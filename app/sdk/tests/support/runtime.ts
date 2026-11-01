@@ -13,6 +13,8 @@ const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
 export interface Runtime {
   home: string
+  /** Operator-side credential handoff dir (launch-token/base-url); never inside home (T-01.f3 R1). */
+  handoff: string
   baseUrl: string
   token: string
   client: DshClient
@@ -32,12 +34,16 @@ export interface LaunchOptions {
 /** Boot the p2sdk runtime in mock mode and return a connected client. */
 export async function launchRuntime(opts: LaunchOptions = {}): Promise<Runtime> {
   const home = mkdtempSync(join(tmpdir(), 'p2sdk-runtime-'))
+  // T-01.f3 R1: credentials hand off through a separate random dir that never
+  // enters the dsh child environment (start.ts drops P2SDK_HANDOFF there).
+  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
   const child = spawn(process.execPath, [join(PKG_ROOT, 'scripts', 'start.mjs')], {
     env: {
       ...process.env,
       ...opts.env,
       P2SDK_PROVIDER: 'mock',
       P2SDK_HOME: home,
+      P2SDK_HANDOFF: handoff,
       P2SDK_PORT: '0',
       P2SDK_READY_TIMEOUT_MS: String(opts.readyTimeoutMs ?? 60_000),
     },
@@ -56,12 +62,13 @@ export async function launchRuntime(opts: LaunchOptions = {}): Promise<Runtime> 
     await new Promise((r) => setTimeout(r, 200))
   }
 
-  const baseUrl = readFileSync(join(home, 'base-url'), 'utf8').trim()
-  const token = readFileSync(join(home, 'launch-token'), 'utf8').trim()
+  const baseUrl = readFileSync(join(handoff, 'base-url'), 'utf8').trim()
+  const token = readFileSync(join(handoff, 'launch-token'), 'utf8').trim()
   const client = await connect({ baseUrl, token })
 
   return {
     home,
+    handoff,
     baseUrl,
     token,
     client,

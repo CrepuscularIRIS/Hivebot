@@ -45,21 +45,22 @@ function childPids(pid: number | undefined): number[] {
 }
 
 /** The one start command every boot (first and restart) uses, unchanged. */
-function startEnv(home: string, patch: string): NodeJS.ProcessEnv {
+function startEnv(home: string, patch: string, handoff: string): NodeJS.ProcessEnv {
   return {
     ...process.env,
     P2SDK_PATCH: patch,
     P2SDK_PROVIDER: 'mock',
     P2SDK_HOME: home,
+    P2SDK_HANDOFF: handoff,
     P2SDK_PORT: '0',
     P2SDK_READY_TIMEOUT_MS: '60000',
   }
 }
 
 /** Boot `pnpm -C app/sdk start`'s underlying command against an existing home. */
-async function bootHome(home: string, patch: string): Promise<{ child: ChildProcess; baseUrl: string; token: string; client: DshClient }> {
+async function bootHome(home: string, patch: string, handoff: string): Promise<{ child: ChildProcess; baseUrl: string; token: string; client: DshClient }> {
   const child = spawn(process.execPath, [join(PKG_ROOT, 'scripts', 'start.mjs')], {
-    env: startEnv(home, patch),
+    env: startEnv(home, patch, handoff),
     stdio: ['ignore', 'pipe', 'pipe'],
   })
   booted.push(child)
@@ -74,8 +75,8 @@ async function bootHome(home: string, patch: string): Promise<{ child: ChildProc
     if (Date.now() >= deadline) throw new Error(`no ready line within 60s:\n${output}`)
     await new Promise((r) => setTimeout(r, 200))
   }
-  const baseUrl = readFileSync(join(home, 'base-url'), 'utf8').trim()
-  const token = readFileSync(join(home, 'launch-token'), 'utf8').trim()
+  const baseUrl = readFileSync(join(handoff, 'base-url'), 'utf8').trim()
+  const token = readFileSync(join(handoff, 'launch-token'), 'utf8').trim()
   return { child, baseUrl, token, client: await connect({ baseUrl, token }) }
 }
 
@@ -188,8 +189,9 @@ async function runTurn(client: DshClient, sessionId: string, prompt: string, fir
 
 it('① restart survival: kill -9 -> same start command + same P2SDK_HOME -> list returns both sessions, events reads history', async () => {
   const home = mkdtempSync(join(tmpdir(), 'p2sdk-t06-r1-'))
+  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-t06-h1-'))
   const patch = fakeOverlay()
-  const rt = await bootHome(home, patch)
+  const rt = await bootHome(home, patch, handoff)
   const s1 = await createSession(rt.client, home)
   const s2 = await createSession(rt.client, home)
   writeScriptCalls(home, s1, [scriptedCall(['甲', '乙', '丙', '丁', '戊'])])
@@ -199,7 +201,7 @@ it('① restart survival: kill -9 -> same start command + same P2SDK_HOME -> lis
   await killTree9(rt.child)
   expect(rt.child.signalCode ?? rt.child.exitCode, 'the runtime died to the kill, not on its own').not.toBe(null)
 
-  const rt2 = await bootHome(home, patch) // identical spawn: same argv, same env, same P2SDK_HOME
+  const rt2 = await bootHome(home, patch, handoff) // identical spawn: same argv, same env, same P2SDK_HOME/HANDOFF
   const list = (await rt2.client.call('session/list', { _request: {} })) as { items: Array<{ sessionId: string; agentAvailable: boolean }> }
   expect(list.items.map((i) => i.sessionId).sort()).toEqual([s1, s2].sort())
   expect(list.items.every((i) => !i.agentAvailable), 'cold list: no Agent attached before any prompt').toBe(true)
@@ -218,8 +220,9 @@ it('① restart survival: kill -9 -> same start command + same P2SDK_HOME -> lis
 
 it('② kill -9 mid-stream: completed turns survive, the interrupted turn is closed by synthetic events after resume', async () => {
   const home = mkdtempSync(join(tmpdir(), 'p2sdk-t06-r2-'))
+  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-t06-h2-'))
   const patch = fakeOverlay()
-  const rt = await bootHome(home, patch)
+  const rt = await bootHome(home, patch, handoff)
   const sid = await createSession(rt.client, home)
   writeScriptCalls(home, sid, [
     scriptedCall(['甲', '乙', '丙', '丁', '戊']),
@@ -235,7 +238,7 @@ it('② kill -9 mid-stream: completed turns survive, the interrupted turn is clo
   await waitForDelta(frames, '子', 15_000) // barrier receipt: the model call is streaming and parked
   await killTree9(rt.child)
 
-  const rt2 = await bootHome(home, patch)
+  const rt2 = await bootHome(home, patch, handoff)
   const cold = await eventsOf(rt2.client, sid)
   expect(realUserTexts(cold)).toEqual(['重启前·完整一问', '重启前·会被中断的一问'])
   expect(assistantTexts(cold)).toContain('甲乙丙丁戊')

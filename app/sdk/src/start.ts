@@ -16,7 +16,7 @@
  */
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { closeSync, fstatSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { closeSync, fstatSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -31,6 +31,8 @@ export interface StartConfig {
   llmBaseUrl: string
   model: string
   home: string
+  /** Credential handoff dir (launch-token/base-url, 0600). Never enters the dsh child env (T-01.f3 R1). */
+  handoff: string
   port: number
   extraPatches: string[]
   readyTimeoutMs: number
@@ -45,6 +47,7 @@ export function resolveConfig(env: NodeJS.ProcessEnv = process.env): StartConfig
     llmBaseUrl: env.P2SDK_LLM_BASE_URL || DEFAULT_LLM_BASE_URL,
     model: env.P2SDK_LLM_MODEL || DEFAULT_MODEL,
     home: env.P2SDK_HOME || join(PKG_ROOT, '.dsh'),
+    handoff: env.P2SDK_HANDOFF || join(PKG_ROOT, '.dsh-handoff'),
     port: Number(env.P2SDK_PORT ?? 0),
     extraPatches: (env.P2SDK_PATCH ?? '').split(':').filter(Boolean),
     readyTimeoutMs: Number(env.P2SDK_READY_TIMEOUT_MS ?? 60_000),
@@ -80,17 +83,28 @@ export function buildArgs(cfg: StartConfig, runtimePatch: string): string[] {
   return args
 }
 
-/** Environment for the dsh child: isolated home, routed provider, quiet telemetry. */
+/**
+ * Environment for the dsh child: an explicit allowlist (T-01.f3 O8/R1), not the
+ * launcher's full env. Only PATH, HOME, and the P2SDK_ / DSH_ prefixed names
+ * pass through; the handoff dir is always dropped (its path must not be
+ * env-derivable inside the sandbox), and the real LLM key is dropped in mock
+ * mode (the replay/fake providers never read it).
+ */
 export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
-  return {
-    ...env,
-    DSH_HOME: cfg.home,
-    P2SDK_HOME: cfg.home,
-    P2SDK_PROVIDER: cfg.provider,
-    P2SDK_LLM_MODEL: cfg.model,
-    P2SDK_LLM_API_BASE: normalizeApiBase(cfg.llmBaseUrl),
-    DSH_TELEMETRY_MODE: env.DSH_TELEMETRY_MODE ?? 'DISABLED',
+  const child: NodeJS.ProcessEnv = {}
+  for (const [name, value] of Object.entries(env)) {
+    if (value === undefined) continue
+    const keep = name === 'PATH' || name === 'HOME' || name.startsWith('P2SDK_') || name.startsWith('DSH_')
+    if (keep && name !== 'P2SDK_HANDOFF') child[name] = value
   }
+  child.DSH_HOME = cfg.home
+  child.P2SDK_HOME = cfg.home
+  child.P2SDK_PROVIDER = cfg.provider
+  child.P2SDK_LLM_MODEL = cfg.model
+  child.P2SDK_LLM_API_BASE = normalizeApiBase(cfg.llmBaseUrl)
+  child.DSH_TELEMETRY_MODE = env.DSH_TELEMETRY_MODE ?? 'DISABLED'
+  if (cfg.provider === 'mock') delete child.P2SDK_LLM_API_KEY
+  return child
 }
 
 const fileUrl = (p: string): string => `file://${p}`
@@ -124,6 +138,8 @@ export function writeRuntimePatch(cfg: StartConfig): string {
 - insert:
     - id: p2sdk-handoff
       name: '${fileUrl(join(PKG_ROOT, 'profile', 'plugins', 'handoff.mjs'))}'
+      config:
+        dir: '${cfg.handoff}'
 `)
   writeFileSync(path, rows.join(''))
   return path
@@ -353,6 +369,7 @@ export interface RuntimeHandle {
 /** Prepare the home dir, overlays, and dsh child process for one runtime. */
 export function startRuntime(cfg: StartConfig): RuntimeHandle {
   mkdirSync(cfg.home, { recursive: true })
+  mkdirSync(cfg.handoff, { recursive: true })
   if (cfg.provider === 'mock') {
     writeFileSync(join(cfg.home, 'replay-override.json'), JSON.stringify(mockReplayOverride()))
   }
@@ -367,6 +384,15 @@ export function startRuntime(cfg: StartConfig): RuntimeHandle {
   const note = (line: string) => {
     if (!announced && isReadyLine(line)) {
       announced = true
+      // dsh has finished loading every --patch overlay by the time the handoff
+      // plugin fires, so the generated patch (which names the handoff dir) is
+      // deleted once boot succeeded: the only on-disk clue to the credential
+      // location disappears before any model-driven tool can run (T-01.f3 R1).
+      try {
+        rmSync(runtimePatch, { force: true })
+      } catch {
+        // best effort: a leftover patch only matters for the default fixed dirs
+      }
       readyResolve(true)
     }
   }

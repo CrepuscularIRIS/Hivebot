@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { expect } from 'vitest'
-import type { DshClient } from '../../examples/lib/client.mjs'
+import { snapshotFrames, type DshClient } from '../../../examples/lib/client.mjs'
 import { launchRuntime, type Runtime } from '../runtime.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
@@ -48,7 +48,9 @@ export interface FakeRequest {
 
 export interface FakeRuntime extends Runtime {
   /** Write the scripted model-call list for one session (plugin reads it per call). */
-  writeScript(sessionId: string, pieces: string[], gateId?: string): void
+  writeScript(sessionId: string, pieces: string[], gateId?: string, paceMs = 10): void
+  /** Write arbitrary scripted calls (raw chunk lists, e.g. tool-call turns). */
+  writeScriptCalls(sessionId: string, calls: object[]): void
   /** Requests the fake provider actually received, in order. */
   readRequests(): FakeRequest[]
 }
@@ -67,12 +69,30 @@ export function childEnvHas(pid: number, name: string): boolean {
 }
 
 /**
+ * pid of the dsh runtime process under the start.mjs launcher. T-01.f3 checks
+ * the allowlist against the environment the model-driven tools actually
+ * inherit, which is dsh's own environ — not the launcher's.
+ */
+export function runtimeDshPid(pid: number): number {
+  for (const p of processTree(pid)) {
+    let cmd = ''
+    try {
+      cmd = readFileSync(`/proc/${p}/cmdline`, 'utf8')
+    } catch {
+      continue
+    }
+    if (cmd.includes('/dsh/lib/bin.js')) return p
+  }
+  throw new Error(`no dsh runtime process under launcher ${pid}`)
+}
+
+/**
  * Scripted model call, chunk vocabulary copied from upstream mock-adapter.ts
  * (来源: deepseek-harness@ce7073d packages/core/agent-loop/tests/mock-adapter.ts).
  * gateAfterChunk=1 makes the fake hang after the first text-delta until the
  * gate file $P2SDK_HOME/gates/<gateId> appears (T-01⑧ channel).
  */
-function scriptedCall(pieces: string[], gateId?: string): object {
+function scriptedCall(pieces: string[], gateId?: string, paceMs = 10): object {
   const chunks: object[] = [
     { type: 'block-start', index: 0, blockType: 'text' },
     ...pieces.map((text) => ({ type: 'text-delta', index: 0, text })),
@@ -80,7 +100,7 @@ function scriptedCall(pieces: string[], gateId?: string): object {
     { type: 'usage', usage: { inputTokens: 10, outputTokens: pieces.length } },
     { type: 'finish', reason: { kind: 'stop' } },
   ]
-  return gateId ? { chunks, gateAfterChunk: 1, gateId, paceMs: 10 } : { chunks, paceMs: 10 }
+  return gateId ? { chunks, gateAfterChunk: 1, gateId, paceMs } : { chunks, paceMs }
 }
 
 /**
@@ -88,16 +108,20 @@ function scriptedCall(pieces: string[], gateId?: string): object {
  * mkdtemp home. The scripted fake provider is selected through a generated
  * P2SDK_PATCH overlay (agent-default-model -> p2fake + p2sdk-fake-llm plugin).
  */
-export async function launchFakeRuntime(): Promise<FakeRuntime> {
+export async function launchFakeRuntime(opts: { env?: Record<string, string> } = {}): Promise<FakeRuntime> {
   clearRealKeys()
-  const rt = await launchRuntime({ env: overlayEnv() })
+  const rt = await launchRuntime({ env: { ...overlayEnv(), ...opts.env } })
+  const writeScriptCalls = (sessionId: string, calls: object[]): void => {
+    const dir = join(rt.home, 'fake', 'scripts')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({ calls }))
+  }
   return {
     ...rt,
-    writeScript(sessionId: string, pieces: string[], gateId?: string) {
-      const dir = join(rt.home, 'fake', 'scripts')
-      mkdirSync(dir, { recursive: true })
-      writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({ calls: [scriptedCall(pieces, gateId)] }))
+    writeScript(sessionId: string, pieces: string[], gateId?: string, paceMs = 10) {
+      writeScriptCalls(sessionId, [scriptedCall(pieces, gateId, paceMs)])
     },
+    writeScriptCalls,
     readRequests(): FakeRequest[] {
       let raw: string
       try {
@@ -179,9 +203,14 @@ export function sendPrompt(client: DshClient, sessionId: string, prompt: string)
   })
 }
 
-/** Create one session on the runtime (cwd under the isolated home). */
-export async function createSession(client: DshClient, home: string): Promise<string> {
-  const { sessionId } = (await client.call('session/create', { request: { cwd: join(home, 'workspace') } })) as {
+/**
+ * Create one session on the runtime. T-01.f3 R1: the cwd is an independent
+ * mkdtemp work dir — never under P2SDK_HOME/DSH_HOME, so a `read
+ * ../launch-token` from inside the session finds nothing.
+ */
+export async function createSession(client: DshClient, _home?: string): Promise<string> {
+  const work = mkdtempSync(join(tmpdir(), 'p2sdk-work-'))
+  const { sessionId } = (await client.call('session/create', { request: { cwd: work } })) as {
     sessionId: string
   }
   expect(sessionId, 'session/create returned a sessionId').toBeTypeOf('string')
@@ -242,18 +271,24 @@ export interface TurnResult {
  * hangs after chunk 1; the client must actually receive it (5s FAIL clock)
  * before release(gateId), the T-01② listener criterion is re-checked during
  * the barrier, and all K pieces must land in order before turn/end.
+ * T-01.f3 R6: the prompt is sent only after the follow opening snapshot
+ * arrived (subscription barrier), and the snapshot baseline is folded into
+ * the frame statistics so a turn landing inside the baseline still settles.
  */
-export async function runScriptedTurn(rt: FakeRuntime, opts: { prompt: string; pieces: string[]; gateId?: string }): Promise<TurnResult> {
+export async function runScriptedTurn(
+  rt: FakeRuntime,
+  opts: { prompt: string; pieces: string[]; gateId?: string; paceMs?: number },
+): Promise<TurnResult> {
   const pid = rt.child.pid ?? 0
   const sessionId = await createSession(rt.client, rt.home)
-  rt.writeScript(sessionId, opts.pieces, opts.gateId)
+  rt.writeScript(sessionId, opts.pieces, opts.gateId, opts.paceMs)
 
-  const baseline = treeListenerEndpoints(pid)
-  expect(baseline.length, 'runtime tree listens on at least one socket').toBeGreaterThanOrEqual(1)
-  for (const e of baseline) expect(isLoopback(e), `listener ${e} is loopback`).toBe(true)
+  const listeners = treeListenerEndpoints(pid)
+  expect(listeners.length, 'runtime tree listens on at least one socket').toBeGreaterThanOrEqual(1)
+  for (const e of listeners) expect(isLoopback(e), `listener ${e} is loopback`).toBe(true)
 
-  const stream = await rt.client.follow(sessionId)
-  const frames: Frame[] = []
+  const { stream, snapshot } = await rt.client.follow(sessionId, { assistantStream: true, awaitSnapshot: true })
+  const frames: Frame[] = [...snapshotFrames(snapshot)]
   const drained = (async () => {
     for await (const f of stream) frames.push(f)
   })()
@@ -261,7 +296,13 @@ export async function runScriptedTurn(rt: FakeRuntime, opts: { prompt: string; p
 
   if (opts.gateId) {
     await waitForDelta(frames, opts.pieces[0]) // barrier receipt at the client; 5s timeout = FAIL
-    expect(treeListenerEndpoints(pid), 'no new listeners during the barrier').toEqual(baseline)
+    expect(treeListenerEndpoints(pid), 'no new listeners during the barrier').toEqual(listeners)
+    rt.release(opts.gateId)
+  }
+
+  if (opts.gateId) {
+    await waitForDelta(frames, opts.pieces[0]) // barrier receipt at the client; 5s timeout = FAIL
+    expect(treeListenerEndpoints(pid), 'no new listeners during the barrier').toEqual(listeners)
     rt.release(opts.gateId)
   }
   const turnEndIndex = await waitForTurnEnd(frames)

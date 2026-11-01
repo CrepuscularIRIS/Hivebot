@@ -4,23 +4,32 @@
 // Exit code 0 only when both assertions hold.
 //
 // Run (G2-r2 wording): pnpm -C app/sdk exec node examples/min-client.mjs "你好"
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { connect } from './lib/client.mjs'
+import { connect, snapshotFrames } from './lib/client.mjs'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
-const home = process.env.P2SDK_HOME ?? join(PKG_ROOT, '.dsh')
-const baseUrl = process.env.P2SDK_BASE_URL ?? readFileSync(join(home, 'base-url'), 'utf8').trim()
-const token = process.env.P2SDK_LAUNCH_TOKEN ?? readFileSync(join(home, 'launch-token'), 'utf8').trim()
+// T-01.f3 R1: credentials live in the operator-side handoff dir, which never
+// enters the dsh runtime environment; the session cwd is an independent
+// mkdtemp work dir, never under P2SDK_HOME/DSH_HOME.
+const handoff = process.env.P2SDK_HANDOFF ?? join(PKG_ROOT, '.dsh-handoff')
+const baseUrl = process.env.P2SDK_BASE_URL ?? readFileSync(join(handoff, 'base-url'), 'utf8').trim()
+const token = process.env.P2SDK_LAUNCH_TOKEN ?? readFileSync(join(handoff, 'launch-token'), 'utf8').trim()
 const prompt = process.argv[2] ?? '你好'
 
 const client = await connect({ baseUrl, token })
-const { sessionId } = await client.call('session/create', { request: { cwd: join(home, 'workspace') } })
+const work = mkdtempSync(join(tmpdir(), 'p2sdk-work-'))
+const { sessionId } = await client.call('session/create', { request: { cwd: work } })
 console.log(`session ${sessionId}`)
 
 const frames = []
-const stream = await client.follow(sessionId, { assistantStream: true })
+// R6 barrier: wait for the opening snapshot (the follow subscription is only
+// established once the server built it) before sending the prompt, and fold
+// the snapshot baseline into the frame statistics.
+const { stream, snapshot } = await client.follow(sessionId, { assistantStream: true, awaitSnapshot: true })
+frames.push(...snapshotFrames(snapshot))
 const turnEnded = (async () => {
   for await (const frame of stream) {
     frames.push(frame)

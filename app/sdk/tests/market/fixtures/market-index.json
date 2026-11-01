@@ -1,0 +1,43 @@
+{
+  "format": 1,
+  "title": "p2sdk fixture market",
+  "description": "Self-made minimal format-1 snapshot; fixture only, never fetched from a real market (T-03 acceptance ①).",
+  "plugins": [
+    {
+      "name": "@p2sdk-fixture/demo-mcp",
+      "title": "Demo MCP connector",
+      "description": "stdio ping MCP server used by the T-03 connector acceptance.",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "publishTimestamp": 1761958400,
+          "source": { "type": "npm" }
+        }
+      ]
+    },
+    {
+      "name": "@p2sdk-fixture/echo-tool",
+      "title": "Echo tool",
+      "description": "Second entry so the snapshot has more than one row.",
+      "versions": [
+        {
+          "version": "0.3.1",
+          "publishTimestamp": 1761958401,
+          "source": { "type": "npm" }
+        }
+      ]
+    },
+    {
+      "name": "@p2sdk-fixture/other-tool",
+      "title": "Other tool",
+      "description": "Third entry so paging and filtering have something to chew on.",
+      "versions": [
+        {
+          "version": "2.0.0",
+          "publishTimestamp": 1761958402,
+          "source": { "type": "npm" }
+        }
+      ]
+    }
+  ]
+}

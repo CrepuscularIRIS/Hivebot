@@ -1,0 +1,29 @@
+# p2sdk market overlay on the dsh web profile (T-03, D6 base).
+# Loaded through P2SDK_PATCH (colon-separated --patch overlays, see src/start.ts)
+# so src/start.ts itself stays untouched.
+#
+# Assembles two rows the web profile does not carry by default:
+#   1. plugin-market — the @deepseek-ai market reader service; contributes the
+#      pluginMarket/* remote methods (kept in the T-03③ baseline, G2-r2 item 3).
+#   2. p2temp — this repo's single temporary adapter method
+#      (P2-TEMP: P3 may overturn; see src/p2temp/index.mjs).
+#
+# Bare package names resolve because this patch lives inside app/sdk's package
+# scope: the Cordis loader anchors import.meta.resolve at the nearest
+# package.json (app/sdk), where @deepseek-ai/dsh-plugin-market is a direct
+# dependency. The generated runtime patch in src/start.ts cannot do this
+# ($DSH_HOME has no package scope), which is why that one uses file:// URLs.
+#
+# P2SDK_MARKET_INDEXES: whitespace-separated http(s) index URLs for
+# plugin-market's `indexes` config. Empty by default; tests point it at a
+# loopback static server serving a local format-1 snapshot (fixture only).
+- insert:
+    - id: plugin-market
+      name: '@deepseek-ai/dsh-plugin-market'
+      config:
+        indexes: !!js (process.env.P2SDK_MARKET_INDEXES ?? '').split(/\s+/).filter(Boolean)
+
+- insert:
+    - id: p2temp-connectors
+      # Relative to this patch file's directory (profile/patches/).
+      name: ../../src/p2temp/index.mjs

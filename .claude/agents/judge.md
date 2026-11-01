@@ -1,6 +1,6 @@
 ---
 name: judge
-description: 多模型评审席（盲评）。只由 /panel 派发：同一提示词同时派 3 次，model=fable（席 A，Opus 5.5）/ sonnet（席 B，6.1 Sol）/ haiku（席 C，K3.1 Pro）。评审 BRIEF / PLAN / 设计 / 验收，或在决策点投票。不写代码不改文件。
+description: 多模型评审席（盲评）。只由 /panel 派发：同一提示词同时派 2 次，model=fable（席 A，Opus 5.5）/ sonnet（席 B，6.1 Sol），两席都是裁决席。评审 BRIEF / PLAN / 设计 / 验收，或在决策点投票。不写代码不改文件。
 disallowedTools: Edit, NotebookEdit
 ---
 

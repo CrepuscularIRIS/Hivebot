@@ -6,7 +6,7 @@
 
 ## §1 派发对照（Agent 工具参数）
 
-slot 与实际模型的对应：`fable`=Opus 5.5，`opus`=GLM 5.3 1M，`sonnet`=6.1 Sol，`haiku`=K3.1 Pro。
+slot 与实际模型的对应：`fable`=Opus 5.5，`opus`=GLM 5.3 1M，`sonnet`=6.1 Sol，`haiku`=K3.1 Pro（不再使用，2026-11-01）。
 
 **GLM 一律写完整 ID `glm-5.3[1m]`，不要写别名 `opus`**（2026-10-28 实测）：主会话是 Opus 5.5 时，`opus` 别名会被解析成主会话的 claude-opus-5-5，GLM 角色就悄悄变成了 Opus。frontmatter 和 workflow 的 `opts.model` 都填完整 ID。`fable`、`sonnet`、`haiku` 三个别名实测解析正确。Agent 工具的 `model` 参数只接受别名，所以 GLM 角色不要通过它传，靠 frontmatter。 **已实测（2026-10-28）**：frontmatter 写 `model: glm-5.3[1m]` 的 agent，从 Opus 会话派出时实际跑在 glm-5.3 上（builder、drafter 都靠这个）。
 
@@ -18,15 +18,14 @@ slot 与实际模型的对应：`fable`=Opus 5.5，`opus`=GLM 5.3 1M，`sonnet`=
 | reverse-engineer | `reverse-engineer` | 不传 | GLM 5.3 + REA | director / 主会话 | 按目标多开 |
 | builder | `builder` | 不传 | GLM 5.3 | build-lead | 按 ready 任务多开 |
 | ux-proposer 席 A | `ux-proposer` | `"fable"` | Opus 5.5 | build-lead | 与席 C 同一条消息派出 |
-| ux-proposer 席 C | `ux-proposer` | `"haiku"` | K3.1 Pro | build-lead | 同上 |
+| ux-proposer 席 C | `ux-proposer` | `"sonnet"` | 6.1 Sol | build-lead | 同上 |
 | frontend-dev | `frontend-dev` | 不传 | Opus 5.5 | build-lead | 每条 UI 任务一个 |
 | verifier | `verifier` | 不传 | GLM 5.3 | build-lead / 主会话 | 按任务多开 |
-| judge 席 A | `judge` | `"fable"` | Opus 5.5 | `/panel` | 三席同一条消息派出 |
+| judge 席 A | `judge` | `"fable"` | Opus 5.5 | `/panel` | 两席同一条消息派出 |
 | judge 席 B | `judge` | `"sonnet"` | 6.1 Sol | `/panel` | 同上 |
-| judge 席 C | `judge` | `"haiku"` | K3.1 Pro | `/panel` | 同上 |
 
 规则：
-- `judge` 和 `ux-proposer` 的 frontmatter 里**故意不锁模型**。漏传 `model` 时会继承会话模型（GLM），三席就退化成同一个模型，panel 等于没开。所以必须传。
+- `judge` 和 `ux-proposer` 的 frontmatter 里**故意不锁模型**。漏传 `model` 时会继承会话模型（GLM），两席就退化成同一个模型，panel 等于没开。所以必须传。
 - 其余 agent 一律**不传** `model`，以 frontmatter 为准。传了反而会覆盖掉。
 - 默认前台派发。同一条消息里的多个前台 Agent 调用会并发执行，结果作为工具返回值回来，不会遗漏。
 - 前提：`CLAUDE_CODE_SUBAGENT_MODEL=inherit`（claude-kimi 默认就是）。如果它被设成某个具体模型，所有 `model` 参数都会被覆盖，panel 也会失效。
@@ -71,11 +70,9 @@ slot 与实际模型的对应：`fable`=Opus 5.5，`opus`=GLM 5.3 1M，`sonnet`=
   - 要求每条结论附证据路径
   - 字数上限放宽一些，并写明「用完整句子」
 
-### K3.1 Pro（`haiku`）：ux-proposer 席 C、召回席 C
+### K3.1 Pro（`haiku`）：不再使用
 
-- **定位**：作为不同厂商的视角，负责发散和召回。它的发现必须得到回应，但不单独决定裁决（GU 闸门除外）。
-- **画像待补**：本项目还没实测过。跑满 3 次 panel 后，由主会话根据它的发现命中率补写本节。
-- **提示词写法**：鼓励主见和反提案，不要求面面俱到。
+2026-11-01 用户定：决策核心只用 Opus 5.5 和 6.1 Sol，代码交给 GLM。原来 K3 担任的 ux 提案席 C 改由 Sol 担任，panel 召回席取消。
 
 ### 额度与分工总览
 
@@ -84,9 +81,8 @@ slot 与实际模型的对应：`fable`=Opus 5.5，`opus`=GLM 5.3 1M，`sonnet`=
 | | 方向 / plan | 实现 | code review | 评审 panel |
 |---|---|---|---|---|
 | Opus 5.5 | director（主） | 前端定稿 | M / L 档的 1 个深度 finder | 裁决席 A（路线把关） |
-| 6.1 Sol | — | — | 后端 finder + 全部验证 | 裁决席 B |
+| 6.1 Sol | scout 调研 | ux 提案席 C | 后端 finder + 全部验证 | 裁决席 B |
 | GLM 5.3 | — | builder、verifier（主） | 安全 finder + 主力 finder（主） | — |
-| K3.1 Pro | — | ux 提案席 C | — | 召回席 C |
 
 **实测（2026-10-28，v2 规划到第 0 波）**：输出 token（只统计 bots 的会话；初版统计误把同一 config 下其他项目的会话算进来，已更正）GLM 3.93M（73%）、Opus 1.02M（19%）、Sol 0.23M、K3 0.17M。Opus 的 76% 在 director 自己的会话里（BRIEF/PLAN 多次改版、回应 panel，以及等待 scout 时的心跳、轮询和记账），20% 在 panel A 席。用户 2026-10-28 认为 Opus 仍然偏多，需要压缩（见 DIVISION.md §3.2）。**大量调研、找素材一律交给 6.1 Sol（scout 池）**，Opus 不亲自做检索。
 

@@ -14,7 +14,7 @@ MVP 不做（以后再做）：云电脑 / box、SSH、远程连接、VNC 实时
 
 | 素材 | 位置 | 已知事实（2026-11-01 摸底） |
 |---|---|---|
-| Grok Bot 0.78.1（最新，闭源） | `~/Downloads/grok-bot_0.78.1_amd64.deb` | Electron；`resources/app.asar` 约 52MB；native 模块：`@anysphere/jpeg-napi`、`cursor-proclist`、`sand-address-lookup` 等；包名 `grok-bot`，Provides `sand`，厂商 Cursor / SpaceXAI。本机没有安装 |
+| Grok Bot 0.78.1（最新，闭源） | `~/Downloads/grok-bot_0.78.1_amd64.deb` | Electron；`resources/app.asar` 约 52MB；native 模块：`@anysphere/jpeg-napi`、`cursor-proclist`、`sand-address-lookup` 等；包名 `grok-bot`，Provides `sand`，厂商 Cursor / SpaceXAI。已安装于 `/opt/Grok Bot`（dpkg -l 确认，2026-11-01 更正；原记录误写为「本机没有安装」） |
 | Grok Bot 0.18 重构源码 | `repos/grok-bot-0.18-reconstructed/` | 见下面「0.18 的分层」 |
 | dsh（DeepSeek Harness） | `repos/deepseek-harness/` | Cordis 插件树；有 headless、sdk、acp、web 几个 profile；约 370 个包，其中 `packages/client/*` 约 68 个前端包可以砍掉，但 `client/connection` 的宿主侧（`/api` 路由与鉴权）要保留；Node ≥24.9，pnpm 11；CI 要求每个文件 100% 覆盖 |
 | superagent | `repos/dsh-superagent-prototype/` | dsh 的 bundle 插件（`cordis.patch.yml`），没有改 dsh 源码；`src/core` 是纯领域引擎，只通过 `ports.ts` 和外部打交道；只有 loopback HTTP `/orchestrator/api/`，没有推送；peer 依赖 dsh 0.2.1-alpha / rc.3，本地 dsh 是 0.2.2-alpha.2，可能不兼容；没有安装、没有跑过 |

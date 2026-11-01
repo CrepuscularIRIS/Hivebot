@@ -18,9 +18,9 @@ PROTOCOL §7.1 的展开。workflow 脚本存为 `.claude/workflows/mm-review.js
 | Verifier：验证 Opus 的发现 | Sol | 发现者 ≠ 验证者 |
 | 写报告 `REVIEW-<task>.md` | GLM | 抄写结构化结果，不做判断 |
 
-路线与方案是否偏离 PLAN / BRIEF，由 panel 的 G2 / G3（Opus / Sol / K3 三席）负责，code review 不重复做。
+路线与方案是否偏离 PLAN / BRIEF，由 panel 的 G2 / G3（Opus / Sol 两席）负责，code review 不重复做。
 
-不参与：K3.1 Pro。cleanup 类角度（复用、简化）默认关闭，需要时单独跑 `/ponytail-review`。
+不参与：K3.1 Pro（已停用）。cleanup 类角度（复用、简化）默认关闭，需要时单独跑 `/ponytail-review`。
 
 ## 2. 档位
 

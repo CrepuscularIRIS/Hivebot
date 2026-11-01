@@ -48,10 +48,10 @@ cron 的限制：只在主会话空闲时触发；会话退出就没了；7 天�
 | UI 提案 | `ux-proposer` | `"fable"`（席 A）和 `"sonnet"`（席 C） | Opus / Sol | UI 任务开工前，在同一条消息里派两次 |
 | 前端 | `frontend-dev` | 不传 | Opus 5.5 | 综合两份提案定稿并实现 |
 | 验收 | `verifier` | 不传 | GLM 5.3 | 真实环境测试、截图，写 VERIFY |
-| 评审 | `/panel` | 由命令传 | Opus / Sol / Sol | 方案闸门与决策投票 |
+| 评审 | `/panel` | 由命令传 | Opus / Sol | 方案闸门与决策投票，两席都是裁决席 |
 | code review | `mm-review` workflow | 脚本内定 | GLM / Sol / Opus | §6，由你派 |
 
-K3.1 Pro（`haiku`）没有额度，不要用；旧文档写 haiku 的席位一律改用 `sonnet`。
+**决策核心 = Opus 5.5 + 6.1 Sol，代码 = GLM 5.3**（用户 2026-11-01）。K3.1 Pro（`haiku`）不用；GLM 不进 panel。D 投票两席一致才通过，不一致写进 QUESTIONS。
 
 一层派发的代价是所有回报都回到你的上下文里。所以每个派发提示词都要求「全文写进文件，最终回报 ≤15 行」。
 

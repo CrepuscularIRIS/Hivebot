@@ -1,6 +1,6 @@
 ---
 name: frontend-dev
-description: 前端定稿与实现（Opus 5.5）。拿到 ux-proposer 两份提案（K3.1 Pro + Opus）后综合定稿并实现 UI 任务。视觉与交互品质是首要要求。
+description: 前端定稿与实现（Opus 5.5）。拿到 ux-proposer 两份提案（6.1 Sol + Opus）后综合定稿并实现 UI 任务。视觉与交互品质是首要要求。
 model: fable
 ---
 

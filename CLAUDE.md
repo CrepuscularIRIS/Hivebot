@@ -13,7 +13,7 @@
 | `work/LEARNINGS.md` | 跨需求经验（现象 → 根因 → 规则）。开工前读一遍 |
 | `work/<slug>/` | 每个需求的状态文件（BRIEF / PLAN / VERIFY / LOG 等）。只认文件，不认聊天记录 |
 | `.claude/agents/` | director、scout、builder、ux-proposer、frontend-dev、verifier、judge、drafter（build-lead 已归档到 `docs/harness/archive/`：改为一层派发） |
-| `.claude/commands/panel.md` | `/panel`：三席盲评（方案 / UI / 交付闸门） |
+| `.claude/commands/panel.md` | `/panel`：双席盲评（Opus + Sol，方案 / UI / 交付闸门 / 决策投票） |
 | `.claude/workflows/mm-review.js` | 多模型 code review，档位 S / M / L |
 | `docs/harness/CLAUDE.bots-v2.md` | 旧项目（Gas City 版）的主控文件，仅供查阅，不生效 |
 
@@ -25,7 +25,9 @@
 |---|---|
 | 方案、产品判断、UI 定稿 | Opus 5.5 |
 | 主力实现、验收、安全 review | GLM 5.3 |
-| 调研（GitHub MCP）、后端 review、judge 第三席 | 6.1 Sol |
+| 调研（GitHub MCP）、后端 review 与验证、panel 席 B、UI 提案席 C | 6.1 Sol |
+
+决策核心是 Opus 5.5 + 6.1 Sol（panel 两席），代码交给 GLM 5.3。K3.1 Pro 不用。
 | 逆向闭源产物 | 用户级 agent `reverse-engineer`（GLM 5.3 + REA，MCP 只挂在它身上） |
 
 ## 3. 方法论

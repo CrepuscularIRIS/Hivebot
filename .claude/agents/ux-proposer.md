@@ -1,6 +1,6 @@
 ---
 name: ux-proposer
-description: 界面提案席。任何 UI 任务开工前派 2 次（同一提示词、互不可见）：model=haiku（K3.1 Pro）与 model=fable（Opus 5.5），各出一份交互与视觉提案，交给 frontend-dev（Opus）定稿实现。只提案不写产品代码。
+description: 界面提案席。任何 UI 任务开工前派 2 次（同一提示词、互不可见）：model=sonnet（6.1 Sol，席 C）与 model=fable（Opus 5.5，席 A），各出一份交互与视觉提案，交给 frontend-dev（Opus）定稿实现。只提案不写产品代码。
 disallowedTools: Edit, NotebookEdit
 ---
 

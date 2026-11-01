@@ -33,7 +33,7 @@
 | `reuse/<能力>.md` → `REUSE.md` | scout 各写一份 → director 合并 | 每项能力：集成 / 改造 / 逆向 / 自建 |
 | `RE-<topic>.md` | reverse-engineer | 逆向结论 + 证据 + 局限 |
 | `PLAN.md` | director 起草，主会话维护状态列 | 任务图（格式见 §4） |
-| `panels/<gate>-r<n>-<席>.md` → `panels/<gate>-r<n>.md` | judge 各写原文 → 主会话只写汇总 | 三席原文 / 汇总结论 + 必须回应清单 |
+| `panels/<gate>-r<n>-<席>.md` → `panels/<gate>-r<n>.md` | judge 各写原文 → 主会话只写汇总 | 两席原文 / 汇总结论 + 必须回应清单 |
 | `REVIEW-<task>.md` | `mm-review` workflow | 多模型 code review 结论 |
 | `ui/<task>-{A,C,final}.md` | ux-proposer / frontend-dev | 界面提案与定稿 |
 | `VERIFY-<task>.md`、`evidence/` | verifier | 验收结论与证据 |
@@ -102,27 +102,26 @@ Intake ─▶ G1 ─▶ Scout ─▶ [Reverse] ─▶ Plan ─▶ G2 ─▶ Buil
 |---|---|---|---|
 | A | `judge`, model=fable | Opus 5.5 | 裁决席 |
 | B | `judge`, model=sonnet | 6.1 Sol | 裁决席 |
-| C | `judge`, model=haiku | K3.1 Pro | 召回席：发现计入，不参与裁决 |
 
-GU（界面）闸门例外：A + C 为裁决席，B 为召回席。
+两席都是裁决席，所有闸门（含 GU）相同。K3.1 Pro 不再使用，GLM 不进 panel（用户 2026-11-01）。
 
 ### 派发
 
-三席**必须在同一条消息里并行派发**，提示词完全一致（只有 seat 字母不同），互相看不到对方结果。主会话不往提示词里加入自己的倾向。
+两席**必须在同一条消息里并行派发**，提示词完全一致（只有 seat 字母不同），互相看不到对方结果。主会话不往提示词里加入自己的倾向。
 
 ### 汇总（机械执行，主会话不做判断）
 
 1. 任一裁决席 BLOCK 且附证据 → **BLOCK**：回给作者，修完后重新开一轮 panel
 2. 两个裁决席都 PASS → **PASS**
 3. 其余情况 → **REVISE**
-4. 不论结论是什么，所有席位（包括召回席）带证据的 BLOCKER/HIGH 发现都进入「必须回应清单」。作者要逐条写「已改 / 不改 + 理由」，追加到 panel 记录里
-5. 最多 2 轮（用户 2026-10-28，为省 Opus）：第 2 轮仍为 REVISE → 有条件通过，必须回应清单转成首批任务；第 2 轮为 BLOCK → 暂停，交用户拍板
+4. 不论结论是什么，两席带证据的 BLOCKER/HIGH 发现都进入「必须回应清单」。作者要逐条写「已改 / 不改 + 理由」，追加到 panel 记录里
+5. 最多 2 轮（用户 2026-10-28，为省 Opus）：第 2 轮仍为 REVISE → 有条件通过，必须回应清单转成首批任务；第 2 轮为 BLOCK → 暂停，写进 `work/QUESTIONS.md` 交用户拍板
 
 ### 决策题（D）
 
 以下情况不由单个模型拍板，必须走 D 投票：技术栈与框架选型；核心能力是复用还是自建（scout 结论拿不准时）；是否做逆向（§6 中「panel 决定」的情况）；契约或架构的修改；砍掉用户可见的功能。
 
-规则：三席多数票通过。如果涉及安全或不可逆操作，必须 A 和 B 一致，否则交用户。三席各投一个不同选项时，交 director 裁定并写明理由。
+规则：A、B 两席投同一个选项才通过。不一致 → 写进 `work/QUESTIONS.md` 交用户；两个选项都可逆时，先按改动更小、更容易回退的那个做，标「暂定」。
 
 记录写进 `panels/D-<nn>-<主题>.md`。
 
@@ -144,7 +143,7 @@ GU（界面）闸门例外：A + C 为裁决席，B 为召回席。
 整个循环由 `build-lead` 负责（详见该 agent 文件）：G2 PASS 后，主会话只派一次 build-lead，等它回报「全部完成」或「blocked」。以下是 build-lead 执行时遵守的规则：
 
 - 每个 ready 任务派一个 builder，每个 builder 一个独立 worktree（`/tmp/bot-wt/<task-id>`）。无冲突的 ready 任务**一次全部派出**
-- UI 任务：ux-proposer ×2（haiku / fable，并行）→ frontend-dev 定稿实现 → verifier → GU panel
+- UI 任务：ux-proposer ×2（sonnet / fable，并行）→ frontend-dev 定稿实现 → verifier → GU panel
 - 任何回报完成 → verifier。VERIFY PASS 后：review 列为 `–` → 合并；否则合并后调用 mm-review，不等待
 - VERIFY FAIL → 主会话把 `[FIX]` 行原样变成 `.f` 任务并重新派发。不允许主会话自己改代码
 - 合并：逐文件清单 checkout，禁止 `git checkout <commit> -- .` 整树覆盖。合并后检查：任务关键标记 grep 能命中，测试数量没有下降

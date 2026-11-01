@@ -21,7 +21,7 @@
 import { createRequire } from 'node:module'
 import { realpathSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const require = createRequire(
@@ -63,6 +63,25 @@ export function basePresetRows(registry, agentPreset) {
   return record.config.plugins
 }
 
+/**
+ * Convert inserted filesystem paths to file URLs, anchoring relative paths
+ * beside the patch file; keep bare package names literal. Mirrors upstream
+ * anchorInsertedPluginNames (repos/deepseek-harness packages/boot/app-boot
+ * src/index.ts:546-557) so connector patches resolve identically here and
+ * through the normal dsh enable path; recurses into nested group rows.
+ */
+function anchorInsertedPluginNames(rows, patchFile) {
+  const base = dirname(resolve(patchFile))
+  const visit = (entry) => {
+    if (typeof entry.name === 'string' && (isAbsolute(entry.name) || entry.name.startsWith('./') || entry.name.startsWith('../'))) {
+      entry.name = pathToFileURL(resolve(base, entry.name)).href
+    }
+    if (entry.group && Array.isArray(entry.config)) entry.config.forEach(visit)
+  }
+  for (const row of rows) visit(row)
+  return rows
+}
+
 /** 读一个已安装连接器 bundle 的 insert 行（patch 内容须为 JSON）。 */
 export async function readConnectorRows(profileDir, name) {
   const dir = join(profileDir, 'node_modules', name)
@@ -76,15 +95,16 @@ export async function readConnectorRows(profileDir, name) {
   if (typeof patchRel !== 'string') {
     throw new Error(`p2temp: connector ${JSON.stringify(name)} declares no dsh.bundle.patch`)
   }
+  const patchFile = join(dir, patchRel)
   let patch
   try {
-    patch = JSON.parse(await readFile(join(dir, patchRel), 'utf8'))
+    patch = JSON.parse(await readFile(patchFile, 'utf8'))
   } catch (error) {
     throw new Error(`p2temp: connector ${JSON.stringify(name)} patch is not JSON (T-03 scope): ${error.message}`)
   }
   const rows = patch.flatMap((row) => row.insert ?? [])
   if (rows.length === 0) throw new Error(`p2temp: connector ${JSON.stringify(name)} patch inserts nothing`)
-  return rows
+  return anchorInsertedPluginNames(rows, patchFile)
 }
 
 class P2TempService extends TypertRemoteService {

@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
-import { BUNDLE_NAME, CONNECTOR_TOOL, MARKET_YML, readMethods, writeBundleFixture, writeObserverPatch } from './support.ts'
+import { BUNDLE_NAME, CONNECTOR_TOOL, MARKET_YML, REL_BUNDLE_NAME, REL_TOOL, readMethods, writeBundleFixture, writeObserverPatch, writeRelativeBundleFixture } from './support.ts'
 
 const SIGNATURE =
   'p2temp/session.createWithConnectors({connectors: string[], agentPreset?: string, cwd?: string}) → {sessionId}'
@@ -60,6 +60,13 @@ beforeAll(async () => {
   if (install?.application === 'failed' || install?.error) {
     throw new Error(`installBundle failed: ${JSON.stringify(install).slice(0, 2000)}`)
   }
+  const installRel = await rt.client.call('pluginManager/installBundle', {
+    spec: writeRelativeBundleFixture(join(scratch, 'relative-tool')),
+    options: { enabled: false },
+  })
+  if (installRel?.application === 'failed' || installRel?.error) {
+    throw new Error(`installBundle(relative) failed: ${JSON.stringify(installRel).slice(0, 2000)}`)
+  }
   rtBare = await launchRuntime({ env: { P2SDK_PATCH: observerPatch } })
 }, 240_000)
 
@@ -82,6 +89,16 @@ it('X created with connectors sees the MCP tool; plain Y does not', async () => 
   const yTools = await requestToolNames(y)
   expect(xTools).toContain(CONNECTOR_TOOL)
   expect(yTools.filter((n) => n.startsWith('mcp__'))).toEqual([])
+}, 180_000)
+
+it('R14: a relative-path connector loads; its tool reaches the request tool table', async () => {
+  const cwd = join(rt.home, 'workspace')
+  const { sessionId } = await rt.client.call('p2temp/session.createWithConnectors', {
+    request: { connectors: [REL_BUNDLE_NAME], agentPreset: 'standard', cwd },
+  })
+  expect(typeof sessionId).toBe('string')
+  const tools = await requestToolNames(sessionId)
+  expect(tools).toContain(REL_TOOL)
 }, 180_000)
 
 it('the method table differs from the bare baseline by exactly the one p2temp method', async () => {

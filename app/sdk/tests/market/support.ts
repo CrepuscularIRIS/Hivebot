@@ -5,7 +5,7 @@
 // creator-plugin-manager expected e2e: package.json dsh.bundle.patch +
 // cordis.patch.yml as JSON), and reads the methods.json snapshot.
 import { createServer, type Server } from 'node:http'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -15,6 +15,9 @@ export const FIXTURES = join(PKG_ROOT, 'tests', 'market', 'fixtures')
 
 export const BUNDLE_NAME = '@p2sdk-fixture/demo-mcp'
 export const CONNECTOR_TOOL = 'mcp__demo__ping'
+
+export const REL_BUNDLE_NAME = '@p2sdk-fixture/relative-tool'
+export const REL_TOOL = 'relative_ping'
 
 /** Loopback static server for the format-1 snapshot; resolves to its index URL. */
 export async function serveMarketIndex(): Promise<{ url: string; close: () => Promise<void> }> {
@@ -58,6 +61,17 @@ export function writeBundleFixture(dir: string): string {
     },
   }
   writeFileSync(join(dir, 'cordis.patch.yml'), `${JSON.stringify([{ insert: [mcpRow] }])}\n`)
+  return dir
+}
+
+/**
+ * Materialize the relative-path connector fixture (R14) under `dir`: unlike
+ * `writeBundleFixture` everything is static under fixtures/relative-bundle/
+ * because the patch's insert specifier './lib/index.mjs' is machine-independent.
+ */
+export function writeRelativeBundleFixture(dir: string): string {
+  mkdirSync(dir, { recursive: true })
+  cpSync(join(FIXTURES, 'relative-bundle'), dir, { recursive: true })
   return dir
 }
 

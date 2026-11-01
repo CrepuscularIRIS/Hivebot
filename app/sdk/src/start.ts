@@ -15,7 +15,7 @@
  *   P2SDK_PATCH          colon-separated extra `--patch` overlays (absolute paths)
  */
 import { spawn } from 'node:child_process'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { closeSync, mkdirSync, openSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -153,8 +153,94 @@ export function isReadyLine(line: string): string | null {
   return m ? m[1] : null
 }
 
+const LOCK_FILE = 'launcher.lock'
+
+/** Pid recorded in an existing lock file, or null when absent/unreadable/stale. */
+function lockHolder(lockPath: string): number | null {
+  let pid: number
+  try {
+    pid = Number(readFileSync(lockPath, 'utf8').trim())
+  } catch {
+    return null
+  }
+  if (!Number.isInteger(pid) || pid <= 0) return null
+  try {
+    process.kill(pid, 0)
+  } catch (e) {
+    // EPERM means the pid exists but belongs to another user: the home is held.
+    return (e as NodeJS.ErrnoException).code === 'EPERM' ? pid : null
+  }
+  return pid
+}
+
+/**
+ * One launcher per P2SDK_HOME (T-01.f2 acceptance ①, review R4): concurrent
+ * launches would overwrite runtime-patch.yml and the handoff files under the
+ * shared home. O_EXCL makes acquisition atomic; a lock naming a dead pid is
+ * stale and gets taken over. Returns a release() thunk, or a user-facing
+ * error string when a live launcher holds the home.
+ */
+export function acquireHomeLock(home: string): string | (() => void) {
+  const lockPath = join(home, LOCK_FILE)
+  const openExcl = () => openSync(lockPath, 'wx')
+  const refuse = (pid: number) =>
+    `P2SDK_HOME "${home}" is already in use by launcher pid ${pid}: a second instance would clobber its runtime-patch.yml and handoff files`
+  let fd: number
+  try {
+    fd = openExcl()
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code !== 'EEXIST') throw e
+    const held = lockHolder(lockPath)
+    if (held) return refuse(held)
+    // Stale lock (crashed holder): reclaim once; a racing winner's EEXIST is refused below.
+    try {
+      unlinkSync(lockPath)
+    } catch {
+      /* the racing winner removed it first */
+    }
+    try {
+      fd = openExcl()
+    } catch (e2) {
+      if ((e2 as NodeJS.ErrnoException).code !== 'EEXIST') throw e2
+      const winner = lockHolder(lockPath)
+      return winner ? refuse(winner) : `P2SDK_HOME "${home}" lock is contended; retry`
+    }
+  }
+  writeFileSync(fd, `${process.pid}\n`)
+  let released = false
+  return () => {
+    if (released) return
+    released = true
+    try {
+      unlinkSync(lockPath)
+    } catch {
+      /* already gone */
+    }
+    try {
+      closeSync(fd)
+    } catch {
+      /* already closed */
+    }
+  }
+}
+
 function dshEntry(): string {
   return join(PKG_ROOT, 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js')
+}
+
+/**
+ * dsh spawn options (T-01.f2, review R5): `detached` puts dsh in its own
+ * process group, so a terminal Ctrl-C cannot reach it straight from the
+ * foreground group — it arrives exactly once, through the launcher's forward
+ * in main(), letting the pinned dsh shutdown dispose to completion instead of
+ * force-exiting on a duplicate signal.
+ */
+export function dshSpawnOptions(cfg: StartConfig): {
+  env: NodeJS.ProcessEnv
+  stdio: ['ignore', 'pipe', 'inherit']
+  detached: boolean
+} {
+  return { env: childEnv(cfg, process.env), stdio: ['ignore', 'pipe', 'inherit'], detached: true }
 }
 
 export interface RuntimeHandle {
@@ -172,10 +258,7 @@ export function startRuntime(cfg: StartConfig): RuntimeHandle {
     writeFileSync(join(cfg.home, 'replay-override.json'), JSON.stringify(mockReplayOverride()))
   }
   const runtimePatch = writeRuntimePatch(cfg)
-  const child = spawn(process.execPath, [dshEntry(), ...buildArgs(cfg, runtimePatch)], {
-    env: childEnv(cfg, process.env),
-    stdio: ['ignore', 'pipe', 'inherit'],
-  })
+  const child = spawn(process.execPath, [dshEntry(), ...buildArgs(cfg, runtimePatch)], dshSpawnOptions(cfg))
 
   let announced = false
   let readyResolve!: (ready: boolean) => void
@@ -219,13 +302,28 @@ export async function main(cfg: StartConfig = resolveConfig()): Promise<number> 
     process.stderr.write(`p2sdk: ${err}\n`)
     return 1
   }
+  mkdirSync(cfg.home, { recursive: true })
+  const release = acquireHomeLock(cfg.home)
+  if (typeof release === 'string') {
+    process.stderr.write(`p2sdk: ${release}\n`)
+    return 1
+  }
+  process.on('exit', release)
   const handle = startRuntime(cfg)
-  const forward = (signal: NodeJS.Signals) => handle.child.kill(signal)
-  process.once('SIGINT', () => forward('SIGINT'))
-  process.once('SIGTERM', () => forward('SIGTERM'))
+  process.stderr.write(`p2sdk: dsh pid ${handle.child.pid}\n`)
+  // `on`, not `once`: a second Ctrl-C must also reach dsh (its pinned
+  // shutdown escalates to a forced exit on repeat) instead of killing this
+  // launcher first and leaving the detached dsh orphaned.
+  const forward = (signal: NodeJS.Signals) => {
+    if (handle.child.exitCode !== null) return
+    process.stderr.write(`p2sdk: forwarding ${signal} to dsh\n`)
+    handle.child.kill(signal)
+  }
+  process.on('SIGINT', () => forward('SIGINT'))
+  process.on('SIGTERM', () => forward('SIGTERM'))
   if (!(await handle.ready)) {
     process.stderr.write(`p2sdk: no ready line within ${cfg.readyTimeoutMs}ms\n`)
-    handle.child.kill('SIGTERM')
+    forward('SIGTERM')
     return (await handle.exited) || 1
   }
   return await handle.exited

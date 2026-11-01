@@ -26,6 +26,7 @@ GLM 自查：每一轮结束前在 LOG 写一行 `ready 未派 = N`，N 不为 0
 
 ## 1. 启动（args = start，或者 `work/` 里还没有任何 PLAN）
 
+0. 这几个是延迟加载的工具，先用 `ToolSearch("select:CronCreate,CronList,CronDelete,PushNotification,TaskStop")` 加载。
 1. `CronList`：如果已经有内容包含「grok-orchestrate tick」的任务，就不再新建。
 2. 否则 `CronCreate`：`cron: "3-59/10 * * * *"`，`recurring: true`，prompt：`加载 grok-orchestrate skill，args=tick，跑一次巡检`。
 3. 读 roadmap，确认当前阶段（目前是 P1 和 P2 并行）。对还没有 BRIEF 的 slug 派 director 写 BRIEF。

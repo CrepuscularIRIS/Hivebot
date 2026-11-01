@@ -31,12 +31,18 @@ export class MuxStream {
   }
 
   _finish(err) {
+    if (this.done) return
     this.done = true
     this.failure = err
+    this.mux.streams.delete(this.streamId)
     const settled = { value: undefined, done: true, ...(err ? { error: err } : {}) }
-    const waiter = this.waiters.shift()
-    if (waiter) waiter(settled)
-    else this.queue.push(settled)
+    if (this.waiters.length) {
+      const waiters = this.waiters
+      this.waiters = []
+      for (const waiter of waiters) waiter(settled)
+    } else {
+      this.queue.push(settled)
+    }
   }
 
   /** Async-iterate stream frames ({type:'item',value} payloads) until end. */
@@ -52,7 +58,12 @@ export class MuxStream {
           if (this.failure) throw this.failure
           return { value: undefined, done: true }
         }
-        return await new Promise((resolve) => this.waiters.push(resolve))
+        return await new Promise((resolve, reject) => {
+          this.waiters.push((settled) => {
+            if (settled.error) reject(settled.error)
+            else resolve(settled)
+          })
+        })
       },
       return: async () => {
         this.cancel()
@@ -62,7 +73,11 @@ export class MuxStream {
   }
 
   cancel() {
-    if (!this.done) this.mux._send({ type: 'cancel', streamId: this.streamId })
+    if (this.done) return
+    this.mux._send({ type: 'cancel', streamId: this.streamId })
+    // Upstream sends no terminal frame for a cancel; finish locally so
+    // parked next() settles and later consumers see done.
+    this._finish()
   }
 }
 
@@ -71,12 +86,23 @@ export class MuxSocket {
   constructor(url, cookie) {
     this.ws = new WebSocket(url, { headers: { cookie } })
     this.streams = new Map()
-    this.openWaiters = []
+    this.closed = false
     this.ready = new Promise((resolve, reject) => {
       this.ws.once('open', () => resolve())
       this.ws.once('error', reject)
     })
     this.ws.on('message', (data) => this._receive(String(data)))
+    // Unexpected drop (server killed, network cut): finish every logical
+    // stream with a connection error so consumers fail instead of hanging.
+    this.ws.on('error', (err) => this._onDead(err))
+    this.ws.on('close', () => this._onDead(new MuxError('websocket closed')))
+  }
+
+  _onDead(err) {
+    if (this.closed) return
+    this.closed = true
+    const muxErr = err instanceof MuxError ? err : new MuxError(`mux connection lost: ${err?.message ?? 'unknown'}`)
+    for (const stream of this.streams.values()) stream._finish(muxErr)
   }
 
   _receive(text) {
@@ -96,12 +122,14 @@ export class MuxSocket {
   }
 
   _send(frame) {
-    if (this.ws.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(frame))
+    if (this.ws.readyState !== WebSocket.OPEN) throw new MuxError('mux socket is not open')
+    this.ws.send(JSON.stringify(frame))
   }
 
   /** Open a logical stream on an endpoint; payload args follow {args: …}. */
   async open(endpoint, args) {
     await this.ready
+    if (this.ws.readyState !== WebSocket.OPEN) throw new MuxError('mux socket is not open')
     const streamId = randomUUID()
     const stream = new MuxStream(this, streamId)
     this.streams.set(streamId, stream)
@@ -110,6 +138,7 @@ export class MuxSocket {
   }
 
   close() {
+    this.closed = true
     this.ws.close()
     for (const stream of this.streams.values()) stream._finish()
   }

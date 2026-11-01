@@ -15,7 +15,8 @@
  *   P2SDK_PATCH          colon-separated extra `--patch` overlays (absolute paths)
  */
 import { spawn } from 'node:child_process'
-import { closeSync, mkdirSync, openSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
+import { randomUUID } from 'node:crypto'
+import { closeSync, fstatSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -155,73 +156,171 @@ export function isReadyLine(line: string): string | null {
 
 const LOCK_FILE = 'launcher.lock'
 
-/** Pid recorded in an existing lock file, or null when absent/unreadable/stale. */
-function lockHolder(lockPath: string): number | null {
-  let pid: number
+interface LockView {
+  /** Recorded pid; null when the content is empty or not a pid. */
+  pid: number | null
+  /** Inode identity of the file the pid was read from. */
+  dev: number
+  ino: number
+}
+
+/** Snapshot the lock file, or null when it is absent/unopenable. */
+function readLock(lockPath: string): LockView | null {
+  let fd: number
   try {
-    pid = Number(readFileSync(lockPath, 'utf8').trim())
+    fd = openSync(lockPath, 'r')
   } catch {
     return null
   }
-  if (!Number.isInteger(pid) || pid <= 0) return null
   try {
-    process.kill(pid, 0)
-  } catch (e) {
-    // EPERM means the pid exists but belongs to another user: the home is held.
-    return (e as NodeJS.ErrnoException).code === 'EPERM' ? pid : null
-  }
-  return pid
-}
-
-/**
- * One launcher per P2SDK_HOME (T-01.f2 acceptance ①, review R4): concurrent
- * launches would overwrite runtime-patch.yml and the handoff files under the
- * shared home. O_EXCL makes acquisition atomic; a lock naming a dead pid is
- * stale and gets taken over. Returns a release() thunk, or a user-facing
- * error string when a live launcher holds the home.
- */
-export function acquireHomeLock(home: string): string | (() => void) {
-  const lockPath = join(home, LOCK_FILE)
-  const openExcl = () => openSync(lockPath, 'wx')
-  const refuse = (pid: number) =>
-    `P2SDK_HOME "${home}" is already in use by launcher pid ${pid}: a second instance would clobber its runtime-patch.yml and handoff files`
-  let fd: number
-  try {
-    fd = openExcl()
-  } catch (e) {
-    if ((e as NodeJS.ErrnoException).code !== 'EEXIST') throw e
-    const held = lockHolder(lockPath)
-    if (held) return refuse(held)
-    // Stale lock (crashed holder): reclaim once; a racing winner's EEXIST is refused below.
-    try {
-      unlinkSync(lockPath)
-    } catch {
-      /* the racing winner removed it first */
-    }
-    try {
-      fd = openExcl()
-    } catch (e2) {
-      if ((e2 as NodeJS.ErrnoException).code !== 'EEXIST') throw e2
-      const winner = lockHolder(lockPath)
-      return winner ? refuse(winner) : `P2SDK_HOME "${home}" lock is contended; retry`
-    }
-  }
-  writeFileSync(fd, `${process.pid}\n`)
-  let released = false
-  return () => {
-    if (released) return
-    released = true
-    try {
-      unlinkSync(lockPath)
-    } catch {
-      /* already gone */
-    }
+    const st = fstatSync(fd)
+    const pid = Number(readFileSync(fd, 'utf8').trim())
+    return { pid: Number.isInteger(pid) && pid > 0 ? pid : null, dev: st.dev, ino: st.ino }
+  } catch {
+    return null
+  } finally {
     try {
       closeSync(fd)
     } catch {
       /* already closed */
     }
   }
+}
+
+/** True when a live process (any user) holds the pid. */
+function pidHeld(pid: number): boolean {
+  try {
+    process.kill(pid, 0)
+  } catch (e) {
+    // EPERM means the pid exists but belongs to another user: the home is held.
+    return (e as NodeJS.ErrnoException).code === 'EPERM'
+  }
+  return true
+}
+
+/**
+ * One launcher per P2SDK_HOME (T-01.f2 acceptance ①, review R4): concurrent
+ * launches would overwrite runtime-patch.yml and the handoff files under the
+ * shared home. Acquisition publishes `<pid>\n` atomically via link(2) from an
+ * O_EXCL temp file, so the lock path never shows a half-written lock (review
+ * R1 interleave 1: an empty/unparsable lock is refused, never reclaimed).
+ * Stale reclaim (dead pid) captures the path with rename(2) under a private
+ * name and restores a live replacement it captured by mistake, so a reclaimer
+ * paused mid-reclaim cannot delete the next holder's fresh lock (interleave
+ * 2); release() only unlinks the inode it published (interleave 3). Returns a
+ * release() thunk, or a user-facing error string when the home is held.
+ */
+export function acquireHomeLock(home: string): string | (() => void) {
+  const lockPath = join(home, LOCK_FILE)
+  const refuse = (pid: number) =>
+    `P2SDK_HOME "${home}" is already in use by launcher pid ${pid}: a second instance would clobber its runtime-patch.yml and handoff files`
+
+  /** Publish `<pid>\n` at lockPath atomically; null when someone else holds it. */
+  const publish = (): (() => void) | null => {
+    const tmp = join(home, `.launcher-lock.${process.pid}.${randomUUID()}`)
+    const fd = openSync(tmp, 'wx')
+    writeFileSync(fd, `${process.pid}\n`)
+    try {
+      linkSync(tmp, lockPath)
+    } catch (e) {
+      try {
+        closeSync(fd)
+      } catch {
+        /* already closed */
+      }
+      try {
+        unlinkSync(tmp)
+      } catch {
+        /* already gone */
+      }
+      if ((e as NodeJS.ErrnoException).code !== 'EEXIST') throw e
+      return null
+    }
+    try {
+      unlinkSync(tmp) // the inode lives on as lockPath; the fd stays open as its identity anchor
+    } catch {
+      /* already gone */
+    }
+    const { dev, ino } = fstatSync(fd)
+    let released = false
+    return () => {
+      if (released) return
+      released = true
+      try {
+        const st = statSync(lockPath)
+        if (st.dev === dev && st.ino === ino) unlinkSync(lockPath)
+      } catch {
+        /* already gone */
+      }
+      try {
+        closeSync(fd)
+      } catch {
+        /* already closed */
+      }
+    }
+  }
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const release = publish()
+    if (release) return release
+    const view = readLock(lockPath)
+    if (!view) continue // vanished between publish and read: race again
+    if (view.pid === null) {
+      return `P2SDK_HOME "${home}" has an uninitialized ${LOCK_FILE} (no pid recorded): if no launcher is mid-start on this home, remove ${lockPath} and retry`
+    }
+    if (pidHeld(view.pid)) return refuse(view.pid)
+    // Stale (dead holder), review R1 interleave 2: unlink cannot carry an
+    // identity condition, so a reclaimer paused between its read and its
+    // delete would remove a lock another racer reclaimed and published since.
+    // Instead of unlinking, atomically CAPTURE the current lockPath under our
+    // own private name via rename(2), then check what we captured: the stale
+    // inode we judged dead gets removed; a live replacement is put back with
+    // link(2) (EEXIST-safe — unlike rename it cannot clobber a fresh
+    // publisher), and this caller re-evaluates instead of acquiring. A holder
+    // that releases while captured-and-aside simply skips its unlink (the
+    // restored dead-pid lock is reclaimed by the next start).
+    const aside = join(home, `.launcher-lock.captured.${process.pid}.${randomUUID()}`)
+    let captured: LockView
+    try {
+      renameSync(lockPath, aside)
+      // Identity = inode AND pid: inode numbers are only unique while alive,
+      // and a racer removing the stale lock frees its inode for immediate
+      // reuse by the very next publish (observed under racing reclaimers), so
+      // inode equality alone can mistake a fresh live lock for the stale one.
+      captured = readLock(aside) ?? { pid: null, dev: -1, ino: -1 }
+    } catch {
+      continue // path vanished: another racer reclaimed it first
+    }
+    if (
+      captured.pid === view.pid &&
+      captured.dev === view.dev &&
+      captured.ino === view.ino &&
+      !pidHeld(view.pid) // the dead pid must not have come alive (reuse) meanwhile
+    ) {
+      try {
+        unlinkSync(aside) // exactly the stale inode we judged dead: remove it
+      } catch {
+        /* already gone */
+      }
+    } else {
+      // We captured a live lock replaced since our read: restore it. If a
+      // third racer published at lockPath inside the capture→restore gap, the
+      // link fails EEXIST and we leave the captured inode aside rather than
+      // destroy a live lock (a leaked inert file is the lesser evil).
+      // ponytail: userspace floor — that µs capture→restore gap is the only
+      // remaining window (needs ≥3 racers); an airtight fix requires kernel
+      // arbitration (flock, as upstream dsh session locks use), unavailable in
+      // node:fs without a native addon.
+      try {
+        linkSync(aside, lockPath)
+        unlinkSync(aside)
+      } catch {
+        /* lockPath taken in the gap: keep the captured file, never delete a live lock */
+      }
+      continue
+    }
+  }
+  return `P2SDK_HOME "${home}" lock is contended; retry`
 }
 
 function dshEntry(): string {

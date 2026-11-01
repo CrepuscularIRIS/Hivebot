@@ -95,7 +95,9 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
   for (const [name, value] of Object.entries(env)) {
     if (value === undefined) continue
     const keep = name === 'PATH' || name === 'HOME' || name.startsWith('P2SDK_') || name.startsWith('DSH_')
-    if (keep && name !== 'P2SDK_HANDOFF') child[name] = value
+    // P2SDK_HANDOFF and P2SDK_TEST_V8_COVERAGE are consumed by the launcher
+    // (credential dir / T-11 coverage dir) and never passed on to the sandbox.
+    if (keep && name !== 'P2SDK_HANDOFF' && name !== 'P2SDK_TEST_V8_COVERAGE') child[name] = value
   }
   child.DSH_HOME = cfg.home
   child.P2SDK_HOME = cfg.home
@@ -104,6 +106,13 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
   child.P2SDK_LLM_API_BASE = normalizeApiBase(cfg.llmBaseUrl)
   child.DSH_TELEMETRY_MODE = env.DSH_TELEMETRY_MODE ?? 'DISABLED'
   if (cfg.provider === 'mock') delete child.P2SDK_LLM_API_KEY
+  // T-11 coverage bypass (test harness only): the harness disables coverage
+  // writing in the launcher (tests/support/runtime.ts launcherSpawnEnv — node
+  // force-inherits NODE_V8_COVERAGE, so the dir travels under this P2SDK_
+  // name instead) and start.ts maps it back for the dsh child, whose
+  // execution of src/p2temp then reports coverage. Production never sets this
+  // variable, so real launches inject nothing.
+  if (env.P2SDK_TEST_V8_COVERAGE) child.NODE_V8_COVERAGE = env.P2SDK_TEST_V8_COVERAGE
   return child
 }
 

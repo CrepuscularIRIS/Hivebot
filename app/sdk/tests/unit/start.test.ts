@@ -110,6 +110,19 @@ describe('childEnv', () => {
     const env = childEnv(cfg, {})
     expect(env.P2SDK_LLM_API_KEY).toBeUndefined()
   })
+
+  it('T-11: NODE_V8_COVERAGE reaches the dsh child only via the test-harness name', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h' })
+    // Production launch: NODE_V8_COVERAGE present in the launcher's own env is
+    // NOT forwarded (the allowlist never picks it up) — no injection.
+    const prod = childEnv(cfg, { PATH: '/bin', NODE_V8_COVERAGE: '/tmp/cov' })
+    expect(prod.NODE_V8_COVERAGE).toBeUndefined()
+    // Test harness: the dir travels as P2SDK_TEST_V8_COVERAGE and is mapped to
+    // the dsh child's NODE_V8_COVERAGE.
+    const test = childEnv(cfg, { PATH: '/bin', P2SDK_TEST_V8_COVERAGE: '/tmp/cov' })
+    expect(test.NODE_V8_COVERAGE).toBe('/tmp/cov')
+    expect(test.P2SDK_TEST_V8_COVERAGE).toBeUndefined()
+  })
 })
 
 describe('writeRuntimePatch', () => {

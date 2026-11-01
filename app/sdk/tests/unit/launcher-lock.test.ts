@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { acquireHomeLock } from '../../src/start.ts'
+import { launcherSpawnEnv } from '../support/runtime.ts'
 
 /** A pid that exists for no process (kill → ESRCH), as used in review R1's reproduction. */
 const DEAD_PID = 2_147_483_647
@@ -183,7 +184,10 @@ if (typeof r === 'function') {
       const children = ['a', 'b'].map((id) => {
         const child = spawn(process.execPath, ['--input-type=module', '-e', childScript], {
           stdio: ['ignore', 'pipe', 'pipe'],
-          env: { ...process.env, LOCK_HOME: home, LOCK_CTL: ctl, LOCK_ID: id },
+          // T-11: these children import src/start.ts raw; without the strip
+          // (launcherSpawnEnv) their V8 dump would merge into the worker's
+          // vite-coordinate coverage of the same file and lose ranges.
+          env: { ...launcherSpawnEnv(), LOCK_HOME: home, LOCK_CTL: ctl, LOCK_ID: id },
         })
         const out: string[] = []
         const closed = new Promise<number | null>((res) => child.on('close', res))

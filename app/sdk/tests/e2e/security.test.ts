@@ -41,7 +41,7 @@ import {
   waitForTurnEnd,
   type Frame,
 } from '../support/fake/harness.ts'
-import { launchRuntime } from '../support/runtime.ts'
+import { launchRuntime, launcherSpawnEnv } from '../support/runtime.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const SCAN = join(PKG_ROOT, 'tests', 'e2e', 'security', 'scan.mjs')
@@ -85,8 +85,11 @@ function childPids(pid: number | undefined): number[] {
 
 /** Boot scripts/start.mjs against an existing home; env entries must be strings. */
 async function boot(home: string, env: Record<string, string>): Promise<Boot> {
+  // T-01.f3 handoff semantics: base-url/launch-token land in a separate
+  // P2SDK_HANDOFF dir (never inside P2SDK_HOME), so boot one per runtime.
+  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-t08-ho-'))
   const child = spawn(process.execPath, [join(PKG_ROOT, 'scripts', 'start.mjs')], {
-    env: { ...process.env, ...env, P2SDK_HOME: home, P2SDK_PORT: '0', P2SDK_READY_TIMEOUT_MS: '60000' },
+    env: { ...launcherSpawnEnv(), ...env, P2SDK_HOME: home, P2SDK_HANDOFF: handoff, P2SDK_PORT: '0', P2SDK_READY_TIMEOUT_MS: '60000' },
     stdio: ['ignore', 'pipe', 'pipe'],
   })
   booted.push(child)
@@ -101,8 +104,8 @@ async function boot(home: string, env: Record<string, string>): Promise<Boot> {
     if (Date.now() >= deadline) throw new Error(`no ready line within 60s:\n${state.stdout}\n${state.stderr}`)
     await sleep(200)
   }
-  const baseUrl = readFileSync(join(home, 'base-url'), 'utf8').trim()
-  const token = readFileSync(join(home, 'launch-token'), 'utf8').trim()
+  const baseUrl = readFileSync(join(handoff, 'base-url'), 'utf8').trim()
+  const token = readFileSync(join(handoff, 'launch-token'), 'utf8').trim()
   return { child, baseUrl, token, client: await connect({ baseUrl, token }), logs: () => ({ ...state }) }
 }
 
@@ -372,7 +375,15 @@ it.skipIf(!REAL_KEY)('⑤ real-key D2 smoke re-scan: same scanner, key from env,
   const home = mkdtempSync(join(tmpdir(), 'p2sdk-t08-real-'))
   const rt = await boot(home, { P2SDK_LLM_API_KEY: REAL_KEY }) // real provider mode
   const d2 = spawnSync('pnpm', ['-C', PKG_ROOT, 'exec', 'node', 'examples/min-client.mjs', '你好'], {
-    env: { ...process.env, P2SDK_HOME: home, P2SDK_LLM_API_KEY: REAL_KEY },
+    env: {
+      ...process.env,
+      P2SDK_HOME: home,
+      P2SDK_LLM_API_KEY: REAL_KEY,
+      // f3 handoff: point min-client at this boot's handoff explicitly (never
+      // the shared default dir, which may hold another boot's stale files).
+      P2SDK_BASE_URL: rt.baseUrl,
+      P2SDK_LAUNCH_TOKEN: rt.token,
+    },
     encoding: 'utf8',
     timeout: 120_000,
   })

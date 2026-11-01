@@ -20,6 +20,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, expect, it } from 'vitest'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { createSession, sendPrompt, waitForDelta, waitForTurnEnd, type Frame } from '../support/fake/harness.ts'
+import { launcherSpawnEnv } from '../support/runtime.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -47,7 +48,7 @@ function childPids(pid: number | undefined): number[] {
 /** The one start command every boot (first and restart) uses, unchanged. */
 function startEnv(home: string, patch: string, handoff: string): NodeJS.ProcessEnv {
   return {
-    ...process.env,
+    ...launcherSpawnEnv(),
     P2SDK_PATCH: patch,
     P2SDK_PROVIDER: 'mock',
     P2SDK_HOME: home,

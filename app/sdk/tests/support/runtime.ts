@@ -31,6 +31,27 @@ export interface LaunchOptions {
   readyTimeoutMs?: number
 }
 
+/**
+ * Env for spawning scripts/start.mjs (T-11 coverage split). vitest's
+ * autoAttachSubprocess sets NODE_V8_COVERAGE in the worker; the launcher must
+ * NOT inherit it (src/start.ts is measured by in-process unit tests in vite
+ * coordinates — merging a raw subprocess entry for the same URL loses ranges),
+ * so it is stripped and re-exposed as P2SDK_TEST_V8_COVERAGE, which
+ * src/start.ts childEnv forwards to the dsh child: src/p2temp is then measured
+ * entirely in raw subprocess coordinates (dsh + the p2temp unit runner alike).
+ * Outside coverage runs the variable is unset and this is an identity copy.
+ */
+export function launcherSpawnEnv(): NodeJS.ProcessEnv {
+  const v8 = process.env.NODE_V8_COVERAGE
+  if (!v8) return { ...process.env }
+  // NODE_V8_COVERAGE is force-inherited by node children even when `env` is
+  // passed explicitly (node 22/24 verified); an empty string is the only opt-
+  // out, so the launcher and lock-race children run with writing disabled and
+  // the real dir travels under a P2SDK_ name for src/start.ts childEnv to
+  // forward to the dsh child.
+  return { ...process.env, NODE_V8_COVERAGE: '', P2SDK_TEST_V8_COVERAGE: v8 }
+}
+
 /** Boot the p2sdk runtime in mock mode and return a connected client. */
 export async function launchRuntime(opts: LaunchOptions = {}): Promise<Runtime> {
   const home = mkdtempSync(join(tmpdir(), 'p2sdk-runtime-'))
@@ -39,7 +60,7 @@ export async function launchRuntime(opts: LaunchOptions = {}): Promise<Runtime> 
   const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
   const child = spawn(process.execPath, [join(PKG_ROOT, 'scripts', 'start.mjs')], {
     env: {
-      ...process.env,
+      ...launcherSpawnEnv(),
       ...opts.env,
       P2SDK_PROVIDER: 'mock',
       P2SDK_HOME: home,

@@ -22,6 +22,9 @@ description: Grok Bot 复刻项目的主会话编排手册（主会话 = GLM 5.3
 5. **作者不自评，证据绑定 SHA**：代码由 verifier 和 mm-review 审，方案由 `/panel` 审。分支 head 一变，旧的 VERIFY / REVIEW 就作废。
    原因：写的人最看不见自己的问题；GLM 有提前宣布完成的倾向。
 
+6. **搬运工优先**：按 `CLAUDE.md` §3 的搬运阶梯，在维护的上游 > 整仓集成 > 复制改造 > 逆向 > 自建。没有 REUSE 决策行的能力不派 builder；PLAN 里某条任务写「自建」，派之前先确认 REUSE 里有 scout 的反向确认，没有就先派 scout。
+   原因：别人在维护的项目会持续修 bug、加功能，比自己写的更可靠，也省工兵时间。
+
 GLM 自查：每一轮结束前在 LOG 写一行 `ready 未派 = N`，N 不为 0 必须写原因。不要「顺手」自己读源码、写代码、核验日志，那是叶子 agent 的活。
 
 ## 1. 启动（args = start，或者 `work/` 里还没有任何 PLAN）

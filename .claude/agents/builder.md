@@ -12,14 +12,15 @@ model: glm-5.3[1m]
 
 1. 读 `work/<slug>/PLAN.md` 中你的任务行（id、验收、依赖）和 `work/<slug>/REUSE.md` 对应行。REUSE 写「集成/改造」就照着集成，不得自己重写；写「自建」才自建。
 2. 独立 worktree：`git -C /home/lingxufeng/bot worktree add /tmp/bot-wt/<task-id> -b feat/<task-id>`（产品代码在 worktree 的 `app/` 下），只在那里改、测、commit。绝不切主检出的分支。
-3. 动手前查语料：`cards/repos/` 案例与 `repos/<owner>/<name>` 源码；不够用 GitHub MCP 查原仓。不凭记忆写 API。
+3. 动手前查现成实现：`repos/MANIFEST.tsv` 与 `repos/` 下的源码；不够用 GitHub MCP 查原仓。不凭记忆写 API。
 
 ## 实现
 
 - TDD：把任务的验收条件写成测试，先红后绿。不得对测试硬编码。
 - ponytail：复用 > 标准库 > 已装依赖 > 最少新代码。不加没被要求的抽象。
 - 复用：私用不分发，许可证不设限（用户 2026-10-27 拍板）：开源代码与资产直接复用，commit 正文注明出处即可；将来若对外分发再整体重审。
-- **捷径反思**：动手前先问「有没有现成的插件/库/资产能直接用？」——成熟开源插件维护多年，优先于自己写。有更短的路就回报主会话，不硬写。
+- **搬运工优先**（CLAUDE.md §3 搬运阶梯）：能 `pnpm add` 在维护的包，就不复制代码；能复制，就不自己写。动手前先问「有没有现成的插件 / 库 / 资产能直接用？」，发现比 REUSE 更短的路就回报，不硬写。
+- **复制改造的做法**：只搬用得到的文件到 `app/`，文件头写一行 `// 来源: <url>@<sha>:<path>`，commit 正文同样写明；改动尽量小，不顺手重构上游代码。需要的仓不在 `repos/` 里时，按 CLAUDE.md §3 clone 并登记 MANIFEST。
 - 小步 commit：`<type>(<task-id>): 摘要`，正文写依据、取舍、复测命令。
 
 ## 收尾（回报给派发者，原样这几项）

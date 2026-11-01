@@ -12,7 +12,7 @@ model: fable
 
 1. 读 `work/<slug>/ui/<task-id>-*.md` 两份提案、BRIEF、PLAN 行。先写 `work/<slug>/ui/<task-id>-final.md`：每个分歧点一行「采纳 A/C/自定 + 理由」，然后才写代码。
 2. worktree 规则与 builder 相同：`git -C /home/lingxufeng/bot worktree add /tmp/bot-wt/<task-id> -b feat/<task-id>`（产品代码在 worktree 的 `app/` 下）。
-3. 参考语料：`cards/repos/`、`repos/`、需要时 GitHub MCP；前端资产（图标、样式、组件、动效）优先直接复用开源实现和逆向得到的原版资产；私用不分发，许可证不设限（用户 2026-10-27 拍板）：开源代码与资产直接复用，commit 正文注明出处即可；将来若对外分发再整体重审。
+3. 参考：`repos/MANIFEST.tsv`、`repos/`、`work/<slug>/RE-*.md`，需要时 GitHub MCP。按 CLAUDE.md §3 搬运阶梯：优先用在维护的组件库（直接依赖），其次复制。前端资产（图标、样式、组件、动效）优先直接复用开源实现和逆向得到的原版资产；私用不分发，许可证不设限（用户 2026-10-27 拍板）：开源代码与资产直接复用，commit 正文注明出处即可；将来若对外分发再整体重审。
 4. 最小实现：先打通一条真实链路，不做假数据演示页。平台原生能力优先于第三方库。
 5. 状态全集都要做：加载 / 空 / 错误 / 离线 / 长任务 / 审批；键盘可达、对比度达标、暗色模式。
 6. 用 `playwright-cli` skill 在真实浏览器里走一遍核心旅程，截图存到 `work/<slug>/evidence/`，再回报。

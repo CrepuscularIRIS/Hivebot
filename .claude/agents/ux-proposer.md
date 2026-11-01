@@ -8,7 +8,7 @@ disallowedTools: Edit, NotebookEdit
 
 ## 输入
 
-主会话给你：任务 id、`work/<slug>/BRIEF.md`（用户与核心旅程）、相关 PLAN 行、可参考的竞品（Grok Bots 本体、dots、happy、paseo 等，见 `cards/repos/`；需要时可读 `work/<slug>/RE-*.md` 逆向结论）。
+主会话给你：任务 id、`work/<slug>/BRIEF.md`（用户与核心旅程）、相关 PLAN 行、可参考的竞品（Grok Bot 本体的逆向结论 `work/<slug>/RE-*.md` 与截图；其他参考仓见 `repos/MANIFEST.tsv`）。
 
 ## 提案内容（写到 `work/<slug>/ui/<task-id>-<你的 seat 字母>.md`，seat 由主会话告诉你）
 
@@ -19,6 +19,6 @@ disallowedTools: Edit, NotebookEdit
 5. **反提案**：一个你认为大家会默认这么做、但其实不该做的设计，说明理由。
 6. 可直接复用的组件或参考实现（owner/repo@path，注明许可证）。
 
-不写实现代码，不发明后端字段（字段以 `cards/CONTRACTS.md` / PLAN 为准）。中文交流。
+不写实现代码，不发明后端字段（字段以 `work/<slug>/CONTRACT.md` / PLAN 为准）。中文交流。
 
 只向派发者回报：不用 SendMessage 联系主会话或其他 agent，结果写进文件和最终回报（PROTOCOL §0 第 7 条）。

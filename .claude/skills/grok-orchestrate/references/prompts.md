@@ -59,7 +59,7 @@ slug：<slug>    仓库：/home/lingxufeng/bot    worktree：/tmp/bot-wt/<T-xx>�
 步骤：
 1. `git -C /home/lingxufeng/bot worktree add /tmp/bot-wt/<T-xx> -b feat/<T-xx> main`，只在 worktree 里改。
 2. 把验收条件先写成测试（红），再实现（绿）。
-3. REUSE 写「集成 / 改造」的，就照着复用，不要重写。
+3. REUSE 写「集成 / 改造」的，就照着复用，不要重写。复制的文件头和 commit 正文写 `来源: <url>@<sha>:<path>`（CLAUDE.md §3）。
 4. 小步 commit，正文写出处与复测命令。
 回报：分支、commit SHA、改动文件、测试命令和最后几行输出、未完成项。最后写一句「待 verifier 验收」。
 ```

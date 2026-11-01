@@ -73,8 +73,12 @@ class FakeAdapter {
     return { width: image.width, height: image.height, maxBytes: image.bytes }
   }
 
-  listModels(_provider) {
-    return Promise.resolve([])
+  // Catalog entries need {provider,id,name} or llm's listModels throws
+  // INVALID_CATALOG (packages/llm/llm/src/index.ts:718+).
+  listModels(provider) {
+    return Promise.resolve(
+      (this.providers.find((p) => p.id === provider)?.models ?? []).map((m) => ({ provider, id: m.id, name: m.id })),
+    )
   }
 
   resolveModel(provider, model) {

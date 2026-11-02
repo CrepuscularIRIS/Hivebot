@@ -229,14 +229,15 @@ describe('§2.2 $events/result 校验（ledger）', () => {
     expect(dsh.apiCount).toBe(2)
   })
 
-  it('R10：rpc 抛异常（fetch 裸抛）→ pending 保留，重试仍可作答', async () => {
+  it('R10：rpc 抛异常（fetch 裸抛）→ unavailable + pending 保留，重试仍可作答（U-22 GU-1 后不再裸抛）', async () => {
     let throwOnce = true
     const { api, dsh, ledger } = makeApi(() => {
       if (throwOnce) { throwOnce = false; throw new Error('socket hang up') }
       return { ok: true, value: null }
     })
     const args = { clientId: 'cli-1', eventId: 'ev-1', outcome: { kind: 'result', value: 'rejected' } }
-    await expect(api({ method: '$events/result', args })).rejects.toThrow('socket hang up')
+    const first = await api({ method: '$events/result', args })
+    expect(first).toEqual({ ok: false, error: { code: 'pbots/unavailable', message: 'dsh rpc failed: socket hang up', details: {} } })
     expect(ledger.pendingEvents().some((e) => e.eventId === 'ev-1')).toBe(true)
     const res = await api({ method: '$events/result', args })
     expect(res.ok).toBe(true)
@@ -358,3 +359,36 @@ function makeApiWithoutLedgerInjection() {
   const api = registerM1Api({ dsh, log: () => {} })
   return { api, dsh }
 }
+
+// U-22 [GU-1]：dsh.rpc 抛错（fetch 断链 / 非 200 / JSON 坏）不得炸 ipcMain.handle —— 全路径转
+// {ok:false, code:'pbots/unavailable'}；R10 不变量：$events/result 抛错时 pending 保留可重试。
+describe('rpc 抛错兜底（GU-1）', () => {
+  function throwingDsh(message = 'fetch failed') {
+    let count = 0
+    return {
+      get apiCount(): number { return count },
+      async rpc(): Promise<ConnectionRpcResult> { count += 1; throw new Error(message) },
+    }
+  }
+
+  it('rpc reject → pbots/unavailable（含 message），不向上抛', async () => {
+    const ledger = readyLedger()
+    const api = registerM1Api({ dsh: throwingDsh('socket hang up'), ledger, log: () => {} })
+    const res = await api({ method: 'session/list', args: { _request: {} } })
+    expect(res).toEqual({ ok: false, error: { code: 'pbots/unavailable', message: 'dsh rpc failed: socket hang up', details: {} } })
+  })
+
+  it('rpc 抛非 Error 值 → unavailable，message 落 String 化', async () => {
+    const api = registerM1Api({ dsh: throwingDsh('boom') as never, ledger: readyLedger(), log: () => {} })
+    const res = await api({ method: 'session/prompt', args: { request: { content: [] } } })
+    expect(expectFail(res).code).toBe('pbots/unavailable')
+  })
+
+  it('$events/result 抛错 → unavailable 且 ledger pending 保留（R10：可重试）', async () => {
+    const ledger = readyLedger() // ev-1 pending
+    const api = registerM1Api({ dsh: throwingDsh(), ledger, log: () => {} })
+    const res = await api({ method: '$events/result', args: { clientId: 'cli-1', eventId: 'ev-1', outcome: { kind: 'result', value: 'rejected' } } })
+    expect(expectFail(res).code).toBe('pbots/unavailable')
+    expect(ledger.pendingEvents().map((e) => e.eventId)).toEqual(['ev-1'])
+  })
+})

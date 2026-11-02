@@ -181,7 +181,17 @@ export function registerM1Api(deps: M1Deps = {}): (req: M1Request) => Promise<M1
       log(`denied (no dsh): ${method}`)
       return forbidden('dsh connection not configured')
     }
-    const result = await deps.dsh.rpc(method, req.args)
+    let result: M1Result
+    try {
+      result = await deps.dsh.rpc(method, req.args)
+    } catch (error) {
+      // U-22 [GU-1]（A-HIGH）：rpcRaw 裸抛（断链 fetch 失败 / 非 200 / 坏 JSON）会 reject
+      // ipcMain.handle → renderer invoke 全线抛错（loadRoster/start 卡封面、create 卡创建中）。
+      // 全路径兜底成结构化 unavailable；R10 不变量保持：$events/result 抛错时 pending 保留。
+      const message = error instanceof Error ? error.message : String(error)
+      log(`rpc error (${method}): ${message}`)
+      return { ok: false, error: { code: 'pbots/unavailable', message: `dsh rpc failed: ${message}`, details: {} } }
+    }
     // R10：审批作答先发送后消费——rpc ok 才下账；失败（ok:false 或 throw）pending 保留可重试。
     // consume 为 false = 并发路径已消费（gateway 同样只会收下一份作答），仅记日志。
     if (method === '$events/result' && result.ok) {

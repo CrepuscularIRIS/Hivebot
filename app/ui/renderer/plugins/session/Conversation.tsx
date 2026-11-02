@@ -7,9 +7,10 @@
 // - composer：Enter 发送 / Shift+Enter 换行 / IME 组字不发送；运行中主按钮为停止，Esc 不绑定（R19）；草稿按 bot 隔离（R21）。
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Icon, type IconName } from '../../theme/theme'
-import { answer, cancelTurn, sendPrompt, setDraft, type Approval, type State } from '../../shell/store'
+import { answer, cancelTurn, getState, sendPrompt, setDraft, type Approval, type State } from '../../shell/store'
 import { Avatar, botInfo } from '../bots/Sidebar'
 import { toolSummary, toolTitle, type TimelineItem } from './reduce'
+import { Markdown } from './Markdown'
 
 type ToolItem = Extract<TimelineItem, { kind: 'tool' }>
 
@@ -73,7 +74,12 @@ function Composer({ s, id, running, name }: { s: State; id: string; running: boo
     setDraft(id, '')
     setError(null)
     const res = await sendPrompt(id, text)
-    if (!res.ok) { setDraft(id, text); setError(`发送失败：${res.error?.message ?? ''}`) } // 席 C：失败保留草稿
+    if (!res.ok) {
+      // [GU-2]（席 C-M）：失败保留待发文本；等待期已有新输入则不覆盖，原文本进错误提示
+      const waiting = getState().drafts[id] ?? ''
+      if (waiting === '') { setDraft(id, text); setError(`发送失败：${res.error?.message ?? ''}`) }
+      else setError(`发送失败：${res.error?.message ?? ''}（草稿已有新内容；未发送的文本：${text}）`)
+    }
   }
   return (
     <div className="composer-wrap">
@@ -88,7 +94,13 @@ function Composer({ s, id, running, name }: { s: State; id: string; running: boo
         />
         {running
           ? <button type="button" className="send stop" data-action="stop" aria-label="停止" disabled={stopping}
-            onClick={() => { setStopping(true); void cancelTurn(id).then((r) => { if (!r.ok) { setStopping(false); setError(`停止失败：${r.error?.message ?? ''}`) } }) }}>
+            onClick={() => {
+              setStopping(true)
+              // [GU-3]（席 C-L）：失败两条路都复位 stopping——!ok 走 then，裸抛走 catch，不得永久 disabled
+              void cancelTurn(id)
+                .then((r) => { if (!r.ok) { setStopping(false); setError(`停止失败：${r.error?.message ?? ''}`) } })
+                .catch((e: unknown) => { setStopping(false); setError(`停止失败：${e instanceof Error ? e.message : String(e)}`) })
+            }}>
             <Icon name="stop" />
           </button>
           : <button type="submit" className="send" data-action="send" aria-label="发送" disabled={draft.trim() === ''}><Icon name="arrow-up" /></button>}
@@ -146,11 +158,11 @@ export function Conversation({ s, id }: { s: State; id: string }): JSX.Element {
           )}
           {view?.items.map((item) => {
             if (item.kind === 'user') return <div key={item.id} className="bubble user final" data-message-bubble>{item.text}</div>
-            if (item.kind === 'assistant') return <div key={item.id} className="bubble assistant final">{item.text}</div>
+            if (item.kind === 'assistant') return <div key={item.id} className="bubble assistant final" data-assistant-bubble><Markdown text={item.text} /></div>
             if (item.kind === 'notice') return <div key={item.id} className={`turn-notice ${item.tone}`}>{item.text}</div>
             return <ToolRow key={item.id} item={item} online={s.online} approval={mine.find((a) => a.callId === item.callId)} />
           })}
-          {view?.streaming != null && <div className="bubble assistant streaming" data-streaming>{view.streaming.text}</div>}
+          {view?.streaming != null && <div className="bubble assistant streaming" data-streaming><Markdown text={view.streaming.text} /></div>}
           {thinking && <div className="bubble assistant thinking" aria-label="正在思考"><span /><span /><span /></div>}
           {orphans.map((a) => <ApprovalCard key={a.eventId} approval={a} args={null} online={s.online} />)}
         </div>

@@ -12,7 +12,9 @@
 //      tests/market/support.ts；非 JSON patch 不在本临时接口范围内）。
 //   2. 取基础 preset（agentPreset，显式传入）的插件行，追加连接器行，注册
 //      preset——id 由内容决定（presetIdOf，CONTRACT §3.1，#4/#21 共用），
-//      has-check 幂等（已注册直接复用，Duplicate 视为已存在）。
+//      连接器清单先规范化（去重 + 排序）再用于 id 与注册内容，has-check
+//      幂等（已注册且健康才复用）；激活失败（上游只标 broken 不抛错）报
+//      p2temp/preset-broken 并注销死记录，同 id 重试走完整路径。
 //   3. 调 sessionController.create({cwd, agentPreset: 临时 id})。
 // preset.ensure 只做第 1–2 步（T-16 / Q-008=A）：重启恢复用，main 启动时按
 // recipes 逐个调用（CONTRACT #21；main 编排属 P4）。
@@ -53,7 +55,8 @@ const REMOTE_MARKER = Object.freeze({
   ]),
 })
 
-/** 校验 createWithConnectors 的 connectors 入参；返回归一化后的数组。 */
+/** 校验 connectors 入参；返回规范化副本（去重 + 排序，与 presetIdOf 同一
+ * 规范化——id 与实际注册的内容必须来自同一份连接器清单，CONTRACT §3.1）。 */
 export function normalizeConnectors(connectors) {
   if (!Array.isArray(connectors) || connectors.length === 0) {
     throw new Error('p2temp: connectors must be a non-empty array of bundle names')
@@ -63,7 +66,7 @@ export function normalizeConnectors(connectors) {
       throw new Error('p2temp: connectors must be a non-empty array of bundle names')
     }
   }
-  return connectors
+  return [...new Set(connectors)].sort()
 }
 
 /** 基础 preset 的插件行。registry 未公开 definitions，此处运行时读取
@@ -96,6 +99,15 @@ function anchorInsertedPluginNames(rows, patchFile) {
 /** 结构化连接器失败：code 判别 + details.connector（§8 第 1 条，不毒化其他 preset）。 */
 function connectorUnavailable(name, message) {
   return new RemoteError('p2temp/connector-unavailable', message, { connector: name })
+}
+
+/** 结构化 broken-preset 失败：上游 register 激活失败不抛错、只标
+ * record.broken（agent-preset-registry src/index.ts:97-136），本层负责报错。 */
+function presetBroken(id, diagnostic) {
+  return new RemoteError('p2temp/preset-broken', `p2temp: preset ${id} failed to activate: ${diagnostic}`, {
+    presetId: id,
+    diagnostic,
+  })
 }
 
 /** 读一个已安装连接器 bundle 的 insert 行（patch 内容须为 JSON）。 */
@@ -176,32 +188,48 @@ class P2TempService extends TypertRemoteService {
   /**
    * 内容定 id + 幂等注册（CONTRACT §3.1）：已注册（has-check）直接复用；
    * 同 id 并发调用共享同一条 in-flight 注册（register 只被触达一次，无
-   * Duplicate 文案匹配——上游改文案不影响本层）。注册失败在 register
-   * 之前抛出（连接器读取阶段）或原样透传，registry 不留半成品，失败后
-   * in-flight 槽清空、重试走完整路径（§8 第 1 条）。
+   * Duplicate 文案匹配——上游改文案不影响本层）。失败后 in-flight 槽清空、
+   * broken 记录被注销（见 registerPreset），重试走完整路径（§8 第 1 条）。
+   * connectors 先规范化（去重 + 排序）：id 与注册内容出自同一份清单，
+   * 首个脏请求（如 ['a','a']）不得决定共享 id 的实际内容。
    * @returns {Promise<string>} 注册/复用成功的 preset id
    */
   async ensurePreset(agentPreset, connectors) {
-    const id = presetIdOf(agentPreset, connectors)
+    const names = normalizeConnectors(connectors)
+    const id = presetIdOf(agentPreset, names)
     const pending = this.inflight.get(id)
     if (pending !== undefined) return pending
-    const done = this.registerPreset(agentPreset, connectors, id)
+    const done = this.registerPreset(agentPreset, names, id)
     this.inflight.set(id, done)
     const clear = () => { if (this.inflight.get(id) === done) this.inflight.delete(id) }
     done.then(clear, clear)
     return done
   }
 
-  /** ensurePreset 的单飞路径：has-check → 组 rows → register。 */
+  /** ensurePreset 的单飞路径：has-check → 组 rows → register → broken 检查。 */
   async registerPreset(agentPreset, connectors, id) {
-    if (this.ctx.agentPresets.definitions?.get(id) !== undefined) return id
+    const existing = this.ctx.agentPresets.definitions?.get(id)
+    if (existing !== undefined) {
+      // 健康的已注册 id 直接复用；broken 记录绝不作为成功返回（R2/R4：
+      // 上游 register 激活失败只标 record.broken，不抛错）。
+      if (existing.broken === undefined) return id
+      throw presetBroken(id, existing.broken)
+    }
     const profileDir = this.ctx.get('profileContext')?.dir
     if (typeof profileDir !== 'string') throw new Error('p2temp: no profile context')
     const rows = [...basePresetRows(this.ctx.agentPresets, agentPreset)]
     for (const name of connectors) rows.push(...(await readConnectorRows(profileDir, name)))
-    // ponytail: 临时 preset 注册后不注销；session 的 Agent 持有该 revision，
-    // P2 生命周期内数量个位数，P3 换正式接口时一并推翻。
-    await this.ctx.agentPresets.register({ id, plugins: rows })
+    // 上游 register 激活失败不抛错（只标 broken）且返回注销器；健康临时
+    // preset 注册后不注销（ponytail：session 的 Agent 持有该 revision，
+    // P2 生命周期内数量个位数，P3 换正式接口时一并推翻）。
+    const unregister = await this.ctx.agentPresets.register({ id, plugins: rows })
+    const record = this.ctx.agentPresets.definitions?.get(id)
+    if (record?.broken !== undefined) {
+      // 注销 broken 记录：该 id 保持可重入，修复连接器后的重试重新走
+      // 完整路径（重读 patch + 重新注册），而不是命中 has-check 拿死记录。
+      await unregister?.()
+      throw presetBroken(id, record.broken)
+    }
     return id
   }
 }

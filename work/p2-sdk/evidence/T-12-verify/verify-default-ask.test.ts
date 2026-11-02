@@ -279,6 +279,61 @@ it('T-12①②③④ 默认链（不设 P2SDK_PATCH/HANDOFF）：普通 bash 必
   }
 }, 240_000)
 
+it('T-12 入口烟测+min-client demo：真实 scripts/start.mjs（mock，不设 PATCH/HANDOFF）stderr 印 handoff 行，min-client 走该目录完成流式往返', async () => {
+  delete process.env.P2SDK_PATCH
+  delete process.env.P2SDK_HANDOFF
+  process.env.P2SDK_PROVIDER = 'mock'
+  const home = mkdtempSync(join(tmpdir(), 'p2sdk-vfy-entry-'))
+  process.env.P2SDK_HOME = home
+  const child = spawn(process.execPath, [join(SDK, 'scripts', 'start.mjs')], {
+    env: { ...process.env },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  let stdout = ''
+  let stderr = ''
+  child.stdout.setEncoding('utf8')
+  child.stderr.setEncoding('utf8')
+  child.stdout.on('data', (c: string) => { stdout += c })
+  child.stderr.on('data', (c: string) => { stderr += c })
+  const deadline = Date.now() + 90_000
+  while (Date.now() < deadline) {
+    if (/\[p2sdk\] ready http/.test(stdout) && /p2sdk: handoff \S+/.test(stderr)) break
+    if (child.exitCode !== null) throw new Error(`launcher exited early: ${stdout}${stderr}`)
+    await sleep(200)
+  }
+  try {
+    const hoMatch = stderr.match(/p2sdk: handoff (\S+)/)
+    expect(hoMatch, 'stderr 印出 p2sdk: handoff <dir>（operator 侧元数据）').toBeTruthy()
+    const handoffDir = hoMatch![1]
+    log('入口 stderr handoff =', handoffDir)
+    expect(handoffDir, 'handoff 是随机 tmpdir').toMatch(/p2sdk-handoff-/)
+    expect(/\[p2sdk\] ready http/.test(stdout), 'ready 行到达').toBe(true)
+    expect(stdout + stderr, 'argv/env 链路无 token 泄漏到 stdio').not.toContain(readFileSync(join(handoffDir, 'launch-token'), 'utf8').trim())
+
+    const proc = spawn(process.execPath, [join(SDK, 'examples', 'min-client.mjs'), '验收你好'], {
+      env: { ...process.env, P2SDK_HANDOFF: handoffDir },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    let out = ''
+    proc.stdout.setEncoding('utf8')
+    proc.stderr.setEncoding('utf8')
+    proc.stdout.on('data', (c: string) => { out += c })
+    proc.stderr.on('data', (c: string) => { out += c })
+    const code = await new Promise<number>((resolve) => proc.on('exit', (c) => resolve(c ?? 1)))
+    log('min-client 输出尾部:', out.trim().split('\n').slice(-2).join(' | '))
+    expect(code, 'min-client exit 0').toBe(0)
+    expect(out, 'min-client PASS（流式往返完成）').toContain('min-client PASS')
+  } finally {
+    child.kill('SIGTERM')
+    await new Promise<void>((resolve) => {
+      const t = setTimeout(() => { child.kill('SIGKILL'); resolve() }, 8000)
+      child.on('exit', () => { clearTimeout(t); resolve() })
+      if (child.exitCode !== null) { clearTimeout(t); resolve() }
+    })
+    log('launcher teardown 完成, exitCode =', child.exitCode)
+  }
+}, 240_000)
+
 it('T-12 红路径：禁用默认 approval 行后「没问就跑了」（R3/R5/R13 复现），严格宽升权仍问', async () => {
   const overlay = join(tmpdir(), 'p2sdk-vfy-noask-', 'no-ask.yml')
   const dir = mkdtempSync(join(tmpdir(), 'p2sdk-vfy-noask-'))

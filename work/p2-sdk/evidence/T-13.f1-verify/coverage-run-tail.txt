@@ -1,0 +1,35 @@
+Already up to date
+Done in 297ms using pnpm v11.0.9
+$ vitest run --coverage --no-file-parallelism
+
+ RUN  v5.0.5 /tmp/bot-wt/T-13.f1/app/sdk
+      Coverage enabled with v8
+
+[p2sdk] ready http://127.0.0.1:38253
+p2sdk: dsh pid 1270402
+p2sdk: handoff /tmp/p2sdk-handoff-uBcd0H
+p2sdk: no ready line within 1ms
+p2sdk: forwarding SIGTERM to dsh
+
+ Test Files  15 passed (15)
+      Tests  105 passed (105)
+   Start at  02:51:52
+   Duration  107.36s (tests 99%)
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+----------------|---------|----------|---------|---------|----------------------
+File            | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s    
+----------------|---------|----------|---------|---------|----------------------
+All files       |   92.25 |       88 |   95.83 |   94.55 |                      
+ src            |   89.73 |    86.61 |   94.73 |   92.78 |                      
+  start.ts      |   89.73 |    86.61 |   94.73 |   92.78 | ...4-585,591-593,622 
+ src/policy     |     100 |    81.48 |     100 |     100 |                      
+  shell-ask.mjs |     100 |    81.48 |     100 |     100 | 36,44-45,48          
+----------------|---------|----------|---------|---------|----------------------
+
+=============================== Coverage summary ===============================
+Statements   : 92.25% ( 274/297 )
+Branches     : 88% ( 176/200 )
+Functions    : 95.83% ( 46/48 )
+Lines        : 94.55% ( 243/257 )
+================================================================================

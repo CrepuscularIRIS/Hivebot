@@ -60,3 +60,30 @@
   - B：继续不跟踪
 - 答复： A
 - 落实（主会话 2026-11-02 00:40）：已提交（见 LOG 的 commit SHA）；后续 work/ 变更随合并节奏提交。
+
+## Q-007 [answered] P3 契约路线确认：重写 renderer（B/B′）
+- slug：p3-contract ｜ 类型：契约 ｜ 阻塞：CONTRACT.md 定稿（起草并行进行，标暂定）｜ 提出：2026-11-02 00:50
+- 背景：/panel D-route 两席一致投 B（panels/D-route-r1.md）。B′ 变体：以 dsh 自带 74 个 MIT React client 包为骨架 + 从 0.78.1 提取字体/图标/CSS + 只做 4 个 MVP 页；路线 A（保留 0.78.1 renderer + 适配层）因三条硬伤被否（per-bot 配置无协议字段、适配层=两套外来协议翻译的第 5 级自建、启动面无运行态证据）。
+- 选项：
+  - B′（panel 两席一致，暂按此推进）：重写 renderer 直连 SDK，dsh client 包骨架 + Grok 资产，4 页封顶
+  - A：保留 0.78.1 renderer + 适配层（需先实测启动面，成本更高）
+- 答复：可行, 直接重写即可. B
+- 落实（主会话 2026-11-02 05:00）：B/B′ 定稿——CONTRACT.md 转正，v1.1 改版吸收 scout 与 T-15 结论后过 panel G1。
+
+## Q-008 [open] 契约变更：p2temp 增第 2 方法 preset.ensure（连接器 bot 重启恢复）
+- slug：p3-contract ｜ 类型：契约 ｜ 阻塞：preset.ensure 实现、CONTRACT v1.1 定稿（起草并行标暂定）｜ 提出：2026-11-02 01:30
+- 背景：T-15 探明①红（work/p3-contract/VERIFY-T-15.md）：带连接器的 bot 重启后对旧 session 发 prompt 报 `Unknown agent preset: p2temp-*`——临时 preset 只在内存 registry，不落盘。方案：p2temp 增幂等 `preset.ensure({agentPreset, connectors})`，preset id 由内容确定，main 启动按 bots.json 逐个调用；探明已证同内容重注册路径可跑通。注意：客户端错误 code 是 gateway/internal（判错只能看 message）。附带：T-03③ 的「p2temp 恰 1 方法」验收数字随之改为 2。
+- 选项：
+  - A（推荐，T-15 实测必须）：加 preset.ensure（p2temp 组内第 2 方法，仍不超 BRIEF 4 项缺口清单的「市场/按 session 启用」语义）
+  - B：不做重启恢复（带连接器的 bot 重启即失效）——违反 D5 重启存续
+- 答复： 我们不希望重启电脑, 不要kill行为, 之前误杀了很多电脑的系统进程
+- **仍待确认（主会话 2026-11-02 05:00）**：您的答复是关于进程安全的关切（已固化进 LEARNINGS：测试内 kill 仅限框架自管子进程、shell 手工 kill 全禁、机器重启只由您手动），但**未直接回答 preset.ensure**。请明确：A = 加 preset.ensure（带连接器的 bot 重启后可恢复，T-15 红测试证明没有它 bot 会失效）还是 B = 不做？一句话即可。
+
+## Q-009 [open] danger-full-access preset 下 shell-ask 的行为（增量 L 复审 R2）
+- slug：p2-sdk ｜ 类型：高风险（审批语义）｜ 阻塞：T-12.f1 ｜ 提出：2026-11-02 02:30
+- 背景：T-12 把 approval.yml（shell-ask：普通 bash 必问）挂进默认启动链。但用户显式选 danger-full-access preset（其 approval 配置为 never）时，user-approval 对一切 ask 一律拒绝 → **bash 完全不可用**（死锁，非放行）。REVIEW R2 判 major。修复涉及「何时可以不问」——权限系统要求用户明示。
+- 选项：
+  - A（放行显式选择）：shell-ask 读 approval 策略，显式 never（用户主动配置）时放行——默认 preset（workspace-write+ask）仍必问，D8 底线由既有测试守护
+  - B（保持死锁 + 文档说明）：never preset 与默认审批插件互斥，选 never 需同时 P2SDK_PATCH 摘除 approval.yml（文档写明）
+  - C（never 时改为 warn 日志放行）：同 A 但每次放行打警告日志留痕
+- 答复：

@@ -5,3 +5,6 @@ T-04 REVIEW-pending-L 5ca48f2（T-02/f1/T-04 的 S 攒入整分支 L，凑满 6 
 T-05 REVIEW-pending-L 974e09e
 T-07 REVIEW-pending-L d373b6b
 L-review-1 范围 7c2524f..d373b6b（12 个代码任务：T-01/T-02/T-03/T-04/T-05/T-06/T-07/T-08/f1/f2/f2.f1/f3；T-02、f1、T-04、T-05 的 S 档由本次 L 覆盖）
+T-13 REVIEW-pending-L f9dfc45
+L-review-2 范围 d373b6b..f9dfc45（REVIEW-L 修复：T-11/T-12/T-13/T-14 对应 R4/R1+R3/5/6/12/13/R2+R7/8/9/10/R14——复审 14 发现闭环 + 增量代码）
+L-review-2 结果 FAIL→T-13.f1（R1+R3 锁身份）、T-12.f1（R2 never preset）——修复链第 2 轮

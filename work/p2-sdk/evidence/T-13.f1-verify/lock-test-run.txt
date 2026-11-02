@@ -1,0 +1,13 @@
+Already up to date
+Done in 300ms using pnpm v11.0.9
+Already up to date
+Done in 299ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/T-13.f1/app/sdk
+
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  02:53:56
+   Duration  5.34s (tests 99%, import 1%)
+

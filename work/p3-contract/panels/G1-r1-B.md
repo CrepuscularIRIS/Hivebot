@@ -1,0 +1,18 @@
+# G1-r1 · 席 B（6.1 Sol）
+
+> 主会话代录：本席运行约束禁止写文件，以下为其回报原文，未经改写。
+
+seat: B
+verdict: REVISE
+confidence: high
+findings:
+- [HIGH] /home/lingxufeng/bot/work/p3-contract/CONTRACT.md:49,73-75,120 — Q-008 标 pending 是正确的，但其 A 分支仍缺恢复所需数据：ensure 要 agentPreset，bots.json 却只存 connectors；session header 又只剩组合后的临时 preset id，无法还原用户原选的基础 preset。内容定 id 不能补回丢失的输入 — 证据: #4 允许不同 agentPreset，#21 必填 agentPreset，BotsMeta 无该字段；/home/lingxufeng/bot/app/sdk/src/p2temp/index.mjs:125-137 将基础 preset 合成临时 id 后仅返回 sessionId — 建议: 若 Q-008=A，持久化原始 basePreset 与规范化 connectors，规定 create/ensure 共用 id 算法及 ensure 完成后才允许 resume；未答前保持相关实现阻塞，不把只读降级视为 J3×J4 已完成。无需判 BLOCK：文档已经明确披露失败，尚未冒称恢复可用。
+- [HIGH] /home/lingxufeng/bot/work/p3-contract/CONTRACT.md:21,43,103 — 方法白名单后"原样透传"没有在 main 落实关键参数约束；只在 UI 不传某值，不能保证"只装不全局启用"和审批仅一次允许 — 证据: /home/lingxufeng/bot/repos/deepseek-harness/packages/boot/plugin-manager/src/index.ts:1002 在 enabled !== false 时启用 bundle；/home/lingxufeng/bot/repos/deepseek-harness/packages/client/ui-plugin-manager/src/client/manager-store.ts:1277-1280 传 enabled:subject.selection；契约 main 仅声明检查 method — 建议: 保留 M1，但明确 main 校验/installBundle 强制 enabled:false，并校验 $events/result 的 outcome 及相关标识；增加省略 enabled、enabled:true、非允许审批值的拒绝测试，不能靠隐藏按钮维护边界。
+- [HIGH] /home/lingxufeng/bot/work/p3-contract/CONTRACT.md:22,56 — M2 的 invoke→MessagePort 描述缺少 Electron 实际可用的转交协议；如果按 invoke 返回端口实现，carrier 无法建立 — 证据: Electron 官方明确 send/invoke 不能转移 MessagePort，只有 postMessage 可以，https://www.electronjs.org/docs/latest/tutorial/message-ports — 建议: 写清 renderer 请求与 requestId、main 经 webContents.postMessage 转交端口、preload 到页面的桥接和失败清理；同步 socket 工厂先返回 CONNECTING 包装对象，端口及 main socket 就绪后才发 open，失败发 error/close。
+- [MEDIUM] /home/lingxufeng/bot/work/p3-contract/CONTRACT.md:50,123 — P4 首日 spike 作为探索任务可以接受，但"发现后再加白名单"还不是已闭合的可实施契约；已知必需的 session/control 当前必被拒绝 — 证据: /home/lingxufeng/bot/repos/deepseek-harness/packages/api/session-controller/src/client/index.ts:128-140 在 generation 就绪后启动 control stream；契约 M2 仅允许 follow/$events — 建议: 明确 spike 后置一次接口增补审批闸门，审批前不启动依赖该集合的 UI 实现；产出必须覆盖冷启动、两 bot 并发、审批、重载，不能只按启动日志收集；拒绝请求不自动获得授权，禁止通配加行。这样风险管理可接受，不必现在重写 ClientSessions。
+- [MEDIUM] /home/lingxufeng/bot/work/p3-contract/CONTRACT.md:23,75 — bot 创建与 metadata 写入分属两次 renderer 调用，原子 rename 只能保护单次文件写，不能保护这条跨存储旅程；创建成功后窗口崩溃，会留下缺 connectors/恢复配方的 session — 证据: 第75行明确创建成功后 renderer 才调用 #20；第49行恢复只遍历 bots.json — 建议: 将创建及 metadata 落盘的编排归 main，明确失败或中断后的补偿/重试识别；验收在 create 已成功、metadata 尚未提交处模拟 renderer 重载，确认不会静默丢配置。
+- [MEDIUM] /home/lingxufeng/bot/work/p3-contract/CONTRACT.md:29,91,124 — "可选 preset 名单"和"普通 shell 必问"没有体现 Q-009 已知不兼容项；用户可选到 bash 永远拒绝的 preset — 证据: /home/lingxufeng/bot/work/QUESTIONS.md:82-88 明确 danger-full-access 的 never 与 shell-ask 冲突，且仍待用户决定 — 建议: Q-009 未答前在可选列表明确禁用该组合并解释原因，不擅自放行，也不承诺所有上游 preset 都可用。
+carrier_ruling: 选 director 的 rpc.call + createWebSocket 包 MessagePort，不要求注入 rpc.open。证据: /home/lingxufeng/bot/repos/deepseek-harness/packages/api/gateway/src/client/index.ts:159-181,240-245 明确无 rpc.open 时使用内置 mux；/home/lingxufeng/bot/repos/deepseek-harness/packages/client/connection/src/client/index.ts:233,273 分别接受 rpc 和 socket 工厂。renderer 只拥有逻辑帧与端口，不持凭证、不建网络 socket，main 仍是唯一物理 mux 客户端；这不破坏既定边界。main 须校验帧和端点、维护 port→streamId 所有权、拒绝重复/越权 item/end/cancel；端口废弃清理其全部流。rpc.open 也能安全实现，但需改变 M2 为逻辑流桥并增加 main 的流适配，没有本轮必要。
+product_ruling: 首轮后锁定 preset/连接器、模型可改，作为 demo/MVP 成立；应在创建页明确"配置随 bot 固定，换配置需新建"，并保留旧 bot 历史。证据: /home/lingxufeng/bot/repos/deepseek-harness/packages/preset/agent-preset-registry/src/index.ts:364-369 确有首轮后锁定。契约同时排除 select，实际上首轮前也不能改已创建 bot；应统一文案为创建时确定，不展示不能工作的编辑入口。
+reverse_take: 最可能失败的不是 carrier 选错，而是薄 IPC 桥在接入上游完整对象层后不断扩权，同时缺失 bot 恢复配方；更稳的是先跑一个闭包 spike、审批精确增补清单，再实现四页。
+落盘说明：本席运行约束禁止写报告文件，未写 G1-r1-B.md；请主会话将以上全文原样代录。

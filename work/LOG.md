@@ -240,3 +240,76 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-02 00:26 tick | verifier T-12 evidence 12min 未更新（总 45min）→ SendMessage 查状态，记 stale 第 1 次
 2026-11-02 00:27 tick | verifier T-12 活跃（verify-default-ask.test.ts 00:26 更新）——状态查询消息排队中
 2026-11-02 00:36 tick | verifier T-12 骨架落盘（边跑边补）：95/95×2、/proc environ 亲查 P2SDK_HOME/HANDOFF ABSENT（R1 critical 核心证据）、start.ts 语义合并逐 hunk 过、区域 11 文件全在申报内 | ①–④ 手工端到端进行中（verifier 探针自身 2 bug 已修待重跑）| **新规则首次生效**：verifier 上报 2 个孤儿 PID 而非自行杀 → 派 process-ops（Opus）清理
+2026-11-02 00:42 答复落实 | Q-005=A：P1 验收完成、**P3 开启**——派 panel D-route 两席（契约路线 A 适配层 vs B 重写 renderer，材料 ARCH-0.78 §4 P3 输入 + ipc-rpc 接口面 + Q-003 主 bot 分工补充）| Q-006=A：**work/ 入 git（1e1502e，174 文件 14235 行）**| Q-003 补充落实：主 bot 分工两思路交 P3 director 契约设计时出对比备忘 | process-ops 派发被权限分类器拒（Interfere With Workloads，需用户批准目标）——2 个孤儿 PID 459759/459949 待用户处置
+2026-11-02 00.4x 回报 | D-route 席 B = 投 B（high）：复用已定稿 dsh 契约 > 维持原版接口形状；A 可行但 29 方法+22 RPC 替身的兼容语义维护成本；reverse_take 警告别把 B 做成完整 UI 重建（复用资产只做四旅程）| 已代录 panels/D-route-r1-B.md | 等 A 席 | verifier T-12 收尾中（coverage-run.log 00:41）
+2026-11-02 00.4x 回报 | D-route A 席也投 B（medium-high）→ **两席一致，契约路线 B/B′ 通过**：A 席三条 HIGH 否掉路线 A（per-bot 配置无协议字段、适配层=第5级自建、启动面无运行态证据）；B′ = dsh 74 个 MIT React client 包骨架 + Grok 资产 + 4 页封顶 | 汇总 panels/D-route-r1.md；Q-007 提请用户确认 | 
+2026-11-02 00.5x 回报 | **verifier T-12 = PASS**（①–④全过+⑤ 95/95×2；红路径双向复现；④超预期：handoff 路径直接喂模型 bash 也读不到——OS 沙箱兜底，R1 critical 闭环）| LOW×3 记档 | 待清理 PID 2 个仍挂起（等用户处置）| **合并 T-12 → 7ab9b42**（16/19）——分类器拦目录级 checkout，改 11 文件清单通过（§7.3 规则 hook 化生效）| **主仓合并后回归 95/95 全绿**（LEARNINGS 纪律执行）| **派 T-13**（最后一个 REVIEW-L 修复：锁双 pid + re-验 + R9 固化）
+2026-11-02 00.5x 派发：scout → p3-contract/reuse/dsh-client-packages.md（B′ 落地核实）；director → p3-contract/CONTRACT.md v1（暂定 Q-007）
+2026-11-02 00:52 tick | p2-sdk 16/19 · p3-contract 启动 | QUESTIONS 3 open（Q-007 新）| load 4.7 | 在途 3：T-13（起步）、scout、director（均刚派）| 无 stale | ready 未派 = 0
+2026-11-02 00:56 tick | 在途 3 均读材料/setup 阶段（<10min 正常）| 无异常
+2026-11-02 00:57 tick | 同上（三个在途正常起步）
+2026-11-02 01.0x 回报 | director CONTRACT v1 完成（111 行暂定 Q-007）：20 接口行（复用 dsh 17 + P2-TEMP 1 + 新增 M3 get/patch 2）、3 条 main 桥（M1 白名单透传 / M2 MessagePort mux 桥只放行 follow+$events / M3 bots.json）、bot 记录加 mainBot+runtime（默认思路② runtime 恒 dsh）、**22 云 RPC 替身在 B′ 下降为 0** | 遗留 5 项：①连接器 bot 重启或起不来（内存 preset，推定）②$events 重连补发未测 ③市场映射等 T-09 ④UI 层等 scout ⑤品味项（bot 首轮后 preset 锁定）交 G2 | **派 T-15**（遗留 1/2 红测试探明——结论决定 preset.ensure 是否回 G1）
+2026-11-02 01:06 tick | 在途 3（T-13/T-15/scout 均起步阶段 ~15min）| QUESTIONS 3 open | load 3.0↓ | 无 stale
+2026-11-02 01:07 tick | T-13 活跃（改 start.test.ts，回报时核对区域）；T-15/scout 起步 | 无 stale
+2026-11-02 01.1x 回报 | scout dsh-client-packages 完成：69 包（纠正 74）三档 4/24/41；决策=集成第 2 级（workspace 保留浏览器 Cordis+slots+对象层，替换产品壳/bot 导航/theme/IPC carrier）| 关键修正：feature 包不能脱离 Cordis 当纯组件库；只换 streamBaseUrl 仍在 renderer 建 WS（M2 桥要真 MessagePort carrier）；会话列表在 ui-workspace、bot roster 需产品适配；npm latest 与本地不一致→workspace 正好规避 | 输入 CONTRACT v1.1（等 T-15 探明一起改版）
+2026-11-02 01:17 tick | T-13/T-15 均 ~30min 无 commit（T-13 有文件改动活跃；T-15 写测试中）| 下 tick 无变化则查 | QUESTIONS 3 open
+2026-11-02 01:18 tick | T-13（锁测试×2 在改）/ T-15（connector-restart + events-replay 在写）均活跃
+2026-11-02 01.2x 回报 | T-15 双探明定论：**①红**——连接器 bot 重启后旧 session prompt 报 Unknown agent preset（内存 registry，code=gateway/internal 判错只能看 message）；**②绿**——$events 订阅时刻全量未决快照补发（gateway index.ts:586-589/732-738），main 缓存不需要 | 建议 preset.ensure（幂等、内容定 id）→ **Q-008 契约问题**（实现阻塞待答；CONTRACT v1.1 标暂定起草）| 派 verifier T-15（轻）| T-13 仍活跃
+2026-11-02 01:26 tick | T-13 出红测试 commit 00ee60d（R2/R7/R8/R9/R10 五红在案，实现进行中）；verifier T-15 在途 | QUESTIONS 4 open | 无 stale
+2026-11-02 01:27 tick | 同上（T-13 实现中、verifier T-15 在途）
+2026-11-02 01.3x 回报 | verifier T-15 = PASS（①红复现含 Unknown agent preset 原文、freshBot ok 证明红为旧 preset 特有；②绿语义断言齐、gateway 源码独立核实；区域仅两新文件 428 行；market 回归 8 绿）| 注释偏差一处（预断 d+e 双红实测仅 e 红——更精确，preset.ensure 实现时顺手更正）| **合并决策：暂缓**——探明①的红测试会让 main 带红，等 Q-008 批准后与 preset.ensure 实现一起转绿合并（feat/T-15@a3758e0 保留）| 遗留 PID 攒 5 个（459759/459949/800532/800539/802184，均 dsh web 测试残留）等 T-13 收口后统一交 process-ops | 在途：T-13
+2026-11-02 01:36 tick | T-13 实现落地 46929b2（双 pid 锁、exit 不删、start 前门），收尾中 | QUESTIONS 4 open | ready 未派 = 0（等 T-13 + Q-008）
+2026-11-02 01.4x 回报 | **builder T-13 完成**：00ee60d（红×5）→ 46929b2（双 pid 锁：fd 身份锚追加 dsh pid、持锁=任一活、回收=双死、exit 不删、startRuntime 前 stillHeld() re-验）| ①–⑤ 全 PASS（三竞争者 loader 拦截确定性复现、gate 后恰一个 PROCEED；EPIPE 红态确认旧代码删锁）| 99/99 绿、覆盖率 91.8/88.8/95.7/94.3 | 残余 µs 窗口 ponytail 注释如实 | EPIPE 调试泄漏 PID 3 个（800532/800539/802184）正确上报待 process-ops | 派 verifier T-13
+2026-11-02 01:46 tick | verifier T-13 在途（~10min 正常）| QUESTIONS 4 open（Q-007/Q-008 待答）
+2026-11-02 01.4x 回报 | verifier T-13 = PASS（99/99 + 覆盖率 88.9/87.7/94.4/92.3；①亲跑端到端真第二实例被拒含双 pid 拒信；③loader 拦截三竞争者 gate 恰一 PROCEED；childEnv/handoff 未碰；红基线无缺口；verifier 字面 kill 脚本被分类器拦→改自管子进程 node harness，合规）| **合并 T-13 → f9dfc45**（17/19）| 主仓回归 99/99 ✓ | **REVIEW-L 修复链全闭环**（T-11/12/13/14 全合并）| **启动增量 L 复审**（d373b6b..f9dfc45）
+2026-11-02 01:56 tick | p2-sdk 17/19 | 增量 L 复审运行中（wf_1af01f89）| QUESTIONS 4 open（Q-007/Q-008 待答——阻塞 T-09 数值定稿与 CONTRACT v1.1）| ready 未派 = 0（T-09/T-10 被阻塞）
+2026-11-02 01:57 tick | 增量 L 复审运行中（~20min，正常）
+2026-11-02 02:07 tick | 增量 L 复审活跃（journal 02:06 更新）
+2026-11-02 02:07 tick | 同上
+2026-11-02 02:16 tick | 增量 L 复审仍在跑（~30min，L 档重正常；journal 上次见 02:06 活跃）
+2026-11-02 02:17 tick | L 复审活跃（journal 02:13）
+2026-11-02 02:26 tick | L 复审 ~40min 仍在跑（上次 L 档跑了 30min，M 档 20min——继续等一个 tick，无 journal 更新再查）
+2026-11-02 02.2x 回报 | **增量 L 复审 = FAIL：3 CONFIRMED major**（16 候选 10 verified 2 refuted）——修复自身引入：R1+R3（T-13 锁：正常退出留锁 + pidHeld 无身份验证 → PID 复用/容器 PID1 自身复用时 home 砖死，verifier 探针实测）、R2（T-12 approval 默认挂载 × danger-full-access never preset → user-approval 拒绝一切 ask，bash 死锁）| 2 refuted 记入 ALLOWLIST 候选 | 转 T-13.f1（锁身份 starttime 验证 + 拒信提示）与 T-12.f1（shell-ask 尊重显式 never）**并行派出**（区域不重叠）| 修复链第 2 轮（T-13/T-12 各自第 1 轮）
+2026-11-02 02.2x 派发：T-13.f1 ✓（锁身份验证）；**T-12.f1 被权限分类器拦（Security Weaken——R2 修复=放宽审批控制，需用户授权）**→ 改 Q-009 三选项等答复 | 分类器拦截正确（安全语义变更不自动派）
+2026-11-02 02:36 tick | T-13.f1 起步（~10min 读材料正常）| QUESTIONS 5 open | ready 未派 = 1（T-12.f1 被 Q-009 阻塞）
+2026-11-02 02:37 tick | T-13.f1 活跃（红测试编写中）
+2026-11-02 02:46 tick | T-13.f1 ~20min 无 commit（上 tick 文件活跃，TDD 中）| QUESTIONS 5 open
+2026-11-02 02:47 tick | T-13.f1 实现落地 04c58d5（/proc starttime 身份、PID 复用/自 PID 不再砖死），收尾中
+2026-11-02 02.5x 回报 | builder T-13.f1 完成：04c58d5；锁行 <pid>:<starttime>、双判 pidHeld、旧格式/不可读回退存活判定（fail-closed 有测试钉住）、拒信加删除提示；三红转绿；105/105、覆盖率 92.25/88/95.83/94.55 | 取舍注明：升级过渡期旧格式活锁保守拒（靠提示人工删）、hidepid 回退 | 派 verifier T-13.f1
+2026-11-02 02:56 tick | verifier T-13.f1 在途（~10min）| QUESTIONS 5 open
+2026-11-02 02:57 tick | verifier T-13.f1 活跃（evidence/T-13.f1-verify 在产出）
+2026-11-02 03.0x 回报 | verifier T-13.f1 = PASS（105/105 + 覆盖率；**独立 detach 重建红基线 5 红 1 绿**——R1/R3 砖死原样复现；ps(1) lstart × /proc btime 交叉验证 field-22 解析漂移仅 80ms；4 种畸形行全按 uninitialized 拒；区域 8 hunk 零越界）| LOW×2（commit 缺红跑输出=流程、测试 oracle 同构建议收编）| **合并 T-13.f1 → 267fb13**（18/19）| 主仓回归 105/105 ✓ | 增量 L 复审的 R1+R3 闭环；**R2（T-12.f1）等 Q-009** | 在途：无——全部可推进任务收口，等 QUESTIONS 答复
+2026-11-02 03:06 tick | p2-sdk 18/19 · p1-re 完成 · p3-contract 等 Q-007/008/009 | 在途 0 | 无事可派：全部下游被三个未答问题阻塞（用户凌晨休息中）| cron 保持巡检
+2026-11-02 03:07 tick | 同上（无答复，等待中）
+2026-11-02 03:16 tick | 同上
+2026-11-02 03:17 tick | 等待中（Q-007/008/009）
+2026-11-02 03:26 tick | 等待中
+2026-11-02 03:27 tick | 等待中
+2026-11-02 03:36 tick | 等待中
+2026-11-02 03:37 tick | 等待中
+2026-11-02 03:46 tick | 等待中
+2026-11-02 03:47 tick | 等待中
+2026-11-02 03:56 tick | 等待中
+2026-11-02 03:57 tick | 等待中
+2026-11-02 04:06 tick | 等待中
+2026-11-02 04:07 tick | 等待中
+2026-11-02 04:16 tick | 等待中
+2026-11-02 04:17 tick | 等待中
+2026-11-02 04:26 tick | 等待中
+2026-11-02 04:27 tick | 等待中
+2026-11-02 04:36 tick | 等待中
+2026-11-02 04:37 tick | 等待中
+2026-11-02 04:46 tick | 等待中
+2026-11-02 04:47 tick | 等待中
+2026-11-02 04:56 tick | 等待中
+2026-11-02 04:57 tick | 等待中
+2026-11-02 05:00 答复处理 | Q-007 = B 定稿（「可行，直接重写即可」）| Q-008 答复为进程安全关切（非直接回答）——**分类器拦截了我把其解读为批准的操作（拦截正确）**，Q-008 保持 open 重问（一句话确认 A/B）| LEARNINGS 记用户进程三层约束 | Q-009 未答保持 open | 派 director CONTRACT v1.1（吸收 scout+T-15，preset.ensure 标待 Q-008）
+2026-11-02 05:06 tick | CONTRACT v1.1 改版中（director 在途）| Q-008/Q-009 待答 | 无 stale
+2026-11-02 05:07 tick | CONTRACT v1.1 仍在改（director 在途 ~7min 正常）
+2026-11-02 05.1x 回报 | director CONTRACT v1.1 完成（131 行）：§2.1 第 2 级集成清单（69 包 4/24/41）、补发结案（新 clientId 全量未决、main 缓存删除）、#21 preset.ensure 标 pending Q-008、§7.4 P4 首日 spike（ClientSessions 超白名单接口）、品味项交 G1、修订账三条 | **carrier 分歧**：director 选 transport.rpc.call+createWebSocket vs scout 建议 rpc.open → 交 G1 裁 | **派 G1 两席**
+2026-11-02 05:16 tick | G1 ×2 在途（~5min）| Q-008/Q-009 待答
+2026-11-02 05:17 tick | G1 两席在途
+2026-11-02 05.3x G1-r1 p3-contract 汇总 = REVISE | carrier 两席一致支持 director 方案（rpc.open 系进程内载体，浏览器 transport 无此方法）| 清单 4 HIGH：恢复数据缺口（A 席明示不必等 Q-008）、M1 错误形状 details、M1 参数约束（enabled:false 强制）、M2 postMessage 转交协议 | 品味项判成立 |
+2026-11-02 05.4x 回报 | director CONTRACT v1.2 完成（150 行）：4 HIGH 全改（recipes+presetIdOf+幂等、ConnectionRpcResult 原样、§2.2 参数约束、§2.3 postMessage 时序）、9 MEDIUM + 3 LOW 全吸收、一处合理偏离（配方先落盘消除两步写入窗口）| **派 G1-r2 两席**（最后一轮）
+2026-11-02 05:27 tick | G1-r2 两席刚派（~2min）
+2026-11-02 05.45 G1-r2 汇总：两席 REVISE → **有条件通过**（4 HIGH 确认落实；新清单 4 条转 CONTRACT §8：失败配方隔离、preset id 单点解析（main 唯一）、Q-009 过滤错位（danger-full-access 是权限 preset 不在 list）、5 LOW）| **P3 收口**

@@ -1,0 +1,94 @@
+// M3 bots.json 存储（U-13）：原子写（tmp + rename）+ 单一 Promise 写队列（D10e）。
+// v1 盘上形状 {version:1, mainBotId, recipes}——不含 bots 字段（D10d）。
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
+
+/** CONTRACT §3.1：recipes 按 presetId 存 {agentPreset, 规范化 connectors}。 */
+export interface Recipe {
+  agentPreset: string
+  connectors: string[]
+}
+
+/** 盘上形状（version 1）。renderer 只写 mainBotId；recipes 只由 #4 编排写。 */
+export interface BotsMeta {
+  version: 1
+  mainBotId: string | null
+  recipes: Record<string, Recipe>
+}
+
+/** 落盘文件名（$PBOTS_DATA_DIR/bots.json，CONTRACT M3 行）。 */
+export const BOTS_JSON = 'bots.json'
+
+/** 单写者队列 + 原子写。所有变更先改内存、再串行落盘，读方永远看到完整 JSON。 */
+export class BotsMetaStore {
+  readonly file: string
+  // 每实例独立空态（不得引用共享常量再突变——单测已抓过实例间串数据）。
+  private meta: BotsMeta = { version: 1, mainBotId: null, recipes: {} }
+  private loadError: Error | undefined
+  private queue: Promise<unknown> = Promise.resolve()
+
+  constructor(dataDir: string) {
+    this.file = join(dataDir, BOTS_JSON)
+  }
+
+  /** 启动读盘；ENOENT → 空 meta。坏 JSON / version 不符 → 记错，read() 抛。 */
+  async init(): Promise<void> {
+    let text: string
+    try {
+      text = await readFile(this.file, 'utf8')
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return
+      this.loadError = error as Error
+      return
+    }
+    try {
+      const parsed = JSON.parse(text) as BotsMeta
+      if (parsed.version !== 1 || typeof parsed.recipes !== 'object' || parsed.recipes === null) {
+        throw new Error(`bots.json: unsupported payload (version=${JSON.stringify(parsed.version)})`)
+      }
+      this.meta = { version: 1, mainBotId: parsed.mainBotId ?? null, recipes: parsed.recipes }
+    } catch (error) {
+      this.loadError = error as Error
+    }
+  }
+
+  /** 当前内存态深拷贝；init 时发现的坏文件在此抛出。 */
+  read(): BotsMeta {
+    if (this.loadError !== undefined) throw this.loadError
+    return { version: 1, mainBotId: this.meta.mainBotId, recipes: structuredClone(this.meta.recipes) }
+  }
+
+  /** 变更加入单一队列：改内存 → 串行原子落盘。后入队的看到先入队的内存态。 */
+  private enqueue<T>(job: () => Promise<T>): Promise<T> {
+    const run = this.queue.then(job, job)
+    this.queue = run.then(
+      () => undefined,
+      () => undefined,
+    )
+    return run
+  }
+
+  private async flush(): Promise<void> {
+    const snapshot = JSON.stringify(this.read())
+    const tmp = `${this.file}.tmp`
+    await mkdir(join(this.file, '..'), { recursive: true })
+    await writeFile(tmp, snapshot, 'utf8')
+    await rename(tmp, this.file)
+  }
+
+  /** #4 编排写配方：同 key 同值幂等（CONTRACT §3.1「重复写无害」）。 */
+  putRecipe(presetId: string, recipe: Recipe): Promise<void> {
+    return this.enqueue(async () => {
+      this.meta.recipes[presetId] = { agentPreset: recipe.agentPreset, connectors: [...recipe.connectors] }
+      await this.flush()
+    })
+  }
+
+  /** renderer 唯一可写字段（#20）。 */
+  patchMainBotId(mainBotId: string | null): Promise<void> {
+    return this.enqueue(async () => {
+      this.meta.mainBotId = mainBotId
+      await this.flush()
+    })
+  }
+}

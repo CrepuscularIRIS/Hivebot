@@ -121,8 +121,8 @@ async function main(): Promise<void> {
       try { assertSender(event) } catch (error) { console.warn(error); return }
       m2(event, req)
     })
-    const m3 = registerM3Meta()
-    ipcMain.handle('pbots:bots-meta', (event, req) => { assertSender(event); return m3(req) })
+    const m3 = registerM3Meta({ dsh, dataDir: process.env.PBOTS_DATA_DIR ?? app.getPath('userData') })
+    ipcMain.handle('pbots:bots-meta', (event, req) => { assertSender(event); return m3.handler(req) })
   }
 
   await mainWindow.loadURL(process.env.PBOTS_APP_URL ?? `${SCHEME}://app/`)

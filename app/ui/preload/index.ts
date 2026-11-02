@@ -18,9 +18,9 @@ if (isAppMainFrame) {
       ipcRenderer.invoke('pbots:api', { method, ...(args !== undefined ? { args } : {}) }) as Promise<PbotsApiResult>,
     /** M2：申请一个 mux 端口（端口经 postMessage 转交，见 mux-relay）。 */
     requestMuxPort: (requestId: string): void => { ipcRenderer.send('pbots:mux-port', { requestId }) },
-    /** M3：本地 bots 元数据（get / patch mainBotId）。 */
+    /** M3：本地 bots 元数据（CONTRACT M3 行：invoke({op:'get'}) / invoke({op:'patch',mainBotId})）。 */
     botsMeta: (op: 'get' | { op: 'patch'; mainBotId: string }): Promise<PbotsApiResult> =>
-      ipcRenderer.invoke('pbots:bots-meta', op) as Promise<PbotsApiResult>,
+      ipcRenderer.invoke('pbots:bots-meta', op === 'get' ? { op: 'get' } : { op: 'patch', mainBotId: op.mainBotId }) as Promise<PbotsApiResult>,
   })
   installMuxPortRelay()
 }

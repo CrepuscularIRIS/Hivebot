@@ -1,0 +1,29 @@
+
+Running 3 tests using 1 worker
+
+  ✘  1 tests/e2e/d1.spec.ts:126:5 › D1：建 bot→发消息→流式增量→定稿；两 bot header.agentPreset 精确等值 (5.0s)
+  ✓  2 tests/e2e/d1.spec.ts:181:5 › U-15 ③ ledger 联调：真实 $events ready 后错 clientId 作答 → pbots/forbidden，dsh 计数不变 (3.0s)
+  ✓  3 tests/e2e/d1.spec.ts:229:5 › 建 bot 经 M3（#4 编排→createWithConnectors）：勾选连接器 → recipe 落盘 → header 冻结 p2temp-id (4.5s)
+
+
+  1) tests/e2e/d1.spec.ts:126:5 › D1：建 bot→发消息→流式增量→定稿；两 bot header.agentPreset 精确等值 ───────────────
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 3
+    Received:    0
+
+      163 |     const bFinal = await sampleStreamingGrowth(page)
+      164 |     await expect.poll(async () => page.locator('.bubble.assistant.final').last().textContent()).toBe(B_PIECES.join(''))
+    > 165 |     expect(bFinal.length).toBeGreaterThanOrEqual(3) // ≥2 增量（派发 ③：≥2 增量 + turn end）
+          |                           ^
+      166 |     await expect.poll(async () => (await devBots(page)).find((b) => b.sessionId === sidB)?.chunkCount).toBeGreaterThanOrEqual(2)
+      167 |     await expect.poll(async () => (await devBots(page)).find((b) => b.sessionId === sidB)?.turnEnded).toBe(true)
+      168 |
+        at /tmp/bot-wt/U-15/app/ui/tests/e2e/d1.spec.ts:165:27
+
+    Error Context: test-results/d1-D1：建-bot→发消息→流式增量→定稿；两-bot-header-agentPreset-精确等值/error-context.md
+
+  1 failed
+    tests/e2e/d1.spec.ts:126:5 › D1：建 bot→发消息→流式增量→定稿；两 bot header.agentPreset 精确等值 ────────────────
+  2 passed (13.6s)

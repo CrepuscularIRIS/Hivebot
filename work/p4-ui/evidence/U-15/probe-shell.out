@@ -1,0 +1,10 @@
+[#4 裸对象（无壳）] REJECT {"name":"Error","message":"p2temp/session.createWithConnectors failed: {\"code\":\"gateway/arguments-invalid\",\"message\":\"typert gateway: p2temp/session.createWithConnectors: args fields do not match the descrip"}
+[#4 {request:…}] REJECT {"name":"Error","message":"p2temp/session.createWithConnectors failed: {\"code\":\"p2temp/connector-unavailable\",\"message\":\"p2temp: connector \\\"x-nonexistent-bundle\\\" is not installed under the profile\",\"detail"}
+[#4 {_request:…}（U-14 verifier 口径）] REJECT {"name":"Error","message":"p2temp/session.createWithConnectors failed: {\"code\":\"gateway/arguments-invalid\",\"message\":\"typert gateway: p2temp/session.createWithConnectors: args fields do not match the descrip"}
+[session/list {} 裸] REJECT {"name":"Error","message":"session/list failed: {\"code\":\"gateway/arguments-invalid\",\"message\":\"typert gateway: session/list: args fields do not match the descriptor: missing \\\"_request\\\"\",\"details\":{\"endpoin"}
+[session/list {_request:{}}] OK {"items":[]}
+[session/list {request:{}}] REJECT {"name":"Error","message":"session/list failed: {\"code\":\"gateway/arguments-invalid\",\"message\":\"typert gateway: session/list: args fields do not match the descriptor: missing \\\"_request\\\"; unexpected \\\"reques"}
+[#21 preset.ensure 裸对象] REJECT {"name":"Error","message":"p2temp/preset.ensure failed: {\"code\":\"gateway/arguments-invalid\",\"message\":\"typert gateway: p2temp/preset.ensure: args fields do not match the descriptor: unexpected \\\"agentPreset\\"}
+[#21 preset.ensure {request:…}] REJECT {"name":"Error","message":"p2temp/preset.ensure failed: {\"code\":\"p2temp/connector-unavailable\",\"message\":\"p2temp: connector \\\"x-nonexistent-bundle\\\" is not installed under the profile\",\"details\":{\"connector\""}
+[installBundle {spec,options}（enabled:false）] OK {"stage":"enable","target":"@p2sdk-fixture/demo-mcp","enabled":false,"changed":true,"application":"applied","registries":[null],"packageResult":{"exitCode":0,"output":"\ndependencies:\n+ @p2sdk-fixtur
+probe done

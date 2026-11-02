@@ -1,0 +1,12 @@
+== pnpm build（复跑 13:36）==
+✓ 26 modules transformed; out/renderer/assets/index-B6sSn5GD.js 235.66 kB; built in 456ms（main/preload 构建在前段，✓ built in 11ms）
+
+== pnpm test（13:36:33）==
+Test Files  14 passed (14)
+      Tests  139 passed (139)
+   Duration  2.87s
+
+== HOME=/tmp/bot-p4-vfy-U-16 pnpm test:e2e（13:36）==
+17 passed (45.0s)，含新增：
+  1 m2-deadline.spec.ts:95 ②超时+③观察窗口（5.4s）
+  2 m2-deadline.spec.ts:146 ②宽限（9.1s）

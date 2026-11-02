@@ -1,0 +1,22 @@
+verdict: PASS
+commit: d2262b1c3463dd4b49f5d7d77cb3148a6b671bef（worktree /tmp/bot-wt/U-16，验收期间 HEAD 未漂移；worktree 干净无未申报改动）
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+|---|---|---|
+| ④ 全量复跑：build + 单测 + e2e（HOME 隔离） | PASS | `pnpm build` 绿（26 模块）；`pnpm test` 14 文件 **139/139** 绿（2.87s）；`HOME=/tmp/bot-p4-vfy-U-16 pnpm test:e2e` **17/17** 绿（45.0s），含两条新 deadline 例（5.4s / 9.1s）。evidence/U-16/rerun-summary.txt |
+| ① 代答走 main 自持 clientId——gateway 证据链复核 | PASS | 亲读 dsh-api-gateway@0.2.2-alpha.2 `lib/index.js`（app/sdk/node_modules/.pnpm/...）：:994-1001 `$events/result` 要求 `remoteEventClients.get(clientId)` 为 **active** 流且 `client.peer === peer`（否则 "no active event stream" / "belongs to another Peer"）；:1054 流关闭即 `removeRemoteEventClient` → renderer 端口关闭后其 clientId 必不可用 → PLAN ① 字面「ledger 中的 clientId」不可实现，偏差修正**必要且正确**。eventId 仍取自 ledger.pendingEvents（REUSE「不另存状态」意图保持：since/answered 是窗口监督态，非未决事件副本）。evidence/U-16/gateway-source-excerpt.txt |
+| ① settle 只向其余方推 cancel → 本地下账等价幂等 | PASS | gateway :1146-1152 作答方先 `removeRemoteEventDelivery`、须被 deliver 过（:1045/:1136 新 client 注册/新事件即 deliver——main 常驻订阅必在被 deliver 方之列）；:1175-1188 `finishRemoteEvent` 只向**其余**被 deliver 方推 `{type:'cancel',eventId}` → 作答方收不到自己的 cancel，deadline.ts:81 本地 `ledger.record({type:'cancel'})` 与 gateway 帧等价；ledger.ts:42 Map.delete 幂等。重复作答 gateway 静默 no-op 返回 ok（:1148 pending 已删即 return）→「恰好 1 次」不靠 gateway 兜底、由 answered 集保证（deadline.ts:60,74）。deadline-wire.test.ts:68-73 实测 gateway cancel 帧到达不复活不重发 |
+| ① 「仅 rejected 字面量、恰好 1 次」断言在位 | PASS | deadline.ts 全文 outcome 值字面量仅 `'rejected'`（:71，其余出现为注释/日志文案，无 allowed-once/cancelled/unavailable）；恰好 1 次三层断言：deadline.test.ts:86-89（+10s 再 review 仍 1 次）、deadline-wire.test.ts:73（rpcCalls 恰 1）、m2-deadline.spec.ts:121-125（answers===1 且 answeredEvents===[eventId] 精确值） |
+| ② 两条新 E2E 语义亲跑 | PASS | T1 超时代答（spec:95）：关唯一窗口（PBOTS_HOLD_ON_CLOSE=1）→ 代答 rejected → `tool/result isError:true + turn/end`（session/events 断言）+ 台账 pending===[] + canary 全程不存在，全过（5.4s）。T2 宽限（spec:146）：挂载超 deadline+1.5s 代答计数===0；reload 重连新 clientId、同 eventId 补发（断言 replayed.eventId===eventId）；接手 approved → canary 出现、全程零代答（9.1s）。evidence/U-16/rerun-summary.txt |
+| ③ 2×deadline 有界 poll 可证伪 | PASS | T1 `expect.poll(answers→1, {timeout: 2*deadlineMs+15_000})`——不代答即超时 FAIL；关窗前 answers===0 断言拦「过早代答」；窗口下界由假时钟单测（deadline.test.ts:72-74：2_000 窗口内 1_999 仍零调用且 pending 在——「deadline 内无终态不作答」的正向证伪）+ 集成真钟（deadline-wire: sleep 80 < 150ms 仍 pending）夹住。双向有界 |
+| ⑤ 随动更新：U-12 断言收窄（bridge.test.ts）语义正当 | PASS | U-16 起 wire() 恒开 main 常驻 $events，opens 全集恰一条不再成立；收窄为 sid-1 直通恰一次 + main $events 开帧恰一次 payload {args:{}}（gateway :1026 要求空 args——形状对）。原断言意图（端口直通）保留 |
+| ⑤ 随动更新：m2-port ⑤ pending 断言翻转语义正当 | PASS | gateway `finishRemoteEvent`（:1175-1188）：页面作答方先移除，cancel **确定**推给仍被 deliver 的 main 常驻订阅 → record 自动下账——不再是竞态（U-12 期 main 无订阅、无帧到达，「条目仍在」当时确定成立；新世界翻转确定成立）。两世界各自自洽 |
+| ⑤ 对 U-15 ledger 联调影响 → HANDOFF | PASS（记入下方 HANDOFF） | U-15 ③ 前提未破坏：main 的 ready 只进 mainEventsClientId、不进 ledger.readyClientId（index.ts:190-191，deadline-wire.test.ts:57 实证 `readyClientId===undefined`），M1 §2.2 校验源不变；变化是**作答后 pending 必自动清**——U-15 联调断言不得假设作答后条目仍在。主会话 13:4x 已 SendMessage 通知 U-15「rebase 新 main（含 U-16 ledger 口径）」（work/LOG.md:430），此处补正式 HANDOFF 行 |
+| ⑥ 区域：8 文件；未碰 main/index、m1、m3 | PASS | `git diff 29b6859..d2262b1 --name-only`：m2-mux/{deadline.ts,index.ts} + tests/{unit/m2/{deadline,deadline-wire,bridge,support}, e2e/{m2-deadline,m2-port}} 恰 8 文件，无 main/index、m1-api、m3-meta、preload、renderer |
+| 坏路径（验收员加试）：关窗后断链重连 | PASS | 探针 /tmp/bot-p4-vfy-U-16/probe/badpath-reconnect.spec.ts：关窗口 → 观察窗口中途 `testDropSocket()` 断链 → 重连新一代重开 $events（gateway 补发）→ 新 clientId 代答 rejected 恰 1 次、pending 清、canary 不存在；+10s 复查仍恰 1 次（无重连风暴重复代答）。evidence/U-16/badpath-reconnect.txt |
+
+新问题（每条一行，可直接成为修复任务）：
+- [HANDOFF] U-15 ③ ledger 联调口径：U-16 起 main 常驻 $events 订阅必收 settle cancel 帧——**任何作答（页面或 main 代答）后 pendingEvents 必为空**，U-15 ③ 若沿用「作答后条目仍在」的旧口径会假红；另有 U-12 期已记的共享 ledger 实例接线（VERIFY-U-12.md:54）仍待 U-15 落实 | 复现：合并 U-16 后跑 U-15 ③ 用例，作答后读 pendingEvents | 疑似位置：app/ui/tests/e2e/d1.spec.ts（U-15 交付物） | 严重度 LOW（联调口径，非缺陷）
+- [FIX-LOW] REUSE.md D4③ 决策行仍写「main 以 ledger 中的 clientId」，与已实证修正（main 自持 clientId）不一致，下次有人按行实现会撞 gateway active-client 墙 | 复现：grep REUSE.md D4③ 行 vs gateway lib/index.js:994-1001 | 疑似位置：work/p4-ui/REUSE.md:20 | 严重度 LOW（文档漂移，commit message 已注明证据）
+
+复跑环境：/tmp/bot-wt/U-16（d2262b1，依赖在位、git status 干净）；e2e 一律 HOME 临时目录隔离；探针与复跑均未触碰 main/index、m1、m3，worktree 验收后仍干净（test-results/ 在 .gitignore 内）。无 UI 验收项，无截图需求；证据为命令输出与源码摘录（evidence/U-16/ 三份）。

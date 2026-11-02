@@ -1,0 +1,38 @@
+== cmd: HOME=/tmp/bot-u15-verify pnpm build ==
+rendering chunks...
+../out/renderer/index.html                  0.52 kB
+../out/renderer/assets/index-CxCWFApa.js  247.79 kB
+✓ built in 432ms
+
+== cmd: HOME=/tmp/bot-u15-verify pnpm exec vitest run ==
+
+ Test Files  16 passed (16)
+      Tests  153 passed (153)
+   Start at  13:56:44
+   Duration  2.59s (tests 88%, import 8%, transform 3%, worker 1%)
+
+
+== cmd: HOME=/tmp/bot-u15-verify pnpm exec playwright test ==
+Running 19 tests using 1 worker
+
+  ✓   1 tests/e2e/d1.spec.ts:126:5 › D1：建 bot→发消息→流式增量→定稿；两 bot header.agentPreset 精确等值 (6.7s)
+  ✓   2 tests/e2e/d1.spec.ts:181:5 › U-15 ③ ledger 联调：真实 $events ready 后错 clientId 作答 → pbots/forbidden，dsh 计数不变 (2.9s)
+  ✓   3 tests/e2e/d1.spec.ts:229:5 › 建 bot 经 M3（#4 编排→createWithConnectors）：勾选连接器 → recipe 落盘 → header 冻结 p2temp-id (4.0s)
+  ✓   4 tests/e2e/m2-port.spec.ts:105:5 › ① 成功转交 + 两并发 requestId 不串线 + readyState 0→1 + tap 计数可读（④） (2.6s)
+  ✓   5 tests/e2e/m2-port.spec.ts:187:5 › ① 失败不带端口：dsh 未配置 → {ok:false,error}，readyState=3 (619ms)
+  ✓   6 tests/e2e/m2-port.spec.ts:207:5 › ① 10s 超时：socket 一直不就绪 → readyState=3 派发 error（真 10s 计时） (10.6s)
+  ✓   7 tests/e2e/m2-port.spec.ts:230:5 › ④ ipc 来源校验：非主窗口的 pbots:mux-port 被拒，不转交 (3.4s)
+  ✓   8 tests/e2e/m2-port.spec.ts:267:5 › ④⑤ ledger 记 ready clientId 与未决 eventId；D4① 重载后未决 waterfall 带新 clientId 重新下发，批准后执行 (2.9s)
+  ✓   9 tests/e2e/m2-port.spec.ts:314:5 › ⑤ D4② 断开 mux socket 再重连：未决 waterfall 带新 clientId 重新下发，批准后执行 (3.2s)
+  ✓  10 tests/e2e/restore.spec.ts:69:5 › restore：好 recipe ensure 成功 live=true、坏 recipe 失败不阻断 live=false，gate 在 restore settle 后开 (3.6s)
+  ✓  11 tests/e2e/shell/cold-start.spec.ts:6:5 › cold start opens window on pbots-app://app/ (616ms)
+  ✓  12 tests/e2e/shell/origin-gate.spec.ts:10:5 › (a) webviewTag === false 且 devTools === false (1.0s)
+  ✓  13 tests/e2e/shell/origin-gate.spec.ts:29:5 › (b) window.open 与 <a target=_blank> 均不开新窗，http(s) 交给 openExternal (1.2s)
+  ✓  14 tests/e2e/shell/origin-gate.spec.ts:71:5 › (c) 页内 location.href 外部/ file:// 导航被拒，getURL 仍在 pbots-app://app/ (1.5s)
+  ✓  15 tests/e2e/shell/origin-gate.spec.ts:85:5 › (d) 同一 preload 载入 data:/file: 页面拿不到 window.pbots (628ms)
+  ✓  16 tests/e2e/shell/origin-gate.spec.ts:108:5 › (e) 非主窗口（同 preload、pbots-app://app/ 页面）的 pbots:api 被拒 (617ms)
+  ✓  17 tests/e2e/shell/origin-gate.spec.ts:127:5 › (f) pbots-app 协议只答静态产物：/api/ 404、穿越 403/非2xx、other 主机 404 (1.1s)
+  ✓  18 tests/e2e/shell/origin-gate.spec.ts:174:5 › (f2) dsh 侧 /api 调用计数恒 0（无 spike 桥时通道未接线，静态 fetch 也到不了 dsh） (511ms)
+  ✓  19 tests/e2e/shell/origin-gate.spec.ts:182:5 › ⑧ CSP：响应头带最小 CSP，且内联脚本被拦 (589ms)
+
+  19 passed (49.0s)

@@ -1,0 +1,111 @@
+
+ RUN  v5.0.5 /tmp/vfy-U-18-base/app/ui
+
+ ❯ tests/unit/m3/store-lock-flush.test.ts (4 tests | 4 failed) 16ms
+   ❯ BotsMetaStore · 单实例锁（W1 R8） (2)
+     × 同 dataDir 第二个实例构造即抛结构化错（code=PBOTS_STORE_LOCKED） 4ms
+     × close() 释放锁后可重建；不同 dataDir 互不干扰 1ms
+   ❯ BotsMetaStore · flush 失败回滚（W1 R9） (2)
+     × putRecipe 的 rename 失败：内存回滚、磁盘保留先前好状态、无半写 tmp，后续成功提交不带失败操作 7ms
+     × patchMainBotId 的 rename 失败：mainBotId 回滚到旧值，磁盘不变 2ms
+ ❯ tests/unit/m3/index.test.ts (13 tests | 1 failed) 16ms
+   ❯ patch · wire 壳（W1 R4：session/list 参数名是 _request） (1)
+     × 用 {_request:{}} 壳：fake gateway 只认 _request 形状，不再 arguments-invalid 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/m3/index.test.ts > patch · wire 壳（W1 R4：session/list 参数名是 _request） > 用 {_request:{}} 壳：fake gateway 只认 _request 形状，不再 arguments-invalid
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/m3/index.test.ts:139:23
+    137|     const result = await m3.handler({ op: 'patch', mainBotId: 's-1' })
+    138|     // 修复前：{cursor:null} 被 gateway 判 arguments-invalid → pbots/unavail…
+    139|     expect(result.ok).toBe(true)
+       |                       ^
+    140|     const call = dsh.calls.find((c) => c.method === 'session/list')
+    141|     expect(call?.args).toEqual({ _request: {} })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/unit/m3/store-lock-flush.test.ts > BotsMetaStore · 单实例锁（W1 R8） > 同 dataDir 第二个实例构造即抛结构化错（code=PBOTS_STORE_LOCKED）
+TypeError: first.close is not a function
+ ❯ tests/unit/m3/store-lock-flush.test.ts:35:13
+     33|       )
+     34|     } finally {
+     35|       first.close()
+       |             ^
+     36|     }
+     37|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/unit/m3/store-lock-flush.test.ts > BotsMetaStore · 单实例锁（W1 R8） > close() 释放锁后可重建；不同 dataDir 互不干扰
+TypeError: first.close is not a function
+ ❯ tests/unit/m3/store-lock-flush.test.ts:42:11
+     40|     const dirA = tmpHome()
+     41|     const first = new BotsMetaStore(dirA)
+     42|     first.close()
+       |           ^
+     43|     expect(() => {
+     44|       const second = new BotsMetaStore(dirA)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  tests/unit/m3/store-lock-flush.test.ts > BotsMetaStore · flush 失败回滚（W1 R9） > putRecipe 的 rename 失败：内存回滚、磁盘保留先前好状态、无半写 tmp，后续成功提交不带失败操作
+AssertionError: expected { 'p2temp-good': { …(2) }, …(1) } to deeply equal { 'p2temp-good': { …(2) } }
+
+- Expected
++ Received
+
+@@ -1,6 +1,12 @@
+  {
++   "p2temp-bad": {
++     "agentPreset": "p2-beta",
++     "connectors": [
++       "b",
++     ],
++   },
+    "p2temp-good": {
+      "agentPreset": "p2-alpha",
+      "connectors": [
+        "a",
+      ],
+
+ ❯ tests/unit/m3/store-lock-flush.test.ts:66:34
+     64|
+     65|     // 内存态回滚：失败 recipe 不在、先前好 recipe 还在
+     66|     expect(store.read().recipes).toEqual({ 'p2temp-good': { agentPrese…
+       |                                  ^
+     67|     // 磁盘 = 先前好状态，且无半写 tmp 残留
+     68|     expect(readFileSync(join(dir, BOTS_JSON), 'utf8')).toBe(goodOnDisk)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  tests/unit/m3/store-lock-flush.test.ts > BotsMetaStore · flush 失败回滚（W1 R9） > patchMainBotId 的 rename 失败：mainBotId 回滚到旧值，磁盘不变
+AssertionError: expected 's-new' to be 's-old' // Object.is equality
+
+Expected: "s-old"
+Received: "s-new"
+
+ ❯ tests/unit/m3/store-lock-flush.test.ts:88:36
+     86|     await expect(store.patchMainBotId('s-new')).rejects.toThrow('simul…
+     87|
+     88|     expect(store.read().mainBotId).toBe('s-old')
+       |                                    ^
+     89|     expect(readFileSync(join(dir, BOTS_JSON), 'utf8')).toBe(goodOnDisk)
+     90|     store.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 12 passed (17)
+   Start at  14:24:05
+   Duration  138ms (tests 45%, import 32%, transform 13%, worker 9%)
+

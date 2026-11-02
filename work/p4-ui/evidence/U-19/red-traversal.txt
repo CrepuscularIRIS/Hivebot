@@ -1,0 +1,26 @@
+# U-19 R1 红实证复现（verifier 2026-11-02 14:2x 自跑）
+# 探针目录布局（profile 外父目录放恶意 package.json + evil.patch）:
+#   /tmp/vfy-u19-esc/package.json  = {"name":"escaped-parent","dsh":{"bundle":{"patch":"./evil.patch"}}}
+#   /tmp/vfy-u19-esc/evil.patch    = [{"insert":{"id":"pwned","name":"pwned-from-outside-profile"}}]
+#   /tmp/vfy-u19-esc/profile/node_modules/   （空 profile）
+
+## 修前（detached worktree @1608d10, app/sdk/src/p2temp/index.mjs）
+$ node --input-type=module -e "import {readConnectorRows} from '/tmp/vfy-u19-red/app/sdk/src/p2temp/index.mjs'; try { const rows = await readConnectorRows('/tmp/vfy-u19-esc/profile','../..'); console.log('PRE-FIX ESCAPED: rows =', JSON.stringify(rows)) } catch(e){ console.log('PRE-FIX rejected:', e.code) }"
+PRE-FIX ESCAPED: rows = [{"id":"pwned","name":"pwned-from-outside-profile"}]
+→ join(profileDir,'node_modules','../..') 落到 profile 父目录，真读到了 profile 外的 patch 并返回 insert 行。
+
+## 修后（U-19 worktree @d88664b）同一探针 + 变体
+"../.." -> p2temp/connector-unavailable
+"../../x" -> p2temp/connector-unavailable
+"@scope/.." -> p2temp/connector-unavailable
+"@p2/.." -> p2temp/connector-unavailable
+"/abs/x" -> p2temp/connector-unavailable
+"C:/x" -> p2temp/connector-unavailable
+"a/b/c" -> p2temp/connector-unavailable
+"..\\..\\x" -> p2temp/connector-unavailable
+"." ".." "" " " "x/" "@/x" "..%2f" -> p2temp/connector-unavailable
+legal scoped '@p2sdk-fixture/demo' → p2temp/connector-unavailable「is not installed under the profile」（形状层放行、安装层语义拒，证明校验不误伤）
+
+## 正则边界枚举（离线）
+should-reject but accepted: []   （29 形态：../.. .. . @scope/.. @p2/.hidden /abs C:/x \\server a/b/c a//b a/ / // @/x @a/ @a 'x y' tab @SCOPE/x A 'x$' '..%2f' '%2e%2e' 'a?b' 'a*b' 'x|y' CON 等）
+should-accept but rejected: []   （9 形态：a plain broken-conn @p2sdk-fixture/demo @p2sdk-fixture/demo-mcp a.b a..b a-b_c~d @a.b/c）

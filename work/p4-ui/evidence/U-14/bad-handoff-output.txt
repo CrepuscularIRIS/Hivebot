@@ -1,0 +1,9 @@
+[stderr] [m3] restore skipped: dsh start failed: TypeError: fetch failed
+[stderr] (node:1061845) UnhandledPromiseRejectionWarning: TypeError: fetch failed
+(Use `electron --trace-warnings ...` to show where the warning was created)
+(node:1061845) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). To terminate the node process on unhandled promise rejection, use the CLI flag `--unhandled-rejections=strict` (see https://nodejs.org/api/cli.html#cli_unhandled_rejections_mode). (rejection id: 1)
+probe(__pbotsRestore): null
+m1 agentPresets/list: {"kind":"HUNG-after-8s"}
+gate-settle evidence = stderr [m3] restore skipped line above; M1 hang root = DshConnection.rpc await this.ready() (connect.ts:111)
+[stderr] Debugger ending on ws://127.0.0.1:42775/c562b31a-fb4c-4e1d-bd16-514c2f65290d
+For help, see: https://nodejs.org/learn/getting-started/debugging

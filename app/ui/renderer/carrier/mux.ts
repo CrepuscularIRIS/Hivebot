@@ -1,4 +1,4 @@
-// mux wire 客户端（U-15 dev-min 起源，U-21 迁入 carrier/ 供产品 store 与 dev-min 共用）：CarrierSocket 上的 open/item/end/cancel/error。
+// mux wire 客户端（U-15 起源，U-21 迁入 carrier/ 供产品 store 共用）：CarrierSocket 上的 open/item/end/cancel/error。
 // 由 U-12 的 renderer/carrier/debug-boot.ts DebugMux 演化（debug-boot 按 VERIFY-U-12 建议随 U-15 回收）；
 // wire 客户端骨架参考 spike/U-00 page/app.js 的 PortMux（feat/U-00@8998435）。
 import { CarrierSocket, pageEnv, type CarrierEnv } from './index'

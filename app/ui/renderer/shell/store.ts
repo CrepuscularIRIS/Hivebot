@@ -1,9 +1,10 @@
-// 产品 store（U-21/PAB，PAB-final R0：由 dev-min/carrier.ts 演化，三桥接口不变）：
+// 产品 store（U-21/PAB，PAB-final R0：自写数据层，三桥接口不变）：
 // - 一条 CarrierSocket（= 一个 MessagePort）上跑 $events + 所有 session/follow 流；断链 300ms 重开，follow 全部重挂。
 // - bot 列表 = #9 session/list（wire 壳 {_request:{}}）+ M3 bots-meta；主 bot 缺失/失效 → #3 建默认 → #20 patch（C §5）。
 // - 运行态/活跃度来自 $events emit `api-session/status|activity`（覆盖未打开的 bot）；审批卡只来自 waterfall。
-// - 侧栏顺序首载定序后冻结（R9）；草稿按 bot 隔离（R21）。
-// E2E 观测面 window.__pbotsDev 与 dev-min 同形（m2-port / m2-deadline spec 依赖），只读旁路，不开新 IPC。
+// - 侧栏顺序首载定序后冻结（R9）；唯一例外是设主 bot 后置顶（PDC-final D9）。草稿按 bot 隔离（R21）。
+// - U-23：页（chat / market）、建 bot 对话框预填（D15）、#5 改模型、#20 设主 bot、建后重拉 #19。
+// E2E 观测面 window.__pbotsDev（m2-port / m2-deadline spec 依赖），只读旁路，不开新 IPC。
 import { useSyncExternalStore } from 'react'
 import { CarrierSocket, pageEnv } from '../carrier'
 import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../carrier/mux'
@@ -17,6 +18,8 @@ export interface Approval {
 export interface Recipe { agentPreset: string; connectors: string[]; live: boolean }
 export interface Meta { mainBotId: string | null; recipes: Record<string, Recipe> }
 export interface ApiResult { ok: boolean; value?: unknown; error?: { code: string; message: string } }
+/** 建 bot 对话框预填（PDC-final D13–D15）：null = 关闭；字段缺省 = 不预填。 */
+export interface DialogInit { title?: string; note?: string; preset?: string; connectors?: string[]; model?: string }
 
 export interface State {
   boot: 'starting' | 'ready' | 'failed'
@@ -32,6 +35,10 @@ export interface State {
   drafts: Record<string, string>
   flash: string | null
   notice: string | null
+  page: 'chat' | 'market'
+  dialog: DialogInit | null
+  /** #5 成功后的模型（`provider/model`），优先于 follow 快照投影。 */
+  models: Record<string, string>
 }
 
 /** 冷启动等待上限（R15：超时换「引擎没有响应  重试 →」）。 */
@@ -40,6 +47,7 @@ export const BOOT_TIMEOUT_MS = 60_000
 let state: State = {
   boot: 'starting', bootError: null, online: false, order: [], summaries: {}, meta: { mainBotId: null, recipes: {} },
   views: {}, approvals: [], unread: {}, selected: null, drafts: {}, flash: null, notice: null,
+  page: 'chat', dialog: null, models: {},
 }
 const listeners = new Set<() => void>()
 const set = (patch: Partial<State>): void => { state = { ...state, ...patch }; for (const l of [...listeners]) l() }
@@ -47,7 +55,12 @@ const subscribe = (l: () => void): (() => void) => { listeners.add(l); return ()
 export const getState = (): State => state
 export const useStore = (): State => useSyncExternalStore(subscribe, getState)
 
+/** E2E 故障注入（__pbotsDev.failNext，与 closeEvents 同类测试钩子）：方法 → 下一次调用返回的错误，一次性。 */
+const injected = new Map<string, { code: string; message: string }>()
+
 export function api(method: string, args?: unknown): Promise<ApiResult> {
+  const fault = injected.get(method)
+  if (fault !== undefined) { injected.delete(method); return Promise.resolve({ ok: false, error: fault }) }
   if (window.pbots === undefined) return Promise.resolve({ ok: false, error: { code: 'pbots/unavailable', message: 'preload bridge missing' } })
   // U-22 [GU-1] renderer 层兜底：main 侧 handler 抛错时 ipcRenderer.invoke 会 reject
   // （main 层 try/catch 之外的最后一道），断线期间 sendPrompt/cancelTurn/对话框提交不得裸抛。
@@ -181,18 +194,29 @@ function summaryOf(item: AnyRecord): Summary {
   }
 }
 
+const NO_BRIDGE: ApiResult = { ok: false, error: { code: 'pbots/unavailable', message: 'preload bridge missing' } }
+const metaOf = (value: unknown): Meta => {
+  const m = rec(value)
+  return { mainBotId: typeof m.mainBotId === 'string' ? m.mainBotId : null, recipes: rec(m.recipes) as unknown as Record<string, Recipe> }
+}
+
 async function loadRoster(): Promise<{ items: Summary[]; meta: Meta } | string> {
   const [list, meta] = await Promise.all([
     api('session/list', { _request: {} }),
-    window.pbots?.botsMeta('get') ?? Promise.resolve<ApiResult>({ ok: false, error: { code: 'pbots/unavailable', message: 'preload bridge missing' } }),
+    window.pbots?.botsMeta('get') ?? Promise.resolve(NO_BRIDGE),
   ])
   if (!list.ok) return `session/list: ${list.error?.message ?? ''}`
   if (!meta.ok) return `bots-meta: ${meta.error?.message ?? ''}`
   const items = (rec(list.value).items as unknown[] | undefined ?? []).map(rec)
     .filter((i) => typeof i.sessionId === 'string' && i.origin !== 'subagent' && i.parentSessionId === undefined)
     .map(summaryOf)
-  const m = rec(meta.value)
-  return { items, meta: { mainBotId: typeof m.mainBotId === 'string' ? m.mainBotId : null, recipes: rec(m.recipes) as unknown as Record<string, Recipe> } }
+  return { items, meta: metaOf(meta.value) }
+}
+
+/** #19 重拉：#4 建出的连接器 bot 的 recipe 由 main 写入，renderer 须重拉才认得（否则误判只读）。 */
+export async function refreshMeta(): Promise<void> {
+  const res = await (window.pbots?.botsMeta('get') ?? Promise.resolve(NO_BRIDGE))
+  if (res.ok) set({ meta: metaOf(res.value) })
 }
 
 async function start(): Promise<void> {
@@ -211,7 +235,7 @@ async function start(): Promise<void> {
     const created = await api('session/create', { request: {} })
     const sid = rec(created.value).sessionId
     if (!created.ok || typeof sid !== 'string') { set({ boot: 'failed', bootError: `创建主 Bot 失败：${created.error?.message ?? ''}` }); return }
-    const patched = await window.pbots!.botsMeta({ op: 'patch', mainBotId: sid })
+    const patched = await (window.pbots?.botsMeta({ op: 'patch', mainBotId: sid }) ?? Promise.resolve(NO_BRIDGE))
     if (!patched.ok) { set({ boot: 'failed', bootError: `设置主 Bot 失败：${patched.error?.message ?? ''}` }); return }
     mainBotId = sid
     summaries[sid] = { sessionId: sid, title: null, preset: null, running: false, updatedAt: Date.now() }
@@ -226,7 +250,31 @@ async function start(): Promise<void> {
 export function select(sessionId: string): void {
   if (!followed.has(sessionId)) { followed.add(sessionId); openFollow(sessionId) }
   const { [sessionId]: _cleared, ...unread } = state.unread
-  set({ selected: sessionId, unread, notice: null })
+  set({ selected: sessionId, unread, notice: null, page: 'chat' })
+}
+
+export function openMarket(): void { set({ page: 'market' }) }
+export function closeMarket(): void { set({ page: 'chat' }) }
+export function openNewBot(init: DialogInit = {}): void { set({ dialog: init }) }
+export function closeNewBot(): void { set({ dialog: null }) }
+
+/** #5（PDC-final D8）：只对本 bot、下一轮生效；失败由调用方回滚显示。value = `provider/model`。 */
+export async function changeModel(sessionId: string, provider: string, model: string): Promise<ApiResult> {
+  const res = await api('session/selectModel', { request: { sessionId, provider, model } })
+  if (res.ok) set({ models: { ...state.models, [sessionId]: `${provider}/${model}` } })
+  return res
+}
+
+/** #20（D9）：成功才更新 mainBotId 并置顶——R9 冻结顺序的唯一例外。 */
+export async function setMainBot(sessionId: string): Promise<ApiResult> {
+  const res = await (window.pbots?.botsMeta({ op: 'patch', mainBotId: sessionId }) ?? Promise.resolve(NO_BRIDGE))
+  if (res.ok) {
+    set({
+      meta: { ...state.meta, mainBotId: sessionId },
+      order: [sessionId, ...state.order.filter((id) => id !== sessionId)],
+    })
+  }
+  return res
 }
 
 /** 新建 bot 插在主 bot 之下第一位（R9），并选中。 */
@@ -298,6 +346,8 @@ export function startStore(): void {
     },
     /** D4 E2E 注入：关掉 boot $events 流（模拟 renderer 离场；main 侧 eventsStreams 清空 →
      * 无人应答窗口开始累计）。与 m2 的 testDropSocket 同模式的测试钩子。 */
+    /** U-23 E2E 注入：让 renderer 下一次调用 method 直接返回该错误（验证回滚 / 失败分类 UI）。 */
+    failNext(method: string, code = 'pbots/test-fault', message = 'injected by E2E'): void { injected.set(method, { code, message }) },
     closeEvents(): void {
       if (dev.eventsStream !== undefined && mux !== undefined) { mux.cancel(dev.eventsStream); dev.eventsStream = undefined }
     },

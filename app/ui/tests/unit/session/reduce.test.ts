@@ -61,4 +61,10 @@ describe('session reduce（时间线）', () => {
     expect(toolSummary('{"command":"ls -la","description":"x"}')).toBe('ls -la')
     expect(toolSummary('not json')).toBe('not json')
   })
+  it('快照 modelSelection 投影：pending 优先于 lastUsed；缺省为 null（U-23 P-D）', () => {
+    const snap = (values: unknown): unknown => ({ type: 'snapshot', header: {}, records: [], projections: { values } })
+    expect(run([snap({ modelSelection: { lastUsed: { provider: 'p', model: 'old' }, pending: { provider: 'p', model: 'new' } } })]).model).toBe('p/new')
+    expect(run([snap({ modelSelection: { lastUsed: { provider: 'p', model: 'old' }, pending: null } })]).model).toBe('p/old')
+    expect(run([snap({})]).model).toBeNull()
+  })
 })

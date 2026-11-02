@@ -1,4 +1,4 @@
-// P-B 会话视图归约（U-21/PAB；由 dev-min/reduce.ts 演化）：session/follow 下行 item → 时间线。
+// P-B 会话视图归约（U-21/PAB）：session/follow 下行 item → 时间线。
 // 帧形状 = CONTRACT §3.3 + U-21 wire 实测（work/p4-ui/ui/PAB-final.md R19：取消后 turn/end.reason.kind
 // === 'aborted'）。纯函数、不可变；产品 store 与单测共用。
 // 审批卡不在这里：活跃卡只来自 $events waterfall（席 C：approval/asked 历史不生成可点按钮），
@@ -18,6 +18,8 @@ export interface SessionView {
   preset: string | null
   cwd: string | null
   title: string | null
+  /** 快照 projections.values.modelSelection（pending ?? lastUsed）→ `provider/model`；未知为 null（U-23 P-D）。 */
+  model: string | null
   running: boolean
   turnEnded: boolean
   endReason: string | null
@@ -34,7 +36,7 @@ export interface SessionView {
 
 export function initView(sessionId: string): SessionView {
   return {
-    sessionId, preset: null, cwd: null, title: null, running: false, turnEnded: false, endReason: null,
+    sessionId, preset: null, cwd: null, title: null, model: null, running: false, turnEnded: false, endReason: null,
     items: [], streaming: null, chunkCount: 0, asked: {}, loaded: false,
   }
 }
@@ -125,6 +127,12 @@ function applyChunk(view: SessionView, chunk: AnyRecord): SessionView {
   return { ...view, streaming: { text: current.text + (typeof chunk.text === 'string' ? chunk.text : '') }, chunkCount: view.chunkCount + 1 }
 }
 
+function modelOf(projection: unknown): string | null {
+  const p = rec(projection)
+  const sel = rec(p.pending ?? p.lastUsed)
+  return typeof sel.provider === 'string' && typeof sel.model === 'string' ? `${sel.provider}/${sel.model}` : null
+}
+
 /** 归约一个 follow 下行 item；不可变（返回新视图）。 */
 export function reduceFollow(view: SessionView, value: unknown): SessionView {
   const frame = rec(value)
@@ -132,7 +140,7 @@ export function reduceFollow(view: SessionView, value: unknown): SessionView {
     const header = rec(frame.header)
     let out: SessionView = {
       ...initView(view.sessionId), preset: str(header.agentPreset), cwd: str(header.cwd),
-      title: str(rec(rec(frame.projections).values).title), loaded: true,
+      title: str(rec(rec(frame.projections).values).title), model: modelOf(rec(rec(frame.projections).values).modelSelection), loaded: true,
     }
     for (const record of Array.isArray(frame.records) ? frame.records : []) {
       const wrapped = rec(record)

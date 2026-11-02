@@ -75,9 +75,14 @@ describe('M2 端口转交（C §2.3 时序）', () => {
       { type: 'item', streamId: 'sid-1', value: { type: 'ready', clientId: 'c1' } },
       { type: 'end', streamId: 'sid-1' },
     ])
-    expect(backend.received.filter((f) => f.type === 'open')).toEqual([
+    // U-16 起 wire 时 main 常驻自开一条 $events（随机 streamId）：opens 全集不再恰一条，
+    // 按流断言——port 的 sid-1 原样直通恰一次 + main 常驻 $events 开帧恰一次（payload {args:{}}）。
+    expect(backend.received.filter((f) => f.type === 'open' && f.streamId === 'sid-1')).toEqual([
       { type: 'open', streamId: 'sid-1', endpoint: '$events', payload: { args: {} } },
     ] as MuxFrame[])
+    const mainOpens = backend.received.filter((f) => f.type === 'open' && f.endpoint === '$events' && f.streamId !== 'sid-1')
+    expect(mainOpens).toHaveLength(1)
+    expect(mainOpens[0].payload).toEqual({ args: {} })
     socket.close()
   })
 
@@ -233,8 +238,8 @@ describe('streamId 归属（②）', () => {
     const m2 = registerM2Mux({ dsh: dsh.conn })
     const socket = await backend.open()
     dsh.setLive(socket)
-    // 先 wire tap（首次转交），再开 main 流：main 归属靠 tap 观察，首个转交前 main 开的流不可见
-    //（U-12 main 不自开流；ponytail 盲窗记录在实现注释）。
+    // 先 wire tap（首次转交或 U-16 常驻循环），再开 main 流：main 归属靠 tap 观察；
+    // U-16 起 main 常驻自开 $events，但本测试手动开的 mainStream 是另一条随机流，互不影响。
     const { event, posts } = fakeEvent()
     m2(event, { requestId: 'rm' })
     await sleep(50)

@@ -112,19 +112,44 @@ export async function startMuxBackend(): Promise<MuxBackend> {
   }
 }
 
-/** 假 DshConnection：ready() 返回当前 live socket（未设时永久 pending）；测试随时切换以模拟重连。 */
+/** 假 DshConnection：ready() 返回当前 live socket（未设时永久 pending）；测试随时切换以模拟重连。
+ * rpc（U-16 deadline 代答用）：默认记录调用并返回 ok，可用 failNext 注入一次失败。 */
 export interface FakeDsh {
   conn: DshConnection
   setLive(socket: DshMuxSocket | undefined): void
+  rpcCalls: Array<{ method: string; args: unknown }>
+  failNextRpc(): void
 }
 
 export function fakeDsh(): FakeDsh {
   let live: DshMuxSocket | undefined
+  const readyWaiters: Array<(socket: DshMuxSocket) => void> = []
+  const rpcCalls: Array<{ method: string; args: unknown }> = []
+  let failNext = false
   const conn = {
-    ready: (): Promise<DshMuxSocket> =>
-      live !== undefined ? Promise.resolve(live) : new Promise<DshMuxSocket>(() => { /* 未就绪：挂起 */ }),
+    ready: (): Promise<DshMuxSocket> => {
+      if (live !== undefined) return Promise.resolve(live)
+      // 与真 DshConnection 一致：先挂起，setLive 时统一唤醒（U-16 常驻循环依赖此语义）
+      return new Promise<DshMuxSocket>((resolve) => { readyWaiters.push(resolve) })
+    },
+    rpc: async (method: string, args: unknown): Promise<unknown> => {
+      rpcCalls.push({ method, args })
+      if (failNext) {
+        failNext = false
+        return { ok: false, error: { code: 'pbots/upstream', message: 'injected failure', details: {} } }
+      }
+      return { ok: true, value: undefined }
+    },
   } as unknown as DshConnection
-  return { conn, setLive: (socket) => { live = socket } }
+  return {
+    conn,
+    setLive: (socket) => {
+      live = socket
+      if (socket !== undefined) for (const w of readyWaiters.splice(0)) w(socket)
+    },
+    rpcCalls,
+    failNextRpc: () => { failNext = true },
+  }
 }
 
 /** 假 IpcMainEvent：记录 sender.postMessage 转交调用。 */

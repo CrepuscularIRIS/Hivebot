@@ -297,14 +297,15 @@ test('④⑤ ledger 记 ready clientId 与未决 eventId；D4① 重载后未决
       { cid: newClientId, eid: eventId },
     )
     await expect.poll(() => existsSync(canary), { timeout: 30_000 }).toBe(true)
-    // ledger 是旁听台账：作答后的下账由 U-11 的 validateResult 消费（$events 流不因 decided 发 cancel 帧），
-    // 此处断言条目仍在（精确语义），下账联调归 U-15 ③。
+    // U-16 起 main 常驻 $events 订阅也是被 deliver 方：作答方（页面 clientId）在 settle 时先移除，
+    // gateway 只向其余被 deliver 方推 {type:'cancel',eventId}——main 订阅收到即自动下账（真协议路径）。
+    // 此前「条目仍在」的断言随之失效；M1 validateResult 下账路径（U-15 ③）不受影响。
     const pendingAfter = await shell.app.evaluate(
       (_electron: unknown, eid: string) => (globalThis as unknown as { __pbotsM2: { ledger: { pendingEvents(): Array<{ eventId: string }> } } })
         .__pbotsM2.ledger.pendingEvents().some((e) => e.eventId === eid),
       eventId,
     )
-    expect(pendingAfter).toBe(true)
+    expect(pendingAfter).toBe(false)
   } finally {
     await shell.stop()
     await rt.stop()

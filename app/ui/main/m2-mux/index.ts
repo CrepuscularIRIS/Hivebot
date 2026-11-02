@@ -3,10 +3,12 @@
 //（分支 feat/U-00@8998435，未随 W0 合入），按验收重做：10s 超时、senderFrame 校验、main 归属流冲突、
 // 重连间隙不转交死 socket、tap 计数观测面。
 // 白名单恰三个 endpoint（Q-spike 结论：无增补行；typert wire 的 {request:…} 壳在 payload 内原样透传，SPIKE.md §5.2）。
+// U-16：main 常驻 $events 订阅（常开，随每代 socket 重开）+ 无人应答 deadline 代答（./deadline.ts）。
 import { MessageChannelMain, type IpcMainEvent } from 'electron'
 import type { DshConnection } from '../dsh/connect'
 import type { DshMuxSocket, DshTap, MuxFrame } from '../dsh/socket'
 import { EventsLedger, type EventsItem } from '../dsh/ledger'
+import { approvalDeadlineMsFromEnv, createApprovalDeadline, type ApprovalDeadlineStats } from './deadline'
 import { SCHEME } from '../sender'
 
 /** M2 放行的 mux endpoint（C §2 M2 行 + Q-spike 落实：session/control 为 spike 证实必需）。 */
@@ -35,6 +37,8 @@ export interface M2Stats {
   transfers: number
   timeouts: number
   portCancels: number
+  /** U-16 代答统计（活引用，随 deadline 巡检更新）。 */
+  deadline: ApprovalDeadlineStats
 }
 
 export interface M2Deps {
@@ -46,6 +50,10 @@ export interface M2Deps {
   pollMs?: number
   /** 端口对工厂，默认 MessageChannelMain（测试注入）。 */
   makeChannel?: () => M2Channel
+  /** U-16 代答观察窗口 ms（默认 2×10s 或 env PBOTS_APPROVAL_DEADLINE_MS；测试注入）。 */
+  deadlineMs?: number
+  /** U-16 巡检间隔 ms（默认 clamp(deadline/4, 50..1000)；测试注入）。 */
+  deadlineTickMs?: number
 }
 
 export type M2Handler = ((event: IpcMainEvent, req: M2Request) => void) & {
@@ -115,6 +123,7 @@ export function registerM2Mux(deps: M2Deps = {}): M2Handler {
     transfers: 0,
     timeouts: 0,
     portCancels: 0,
+    deadline: { answers: 0, answeredEvents: [] },
   }
 
   /** streamId → 拥有者（port 或 main）。 */
@@ -126,6 +135,9 @@ export function registerM2Mux(deps: M2Deps = {}): M2Handler {
   /** 已死 socket（重连间隙 ready() 仍返回它们，不得转交）。 */
   const deadSockets = new WeakSet<DshMuxSocket>()
   let wired: DshMuxSocket | undefined
+  /** U-16 main 常驻 $events 订阅（当前代）与其 clientId（作答资格：gateway 只认 active client）。 */
+  let mainEvents: { cancel(): void } | undefined
+  let mainEventsClientId: string | undefined
 
   /** 原帧 tap（独占 socket 的单 tap 槽）：下行路由 + 计数 + $events 喂 ledger；上行记录 main 归属流。 */
   const tap: DshTap = (frame, dir) => {
@@ -171,14 +183,60 @@ export function registerM2Mux(deps: M2Deps = {}): M2Handler {
     }
   }
 
+  /** U-16 main 常驻 $events 订阅：waterfall/cancel 喂 ledger（renderer 不在也可见、可下账）；
+   * ready 只进 mainEventsClientId——不喂 ledger，ledger.readyClientId 归 renderer 的流（M1 §2.2 校验源）。 */
+  function openMainEvents(socket: DshMuxSocket): void {
+    if (mainEvents !== undefined) return
+    try {
+      mainEvents = socket.openStream('$events', {}, (frame) => {
+        if (frame.type !== 'item') return
+        const item = asEventsItem(frame.value)
+        if (item === undefined) return
+        if (item.type === 'ready') { mainEventsClientId = item.clientId; return }
+        ledger.record(item)
+      })
+    } catch {
+      mainEvents = undefined // socket 在 wire 竞态中已死：死回调里已清，下一代重开
+    }
+  }
+
   function wire(socket: DshMuxSocket): void {
     if (wired === socket) return
     wired = socket
     socket.setTap(tap)
+    openMainEvents(socket)
     socket.onDead(() => {
       deadSockets.add(socket)
+      mainEvents = undefined
+      mainEventsClientId = undefined
       if (wired === socket) { wired = undefined; closeAllPorts() }
     })
+  }
+
+  // U-16 常驻循环：main 的 $events 订阅不依赖 renderer 端口（页面关闭后 pending 仍可见、可代答；
+  // 断链重连后在新一代 socket 上重开，gateway 对新 client 补发未决——S5 补发语义）。
+  // 无人应答 deadline 代答：经 main 自己的连接（同 Peer）以常驻订阅 clientId 作答（./deadline.ts）。
+  if (deps.dsh !== undefined) {
+    void (async () => {
+      for (;;) {
+        const socket = await deps.dsh!.ready()
+        if (deadSockets.has(socket)) { await sleep(pollMs); continue }
+        wire(socket)
+        await new Promise<void>((resolve) => { socket.onDead(resolve) })
+      }
+    })()
+    const deadlineMs = deps.deadlineMs ?? approvalDeadlineMsFromEnv()
+    createApprovalDeadline(
+      {
+        dsh: deps.dsh,
+        ledger,
+        isPortMounted: () => eventsStreams.size > 0,
+        mainClientId: () => mainEventsClientId,
+        deadlineMs,
+        tickMs: deps.deadlineTickMs ?? Math.min(1_000, Math.max(50, Math.round(deadlineMs / 4))),
+      },
+      stats.deadline,
+    )
   }
 
   /** 等 live socket：dsh.ready() 可能永久 pending（未连上）或返回死 socket（重连间隙），都受时限约束。 */

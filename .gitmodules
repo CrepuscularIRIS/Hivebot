@@ -1,3 +1,0 @@
-[submodule "app/ui/vendor/deepseek-harness"]
-	path = app/ui/vendor/deepseek-harness
-	url = https://github.com/deepseek-ai/deepseek-harness.git

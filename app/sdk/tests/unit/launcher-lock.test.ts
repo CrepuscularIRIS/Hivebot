@@ -4,11 +4,17 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { acquireHomeLock } from '../../src/start.ts'
+import { acquireHomeLock, acquireHomeLockDetailed, processStarttime, type HomeLockHold } from '../../src/start.ts'
 import { launcherSpawnEnv } from '../support/runtime.ts'
 
 /** A pid that exists for no process (kill → ESRCH), as used in review R1's reproduction. */
 const DEAD_PID = 2_147_483_647
+
+/** /proc/<pid>/stat field 22 (starttime) — the test's own oracle for the recorded identity (T-13.f1). */
+const starttimeOf = (pid: number): number => {
+  const stat = readFileSync(`/proc/${pid}/stat`, 'utf8')
+  return Number(stat.slice(stat.lastIndexOf(')') + 2).split(' ')[19])
+}
 
 const homes: string[] = []
 afterEach(() => {
@@ -108,8 +114,11 @@ describe('T-13 R10 ① — SIGKILLed launcher with a live detached dsh still hol
   it('the lock records launcher+dsh pids; a second instance is refused until the dsh dies, then the home is reclaimable', async () => {
     const home = newHome()
     const rt = await bootForLockTest(home)
-    // Dual-pid lock content: the launcher appends the dsh pid right after spawn.
-    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${rt.child.pid}\n${rt.dshPid}\n`)
+    // Dual-pid lock content: the launcher appends the dsh pid right after spawn
+    // (T-13.f1: each row carries the pid's /proc starttime identity).
+    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(
+      `${rt.child.pid}:${starttimeOf(rt.child.pid)}\n${rt.dshPid}:${starttimeOf(rt.dshPid)}\n`,
+    )
     // SIGKILL the launcher only (uncatchable: no exit handler can run — review R10).
     rt.child.kill('SIGKILL')
     await waitClose(rt.child, 10_000)
@@ -207,14 +216,14 @@ describe('acquireHomeLock — review R1 interleave 2: stale-reclaim race', () =>
     const b = acquireHomeLock(home)
     expect(b).toBeTypeOf('function')
     const liveInode = inodeOf(lockPathOf(home))
-    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid}\n`)
+    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid}:${starttimeOf(process.pid)}\n`)
     // A resumes: its next step is the dev+ino re-check before unlink.
     const a = acquireHomeLock(home)
     expect(a).toBeTypeOf('string')
     expect(a).toContain('already in use')
     // B's lock is intact — same inode, same pid.
     expect(inodeOf(lockPathOf(home))).toBe(liveInode)
-    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid}\n`)
+    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid}:${starttimeOf(process.pid)}\n`)
     expect(tempLeftovers(home)).toEqual([])
     ;(b as () => void)()
     expect(existsSync(lockPathOf(home))).toBe(false)
@@ -234,7 +243,7 @@ describe('release — review R1 interleave 3: ownership check', () => {
     a()
     expect(existsSync(lockPathOf(home))).toBe(true)
     expect(inodeOf(lockPathOf(home))).toBe(bInode)
-    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid}\n`)
+    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid}:${starttimeOf(process.pid)}\n`)
     b()
     expect(existsSync(lockPathOf(home))).toBe(false)
   })
@@ -245,6 +254,80 @@ describe('release — review R1 interleave 3: ownership check', () => {
     r()
     r()
     expect(existsSync(lockPathOf(home))).toBe(false)
+  })
+})
+
+// --- T-13.f1 (REVIEW-REVIEW-L R1+R3): lock rows carry pid identity (starttime) ---
+
+describe('T-13.f1 R1/R3 — lock rows carry pid identity (starttime)', () => {
+  /** A starttime that belongs to a later process: real pid reuse means the new holder started strictly after. */
+  const foreignStarttime = (pid: number): number => starttimeOf(pid) + 1
+
+  it('① publish records `<pid>:<starttime>`; recordChildPid appends the runtime row with its own identity', () => {
+    const home = newHome()
+    const hold = acquireHomeLockDetailed(home) as HomeLockHold
+    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid}:${starttimeOf(process.pid)}\n`)
+    // A live child pid gets ITS OWN starttime recorded (never the launcher's).
+    const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 30000)'], { stdio: 'ignore' })
+    track(child.pid)
+    hold.recordChildPid(child.pid!)
+    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(
+      `${process.pid}:${starttimeOf(process.pid)}\n${child.pid}:${starttimeOf(child.pid!)}\n`,
+    )
+    // Degraded row: a pid whose /proc is unreadable (already dead) is recorded bare.
+    hold.recordChildPid(DEAD_PID)
+    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(
+      `${process.pid}:${starttimeOf(process.pid)}\n${child.pid}:${starttimeOf(child.pid!)}\n${DEAD_PID}\n`,
+    )
+    expect(processStarttime(DEAD_PID)).toBeNull()
+    hold.release()
+    expect(existsSync(lockPathOf(home))).toBe(false)
+  }, 30_000)
+
+  it('① a live pid with a MATCHING starttime still holds — identity must not over-reclaim', () => {
+    const home = newHome()
+    writeFileSync(lockPathOf(home), `${process.pid}:${starttimeOf(process.pid)}\n`)
+    const r = acquireHomeLock(home)
+    expect(r).toBeTypeOf('string')
+    expect(r).toContain(`launcher pid ${process.pid}`)
+    // The genuinely-held lock is untouched.
+    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid}:${starttimeOf(process.pid)}\n`)
+    expect(tempLeftovers(home)).toEqual([])
+  })
+
+  it('② R1: a runtime-row pid alive but reused (starttime mismatch) is a stale lock, reclaimable', () => {
+    const home = newHome()
+    writeFileSync(lockPathOf(home), `${DEAD_PID}:1\n${process.pid}:${foreignStarttime(process.pid)}\n`)
+    const r = acquireHomeLock(home)
+    expect(r).toBeTypeOf('function')
+    ;(r as () => void)()
+    expect(tempLeftovers(home)).toEqual([])
+  })
+
+  it('③ R3: the launcher row naming THIS process pid with a foreign starttime is stale, reclaimable', () => {
+    const home = newHome()
+    writeFileSync(lockPathOf(home), `${process.pid}:${foreignStarttime(process.pid)}\n`)
+    const r = acquireHomeLock(home)
+    expect(r).toBeTypeOf('function')
+    ;(r as () => void)()
+    expect(tempLeftovers(home)).toEqual([])
+  })
+
+  it('④ the refuse message points at the lock file for manual recovery', () => {
+    const home = newHome()
+    const first = acquireHomeLock(home)
+    expect(first).toBeTypeOf('function')
+    const second = acquireHomeLock(home)
+    expect(second).toBeTypeOf('string')
+    expect(second).toContain('如确认无实例运行')
+    expect(second).toContain(lockPathOf(home))
+    ;(first as () => void)()
+  })
+
+  it('an old-format row (pre-T-13.f1 lock, no starttime) with a live pid still holds — conservative transition', () => {
+    const home = newHome()
+    writeFileSync(lockPathOf(home), `${process.pid}\n`)
+    expect(acquireHomeLock(home)).toBeTypeOf('string')
   })
 })
 
@@ -267,7 +350,7 @@ describe('acquireHomeLock — T-01.f2 acceptance ① behavior preserved', () => 
     writeFileSync(lockPathOf(home), `${DEAD_PID}\n`)
     const r = acquireHomeLock(home)
     expect(r).toBeTypeOf('function')
-    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid}\n`)
+    expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid}:${starttimeOf(process.pid)}\n`)
     ;(r as () => void)()
     expect(existsSync(lockPathOf(home))).toBe(false)
   })
@@ -304,10 +387,10 @@ if (typeof r === 'function') {
   let recorded = ''
   for (let i = 0; i < 200; i++) {
     try { recorded = readFileSync(lockPath, 'utf8').trim() } catch { recorded = '' }
-    if (recorded === String(process.pid)) break
+    if (recorded.split(':')[0] === String(process.pid)) break
     await new Promise((res) => setTimeout(res, 5))
   }
-  if (recorded !== String(process.pid)) { console.log('CORRUPT ' + recorded); process.exit(8) }
+  if (recorded.split(':')[0] !== String(process.pid)) { console.log('CORRUPT ' + recorded); process.exit(8) }
   await new Promise((res) => setTimeout(res, 600))
   r()
   journal('RELEASE')
@@ -531,7 +614,7 @@ export async function resolve(specifier, context, nextResolve) {
 
     // The strand is real: both acquired, lockPath names only C, B's lock is aside.
     expect(bPid).not.toBe(cPid)
-    expect(readFileSync(lockPathOf(home), 'utf8').trim(), 'lockPath carries C, the last publisher').toBe(String(cPid))
+    expect(readFileSync(lockPathOf(home), 'utf8').trim(), 'lockPath carries C, the last publisher').toMatch(new RegExp(`^${cPid}:`))
     expect(tempLeftovers(home).some((n) => n.startsWith('.launcher-lock.captured.')), "B's live inode is stranded aside").toBe(true)
 
     // The gate: at most one holder may proceed into startRuntime.

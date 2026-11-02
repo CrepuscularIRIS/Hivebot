@@ -203,21 +203,48 @@ export function isReadyLine(line: string): string | null {
 const LOCK_FILE = 'launcher.lock'
 
 interface LockView {
-  /** Recorded launcher pid; null when the content is empty or not a pid. */
+  /** Recorded launcher pid; null when the content is empty or not a pid row. */
   pid: number | null
+  /**
+   * Recorded launcher pid starttime (/proc field 22, T-13.f1 R1/R3); null when
+   * the row predates the identity format — such rows fall back to alive-only.
+   */
+  starttime: number | null
   /**
    * Recorded dsh runtime pid (T-13, review R2/R10): the launcher appends it
    * right after spawn. 0 = not yet spawned (or pre-T-13 single-pid lock).
    */
   dshPid: number
+  /** Recorded runtime pid starttime; null when the row predates the format. */
+  dshStarttime: number | null
   /** Inode identity of the file the pid was read from. */
   dev: number
   ino: number
 }
 
-const toPid = (line: string | undefined): number | null => {
-  const n = Number((line ?? '').trim())
-  return Number.isInteger(n) && n > 0 ? n : null
+/** Parse one lock row: `<pid>` (pre-T-13.f1) or `<pid>:<starttime>` (T-13.f1). */
+function toPidRow(line: string | undefined): { pid: number | null; starttime: number | null } {
+  const m = /^([1-9]\d*)(?::(\d+))?$/.exec((line ?? '').trim())
+  if (!m) return { pid: null, starttime: null }
+  return { pid: Number(m[1]), starttime: m[2] === undefined ? null : Number(m[2]) }
+}
+
+/**
+ * /proc/<pid>/stat field 22 (starttime, clock ticks since boot) — the pid's
+ * identity across PID reuse (T-13.f1 R1/R3). Readable for any user's live
+ * pid; null when the process is gone or /proc is unreadable.
+ */
+export function processStarttime(pid: number): number | null {
+  try {
+    const stat = readFileSync(`/proc/${pid}/stat`, 'utf8')
+    // Fields 1 (pid) and 2 (comm) precede; comm may contain spaces and parens,
+    // so counting starts after the LAST ')'. Field 22 → index 19 from field 3.
+    const fields = stat.slice(stat.lastIndexOf(')') + 2).split(' ')
+    const st = Number(fields[19])
+    return Number.isInteger(st) && st >= 0 ? st : null
+  } catch {
+    return null
+  }
 }
 
 /** Snapshot the lock file, or null when it is absent/unopenable. */
@@ -231,7 +258,16 @@ function readLock(lockPath: string): LockView | null {
   try {
     const st = fstatSync(fd)
     const lines = readFileSync(fd, 'utf8').split('\n')
-    return { pid: toPid(lines[0]), dshPid: toPid(lines[1]) ?? 0, dev: st.dev, ino: st.ino }
+    const launcher = toPidRow(lines[0])
+    const dsh = toPidRow(lines[1])
+    return {
+      pid: launcher.pid,
+      starttime: launcher.starttime,
+      dshPid: dsh.pid ?? 0,
+      dshStarttime: dsh.starttime,
+      dev: st.dev,
+      ino: st.ino,
+    }
   } catch {
     return null
   } finally {
@@ -243,21 +279,31 @@ function readLock(lockPath: string): LockView | null {
   }
 }
 
-/** True when a live process (any user) holds the pid. */
-function pidHeld(pid: number): boolean {
+/**
+ * True when the recorded holder still owns the pid: the pid is alive AND its
+ * /proc starttime matches the recorded one (T-13.f1 R1/R3 — a recycled or
+ * coincidental pid, including the caller's own pid in a PID-1 container, is
+ * NOT the holder). A row without a recorded starttime (pre-T-13.f1 lock) and
+ * an unreadable /proc both fall back to alive-only: fail-closed beats
+ * reclaiming a possibly-live holder.
+ */
+function pidHeld(pid: number, starttime: number | null): boolean {
   try {
     process.kill(pid, 0)
   } catch (e) {
-    // EPERM means the pid exists but belongs to another user: the home is held.
-    return (e as NodeJS.ErrnoException).code === 'EPERM'
+    // EPERM means the pid exists but belongs to another user: /proc/<pid>/stat
+    // is still world-readable, so identity checking proceeds below.
+    if ((e as NodeJS.ErrnoException).code !== 'EPERM') return false
   }
-  return true
+  if (starttime === null) return true
+  const actual = processStarttime(pid)
+  return actual === null ? true : actual === starttime
 }
 
-/** True when any pid recorded in the lock view is still alive (T-13: the home is held by the launcher OR its detached dsh). */
+/** True when a recorded holder with a matching identity is still alive (T-13: launcher OR its detached dsh). */
 function lockHeld(view: LockView): boolean {
-  if (view.pid !== null && pidHeld(view.pid)) return true
-  return view.dshPid > 0 && pidHeld(view.dshPid)
+  if (view.pid !== null && pidHeld(view.pid, view.starttime)) return true
+  return view.dshPid > 0 && pidHeld(view.dshPid, view.dshStarttime)
 }
 
 /** A held home lock: release, liveness re-verification, and dsh pid recording. */
@@ -271,8 +317,9 @@ export interface HomeLockHold {
    */
   stillHeld(): boolean
   /**
-   * Append the dsh child pid to the lock content (T-13, review R2/R10): the
-   * home stays held while the detached dsh outlives a crashed/killed launcher.
+   * Append the dsh child pid (with its /proc starttime, T-13.f1) to the lock
+   * content (T-13, review R2/R10): the home stays held while the detached dsh
+   * outlives a crashed/killed launcher.
    */
   recordChildPid(pid: number): void
 }
@@ -280,8 +327,10 @@ export interface HomeLockHold {
 /**
  * One launcher per P2SDK_HOME (T-01.f2 acceptance ①, review R4): concurrent
  * launches would overwrite runtime-patch.yml and the handoff files under the
- * shared home. Acquisition publishes `<launcherPid>\n<runtimePid>\n` (the
- * runtime line is appended right after spawn, T-13) atomically via link(2)
+ * shared home. Acquisition publishes `<launcherPid>:<starttime>\n<runtimePid>:<starttime>\n`
+ * (the runtime line is appended right after spawn, T-13; each row carries the
+ * pid's /proc starttime so a recycled pid never counts as the holder,
+ * T-13.f1 R1/R3) atomically via link(2)
  * from an O_EXCL temp file, so the lock path never shows a half-written lock
  * (review R1 interleave 1: an empty/unparsable lock is refused, never
  * reclaimed). Stale reclaim (BOTH recorded pids dead — the detached dsh
@@ -297,13 +346,19 @@ export interface HomeLockHold {
 export function acquireHomeLockDetailed(home: string): string | HomeLockHold {
   const lockPath = join(home, LOCK_FILE)
   const refuse = (view: LockView) =>
-    `P2SDK_HOME "${home}" is already in use by launcher pid ${view.pid}${view.dshPid > 0 ? ` and its runtime pid ${view.dshPid}` : ''}: a second instance would clobber its runtime-patch.yml and handoff files`
+    `P2SDK_HOME "${home}" is already in use by launcher pid ${view.pid}${view.dshPid > 0 ? ` and its runtime pid ${view.dshPid}` : ''}: a second instance would clobber its runtime-patch.yml and handoff files（如确认无实例运行，删除 ${lockPath}）`
 
-  /** Publish `<pid>\n` at lockPath atomically; null when someone else holds it. */
+  /** One lock row: `<pid>:<starttime>`, or bare `<pid>` when /proc is unreadable. */
+  const pidRow = (pid: number): string => {
+    const st = processStarttime(pid)
+    return st === null ? `${pid}` : `${pid}:${st}`
+  }
+
+  /** Publish `<pid>:<starttime>\n` at lockPath atomically; null when someone else holds it. */
   const publish = (): HomeLockHold | null => {
     const tmp = join(home, `.launcher-lock.${process.pid}.${randomUUID()}`)
     const fd = openSync(tmp, 'wx')
-    writeFileSync(fd, `${process.pid}\n`)
+    writeFileSync(fd, `${pidRow(process.pid)}\n`)
     try {
       linkSync(tmp, lockPath)
     } catch (e) {
@@ -352,9 +407,10 @@ export function acquireHomeLockDetailed(home: string): string | HomeLockHold {
         if (released || pid <= 0) return
         // Single append through the identity-anchor fd: readers either see the
         // launcher-only line or the completed runtime line, never a torn one,
-        // and the inode identity is preserved (no path rewrite).
+        // and the inode identity is preserved (no path rewrite). The row
+        // carries the child's own starttime (T-13.f1 identity).
         try {
-          writeSync(fd, `${pid}\n`)
+          writeSync(fd, `${pidRow(pid)}\n`)
         } catch {
           /* the lock is gone; nothing to record */
         }
@@ -389,7 +445,7 @@ export function acquireHomeLockDetailed(home: string): string | HomeLockHold {
       // and a racer removing the stale lock frees its inode for immediate
       // reuse by the very next publish (observed under racing reclaimers), so
       // inode equality alone can mistake a fresh live lock for the stale one.
-      captured = readLock(aside) ?? { pid: null, dshPid: 0, dev: -1, ino: -1 }
+      captured = readLock(aside) ?? { pid: null, starttime: null, dshPid: 0, dshStarttime: null, dev: -1, ino: -1 }
     } catch {
       continue // path vanished: another racer reclaimed it first
     }

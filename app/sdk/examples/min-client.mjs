@@ -6,15 +6,20 @@
 // Run (G2-r2 wording): pnpm -C app/sdk exec node examples/min-client.mjs "你好"
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { connect, snapshotFrames } from './lib/client.mjs'
 
-const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 // T-01.f3 R1: credentials live in the operator-side handoff dir, which never
 // enters the dsh runtime environment; the session cwd is an independent
 // mkdtemp work dir, never under P2SDK_HOME/DSH_HOME.
-const handoff = process.env.P2SDK_HANDOFF ?? join(PKG_ROOT, '.dsh-handoff')
+// T-12 R1: the launcher's default handoff dir is a fresh random tmpdir printed
+// on stderr as `p2sdk: handoff <dir>` — export it as P2SDK_HANDOFF here, or
+// pass P2SDK_BASE_URL + P2SDK_LAUNCH_TOKEN directly.
+const handoff = process.env.P2SDK_HANDOFF
+if (!handoff && !process.env.P2SDK_BASE_URL && !process.env.P2SDK_LAUNCH_TOKEN) {
+  console.error('min-client: no credentials source. Export P2SDK_HANDOFF to the dir the launcher printed as "p2sdk: handoff <dir>", or export P2SDK_BASE_URL and P2SDK_LAUNCH_TOKEN.')
+  process.exit(1)
+}
 const baseUrl = process.env.P2SDK_BASE_URL ?? readFileSync(join(handoff, 'base-url'), 'utf8').trim()
 const token = process.env.P2SDK_LAUNCH_TOKEN ?? readFileSync(join(handoff, 'launch-token'), 'utf8').trim()
 const prompt = process.argv[2] ?? '你好'

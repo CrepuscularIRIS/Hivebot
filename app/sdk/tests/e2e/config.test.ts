@@ -130,8 +130,9 @@ const textOf = (message) => (message.content ?? [])
 
 export function apply(ctx) {
   ctx.on('llm/stream', (options, next) => {
-    const home = process.env.P2SDK_HOME
-    if (home === undefined) throw new Error('p2sdk-llm-recorder: $P2SDK_HOME is not set')
+    // T-12: P2SDK_HOME left the dsh env (REVIEW R1); DSH_HOME is canonical.
+    const home = process.env.DSH_HOME
+    if (home === undefined) throw new Error('p2sdk-llm-recorder: $DSH_HOME is not set')
     appendFileSync(
       join(home, 'fake', 'llm-streams.jsonl'),
       \`\${JSON.stringify({

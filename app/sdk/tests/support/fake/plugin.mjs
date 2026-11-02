@@ -24,8 +24,11 @@ export const inject = ['llm']
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 function fakeHome() {
-  const home = process.env.P2SDK_HOME
-  if (!home) throw new Error('p2sdk-fake-llm: $P2SDK_HOME is not set')
+  // T-12 (REVIEW R1): P2SDK_HOME no longer enters the dsh env; DSH_HOME is the
+  // canonical home and the upstream scrubber keeps it out of model-driven
+  // tool processes, so scripts/gates stay operator-side only.
+  const home = process.env.DSH_HOME
+  if (!home) throw new Error('p2sdk-fake-llm: $DSH_HOME is not set')
   return home
 }
 

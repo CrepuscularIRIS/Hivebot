@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -49,6 +49,18 @@ describe('resolveConfig', () => {
   it('treats a blank API key as missing', () => {
     expect(resolveConfig({ P2SDK_LLM_API_KEY: '   ' }).apiKey).toBeUndefined()
   })
+
+  // T-12 (REVIEW R1 critical): the default handoff dir holds the launch token,
+  // so it must be a fresh random tmpdir — never the deterministic sibling of
+  // the default home (<pkg>/.dsh-handoff), which a model-side shell could
+  // derive from P2SDK_HOME or find under a known root.
+  it('defaults the handoff dir to a fresh random tmpdir, not a deterministic path', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock' })
+    expect(cfg.handoff.startsWith(tmpdir()), `handoff under tmpdir (got ${cfg.handoff})`).toBe(true)
+    expect(existsSync(cfg.handoff), 'the default handoff dir exists').toBe(true)
+    expect(cfg.handoff, 'per-launch random segment').not.toBe(resolveConfig({ P2SDK_PROVIDER: 'mock' }).handoff)
+    expect(cfg.handoff, 'not the legacy fixed default').not.toContain('.dsh-handoff')
+  })
 })
 
 describe('validateStart (acceptance ③)', () => {
@@ -82,7 +94,7 @@ describe('normalizeApiBase', () => {
 })
 
 describe('buildArgs', () => {
-  it('boots the web profile with the static and runtime patches, then extras', () => {
+  it('boots the web profile with the static, approval, and runtime patches, then extras', () => {
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_PORT: '4599', P2SDK_PATCH: '/tmp/x.yml' })
     const args = buildArgs(cfg, '/tmp/h/runtime-patch.yml')
     expect(args[0]).toBe('web')
@@ -91,18 +103,41 @@ describe('buildArgs', () => {
     expect(args[args.indexOf('--port') + 1]).toBe('4599')
     const patches = args.filter((_, i) => args[i - 1] === '--patch')
     expect(patches[0].endsWith('profile/patches/p2sdk.yml')).toBe(true)
-    expect(patches).toEqual([patches[0], '/tmp/h/runtime-patch.yml', '/tmp/x.yml'])
+    expect(patches, 'p2sdk.yml + approval.yml + runtime patch + extras').toHaveLength(4)
+    expect(patches[2]).toBe('/tmp/h/runtime-patch.yml')
+    expect(patches[3]).toBe('/tmp/x.yml')
+  })
+
+  // T-12 (REVIEW R3/R5/R13): the shell-ask approval policy ships in the
+  // DEFAULT boot chain — `pnpm start` with no P2SDK_PATCH must ask on every
+  // ordinary bash call (CLAUDE.md 安全反例: openclaw exec 默认不审批).
+  it('mounts profile/patches/approval.yml by default between the static and runtime patches', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_PATCH: '/tmp/x.yml' })
+    const patches = buildArgs(cfg, '/tmp/h/runtime-patch.yml').filter((_, i, a) => a[i - 1] === '--patch')
+    expect(patches[1].endsWith(join('profile', 'patches', 'approval.yml')), `second patch is approval.yml (got ${patches[1]})`).toBe(true)
+    expect(patches, 'p2sdk.yml, approval.yml, runtime patch, extras').toHaveLength(4)
   })
 })
 
 describe('childEnv', () => {
-  it('points DSH_HOME and P2SDK_HOME at the runtime home and never logs the key', () => {
+  // T-12 (REVIEW R1 critical): P2SDK_HOME must never enter the dsh env — the
+  // upstream tool-subprocess scrubber drops DSH_* names but keeps P2SDK_*,
+  // so a home path in P2SDK_HOME would be derivable (dirname sibling
+  // .dsh-handoff) or find-able inside the sandbox.
+  it('points DSH_HOME at the runtime home and never sets P2SDK_HOME', () => {
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'real', P2SDK_LLM_API_KEY: 'sk-secret', P2SDK_HOME: '/tmp/h' })
     const env = childEnv(cfg, { PATH: '/bin' })
     expect(env.DSH_HOME).toBe('/tmp/h')
-    expect(env.P2SDK_HOME).toBe('/tmp/h')
+    expect(env.P2SDK_HOME).toBeUndefined()
     expect(env.P2SDK_LLM_API_BASE).toBe('http://127.0.0.1:4001/v1')
     expect(env.DSH_TELEMETRY_MODE).toBe('DISABLED')
+  })
+
+  it('drops a parent P2SDK_HOME/P2SDK_HANDOFF instead of passing them through', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock' })
+    const env = childEnv(cfg, { P2SDK_HOME: '/tmp/leak', P2SDK_HANDOFF: '/tmp/leak-ho' })
+    expect(env.P2SDK_HOME).toBeUndefined()
+    expect(env.P2SDK_HANDOFF).toBeUndefined()
   })
 
   it('never carries the key or derived secrets', () => {

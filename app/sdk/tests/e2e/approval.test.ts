@@ -13,15 +13,17 @@
 //    'danger-full-access' (permissionPresets/catalog defaultPreset, the pinned
 //    sandbox/mode + approval/policy durable events, the permissions projection).
 //
-// Preset-only probe: P2SDK_T07_PRESET_ONLY=1 boots WITHOUT
-// profile/patches/approval.yml — the pure dsh permission-preset composition
-// (approval policy 'ask' via the preset table). That run stays red at segment ①
-// because presets cannot express "an ordinary shell call must ask"
-// (tool-bash only asks on explicit sandbox_permissions escalation,
-// packages/shell/tool-bash/src/index.ts approveBashEscalation). The captured
-// red output is evidence/D8-preset-only-red.txt and motivated src/policy.
+// Preset-only probe: P2SDK_T07_PRESET_ONLY=1 disables the shell-ask policy
+// row the launcher now mounts by DEFAULT (T-12, REVIEW R3/R5/R13: buildArgs
+// carries profile/patches/approval.yml, no P2SDK_PATCH opt-in) — the pure dsh
+// permission-preset composition (approval policy 'ask' via the preset table).
+// That run stays red at segment ① because presets cannot express "an ordinary
+// shell call must ask" (tool-bash only asks on explicit sandbox_permissions
+// escalation, packages/shell/tool-bash/src/index.ts approveBashEscalation).
+// The captured red output is evidence/D8-preset-only-red.txt and motivated
+// src/policy.
 import { expect, it } from 'vitest'
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -71,18 +73,35 @@ function buildFakeOverlay(): string {
   return overlay
 }
 
+/** Preset-only probe overlay: disable the launcher's DEFAULT shell-ask row (T-12). */
+function buildNoAskOverlay(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-t12-noask-'))
+  const overlay = join(dir, 'no-ask.yml')
+  writeFileSync(overlay, `\
+# T-12 preset-only probe: turn the default-mounted approval policy off.
+- id: p2sdk-shell-ask
+  disabled: true
+`)
+  return overlay
+}
+
 interface ApprovalRuntime extends Runtime {
   /** Write the scripted model-call list for one session (bash + text turns). */
   writeScript(sessionId: string, calls: object[]): void
 }
 
-/** Boot the fake-provider runtime; the approval policy patch joins unless PRESET_ONLY. */
+/**
+ * Boot the fake-provider runtime. T-12: the approval policy is mounted by the
+ * launcher's DEFAULT buildArgs — the patch list here carries only the fake
+ * provider, so a green ① proves the default chain asks (REVIEW R3/R5/R13's
+ * "no P2SDK_PATCH set" trigger). PRESET_ONLY additionally disables the
+ * default policy row to reproduce the pure preset composition red case.
+ */
 async function launchApprovalRuntime(): Promise<ApprovalRuntime> {
   clearRealKeys()
-  const approvalYml = join(PKG_ROOT, 'profile', 'patches', 'approval.yml')
   const patches = PRESET_ONLY
-    ? buildFakeOverlay()
-    : `${buildFakeOverlay()}:${approvalYml}`
+    ? `${buildFakeOverlay()}:${buildNoAskOverlay()}`
+    : buildFakeOverlay()
   const rt = await launchRuntime({ env: { P2SDK_PATCH: patches } })
   return {
     ...rt,
@@ -95,11 +114,12 @@ async function launchApprovalRuntime(): Promise<ApprovalRuntime> {
 }
 
 /** Scripted bash tool call — chunk vocabulary copied from upstream mock-adapter
- * toolCallResponse (来源: deepseek-harness@ce7073d packages/core/agent-loop/tests/mock-adapter.ts). */
-function bashCall(command: string): object {
+ * toolCallResponse (来源: deepseek-harness@ce7073d packages/core/agent-loop/tests/mock-adapter.ts).
+ * `extra` merges raw bash-tool arguments (e.g. sandbox_permissions + justification). */
+function bashCall(command: string, extra: Record<string, string> = {}): object {
   const id = `p2sdk-t07-${Math.random().toString(16).slice(2, 8)}`
   // description is a required bash-tool argument (tool-bash parameters schema).
-  const argumentsJson = JSON.stringify({ command, description: 'Create the D8 approval canary file' })
+  const argumentsJson = JSON.stringify({ command, description: 'Create the D8 approval canary file', ...extra })
   return {
     chunks: [
       { type: 'block-start', index: 0, blockType: 'tool-call' },
@@ -321,6 +341,93 @@ it('D8: an approval granted in session Y does not release a pending shell call i
 
     streamX.stop()
     streamY.stop()
+  } finally {
+    feed.close()
+    await rt.stop()
+  }
+})
+
+// T-12 (REVIEW R6/R12): repeating the session's effective sandbox mode in
+// sandbox_permissions must still ask — tool-bash's own gate never does
+// (validateBashArgs early-returns on a repeated mode, approveEscalation
+// returns it without a request), so before the fix one extra argument let an
+// ordinary shell call run with zero user interaction.
+it('D8: a bash call whose sandbox_permissions repeats the effective mode still asks', async () => {
+  const rt = await launchApprovalRuntime()
+  const feed = await openEvents(rt)
+  try {
+    const s1 = await createSessionAt(rt.client, rt.home)
+    const canaryDenied = join(rt.home, 'workspace', 'canary-mode-denied')
+    const canaryAllowed = join(rt.home, 'workspace', 'canary-mode-allowed')
+    rt.writeScript(s1, [
+      bashCall(`touch ${canaryDenied}`, { sandbox_permissions: 'workspace-write', justification: 'R12 同模式重复探针' }),
+      textCall('被拒绝'),
+      bashCall(`touch ${canaryAllowed}`, { sandbox_permissions: 'workspace-write', justification: 'R12 同模式重复探针' }),
+      textCall('被批准'),
+    ])
+
+    const stream = await follow(rt.client, s1)
+
+    // ① rejected: the canary must not exist — before the fix the call ran unasked.
+    await sendPrompt(rt.client, s1, '同模式摸 canary-mode-denied')
+    const asked1 = await waitForApproval(feed, s1, 1)
+    expect(asked1.request?.toolName, 'the repeated-mode approval names the bash tool').toBe('bash')
+    expect(asked1.agentId).toBe(s1)
+    await feed.answer(asked1, 'rejected')
+    await waitForTurnEnds(stream.frames, 1)
+    expect(existsSync(canaryDenied), 'rejected repeated-mode call left no canary').toBe(false)
+
+    // ② approved: exactly one ask total (the policy's), then the command runs.
+    await sendPrompt(rt.client, s1, '同模式摸 canary-mode-allowed')
+    const asked2 = await waitForApproval(feed, s1, 2)
+    await feed.answer(asked2, 'allowed-once')
+    await waitForTurnEnds(stream.frames, 2)
+    expect(existsSync(canaryAllowed), 'approved repeated-mode call created the canary').toBe(true)
+
+    stream.stop()
+  } finally {
+    feed.close()
+    await rt.stop()
+  }
+})
+
+// T-12 (REVIEW R1 critical): a model-driven shell inside the runtime must not
+// be able to derive or find the launch token — no P2SDK_HOME/P2SDK_HANDOFF in
+// printenv, no token via the documented sibling-path derivation, and no
+// launch-token file under the runtime home or the package root. Each probe is
+// an ordinary bash call answered allowed-once so its output lands in the
+// transcript the assertions read.
+it('R1: a model-side shell cannot derive or find the launch token', async () => {
+  const rt = await launchApprovalRuntime()
+  const feed = await openEvents(rt)
+  try {
+    const s1 = await createSessionAt(rt.client, rt.home)
+    const token = readFileSync(join(rt.handoff, 'launch-token'), 'utf8').trim()
+    expect(token.length, 'the runtime did hand off a token').toBeGreaterThan(0)
+
+    const probes = [
+      'echo PRINTENV_COUNT=$(printenv | grep -c -E "^P2SDK_(HOME|HANDOFF)=")',
+      'echo CAT_DERIVED_LEN=$(cat "$(dirname "${P2SDK_HOME:-/nonexistent}")/.dsh-handoff/launch-token" 2>/dev/null | wc -c)',
+      `echo FIND_HOME_COUNT=$(find "${rt.home}" -name launch-token 2>/dev/null | wc -l)`,
+      `echo FIND_PKG_COUNT=$(find "${PKG_ROOT}" -maxdepth 2 -name launch-token 2>/dev/null | wc -l)`,
+    ]
+    rt.writeScript(s1, probes.flatMap((cmd) => [bashCall(cmd), textCall('probe 完成')]))
+
+    const stream = await follow(rt.client, s1)
+    for (let i = 0; i < probes.length; i++) {
+      await sendPrompt(rt.client, s1, `probe ${i + 1}`)
+      const asked = await waitForApproval(feed, s1, i + 1)
+      await feed.answer(asked, 'allowed-once')
+      await waitForTurnEnds(stream.frames, i + 1)
+    }
+    stream.stop()
+
+    const all = JSON.stringify(stream.frames)
+    expect(all, 'no P2SDK_HOME/P2SDK_HANDOFF in the model-side env').toContain('PRINTENV_COUNT=0')
+    expect(all, 'the sibling-path derivation reads 0 bytes').toContain('CAT_DERIVED_LEN=0')
+    expect(all, 'no launch-token under the runtime home').toContain('FIND_HOME_COUNT=0')
+    expect(all, 'no launch-token under the package root').toContain('FIND_PKG_COUNT=0')
+    expect(all, 'the token itself never reached the transcript').not.toContain(token)
   } finally {
     feed.close()
     await rt.stop()

@@ -46,7 +46,8 @@ function collect(ctx) {
 
 export function apply(ctx) {
   const write = () => {
-    const home = process.env.P2SDK_HOME
+    // T-12: P2SDK_HOME left the dsh env (REVIEW R1); DSH_HOME is canonical.
+    const home = process.env.DSH_HOME
     if (!home) return
     const typert = ctx.get('typert')
     const generated = typert?.local?.list?.().map((d) => `${d.namespace}/${d.method}`) ?? []

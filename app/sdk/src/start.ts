@@ -2,21 +2,28 @@
  * P2 demo launcher (T-01). Boots `@deepseek-ai/dsh` web profile with the p2sdk
  * patch overlay: real provider routes through `dsh-llm-pi-ai` to a local
  * LiteLLM endpoint, mock provider replays a fixed chunk script via
- * `dsh-llm-replay`. The launch token is handed off through
- * `$P2SDK_HOME/launch-token` (0600), never through stdout.
+ * `dsh-llm-replay`. The launch token is handed off through a private handoff
+ * dir (see P2SDK_HANDOFF below, 0600), never through stdout.
  *
  * Environment:
  *   P2SDK_PROVIDER       'real' (default) | 'mock'
  *   P2SDK_LLM_API_KEY    required for the real provider; never logged
  *   P2SDK_LLM_BASE_URL   LiteLLM root, default http://127.0.0.1:4001
  *   P2SDK_LLM_MODEL      default glm-5.3-flash (verified alias on local LiteLLM)
- *   P2SDK_HOME           runtime home, default <pkg>/.dsh
+ *   P2SDK_HOME           runtime home, default <pkg>/.dsh (launcher-side only:
+ *                        never enters the dsh env, REVIEW R1 — the model-side
+ *                        shell must not derive anything from it)
+ *   P2SDK_HANDOFF        credential handoff dir; defaults to a fresh random
+ *                        tmpdir per launch (T-12 R1: unguessable, not a
+ *                        deterministic sibling of the home), printed to stderr
+ *                        as `p2sdk: handoff <dir>` for the operator client
  *   P2SDK_PORT           listen port, default 0 (OS-assigned)
  *   P2SDK_PATCH          colon-separated extra `--patch` overlays (absolute paths)
  */
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { closeSync, fstatSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { closeSync, fstatSync, linkSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -47,7 +54,12 @@ export function resolveConfig(env: NodeJS.ProcessEnv = process.env): StartConfig
     llmBaseUrl: env.P2SDK_LLM_BASE_URL || DEFAULT_LLM_BASE_URL,
     model: env.P2SDK_LLM_MODEL || DEFAULT_MODEL,
     home: env.P2SDK_HOME || join(PKG_ROOT, '.dsh'),
-    handoff: env.P2SDK_HANDOFF || join(PKG_ROOT, '.dsh-handoff'),
+    // T-12 (REVIEW R1 critical): the default handoff dir carries the launch
+    // token, so it must be a fresh random tmpdir — never the deterministic
+    // sibling of the default home (derivable from the documented layout) and
+    // never inside $DSH_HOME (find-able). Per-launch randomness also removes
+    // the cross-instance default-path clobber (review R9's default case).
+    handoff: env.P2SDK_HANDOFF || mkdtempSync(join(tmpdir(), 'p2sdk-handoff-')),
     port: Number(env.P2SDK_PORT ?? 0),
     extraPatches: (env.P2SDK_PATCH ?? '').split(':').filter(Boolean),
     readyTimeoutMs: Number(env.P2SDK_READY_TIMEOUT_MS ?? 60_000),
@@ -71,11 +83,15 @@ export function normalizeApiBase(baseUrl: string): string {
   return trimmed.endsWith('/v1') ? trimmed : `${trimmed}/v1`
 }
 
-/** dsh argv: web profile + our static overlay + the generated runtime overlay + extras (acceptance ③). */
+/** dsh argv: web profile + our static overlay + the approval overlay + the generated runtime overlay + extras (acceptance ③). */
 export function buildArgs(cfg: StartConfig, runtimePatch: string): string[] {
   const args = [
     'web',
     '--patch', join(PKG_ROOT, 'profile', 'patches', 'p2sdk.yml'),
+    // T-12 (REVIEW R3/R5/R13): the shell-ask approval policy ships in the
+    // DEFAULT chain — no P2SDK_PATCH opt-in — so an ordinary bash call asks
+    // out of the box (CLAUDE.md 安全反例: openclaw exec 默认不审批).
+    '--patch', join(PKG_ROOT, 'profile', 'patches', 'approval.yml'),
     '--patch', runtimePatch,
   ]
   for (const p of cfg.extraPatches) args.push('--patch', p)
@@ -88,7 +104,12 @@ export function buildArgs(cfg: StartConfig, runtimePatch: string): string[] {
  * launcher's full env. Only PATH, HOME, and the P2SDK_ / DSH_ prefixed names
  * pass through; the handoff dir is always dropped (its path must not be
  * env-derivable inside the sandbox), and the real LLM key is dropped in mock
- * mode (the replay/fake providers never read it).
+ * mode (the replay/fake providers never read it). T-12 (REVIEW R1 critical):
+ * P2SDK_HOME is dropped too — the upstream tool-subprocess scrubber removes
+ * DSH_* names but keeps P2SDK_*, so a home path in P2SDK_HOME would let a
+ * model-driven shell derive the (formerly deterministic) handoff location.
+ * DSH_HOME stays: it is the canonical home the runtime itself needs, and the
+ * scrubber keeps it out of model-driven tool processes.
  */
 export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const child: NodeJS.ProcessEnv = {}
@@ -96,11 +117,11 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
     if (value === undefined) continue
     const keep = name === 'PATH' || name === 'HOME' || name.startsWith('P2SDK_') || name.startsWith('DSH_')
     // P2SDK_HANDOFF and P2SDK_TEST_V8_COVERAGE are consumed by the launcher
-    // (credential dir / T-11 coverage dir) and never passed on to the sandbox.
-    if (keep && name !== 'P2SDK_HANDOFF' && name !== 'P2SDK_TEST_V8_COVERAGE') child[name] = value
+    // (credential dir / T-11 coverage dir) and never passed on to the sandbox;
+    // P2SDK_HOME is dropped too (T-12 R1 — see above).
+    if (keep && name !== 'P2SDK_HANDOFF' && name !== 'P2SDK_TEST_V8_COVERAGE' && name !== 'P2SDK_HOME') child[name] = value
   }
   child.DSH_HOME = cfg.home
-  child.P2SDK_HOME = cfg.home
   child.P2SDK_PROVIDER = cfg.provider
   child.P2SDK_LLM_MODEL = cfg.model
   child.P2SDK_LLM_API_BASE = normalizeApiBase(cfg.llmBaseUrl)
@@ -445,6 +466,10 @@ export async function main(cfg: StartConfig = resolveConfig()): Promise<number> 
   process.on('exit', release)
   const handle = startRuntime(cfg)
   process.stderr.write(`p2sdk: dsh pid ${handle.child.pid}\n`)
+  // T-12 R1: the default handoff dir is a fresh random tmpdir the operator
+  // could not otherwise know; the PATH is operator-facing metadata (stderr,
+  // never the model-side env) — the token itself still only lives in the dir.
+  process.stderr.write(`p2sdk: handoff ${cfg.handoff}\n`)
   // `on`, not `once`: a second Ctrl-C must also reach dsh (its pinned
   // shutdown escalates to a forced exit on repeat) instead of killing this
   // launcher first and leaving the detached dsh orphaned.

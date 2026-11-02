@@ -1,0 +1,16 @@
+tree pids: 1074034,1074035,1074093,1074094,1074107
+pid 1074034: /usr/bin/bash :: /bin/bash -c source /home/lingxufeng/.claude-kimi/shell-snapshots/snapshot-bash-1793549584
+# verifier extra-patch injection probe (T-01 acceptance ③)
+- id: message-quotes
+  disabled: true
+EOF
+rm -rf /tmp/t01-mock-home && mkdir -p /tmp/t01-mock-home
+cd /tmp/t01-verify && P2SDK_PROVIDER=mock P2SDK_HOME=/tmp/t01-mock-home P2SDK_PATCH=/tmp/t
+echo "launcher pid=$!"' && pwd -P >| /tmp/claude-af38-cwd 
+pid 1074035: /usr/bin/node :: node /home/lingxufeng/.npm-global/bin/pnpm -C app/sdk start 
+pid 1074093: /usr/bin/dash :: sh -c node scripts/start.mjs 
+pid 1074094: /tmp/t01-verify/app/sdk/node_modules/.pnpm/node@24.22.2/node_modules/node/bin/node :: node scripts/start.mjs 
+pid 1074107: /tmp/t01-verify/app/sdk/node_modules/.pnpm/node@24.22.2/node_modules/node/bin/node :: /tmp/t01-verify/app/sdk/node_modules/.pnpm/node@24.22.2/node_modules/node/bin/node /tmp/t0
+== ss -ltnp (tree pids only):
+LISTEN 0      511        127.0.0.1:38795      0.0.0.0:*    users:(("MainThread",pid=1074107,fd=21))  
+== any non-loopback line among those? (empty=none):

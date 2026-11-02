@@ -1,0 +1,20 @@
+1 listMarketplacePlugins|electron-main/main-app.cjs
+2 listMarketplaces|electron-main/main-app.cjs
+3 authMode:"best-effort"|electron-main/main-app.cjs
+4 x-ghost-mode|electron-main/main-app.cjs
+5 MCP tools run on Grok Bot|electron-main/main-app.cjs
+6 MCP resources are read on Grok Bot|electron-main/main-app.cjs
+7 /tmp/sand-supervisor|electron-main/main-app.cjs
+8 http://localhost:8787/callback|electron-main/main-app.cjs
+9 grokbot://mcp/oauth/callback|electron-main/main-app.cjs
+10 mcp.cloudflare.com|electron-main/main-app.cjs
+11 installUserPlugin(new A.InstallUserPluginRequest|electron-main/main-app.cjs
+12 setMcpConfig(new A.SetMcpConfigRequest|electron-main/main-app.cjs
+13 https://api2.cursor.sh|electron-main/main-core.cjs
+14 ListMarketplacePlugins|electron-main/proto.cjs
+15 .cursor-plugin/marketplace.json|local-exec-daemon/main.cjs
+16 .claude-plugin/marketplace.json|local-exec-daemon/main.cjs
+17 https://github.com/${s.repo}.git|local-exec-daemon/main.cjs
+18 coordinator-main|node-agent-coordinator/main.cjs
+19 setBoxSecrets:I().args|node-agent-coordinator/main.cjs
+20 completeMcpOAuth:I().args({code:y(),state:y()})|node-agent-coordinator/main.cjs

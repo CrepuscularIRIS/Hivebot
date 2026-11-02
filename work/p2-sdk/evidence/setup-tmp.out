@@ -1,0 +1,23 @@
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +636
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 636, reused 636, downloaded 0, added 636, done
+
+dependencies:
++ @deepseek-ai/dsh 0.2.2-alpha.2
++ @deepseek-ai/dsh-llm-pi-ai 0.2.2-alpha.2
++ @deepseek-ai/dsh-mcp-client 0.2.2-alpha.2
++ @deepseek-ai/dsh-plugin-manager 0.2.2-alpha.2
++ @deepseek-ai/dsh-plugin-market 0.2.2-alpha.2
++ ws 8.22.1
+
+devDependencies:
++ @deepseek-ai/dsh-llm-replay 0.2.2-alpha.2
++ @vitest/coverage-v8 5.0.5
++ node 24.22.2
++ vitest 5.0.5
+
+Done in 1.1s using pnpm v11.0.9
+Already up to date
+Done in 306ms using pnpm v11.0.9

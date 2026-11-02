@@ -1,0 +1,9 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-06/app/sdk
+
+
+ Test Files  2 passed (2)
+      Tests  3 passed (3)
+   Start at  15:30:51
+   Duration  9.25s (tests 99%, import 1%)
+

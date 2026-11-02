@@ -1,0 +1,371 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-01.f3/app/sdk
+
+[p2sdk] ready http://127.0.0.1:42797
+p2sdk: dsh pid 1961838
+p2sdk: no ready line within 1ms
+p2sdk: forwarding SIGTERM to dsh
+ ❯ tests/e2e/mock-demo.test.ts (9 tests | 2 failed) 6415ms
+   ❯ T-01.f3 credential isolation + snapshot barrier (3)
+     × ② paceMs=0 stress: 20 scripted turns through the barrier all pass 207ms
+     × ③ a follow opening snapshot that already contains turn/end settles without waiting for increments 203ms
+p2sdk: forwarding SIGTERM to dsh
+ ❯ tests/e2e/restart.test.ts (2 tests | 2 failed) 412ms
+   × ① restart survival: kill -9 -> same start command + same P2SDK_HOME -> list returns both sessions, events reads history 207ms
+   × ② kill -9 mid-stream: completed turns survive, the interrupted turn is closed by synthetic events after resume 203ms
+ ❯ tests/market/connectors.test.ts (3 tests | 3 skipped) 209ms
+ ❯ tests/e2e/config.test.ts (1 test | 1 failed) 210ms
+   × D4: two sessions keep different preset + model configs, per-session, request-side 209ms
+ ❯ tests/e2e/reconnect.test.ts (1 test | 1 failed) 210ms
+   × ③ mux reconnect: old cookie rejected after socket close; re-/connect + re-follow catch up via snapshot/cursor 208ms
+ ❯ tests/market/market-search.test.ts (4 tests | 4 skipped) 213ms
+ ❯ tests/e2e/concurrency.test.ts (1 test | 1 failed) 210ms
+   × D3 并发不串线: barrier proves 3 concurrent turns on one runtime, markers stay per-session on one mux socket 209ms
+ ❯ tests/e2e/mux-disconnect.test.ts (5 tests | 2 skipped) 315ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/e2e/mux-disconnect.test.ts > against the real mock runtime
+Error: runtime exited early (code 1):
+file:///tmp/bot-wt/T-01.f3/app/sdk/src/start.ts:18
+import { spawn } from 'node:child_process'
+<<<<<<< HEAD
+^^^^^^^
+import { randomUUID } from 'node:crypto'
+
+SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]: Merge conflict marker encountered.
+    at parseTypeScript (node:internal/modules/typescript:72:36)
+    at processTypeScriptCode (node:internal/modules/typescript:146:42)
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:215:22)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:680:29)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12) {
+  code: 'ERR_INVALID_TYPESCRIPT_SYNTAX'
+}
+
+ ❯ launchRuntime tests/support/runtime.ts:61:40
+     59|   while (Date.now() < deadline) {
+     60|     if (/\[p2sdk\] ready http/.test(output)) break
+     61|     if (child.exitCode !== null) throw new Error(`runtime exited early…
+       |                                        ^
+     62|     await new Promise((r) => setTimeout(r, 200))
+     63|   }
+ ❯ tests/e2e/mux-disconnect.test.ts:54:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  tests/market/connectors.test.ts [ tests/market/connectors.test.ts ]
+Error: runtime exited early (code 1):
+file:///tmp/bot-wt/T-01.f3/app/sdk/src/start.ts:18
+import { spawn } from 'node:child_process'
+<<<<<<< HEAD
+^^^^^^^
+import { randomUUID } from 'node:crypto'
+
+SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]: Merge conflict marker encountered.
+    at parseTypeScript (node:internal/modules/typescript:72:36)
+    at processTypeScriptCode (node:internal/modules/typescript:146:42)
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:215:22)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:680:29)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12) {
+  code: 'ERR_INVALID_TYPESCRIPT_SYNTAX'
+}
+
+ ❯ launchRuntime tests/support/runtime.ts:61:40
+     59|   while (Date.now() < deadline) {
+     60|     if (/\[p2sdk\] ready http/.test(output)) break
+     61|     if (child.exitCode !== null) throw new Error(`runtime exited early…
+       |                                        ^
+     62|     await new Promise((r) => setTimeout(r, 200))
+     63|   }
+ ❯ tests/market/connectors.test.ts:50:8
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  tests/market/market-search.test.ts [ tests/market/market-search.test.ts ]
+Error: runtime exited early (code 1):
+file:///tmp/bot-wt/T-01.f3/app/sdk/src/start.ts:18
+import { spawn } from 'node:child_process'
+<<<<<<< HEAD
+^^^^^^^
+import { randomUUID } from 'node:crypto'
+
+SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]: Merge conflict marker encountered.
+    at parseTypeScript (node:internal/modules/typescript:72:36)
+    at processTypeScriptCode (node:internal/modules/typescript:146:42)
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:215:22)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:680:29)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12) {
+  code: 'ERR_INVALID_TYPESCRIPT_SYNTAX'
+}
+
+ ❯ launchRuntime tests/support/runtime.ts:61:40
+     59|   while (Date.now() < deadline) {
+     60|     if (/\[p2sdk\] ready http/.test(output)) break
+     61|     if (child.exitCode !== null) throw new Error(`runtime exited early…
+       |                                        ^
+     62|     await new Promise((r) => setTimeout(r, 200))
+     63|   }
+ ❯ tests/market/market-search.test.ts:19:8
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/e2e/concurrency.test.ts > D3 并发不串线: barrier proves 3 concurrent turns on one runtime, markers stay per-session on one mux socket
+Error: runtime exited early (code 1):
+file:///tmp/bot-wt/T-01.f3/app/sdk/src/start.ts:18
+import { spawn } from 'node:child_process'
+<<<<<<< HEAD
+^^^^^^^
+import { randomUUID } from 'node:crypto'
+
+SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]: Merge conflict marker encountered.
+    at parseTypeScript (node:internal/modules/typescript:72:36)
+    at processTypeScriptCode (node:internal/modules/typescript:146:42)
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:215:22)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:680:29)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12) {
+  code: 'ERR_INVALID_TYPESCRIPT_SYNTAX'
+}
+
+ ❯ launchRuntime tests/support/runtime.ts:61:40
+     59|   while (Date.now() < deadline) {
+     60|     if (/\[p2sdk\] ready http/.test(output)) break
+     61|     if (child.exitCode !== null) throw new Error(`runtime exited early…
+       |                                        ^
+     62|     await new Promise((r) => setTimeout(r, 200))
+     63|   }
+ ❯ launchFakeRuntime tests/support/fake/harness.ts:113:14
+ ❯ tests/e2e/concurrency.test.ts:80:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  tests/e2e/config.test.ts > D4: two sessions keep different preset + model configs, per-session, request-side
+Error: runtime exited early (code 1):
+file:///tmp/bot-wt/T-01.f3/app/sdk/src/start.ts:18
+import { spawn } from 'node:child_process'
+<<<<<<< HEAD
+^^^^^^^
+import { randomUUID } from 'node:crypto'
+
+SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]: Merge conflict marker encountered.
+    at parseTypeScript (node:internal/modules/typescript:72:36)
+    at processTypeScriptCode (node:internal/modules/typescript:146:42)
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:215:22)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:680:29)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12) {
+  code: 'ERR_INVALID_TYPESCRIPT_SYNTAX'
+}
+
+ ❯ launchRuntime tests/support/runtime.ts:61:40
+     59|   while (Date.now() < deadline) {
+     60|     if (/\[p2sdk\] ready http/.test(output)) break
+     61|     if (child.exitCode !== null) throw new Error(`runtime exited early…
+       |                                        ^
+     62|     await new Promise((r) => setTimeout(r, 200))
+     63|   }
+ ❯ launchD4Runtime tests/e2e/config.test.ts:158:14
+ ❯ tests/e2e/config.test.ts:217:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  tests/e2e/mock-demo.test.ts > T-01.f3 credential isolation + snapshot barrier > ② paceMs=0 stress: 20 scripted turns through the barrier all pass
+Error: runtime exited early (code 1):
+file:///tmp/bot-wt/T-01.f3/app/sdk/src/start.ts:18
+import { spawn } from 'node:child_process'
+<<<<<<< HEAD
+^^^^^^^
+import { randomUUID } from 'node:crypto'
+
+SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]: Merge conflict marker encountered.
+    at parseTypeScript (node:internal/modules/typescript:72:36)
+    at processTypeScriptCode (node:internal/modules/typescript:146:42)
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:215:22)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:680:29)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12) {
+  code: 'ERR_INVALID_TYPESCRIPT_SYNTAX'
+}
+
+ ❯ launchRuntime tests/support/runtime.ts:61:40
+     59|   while (Date.now() < deadline) {
+     60|     if (/\[p2sdk\] ready http/.test(output)) break
+     61|     if (child.exitCode !== null) throw new Error(`runtime exited early…
+       |                                        ^
+     62|     await new Promise((r) => setTimeout(r, 200))
+     63|   }
+ ❯ launchFakeRuntime tests/support/fake/harness.ts:113:14
+ ❯ tests/e2e/mock-demo.test.ts:182:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  tests/e2e/mock-demo.test.ts > T-01.f3 credential isolation + snapshot barrier > ③ a follow opening snapshot that already contains turn/end settles without waiting for increments
+Error: runtime exited early (code 1):
+file:///tmp/bot-wt/T-01.f3/app/sdk/src/start.ts:18
+import { spawn } from 'node:child_process'
+<<<<<<< HEAD
+^^^^^^^
+import { randomUUID } from 'node:crypto'
+
+SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]: Merge conflict marker encountered.
+    at parseTypeScript (node:internal/modules/typescript:72:36)
+    at processTypeScriptCode (node:internal/modules/typescript:146:42)
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:215:22)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:680:29)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12) {
+  code: 'ERR_INVALID_TYPESCRIPT_SYNTAX'
+}
+
+ ❯ launchRuntime tests/support/runtime.ts:61:40
+     59|   while (Date.now() < deadline) {
+     60|     if (/\[p2sdk\] ready http/.test(output)) break
+     61|     if (child.exitCode !== null) throw new Error(`runtime exited early…
+       |                                        ^
+     62|     await new Promise((r) => setTimeout(r, 200))
+     63|   }
+ ❯ launchFakeRuntime tests/support/fake/harness.ts:113:14
+ ❯ tests/e2e/mock-demo.test.ts:194:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  tests/e2e/reconnect.test.ts > ③ mux reconnect: old cookie rejected after socket close; re-/connect + re-follow catch up via snapshot/cursor
+Error: runtime exited early (code 1):
+file:///tmp/bot-wt/T-01.f3/app/sdk/src/start.ts:18
+import { spawn } from 'node:child_process'
+<<<<<<< HEAD
+^^^^^^^
+import { randomUUID } from 'node:crypto'
+
+SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]: Merge conflict marker encountered.
+    at parseTypeScript (node:internal/modules/typescript:72:36)
+    at processTypeScriptCode (node:internal/modules/typescript:146:42)
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:215:22)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:680:29)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12) {
+  code: 'ERR_INVALID_TYPESCRIPT_SYNTAX'
+}
+
+ ❯ launchRuntime tests/support/runtime.ts:61:40
+     59|   while (Date.now() < deadline) {
+     60|     if (/\[p2sdk\] ready http/.test(output)) break
+     61|     if (child.exitCode !== null) throw new Error(`runtime exited early…
+       |                                        ^
+     62|     await new Promise((r) => setTimeout(r, 200))
+     63|   }
+ ❯ launchFakeRuntime tests/support/fake/harness.ts:113:14
+ ❯ tests/e2e/reconnect.test.ts:91:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  tests/e2e/restart.test.ts > ① restart survival: kill -9 -> same start command + same P2SDK_HOME -> list returns both sessions, events reads history
+Error: runtime exited early (code 1):
+file:///tmp/bot-wt/T-01.f3/app/sdk/src/start.ts:18
+import { spawn } from 'node:child_process'
+<<<<<<< HEAD
+^^^^^^^
+import { randomUUID } from 'node:crypto'
+
+SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]: Merge conflict marker encountered.
+    at parseTypeScript (node:internal/modules/typescript:72:36)
+    at processTypeScriptCode (node:internal/modules/typescript:146:42)
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:215:22)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:680:29)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12) {
+  code: 'ERR_INVALID_TYPESCRIPT_SYNTAX'
+}
+
+ ❯ bootHome tests/e2e/restart.test.ts:74:40
+     72|   const deadline = Date.now() + 60_000
+     73|   while (!/\[p2sdk\] ready http/.test(output)) {
+     74|     if (child.exitCode !== null) throw new Error(`runtime exited early…
+       |                                        ^
+     75|     if (Date.now() >= deadline) throw new Error(`no ready line within …
+     76|     await new Promise((r) => setTimeout(r, 200))
+ ❯ tests/e2e/restart.test.ts:194:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  tests/e2e/restart.test.ts > ② kill -9 mid-stream: completed turns survive, the interrupted turn is closed by synthetic events after resume
+Error: runtime exited early (code 1):
+file:///tmp/bot-wt/T-01.f3/app/sdk/src/start.ts:18
+import { spawn } from 'node:child_process'
+<<<<<<< HEAD
+^^^^^^^
+import { randomUUID } from 'node:crypto'
+
+SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]: Merge conflict marker encountered.
+    at parseTypeScript (node:internal/modules/typescript:72:36)
+    at processTypeScriptCode (node:internal/modules/typescript:146:42)
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:215:22)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:680:29)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12) {
+  code: 'ERR_INVALID_TYPESCRIPT_SYNTAX'
+}
+
+ ❯ bootHome tests/e2e/restart.test.ts:74:40
+     72|   const deadline = Date.now() + 60_000
+     73|   while (!/\[p2sdk\] ready http/.test(output)) {
+     74|     if (child.exitCode !== null) throw new Error(`runtime exited early…
+       |                                        ^
+     75|     if (Date.now() >= deadline) throw new Error(`no ready line within …
+     76|     await new Promise((r) => setTimeout(r, 200))
+ ❯ tests/e2e/restart.test.ts:225:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  8 failed | 3 passed (11)
+      Tests  7 failed | 41 passed | 9 skipped (57)
+   Start at  16:00:23
+   Duration  25.17s (tests 99%, import 1%)
+

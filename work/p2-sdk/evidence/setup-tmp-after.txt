@@ -1,0 +1,8 @@
+== git status after setup:
+== dsh version:
+  "version": "0.2.2-alpha.2",
+== repos/ contents:
+Compare.md
+MANIFEST.tsv
+== node runtime:
+node@24.22.2

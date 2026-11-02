@@ -1,0 +1,11 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-02/app/sdk
+
+[p2sdk] ready http://127.0.0.1:43381
+p2sdk: no ready line within 1ms
+
+ Test Files  3 passed (3)
+      Tests  28 passed (28)
+   Start at  14:41:43
+   Duration  16.04s (tests 99%)
+

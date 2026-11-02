@@ -1,0 +1,7 @@
+T-01 REVIEW-T-01.md 8db50bf FAIL→f1-f3（6 CONFIRMED major）
+T-02 REVIEW-T-02.md 2a39f75 S-passed（review 列 S 已由 mm-review 流程外的 TDD+verifier 覆盖，待补 S 档）
+T-01.f2 REVIEW-T-01.f2.md f8cb006 S-FAIL→f2.f1（锁 TOCTOU CONFIRMED major，第 2 轮修复）
+T-04 REVIEW-pending-L 5ca48f2（T-02/f1/T-04 的 S 攒入整分支 L，凑满 6 任务触发）
+T-05 REVIEW-pending-L 974e09e
+T-07 REVIEW-pending-L d373b6b
+L-review-1 范围 7c2524f..d373b6b（12 个代码任务：T-01/T-02/T-03/T-04/T-05/T-06/T-07/T-08/f1/f2/f2.f1/f3；T-02、f1、T-04、T-05 的 S 档由本次 L 覆盖）

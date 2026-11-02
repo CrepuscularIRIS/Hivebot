@@ -1,0 +1,2 @@
+$ node scripts/start.mjs
+p2sdk: P2SDK_LLM_API_KEY is not set: the real provider requires it. Export P2SDK_LLM_API_KEY, or run with P2SDK_PROVIDER=mock.

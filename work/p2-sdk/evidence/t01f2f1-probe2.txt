@@ -1,0 +1,6 @@
+PASS 1 间隙释放后残留锁 pid 已死（持有者子进程退出） | lockPid=1939714 childPid=1939714
+PASS 2 死 pid 陈锁自愈：home 可重新获取
+PASS 3 新持有者 pid 入锁
+PASS 4 释放后锁文件不存在
+PASS 5 无 leftover
+EXIT=0

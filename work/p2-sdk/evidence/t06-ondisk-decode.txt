@@ -1,0 +1,3 @@
+{"file":"session-62a49b99-4143-43ba-a37a-f21d77cbf0bf/session.v4.jsonl.zstd","lines":18,"turnEnds":["completed"],"userTexts":["重启前·第一问"],"asstTexts":["甲乙丙丁戊"]}
+{"file":"session-b830e967-993d-4dbc-9ca0-76c980437881/session.v4.jsonl.zstd","lines":18,"turnEnds":["completed"],"userTexts":["重启前·第二问"],"asstTexts":["子丑寅卯辰"]}
+{"file":"session-be02b0d1-ad49-4783-af53-492825688c8b/session.v4.jsonl.zstd","lines":36,"turnEnds":["completed","interrupted","completed"],"userTexts":["重启前·完整一问","重启前·会被中断的一问","重启后·续聊一问"],"asstTexts":["甲乙丙丁戊","甲乙丙丁戊"]}

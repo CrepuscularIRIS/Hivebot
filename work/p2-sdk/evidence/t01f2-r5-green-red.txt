@@ -1,0 +1,22 @@
+== GREEN: { sleep 4; printf '\x03'; sleep 8; } | script -qec "node exp-r5.mjs" /dev/null (spawn options from REAL src/start.ts dshSpawnOptions; fake-dsh replicates pinned profile-boot shutdown: 2nd SIGINT force-exits) ==
+spawnOptions={"detached":true}
+fake-dsh ready
+^Cp2sdk: forwarding SIGINT to dsh
+fake-dsh sigint=1
+dispose-start
+dispose-done
+fake-dsh exited 130
+sigint-once=true dispose-done=true
+script-exit=0
+
+== NEGATIVE CONTROL: evidence/t01f2-exp-r5-red.mjs same harness, detached:false (pre-fix behavior) ==
+spawnOptions={"detached":false}
+fake-dsh ready
+^Cp2sdk: forwarding SIGINT to dsh
+fake-dsh sigint=1
+dispose-start
+fake-dsh sigint=2
+fake-dsh exited 130
+sigint-count=2 dispose-done=false
+neg-exit=0
+(=> harness detects double delivery: green result is the real detached effect, not an insensitive rig)

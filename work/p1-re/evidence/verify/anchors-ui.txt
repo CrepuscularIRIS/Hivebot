@@ -1,0 +1,20 @@
+1 isSidebarShown:W.popoutAgentId==null|index-CxzQ4vjO.js
+2 "agent-invite"|index.eager-app-iGTgHP_Q.js
+3 marketplace:An(`/v1/marketplace`|index.eager-app-iGTgHP_Q.js
+4 "create-team-bot"|index.eager-app-iGTgHP_Q.js
+5 var Fee=[`settings`,`messages`,`plugin-add`,`sidebar`,`bot-template`,`agent`,`vault`]|index.eager-app-iGTgHP_Q.js
+6 https://x.ai/bot/marketplace|index.eager-app-iGTgHP_Q.js
+7 rc=[`message`,`tool-call`,`send-message`,`user-attachment`,`notice`,`event`,`feedback`,`voice-call`,`mcp-app`]|index.eager-app-iGTgHP_Q.js
+8 case`tool-call`:return null|index.eager-app-iGTgHP_Q.js
+9 cs=[[`general`,`general`]|index.eager-app-iGTgHP_Q.js
+10 ps=[`overview`,`routines`,`media`,`computer`,`meetings`,`members`]|index.eager-app-iGTgHP_Q.js
+11 "Sign In with Cursor"|index.eager-app-iGTgHP_Q.js
+12 "Welcome to Grok Bot"|index.eager-common-DbK3Oi_r.js
+13 yvjVU9|chunk-onboarding-flow-CX7HFdkW.js
+14 function RRn(e,t={}){let n=document.documentElement|index.eager-app-iGTgHP_Q.js
+15 font-family:XVF|index-Dh7EWA8t.css
+16 font-family:cursor-icons|index-Dh7EWA8t.css
+17 "@anysphere/ui/icon-source-context"|index.eager-platform-C2su3Zzb.js
+18 var Kr=`0account|index.eager-platform-C2su3Zzb.js
+19 if(e===`overview`||e===`settings`)return e|index.eager-app-iGTgHP_Q.js
+20 grok_bot_marketplace_back_resets_connect|chunk-view-kcheXZ65.js

@@ -1,0 +1,14 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-01.f1/app/sdk
+
+ ✓ tests/e2e/mux-disconnect.test.ts > against the real mock runtime > open() on a closed socket rejects with MuxError 5ms
+ ✓ tests/e2e/mux-disconnect.test.ts > against the real mock runtime > for-await rejects with a connection error when dsh is killed mid-stream 235ms
+ ✓ tests/e2e/mux-disconnect.test.ts > against an in-process ws frame server > cancel() ends a parked next() with done 42ms
+ ✓ tests/e2e/mux-disconnect.test.ts > against an in-process ws frame server > a parked next() rejects when an error frame arrives 40ms
+ ✓ tests/e2e/mux-disconnect.test.ts > against an in-process ws frame server > 100 ended streams leave streams.size at 0 13ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  14:42:16
+   Duration  1.91s (tests 98%, import 1%)
+

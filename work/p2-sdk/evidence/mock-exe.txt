@@ -1,0 +1,2 @@
+dsh proc exe: /tmp/t01-verify/app/sdk/node_modules/.pnpm/node@24.22.2/node_modules/node/bin/node
+exe --version: v24.22.2

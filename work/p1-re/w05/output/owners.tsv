@@ -1,0 +1,875 @@
+入口名	类型	锚点	归属	ids
+electron-main/main.cjs	进程入口	dist/electron-main/main.cjs#"Module._initPaths()"	RE-unpack（bootstrap）	
+electron-main/main-app.cjs	进程入口(bundle)	dist/electron-main/main.cjs#"main-app"	RE-unpack（主进程主体）	
+electron-main/main-core.cjs	进程入口(bundle)	dist/electron-main/main.cjs#"main-core"	RE-unpack（主进程核心）	
+electron-main/proto.cjs	进程入口(bundle)	dist/electron-main/main.cjs#"proto"	ipc-rpc（proto 字典）	
+electron-main/onepassword-connection-service.cjs	进程入口(bundle)	dist/electron-main/onepassword-connection-service.cjs#"onepassword"	cloud-deps（账号体系）	
+local-exec-daemon/main.cjs	进程入口	dist/electron-main/main-core.cjs#"local-exec-daemon","main.cjs"	ipc-rpc Q1（进程拓扑）	
+local-exec-daemon/messages-worker.cjs	进程入口	dist/electron-main/main-core.cjs#"messages-worker"	ipc-rpc Q3（流式/消息）	
+node-agent-coordinator/main.cjs	进程入口	dist/electron-main/main-app.cjs#"node-agent-coordinator","main.cjs"	ipc-rpc Q1（进程拓扑）	
+electron-preload/preload-avatar-source.cjs	preload 入口	dist/electron-preload/preload-avatar-source.cjs（无 contextBridge，走 MessageChannel/postMessage）	ui-shell	W05-3-1
+electron-preload/preload-desktop-mount-capture-overlay.cjs	preload 入口	dist/electron-preload/preload-desktop-mount-capture-overlay.cjs#"exposeInMainWorld"	非 MVP：computer-use（桌面挂载/截屏覆盖层）	W05-3-2
+electron-preload/preload-desktop-mount-panel.cjs	preload 入口	dist/electron-preload/preload-desktop-mount-panel.cjs#"exposeInMainWorld"	非 MVP：computer-use（桌面挂载/截屏覆盖层）	W05-3-3
+electron-preload/preload-vnc.cjs	preload 入口	dist/electron-preload/preload-vnc.cjs（无 contextBridge，走 MessageChannel/postMessage）	非 MVP：VNC	-
+electron-preload/preload-webview.cjs	preload 入口	dist/electron-preload/preload-webview.cjs（无 contextBridge，走 MessageChannel/postMessage）	ipc-rpc（兜底：renderer 可达面普查）	-
+electron-preload/preload.cjs	preload 入口	dist/electron-preload/preload.cjs#"exposeInMainWorld"	ipc-rpc（兜底：renderer 可达面普查）	-
+contextBridge:desktopMountCaptureOverlay	IPC 键	dist/electron-preload/preload-desktop-mount-capture-overlay.cjs#"exposeInMainWorld("desktopMountCaptureOverlay")"	非 MVP：computer-use（桌面挂载/截屏覆盖层）	-
+contextBridge:desktopMount	IPC 键	dist/electron-preload/preload-desktop-mount-panel.cjs#"exposeInMainWorld("desktopMount")"	非 MVP：computer-use（桌面挂载/截屏覆盖层）	-
+contextBridge:desktopMountFiles	IPC 键	dist/electron-preload/preload-desktop-mount-panel.cjs#"exposeInMainWorld("desktopMountFiles")"	非 MVP：computer-use（桌面挂载/截屏覆盖层）	-
+contextBridge:desktopMount	IPC 键	dist/electron-preload/preload.cjs#"exposeInMainWorld("desktopMount")"	非 MVP：computer-use（桌面挂载/截屏覆盖层）	-
+contextBridge:sandPopout	IPC 键	dist/electron-preload/preload.cjs#"exposeInMainWorld("sandPopout")"	ipc-rpc（兜底：renderer 可达面普查）	-
+contextBridge:sandRenderTrace	IPC 键	dist/electron-preload/preload.cjs#"exposeInMainWorld("sandRenderTrace")"	cloud-deps（遥测）	-
+dep:@anysphere/agent-store-ids	依赖	package.json dependencies "@anysphere/agent-store-ids": "workspace:*"	features	W05-1-1
+dep:@anysphere/attention-count	依赖	package.json dependencies "@anysphere/attention-count": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-2
+dep:@anysphere/browser-smoke	依赖	package.json dependencies "@anysphere/browser-smoke": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-3
+dep:@anysphere/canvas-shared	依赖	package.json dependencies "@anysphere/canvas-shared": "workspace:*"	ui-shell	W05-1-4
+dep:@anysphere/card-photo-text	依赖	package.json dependencies "@anysphere/card-photo-text": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-5
+dep:@anysphere/device-local-tools	依赖	package.json dependencies "@anysphere/device-local-tools": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-6
+dep:@anysphere/draft-revision	依赖	package.json dependencies "@anysphere/draft-revision": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-7
+dep:@anysphere/dune	依赖	package.json dependencies "@anysphere/dune": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-8
+dep:@anysphere/dune-reliability	依赖	package.json dependencies "@anysphere/dune-reliability": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-9
+dep:@anysphere/file-kind-icons	依赖	package.json dependencies "@anysphere/file-kind-icons": "workspace:*"	ui-shell	W05-1-10
+dep:@anysphere/grok-bot-harness	依赖	package.json dependencies "@anysphere/grok-bot-harness": "workspace:*"	features	W05-1-11
+dep:@anysphere/jpeg-napi	依赖	package.json dependencies "@anysphere/jpeg-napi": "workspace:*"	native	W05-1-12
+dep:@anysphere/link-preview	依赖	package.json dependencies "@anysphere/link-preview": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-13
+dep:@anysphere/marketplace-category	依赖	package.json dependencies "@anysphere/marketplace-category": "workspace:*"	marketplace	W05-1-14
+dep:@anysphere/mcp-core	依赖	package.json dependencies "@anysphere/mcp-core": "workspace:*"	marketplace	W05-1-15
+dep:@anysphere/messages-mac	依赖	package.json dependencies "@anysphere/messages-mac": "workspace:*"	cloud-deps（mac 消息集成）	W05-1-16
+dep:@anysphere/metrics	依赖	package.json dependencies "@anysphere/metrics": "workspace:*"	cloud-deps（遥测）	W05-1-17
+dep:@anysphere/orbit-client	依赖	package.json dependencies "@anysphere/orbit-client": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-18
+dep:@anysphere/otel-proto	依赖	package.json dependencies "@anysphere/otel-proto": "workspace:*"	cloud-deps（遥测）	W05-1-19
+dep:@anysphere/sand-playwright-runtime	依赖	package.json dependencies "@anysphere/sand-playwright-runtime": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-20
+dep:@anysphere/slack-app-setup	依赖	package.json dependencies "@anysphere/slack-app-setup": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-21
+dep:@anysphere/usage-banner	依赖	package.json dependencies "@anysphere/usage-banner": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-22
+dep:@anysphere/voice-call-harness	依赖	package.json dependencies "@anysphere/voice-call-harness": "workspace:*"	cloud-deps（语音端点，非 MVP 外围）	W05-1-23
+dep:@anysphere/xai-commerce-prepaid	依赖	package.json dependencies "@anysphere/xai-commerce-prepaid": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-24
+dep:@lingui/core	依赖	package.json dependencies "@lingui/core": "^5.9.5"	RE-unpack（外壳/更新/i18n）	W05-1-25
+dep:@lingui/react	依赖	package.json dependencies "@lingui/react": "^5.9.5"	RE-unpack（外壳/更新/i18n）	W05-1-26
+dep:@sand/host	依赖	package.json dependencies "@sand/host": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-27
+dep:@sand/local-exec-daemon	依赖	package.json dependencies "@sand/local-exec-daemon": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-28
+dep:@sand/local-exec-protocol	依赖	package.json dependencies "@sand/local-exec-protocol": "workspace:*"	ipc-rpc	W05-1-29
+dep:@sand/primitives	依赖	package.json dependencies "@sand/primitives": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-30
+dep:@sand/sand-eval-runner	依赖	package.json dependencies "@sand/sand-eval-runner": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-31
+dep:@sand/shared-node	依赖	package.json dependencies "@sand/shared-node": "workspace:*"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-32
+dep:@sentry/node-core	依赖	package.json dependencies "@sentry/node-core": "10.27.0"	cloud-deps（遥测）	W05-1-33
+dep:@tiptap/extensions	依赖	package.json dependencies "@tiptap/extensions": "3.14.0"	marketplace	W05-1-34
+dep:mdast-util-from-markdown	依赖	package.json dependencies "mdast-util-from-markdown": "^2.0.2"	ui-shell	W05-1-35
+dep:pele	依赖	package.json dependencies "pele": "1.7.0"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-36
+dep:qrcode	依赖	package.json dependencies "qrcode": "^1.5.4"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-37
+dep:sand-address-lookup	依赖	package.json dependencies "sand-address-lookup": "file:native/address-lookup"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-38
+dep:sand-card-text-recognition	依赖	package.json dependencies "sand-card-text-recognition": "file:native/card-text-recognition"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-39
+dep:sand-devicecheck	依赖	package.json dependencies "sand-devicecheck": "file:native/devicecheck"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-40
+dep:sand-notification-settings	依赖	package.json dependencies "sand-notification-settings": "file:native/notification-settings"	RE-unpack（外壳/更新/i18n）	W05-1-41
+dep:sand-window-capture	依赖	package.json dependencies "sand-window-capture": "file:native/window-capture"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-42
+dep:tldts	依赖	package.json dependencies "tldts": "^7.0.17"	ipc-rpc（兜底：renderer 可达面普查）	W05-1-43
+chunk族:capture-overlay	renderer/主进程 bundle 族	dist/**/capture-overlay-*.js（axis2-chunks.tsv W05-2-1）	非 MVP：computer-use（桌面挂载/截屏覆盖层）	W05-2-1
+chunk族:chunk-Button	renderer/主进程 bundle 族	dist/**/chunk-Button-*.js（axis2-chunks.tsv W05-2-2）	ui-shell	W05-2-2
+chunk族:chunk-CodeBlock	renderer/主进程 bundle 族	dist/**/chunk-CodeBlock-*.js（axis2-chunks.tsv W05-2-3）	ui-shell	W05-2-3
+chunk族:chunk-ComboboxItemIndicator	renderer/主进程 bundle 族	dist/**/chunk-ComboboxItemIndicator-*.js（axis2-chunks.tsv W05-2-4）	ui-shell	W05-2-4
+chunk族:chunk-CompositeRoot	renderer/主进程 bundle 族	dist/**/chunk-CompositeRoot-*.js（axis2-chunks.tsv W05-2-5）	ui-shell	W05-2-5
+chunk族:chunk-DefaultCode	renderer/主进程 bundle 族	dist/**/chunk-DefaultCode-*.js（axis2-chunks.tsv W05-2-6）	ui-shell	W05-2-6
+chunk族:chunk-SegmentedControl	renderer/主进程 bundle 族	dist/**/chunk-SegmentedControl-*.js（axis2-chunks.tsv W05-2-7）	ui-shell	W05-2-7
+chunk族:chunk-ToggleIconButton	renderer/主进程 bundle 族	dist/**/chunk-ToggleIconButton-*.js（axis2-chunks.tsv W05-2-8）	ui-shell	W05-2-8
+chunk族:chunk-agent-avatar-editor	renderer/主进程 bundle 族	dist/**/chunk-agent-avatar-editor-*.js（axis2-chunks.tsv W05-2-9）	ui-shell	W05-2-9
+chunk族:chunk-agent-invite-dialog	renderer/主进程 bundle 族	dist/**/chunk-agent-invite-dialog-*.js（axis2-chunks.tsv W05-2-10）	ui-shell	W05-2-10
+chunk族:chunk-agents	renderer/主进程 bundle 族	dist/**/chunk-agents-*.js（axis2-chunks.tsv W05-2-11）	features	W05-2-11
+chunk族:chunk-app-copy	renderer/主进程 bundle 族	dist/**/chunk-app-copy-*.js（axis2-chunks.tsv W05-2-12）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-12
+chunk族:chunk-asm	renderer/主进程 bundle 族	dist/**/chunk-asm-*.js（axis2-chunks.tsv W05-2-13）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-13
+chunk族:chunk-astro	renderer/主进程 bundle 族	dist/**/chunk-astro-*.js（axis2-chunks.tsv W05-2-14）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-14
+chunk族:chunk-auto-review-rule-notice	renderer/主进程 bundle 族	dist/**/chunk-auto-review-rule-notice-*.js（axis2-chunks.tsv W05-2-15）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-15
+chunk族:chunk-auto-review-selector	renderer/主进程 bundle 族	dist/**/chunk-auto-review-selector-*.js（axis2-chunks.tsv W05-2-16）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-16
+chunk族:chunk-automation-detail-panel	renderer/主进程 bundle 族	dist/**/chunk-automation-detail-panel-*.js（axis2-chunks.tsv W05-2-17）	features	W05-2-17
+chunk族:chunk-bonfire-dialog	renderer/主进程 bundle 族	dist/**/chunk-bonfire-dialog-*.js（axis2-chunks.tsv W05-2-18）	ui-shell	W05-2-18
+chunk族:chunk-bot-configure-dialog	renderer/主进程 bundle 族	dist/**/chunk-bot-configure-dialog-*.js（axis2-chunks.tsv W05-2-19）	ui-shell	W05-2-19
+chunk族:chunk-bot-manage-knowledge	renderer/主进程 bundle 族	dist/**/chunk-bot-manage-knowledge-*.js（axis2-chunks.tsv W05-2-20）	features	W05-2-20
+chunk族:chunk-bot-manage-screen	renderer/主进程 bundle 族	dist/**/chunk-bot-manage-screen-*.js（axis2-chunks.tsv W05-2-21）	features	W05-2-21
+chunk族:chunk-bot-manage-section	renderer/主进程 bundle 族	dist/**/chunk-bot-manage-section-*.js（axis2-chunks.tsv W05-2-22）	features	W05-2-22
+chunk族:chunk-bot-share-control	renderer/主进程 bundle 族	dist/**/chunk-bot-share-control-*.js（axis2-chunks.tsv W05-2-23）	features	W05-2-23
+chunk族:chunk-bot-share-invite-popover	renderer/主进程 bundle 族	dist/**/chunk-bot-share-invite-popover-*.js（axis2-chunks.tsv W05-2-24）	features	W05-2-24
+chunk族:chunk-bot-share-popover	renderer/主进程 bundle 族	dist/**/chunk-bot-share-popover-*.js（axis2-chunks.tsv W05-2-25）	features	W05-2-25
+chunk族:chunk-bot-share-state-line	renderer/主进程 bundle 族	dist/**/chunk-bot-share-state-line-*.js（axis2-chunks.tsv W05-2-26）	features	W05-2-26
+chunk族:chunk-bot-share-trigger	renderer/主进程 bundle 族	dist/**/chunk-bot-share-trigger-*.js（axis2-chunks.tsv W05-2-27）	features	W05-2-27
+chunk族:chunk-bot-sharing-reads	renderer/主进程 bundle 族	dist/**/chunk-bot-sharing-reads-*.js（axis2-chunks.tsv W05-2-28）	features	W05-2-28
+chunk族:chunk-bot-slack-copy	renderer/主进程 bundle 族	dist/**/chunk-bot-slack-copy-*.js（axis2-chunks.tsv W05-2-29）	features	W05-2-29
+chunk族:chunk-bot-store-files-library	renderer/主进程 bundle 族	dist/**/chunk-bot-store-files-library-*.js（axis2-chunks.tsv W05-2-30）	features	W05-2-30
+chunk族:chunk-bot-template-details-dialog	renderer/主进程 bundle 族	dist/**/chunk-bot-template-details-dialog-*.js（axis2-chunks.tsv W05-2-31）	ui-shell	W05-2-31
+chunk族:chunk-bot-template-details-focus	renderer/主进程 bundle 族	dist/**/chunk-bot-template-details-focus-*.js（axis2-chunks.tsv W05-2-32）	features	W05-2-32
+chunk族:chunk-bot-template-share-card-frame	renderer/主进程 bundle 族	dist/**/chunk-bot-template-share-card-frame-*.js（axis2-chunks.tsv W05-2-33）	features	W05-2-33
+chunk族:chunk-box-desktop-modal	renderer/主进程 bundle 族	dist/**/chunk-box-desktop-modal-*.js（axis2-chunks.tsv W05-2-34）	非 MVP：box/云电脑	W05-2-34
+chunk族:chunk-brand-marks	renderer/主进程 bundle 族	dist/**/chunk-brand-marks-*.js（axis2-chunks.tsv W05-2-35）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-35
+chunk族:chunk-button-layout.stylex	renderer/主进程 bundle 族	dist/**/chunk-button-layout.stylex-*.js（axis2-chunks.tsv W05-2-36）	ui-shell	W05-2-36
+chunk族:chunk-c	renderer/主进程 bundle 族	dist/**/chunk-c-*.js（axis2-chunks.tsv W05-2-37）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-37
+chunk族:chunk-card-dialog	renderer/主进程 bundle 族	dist/**/chunk-card-dialog-*.js（axis2-chunks.tsv W05-2-38）	ui-shell	W05-2-38
+chunk族:chunk-card-field	renderer/主进程 bundle 族	dist/**/chunk-card-field-*.js（axis2-chunks.tsv W05-2-39）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-39
+chunk族:chunk-card-item	renderer/主进程 bundle 族	dist/**/chunk-card-item-*.js（axis2-chunks.tsv W05-2-40）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-40
+chunk族:chunk-character-entities	renderer/主进程 bundle 族	dist/**/chunk-character-entities-*.js（axis2-chunks.tsv W05-2-41）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-41
+chunk族:chunk-chat	renderer/主进程 bundle 族	dist/**/chunk-chat-*.js（axis2-chunks.tsv W05-2-42）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-42
+chunk族:chunk-chat-widget	renderer/主进程 bundle 族	dist/**/chunk-chat-widget-*.js（axis2-chunks.tsv W05-2-43）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-43
+chunk族:chunk-clojure	renderer/主进程 bundle 族	dist/**/chunk-clojure-*.js（axis2-chunks.tsv W05-2-44）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-44
+chunk族:chunk-cloud-agent-artifact-open-telemetry	renderer/主进程 bundle 族	dist/**/chunk-cloud-agent-artifact-open-telemetry-*.js（axis2-chunks.tsv W05-2-45）	cloud-deps（遥测）	W05-2-45
+chunk族:chunk-cloud-agent-card-elevated	renderer/主进程 bundle 族	dist/**/chunk-cloud-agent-card-elevated-*.js（axis2-chunks.tsv W05-2-46）	features	W05-2-46
+chunk族:chunk-cmake	renderer/主进程 bundle 族	dist/**/chunk-cmake-*.js（axis2-chunks.tsv W05-2-47）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-47
+chunk族:chunk-code-body	renderer/主进程 bundle 族	dist/**/chunk-code-body-*.js（axis2-chunks.tsv W05-2-48）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-48
+chunk族:chunk-compact	renderer/主进程 bundle 族	dist/**/chunk-compact-*.js（axis2-chunks.tsv W05-2-49）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-49
+chunk族:chunk-computer-screen-preview	renderer/主进程 bundle 族	dist/**/chunk-computer-screen-preview-*.js（axis2-chunks.tsv W05-2-50）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-50
+chunk族:chunk-connect	renderer/主进程 bundle 族	dist/**/chunk-connect-*.js（axis2-chunks.tsv W05-2-51）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-51
+chunk族:chunk-connector	renderer/主进程 bundle 族	dist/**/chunk-connector-*.js（axis2-chunks.tsv W05-2-52）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-52
+chunk族:chunk-connector-auth-telemetry	renderer/主进程 bundle 族	dist/**/chunk-connector-auth-telemetry-*.js（axis2-chunks.tsv W05-2-53）	cloud-deps（账号体系/计费端点）	W05-2-53
+chunk族:chunk-connector-card	renderer/主进程 bundle 族	dist/**/chunk-connector-card-*.js（axis2-chunks.tsv W05-2-54）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-54
+chunk族:chunk-connector-card-view	renderer/主进程 bundle 族	dist/**/chunk-connector-card-view-*.js（axis2-chunks.tsv W05-2-55）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-55
+chunk族:chunk-connector-data-center	renderer/主进程 bundle 族	dist/**/chunk-connector-data-center-*.js（axis2-chunks.tsv W05-2-56）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-56
+chunk族:chunk-core	renderer/主进程 bundle 族	dist/**/chunk-core-*.js（axis2-chunks.tsv W05-2-57）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-57
+chunk族:chunk-cpp	renderer/主进程 bundle 族	dist/**/chunk-cpp-*.js（axis2-chunks.tsv W05-2-58）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-58
+chunk族:chunk-crystal	renderer/主进程 bundle 族	dist/**/chunk-crystal-*.js（axis2-chunks.tsv W05-2-59）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-59
+chunk族:chunk-csharp	renderer/主进程 bundle 族	dist/**/chunk-csharp-*.js（axis2-chunks.tsv W05-2-60）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-60
+chunk族:chunk-css	renderer/主进程 bundle 族	dist/**/chunk-css-*.js（axis2-chunks.tsv W05-2-61）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-61
+chunk族:chunk-csv-parse	renderer/主进程 bundle 族	dist/**/chunk-csv-parse-*.js（axis2-chunks.tsv W05-2-62）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-62
+chunk族:chunk-custom-mcp-form	renderer/主进程 bundle 族	dist/**/chunk-custom-mcp-form-*.js（axis2-chunks.tsv W05-2-63）	marketplace	W05-2-63
+chunk族:chunk-custom-plugin-slots	renderer/主进程 bundle 族	dist/**/chunk-custom-plugin-slots-*.js（axis2-chunks.tsv W05-2-64）	marketplace	W05-2-64
+chunk族:chunk-dart	renderer/主进程 bundle 族	dist/**/chunk-dart-*.js（axis2-chunks.tsv W05-2-65）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-65
+chunk族:chunk-device-action	renderer/主进程 bundle 族	dist/**/chunk-device-action-*.js（axis2-chunks.tsv W05-2-66）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-66
+chunk族:chunk-diff	renderer/主进程 bundle 族	dist/**/chunk-diff-*.js（axis2-chunks.tsv W05-2-67）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-67
+chunk族:chunk-dist	renderer/主进程 bundle 族	dist/**/chunk-dist-*.js（axis2-chunks.tsv W05-2-68）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-68
+chunk族:chunk-dockerfile	renderer/主进程 bundle 族	dist/**/chunk-dockerfile-*.js（axis2-chunks.tsv W05-2-69）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-69
+chunk族:chunk-document-page	renderer/主进程 bundle 族	dist/**/chunk-document-page-*.js（axis2-chunks.tsv W05-2-70）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-70
+chunk族:chunk-dotenv	renderer/主进程 bundle 族	dist/**/chunk-dotenv-*.js（axis2-chunks.tsv W05-2-71）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-71
+chunk族:chunk-draft-send-error	renderer/主进程 bundle 族	dist/**/chunk-draft-send-error-*.js（axis2-chunks.tsv W05-2-72）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-72
+chunk族:chunk-elevated-draft-fields	renderer/主进程 bundle 族	dist/**/chunk-elevated-draft-fields-*.js（axis2-chunks.tsv W05-2-73）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-73
+chunk族:chunk-elixir	renderer/主进程 bundle 族	dist/**/chunk-elixir-*.js（axis2-chunks.tsv W05-2-74）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-74
+chunk族:chunk-elm	renderer/主进程 bundle 族	dist/**/chunk-elm-*.js（axis2-chunks.tsv W05-2-75）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-75
+chunk族:chunk-emoji-messages.af	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.af-*.js（axis2-chunks.tsv W05-2-76）	ui-shell	W05-2-76
+chunk族:chunk-emoji-messages.ar	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.ar-*.js（axis2-chunks.tsv W05-2-77）	ui-shell	W05-2-77
+chunk族:chunk-emoji-messages.cs	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.cs-*.js（axis2-chunks.tsv W05-2-78）	ui-shell	W05-2-78
+chunk族:chunk-emoji-messages.el	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.el-*.js（axis2-chunks.tsv W05-2-79）	ui-shell	W05-2-79
+chunk族:chunk-emoji-messages.ha	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.ha-*.js（axis2-chunks.tsv W05-2-80）	ui-shell	W05-2-80
+chunk族:chunk-emoji-messages.he	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.he-*.js（axis2-chunks.tsv W05-2-81）	ui-shell	W05-2-81
+chunk族:chunk-emoji-messages.id	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.id-*.js（axis2-chunks.tsv W05-2-82）	ui-shell	W05-2-82
+chunk族:chunk-emoji-messages.mr	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.mr-*.js（axis2-chunks.tsv W05-2-83）	ui-shell	W05-2-83
+chunk族:chunk-emoji-messages.pt-pt	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.pt-pt-*.js（axis2-chunks.tsv W05-2-84）	ui-shell	W05-2-84
+chunk族:chunk-emoji-messages.sw	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.sw-*.js（axis2-chunks.tsv W05-2-85）	ui-shell	W05-2-85
+chunk族:chunk-emoji-messages.ta	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.ta-*.js（axis2-chunks.tsv W05-2-86）	ui-shell	W05-2-86
+chunk族:chunk-emoji-messages.te	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.te-*.js（axis2-chunks.tsv W05-2-87）	ui-shell	W05-2-87
+chunk族:chunk-emoji-messages.tr	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.tr-*.js（axis2-chunks.tsv W05-2-88）	ui-shell	W05-2-88
+chunk族:chunk-emoji-messages.ur	renderer/主进程 bundle 族	dist/**/chunk-emoji-messages.ur-*.js（axis2-chunks.tsv W05-2-89）	ui-shell	W05-2-89
+chunk族:chunk-emojibase	renderer/主进程 bundle 族	dist/**/chunk-emojibase-*.js（axis2-chunks.tsv W05-2-90）	ui-shell	W05-2-90
+chunk族:chunk-erb	renderer/主进程 bundle 族	dist/**/chunk-erb-*.js（axis2-chunks.tsv W05-2-91）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-91
+chunk族:chunk-erlang	renderer/主进程 bundle 族	dist/**/chunk-erlang-*.js（axis2-chunks.tsv W05-2-92）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-92
+chunk族:chunk-file-markdown	renderer/主进程 bundle 族	dist/**/chunk-file-markdown-*.js（axis2-chunks.tsv W05-2-93）	ui-shell	W05-2-93
+chunk族:chunk-file-markdown-hast	renderer/主进程 bundle 族	dist/**/chunk-file-markdown-hast-*.js（axis2-chunks.tsv W05-2-94）	ui-shell	W05-2-94
+chunk族:chunk-file-markdown.worker	renderer/主进程 bundle 族	dist/**/chunk-file-markdown.worker-*.js（axis2-chunks.tsv W05-2-95）	ui-shell	W05-2-95
+chunk族:chunk-file-stage	renderer/主进程 bundle 族	dist/**/chunk-file-stage-*.js（axis2-chunks.tsv W05-2-96）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-96
+chunk族:chunk-fish	renderer/主进程 bundle 族	dist/**/chunk-fish-*.js（axis2-chunks.tsv W05-2-97）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-97
+chunk族:chunk-form-values	renderer/主进程 bundle 族	dist/**/chunk-form-values-*.js（axis2-chunks.tsv W05-2-98）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-98
+chunk族:chunk-fsharp	renderer/主进程 bundle 族	dist/**/chunk-fsharp-*.js（axis2-chunks.tsv W05-2-99）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-99
+chunk族:chunk-fullscreen-file-viewer-body	renderer/主进程 bundle 族	dist/**/chunk-fullscreen-file-viewer-body-*.js（axis2-chunks.tsv W05-2-100）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-100
+chunk族:chunk-general-pane	renderer/主进程 bundle 族	dist/**/chunk-general-pane-*.js（axis2-chunks.tsv W05-2-101）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-101
+chunk族:chunk-get-file-icon	renderer/主进程 bundle 族	dist/**/chunk-get-file-icon-*.js（axis2-chunks.tsv W05-2-102）	ui-shell	W05-2-102
+chunk族:chunk-glsl	renderer/主进程 bundle 族	dist/**/chunk-glsl-*.js（axis2-chunks.tsv W05-2-103）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-103
+chunk族:chunk-go	renderer/主进程 bundle 族	dist/**/chunk-go-*.js（axis2-chunks.tsv W05-2-104）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-104
+chunk族:chunk-graphql	renderer/主进程 bundle 族	dist/**/chunk-graphql-*.js（axis2-chunks.tsv W05-2-105）	ui-shell	W05-2-105
+chunk族:chunk-grok-bot-secret-problem-text	renderer/主进程 bundle 族	dist/**/chunk-grok-bot-secret-problem-text-*.js（axis2-chunks.tsv W05-2-106）	features	W05-2-106
+chunk族:chunk-grok-bot-secrets	renderer/主进程 bundle 族	dist/**/chunk-grok-bot-secrets-*.js（axis2-chunks.tsv W05-2-107）	features	W05-2-107
+chunk族:chunk-grok-bot-slack-dialog-live	renderer/主进程 bundle 族	dist/**/chunk-grok-bot-slack-dialog-live-*.js（axis2-chunks.tsv W05-2-108）	ui-shell	W05-2-108
+chunk族:chunk-grok-bot-team-custom-mcp	renderer/主进程 bundle 族	dist/**/chunk-grok-bot-team-custom-mcp-*.js（axis2-chunks.tsv W05-2-109）	marketplace	W05-2-109
+chunk族:chunk-grok-bot-vault-login-dialogs	renderer/主进程 bundle 族	dist/**/chunk-grok-bot-vault-login-dialogs-*.js（axis2-chunks.tsv W05-2-110）	cloud-deps（账号体系/计费端点）	W05-2-110
+chunk族:chunk-groovy	renderer/主进程 bundle 族	dist/**/chunk-groovy-*.js（axis2-chunks.tsv W05-2-111）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-111
+chunk族:chunk-group-chat-connect-waiting	renderer/主进程 bundle 族	dist/**/chunk-group-chat-connect-waiting-*.js（axis2-chunks.tsv W05-2-112）	features	W05-2-112
+chunk族:chunk-haml	renderer/主进程 bundle 族	dist/**/chunk-haml-*.js（axis2-chunks.tsv W05-2-113）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-113
+chunk族:chunk-haskell	renderer/主进程 bundle 族	dist/**/chunk-haskell-*.js（axis2-chunks.tsv W05-2-114）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-114
+chunk族:chunk-hcl	renderer/主进程 bundle 族	dist/**/chunk-hcl-*.js（axis2-chunks.tsv W05-2-115）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-115
+chunk族:chunk-heading-link	renderer/主进程 bundle 族	dist/**/chunk-heading-link-*.js（axis2-chunks.tsv W05-2-116）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-116
+chunk族:chunk-hlsl	renderer/主进程 bundle 族	dist/**/chunk-hlsl-*.js（axis2-chunks.tsv W05-2-117）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-117
+chunk族:chunk-html	renderer/主进程 bundle 族	dist/**/chunk-html-*.js（axis2-chunks.tsv W05-2-118）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-118
+chunk族:chunk-html-derivative	renderer/主进程 bundle 族	dist/**/chunk-html-derivative-*.js（axis2-chunks.tsv W05-2-119）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-119
+chunk族:chunk-iamcal	renderer/主进程 bundle 族	dist/**/chunk-iamcal-*.js（axis2-chunks.tsv W05-2-120）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-120
+chunk族:chunk-ini	renderer/主进程 bundle 族	dist/**/chunk-ini-*.js（axis2-chunks.tsv W05-2-121）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-121
+chunk族:chunk-inline-user-form	renderer/主进程 bundle 族	dist/**/chunk-inline-user-form-*.js（axis2-chunks.tsv W05-2-122）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-122
+chunk族:chunk-java	renderer/主进程 bundle 族	dist/**/chunk-java-*.js（axis2-chunks.tsv W05-2-123）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-123
+chunk族:chunk-javascript	renderer/主进程 bundle 族	dist/**/chunk-javascript-*.js（axis2-chunks.tsv W05-2-124）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-124
+chunk族:chunk-json	renderer/主进程 bundle 族	dist/**/chunk-json-*.js（axis2-chunks.tsv W05-2-125）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-125
+chunk族:chunk-json5	renderer/主进程 bundle 族	dist/**/chunk-json5-*.js（axis2-chunks.tsv W05-2-126）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-126
+chunk族:chunk-jsonc	renderer/主进程 bundle 族	dist/**/chunk-jsonc-*.js（axis2-chunks.tsv W05-2-127）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-127
+chunk族:chunk-jsx	renderer/主进程 bundle 族	dist/**/chunk-jsx-*.js（axis2-chunks.tsv W05-2-128）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-128
+chunk族:chunk-julia	renderer/主进程 bundle 族	dist/**/chunk-julia-*.js（axis2-chunks.tsv W05-2-129）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-129
+chunk族:chunk-kotlin	renderer/主进程 bundle 族	dist/**/chunk-kotlin-*.js（axis2-chunks.tsv W05-2-130）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-130
+chunk族:chunk-latex	renderer/主进程 bundle 族	dist/**/chunk-latex-*.js（axis2-chunks.tsv W05-2-131）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-131
+chunk族:chunk-layout	renderer/主进程 bundle 族	dist/**/chunk-layout-*.js（axis2-chunks.tsv W05-2-132）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-132
+chunk族:chunk-lazy	renderer/主进程 bundle 族	dist/**/chunk-lazy-*.js（axis2-chunks.tsv W05-2-133）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-133
+chunk族:chunk-lean	renderer/主进程 bundle 族	dist/**/chunk-lean-*.js（axis2-chunks.tsv W05-2-134）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-134
+chunk族:chunk-less	renderer/主进程 bundle 族	dist/**/chunk-less-*.js（axis2-chunks.tsv W05-2-135）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-135
+chunk族:chunk-lib	renderer/主进程 bundle 族	dist/**/chunk-lib-*.js（axis2-chunks.tsv W05-2-136）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-136
+chunk族:chunk-library-visual-viewer	renderer/主进程 bundle 族	dist/**/chunk-library-visual-viewer-*.js（axis2-chunks.tsv W05-2-137）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-137
+chunk族:chunk-link-brand-logo	renderer/主进程 bundle 族	dist/**/chunk-link-brand-logo-*.js（axis2-chunks.tsv W05-2-138）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-138
+chunk族:chunk-lisp	renderer/主进程 bundle 族	dist/**/chunk-lisp-*.js（axis2-chunks.tsv W05-2-139）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-139
+chunk族:chunk-list-item	renderer/主进程 bundle 族	dist/**/chunk-list-item-*.js（axis2-chunks.tsv W05-2-140）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-140
+chunk族:chunk-listener-integrations	renderer/主进程 bundle 族	dist/**/chunk-listener-integrations-*.js（axis2-chunks.tsv W05-2-141）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-141
+chunk族:chunk-lua	renderer/主进程 bundle 族	dist/**/chunk-lua-*.js（axis2-chunks.tsv W05-2-142）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-142
+chunk族:chunk-mac-app-tile	renderer/主进程 bundle 族	dist/**/chunk-mac-app-tile-*.js（axis2-chunks.tsv W05-2-143）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-143
+chunk族:chunk-mac-mail-setup-dialog	renderer/主进程 bundle 族	dist/**/chunk-mac-mail-setup-dialog-*.js（axis2-chunks.tsv W05-2-144）	ui-shell	W05-2-144
+chunk族:chunk-makefile	renderer/主进程 bundle 族	dist/**/chunk-makefile-*.js（axis2-chunks.tsv W05-2-145）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-145
+chunk族:chunk-markdown	renderer/主进程 bundle 族	dist/**/chunk-markdown-*.js（axis2-chunks.tsv W05-2-146）	ui-shell	W05-2-146
+chunk族:chunk-markdown-math	renderer/主进程 bundle 族	dist/**/chunk-markdown-math-*.js（axis2-chunks.tsv W05-2-147）	ui-shell	W05-2-147
+chunk族:chunk-markdown-math-katex	renderer/主进程 bundle 族	dist/**/chunk-markdown-math-katex-*.js（axis2-chunks.tsv W05-2-148）	ui-shell	W05-2-148
+chunk族:chunk-markdown-math-remark	renderer/主进程 bundle 族	dist/**/chunk-markdown-math-remark-*.js（axis2-chunks.tsv W05-2-149）	ui-shell	W05-2-149
+chunk族:chunk-markdown-structure	renderer/主进程 bundle 族	dist/**/chunk-markdown-structure-*.js（axis2-chunks.tsv W05-2-150）	ui-shell	W05-2-150
+chunk族:chunk-marketplace-browse-model	renderer/主进程 bundle 族	dist/**/chunk-marketplace-browse-model-*.js（axis2-chunks.tsv W05-2-151）	marketplace	W05-2-151
+chunk族:chunk-mdx	renderer/主进程 bundle 族	dist/**/chunk-mdx-*.js（axis2-chunks.tsv W05-2-152）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-152
+chunk族:chunk-member-chip	renderer/主进程 bundle 族	dist/**/chunk-member-chip-*.js（axis2-chunks.tsv W05-2-153）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-153
+chunk族:chunk-messages	renderer/主进程 bundle 族	dist/**/chunk-messages-*.js（axis2-chunks.tsv W05-2-154）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-154
+chunk族:chunk-model	renderer/主进程 bundle 族	dist/**/chunk-model-*.js（axis2-chunks.tsv W05-2-155）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-155
+chunk族:chunk-native-connector-card	renderer/主进程 bundle 族	dist/**/chunk-native-connector-card-*.js（axis2-chunks.tsv W05-2-156）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-156
+chunk族:chunk-native-plugin-detail	renderer/主进程 bundle 族	dist/**/chunk-native-plugin-detail-*.js（axis2-chunks.tsv W05-2-157）	marketplace	W05-2-157
+chunk族:chunk-native-plugin-state	renderer/主进程 bundle 族	dist/**/chunk-native-plugin-state-*.js（axis2-chunks.tsv W05-2-158）	marketplace	W05-2-158
+chunk族:chunk-network-debugger-dialog	renderer/主进程 bundle 族	dist/**/chunk-network-debugger-dialog-*.js（axis2-chunks.tsv W05-2-159）	ui-shell	W05-2-159
+chunk族:chunk-new-chat-bar	renderer/主进程 bundle 族	dist/**/chunk-new-chat-bar-*.js（axis2-chunks.tsv W05-2-160）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-160
+chunk族:chunk-nginx	renderer/主进程 bundle 族	dist/**/chunk-nginx-*.js（axis2-chunks.tsv W05-2-161）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-161
+chunk族:chunk-nim	renderer/主进程 bundle 族	dist/**/chunk-nim-*.js（axis2-chunks.tsv W05-2-162）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-162
+chunk族:chunk-notice	renderer/主进程 bundle 族	dist/**/chunk-notice-*.js（axis2-chunks.tsv W05-2-163）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-163
+chunk族:chunk-objective-c	renderer/主进程 bundle 族	dist/**/chunk-objective-c-*.js（axis2-chunks.tsv W05-2-164）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-164
+chunk族:chunk-objective-cpp	renderer/主进程 bundle 族	dist/**/chunk-objective-cpp-*.js（axis2-chunks.tsv W05-2-165）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-165
+chunk族:chunk-ocaml	renderer/主进程 bundle 族	dist/**/chunk-ocaml-*.js（axis2-chunks.tsv W05-2-166）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-166
+chunk族:chunk-onboarding-flow	renderer/主进程 bundle 族	dist/**/chunk-onboarding-flow-*.js（axis2-chunks.tsv W05-2-167）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-167
+chunk族:chunk-onepassword-previous-vault-note	renderer/主进程 bundle 族	dist/**/chunk-onepassword-previous-vault-note-*.js（axis2-chunks.tsv W05-2-168）	ipc-rpc	W05-2-168
+chunk族:chunk-order-checkout	renderer/主进程 bundle 族	dist/**/chunk-order-checkout-*.js（axis2-chunks.tsv W05-2-169）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-169
+chunk族:chunk-pane-header	renderer/主进程 bundle 族	dist/**/chunk-pane-header-*.js（axis2-chunks.tsv W05-2-170）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-170
+chunk族:chunk-pdf	renderer/主进程 bundle 族	dist/**/chunk-pdf-*.js（axis2-chunks.tsv W05-2-171）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-171
+chunk族:chunk-people-search-menu-live	renderer/主进程 bundle 族	dist/**/chunk-people-search-menu-live-*.js（axis2-chunks.tsv W05-2-172）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-172
+chunk族:chunk-perl	renderer/主进程 bundle 族	dist/**/chunk-perl-*.js（axis2-chunks.tsv W05-2-173）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-173
+chunk族:chunk-personal-bot-target	renderer/主进程 bundle 族	dist/**/chunk-personal-bot-target-*.js（axis2-chunks.tsv W05-2-174）	features	W05-2-174
+chunk族:chunk-phone-call	renderer/主进程 bundle 族	dist/**/chunk-phone-call-*.js（axis2-chunks.tsv W05-2-175）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-175
+chunk族:chunk-phone-icon	renderer/主进程 bundle 族	dist/**/chunk-phone-icon-*.js（axis2-chunks.tsv W05-2-176）	ui-shell	W05-2-176
+chunk族:chunk-php	renderer/主进程 bundle 族	dist/**/chunk-php-*.js（axis2-chunks.tsv W05-2-177）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-177
+chunk族:chunk-place-facts	renderer/主进程 bundle 族	dist/**/chunk-place-facts-*.js（axis2-chunks.tsv W05-2-178）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-178
+chunk族:chunk-places-stage	renderer/主进程 bundle 族	dist/**/chunk-places-stage-*.js（axis2-chunks.tsv W05-2-179）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-179
+chunk族:chunk-plugin-detail-sharepoint-write	renderer/主进程 bundle 族	dist/**/chunk-plugin-detail-sharepoint-write-*.js（axis2-chunks.tsv W05-2-180）	marketplace	W05-2-180
+chunk族:chunk-plugin-detail-view	renderer/主进程 bundle 族	dist/**/chunk-plugin-detail-view-*.js（axis2-chunks.tsv W05-2-181）	marketplace	W05-2-181
+chunk族:chunk-pointer-release	renderer/主进程 bundle 族	dist/**/chunk-pointer-release-*.js（axis2-chunks.tsv W05-2-182）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-182
+chunk族:chunk-postcss	renderer/主进程 bundle 族	dist/**/chunk-postcss-*.js（axis2-chunks.tsv W05-2-183）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-183
+chunk族:chunk-powershell	renderer/主进程 bundle 族	dist/**/chunk-powershell-*.js（axis2-chunks.tsv W05-2-184）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-184
+chunk族:chunk-presentation	renderer/主进程 bundle 族	dist/**/chunk-presentation-*.js（axis2-chunks.tsv W05-2-185）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-185
+chunk族:chunk-prisma	renderer/主进程 bundle 族	dist/**/chunk-prisma-*.js（axis2-chunks.tsv W05-2-186）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-186
+chunk族:chunk-prompt-editor	renderer/主进程 bundle 族	dist/**/chunk-prompt-editor-*.js（axis2-chunks.tsv W05-2-187）	ui-shell	W05-2-187
+chunk族:chunk-proto	renderer/主进程 bundle 族	dist/**/chunk-proto-*.js（axis2-chunks.tsv W05-2-188）	ipc-rpc	W05-2-188
+chunk族:chunk-python	renderer/主进程 bundle 族	dist/**/chunk-python-*.js（axis2-chunks.tsv W05-2-189）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-189
+chunk族:chunk-r	renderer/主进程 bundle 族	dist/**/chunk-r-*.js（axis2-chunks.tsv W05-2-190）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-190
+chunk族:chunk-regexp	renderer/主进程 bundle 族	dist/**/chunk-regexp-*.js（axis2-chunks.tsv W05-2-191）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-191
+chunk族:chunk-review-item-seed	renderer/主进程 bundle 族	dist/**/chunk-review-item-seed-*.js（axis2-chunks.tsv W05-2-192）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-192
+chunk族:chunk-review-usage-button	renderer/主进程 bundle 族	dist/**/chunk-review-usage-button-*.js（axis2-chunks.tsv W05-2-193）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-193
+chunk族:chunk-rolldown-runtime	renderer/主进程 bundle 族	dist/**/chunk-rolldown-runtime-*.js（axis2-chunks.tsv W05-2-194）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-194
+chunk族:chunk-rst	renderer/主进程 bundle 族	dist/**/chunk-rst-*.js（axis2-chunks.tsv W05-2-195）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-195
+chunk族:chunk-ruby	renderer/主进程 bundle 族	dist/**/chunk-ruby-*.js（axis2-chunks.tsv W05-2-196）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-196
+chunk族:chunk-rust	renderer/主进程 bundle 族	dist/**/chunk-rust-*.js（axis2-chunks.tsv W05-2-197）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-197
+chunk族:chunk-sand-auto-review-instructions	renderer/主进程 bundle 族	dist/**/chunk-sand-auto-review-instructions-*.js（axis2-chunks.tsv W05-2-198）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-198
+chunk族:chunk-sand-diagram-render	renderer/主进程 bundle 族	dist/**/chunk-sand-diagram-render-*.js（axis2-chunks.tsv W05-2-199）	ui-shell	W05-2-199
+chunk族:chunk-sand-rule-text-diff	renderer/主进程 bundle 族	dist/**/chunk-sand-rule-text-diff-*.js（axis2-chunks.tsv W05-2-200）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-200
+chunk族:chunk-sass	renderer/主进程 bundle 族	dist/**/chunk-sass-*.js（axis2-chunks.tsv W05-2-201）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-201
+chunk族:chunk-scala	renderer/主进程 bundle 族	dist/**/chunk-scala-*.js（axis2-chunks.tsv W05-2-202）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-202
+chunk族:chunk-scale-layer	renderer/主进程 bundle 族	dist/**/chunk-scale-layer-*.js（axis2-chunks.tsv W05-2-203）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-203
+chunk族:chunk-scroll-pane	renderer/主进程 bundle 族	dist/**/chunk-scroll-pane-*.js（axis2-chunks.tsv W05-2-204）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-204
+chunk族:chunk-scss	renderer/主进程 bundle 族	dist/**/chunk-scss-*.js（axis2-chunks.tsv W05-2-205）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-205
+chunk族:chunk-see-usage-button	renderer/主进程 bundle 族	dist/**/chunk-see-usage-button-*.js（axis2-chunks.tsv W05-2-206）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-206
+chunk族:chunk-send-imessage-approval	renderer/主进程 bundle 族	dist/**/chunk-send-imessage-approval-*.js（axis2-chunks.tsv W05-2-207）	features	W05-2-207
+chunk族:chunk-sentry-sdk	renderer/主进程 bundle 族	dist/**/chunk-sentry-sdk-*.js（axis2-chunks.tsv W05-2-208）	cloud-deps（遥测）	W05-2-208
+chunk族:chunk-session	renderer/主进程 bundle 族	dist/**/chunk-session-*.js（axis2-chunks.tsv W05-2-209）	features	W05-2-209
+chunk族:chunk-settings	renderer/主进程 bundle 族	dist/**/chunk-settings-*.js（axis2-chunks.tsv W05-2-210）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-210
+chunk族:chunk-settings-row	renderer/主进程 bundle 族	dist/**/chunk-settings-row-*.js（axis2-chunks.tsv W05-2-211）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-211
+chunk族:chunk-shared	renderer/主进程 bundle 族	dist/**/chunk-shared-*.js（axis2-chunks.tsv W05-2-212）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-212
+chunk族:chunk-shellscript	renderer/主进程 bundle 族	dist/**/chunk-shellscript-*.js（axis2-chunks.tsv W05-2-213）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-213
+chunk族:chunk-shiki-grammars	renderer/主进程 bundle 族	dist/**/chunk-shiki-grammars-*.js（axis2-chunks.tsv W05-2-214）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-214
+chunk族:chunk-shiki-incremental-tokenizer	renderer/主进程 bundle 族	dist/**/chunk-shiki-incremental-tokenizer-*.js（axis2-chunks.tsv W05-2-215）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-215
+chunk族:chunk-shiki-sync	renderer/主进程 bundle 族	dist/**/chunk-shiki-sync-*.js（axis2-chunks.tsv W05-2-216）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-216
+chunk族:chunk-shiki-token-cache	renderer/主进程 bundle 族	dist/**/chunk-shiki-token-cache-*.js（axis2-chunks.tsv W05-2-217）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-217
+chunk族:chunk-sql	renderer/主进程 bundle 族	dist/**/chunk-sql-*.js（axis2-chunks.tsv W05-2-218）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-218
+chunk族:chunk-svelte	renderer/主进程 bundle 族	dist/**/chunk-svelte-*.js（axis2-chunks.tsv W05-2-219）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-219
+chunk族:chunk-swift	renderer/主进程 bundle 族	dist/**/chunk-swift-*.js（axis2-chunks.tsv W05-2-220）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-220
+chunk族:chunk-teach-recording-controls	renderer/主进程 bundle 族	dist/**/chunk-teach-recording-controls-*.js（axis2-chunks.tsv W05-2-221）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-221
+chunk族:chunk-team-agent-rows	renderer/主进程 bundle 族	dist/**/chunk-team-agent-rows-*.js（axis2-chunks.tsv W05-2-222）	features	W05-2-222
+chunk族:chunk-team-bot-access-alerts	renderer/主进程 bundle 族	dist/**/chunk-team-bot-access-alerts-*.js（axis2-chunks.tsv W05-2-223）	features	W05-2-223
+chunk族:chunk-team-bot-carry-over-plugin-selection	renderer/主进程 bundle 族	dist/**/chunk-team-bot-carry-over-plugin-selection-*.js（axis2-chunks.tsv W05-2-224）	marketplace	W05-2-224
+chunk族:chunk-team-bot-context-dialog	renderer/主进程 bundle 族	dist/**/chunk-team-bot-context-dialog-*.js（axis2-chunks.tsv W05-2-225）	ui-shell	W05-2-225
+chunk族:chunk-team-bot-custom-plugins	renderer/主进程 bundle 族	dist/**/chunk-team-bot-custom-plugins-*.js（axis2-chunks.tsv W05-2-226）	marketplace	W05-2-226
+chunk族:chunk-team-bot-details-dialog	renderer/主进程 bundle 族	dist/**/chunk-team-bot-details-dialog-*.js（axis2-chunks.tsv W05-2-227）	ui-shell	W05-2-227
+chunk族:chunk-team-bot-details-pane	renderer/主进程 bundle 族	dist/**/chunk-team-bot-details-pane-*.js（axis2-chunks.tsv W05-2-228）	features	W05-2-228
+chunk族:chunk-team-bot-details-rows	renderer/主进程 bundle 族	dist/**/chunk-team-bot-details-rows-*.js（axis2-chunks.tsv W05-2-229）	features	W05-2-229
+chunk族:chunk-team-bot-line-render	renderer/主进程 bundle 族	dist/**/chunk-team-bot-line-render-*.js（axis2-chunks.tsv W05-2-230）	features	W05-2-230
+chunk族:chunk-team-bot-manager-alerts	renderer/主进程 bundle 族	dist/**/chunk-team-bot-manager-alerts-*.js（axis2-chunks.tsv W05-2-231）	features	W05-2-231
+chunk族:chunk-team-bot-memories-list	renderer/主进程 bundle 族	dist/**/chunk-team-bot-memories-list-*.js（axis2-chunks.tsv W05-2-232）	features	W05-2-232
+chunk族:chunk-team-bot-overview-panel	renderer/主进程 bundle 族	dist/**/chunk-team-bot-overview-panel-*.js（axis2-chunks.tsv W05-2-233）	features	W05-2-233
+chunk族:chunk-team-bot-overview-section	renderer/主进程 bundle 族	dist/**/chunk-team-bot-overview-section-*.js（axis2-chunks.tsv W05-2-234）	features	W05-2-234
+chunk族:chunk-team-bot-plugins-dialog-list	renderer/主进程 bundle 族	dist/**/chunk-team-bot-plugins-dialog-list-*.js（axis2-chunks.tsv W05-2-235）	marketplace	W05-2-235
+chunk族:chunk-team-bot-service-account-tiles	renderer/主进程 bundle 族	dist/**/chunk-team-bot-service-account-tiles-*.js（axis2-chunks.tsv W05-2-236）	cloud-deps（账号体系/计费端点）	W05-2-236
+chunk族:chunk-team-bot-service-accounts	renderer/主进程 bundle 族	dist/**/chunk-team-bot-service-accounts-*.js（axis2-chunks.tsv W05-2-237）	cloud-deps（账号体系/计费端点）	W05-2-237
+chunk族:chunk-team-bot-service-accounts-dialog	renderer/主进程 bundle 族	dist/**/chunk-team-bot-service-accounts-dialog-*.js（axis2-chunks.tsv W05-2-238）	cloud-deps（账号体系/计费端点）	W05-2-238
+chunk族:chunk-team-bot-service-accounts-setup-copy	renderer/主进程 bundle 族	dist/**/chunk-team-bot-service-accounts-setup-copy-*.js（axis2-chunks.tsv W05-2-239）	cloud-deps（账号体系/计费端点）	W05-2-239
+chunk族:chunk-team-bot-service-accounts-shown	renderer/主进程 bundle 族	dist/**/chunk-team-bot-service-accounts-shown-*.js（axis2-chunks.tsv W05-2-240）	cloud-deps（账号体系/计费端点）	W05-2-240
+chunk族:chunk-team-bot-setup-dialog-shell	renderer/主进程 bundle 族	dist/**/chunk-team-bot-setup-dialog-shell-*.js（axis2-chunks.tsv W05-2-241）	ui-shell	W05-2-241
+chunk族:chunk-team-bot-share-card	renderer/主进程 bundle 族	dist/**/chunk-team-bot-share-card-*.js（axis2-chunks.tsv W05-2-242）	features	W05-2-242
+chunk族:chunk-team-bot-teammate-intro	renderer/主进程 bundle 族	dist/**/chunk-team-bot-teammate-intro-*.js（axis2-chunks.tsv W05-2-243）	features	W05-2-243
+chunk族:chunk-team-bot-teams-flow-dialog-live	renderer/主进程 bundle 族	dist/**/chunk-team-bot-teams-flow-dialog-live-*.js（axis2-chunks.tsv W05-2-244）	ui-shell	W05-2-244
+chunk族:chunk-team-bot-vault	renderer/主进程 bundle 族	dist/**/chunk-team-bot-vault-*.js（axis2-chunks.tsv W05-2-245）	features	W05-2-245
+chunk族:chunk-team-bot-vault-access	renderer/主进程 bundle 族	dist/**/chunk-team-bot-vault-access-*.js（axis2-chunks.tsv W05-2-246）	features	W05-2-246
+chunk族:chunk-team-bot-vault-slot	renderer/主进程 bundle 族	dist/**/chunk-team-bot-vault-slot-*.js（axis2-chunks.tsv W05-2-247）	features	W05-2-247
+chunk族:chunk-team-setup-new-secret-dialog	renderer/主进程 bundle 族	dist/**/chunk-team-setup-new-secret-dialog-*.js（axis2-chunks.tsv W05-2-248）	ui-shell	W05-2-248
+chunk族:chunk-team-setup-new-skill-dialog	renderer/主进程 bundle 族	dist/**/chunk-team-setup-new-skill-dialog-*.js（axis2-chunks.tsv W05-2-249）	ui-shell	W05-2-249
+chunk族:chunk-team-setup-pills	renderer/主进程 bundle 族	dist/**/chunk-team-setup-pills-*.js（axis2-chunks.tsv W05-2-250）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-250
+chunk族:chunk-team-setup-row	renderer/主进程 bundle 族	dist/**/chunk-team-setup-row-*.js（axis2-chunks.tsv W05-2-251）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-251
+chunk族:chunk-teams-integration-shown	renderer/主进程 bundle 族	dist/**/chunk-teams-integration-shown-*.js（axis2-chunks.tsv W05-2-252）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-252
+chunk族:chunk-template-editor-dialog	renderer/主进程 bundle 族	dist/**/chunk-template-editor-dialog-*.js（axis2-chunks.tsv W05-2-253）	ui-shell	W05-2-253
+chunk族:chunk-terraform	renderer/主进程 bundle 族	dist/**/chunk-terraform-*.js（axis2-chunks.tsv W05-2-254）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-254
+chunk族:chunk-text-viewer	renderer/主进程 bundle 族	dist/**/chunk-text-viewer-*.js（axis2-chunks.tsv W05-2-255）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-255
+chunk族:chunk-thread-card	renderer/主进程 bundle 族	dist/**/chunk-thread-card-*.js（axis2-chunks.tsv W05-2-256）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-256
+chunk族:chunk-tlaplus	renderer/主进程 bundle 族	dist/**/chunk-tlaplus-*.js（axis2-chunks.tsv W05-2-257）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-257
+chunk族:chunk-toml	renderer/主进程 bundle 族	dist/**/chunk-toml-*.js（axis2-chunks.tsv W05-2-258）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-258
+chunk族:chunk-top-up-modal-host	renderer/主进程 bundle 族	dist/**/chunk-top-up-modal-host-*.js（axis2-chunks.tsv W05-2-259）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-259
+chunk族:chunk-top-up-recipe	renderer/主进程 bundle 族	dist/**/chunk-top-up-recipe-*.js（axis2-chunks.tsv W05-2-260）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-260
+chunk族:chunk-transcript-markdown	renderer/主进程 bundle 族	dist/**/chunk-transcript-markdown-*.js（axis2-chunks.tsv W05-2-261）	ui-shell	W05-2-261
+chunk族:chunk-tsx	renderer/主进程 bundle 族	dist/**/chunk-tsx-*.js（axis2-chunks.tsv W05-2-262）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-262
+chunk族:chunk-typescript	renderer/主进程 bundle 族	dist/**/chunk-typescript-*.js（axis2-chunks.tsv W05-2-263）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-263
+chunk族:chunk-unified-billing-dev	renderer/主进程 bundle 族	dist/**/chunk-unified-billing-dev-*.js（axis2-chunks.tsv W05-2-264）	cloud-deps（账号体系/计费端点）	W05-2-264
+chunk族:chunk-unrequested-meeting-approval	renderer/主进程 bundle 族	dist/**/chunk-unrequested-meeting-approval-*.js（axis2-chunks.tsv W05-2-265）	features	W05-2-265
+chunk族:chunk-usage-review-gate	renderer/主进程 bundle 族	dist/**/chunk-usage-review-gate-*.js（axis2-chunks.tsv W05-2-266）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-266
+chunk族:chunk-use-active-option-scroll	renderer/主进程 bundle 族	dist/**/chunk-use-active-option-scroll-*.js（axis2-chunks.tsv W05-2-267）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-267
+chunk族:chunk-use-bot-sharing	renderer/主进程 bundle 族	dist/**/chunk-use-bot-sharing-*.js（axis2-chunks.tsv W05-2-268）	features	W05-2-268
+chunk族:chunk-use-draft-revision-highlight	renderer/主进程 bundle 族	dist/**/chunk-use-draft-revision-highlight-*.js（axis2-chunks.tsv W05-2-269）	ui-shell	W05-2-269
+chunk族:chunk-use-team-bot-access	renderer/主进程 bundle 族	dist/**/chunk-use-team-bot-access-*.js（axis2-chunks.tsv W05-2-270）	features	W05-2-270
+chunk族:chunk-user-custom-connector	renderer/主进程 bundle 族	dist/**/chunk-user-custom-connector-*.js（axis2-chunks.tsv W05-2-271）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-271
+chunk族:chunk-vault-card-dialog	renderer/主进程 bundle 族	dist/**/chunk-vault-card-dialog-*.js（axis2-chunks.tsv W05-2-272）	ui-shell	W05-2-272
+chunk族:chunk-vault-card-editor	renderer/主进程 bundle 族	dist/**/chunk-vault-card-editor-*.js（axis2-chunks.tsv W05-2-273）	ui-shell	W05-2-273
+chunk族:chunk-view	renderer/主进程 bundle 族	dist/**/chunk-view-*.js（axis2-chunks.tsv W05-2-274）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-274
+chunk族:chunk-virtual-card-checkout	renderer/主进程 bundle 族	dist/**/chunk-virtual-card-checkout-*.js（axis2-chunks.tsv W05-2-275）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-275
+chunk族:chunk-visualization-d3-runtime.gen	renderer/主进程 bundle 族	dist/**/chunk-visualization-d3-runtime.gen-*.js（axis2-chunks.tsv W05-2-276）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-276
+chunk族:chunk-visualization-document	renderer/主进程 bundle 族	dist/**/chunk-visualization-document-*.js（axis2-chunks.tsv W05-2-277）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-277
+chunk族:chunk-visualization-three-runtime.gen	renderer/主进程 bundle 族	dist/**/chunk-visualization-three-runtime.gen-*.js（axis2-chunks.tsv W05-2-278）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-278
+chunk族:chunk-voice-call-feedback-card	renderer/主进程 bundle 族	dist/**/chunk-voice-call-feedback-card-*.js（axis2-chunks.tsv W05-2-279）	cloud-deps（语音端点，非 MVP 外围）	W05-2-279
+chunk族:chunk-voice-memo-bubble	renderer/主进程 bundle 族	dist/**/chunk-voice-memo-bubble-*.js（axis2-chunks.tsv W05-2-280）	cloud-deps（语音端点，非 MVP 外围）	W05-2-280
+chunk族:chunk-vue	renderer/主进程 bundle 族	dist/**/chunk-vue-*.js（axis2-chunks.tsv W05-2-281）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-281
+chunk族:chunk-widget	renderer/主进程 bundle 族	dist/**/chunk-widget-*.js（axis2-chunks.tsv W05-2-282）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-282
+chunk族:chunk-window-chrome	renderer/主进程 bundle 族	dist/**/chunk-window-chrome-*.js（axis2-chunks.tsv W05-2-283）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-283
+chunk族:chunk-wipe-navigation	renderer/主进程 bundle 族	dist/**/chunk-wipe-navigation-*.js（axis2-chunks.tsv W05-2-284）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-284
+chunk族:chunk-x-brand-logo	renderer/主进程 bundle 族	dist/**/chunk-x-brand-logo-*.js（axis2-chunks.tsv W05-2-285）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-285
+chunk族:chunk-xlsx	renderer/主进程 bundle 族	dist/**/chunk-xlsx-*.js（axis2-chunks.tsv W05-2-286）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-286
+chunk族:chunk-xml	renderer/主进程 bundle 族	dist/**/chunk-xml-*.js（axis2-chunks.tsv W05-2-287）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-287
+chunk族:chunk-yaml	renderer/主进程 bundle 族	dist/**/chunk-yaml-*.js（axis2-chunks.tsv W05-2-288）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-288
+chunk族:chunk-zig	renderer/主进程 bundle 族	dist/**/chunk-zig-*.js（axis2-chunks.tsv W05-2-289）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-289
+chunk族:desktop-mount-capture-overlay	renderer/主进程 bundle 族	dist/**/desktop-mount-capture-overlay-*.js（axis2-chunks.tsv W05-2-290）	非 MVP：computer-use（桌面挂载/截屏覆盖层）	W05-2-290
+chunk族:desktop-mount-panel	renderer/主进程 bundle 族	dist/**/desktop-mount-panel-*.js（axis2-chunks.tsv W05-2-291）	非 MVP：computer-use（桌面挂载/截屏覆盖层）	W05-2-291
+chunk族:dune-render-trace-hook	renderer/主进程 bundle 族	dist/**/dune-render-trace-hook-*.js（axis2-chunks.tsv W05-2-292）	cloud-deps（遥测）	W05-2-292
+chunk族:fullscreen-file-viewer-body	renderer/主进程 bundle 族	dist/**/fullscreen-file-viewer-body-*.js（axis2-chunks.tsv W05-2-293）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-293
+chunk族:index.eager-app	renderer/主进程 bundle 族	dist/**/index.eager-app-*.js（axis2-chunks.tsv W05-2-294）	ipc-rpc	W05-2-294
+chunk族:index.eager-common	renderer/主进程 bundle 族	dist/**/index.eager-common-*.js（axis2-chunks.tsv W05-2-295）	ipc-rpc	W05-2-295
+chunk族:index.eager-platform	renderer/主进程 bundle 族	dist/**/index.eager-platform-*.js（axis2-chunks.tsv W05-2-296）	ipc-rpc	W05-2-296
+chunk族:index.eager-vendor	renderer/主进程 bundle 族	dist/**/index.eager-vendor-*.js（axis2-chunks.tsv W05-2-297）	ipc-rpc	W05-2-297
+chunk族:main-app	renderer/主进程 bundle 族	dist/**/main-app-*.js（axis2-chunks.tsv W05-2-298）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-298
+chunk族:main-core	renderer/主进程 bundle 族	dist/**/main-core-*.js（axis2-chunks.tsv W05-2-299）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-299
+chunk族:markdown-math-katex	renderer/主进程 bundle 族	dist/**/markdown-math-katex-*.js（axis2-chunks.tsv W05-2-300）	ui-shell	W05-2-300
+chunk族:messages-worker	renderer/主进程 bundle 族	dist/**/messages-worker-*.js（axis2-chunks.tsv W05-2-301）	ipc-rpc（兜底：renderer 可达面普查）	W05-2-301
+chunk族:onepassword-connection-service	renderer/主进程 bundle 族	dist/**/onepassword-connection-service-*.js（axis2-chunks.tsv W05-2-302）	ipc-rpc	W05-2-302
+chunk族:preload-avatar-source	renderer/主进程 bundle 族	dist/**/preload-avatar-source-*.js（axis2-chunks.tsv W05-2-303）	ui-shell	W05-2-303
+chunk族:preload-desktop-mount-capture-overlay	renderer/主进程 bundle 族	dist/**/preload-desktop-mount-capture-overlay-*.js（axis2-chunks.tsv W05-2-304）	非 MVP：computer-use（桌面挂载/截屏覆盖层）	W05-2-304
+chunk族:preload-desktop-mount-panel	renderer/主进程 bundle 族	dist/**/preload-desktop-mount-panel-*.js（axis2-chunks.tsv W05-2-305）	非 MVP：computer-use（桌面挂载/截屏覆盖层）	W05-2-305
+proto:aiserver.v1.AgentStoreService.*	proto 方法	dist/electron-main/proto.cjs#"AgentStoreService"	features	W05-4-1
+proto:aiserver.v1.AgentStoreService.AbortAgentStoreMultipartWrites	proto 方法	dist/electron-main/proto.cjs#"AbortAgentStoreMultipartWrites"	features	W05-4-2
+proto:aiserver.v1.AgentStoreService.AcquireAgentStoreFileLock	proto 方法	dist/electron-main/proto.cjs#"AcquireAgentStoreFileLock"	features	W05-4-3
+proto:aiserver.v1.AgentStoreService.CheckAgentStoreVersions	proto 方法	dist/electron-main/proto.cjs#"CheckAgentStoreVersions"	features	W05-4-4
+proto:aiserver.v1.AgentStoreService.CompleteAgentStoreMultipartWrites	proto 方法	dist/electron-main/proto.cjs#"CompleteAgentStoreMultipartWrites"	features	W05-4-5
+proto:aiserver.v1.AgentStoreService.DeleteAgentStoreFiles	proto 方法	dist/electron-main/proto.cjs#"DeleteAgentStoreFiles"	features	W05-4-6
+proto:aiserver.v1.AgentStoreService.GetAgentStoreFileLock	proto 方法	dist/electron-main/proto.cjs#"GetAgentStoreFileLock"	features	W05-4-7
+proto:aiserver.v1.AgentStoreService.ListAgentStoreDirectory	proto 方法	dist/electron-main/proto.cjs#"ListAgentStoreDirectory"	features	W05-4-8
+proto:aiserver.v1.AgentStoreService.ListAgentStoreEntries	proto 方法	dist/electron-main/proto.cjs#"ListAgentStoreEntries"	features	W05-4-9
+proto:aiserver.v1.AgentStoreService.ListAgentStoreFiles	proto 方法	dist/electron-main/proto.cjs#"ListAgentStoreFiles"	features	W05-4-10
+proto:aiserver.v1.AgentStoreService.ListAgentStoreTombstones	proto 方法	dist/electron-main/proto.cjs#"ListAgentStoreTombstones"	features	W05-4-11
+proto:aiserver.v1.AgentStoreService.ListAgentStores	proto 方法	dist/electron-main/proto.cjs#"ListAgentStores"	features	W05-4-12
+proto:aiserver.v1.AgentStoreService.ListSharedAgentStores	proto 方法	dist/electron-main/proto.cjs#"ListSharedAgentStores"	features	W05-4-13
+proto:aiserver.v1.AgentStoreService.MintAgentStoreToken	proto 方法	dist/electron-main/proto.cjs#"MintAgentStoreToken"	features	W05-4-14
+proto:aiserver.v1.AgentStoreService.PresignAgentStoreReads	proto 方法	dist/electron-main/proto.cjs#"PresignAgentStoreReads"	features	W05-4-15
+proto:aiserver.v1.AgentStoreService.PresignAgentStoreWrites	proto 方法	dist/electron-main/proto.cjs#"PresignAgentStoreWrites"	features	W05-4-16
+proto:aiserver.v1.AgentStoreService.ReadAgentStoreFile	proto 方法	dist/electron-main/proto.cjs#"ReadAgentStoreFile"	features	W05-4-17
+proto:aiserver.v1.AgentStoreService.RecordAgentStoreListingVersionAudit	proto 方法	dist/electron-main/proto.cjs#"RecordAgentStoreListingVersionAudit"	features	W05-4-18
+proto:aiserver.v1.AgentStoreService.ReleaseAgentStoreFileLock	proto 方法	dist/electron-main/proto.cjs#"ReleaseAgentStoreFileLock"	features	W05-4-19
+proto:aiserver.v1.AgentStoreService.RenewAgentStoreFileLock	proto 方法	dist/electron-main/proto.cjs#"RenewAgentStoreFileLock"	features	W05-4-20
+proto:aiserver.v1.AgentStoreService.RmdirAgentStore	proto 方法	dist/electron-main/proto.cjs#"RmdirAgentStore"	features	W05-4-21
+proto:aiserver.v1.AgentStoreService.SetAgentStoreDocumentVisibility	proto 方法	dist/electron-main/proto.cjs#"SetAgentStoreDocumentVisibility"	features	W05-4-22
+proto:aiserver.v1.AgentStoreService.ShareAgentStore	proto 方法	dist/electron-main/proto.cjs#"ShareAgentStore"	features	W05-4-23
+proto:aiserver.v1.AgentStoreService.UndeleteAgentStoreFiles	proto 方法	dist/electron-main/proto.cjs#"UndeleteAgentStoreFiles"	features	W05-4-24
+proto:aiserver.v1.AgentStoreService.UnshareAgentStore	proto 方法	dist/electron-main/proto.cjs#"UnshareAgentStore"	features	W05-4-25
+proto:aiserver.v1.AgentStoreService.WriteAgentStoreDocument	proto 方法	dist/electron-main/proto.cjs#"WriteAgentStoreDocument"	features	W05-4-26
+proto:aiserver.v1.AiService.TextToSpeech	proto 方法	dist/electron-main/proto.cjs#"TextToSpeech"	cloud-deps（语音端点，非 MVP 外围）	W05-4-27
+proto:aiserver.v1.BackgroundComposerService.ListWorkersForManager	proto 方法	dist/electron-main/proto.cjs#"ListWorkersForManager"	ui-shell	W05-4-28
+proto:aiserver.v1.BackgroundComposerService.StreamBackgroundComposerUpdates	proto 方法	dist/electron-main/proto.cjs#"StreamBackgroundComposerUpdates"	RE-unpack（外壳/更新/i18n）	W05-4-29
+proto:aiserver.v1.DashboardService.ClaimSandTrialWithDeviceAttestation	proto 方法	dist/electron-main/proto.cjs#"ClaimSandTrialWithDeviceAttestation"	marketplace	W05-4-30
+proto:aiserver.v1.DashboardService.CreateBonfireInvite	proto 方法	dist/electron-main/proto.cjs#"CreateBonfireInvite"	marketplace	W05-4-31
+proto:aiserver.v1.DashboardService.DeleteCanvas	proto 方法	dist/electron-main/proto.cjs#"DeleteCanvas"	marketplace	W05-4-32
+proto:aiserver.v1.DashboardService.DeleteFinancialConnection	proto 方法	dist/electron-main/proto.cjs#"DeleteFinancialConnection"	marketplace	W05-4-33
+proto:aiserver.v1.DashboardService.DiscoverTeamTailnetSuffix	proto 方法	dist/electron-main/proto.cjs#"DiscoverTeamTailnetSuffix"	marketplace	W05-4-34
+proto:aiserver.v1.DashboardService.GetBonfireStatus	proto 方法	dist/electron-main/proto.cjs#"GetBonfireStatus"	marketplace	W05-4-35
+proto:aiserver.v1.DashboardService.GetCanvasMetadata	proto 方法	dist/electron-main/proto.cjs#"GetCanvasMetadata"	marketplace	W05-4-36
+proto:aiserver.v1.DashboardService.GetCanvasPayload	proto 方法	dist/electron-main/proto.cjs#"GetCanvasPayload"	marketplace	W05-4-37
+proto:aiserver.v1.DashboardService.GetCanvasShareAccess	proto 方法	dist/electron-main/proto.cjs#"GetCanvasShareAccess"	非 MVP：远程连接/SSH	W05-4-38
+proto:aiserver.v1.DashboardService.GetSandMachineMessagesEnabled	proto 方法	dist/electron-main/proto.cjs#"GetSandMachineMessagesEnabled"	marketplace	W05-4-39
+proto:aiserver.v1.DashboardService.GetTeamPrepaidBilling	proto 方法	dist/electron-main/proto.cjs#"GetTeamPrepaidBilling"	cloud-deps（账号体系/计费端点）	W05-4-40
+proto:aiserver.v1.DashboardService.GetTeamTailnet	proto 方法	dist/electron-main/proto.cjs#"GetTeamTailnet"	marketplace	W05-4-41
+proto:aiserver.v1.DashboardService.GetUnifyCta	proto 方法	dist/electron-main/proto.cjs#"GetUnifyCta"	marketplace	W05-4-42
+proto:aiserver.v1.DashboardService.GetUserPrepaidBilling	proto 方法	dist/electron-main/proto.cjs#"GetUserPrepaidBilling"	cloud-deps（账号体系/计费端点）	W05-4-43
+proto:aiserver.v1.DashboardService.GetXaiCommerceBearerToken	proto 方法	dist/electron-main/proto.cjs#"GetXaiCommerceBearerToken"	marketplace	W05-4-44
+proto:aiserver.v1.DashboardService.ListFinancialAccounts	proto 方法	dist/electron-main/proto.cjs#"ListFinancialAccounts"	cloud-deps（账号体系/计费端点）	W05-4-45
+proto:aiserver.v1.DashboardService.ListFinancialConnections	proto 方法	dist/electron-main/proto.cjs#"ListFinancialConnections"	marketplace	W05-4-46
+proto:aiserver.v1.DashboardService.ListSandMachines	proto 方法	dist/electron-main/proto.cjs#"ListSandMachines"	marketplace	W05-4-47
+proto:aiserver.v1.DashboardService.ListUserCanvases	proto 方法	dist/electron-main/proto.cjs#"ListUserCanvases"	marketplace	W05-4-48
+proto:aiserver.v1.DashboardService.ReadSandMcpResource	proto 方法	dist/electron-main/proto.cjs#"ReadSandMcpResource"	marketplace	W05-4-49
+proto:aiserver.v1.DashboardService.RefreshCanvasSources	proto 方法	dist/electron-main/proto.cjs#"RefreshCanvasSources"	marketplace	W05-4-50
+proto:aiserver.v1.DashboardService.RegisterSandMachine	proto 方法	dist/electron-main/proto.cjs#"RegisterSandMachine"	marketplace	W05-4-51
+proto:aiserver.v1.DashboardService.RemoveSandMachine	proto 方法	dist/electron-main/proto.cjs#"RemoveSandMachine"	marketplace	W05-4-52
+proto:aiserver.v1.DashboardService.RenameCanvas	proto 方法	dist/electron-main/proto.cjs#"RenameCanvas"	marketplace	W05-4-53
+proto:aiserver.v1.DashboardService.RetrySandMessagesPermission	proto 方法	dist/electron-main/proto.cjs#"RetrySandMessagesPermission"	marketplace	W05-4-54
+proto:aiserver.v1.DashboardService.SetActiveTailnet	proto 方法	dist/electron-main/proto.cjs#"SetActiveTailnet"	marketplace	W05-4-55
+proto:aiserver.v1.DashboardService.SetCanvasVisibility	proto 方法	dist/electron-main/proto.cjs#"SetCanvasVisibility"	marketplace	W05-4-56
+proto:aiserver.v1.DashboardService.SetGrokConnectorEnabled	proto 方法	dist/electron-main/proto.cjs#"SetGrokConnectorEnabled"	marketplace	W05-4-57
+proto:aiserver.v1.DashboardService.SetTeamPrepaidAutoTopUp	proto 方法	dist/electron-main/proto.cjs#"SetTeamPrepaidAutoTopUp"	marketplace	W05-4-58
+proto:aiserver.v1.DashboardService.SetUserPrepaidAutoTopUp	proto 方法	dist/electron-main/proto.cjs#"SetUserPrepaidAutoTopUp"	marketplace	W05-4-59
+proto:aiserver.v1.DashboardService.StartFinancialLink	proto 方法	dist/electron-main/proto.cjs#"StartFinancialLink"	marketplace	W05-4-60
+proto:aiserver.v1.DashboardService.UpdateCanvasShareAccess	proto 方法	dist/electron-main/proto.cjs#"UpdateCanvasShareAccess"	非 MVP：远程连接/SSH	W05-4-61
+proto:aiserver.v1.DashboardService.UpdateSandMachineLabel	proto 方法	dist/electron-main/proto.cjs#"UpdateSandMachineLabel"	marketplace	W05-4-62
+proto:aiserver.v1.DashboardService.UpdateSandMachineLocalToolPermission	proto 方法	dist/electron-main/proto.cjs#"UpdateSandMachineLocalToolPermission"	marketplace	W05-4-63
+proto:aiserver.v1.DashboardService.UpdateSandMachineMessagesEnabled	proto 方法	dist/electron-main/proto.cjs#"UpdateSandMachineMessagesEnabled"	marketplace	W05-4-64
+proto:aiserver.v1.DashboardService.UpdateTeamTailnet	proto 方法	dist/electron-main/proto.cjs#"UpdateTeamTailnet"	marketplace	W05-4-65
+proto:aiserver.v1.GrokBotService.AbortGrokBotAttachmentUpload	proto 方法	dist/electron-main/proto.cjs#"AbortGrokBotAttachmentUpload"	features	W05-4-66
+proto:aiserver.v1.GrokBotService.AcceptGrokBotAgentAccessInvite	proto 方法	dist/electron-main/proto.cjs#"AcceptGrokBotAgentAccessInvite"	features	W05-4-67
+proto:aiserver.v1.GrokBotService.ActivateGrokBotTemplateVersion	proto 方法	dist/electron-main/proto.cjs#"ActivateGrokBotTemplateVersion"	features	W05-4-68
+proto:aiserver.v1.GrokBotService.AddGrokBotAgentAccessPrincipal	proto 方法	dist/electron-main/proto.cjs#"AddGrokBotAgentAccessPrincipal"	features	W05-4-69
+proto:aiserver.v1.GrokBotService.AddGrokBotAgentManager	proto 方法	dist/electron-main/proto.cjs#"AddGrokBotAgentManager"	features	W05-4-70
+proto:aiserver.v1.GrokBotService.AddGrokBotAgentSkill	proto 方法	dist/electron-main/proto.cjs#"AddGrokBotAgentSkill"	features	W05-4-71
+proto:aiserver.v1.GrokBotService.AddGrokBotRoomPeople	proto 方法	dist/electron-main/proto.cjs#"AddGrokBotRoomPeople"	features	W05-4-72
+proto:aiserver.v1.GrokBotService.AddGrokBotTeamReviewItem	proto 方法	dist/electron-main/proto.cjs#"AddGrokBotTeamReviewItem"	features	W05-4-73
+proto:aiserver.v1.GrokBotService.AddGrokBotTeamsAppToTeam	proto 方法	dist/electron-main/proto.cjs#"AddGrokBotTeamsAppToTeam"	features	W05-4-74
+proto:aiserver.v1.GrokBotService.AdminAddGrokBotEmailSuppression	proto 方法	dist/electron-main/proto.cjs#"AdminAddGrokBotEmailSuppression"	features	W05-4-75
+proto:aiserver.v1.GrokBotService.AdminBreakGlassDeleteSandBoxPod	proto 方法	dist/electron-main/proto.cjs#"AdminBreakGlassDeleteSandBoxPod"	非 MVP：box/云电脑	W05-4-76
+proto:aiserver.v1.GrokBotService.AdminDeleteGrokBotAgent	proto 方法	dist/electron-main/proto.cjs#"AdminDeleteGrokBotAgent"	features	W05-4-77
+proto:aiserver.v1.GrokBotService.AdminDropGrokBotEmailDeadLetter	proto 方法	dist/electron-main/proto.cjs#"AdminDropGrokBotEmailDeadLetter"	features	W05-4-78
+proto:aiserver.v1.GrokBotService.AdminEnqueueGrokBotServiceAccountMessage	proto 方法	dist/electron-main/proto.cjs#"AdminEnqueueGrokBotServiceAccountMessage"	cloud-deps（账号体系/计费端点）	W05-4-79
+proto:aiserver.v1.GrokBotService.AdminForceDeleteGrokBotSessionBox	proto 方法	dist/electron-main/proto.cjs#"AdminForceDeleteGrokBotSessionBox"	features	W05-4-80
+proto:aiserver.v1.GrokBotService.AdminGetGrokBotAgentDefinition	proto 方法	dist/electron-main/proto.cjs#"AdminGetGrokBotAgentDefinition"	features	W05-4-81
+proto:aiserver.v1.GrokBotService.AdminGetGrokBotAgentStoreContents	proto 方法	dist/electron-main/proto.cjs#"AdminGetGrokBotAgentStoreContents"	features	W05-4-82
+proto:aiserver.v1.GrokBotService.AdminGetGrokBotAgentTransfers	proto 方法	dist/electron-main/proto.cjs#"AdminGetGrokBotAgentTransfers"	features	W05-4-83
+proto:aiserver.v1.GrokBotService.AdminGetGrokBotEmailLimits	proto 方法	dist/electron-main/proto.cjs#"AdminGetGrokBotEmailLimits"	features	W05-4-84
+proto:aiserver.v1.GrokBotService.AdminGetGrokBotEmailSendingState	proto 方法	dist/electron-main/proto.cjs#"AdminGetGrokBotEmailSendingState"	features	W05-4-85
+proto:aiserver.v1.GrokBotService.AdminGetGrokBotMeetingJoinConsent	proto 方法	dist/electron-main/proto.cjs#"AdminGetGrokBotMeetingJoinConsent"	features	W05-4-86
+proto:aiserver.v1.GrokBotService.AdminGetGrokBotMeetingSummaryVersions	proto 方法	dist/electron-main/proto.cjs#"AdminGetGrokBotMeetingSummaryVersions"	features	W05-4-87
+proto:aiserver.v1.GrokBotService.AdminGetGrokBotMeetingTranscript	proto 方法	dist/electron-main/proto.cjs#"AdminGetGrokBotMeetingTranscript"	features	W05-4-88
+proto:aiserver.v1.GrokBotService.AdminGetGrokBotSessionBox	proto 方法	dist/electron-main/proto.cjs#"AdminGetGrokBotSessionBox"	features	W05-4-89
+proto:aiserver.v1.GrokBotService.AdminGetGrokBotTeamAgentSharedState	proto 方法	dist/electron-main/proto.cjs#"AdminGetGrokBotTeamAgentSharedState"	features	W05-4-90
+proto:aiserver.v1.GrokBotService.AdminHibernateGrokBotSessionBox	proto 方法	dist/electron-main/proto.cjs#"AdminHibernateGrokBotSessionBox"	features	W05-4-91
+proto:aiserver.v1.GrokBotService.AdminListGrokBotAgentAccessGrants	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotAgentAccessGrants"	features	W05-4-92
+proto:aiserver.v1.GrokBotService.AdminListGrokBotEmailDeadLetterQueues	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotEmailDeadLetterQueues"	features	W05-4-93
+proto:aiserver.v1.GrokBotService.AdminListGrokBotEmailDeadLetters	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotEmailDeadLetters"	features	W05-4-94
+proto:aiserver.v1.GrokBotService.AdminListGrokBotEmailInboxes	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotEmailInboxes"	features	W05-4-95
+proto:aiserver.v1.GrokBotService.AdminListGrokBotEmailMessages	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotEmailMessages"	features	W05-4-96
+proto:aiserver.v1.GrokBotService.AdminListGrokBotEmailSuppressions	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotEmailSuppressions"	features	W05-4-97
+proto:aiserver.v1.GrokBotService.AdminListGrokBotMeetingRequestAgentRuns	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotMeetingRequestAgentRuns"	features	W05-4-98
+proto:aiserver.v1.GrokBotService.AdminListGrokBotServiceAccountSessions	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotServiceAccountSessions"	cloud-deps（账号体系/计费端点）	W05-4-99
+proto:aiserver.v1.GrokBotService.AdminListGrokBotSessionBoxes	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotSessionBoxes"	features	W05-4-100
+proto:aiserver.v1.GrokBotService.AdminListGrokBotTeamAgents	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotTeamAgents"	features	W05-4-101
+proto:aiserver.v1.GrokBotService.AdminListGrokBotTranscriptRequestRows	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotTranscriptRequestRows"	features	W05-4-102
+proto:aiserver.v1.GrokBotService.AdminListGrokBotTransferDestinations	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotTransferDestinations"	features	W05-4-103
+proto:aiserver.v1.GrokBotService.AdminListGrokBotUserStoreFiles	proto 方法	dist/electron-main/proto.cjs#"AdminListGrokBotUserStoreFiles"	features	W05-4-104
+proto:aiserver.v1.GrokBotService.AdminListSandBoxStoreManifestVersions	proto 方法	dist/electron-main/proto.cjs#"AdminListSandBoxStoreManifestVersions"	非 MVP：box/云电脑	W05-4-105
+proto:aiserver.v1.GrokBotService.AdminListSlackAppAudit	proto 方法	dist/electron-main/proto.cjs#"AdminListSlackAppAudit"	features	W05-4-106
+proto:aiserver.v1.GrokBotService.AdminListTeamLiveGrokBotAgents	proto 方法	dist/electron-main/proto.cjs#"AdminListTeamLiveGrokBotAgents"	cloud-deps（语音端点，非 MVP 外围）	W05-4-107
+proto:aiserver.v1.GrokBotService.AdminLookupGrokBotMeetingJoinConsentUsers	proto 方法	dist/electron-main/proto.cjs#"AdminLookupGrokBotMeetingJoinConsentUsers"	features	W05-4-108
+proto:aiserver.v1.GrokBotService.AdminLookupGrokBotMeetings	proto 方法	dist/electron-main/proto.cjs#"AdminLookupGrokBotMeetings"	features	W05-4-109
+proto:aiserver.v1.GrokBotService.AdminLookupGrokBotMeetingsByAgent	proto 方法	dist/electron-main/proto.cjs#"AdminLookupGrokBotMeetingsByAgent"	features	W05-4-110
+proto:aiserver.v1.GrokBotService.AdminMintGrokBotInvite	proto 方法	dist/electron-main/proto.cjs#"AdminMintGrokBotInvite"	features	W05-4-111
+proto:aiserver.v1.GrokBotService.AdminMintGrokBotMeetingAvatarLinks	proto 方法	dist/electron-main/proto.cjs#"AdminMintGrokBotMeetingAvatarLinks"	ui-shell	W05-4-112
+proto:aiserver.v1.GrokBotService.AdminMoveGrokBotEmailInboxes	proto 方法	dist/electron-main/proto.cjs#"AdminMoveGrokBotEmailInboxes"	features	W05-4-113
+proto:aiserver.v1.GrokBotService.AdminPreviewGrokBotAgentTransfer	proto 方法	dist/electron-main/proto.cjs#"AdminPreviewGrokBotAgentTransfer"	features	W05-4-114
+proto:aiserver.v1.GrokBotService.AdminPurgeGrokBotEmailDeadLetters	proto 方法	dist/electron-main/proto.cjs#"AdminPurgeGrokBotEmailDeadLetters"	features	W05-4-115
+proto:aiserver.v1.GrokBotService.AdminReadGrokBotServiceAccountConversation	proto 方法	dist/electron-main/proto.cjs#"AdminReadGrokBotServiceAccountConversation"	cloud-deps（账号体系/计费端点）	W05-4-116
+proto:aiserver.v1.GrokBotService.AdminReapGrokBotSessionBoxNow	proto 方法	dist/electron-main/proto.cjs#"AdminReapGrokBotSessionBoxNow"	features	W05-4-117
+proto:aiserver.v1.GrokBotService.AdminRefreshSandBoxEgress	proto 方法	dist/electron-main/proto.cjs#"AdminRefreshSandBoxEgress"	非 MVP：box/云电脑	W05-4-118
+proto:aiserver.v1.GrokBotService.AdminRemoveGrokBotEmailSuppressions	proto 方法	dist/electron-main/proto.cjs#"AdminRemoveGrokBotEmailSuppressions"	features	W05-4-119
+proto:aiserver.v1.GrokBotService.AdminRequeueAllGrokBotEmailDeadLetters	proto 方法	dist/electron-main/proto.cjs#"AdminRequeueAllGrokBotEmailDeadLetters"	features	W05-4-120
+proto:aiserver.v1.GrokBotService.AdminRequeueGrokBotEmailDeadLetter	proto 方法	dist/electron-main/proto.cjs#"AdminRequeueGrokBotEmailDeadLetter"	features	W05-4-121
+proto:aiserver.v1.GrokBotService.AdminResolveGrokBotAttachmentReads	proto 方法	dist/electron-main/proto.cjs#"AdminResolveGrokBotAttachmentReads"	features	W05-4-122
+proto:aiserver.v1.GrokBotService.AdminRestoreSandBoxStoreSnapshot	proto 方法	dist/electron-main/proto.cjs#"AdminRestoreSandBoxStoreSnapshot"	非 MVP：box/云电脑	W05-4-123
+proto:aiserver.v1.GrokBotService.AdminResumeGrokBotAgentTransfer	proto 方法	dist/electron-main/proto.cjs#"AdminResumeGrokBotAgentTransfer"	features	W05-4-124
+proto:aiserver.v1.GrokBotService.AdminRetryGrokBotSlackAppRemoval	proto 方法	dist/electron-main/proto.cjs#"AdminRetryGrokBotSlackAppRemoval"	features	W05-4-125
+proto:aiserver.v1.GrokBotService.AdminSendGrokBotTestEmail	proto 方法	dist/electron-main/proto.cjs#"AdminSendGrokBotTestEmail"	features	W05-4-126
+proto:aiserver.v1.GrokBotService.AdminSetGrokBotEmailSendingState	proto 方法	dist/electron-main/proto.cjs#"AdminSetGrokBotEmailSendingState"	features	W05-4-127
+proto:aiserver.v1.GrokBotService.AdminSetGrokBotEmailThresholds	proto 方法	dist/electron-main/proto.cjs#"AdminSetGrokBotEmailThresholds"	features	W05-4-128
+proto:aiserver.v1.GrokBotService.AdminStatSandBoxStoreObject	proto 方法	dist/electron-main/proto.cjs#"AdminStatSandBoxStoreObject"	非 MVP：box/云电脑	W05-4-129
+proto:aiserver.v1.GrokBotService.AdminTransferGrokBotAgents	proto 方法	dist/electron-main/proto.cjs#"AdminTransferGrokBotAgents"	features	W05-4-130
+proto:aiserver.v1.GrokBotService.AdminUnsetGrokBotMeetingJoinConsent	proto 方法	dist/electron-main/proto.cjs#"AdminUnsetGrokBotMeetingJoinConsent"	features	W05-4-131
+proto:aiserver.v1.GrokBotService.ApproveOnePasswordCredentialRequest	proto 方法	dist/electron-main/proto.cjs#"ApproveOnePasswordCredentialRequest"	features	W05-4-132
+proto:aiserver.v1.GrokBotService.AttachGrokBotAgentDelegatedCredential	proto 方法	dist/electron-main/proto.cjs#"AttachGrokBotAgentDelegatedCredential"	features	W05-4-133
+proto:aiserver.v1.GrokBotService.BatchCreateGrokBotVaultCredentials	proto 方法	dist/electron-main/proto.cjs#"BatchCreateGrokBotVaultCredentials"	features	W05-4-134
+proto:aiserver.v1.GrokBotService.BeginGrokBotAgentFileUpload	proto 方法	dist/electron-main/proto.cjs#"BeginGrokBotAgentFileUpload"	features	W05-4-135
+proto:aiserver.v1.GrokBotService.BeginGrokBotAttachmentUpload	proto 方法	dist/electron-main/proto.cjs#"BeginGrokBotAttachmentUpload"	features	W05-4-136
+proto:aiserver.v1.GrokBotService.BeginGrokBotSpendApproval	proto 方法	dist/electron-main/proto.cjs#"BeginGrokBotSpendApproval"	features	W05-4-137
+proto:aiserver.v1.GrokBotService.BeginOnePasswordConnection	proto 方法	dist/electron-main/proto.cjs#"BeginOnePasswordConnection"	features	W05-4-138
+proto:aiserver.v1.GrokBotService.BeginPasskeyRegistration	proto 方法	dist/electron-main/proto.cjs#"BeginPasskeyRegistration"	features	W05-4-139
+proto:aiserver.v1.GrokBotService.CallGrokBotMcpAppTool	proto 方法	dist/electron-main/proto.cjs#"CallGrokBotMcpAppTool"	marketplace	W05-4-140
+proto:aiserver.v1.GrokBotService.CancelGrokBotRoomMemberTurn	proto 方法	dist/electron-main/proto.cjs#"CancelGrokBotRoomMemberTurn"	features	W05-4-141
+proto:aiserver.v1.GrokBotService.CancelGrokBotUserComputerRequest	proto 方法	dist/electron-main/proto.cjs#"CancelGrokBotUserComputerRequest"	features	W05-4-142
+proto:aiserver.v1.GrokBotService.CancelSandBoxUpgrade	proto 方法	dist/electron-main/proto.cjs#"CancelSandBoxUpgrade"	非 MVP：box/云电脑	W05-4-143
+proto:aiserver.v1.GrokBotService.CheckGrokBotEmailAddressAvailability	proto 方法	dist/electron-main/proto.cjs#"CheckGrokBotEmailAddressAvailability"	features	W05-4-144
+proto:aiserver.v1.GrokBotService.ClaimGrokBotSlackConnect	proto 方法	dist/electron-main/proto.cjs#"ClaimGrokBotSlackConnect"	features	W05-4-145
+proto:aiserver.v1.GrokBotService.ClearGrokBotConnectorAlwaysAllow	proto 方法	dist/electron-main/proto.cjs#"ClearGrokBotConnectorAlwaysAllow"	features	W05-4-146
+proto:aiserver.v1.GrokBotService.ClearGrokBotHarnessMigrationHoldInternal	proto 方法	dist/electron-main/proto.cjs#"ClearGrokBotHarnessMigrationHoldInternal"	features	W05-4-147
+proto:aiserver.v1.GrokBotService.CloneGrokBotAgentToTeam	proto 方法	dist/electron-main/proto.cjs#"CloneGrokBotAgentToTeam"	features	W05-4-148
+proto:aiserver.v1.GrokBotService.CommitGrokBotTranscriptEntries	proto 方法	dist/electron-main/proto.cjs#"CommitGrokBotTranscriptEntries"	features	W05-4-149
+proto:aiserver.v1.GrokBotService.CommitSandBoxStoreManifest	proto 方法	dist/electron-main/proto.cjs#"CommitSandBoxStoreManifest"	非 MVP：box/云电脑	W05-4-150
+proto:aiserver.v1.GrokBotService.CompleteGrokBotAttachmentUpload	proto 方法	dist/electron-main/proto.cjs#"CompleteGrokBotAttachmentUpload"	features	W05-4-151
+proto:aiserver.v1.GrokBotService.CompleteOnePasswordConnection	proto 方法	dist/electron-main/proto.cjs#"CompleteOnePasswordConnection"	features	W05-4-152
+proto:aiserver.v1.GrokBotService.CompleteOnePasswordOAuth	proto 方法	dist/electron-main/proto.cjs#"CompleteOnePasswordOAuth"	cloud-deps（账号体系/计费端点）	W05-4-153
+proto:aiserver.v1.GrokBotService.CompleteTeamSandSetupFileUpload	proto 方法	dist/electron-main/proto.cjs#"CompleteTeamSandSetupFileUpload"	features	W05-4-154
+proto:aiserver.v1.GrokBotService.CreateGrokBotAgent	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotAgent"	features	W05-4-155
+proto:aiserver.v1.GrokBotService.CreateGrokBotAgentAccessInvite	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotAgentAccessInvite"	features	W05-4-156
+proto:aiserver.v1.GrokBotService.CreateGrokBotAgentFromTemplate	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotAgentFromTemplate"	features	W05-4-157
+proto:aiserver.v1.GrokBotService.CreateGrokBotChangelogInternal	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotChangelogInternal"	cloud-deps（账号体系/计费端点）	W05-4-158
+proto:aiserver.v1.GrokBotService.CreateGrokBotEmailInbox	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotEmailInbox"	features	W05-4-159
+proto:aiserver.v1.GrokBotService.CreateGrokBotMarketplaceCategoryInternal	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotMarketplaceCategoryInternal"	marketplace	W05-4-160
+proto:aiserver.v1.GrokBotService.CreateGrokBotMarketplaceCreatorInternal	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotMarketplaceCreatorInternal"	marketplace	W05-4-161
+proto:aiserver.v1.GrokBotService.CreateGrokBotMarketplaceListingInternal	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotMarketplaceListingInternal"	marketplace	W05-4-162
+proto:aiserver.v1.GrokBotService.CreateGrokBotOnboardingDripInternal	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotOnboardingDripInternal"	features	W05-4-163
+proto:aiserver.v1.GrokBotService.CreateGrokBotOnboardingDripStepInternal	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotOnboardingDripStepInternal"	features	W05-4-164
+proto:aiserver.v1.GrokBotService.CreateGrokBotRoom	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotRoom"	features	W05-4-165
+proto:aiserver.v1.GrokBotService.CreateGrokBotTemplate	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotTemplate"	features	W05-4-166
+proto:aiserver.v1.GrokBotService.CreateGrokBotTemporalAgent	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotTemporalAgent"	features	W05-4-167
+proto:aiserver.v1.GrokBotService.CreateGrokBotThreadFromMessage	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotThreadFromMessage"	features	W05-4-168
+proto:aiserver.v1.GrokBotService.CreateGrokBotVaultCard	proto 方法	dist/electron-main/proto.cjs#"CreateGrokBotVaultCard"	features	W05-4-169
+proto:aiserver.v1.GrokBotService.CreateTeamSandSetupFileUpload	proto 方法	dist/electron-main/proto.cjs#"CreateTeamSandSetupFileUpload"	features	W05-4-170
+proto:aiserver.v1.GrokBotService.DeleteGrokBotAgent	proto 方法	dist/electron-main/proto.cjs#"DeleteGrokBotAgent"	features	W05-4-171
+proto:aiserver.v1.GrokBotService.DeleteGrokBotAgentAutomation	proto 方法	dist/electron-main/proto.cjs#"DeleteGrokBotAgentAutomation"	features	W05-4-172
+proto:aiserver.v1.GrokBotService.DeleteGrokBotAgentFile	proto 方法	dist/electron-main/proto.cjs#"DeleteGrokBotAgentFile"	features	W05-4-173
+proto:aiserver.v1.GrokBotService.DeleteGrokBotEmailInbox	proto 方法	dist/electron-main/proto.cjs#"DeleteGrokBotEmailInbox"	features	W05-4-174
+proto:aiserver.v1.GrokBotService.DeleteGrokBotMarketplaceListingInternal	proto 方法	dist/electron-main/proto.cjs#"DeleteGrokBotMarketplaceListingInternal"	marketplace	W05-4-175
+proto:aiserver.v1.GrokBotService.DeleteGrokBotSecret	proto 方法	dist/electron-main/proto.cjs#"DeleteGrokBotSecret"	features	W05-4-176
+proto:aiserver.v1.GrokBotService.DeleteGrokBotTemplate	proto 方法	dist/electron-main/proto.cjs#"DeleteGrokBotTemplate"	features	W05-4-177
+proto:aiserver.v1.GrokBotService.DeleteGrokBotUserFormVaultEntry	proto 方法	dist/electron-main/proto.cjs#"DeleteGrokBotUserFormVaultEntry"	features	W05-4-178
+proto:aiserver.v1.GrokBotService.DeleteGrokBotUserStoreFile	proto 方法	dist/electron-main/proto.cjs#"DeleteGrokBotUserStoreFile"	features	W05-4-179
+proto:aiserver.v1.GrokBotService.DeleteGrokBotVaultCredential	proto 方法	dist/electron-main/proto.cjs#"DeleteGrokBotVaultCredential"	features	W05-4-180
+proto:aiserver.v1.GrokBotService.DeleteOnePasswordConnection	proto 方法	dist/electron-main/proto.cjs#"DeleteOnePasswordConnection"	features	W05-4-181
+proto:aiserver.v1.GrokBotService.DeleteTeamGrokBot	proto 方法	dist/electron-main/proto.cjs#"DeleteTeamGrokBot"	features	W05-4-182
+proto:aiserver.v1.GrokBotService.DeleteTeamGroupSandSetupManifest	proto 方法	dist/electron-main/proto.cjs#"DeleteTeamGroupSandSetupManifest"	features	W05-4-183
+proto:aiserver.v1.GrokBotService.DeleteTeamSandSetupFile	proto 方法	dist/electron-main/proto.cjs#"DeleteTeamSandSetupFile"	features	W05-4-184
+proto:aiserver.v1.GrokBotService.DeliverGrokBotRoomMemberTurnResult	proto 方法	dist/electron-main/proto.cjs#"DeliverGrokBotRoomMemberTurnResult"	features	W05-4-185
+proto:aiserver.v1.GrokBotService.DenyOnePasswordCredentialRequest	proto 方法	dist/electron-main/proto.cjs#"DenyOnePasswordCredentialRequest"	features	W05-4-186
+proto:aiserver.v1.GrokBotService.DiscardGrokBotDraft	proto 方法	dist/electron-main/proto.cjs#"DiscardGrokBotDraft"	features	W05-4-187
+proto:aiserver.v1.GrokBotService.DisconnectGrokBotTeamsAccount	proto 方法	dist/electron-main/proto.cjs#"DisconnectGrokBotTeamsAccount"	cloud-deps（账号体系/计费端点）	W05-4-188
+proto:aiserver.v1.GrokBotService.DismissGrokBotAgentSuggestions	proto 方法	dist/electron-main/proto.cjs#"DismissGrokBotAgentSuggestions"	features	W05-4-189
+proto:aiserver.v1.GrokBotService.DismissGrokBotTask	proto 方法	dist/electron-main/proto.cjs#"DismissGrokBotTask"	features	W05-4-190
+proto:aiserver.v1.GrokBotService.DismissGrokBotUserForm	proto 方法	dist/electron-main/proto.cjs#"DismissGrokBotUserForm"	features	W05-4-191
+proto:aiserver.v1.GrokBotService.DismissGrokBotWidget	proto 方法	dist/electron-main/proto.cjs#"DismissGrokBotWidget"	features	W05-4-192
+proto:aiserver.v1.GrokBotService.DuplicateGrokBotAgent	proto 方法	dist/electron-main/proto.cjs#"DuplicateGrokBotAgent"	features	W05-4-193
+proto:aiserver.v1.GrokBotService.EndGrokBotBoxHandoff	proto 方法	dist/electron-main/proto.cjs#"EndGrokBotBoxHandoff"	features	W05-4-194
+proto:aiserver.v1.GrokBotService.EnsureGrokBotBoxHarnessMigrationPass	proto 方法	dist/electron-main/proto.cjs#"EnsureGrokBotBoxHarnessMigrationPass"	features	W05-4-195
+proto:aiserver.v1.GrokBotService.EnsureGrokBotDefaultMainAgent	proto 方法	dist/electron-main/proto.cjs#"EnsureGrokBotDefaultMainAgent"	features	W05-4-196
+proto:aiserver.v1.GrokBotService.EnsureGrokBotPullRequestChat	proto 方法	dist/electron-main/proto.cjs#"EnsureGrokBotPullRequestChat"	features	W05-4-197
+proto:aiserver.v1.GrokBotService.ExecuteInternalPrimaryBotMigration	proto 方法	dist/electron-main/proto.cjs#"ExecuteInternalPrimaryBotMigration"	features	W05-4-198
+proto:aiserver.v1.GrokBotService.ExtractGrokBotCardFromPhoto	proto 方法	dist/electron-main/proto.cjs#"ExtractGrokBotCardFromPhoto"	features	W05-4-199
+proto:aiserver.v1.GrokBotService.FinishGrokBotAgentFileUpload	proto 方法	dist/electron-main/proto.cjs#"FinishGrokBotAgentFileUpload"	features	W05-4-200
+proto:aiserver.v1.GrokBotService.FinishGrokBotSpendApprovalAssertion	proto 方法	dist/electron-main/proto.cjs#"FinishGrokBotSpendApprovalAssertion"	features	W05-4-201
+proto:aiserver.v1.GrokBotService.FinishGrokBotXConnect	proto 方法	dist/electron-main/proto.cjs#"FinishGrokBotXConnect"	features	W05-4-202
+proto:aiserver.v1.GrokBotService.FinishMicrosoftTeamsAccountLink	proto 方法	dist/electron-main/proto.cjs#"FinishMicrosoftTeamsAccountLink"	cloud-deps（账号体系/计费端点）	W05-4-203
+proto:aiserver.v1.GrokBotService.FinishPasskeyRegistration	proto 方法	dist/electron-main/proto.cjs#"FinishPasskeyRegistration"	features	W05-4-204
+proto:aiserver.v1.GrokBotService.GetBulkTeamMemberSandBoxOperationStatus	proto 方法	dist/electron-main/proto.cjs#"GetBulkTeamMemberSandBoxOperationStatus"	非 MVP：box/云电脑	W05-4-205
+proto:aiserver.v1.GrokBotService.GetGrokBotAgentAccess	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotAgentAccess"	features	W05-4-206
+proto:aiserver.v1.GrokBotService.GetGrokBotAgentAnalytics	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotAgentAnalytics"	cloud-deps（遥测）	W05-4-207
+proto:aiserver.v1.GrokBotService.GetGrokBotAgentCustomMcp	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotAgentCustomMcp"	marketplace	W05-4-208
+proto:aiserver.v1.GrokBotService.GetGrokBotAgentInPlaceShareStatus	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotAgentInPlaceShareStatus"	features	W05-4-209
+proto:aiserver.v1.GrokBotService.GetGrokBotAgentLinkAccess	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotAgentLinkAccess"	features	W05-4-210
+proto:aiserver.v1.GrokBotService.GetGrokBotAgentPluginFile	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotAgentPluginFile"	marketplace	W05-4-211
+proto:aiserver.v1.GrokBotService.GetGrokBotAgentPlugins	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotAgentPlugins"	marketplace	W05-4-212
+proto:aiserver.v1.GrokBotService.GetGrokBotChangelogInternal	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotChangelogInternal"	cloud-deps（账号体系/计费端点）	W05-4-213
+proto:aiserver.v1.GrokBotService.GetGrokBotCloudAgentWatchers	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotCloudAgentWatchers"	features	W05-4-214
+proto:aiserver.v1.GrokBotService.GetGrokBotConnectorSharedSpaceAllowlist	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotConnectorSharedSpaceAllowlist"	features	W05-4-215
+proto:aiserver.v1.GrokBotService.GetGrokBotDefaultPaymentMethod	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotDefaultPaymentMethod"	cloud-deps（账号体系/计费端点）	W05-4-216
+proto:aiserver.v1.GrokBotService.GetGrokBotEgressPolicy	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotEgressPolicy"	features	W05-4-217
+proto:aiserver.v1.GrokBotService.GetGrokBotHarnessMigrationStatusInternal	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotHarnessMigrationStatusInternal"	features	W05-4-218
+proto:aiserver.v1.GrokBotService.GetGrokBotIMessageDraftSender	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotIMessageDraftSender"	features	W05-4-219
+proto:aiserver.v1.GrokBotService.GetGrokBotMarketplaceCategoryInternal	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotMarketplaceCategoryInternal"	marketplace	W05-4-220
+proto:aiserver.v1.GrokBotService.GetGrokBotMarketplaceCreatorInternal	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotMarketplaceCreatorInternal"	marketplace	W05-4-221
+proto:aiserver.v1.GrokBotService.GetGrokBotMarketplaceListingInternal	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotMarketplaceListingInternal"	marketplace	W05-4-222
+proto:aiserver.v1.GrokBotService.GetGrokBotMarketplaceListingSourceTemplateInternal	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotMarketplaceListingSourceTemplateInternal"	marketplace	W05-4-223
+proto:aiserver.v1.GrokBotService.GetGrokBotMarketplaceListingTemplateInternal	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotMarketplaceListingTemplateInternal"	marketplace	W05-4-224
+proto:aiserver.v1.GrokBotService.GetGrokBotMcpToolPermissions	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotMcpToolPermissions"	marketplace	W05-4-225
+proto:aiserver.v1.GrokBotService.GetGrokBotMeetingRecord	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotMeetingRecord"	features	W05-4-226
+proto:aiserver.v1.GrokBotService.GetGrokBotMessagingLinkStatus	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotMessagingLinkStatus"	features	W05-4-227
+proto:aiserver.v1.GrokBotService.GetGrokBotOnboardingDripInternal	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotOnboardingDripInternal"	features	W05-4-228
+proto:aiserver.v1.GrokBotService.GetGrokBotOnePasswordExtensionDownload	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotOnePasswordExtensionDownload"	marketplace	W05-4-229
+proto:aiserver.v1.GrokBotService.GetGrokBotPhoneUiGates	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotPhoneUiGates"	features	W05-4-230
+proto:aiserver.v1.GrokBotService.GetGrokBotRuntimeCapabilities	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotRuntimeCapabilities"	features	W05-4-231
+proto:aiserver.v1.GrokBotService.GetGrokBotSendStatus	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotSendStatus"	features	W05-4-232
+proto:aiserver.v1.GrokBotService.GetGrokBotSlackInstallState	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotSlackInstallState"	features	W05-4-233
+proto:aiserver.v1.GrokBotService.GetGrokBotTeamContextSummary	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotTeamContextSummary"	features	W05-4-234
+proto:aiserver.v1.GrokBotService.GetGrokBotTeamLinkPreview	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotTeamLinkPreview"	features	W05-4-235
+proto:aiserver.v1.GrokBotService.GetGrokBotTeamsInstallState	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotTeamsInstallState"	features	W05-4-236
+proto:aiserver.v1.GrokBotService.GetGrokBotTemplateExportPolicy	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotTemplateExportPolicy"	cloud-deps（遥测）	W05-4-237
+proto:aiserver.v1.GrokBotService.GetGrokBotTemplateForOperatorInternal	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotTemplateForOperatorInternal"	features	W05-4-238
+proto:aiserver.v1.GrokBotService.GetGrokBotTemplateForSourceAgent	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotTemplateForSourceAgent"	features	W05-4-239
+proto:aiserver.v1.GrokBotService.GetGrokBotTemplateImportDetails	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotTemplateImportDetails"	features	W05-4-240
+proto:aiserver.v1.GrokBotService.GetGrokBotTemplateVersion	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotTemplateVersion"	features	W05-4-241
+proto:aiserver.v1.GrokBotService.GetGrokBotTermsSeen	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotTermsSeen"	features	W05-4-242
+proto:aiserver.v1.GrokBotService.GetGrokBotUserMcpSettings	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotUserMcpSettings"	marketplace	W05-4-243
+proto:aiserver.v1.GrokBotService.GetGrokBotUserRuntimeSettings	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotUserRuntimeSettings"	features	W05-4-244
+proto:aiserver.v1.GrokBotService.GetGrokBotVoiceCall	proto 方法	dist/electron-main/proto.cjs#"GetGrokBotVoiceCall"	cloud-deps（语音端点，非 MVP 外围）	W05-4-245
+proto:aiserver.v1.GrokBotService.GetMicrosoftTeamsAccountLinkStatus	proto 方法	dist/electron-main/proto.cjs#"GetMicrosoftTeamsAccountLinkStatus"	cloud-deps（账号体系/计费端点）	W05-4-246
+proto:aiserver.v1.GrokBotService.GetOnePasswordState	proto 方法	dist/electron-main/proto.cjs#"GetOnePasswordState"	features	W05-4-247
+proto:aiserver.v1.GrokBotService.GetPasskeyCeremony	proto 方法	dist/electron-main/proto.cjs#"GetPasskeyCeremony"	features	W05-4-248
+proto:aiserver.v1.GrokBotService.GetPasskeyCeremonyStatus	proto 方法	dist/electron-main/proto.cjs#"GetPasskeyCeremonyStatus"	features	W05-4-249
+proto:aiserver.v1.GrokBotService.GetPublicGrokBotAgentPreview	proto 方法	dist/electron-main/proto.cjs#"GetPublicGrokBotAgentPreview"	features	W05-4-250
+proto:aiserver.v1.GrokBotService.GetPublicGrokBotMarketplaceListing	proto 方法	dist/electron-main/proto.cjs#"GetPublicGrokBotMarketplaceListing"	marketplace	W05-4-251
+proto:aiserver.v1.GrokBotService.GetPublicGrokBotTemplate	proto 方法	dist/electron-main/proto.cjs#"GetPublicGrokBotTemplate"	features	W05-4-252
+proto:aiserver.v1.GrokBotService.GetSandBoxUpgradeSchedule	proto 方法	dist/electron-main/proto.cjs#"GetSandBoxUpgradeSchedule"	非 MVP：box/云电脑	W05-4-253
+proto:aiserver.v1.GrokBotService.GetTeamMemberSandBoxMigrationStatus	proto 方法	dist/electron-main/proto.cjs#"GetTeamMemberSandBoxMigrationStatus"	非 MVP：box/云电脑	W05-4-254
+proto:aiserver.v1.GrokBotService.HangUpGrokBotOutboundCall	proto 方法	dist/electron-main/proto.cjs#"HangUpGrokBotOutboundCall"	features	W05-4-255
+proto:aiserver.v1.GrokBotService.InstallGrokBotSlackApp	proto 方法	dist/electron-main/proto.cjs#"InstallGrokBotSlackApp"	features	W05-4-256
+proto:aiserver.v1.GrokBotService.InstallGrokBotTeamsApp	proto 方法	dist/electron-main/proto.cjs#"InstallGrokBotTeamsApp"	features	W05-4-257
+proto:aiserver.v1.GrokBotService.InterruptGrokBotAgentRun	proto 方法	dist/electron-main/proto.cjs#"InterruptGrokBotAgentRun"	features	W05-4-258
+proto:aiserver.v1.GrokBotService.InvalidateGrokBotUserSkillsCache	proto 方法	dist/electron-main/proto.cjs#"InvalidateGrokBotUserSkillsCache"	features	W05-4-259
+proto:aiserver.v1.GrokBotService.IssueGrokBotMessagingLinkCode	proto 方法	dist/electron-main/proto.cjs#"IssueGrokBotMessagingLinkCode"	features	W05-4-260
+proto:aiserver.v1.GrokBotService.IssueGrokBotUserComputerCredential	proto 方法	dist/electron-main/proto.cjs#"IssueGrokBotUserComputerCredential"	features	W05-4-261
+proto:aiserver.v1.GrokBotService.KeepGrokBotTaskList	proto 方法	dist/electron-main/proto.cjs#"KeepGrokBotTaskList"	features	W05-4-262
+proto:aiserver.v1.GrokBotService.LeaveGrokBotServerMeeting	proto 方法	dist/electron-main/proto.cjs#"LeaveGrokBotServerMeeting"	features	W05-4-263
+proto:aiserver.v1.GrokBotService.ListDeletedGrokBotAgentIds	proto 方法	dist/electron-main/proto.cjs#"ListDeletedGrokBotAgentIds"	features	W05-4-264
+proto:aiserver.v1.GrokBotService.ListGrokBotAccountAutomations	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAccountAutomations"	cloud-deps（账号体系/计费端点）	W05-4-265
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentAccessInvites	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentAccessInvites"	features	W05-4-266
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentAccessPrincipals	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentAccessPrincipals"	features	W05-4-267
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentAutomations	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentAutomations"	features	W05-4-268
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentFiles	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentFiles"	features	W05-4-269
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentManagers	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentManagers"	features	W05-4-270
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentMeetings	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentMeetings"	features	W05-4-271
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentRoutines	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentRoutines"	features	W05-4-272
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentSessions	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentSessions"	features	W05-4-273
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentSkills	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentSkills"	features	W05-4-274
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentStatuses	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentStatuses"	features	W05-4-275
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentTasks	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentTasks"	features	W05-4-276
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentTodos	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentTodos"	features	W05-4-277
+proto:aiserver.v1.GrokBotService.ListGrokBotAgents	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgents"	features	W05-4-278
+proto:aiserver.v1.GrokBotService.ListGrokBotAgentsForOperatorInternal	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotAgentsForOperatorInternal"	features	W05-4-279
+proto:aiserver.v1.GrokBotService.ListGrokBotChangelogsInternal	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotChangelogsInternal"	features	W05-4-280
+proto:aiserver.v1.GrokBotService.ListGrokBotEmailInboxes	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotEmailInboxes"	features	W05-4-281
+proto:aiserver.v1.GrokBotService.ListGrokBotEmailThreads	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotEmailThreads"	features	W05-4-282
+proto:aiserver.v1.GrokBotService.ListGrokBotLibraryDocs	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotLibraryDocs"	features	W05-4-283
+proto:aiserver.v1.GrokBotService.ListGrokBotLibraryPins	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotLibraryPins"	features	W05-4-284
+proto:aiserver.v1.GrokBotService.ListGrokBotMarketplaceCategoriesInternal	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotMarketplaceCategoriesInternal"	marketplace	W05-4-285
+proto:aiserver.v1.GrokBotService.ListGrokBotMarketplaceCreatorsInternal	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotMarketplaceCreatorsInternal"	marketplace	W05-4-286
+proto:aiserver.v1.GrokBotService.ListGrokBotMarketplaceListingsInternal	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotMarketplaceListingsInternal"	marketplace	W05-4-287
+proto:aiserver.v1.GrokBotService.ListGrokBotMessagingLinkedPhones	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotMessagingLinkedPhones"	features	W05-4-288
+proto:aiserver.v1.GrokBotService.ListGrokBotOnboardingDripsInternal	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotOnboardingDripsInternal"	features	W05-4-289
+proto:aiserver.v1.GrokBotService.ListGrokBotPullRequestChatEntries	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotPullRequestChatEntries"	features	W05-4-290
+proto:aiserver.v1.GrokBotService.ListGrokBotSecrets	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotSecrets"	features	W05-4-291
+proto:aiserver.v1.GrokBotService.ListGrokBotServerMeetings	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotServerMeetings"	features	W05-4-292
+proto:aiserver.v1.GrokBotService.ListGrokBotStripeLinkPaymentMethods	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotStripeLinkPaymentMethods"	cloud-deps（账号体系/计费端点）	W05-4-293
+proto:aiserver.v1.GrokBotService.ListGrokBotSubagents	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotSubagents"	features	W05-4-294
+proto:aiserver.v1.GrokBotService.ListGrokBotTasks	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotTasks"	features	W05-4-295
+proto:aiserver.v1.GrokBotService.ListGrokBotTeamAgents	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotTeamAgents"	features	W05-4-296
+proto:aiserver.v1.GrokBotService.ListGrokBotTeamReviewItems	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotTeamReviewItems"	features	W05-4-297
+proto:aiserver.v1.GrokBotService.ListGrokBotTeamsJoinedTeams	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotTeamsJoinedTeams"	features	W05-4-298
+proto:aiserver.v1.GrokBotService.ListGrokBotTemplates	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotTemplates"	features	W05-4-299
+proto:aiserver.v1.GrokBotService.ListGrokBotTranscriptEntries	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotTranscriptEntries"	features	W05-4-300
+proto:aiserver.v1.GrokBotService.ListGrokBotUserBotMemories	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotUserBotMemories"	features	W05-4-301
+proto:aiserver.v1.GrokBotService.ListGrokBotUserComputers	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotUserComputers"	features	W05-4-302
+proto:aiserver.v1.GrokBotService.ListGrokBotUserFormVaultEntries	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotUserFormVaultEntries"	features	W05-4-303
+proto:aiserver.v1.GrokBotService.ListGrokBotUserFormVaultKeys	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotUserFormVaultKeys"	features	W05-4-304
+proto:aiserver.v1.GrokBotService.ListGrokBotUserStoreFiles	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotUserStoreFiles"	features	W05-4-305
+proto:aiserver.v1.GrokBotService.ListGrokBotVaultCredentials	proto 方法	dist/electron-main/proto.cjs#"ListGrokBotVaultCredentials"	features	W05-4-306
+proto:aiserver.v1.GrokBotService.ListPasskeys	proto 方法	dist/electron-main/proto.cjs#"ListPasskeys"	features	W05-4-307
+proto:aiserver.v1.GrokBotService.ListPublicGrokBotMarketplaceListings	proto 方法	dist/electron-main/proto.cjs#"ListPublicGrokBotMarketplaceListings"	marketplace	W05-4-308
+proto:aiserver.v1.GrokBotService.ListTeamGroupSandSetupManifests	proto 方法	dist/electron-main/proto.cjs#"ListTeamGroupSandSetupManifests"	cloud-deps（语音端点，非 MVP 外围）	W05-4-309
+proto:aiserver.v1.GrokBotService.ListTeamSandSetupFiles	proto 方法	dist/electron-main/proto.cjs#"ListTeamSandSetupFiles"	cloud-deps（语音端点，非 MVP 外围）	W05-4-310
+proto:aiserver.v1.GrokBotService.MarkGrokBotAgentTaskDone	proto 方法	dist/electron-main/proto.cjs#"MarkGrokBotAgentTaskDone"	features	W05-4-311
+proto:aiserver.v1.GrokBotService.MarkGrokBotAgentTaskRead	proto 方法	dist/electron-main/proto.cjs#"MarkGrokBotAgentTaskRead"	features	W05-4-312
+proto:aiserver.v1.GrokBotService.MarkGrokBotTasksSeen	proto 方法	dist/electron-main/proto.cjs#"MarkGrokBotTasksSeen"	features	W05-4-313
+proto:aiserver.v1.GrokBotService.MarkGrokBotTermsSeen	proto 方法	dist/electron-main/proto.cjs#"MarkGrokBotTermsSeen"	features	W05-4-314
+proto:aiserver.v1.GrokBotService.MergeGrokBotLibraryPins	proto 方法	dist/electron-main/proto.cjs#"MergeGrokBotLibraryPins"	features	W05-4-315
+proto:aiserver.v1.GrokBotService.MintSandVoiceCallSecret	proto 方法	dist/electron-main/proto.cjs#"MintSandVoiceCallSecret"	cloud-deps（语音端点，非 MVP 外围）	W05-4-316
+proto:aiserver.v1.GrokBotService.NudgeOnePasswordAccessRequest	proto 方法	dist/electron-main/proto.cjs#"NudgeOnePasswordAccessRequest"	features	W05-4-317
+proto:aiserver.v1.GrokBotService.OpenGrokBotUserComputerRequest	proto 方法	dist/electron-main/proto.cjs#"OpenGrokBotUserComputerRequest"	features	W05-4-318
+proto:aiserver.v1.GrokBotService.PollGrokBotUserComputerRequests	proto 方法	dist/electron-main/proto.cjs#"PollGrokBotUserComputerRequests"	features	W05-4-319
+proto:aiserver.v1.GrokBotService.PresignGrokBotAttachmentUploadParts	proto 方法	dist/electron-main/proto.cjs#"PresignGrokBotAttachmentUploadParts"	features	W05-4-320
+proto:aiserver.v1.GrokBotService.PresignGrokBotMarketplaceCreatorProfileUploadInternal	proto 方法	dist/electron-main/proto.cjs#"PresignGrokBotMarketplaceCreatorProfileUploadInternal"	marketplace	W05-4-321
+proto:aiserver.v1.GrokBotService.PresignGrokBotMarketplaceImageUploadInternal	proto 方法	dist/electron-main/proto.cjs#"PresignGrokBotMarketplaceImageUploadInternal"	marketplace	W05-4-322
+proto:aiserver.v1.GrokBotService.PreviewGrokBotAgentAccessInvite	proto 方法	dist/electron-main/proto.cjs#"PreviewGrokBotAgentAccessInvite"	features	W05-4-323
+proto:aiserver.v1.GrokBotService.PreviewGrokBotMarketplaceSourceInternal	proto 方法	dist/electron-main/proto.cjs#"PreviewGrokBotMarketplaceSourceInternal"	marketplace	W05-4-324
+proto:aiserver.v1.GrokBotService.PreviewInternalPrimaryBotMigration	proto 方法	dist/electron-main/proto.cjs#"PreviewInternalPrimaryBotMigration"	features	W05-4-325
+proto:aiserver.v1.GrokBotService.PromoteGrokBotMemoriesToTeam	proto 方法	dist/electron-main/proto.cjs#"PromoteGrokBotMemoriesToTeam"	features	W05-4-326
+proto:aiserver.v1.GrokBotService.PublishGrokBotAgent	proto 方法	dist/electron-main/proto.cjs#"PublishGrokBotAgent"	features	W05-4-327
+proto:aiserver.v1.GrokBotService.PublishGrokBotUserSkillsSnapshot	proto 方法	dist/electron-main/proto.cjs#"PublishGrokBotUserSkillsSnapshot"	features	W05-4-328
+proto:aiserver.v1.GrokBotService.PullGrokBotMeetings	proto 方法	dist/electron-main/proto.cjs#"PullGrokBotMeetings"	features	W05-4-329
+proto:aiserver.v1.GrokBotService.PutGrokBotSecret	proto 方法	dist/electron-main/proto.cjs#"PutGrokBotSecret"	features	W05-4-330
+proto:aiserver.v1.GrokBotService.PutGrokBotVaultCredential	proto 方法	dist/electron-main/proto.cjs#"PutGrokBotVaultCredential"	features	W05-4-331
+proto:aiserver.v1.GrokBotService.PutGrokBotVaultItem	proto 方法	dist/electron-main/proto.cjs#"PutGrokBotVaultItem"	features	W05-4-332
+proto:aiserver.v1.GrokBotService.RaiseGrokBotVirtualCard	proto 方法	dist/electron-main/proto.cjs#"RaiseGrokBotVirtualCard"	features	W05-4-333
+proto:aiserver.v1.GrokBotService.ReactToGrokBotMessage	proto 方法	dist/electron-main/proto.cjs#"ReactToGrokBotMessage"	features	W05-4-334
+proto:aiserver.v1.GrokBotService.ReadGrokBotAgentAttachmentChunk	proto 方法	dist/electron-main/proto.cjs#"ReadGrokBotAgentAttachmentChunk"	features	W05-4-335
+proto:aiserver.v1.GrokBotService.ReadGrokBotEmailAttachment	proto 方法	dist/electron-main/proto.cjs#"ReadGrokBotEmailAttachment"	features	W05-4-336
+proto:aiserver.v1.GrokBotService.ReadGrokBotEmailThread	proto 方法	dist/electron-main/proto.cjs#"ReadGrokBotEmailThread"	features	W05-4-337
+proto:aiserver.v1.GrokBotService.ReadGrokBotGroupChatCanvas	proto 方法	dist/electron-main/proto.cjs#"ReadGrokBotGroupChatCanvas"	ui-shell	W05-4-338
+proto:aiserver.v1.GrokBotService.ReadGrokBotGroupChatDocument	proto 方法	dist/electron-main/proto.cjs#"ReadGrokBotGroupChatDocument"	features	W05-4-339
+proto:aiserver.v1.GrokBotService.ReadGrokBotMcpAppDocument	proto 方法	dist/electron-main/proto.cjs#"ReadGrokBotMcpAppDocument"	marketplace	W05-4-340
+proto:aiserver.v1.GrokBotService.RecordGrokBotVoiceCall	proto 方法	dist/electron-main/proto.cjs#"RecordGrokBotVoiceCall"	cloud-deps（语音端点，非 MVP 外围）	W05-4-341
+proto:aiserver.v1.GrokBotService.RecreateTeamMemberSandBox	proto 方法	dist/electron-main/proto.cjs#"RecreateTeamMemberSandBox"	非 MVP：box/云电脑	W05-4-342
+proto:aiserver.v1.GrokBotService.RefreshGrokBotTeamsApp	proto 方法	dist/electron-main/proto.cjs#"RefreshGrokBotTeamsApp"	features	W05-4-343
+proto:aiserver.v1.GrokBotService.ReinstallGrokBotSlackApp	proto 方法	dist/electron-main/proto.cjs#"ReinstallGrokBotSlackApp"	features	W05-4-344
+proto:aiserver.v1.GrokBotService.ReinstallGrokBotTeamsApp	proto 方法	dist/electron-main/proto.cjs#"ReinstallGrokBotTeamsApp"	features	W05-4-345
+proto:aiserver.v1.GrokBotService.RemoveGrokBotAgentAccessPrincipal	proto 方法	dist/electron-main/proto.cjs#"RemoveGrokBotAgentAccessPrincipal"	features	W05-4-346
+proto:aiserver.v1.GrokBotService.RemoveGrokBotAgentDelegatedCredential	proto 方法	dist/electron-main/proto.cjs#"RemoveGrokBotAgentDelegatedCredential"	features	W05-4-347
+proto:aiserver.v1.GrokBotService.RemoveGrokBotAgentManager	proto 方法	dist/electron-main/proto.cjs#"RemoveGrokBotAgentManager"	features	W05-4-348
+proto:aiserver.v1.GrokBotService.RemoveGrokBotAgentSkill	proto 方法	dist/electron-main/proto.cjs#"RemoveGrokBotAgentSkill"	features	W05-4-349
+proto:aiserver.v1.GrokBotService.RemoveGrokBotRoomPeople	proto 方法	dist/electron-main/proto.cjs#"RemoveGrokBotRoomPeople"	features	W05-4-350
+proto:aiserver.v1.GrokBotService.ReorderGrokBotOnboardingDripStepsInternal	proto 方法	dist/electron-main/proto.cjs#"ReorderGrokBotOnboardingDripStepsInternal"	features	W05-4-351
+proto:aiserver.v1.GrokBotService.ReportGrokBotClientPresence	proto 方法	dist/electron-main/proto.cjs#"ReportGrokBotClientPresence"	features	W05-4-352
+proto:aiserver.v1.GrokBotService.ReportGrokBotDesktopActivity	proto 方法	dist/electron-main/proto.cjs#"ReportGrokBotDesktopActivity"	features	W05-4-353
+proto:aiserver.v1.GrokBotService.ReportGrokBotMeetings	proto 方法	dist/electron-main/proto.cjs#"ReportGrokBotMeetings"	features	W05-4-354
+proto:aiserver.v1.GrokBotService.ReportGrokBotNotificationPermission	proto 方法	dist/electron-main/proto.cjs#"ReportGrokBotNotificationPermission"	RE-unpack（外壳/更新/i18n）	W05-4-355
+proto:aiserver.v1.GrokBotService.ReportSandBoxHostState	proto 方法	dist/electron-main/proto.cjs#"ReportSandBoxHostState"	非 MVP：box/云电脑	W05-4-356
+proto:aiserver.v1.GrokBotService.RequestGrokBotRoomMemberTurn	proto 方法	dist/electron-main/proto.cjs#"RequestGrokBotRoomMemberTurn"	features	W05-4-357
+proto:aiserver.v1.GrokBotService.RescheduleSandBoxUpgrade	proto 方法	dist/electron-main/proto.cjs#"RescheduleSandBoxUpgrade"	非 MVP：box/云电脑	W05-4-358
+proto:aiserver.v1.GrokBotService.ResolveGrokBotAddress	proto 方法	dist/electron-main/proto.cjs#"ResolveGrokBotAddress"	features	W05-4-359
+proto:aiserver.v1.GrokBotService.ResolveGrokBotAttachmentReads	proto 方法	dist/electron-main/proto.cjs#"ResolveGrokBotAttachmentReads"	features	W05-4-360
+proto:aiserver.v1.GrokBotService.ResolveGrokBotAutoReviewApproval	proto 方法	dist/electron-main/proto.cjs#"ResolveGrokBotAutoReviewApproval"	features	W05-4-361
+proto:aiserver.v1.GrokBotService.ResolveGrokBotConnectorGrant	proto 方法	dist/electron-main/proto.cjs#"ResolveGrokBotConnectorGrant"	features	W05-4-362
+proto:aiserver.v1.GrokBotService.ResolveGrokBotCredentialRequest	proto 方法	dist/electron-main/proto.cjs#"ResolveGrokBotCredentialRequest"	features	W05-4-363
+proto:aiserver.v1.GrokBotService.ResolveGrokBotLocalToolPermission	proto 方法	dist/electron-main/proto.cjs#"ResolveGrokBotLocalToolPermission"	features	W05-4-364
+proto:aiserver.v1.GrokBotService.ResolveGrokBotTeamReviewItem	proto 方法	dist/electron-main/proto.cjs#"ResolveGrokBotTeamReviewItem"	features	W05-4-365
+proto:aiserver.v1.GrokBotService.ResolveGrokBotVirtualCardApproval	proto 方法	dist/electron-main/proto.cjs#"ResolveGrokBotVirtualCardApproval"	features	W05-4-366
+proto:aiserver.v1.GrokBotService.RespondGrokBotWidget	proto 方法	dist/electron-main/proto.cjs#"RespondGrokBotWidget"	features	W05-4-367
+proto:aiserver.v1.GrokBotService.RetryGrokBotOutboundCallRecording	proto 方法	dist/electron-main/proto.cjs#"RetryGrokBotOutboundCallRecording"	features	W05-4-368
+proto:aiserver.v1.GrokBotService.RevokeGrokBotAgentAccessInvite	proto 方法	dist/electron-main/proto.cjs#"RevokeGrokBotAgentAccessInvite"	features	W05-4-369
+proto:aiserver.v1.GrokBotService.RevokePasskey	proto 方法	dist/electron-main/proto.cjs#"RevokePasskey"	features	W05-4-370
+proto:aiserver.v1.GrokBotService.RollBackGrokBotConversation	proto 方法	dist/electron-main/proto.cjs#"RollBackGrokBotConversation"	features	W05-4-371
+proto:aiserver.v1.GrokBotService.SaveTeamGroupSandSetupManifest	proto 方法	dist/electron-main/proto.cjs#"SaveTeamGroupSandSetupManifest"	features	W05-4-372
+proto:aiserver.v1.GrokBotService.ScheduleSandBoxUpgrade	proto 方法	dist/electron-main/proto.cjs#"ScheduleSandBoxUpgrade"	非 MVP：box/云电脑	W05-4-373
+proto:aiserver.v1.GrokBotService.SearchGrokBotEmailThreads	proto 方法	dist/electron-main/proto.cjs#"SearchGrokBotEmailThreads"	features	W05-4-374
+proto:aiserver.v1.GrokBotService.SearchGrokBotPlacesArea	proto 方法	dist/electron-main/proto.cjs#"SearchGrokBotPlacesArea"	features	W05-4-375
+proto:aiserver.v1.GrokBotService.SendGrokBotAgentMessage	proto 方法	dist/electron-main/proto.cjs#"SendGrokBotAgentMessage"	features	W05-4-376
+proto:aiserver.v1.GrokBotService.SendGrokBotDraft	proto 方法	dist/electron-main/proto.cjs#"SendGrokBotDraft"	features	W05-4-377
+proto:aiserver.v1.GrokBotService.SendGrokBotPullRequestChatMessage	proto 方法	dist/electron-main/proto.cjs#"SendGrokBotPullRequestChatMessage"	features	W05-4-378
+proto:aiserver.v1.GrokBotService.SendGrokBotUserMessage	proto 方法	dist/electron-main/proto.cjs#"SendGrokBotUserMessage"	features	W05-4-379
+proto:aiserver.v1.GrokBotService.SetGrokBotAgentAllowCollaboratorAutomationCreation	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotAgentAllowCollaboratorAutomationCreation"	features	W05-4-380
+proto:aiserver.v1.GrokBotService.SetGrokBotAgentAutomationEnabled	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotAgentAutomationEnabled"	features	W05-4-381
+proto:aiserver.v1.GrokBotService.SetGrokBotAgentClientState	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotAgentClientState"	features	W05-4-382
+proto:aiserver.v1.GrokBotService.SetGrokBotAgentDraftingDisabled	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotAgentDraftingDisabled"	features	W05-4-383
+proto:aiserver.v1.GrokBotService.SetGrokBotAgentPluginVariables	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotAgentPluginVariables"	marketplace	W05-4-384
+proto:aiserver.v1.GrokBotService.SetGrokBotAgentPlugins	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotAgentPlugins"	marketplace	W05-4-385
+proto:aiserver.v1.GrokBotService.SetGrokBotAgentRoutineEnabled	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotAgentRoutineEnabled"	features	W05-4-386
+proto:aiserver.v1.GrokBotService.SetGrokBotAgentTaskPinned	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotAgentTaskPinned"	features	W05-4-387
+proto:aiserver.v1.GrokBotService.SetGrokBotAgentVisibility	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotAgentVisibility"	features	W05-4-388
+proto:aiserver.v1.GrokBotService.SetGrokBotAgentVoice	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotAgentVoice"	cloud-deps（语音端点，非 MVP 外围）	W05-4-389
+proto:aiserver.v1.GrokBotService.SetGrokBotChangelogStatusInternal	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotChangelogStatusInternal"	features	W05-4-390
+proto:aiserver.v1.GrokBotService.SetGrokBotDefaultPaymentMethod	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotDefaultPaymentMethod"	cloud-deps（账号体系/计费端点）	W05-4-391
+proto:aiserver.v1.GrokBotService.SetGrokBotLibraryPin	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotLibraryPin"	features	W05-4-392
+proto:aiserver.v1.GrokBotService.SetGrokBotMainAgent	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotMainAgent"	features	W05-4-393
+proto:aiserver.v1.GrokBotService.SetGrokBotMarketplaceListingStatusInternal	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotMarketplaceListingStatusInternal"	marketplace	W05-4-394
+proto:aiserver.v1.GrokBotService.SetGrokBotMcpToolPermissions	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotMcpToolPermissions"	marketplace	W05-4-395
+proto:aiserver.v1.GrokBotService.SetGrokBotOnboardingDripStatusInternal	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotOnboardingDripStatusInternal"	features	W05-4-396
+proto:aiserver.v1.GrokBotService.SetGrokBotRoomMembers	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotRoomMembers"	features	W05-4-397
+proto:aiserver.v1.GrokBotService.SetGrokBotTeamLinkPreview	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotTeamLinkPreview"	features	W05-4-398
+proto:aiserver.v1.GrokBotService.SetGrokBotTemplateCreatorAttributionInternal	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotTemplateCreatorAttributionInternal"	features	W05-4-399
+proto:aiserver.v1.GrokBotService.SetGrokBotTemplateVisibility	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotTemplateVisibility"	features	W05-4-400
+proto:aiserver.v1.GrokBotService.SetGrokBotUserMcpSettings	proto 方法	dist/electron-main/proto.cjs#"SetGrokBotUserMcpSettings"	marketplace	W05-4-401
+proto:aiserver.v1.GrokBotService.SetTeamSandSetupFileCurrentVersion	proto 方法	dist/electron-main/proto.cjs#"SetTeamSandSetupFileCurrentVersion"	features	W05-4-402
+proto:aiserver.v1.GrokBotService.ShareGrokBotAgentInPlace	proto 方法	dist/electron-main/proto.cjs#"ShareGrokBotAgentInPlace"	features	W05-4-403
+proto:aiserver.v1.GrokBotService.StartBulkTeamMemberSandBoxOperation	proto 方法	dist/electron-main/proto.cjs#"StartBulkTeamMemberSandBoxOperation"	非 MVP：box/云电脑	W05-4-404
+proto:aiserver.v1.GrokBotService.StartFreshGrokBotConversation	proto 方法	dist/electron-main/proto.cjs#"StartFreshGrokBotConversation"	features	W05-4-405
+proto:aiserver.v1.GrokBotService.StartGrokBotImagePrecaption	proto 方法	dist/electron-main/proto.cjs#"StartGrokBotImagePrecaption"	features	W05-4-406
+proto:aiserver.v1.GrokBotService.StartGrokBotSilentSubagentInternal	proto 方法	dist/electron-main/proto.cjs#"StartGrokBotSilentSubagentInternal"	features	W05-4-407
+proto:aiserver.v1.GrokBotService.StartGrokBotSlackConnect	proto 方法	dist/electron-main/proto.cjs#"StartGrokBotSlackConnect"	features	W05-4-408
+proto:aiserver.v1.GrokBotService.StartGrokBotTeamsConnect	proto 方法	dist/electron-main/proto.cjs#"StartGrokBotTeamsConnect"	features	W05-4-409
+proto:aiserver.v1.GrokBotService.StartGrokBotXConnect	proto 方法	dist/electron-main/proto.cjs#"StartGrokBotXConnect"	features	W05-4-410
+proto:aiserver.v1.GrokBotService.StartMicrosoftTeamsAccountLink	proto 方法	dist/electron-main/proto.cjs#"StartMicrosoftTeamsAccountLink"	cloud-deps（账号体系/计费端点）	W05-4-411
+proto:aiserver.v1.GrokBotService.StartOnePasswordOAuth	proto 方法	dist/electron-main/proto.cjs#"StartOnePasswordOAuth"	cloud-deps（账号体系/计费端点）	W05-4-412
+proto:aiserver.v1.GrokBotService.StartPasskeyEnrollment	proto 方法	dist/electron-main/proto.cjs#"StartPasskeyEnrollment"	features	W05-4-413
+proto:aiserver.v1.GrokBotService.StoreOnePasswordIntegrationKey	proto 方法	dist/electron-main/proto.cjs#"StoreOnePasswordIntegrationKey"	features	W05-4-414
+proto:aiserver.v1.GrokBotService.SubmitGrokBotSecret	proto 方法	dist/electron-main/proto.cjs#"SubmitGrokBotSecret"	features	W05-4-415
+proto:aiserver.v1.GrokBotService.SubmitGrokBotUserComputerResponses	proto 方法	dist/electron-main/proto.cjs#"SubmitGrokBotUserComputerResponses"	features	W05-4-416
+proto:aiserver.v1.GrokBotService.SubmitGrokBotUserForm	proto 方法	dist/electron-main/proto.cjs#"SubmitGrokBotUserForm"	features	W05-4-417
+proto:aiserver.v1.GrokBotService.SuggestGrokBotAddresses	proto 方法	dist/electron-main/proto.cjs#"SuggestGrokBotAddresses"	features	W05-4-418
+proto:aiserver.v1.GrokBotService.SyncOnePasswordConnections	proto 方法	dist/electron-main/proto.cjs#"SyncOnePasswordConnections"	features	W05-4-419
+proto:aiserver.v1.GrokBotService.TransferGrokBotOutboundCall	proto 方法	dist/electron-main/proto.cjs#"TransferGrokBotOutboundCall"	features	W05-4-420
+proto:aiserver.v1.GrokBotService.UninstallGrokBotSlackApp	proto 方法	dist/electron-main/proto.cjs#"UninstallGrokBotSlackApp"	features	W05-4-421
+proto:aiserver.v1.GrokBotService.UninstallGrokBotTeamsApp	proto 方法	dist/electron-main/proto.cjs#"UninstallGrokBotTeamsApp"	features	W05-4-422
+proto:aiserver.v1.GrokBotService.UnlinkGrokBotMessagingPhone	proto 方法	dist/electron-main/proto.cjs#"UnlinkGrokBotMessagingPhone"	features	W05-4-423
+proto:aiserver.v1.GrokBotService.UnlinkMicrosoftTeamsAccount	proto 方法	dist/electron-main/proto.cjs#"UnlinkMicrosoftTeamsAccount"	cloud-deps（账号体系/计费端点）	W05-4-424
+proto:aiserver.v1.GrokBotService.UnpublishGrokBotAgent	proto 方法	dist/electron-main/proto.cjs#"UnpublishGrokBotAgent"	features	W05-4-425
+proto:aiserver.v1.GrokBotService.UpdateGrokBotAgent	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotAgent"	RE-unpack（外壳/更新/i18n）	W05-4-426
+proto:aiserver.v1.GrokBotService.UpdateGrokBotAgentAccess	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotAgentAccess"	RE-unpack（外壳/更新/i18n）	W05-4-427
+proto:aiserver.v1.GrokBotService.UpdateGrokBotAgentCustomMcp	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotAgentCustomMcp"	marketplace	W05-4-428
+proto:aiserver.v1.GrokBotService.UpdateGrokBotAgentMarketplace	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotAgentMarketplace"	marketplace	W05-4-429
+proto:aiserver.v1.GrokBotService.UpdateGrokBotAgentSkill	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotAgentSkill"	RE-unpack（外壳/更新/i18n）	W05-4-430
+proto:aiserver.v1.GrokBotService.UpdateGrokBotChangelogInternal	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotChangelogInternal"	cloud-deps（账号体系/计费端点）	W05-4-431
+proto:aiserver.v1.GrokBotService.UpdateGrokBotConnectorSharedSpaceAllowlist	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotConnectorSharedSpaceAllowlist"	RE-unpack（外壳/更新/i18n）	W05-4-432
+proto:aiserver.v1.GrokBotService.UpdateGrokBotMarketplaceCategoryInternal	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotMarketplaceCategoryInternal"	marketplace	W05-4-433
+proto:aiserver.v1.GrokBotService.UpdateGrokBotMarketplaceCreatorInternal	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotMarketplaceCreatorInternal"	marketplace	W05-4-434
+proto:aiserver.v1.GrokBotService.UpdateGrokBotMarketplaceListingInternal	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotMarketplaceListingInternal"	marketplace	W05-4-435
+proto:aiserver.v1.GrokBotService.UpdateGrokBotMarketplaceListingTemplateInternal	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotMarketplaceListingTemplateInternal"	marketplace	W05-4-436
+proto:aiserver.v1.GrokBotService.UpdateGrokBotOnboardingDripInternal	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotOnboardingDripInternal"	RE-unpack（外壳/更新/i18n）	W05-4-437
+proto:aiserver.v1.GrokBotService.UpdateGrokBotOnboardingDripStepInternal	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotOnboardingDripStepInternal"	RE-unpack（外壳/更新/i18n）	W05-4-438
+proto:aiserver.v1.GrokBotService.UpdateGrokBotUserRuntimeSettings	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotUserRuntimeSettings"	RE-unpack（外壳/更新/i18n）	W05-4-439
+proto:aiserver.v1.GrokBotService.UpdateGrokBotVaultCard	proto 方法	dist/electron-main/proto.cjs#"UpdateGrokBotVaultCard"	RE-unpack（外壳/更新/i18n）	W05-4-440
+proto:aiserver.v1.GrokBotService.UploadGrokBotAgentAttachmentChunk	proto 方法	dist/electron-main/proto.cjs#"UploadGrokBotAgentAttachmentChunk"	features	W05-4-441
+proto:aiserver.v1.GrokBotService.UpsertGrokBotUserFormVaultEntry	proto 方法	dist/electron-main/proto.cjs#"UpsertGrokBotUserFormVaultEntry"	features	W05-4-442
+proto:aiserver.v1.GrokBotService.VerifyPasskeyEnrollmentCode	proto 方法	dist/electron-main/proto.cjs#"VerifyPasskeyEnrollmentCode"	features	W05-4-443
+proto:aiserver.v1.GrokBotService.VoiceCallHarnessSession	proto 方法	dist/electron-main/proto.cjs#"VoiceCallHarnessSession"	cloud-deps（语音端点，非 MVP 外围）	W05-4-444
+proto:aiserver.v1.GrokBotService.VoiceCallHarnessTool	proto 方法	dist/electron-main/proto.cjs#"VoiceCallHarnessTool"	cloud-deps（语音端点，非 MVP 外围）	W05-4-445
+proto:aiserver.v1.GrokBotService.VoteGrokBotFeedback	proto 方法	dist/electron-main/proto.cjs#"VoteGrokBotFeedback"	features	W05-4-446
+proto:aiserver.v1.GrokBotService.WatchGrokBotTranscripts	proto 方法	dist/electron-main/proto.cjs#"WatchGrokBotTranscripts"	features	W05-4-447
+proto:aiserver.v1.GrokBotService.WatchGrokBotUserComputerRequests	proto 方法	dist/electron-main/proto.cjs#"WatchGrokBotUserComputerRequests"	features	W05-4-448
+proto:aiserver.v1.GrokBotService.WithdrawGrokBotUserComputerPresence	proto 方法	dist/electron-main/proto.cjs#"WithdrawGrokBotUserComputerPresence"	features	W05-4-449
+proto:aiserver.v1.SandBoxService.*	proto 方法	dist/electron-main/proto.cjs#"SandBoxService"	非 MVP：box/云电脑	W05-4-450
+proto:aiserver.v1.SandBoxService.AbortSandBoxStoreMultipartWrites	proto 方法	dist/electron-main/proto.cjs#"AbortSandBoxStoreMultipartWrites"	非 MVP：box/云电脑	W05-4-451
+proto:aiserver.v1.SandBoxService.AdminBreakGlassDeleteSandBoxPod	proto 方法	dist/electron-main/proto.cjs#"AdminBreakGlassDeleteSandBoxPod"	非 MVP：box/云电脑	W05-4-452
+proto:aiserver.v1.SandBoxService.AdminForceRecreateSandBox	proto 方法	dist/electron-main/proto.cjs#"AdminForceRecreateSandBox"	非 MVP：box/云电脑	W05-4-453
+proto:aiserver.v1.SandBoxService.AdminGetSandAgentTranscriptPage	proto 方法	dist/electron-main/proto.cjs#"AdminGetSandAgentTranscriptPage"	非 MVP：box/云电脑	W05-4-454
+proto:aiserver.v1.SandBoxService.AdminGetSandBoxHostStatus	proto 方法	dist/electron-main/proto.cjs#"AdminGetSandBoxHostStatus"	非 MVP：box/云电脑	W05-4-455
+proto:aiserver.v1.SandBoxService.AdminGetSandBoxStoreStatus	proto 方法	dist/electron-main/proto.cjs#"AdminGetSandBoxStoreStatus"	非 MVP：box/云电脑	W05-4-456
+proto:aiserver.v1.SandBoxService.AdminHibernateSandBox	proto 方法	dist/electron-main/proto.cjs#"AdminHibernateSandBox"	非 MVP：box/云电脑	W05-4-457
+proto:aiserver.v1.SandBoxService.AdminListSandAgents	proto 方法	dist/electron-main/proto.cjs#"AdminListSandAgents"	非 MVP：box/云电脑	W05-4-458
+proto:aiserver.v1.SandBoxService.AdminListSandBoxStoreManifestVersions	proto 方法	dist/electron-main/proto.cjs#"AdminListSandBoxStoreManifestVersions"	非 MVP：box/云电脑	W05-4-459
+proto:aiserver.v1.SandBoxService.AdminRecreateSandBox	proto 方法	dist/electron-main/proto.cjs#"AdminRecreateSandBox"	非 MVP：box/云电脑	W05-4-460
+proto:aiserver.v1.SandBoxService.AdminRefreshSandBoxEgress	proto 方法	dist/electron-main/proto.cjs#"AdminRefreshSandBoxEgress"	非 MVP：box/云电脑	W05-4-461
+proto:aiserver.v1.SandBoxService.AdminRestoreSandBoxStoreSnapshot	proto 方法	dist/electron-main/proto.cjs#"AdminRestoreSandBoxStoreSnapshot"	非 MVP：box/云电脑	W05-4-462
+proto:aiserver.v1.SandBoxService.AdminSnapshotSandBoxStore	proto 方法	dist/electron-main/proto.cjs#"AdminSnapshotSandBoxStore"	非 MVP：box/云电脑	W05-4-463
+proto:aiserver.v1.SandBoxService.AdminStatSandBoxStoreObject	proto 方法	dist/electron-main/proto.cjs#"AdminStatSandBoxStoreObject"	非 MVP：box/云电脑	W05-4-464
+proto:aiserver.v1.SandBoxService.AdminUpdateSandBoxHost	proto 方法	dist/electron-main/proto.cjs#"AdminUpdateSandBoxHost"	非 MVP：box/云电脑	W05-4-465
+proto:aiserver.v1.SandBoxService.AdminWatchSandBoxMigration	proto 方法	dist/electron-main/proto.cjs#"AdminWatchSandBoxMigration"	非 MVP：box/云电脑	W05-4-466
+proto:aiserver.v1.SandBoxService.ApproveOnePasswordCredentialRequest	proto 方法	dist/electron-main/proto.cjs#"ApproveOnePasswordCredentialRequest"	非 MVP：box/云电脑	W05-4-467
+proto:aiserver.v1.SandBoxService.BeginOnePasswordConnection	proto 方法	dist/electron-main/proto.cjs#"BeginOnePasswordConnection"	非 MVP：box/云电脑	W05-4-468
+proto:aiserver.v1.SandBoxService.CancelSandBoxUpgrade	proto 方法	dist/electron-main/proto.cjs#"CancelSandBoxUpgrade"	非 MVP：box/云电脑	W05-4-469
+proto:aiserver.v1.SandBoxService.CommitSandBoxStoreManifest	proto 方法	dist/electron-main/proto.cjs#"CommitSandBoxStoreManifest"	非 MVP：box/云电脑	W05-4-470
+proto:aiserver.v1.SandBoxService.CompleteOnePasswordConnection	proto 方法	dist/electron-main/proto.cjs#"CompleteOnePasswordConnection"	非 MVP：box/云电脑	W05-4-471
+proto:aiserver.v1.SandBoxService.CompleteOnePasswordOAuth	proto 方法	dist/electron-main/proto.cjs#"CompleteOnePasswordOAuth"	非 MVP：box/云电脑	W05-4-472
+proto:aiserver.v1.SandBoxService.CompleteSandBoxStoreMultipartWrites	proto 方法	dist/electron-main/proto.cjs#"CompleteSandBoxStoreMultipartWrites"	非 MVP：box/云电脑	W05-4-473
+proto:aiserver.v1.SandBoxService.DeleteOnePasswordConnection	proto 方法	dist/electron-main/proto.cjs#"DeleteOnePasswordConnection"	非 MVP：box/云电脑	W05-4-474
+proto:aiserver.v1.SandBoxService.DeleteTeamSandSetupManifest	proto 方法	dist/electron-main/proto.cjs#"DeleteTeamSandSetupManifest"	非 MVP：box/云电脑	W05-4-475
+proto:aiserver.v1.SandBoxService.DenyOnePasswordCredentialRequest	proto 方法	dist/electron-main/proto.cjs#"DenyOnePasswordCredentialRequest"	非 MVP：box/云电脑	W05-4-476
+proto:aiserver.v1.SandBoxService.EnsureSandBox	proto 方法	dist/electron-main/proto.cjs#"EnsureSandBox"	非 MVP：box/云电脑	W05-4-477
+proto:aiserver.v1.SandBoxService.EnsureSandBoxWindow	proto 方法	dist/electron-main/proto.cjs#"EnsureSandBoxWindow"	非 MVP：box/云电脑	W05-4-478
+proto:aiserver.v1.SandBoxService.ForceRecreateSandBox	proto 方法	dist/electron-main/proto.cjs#"ForceRecreateSandBox"	非 MVP：box/云电脑	W05-4-479
+proto:aiserver.v1.SandBoxService.GetBulkTeamMemberSandBoxOperationStatus	proto 方法	dist/electron-main/proto.cjs#"GetBulkTeamMemberSandBoxOperationStatus"	非 MVP：box/云电脑	W05-4-480
+proto:aiserver.v1.SandBoxService.GetOnePasswordState	proto 方法	dist/electron-main/proto.cjs#"GetOnePasswordState"	非 MVP：box/云电脑	W05-4-481
+proto:aiserver.v1.SandBoxService.GetSandBoxRunState	proto 方法	dist/electron-main/proto.cjs#"GetSandBoxRunState"	非 MVP：box/云电脑	W05-4-482
+proto:aiserver.v1.SandBoxService.GetSandBoxUpgradeSchedule	proto 方法	dist/electron-main/proto.cjs#"GetSandBoxUpgradeSchedule"	非 MVP：box/云电脑	W05-4-483
+proto:aiserver.v1.SandBoxService.GetTeamMemberSandBoxMigrationStatus	proto 方法	dist/electron-main/proto.cjs#"GetTeamMemberSandBoxMigrationStatus"	非 MVP：box/云电脑	W05-4-484
+proto:aiserver.v1.SandBoxService.KillTeamMemberSandBox	proto 方法	dist/electron-main/proto.cjs#"KillTeamMemberSandBox"	非 MVP：box/云电脑	W05-4-485
+proto:aiserver.v1.SandBoxService.ListSandBoxStoreObjects	proto 方法	dist/electron-main/proto.cjs#"ListSandBoxStoreObjects"	非 MVP：box/云电脑	W05-4-486
+proto:aiserver.v1.SandBoxService.ListSandBoxes	proto 方法	dist/electron-main/proto.cjs#"ListSandBoxes"	非 MVP：box/云电脑	W05-4-487
+proto:aiserver.v1.SandBoxService.ListSandSetupManifests	proto 方法	dist/electron-main/proto.cjs#"ListSandSetupManifests"	非 MVP：box/云电脑	W05-4-488
+proto:aiserver.v1.SandBoxService.ListTeamMemberSandBoxes	proto 方法	dist/electron-main/proto.cjs#"ListTeamMemberSandBoxes"	非 MVP：box/云电脑	W05-4-489
+proto:aiserver.v1.SandBoxService.ListTeamSandSetupManifests	proto 方法	dist/electron-main/proto.cjs#"ListTeamSandSetupManifests"	非 MVP：box/云电脑	W05-4-490
+proto:aiserver.v1.SandBoxService.MintSandVoiceCallSecret	proto 方法	dist/electron-main/proto.cjs#"MintSandVoiceCallSecret"	非 MVP：box/云电脑	W05-4-491
+proto:aiserver.v1.SandBoxService.NotifySandAgentTurnFinished	proto 方法	dist/electron-main/proto.cjs#"NotifySandAgentTurnFinished"	非 MVP：box/云电脑	W05-4-492
+proto:aiserver.v1.SandBoxService.PresignSandBoxStoreReads	proto 方法	dist/electron-main/proto.cjs#"PresignSandBoxStoreReads"	非 MVP：box/云电脑	W05-4-493
+proto:aiserver.v1.SandBoxService.PresignSandBoxStoreWrites	proto 方法	dist/electron-main/proto.cjs#"PresignSandBoxStoreWrites"	非 MVP：box/云电脑	W05-4-494
+proto:aiserver.v1.SandBoxService.RecreateSandBox	proto 方法	dist/electron-main/proto.cjs#"RecreateSandBox"	非 MVP：box/云电脑	W05-4-495
+proto:aiserver.v1.SandBoxService.RecreateTeamMemberSandBox	proto 方法	dist/electron-main/proto.cjs#"RecreateTeamMemberSandBox"	非 MVP：box/云电脑	W05-4-496
+proto:aiserver.v1.SandBoxService.RescheduleSandBoxUpgrade	proto 方法	dist/electron-main/proto.cjs#"RescheduleSandBoxUpgrade"	非 MVP：box/云电脑	W05-4-497
+proto:aiserver.v1.SandBoxService.SaveTeamSandSetupManifest	proto 方法	dist/electron-main/proto.cjs#"SaveTeamSandSetupManifest"	非 MVP：box/云电脑	W05-4-498
+proto:aiserver.v1.SandBoxService.ScheduleSandBoxUpgrade	proto 方法	dist/electron-main/proto.cjs#"ScheduleSandBoxUpgrade"	非 MVP：box/云电脑	W05-4-499
+proto:aiserver.v1.SandBoxService.StartBulkTeamMemberSandBoxOperation	proto 方法	dist/electron-main/proto.cjs#"StartBulkTeamMemberSandBoxOperation"	非 MVP：box/云电脑	W05-4-500
+proto:aiserver.v1.SandBoxService.StartOnePasswordOAuth	proto 方法	dist/electron-main/proto.cjs#"StartOnePasswordOAuth"	非 MVP：box/云电脑	W05-4-501
+proto:aiserver.v1.SandBoxService.StatSandBoxStoreObject	proto 方法	dist/electron-main/proto.cjs#"StatSandBoxStoreObject"	非 MVP：box/云电脑	W05-4-502
+proto:aiserver.v1.SandBoxService.StoreOnePasswordIntegrationKey	proto 方法	dist/electron-main/proto.cjs#"StoreOnePasswordIntegrationKey"	非 MVP：box/云电脑	W05-4-503
+proto:aiserver.v1.SandBoxService.SyncOnePasswordConnections	proto 方法	dist/electron-main/proto.cjs#"SyncOnePasswordConnections"	非 MVP：box/云电脑	W05-4-504
+proto:aiserver.v1.SandBoxService.WatchSandBoxMigration	proto 方法	dist/electron-main/proto.cjs#"WatchSandBoxMigration"	非 MVP：box/云电脑	W05-4-505
+proto:message 新增全集	proto message	dist/electron-main/proto.cjs static $()（proto-fields.tsv）	ipc-rpc Q2（字段字典引用，不逐个展开）	W05-4-506;W05-4-507;W05-4-508;W05-4-509;W05-4-510;W05-4-511;W05-4-512;W05-4-513;W05-4-514;W05-4-515;W05-4-516;W05-4-517;W05-4-518;W05-4-519;W05-4-520;W05-4-521;W05-4-522;W05-4-523;W05-4-524;W05-4-525;W05-4-526;W05-4-527;W05-4-528;W05-4-529;W05-4-530;W05-4-531;W05-4-532;W05-4-533;W05-4-534;W05-4-535;W05-4-536;W05-4-537;W05-4-538;W05-4-539;W05-4-540;W05-4-541;W05-4-542;W05-4-543;W05-4-544;W05-4-545;W05-4-546;W05-4-547;W05-4-548;W05-4-549;W05-4-550;W05-4-551;W05-4-552;W05-4-553;W05-4-554;W05-4-555;W05-4-556;W05-4-557;W05-4-558;W05-4-559;W05-4-560;W05-4-561;W05-4-562;W05-4-563;W05-4-564;W05-4-565;W05-4-566;W05-4-567;W05-4-568;W05-4-569;W05-4-570;W05-4-571;W05-4-572;W05-4-573;W05-4-574;W05-4-575;W05-4-576;W05-4-577;W05-4-578;W05-4-579;W05-4-580;W05-4-581;W05-4-582;W05-4-583;W05-4-584;W05-4-585;W05-4-586;W05-4-587;W05-4-588;W05-4-589;W05-4-590;W05-4-591;W05-4-592;W05-4-593;W05-4-594;W05-4-595;W05-4-596;W05-4-597;W05-4-598;W05-4-599;W05-4-600;W05-4-601;W05-4-602;W05-4-603;W05-4-604;W05-4-605;W05-4-606;W05-4-607;W05-4-608;W05-4-609;W05-4-610;W05-4-611;W05-4-612;W05-4-613;W05-4-614;W05-4-615;W05-4-616;W05-4-617;W05-4-618;W05-4-619;W05-4-620;W05-4-621;W05-4-622;W05-4-623;W05-4-624;W05-4-625;W05-4-626;W05-4-627;W05-4-628;W05-4-629;W05-4-630;W05-4-631;W05-4-632;W05-4-633;W05-4-634;W05-4-635;W05-4-636;W05-4-637;W05-4-638;W05-4-639;W05-4-640;W05-4-641;W05-4-642;W05-4-643;W05-4-644;W05-4-645;W05-4-646;W05-4-647;W05-4-648;W05-4-649;W05-4-650;W05-4-651;W05-4-652;W05-4-653;W05-4-654;W05-4-655;W05-4-656;W05-4-657;W05-4-658;W05-4-659;W05-4-660;W05-4-661;W05-4-662;W05-4-663;W05-4-664;W05-4-665;W05-4-666;W05-4-667;W05-4-668;W05-4-669;W05-4-670;W05-4-671;W05-4-672;W05-4-673;W05-4-674;W05-4-675;W05-4-676;W05-4-677;W05-4-678;W05-4-679;W05-4-680;W05-4-681;W05-4-682;W05-4-683;W05-4-684;W05-4-685;W05-4-686;W05-4-687;W05-4-688;W05-4-689;W05-4-690;W05-4-691;W05-4-692;W05-4-693;W05-4-694;W05-4-695;W05-4-696;W05-4-697;W05-4-698;W05-4-699;W05-4-700;W05-4-701;W05-4-702;W05-4-703;W05-4-704;W05-4-705;W05-4-706;W05-4-707;W05-4-708;W05-4-709;W05-4-710;W05-4-711;W05-4-712;W05-4-713;W05-4-714;W05-4-715;W05-4-716;W05-4-717;W05-4-718;W05-4-719;W05-4-720;W05-4-721;W05-4-722;W05-4-723;W05-4-724;W05-4-725;W05-4-726;W05-4-727;W05-4-728;W05-4-729;W05-4-730;W05-4-731;W05-4-732;W05-4-733;W05-4-734;W05-4-735;W05-4-736;W05-4-737;W05-4-738;W05-4-739;W05-4-740;W05-4-741;W05-4-742;W05-4-743;W05-4-744;W05-4-745;W05-4-746;W05-4-747;W05-4-748;W05-4-749;W05-4-750;W05-4-751;W05-4-752;W05-4-753;W05-4-754;W05-4-755;W05-4-756;W05-4-757;W05-4-758;W05-4-759;W05-4-760;W05-4-761;W05-4-762;W05-4-763;W05-4-764;W05-4-765;W05-4-766;W05-4-767;W05-4-768;W05-4-769;W05-4-770;W05-4-771;W05-4-772;W05-4-773;W05-4-774;W05-4-775;W05-4-776;W05-4-777;W05-4-778;W05-4-779;W05-4-780;W05-4-781;W05-4-782;W05-4-783;W05-4-784;W05-4-785;W05-4-786;W05-4-787;W05-4-788;W05-4-789;W05-4-790;W05-4-791;W05-4-792;W05-4-793;W05-4-794;W05-4-795;W05-4-796;W05-4-797;W05-4-798;W05-4-799;W05-4-800;W05-4-801;W05-4-802;W05-4-803;W05-4-804;W05-4-805;W05-4-806;W05-4-807;W05-4-808;W05-4-809;W05-4-810;W05-4-811;W05-4-812;W05-4-813;W05-4-814;W05-4-815;W05-4-816;W05-4-817;W05-4-818;W05-4-819;W05-4-820;W05-4-821;W05-4-822;W05-4-823;W05-4-824;W05-4-825;W05-4-826;W05-4-827;W05-4-828;W05-4-829;W05-4-830;W05-4-831;W05-4-832;W05-4-833;W05-4-834;W05-4-835;W05-4-836;W05-4-837;W05-4-838;W05-4-839;W05-4-840;W05-4-841;W05-4-842;W05-4-843;W05-4-844;W05-4-845;W05-4-846;W05-4-847;W05-4-848;W05-4-849;W05-4-850;W05-4-851;W05-4-852;W05-4-853;W05-4-854;W05-4-855;W05-4-856;W05-4-857;W05-4-858;W05-4-859;W05-4-860;W05-4-861;W05-4-862;W05-4-863;W05-4-864;W05-4-865;W05-4-866;W05-4-867;W05-4-868;W05-4-869;W05-4-870;W05-4-871;W05-4-872;W05-4-873;W05-4-874;W05-4-875;W05-4-876;W05-4-877;W05-4-878;W05-4-879;W05-4-880;W05-4-881;W05-4-882;W05-4-883;W05-4-884;W05-4-885;W05-4-886;W05-4-887;W05-4-888;W05-4-889;W05-4-890;W05-4-891;W05-4-892;W05-4-893;W05-4-894;W05-4-895;W05-4-896;W05-4-897;W05-4-898;W05-4-899;W05-4-900;W05-4-901;W05-4-902;W05-4-903;W05-4-904;W05-4-905;W05-4-906;W05-4-907;W05-4-908;W05-4-909;W05-4-910;W05-4-911;W05-4-912;W05-4-913;W05-4-914;W05-4-915;W05-4-916;W05-4-917;W05-4-918;W05-4-919;W05-4-920;W05-4-921;W05-4-922;W05-4-923;W05-4-924;W05-4-925;W05-4-926;W05-4-927;W05-4-928;W05-4-929;W05-4-930;W05-4-931;W05-4-932;W05-4-933;W05-4-934;W05-4-935;W05-4-936;W05-4-937;W05-4-938;W05-4-939;W05-4-940;W05-4-941;W05-4-942;W05-4-943;W05-4-944;W05-4-945;W05-4-946;W05-4-947;W05-4-948;W05-4-949;W05-4-950;W05-4-951;W05-4-952;W05-4-953;W05-4-954;W05-4-955;W05-4-956;W05-4-957;W05-4-958;W05-4-959;W05-4-960;W05-4-961;W05-4-962;W05-4-963;W05-4-964;W05-4-965;W05-4-966;W05-4-967;W05-4-968;W05-4-969;W05-4-970;W05-4-971;W05-4-972;W05-4-973;W05-4-974;W05-4-975;W05-4-976;W05-4-977;W05-4-978;W05-4-979;W05-4-980;W05-4-981;W05-4-982;W05-4-983;W05-4-984;W05-4-985;W05-4-986;W05-4-987;W05-4-988;W05-4-989;W05-4-990;W05-4-991;W05-4-992;W05-4-993;W05-4-994;W05-4-995;W05-4-996;W05-4-997;W05-4-998;W05-4-999;W05-4-1000;W05-4-1001;W05-4-1002;W05-4-1003;W05-4-1004;W05-4-1005;W05-4-1006;W05-4-1007;W05-4-1008;W05-4-1009;W05-4-1010;W05-4-1011;W05-4-1012;W05-4-1013;W05-4-1014;W05-4-1015;W05-4-1016;W05-4-1017;W05-4-1018;W05-4-1019;W05-4-1020;W05-4-1021;W05-4-1022;W05-4-1023;W05-4-1024;W05-4-1025;W05-4-1026;W05-4-1027;W05-4-1028;W05-4-1029;W05-4-1030;W05-4-1031;W05-4-1032;W05-4-1033;W05-4-1034;W05-4-1035;W05-4-1036;W05-4-1037;W05-4-1038;W05-4-1039;W05-4-1040;W05-4-1041;W05-4-1042;W05-4-1043;W05-4-1044;W05-4-1045;W05-4-1046;W05-4-1047;W05-4-1048;W05-4-1049;W05-4-1050;W05-4-1051;W05-4-1052;W05-4-1053;W05-4-1054;W05-4-1055;W05-4-1056;W05-4-1057;W05-4-1058;W05-4-1059;W05-4-1060;W05-4-1061;W05-4-1062;W05-4-1063;W05-4-1064;W05-4-1065;W05-4-1066;W05-4-1067;W05-4-1068;W05-4-1069;W05-4-1070;W05-4-1071;W05-4-1072;W05-4-1073;W05-4-1074;W05-4-1075;W05-4-1076;W05-4-1077;W05-4-1078;W05-4-1079;W05-4-1080;W05-4-1081;W05-4-1082;W05-4-1083;W05-4-1084;W05-4-1085;W05-4-1086;W05-4-1087;W05-4-1088;W05-4-1089;W05-4-1090;W05-4-1091;W05-4-1092;W05-4-1093;W05-4-1094;W05-4-1095;W05-4-1096;W05-4-1097;W05-4-1098;W05-4-1099;W05-4-1100;W05-4-1101;W05-4-1102;W05-4-1103;W05-4-1104;W05-4-1105;W05-4-1106;W05-4-1107;W05-4-1108;W05-4-1109;W05-4-1110;W05-4-1111;W05-4-1112;W05-4-1113;W05-4-1114;W05-4-1115;W05-4-1116;W05-4-1117;W05-4-1118;W05-4-1119;W05-4-1120;W05-4-1121;W05-4-1122;W05-4-1123;W05-4-1124;W05-4-1125;W05-4-1126;W05-4-1127;W05-4-1128;W05-4-1129;W05-4-1130;W05-4-1131;W05-4-1132;W05-4-1133;W05-4-1134;W05-4-1135;W05-4-1136;W05-4-1137;W05-4-1138;W05-4-1139;W05-4-1140;W05-4-1141;W05-4-1142;W05-4-1143;W05-4-1144;W05-4-1145;W05-4-1146;W05-4-1147;W05-4-1148;W05-4-1149;W05-4-1150;W05-4-1151;W05-4-1152;W05-4-1153;W05-4-1154;W05-4-1155;W05-4-1156;W05-4-1157;W05-4-1158;W05-4-1159;W05-4-1160;W05-4-1161;W05-4-1162;W05-4-1163;W05-4-1164;W05-4-1165;W05-4-1166;W05-4-1167;W05-4-1168;W05-4-1169;W05-4-1170;W05-4-1171;W05-4-1172;W05-4-1173;W05-4-1174;W05-4-1175;W05-4-1176;W05-4-1177;W05-4-1178;W05-4-1179;W05-4-1180;W05-4-1181;W05-4-1182;W05-4-1183;W05-4-1184;W05-4-1185;W05-4-1186;W05-4-1187;W05-4-1188;W05-4-1189;W05-4-1190;W05-4-1191;W05-4-1192;W05-4-1193;W05-4-1194;W05-4-1195;W05-4-1196;W05-4-1197;W05-4-1198;W05-4-1199;W05-4-1200;W05-4-1201;W05-4-1202;W05-4-1203;W05-4-1204;W05-4-1205;W05-4-1206;W05-4-1207;W05-4-1208;W05-4-1209;W05-4-1210;W05-4-1211;W05-4-1212;W05-4-1213;W05-4-1214;W05-4-1215;W05-4-1216;W05-4-1217;W05-4-1218;W05-4-1219;W05-4-1220;W05-4-1221;W05-4-1222;W05-4-1223;W05-4-1224;W05-4-1225;W05-4-1226;W05-4-1227;W05-4-1228;W05-4-1229;W05-4-1230;W05-4-1231;W05-4-1232;W05-4-1233;W05-4-1234;W05-4-1235;W05-4-1236;W05-4-1237;W05-4-1238;W05-4-1239;W05-4-1240;W05-4-1241;W05-4-1242;W05-4-1243;W05-4-1244;W05-4-1245;W05-4-1246;W05-4-1247;W05-4-1248;W05-4-1249;W05-4-1250;W05-4-1251;W05-4-1252;W05-4-1253;W05-4-1254;W05-4-1255;W05-4-1256;W05-4-1257;W05-4-1258;W05-4-1259;W05-4-1260;W05-4-1261;W05-4-1262;W05-4-1263;W05-4-1264;W05-4-1265;W05-4-1266;W05-4-1267;W05-4-1268;W05-4-1269;W05-4-1270;W05-4-1271;W05-4-1272;W05-4-1273;W05-4-1274;W05-4-1275;W05-4-1276;W05-4-1277;W05-4-1278;W05-4-1279;W05-4-1280;W05-4-1281;W05-4-1282;W05-4-1283;W05-4-1284;W05-4-1285;W05-4-1286;W05-4-1287;W05-4-1288;W05-4-1289;W05-4-1290;W05-4-1291;W05-4-1292;W05-4-1293;W05-4-1294;W05-4-1295;W05-4-1296;W05-4-1297;W05-4-1298;W05-4-1299;W05-4-1300;W05-4-1301;W05-4-1302;W05-4-1303;W05-4-1304;W05-4-1305;W05-4-1306;W05-4-1307;W05-4-1308;W05-4-1309;W05-4-1310;W05-4-1311;W05-4-1312;W05-4-1313;W05-4-1314;W05-4-1315;W05-4-1316;W05-4-1317;W05-4-1318;W05-4-1319;W05-4-1320;W05-4-1321;W05-4-1322;W05-4-1323;W05-4-1324;W05-4-1325;W05-4-1326;W05-4-1327;W05-4-1328;W05-4-1329;W05-4-1330;W05-4-1331;W05-4-1332;W05-4-1333;W05-4-1334;W05-4-1335;W05-4-1336;W05-4-1337;W05-4-1338;W05-4-1339;W05-4-1340;W05-4-1341;W05-4-1342;W05-4-1343;W05-4-1344;W05-4-1345;W05-4-1346;W05-4-1347;W05-4-1348;W05-4-1349;W05-4-1350;W05-4-1351;W05-4-1352;W05-4-1353;W05-4-1354;W05-4-1355;W05-4-1356;W05-4-1357;W05-4-1358;W05-4-1359;W05-4-1360;W05-4-1361;W05-4-1362;W05-4-1363;W05-4-1364;W05-4-1365;W05-4-1366;W05-4-1367;W05-4-1368;W05-4-1369;W05-4-1370;W05-4-1371;W05-4-1372;W05-4-1373;W05-4-1374;W05-4-1375;W05-4-1376;W05-4-1377;W05-4-1378;W05-4-1379;W05-4-1380;W05-4-1381;W05-4-1382;W05-4-1383;W05-4-1384;W05-4-1385;W05-4-1386;W05-4-1387;W05-4-1388;W05-4-1389;W05-4-1390;W05-4-1391;W05-4-1392;W05-4-1393;W05-4-1394;W05-4-1395;W05-4-1396;W05-4-1397;W05-4-1398;W05-4-1399;W05-4-1400;W05-4-1401;W05-4-1402;W05-4-1403;W05-4-1404;W05-4-1405;W05-4-1406;W05-4-1407;W05-4-1408;W05-4-1409;W05-4-1410;W05-4-1411;W05-4-1412;W05-4-1413;W05-4-1414;W05-4-1415;W05-4-1416;W05-4-1417;W05-4-1418;W05-4-1419;W05-4-1420;W05-4-1421;W05-4-1422;W05-4-1423;W05-4-1424;W05-4-1425;W05-4-1426;W05-4-1427;W05-4-1428;W05-4-1429;W05-4-1430;W05-4-1431;W05-4-1432;W05-4-1433;W05-4-1434;W05-4-1435;W05-4-1436;W05-4-1437;W05-4-1438;W05-4-1439;W05-4-1440;W05-4-1441;W05-4-1442;W05-4-1443;W05-4-1444;W05-4-1445;W05-4-1446;W05-4-1447;W05-4-1448;W05-4-1449;W05-4-1450;W05-4-1451;W05-4-1452;W05-4-1453;W05-4-1454;W05-4-1455;W05-4-1456;W05-4-1457;W05-4-1458;W05-4-1459;W05-4-1460;W05-4-1461;W05-4-1462;W05-4-1463;W05-4-1464;W05-4-1465;W05-4-1466;W05-4-1467;W05-4-1468;W05-4-1469;W05-4-1470;W05-4-1471;W05-4-1472;W05-4-1473;W05-4-1474;W05-4-1475;W05-4-1476;W05-4-1477;W05-4-1478;W05-4-1479;W05-4-1480;W05-4-1481;W05-4-1482;W05-4-1483;W05-4-1484;W05-4-1485;W05-4-1486;W05-4-1487;W05-4-1488;W05-4-1489;W05-4-1490;W05-4-1491;W05-4-1492;W05-4-1493;W05-4-1494;W05-4-1495;W05-4-1496;W05-4-1497;W05-4-1498;W05-4-1499;W05-4-1500;W05-4-1501;W05-4-1502;W05-4-1503;W05-4-1504;W05-4-1505;W05-4-1506;W05-4-1507;W05-4-1508;W05-4-1509;W05-4-1510;W05-4-1511;W05-4-1512;W05-4-1513;W05-4-1514;W05-4-1515;W05-4-1516;W05-4-1517;W05-4-1518;W05-4-1519;W05-4-1520;W05-4-1521;W05-4-1522;W05-4-1523;W05-4-1524;W05-4-1525;W05-4-1526;W05-4-1527;W05-4-1528;W05-4-1529;W05-4-1530;W05-4-1531;W05-4-1532;W05-4-1533;W05-4-1534;W05-4-1535;W05-4-1536;W05-4-1537;W05-4-1538;W05-4-1539;W05-4-1540;W05-4-1541;W05-4-1542;W05-4-1543;W05-4-1544;W05-4-1545;W05-4-1546;W05-4-1547;W05-4-1548;W05-4-1549;W05-4-1550;W05-4-1551;W05-4-1552;W05-4-1553;W05-4-1554;W05-4-1555;W05-4-1556;W05-4-1557;W05-4-1558;W05-4-1559;W05-4-1560;W05-4-1561;W05-4-1562;W05-4-1563;W05-4-1564;W05-4-1565;W05-4-1566;W05-4-1567;W05-4-1568;W05-4-1569;W05-4-1570;W05-4-1571;W05-4-1572;W05-4-1573;W05-4-1574;W05-4-1575;W05-4-1576;W05-4-1577;W05-4-1578;W05-4-1579;W05-4-1580;W05-4-1581;W05-4-1582;W05-4-1583;W05-4-1584;W05-4-1585;W05-4-1586;W05-4-1587;W05-4-1588;W05-4-1589;W05-4-1590;W05-4-1591;W05-4-1592;W05-4-1593;W05-4-1594;W05-4-1595;W05-4-1596;W05-4-1597;W05-4-1598;W05-4-1599;W05-4-1600;W05-4-1601;W05-4-1602;W05-4-1603;W05-4-1604;W05-4-1605;W05-4-1606;W05-4-1607;W05-4-1608;W05-4-1609;W05-4-1610;W05-4-1611;W05-4-1612;W05-4-1613;W05-4-1614;W05-4-1615;W05-4-1616;W05-4-1617;W05-4-1618;W05-4-1619;W05-4-1620;W05-4-1621;W05-4-1622;W05-4-1623;W05-4-1624;W05-4-1625;W05-4-1626;W05-4-1627;W05-4-1628;W05-4-1629;W05-4-1630;W05-4-1631;W05-4-1632;W05-4-1633;W05-4-1634;W05-4-1635;W05-4-1636;W05-4-1637;W05-4-1638;W05-4-1639;W05-4-1640;W05-4-1641;W05-4-1642;W05-4-1643;W05-4-1644;W05-4-1645;W05-4-1646;W05-4-1647;W05-4-1648;W05-4-1649;W05-4-1650;W05-4-1651;W05-4-1652;W05-4-1653;W05-4-1654;W05-4-1655;W05-4-1656;W05-4-1657;W05-4-1658;W05-4-1659;W05-4-1660;W05-4-1661;W05-4-1662;W05-4-1663;W05-4-1664;W05-4-1665;W05-4-1666;W05-4-1667;W05-4-1668;W05-4-1669;W05-4-1670;W05-4-1671;W05-4-1672;W05-4-1673;W05-4-1674;W05-4-1675;W05-4-1676;W05-4-1677;W05-4-1678;W05-4-1679;W05-4-1680;W05-4-1681;W05-4-1682;W05-4-1683;W05-4-1684;W05-4-1685;W05-4-1686;W05-4-1687;W05-4-1688;W05-4-1689;W05-4-1690;W05-4-1691;W05-4-1692;W05-4-1693;W05-4-1694;W05-4-1695;W05-4-1696;W05-4-1697;W05-4-1698;W05-4-1699;W05-4-1700;W05-4-1701;W05-4-1702;W05-4-1703;W05-4-1704;W05-4-1705;W05-4-1706;W05-4-1707;W05-4-1708;W05-4-1709;W05-4-1710;W05-4-1711;W05-4-1712;W05-4-1713;W05-4-1714;W05-4-1715;W05-4-1716;W05-4-1717;W05-4-1718;W05-4-1719;W05-4-1720;W05-4-1721;W05-4-1722;W05-4-1723;W05-4-1724;W05-4-1725;W05-4-1726;W05-4-1727;W05-4-1728;W05-4-1729;W05-4-1730;W05-4-1731;W05-4-1732;W05-4-1733;W05-4-1734;W05-4-1735;W05-4-1736;W05-4-1737;W05-4-1738;W05-4-1739;W05-4-1740;W05-4-1741;W05-4-1742;W05-4-1743;W05-4-1744;W05-4-1745;W05-4-1746;W05-4-1747;W05-4-1748;W05-4-1749;W05-4-1750;W05-4-1751;W05-4-1752;W05-4-1753;W05-4-1754;W05-4-1755;W05-4-1756;W05-4-1757;W05-4-1758;W05-4-1759;W05-4-1760;W05-4-1761;W05-4-1762;W05-4-1763;W05-4-1764;W05-4-1765;W05-4-1766;W05-4-1767;W05-4-1768;W05-4-1769;W05-4-1770;W05-4-1771;W05-4-1772;W05-4-1773;W05-4-1774;W05-4-1775;W05-4-1776;W05-4-1777;W05-4-1778;W05-4-1779;W05-4-1780;W05-4-1781;W05-4-1782;W05-4-1783;W05-4-1784;W05-4-1785;W05-4-1786;W05-4-1787;W05-4-1788;W05-4-1789;W05-4-1790;W05-4-1791;W05-4-1792;W05-4-1793;W05-4-1794;W05-4-1795;W05-4-1796;W05-4-1797;W05-4-1798;W05-4-1799;W05-4-1800;W05-4-1801;W05-4-1802;W05-4-1803;W05-4-1804;W05-4-1805;W05-4-1806;W05-4-1807;W05-4-1808;W05-4-1809;W05-4-1810;W05-4-1811;W05-4-1812;W05-4-1813;W05-4-1814;W05-4-1815;W05-4-1816;W05-4-1817;W05-4-1818;W05-4-1819;W05-4-1820;W05-4-1821;W05-4-1822;W05-4-1823;W05-4-1824;W05-4-1825;W05-4-1826;W05-4-1827;W05-4-1828;W05-4-1829;W05-4-1830;W05-4-1831;W05-4-1832;W05-4-1833;W05-4-1834;W05-4-1835;W05-4-1836;W05-4-1837;W05-4-1838;W05-4-1839;W05-4-1840;W05-4-1841;W05-4-1842;W05-4-1843;W05-4-1844;W05-4-1845;W05-4-1846;W05-4-1847;W05-4-1848;W05-4-1849;W05-4-1850;W05-4-1851;W05-4-1852;W05-4-1853;W05-4-1854;W05-4-1855;W05-4-1856;W05-4-1857;W05-4-1858;W05-4-1859;W05-4-1860;W05-4-1861;W05-4-1862;W05-4-1863;W05-4-1864;W05-4-1865;W05-4-1866;W05-4-1867;W05-4-1868;W05-4-1869;W05-4-1870;W05-4-1871;W05-4-1872;W05-4-1873;W05-4-1874;W05-4-1875;W05-4-1876;W05-4-1877;W05-4-1878;W05-4-1879;W05-4-1880;W05-4-1881;W05-4-1882;W05-4-1883;W05-4-1884;W05-4-1885;W05-4-1886;W05-4-1887;W05-4-1888;W05-4-1889;W05-4-1890;W05-4-1891;W05-4-1892;W05-4-1893;W05-4-1894;W05-4-1895;W05-4-1896;W05-4-1897;W05-4-1898;W05-4-1899;W05-4-1900;W05-4-1901;W05-4-1902;W05-4-1903;W05-4-1904;W05-4-1905;W05-4-1906;W05-4-1907;W05-4-1908;W05-4-1909;W05-4-1910;W05-4-1911;W05-4-1912;W05-4-1913;W05-4-1914;W05-4-1915;W05-4-1916;W05-4-1917;W05-4-1918;W05-4-1919;W05-4-1920;W05-4-1921;W05-4-1922;W05-4-1923;W05-4-1924;W05-4-1925;W05-4-1926;W05-4-1927;W05-4-1928;W05-4-1929;W05-4-1930;W05-4-1931;W05-4-1932;W05-4-1933;W05-4-1934;W05-4-1935;W05-4-1936;W05-4-1937;W05-4-1938;W05-4-1939;W05-4-1940;W05-4-1941;W05-4-1942;W05-4-1943;W05-4-1944;W05-4-1945;W05-4-1946;W05-4-1947;W05-4-1948;W05-4-1949;W05-4-1950;W05-4-1951;W05-4-1952;W05-4-1953;W05-4-1954;W05-4-1955;W05-4-1956;W05-4-1957;W05-4-1958;W05-4-1959;W05-4-1960;W05-4-1961;W05-4-1962;W05-4-1963;W05-4-1964;W05-4-1965;W05-4-1966;W05-4-1967;W05-4-1968;W05-4-1969;W05-4-1970;W05-4-1971;W05-4-1972;W05-4-1973;W05-4-1974;W05-4-1975;W05-4-1976;W05-4-1977;W05-4-1978;W05-4-1979;W05-4-1980;W05-4-1981;W05-4-1982;W05-4-1983;W05-4-1984;W05-4-1985;W05-4-1986;W05-4-1987;W05-4-1988;W05-4-1989;W05-4-1990;W05-4-1991;W05-4-1992;W05-4-1993;W05-4-1994;W05-4-1995;W05-4-1996;W05-4-1997;W05-4-1998;W05-4-1999;W05-4-2000;W05-4-2001;W05-4-2002;W05-4-2003;W05-4-2004;W05-4-2005;W05-4-2006;W05-4-2007;W05-4-2008;W05-4-2009;W05-4-2010;W05-4-2011;W05-4-2012;W05-4-2013;W05-4-2014;W05-4-2015;W05-4-2016;W05-4-2017;W05-4-2018;W05-4-2019;W05-4-2020;W05-4-2021;W05-4-2022;W05-4-2023;W05-4-2024;W05-4-2025;W05-4-2026;W05-4-2027;W05-4-2028;W05-4-2029;W05-4-2030;W05-4-2031;W05-4-2032;W05-4-2033;W05-4-2034;W05-4-2035;W05-4-2036;W05-4-2037;W05-4-2038;W05-4-2039;W05-4-2040;W05-4-2041;W05-4-2042;W05-4-2043;W05-4-2044;W05-4-2045;W05-4-2046;W05-4-2047;W05-4-2048;W05-4-2049;W05-4-2050;W05-4-2051;W05-4-2052;W05-4-2053;W05-4-2054;W05-4-2055;W05-4-2056;W05-4-2057;W05-4-2058;W05-4-2059;W05-4-2060;W05-4-2061;W05-4-2062;W05-4-2063;W05-4-2064;W05-4-2065;W05-4-2066;W05-4-2067;W05-4-2068;W05-4-2069

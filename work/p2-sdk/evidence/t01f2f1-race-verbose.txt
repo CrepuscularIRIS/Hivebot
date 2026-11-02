@@ -1,0 +1,20 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-01.f2.f1/app/sdk
+
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — review R1 interleave 1: uninitialized lock window > refuses on an empty lock file instead of reclaiming it as stale 4ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — review R1 interleave 1: uninitialized lock window > refuses on a malformed (non-pid) lock file 1ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — review R1 interleave 1: uninitialized lock window > ignores leftover temp files from a crashed publisher and acquires cleanly 1ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — review R1 interleave 2: stale-reclaim race > a stale-reclaimer resuming after another racer reclaimed must refuse, not delete the live lock 1ms
+ ✓ tests/unit/launcher-lock.test.ts > release — review R1 interleave 3: ownership check > a stolen holder releases without deleting the next holder’s lock (same-pid steal proves inode check) 1ms
+ ✓ tests/unit/launcher-lock.test.ts > release — review R1 interleave 3: ownership check > release is idempotent 1ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — T-01.f2 acceptance ① behavior preserved > second acquire on a live lock is refused and touches nothing 1ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — T-01.f2 acceptance ① behavior preserved > a stale dead-pid lock is taken over 1ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — T-01.f2 acceptance ① behavior preserved > after release the next instance boots on the same home 1ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — real multiprocess race > two child processes racing on one home: exactly one acquires, per round (5 rounds) 3416ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  15:57:31
+   Duration  3.55s (tests 99%)
+
+EXIT=0

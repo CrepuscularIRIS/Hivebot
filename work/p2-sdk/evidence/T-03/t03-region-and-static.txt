@@ -1,0 +1,38 @@
+== git status (worktree) ==
+(empty = clean)
+
+== git rev-parse HEAD ==
+affff7b737152f8b542bbef6b0c4f766b6d6013f
+
+== region diff 974e09e(main)..affff7b ==
+A	app/sdk/profile/patches/market.yml
+A	app/sdk/src/p2temp/index.mjs
+A	app/sdk/tests/market/connectors.test.ts
+A	app/sdk/tests/market/fixtures/market-index.json
+A	app/sdk/tests/market/fixtures/mcp-stdio-server.mjs
+A	app/sdk/tests/market/fixtures/methods-snapshot.mjs
+A	app/sdk/tests/market/market-search.test.ts
+A	app/sdk/tests/market/support.ts
+A	app/sdk/tests/unit/p2temp.test.ts
+M	app/sdk/vitest.config.ts
+
+== vitest.config.ts diff ==
+diff --git a/app/sdk/vitest.config.ts b/app/sdk/vitest.config.ts
+index 8809f78..8961a63 100644
+--- a/app/sdk/vitest.config.ts
++++ b/app/sdk/vitest.config.ts
+@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config'
+ 
+ export default defineConfig({
+   test: {
+-    include: ['tests/unit/**/*.test.ts', 'tests/e2e/**/*.test.ts'],
++    include: ['tests/unit/**/*.test.ts', 'tests/e2e/**/*.test.ts', 'tests/market/**/*.test.ts'],
+     testTimeout: 120_000,
+     hookTimeout: 120_000,
+     coverage: {
+== grep P2-TEMP app/sdk/src ==
+app/sdk/src/p2temp/index.mjs:1:// P2-TEMP：P3 可推翻
+app/sdk/src/p2temp/index.mjs:59: *  （P2-TEMP 限定：与 0.2.2-alpha.2 的 AgentPresetRegistry 实现耦合）。 */
+
+== signature line in src ==
+//   p2temp/session.createWithConnectors({connectors: string[], agentPreset?: string, cwd?: string}) → {sessionId}

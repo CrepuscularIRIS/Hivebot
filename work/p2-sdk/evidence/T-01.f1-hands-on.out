@@ -1,0 +1,5 @@
+runtime ready baseUrl=http://127.0.0.1:35525 parent=1424466 dshPids=[1424479]
+② PASS (MuxError: mux socket is not open)
+① killed dsh [1424479] after first chunk (frames so far=11)
+① PASS (MuxError after 22ms: websocket closed)
+HANDS-ON PASS

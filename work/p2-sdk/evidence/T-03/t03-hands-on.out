@@ -1,0 +1,15 @@
+runtime ready: http://127.0.0.1:34641
+PASS ① search returns entries — title="p2sdk fixture market" total=3 names=@p2sdk-fixture/demo-mcp,@p2sdk-fixture/echo-tool,@p2sdk-fixture/other-tool
+PASS ① text=echo narrows to 1
+PASS ② installBundle(enabled:false) succeeds — application=applied
+PASS ② X tools include the MCP tool
+PASS ② Y tools contain no mcp__*
+    tool-table sizes: X=35 Y=31 (builder claim X=35 Y=31)
+    method tables: full=144 (builder claim 144) bare=139 added=5 (pluginMarket/*=4)
+PASS ③ full method table count = 144 — got 144
+PASS ③ added \ pluginMarket/* is exactly the one p2temp method — ["p2temp/session.createWithConnectors"]
+PASS ③ no other p2temp/* methods
+PASS bad path: uninstalled connector errors — p2temp/session.createWithConnectors failed: {"code":"gateway/internal","message":"p2temp: connector \"@nope/missing\" is
+PASS bad path: empty connectors errors — p2temp/session.createWithConnectors failed: {"code":"gateway/internal","message":"p2temp: connectors must be a non-empty
+PASS bad paths created no session — 0 -> 0
+ALL HANDS-ON CHECKS PASS

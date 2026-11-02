@@ -1,0 +1,4 @@
+ce7073d51254c26cd63b22a60835b8f948deb447
+--- worktree repos/ (tracked only):
+repos/Compare.md
+repos/MANIFEST.tsv

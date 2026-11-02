@@ -1,0 +1,16 @@
+=== concurrency run 1 (worktree feat/T-04 @ f990d8e) ===
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Duration  1.98s (tests 98%, import 1%, transform 1%)
+=== concurrency run 2 (worktree feat/T-04 @ f990d8e) ===
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Duration  1.98s (tests 98%, import 1%)
+=== concurrency run 3 (worktree feat/T-04 @ f990d8e) ===
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Duration  1.99s (tests 98%, import 1%)
+=== full suite ===
+ Test Files  5 passed (5)
+      Tests  34 passed (34)
+   Duration  12.43s (tests 99%, import 1%)

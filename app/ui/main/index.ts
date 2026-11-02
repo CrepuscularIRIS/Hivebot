@@ -117,9 +117,13 @@ async function main(): Promise<void> {
   if (handoff) {
     const baseUrl = (await readFile(resolve(handoff, 'base-url'), 'utf8')).trim()
     const token = (await readFile(resolve(handoff, 'launch-token'), 'utf8')).trim()
-    dsh = new DshConnection({ baseUrl, token, interactions: 'answer' })
+    // U-17：首连失败改为指数退避重试，start() 最长等 PBOTS_DSH_START_TIMEOUT_MS（默认 30s）
+    // 才 reject —— 超时后 restore 闸门走失败分支放行，M1/M2 不再永久挂。测试用短值。
+    const startTimeoutMs = Number(process.env.PBOTS_DSH_START_TIMEOUT_MS ?? '') || 30_000
+    dsh = new DshConnection({ baseUrl, token, interactions: 'answer', startTimeoutMs })
     dshStart = dsh.start()
-    void dshStart.then(() => ready.setDshReady())
+    // U-17（R2/R3）：派生 promise 自带 rejection handler —— 超时 reject 由下方 U-14 分支善后
+    void dshStart.then(() => ready.setDshReady(), () => {})
   }
 
   const assertSender = (event: Parameters<typeof assertPbotsSender>[0]): void =>

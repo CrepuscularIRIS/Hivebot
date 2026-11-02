@@ -44,6 +44,12 @@ export interface DshConnectionOptions {
   interactions: string
   /** 重连退避基数 ms（默认 300，测试可调小）。 */
   backoffMs?: number
+  /** 单次重连退避上限 ms（指数翻倍封顶，默认 10_000）。 */
+  backoffMaxMs?: number
+  /** start() 首连整体上限 ms（默认 30_000；超时 reject，后台重试不停止）。 */
+  startTimeoutMs?: number
+  /** rpc 等待连接的就绪上限 ms（默认 30_000；超时返回 pbots/unavailable）。 */
+  rpcTimeoutMs?: number
   /** 测试注入口：避免直接 new DshMuxSocket。 */
   makeSocket?: (url: string, cookie: string) => DshMuxSocket
 }
@@ -57,7 +63,10 @@ export class DshConnection {
   private generation = 0
   private stopped = false
   private reconnectTimer: NodeJS.Timeout | undefined
+  private reconnectAttempts = 0
+  private loopStarted = false
   private readyWaiters: Array<(g: number) => void> = []
+  private firstConnectWaiters: Array<(g: number) => void> = []
   /** main 侧已发出的 /api 调用计数（断言口径：拒绝时必须 === 0）。 */
   apiCount = 0
 
@@ -68,10 +77,39 @@ export class DshConnection {
 
   get currentGeneration(): number { return this.generation }
 
-  /** 连接并完成首次 /connect + ws open；之后再断线自动重连。 */
+  /** 连接并完成首次 /connect + ws open；之后再断线自动重连。
+   * U-17（R2/R3）：首连失败与断线走同一条指数退避重试路径；start() 在
+   * startTimeoutMs 内等到首个 generation 才 resolve，超时 reject（后台继续重试，
+   * dsh 恢复后 rpc/ready 自行恢复，不再永久挂）。 */
   async start(): Promise<number> {
-    await this.connectOnce()
-    return this.generation
+    this.startLoop()
+    if (this.generation >= 1) return this.generation
+    const timeoutMs = this.opts.startTimeoutMs ?? 30_000
+    return new Promise<number>((resolve, reject) => {
+      const timer = setTimeout(
+        () => reject(new Error(`dsh connect timed out after ${timeoutMs}ms`)),
+        timeoutMs,
+      )
+      this.firstConnectWaiters.push((g) => { clearTimeout(timer); resolve(g) })
+    })
+  }
+
+  /** 常驻连接循环（幂等）：失败进 scheduleReconnect，成功后只等 onDead。 */
+  private startLoop(): void {
+    if (this.loopStarted) return
+    this.loopStarted = true
+    void this.tryConnect()
+  }
+
+  private async tryConnect(): Promise<void> {
+    if (this.stopped) return
+    try {
+      await this.connectOnce()
+      this.reconnectAttempts = 0
+    } catch (error) {
+      console.warn(`[dsh] connect failed: ${String(error)}`)
+      this.scheduleReconnect()
+    }
   }
 
   private async connectOnce(): Promise<void> {
@@ -83,23 +121,28 @@ export class DshConnection {
     this.socket = socket
     this.generation += 1
     socket.onDead(() => {
-      if (this.socket === socket) void this.scheduleReconnect()
+      if (this.socket !== socket) return
+      // U-17（R13）：死 socket 立即出清，ready() 只会挂起等新代，不再返回死柄。
+      this.socket = undefined
+      void this.scheduleReconnect()
     })
     for (const w of this.readyWaiters.splice(0)) w(this.generation)
+    for (const w of this.firstConnectWaiters.splice(0)) w(this.generation)
   }
 
-  private async scheduleReconnect(): Promise<void> {
+  private scheduleReconnect(): void {
     if (this.stopped || this.reconnectTimer !== undefined) return
+    const base = this.opts.backoffMs ?? 300
+    const cap = this.opts.backoffMaxMs ?? 10_000
+    const delay = Math.min(base * 2 ** this.reconnectAttempts, cap)
+    this.reconnectAttempts += 1
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = undefined
-      this.connectOnce().catch((error) => {
-        console.warn(`[dsh] reconnect failed: ${String(error)}`)
-        void this.scheduleReconnect()
-      })
-    }, this.opts.backoffMs ?? 300)
+      void this.tryConnect()
+    }, delay)
   }
 
-  /** 等到当前 generation 的 socket（generation ≥1）。 */
+  /** 等到当前 generation 的 socket（generation ≥1）；死 socket 已出清，只会等新代。 */
   ready(): Promise<DshMuxSocket> {
     if (this.socket !== undefined) return Promise.resolve(this.socket)
     return new Promise((resolve) => {
@@ -107,12 +150,24 @@ export class DshConnection {
     })
   }
 
-  /** /api 调用（原样返回，计数 +1）。 */
+  /** /api 调用（原样返回，计数 +1）。U-17（R3）：未连接时有界等待
+   * rpcTimeoutMs，超时返回结构化 pbots/unavailable，不永久挂。 */
   async rpc(method: string, args: unknown): Promise<ConnectionRpcResult> {
-    const socket = await this.ready()
-    if (socket === undefined) return { ok: false, error: { code: 'pbots/unavailable', message: 'dsh connection not ready', details: {} } }
-    this.apiCount += 1
-    return rpcRaw(this.baseUrl, this.cookie, method, args)
+    const timeoutMs = this.opts.rpcTimeoutMs ?? 30_000
+    let timer: NodeJS.Timeout | undefined
+    try {
+      const socket = await Promise.race([
+        this.ready(),
+        new Promise<undefined>((resolve) => { timer = setTimeout(() => resolve(undefined), timeoutMs) }),
+      ])
+      if (socket === undefined) {
+        return { ok: false, error: { code: 'pbots/unavailable', message: `dsh connection not ready after ${timeoutMs}ms`, details: {} } }
+      }
+      this.apiCount += 1
+      return await rpcRaw(this.baseUrl, this.cookie, method, args)
+    } finally {
+      clearTimeout(timer)
+    }
   }
 
   stop(): void {

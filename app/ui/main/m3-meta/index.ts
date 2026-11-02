@@ -23,11 +23,13 @@ export interface M3Deps {
   failed?: Set<string>
 }
 
-/** 注册句柄：main/index.ts 用 handler 注册 IPC；U-11/U-14 消费 store 与 failed。 */
+/** 注册句柄：main/index.ts 用 handler 注册 IPC；U-11/U-14 消费 store/failed/init。 */
 export interface M3Handle {
   handler: (req: unknown) => Promise<M3Result>
   store: BotsMetaStore
   failed: Set<string>
+  /** 首次读盘（init 时启动）；U-14 restore 前等待它，避免读到未初始化的空态。 */
+  init: Promise<void>
 }
 
 const invalidArgs = (message: string): M3Result => ({ ok: false, error: { code: 'pbots/invalid-args', message, details: {} } })
@@ -93,5 +95,5 @@ export function registerM3Meta(deps: M3Deps): M3Handle {
     return liveView()
   }
 
-  return { handler, store, failed }
+  return { handler, store, failed, init }
 }

@@ -46,7 +46,7 @@ describe('restoreRecipes', () => {
     const before = readFileSync(join(dir, BOTS_JSON), 'utf8')
     const dsh = mockDsh({
       'p2temp/preset.ensure': (args) => {
-        const { agentPreset } = args as { agentPreset: string }
+        const { agentPreset } = (args as { request: { agentPreset: string } }).request
         if (agentPreset === 'p2-beta') return new Promise(() => {}) as never
         return { ok: true, value: { presetId: R_GOOD } }
       },
@@ -60,9 +60,10 @@ describe('restoreRecipes', () => {
     // 不写盘：字节不变（失败不落 live=false，也不删）
     expect(readFileSync(join(dir, BOTS_JSON), 'utf8')).toBe(before)
     expect(dsh.calls.map((c) => c.method)).toEqual(['p2temp/preset.ensure', 'p2temp/preset.ensure'])
+    // typert wire 壳（U-14 对真 runtime 实测：无壳被 gateway 拒 arguments-invalid）
     expect(dsh.calls.map((c) => c.args)).toEqual([
-      { agentPreset: 'p2-alpha', connectors: ['a'] },
-      { agentPreset: 'p2-beta', connectors: ['b'] },
+      { request: { agentPreset: 'p2-alpha', connectors: ['a'] } },
+      { request: { agentPreset: 'p2-beta', connectors: ['b'] } },
     ])
   })
 
@@ -74,7 +75,7 @@ describe('restoreRecipes', () => {
     })
     const dsh = mockDsh({
       'p2temp/preset.ensure': (args) => {
-        const { connectors } = args as { connectors: string[] }
+        const { connectors } = (args as { request: { connectors: string[] } }).request
         if (connectors.includes('gone')) {
           return { ok: false, error: { code: 'p2temp/connector-unavailable', message: 'not installed', details: { connector: 'gone' } } }
         }

@@ -13,6 +13,7 @@ import { EventsLedger } from './dsh/ledger'
 import { registerM1Api } from './m1-api'
 import { registerM2Mux } from './m2-mux'
 import { registerM3Meta } from './m3-meta'
+import { ensureThenReady, restoreGated } from './m3-meta/ensure'
 
 if (process.type === 'browser') {
   // 必须在 app ready 前注册；单测导入本模块时（纯 node）跳过。
@@ -91,11 +92,13 @@ async function main(): Promise<void> {
 
   const handoff = process.env.PBOTS_DSH_HANDOFF
   let dsh: DshConnection | undefined
+  let dshStart: Promise<number> | undefined
   if (handoff) {
     const baseUrl = (await readFile(resolve(handoff, 'base-url'), 'utf8')).trim()
     const token = (await readFile(resolve(handoff, 'launch-token'), 'utf8')).trim()
     dsh = new DshConnection({ baseUrl, token, interactions: 'answer' })
-    void dsh.start().then(() => ready.setDshReady())
+    dshStart = dsh.start()
+    void dshStart.then(() => ready.setDshReady())
   }
 
   const assertSender = (event: Parameters<typeof assertPbotsSender>[0]): void =>
@@ -115,14 +118,30 @@ async function main(): Promise<void> {
     })
   } else {
     const m1 = registerM1Api({ dsh })
-    ipcMain.handle('pbots:api', (event, req) => { assertSender(event); return m1(req) })
+    // U-14（CONTRACT #21）：#21 恢复全部 settle 前 M1/M2 不就绪 —— 入口挂 restore 闸门
+    const m1Gated = restoreGated(ready, m1)
+    ipcMain.handle('pbots:api', (event, req) => { assertSender(event); return m1Gated(req) })
     const m2 = registerM2Mux({ dsh })
+    const m2Gated = restoreGated(ready, m2) as (event: Parameters<typeof m2>[0], req: Parameters<typeof m2>[1]) => void
     ipcMain.on('pbots:mux-port', (event, req) => {
       try { assertSender(event) } catch (error) { console.warn(error); return }
-      m2(event, req)
+      void m2Gated(event, req)
     })
     const m3 = registerM3Meta({ dsh, dataDir: process.env.PBOTS_DATA_DIR ?? app.getPath('userData') })
     ipcMain.handle('pbots:bots-meta', (event, req) => { assertSender(event); return m3.handler(req) })
+
+    // U-14 先 restore 后 ready：dsh 连上 → 读盘完成 → #21 逐个 ensure（30s each 超时按
+    // 失败、allSettled、失败进 failed set 不阻断）→ 放行 restore 条件。dsh 起不来时
+    // dsh 条件本就不开，此处只补 settle 观察面，不跑恢复。
+    if (dsh !== undefined && dshStart !== undefined) {
+      void dshStart.then(
+        async () => { await m3.init; await ensureThenReady({ dsh, store: m3.store, failed: m3.failed, ready }) },
+        (error) => {
+          console.warn(`[m3] restore skipped: dsh start failed: ${String(error)}`)
+          ready.setRestoreSettled([...m3.failed])
+        },
+      )
+    }
   }
 
   await mainWindow.loadURL(process.env.PBOTS_APP_URL ?? `${SCHEME}://app/`)

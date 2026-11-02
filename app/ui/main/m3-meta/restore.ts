@@ -31,7 +31,9 @@ export async function restoreRecipes(
   const settled = await Promise.allSettled(
     entries.map(async ([presetId, recipe]) => {
       const result = await Promise.race([
-        dsh.rpc('p2temp/preset.ensure', { agentPreset: recipe.agentPreset, connectors: recipe.connectors }),
+        // typert wire 壳 {request:…}（client.mjs:43 同款；无壳会被 gateway 按
+        // descriptor 拒 arguments-invalid——U-14 e2e 对真 runtime 实测）
+        dsh.rpc('p2temp/preset.ensure', { request: { agentPreset: recipe.agentPreset, connectors: recipe.connectors } }),
         new Promise<{ ok: false; error: { code: string; message: string } }>((resolve) => {
           setTimeout(() => {
             resolve({ ok: false, error: { code: 'pbots/timeout', message: `preset.ensure timed out after ${timeoutMs}ms` } })

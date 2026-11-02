@@ -359,6 +359,20 @@ it('④b scanner guards: refuses non-pnpm invocation and Node <24.9', async () =
   expect(v22.stdout).toContain('GUARD')
 }, 60_000)
 
+// T-20 regression: a tracked entry that is a directory on disk (a submodule
+// gitlink, e.g. app/ui/vendor/deepseek-harness — its content lives in its own
+// repo) must be skipped, not read as a file (EISDIR) into unrecognized.
+it('④c directory entry in the scan set is skipped, not UNRECOGNIZED', async () => {
+  const sentinel = newSentinel()
+  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-t20-dir-'))
+  const sub = join(dir, 'vendor-gitlink-like') // exists as a directory, empty like an uninitialized submodule
+  mkdirSync(sub)
+  const res = scan({ secret: sentinel, files: [sub] })
+  expect(res.status, `a directory entry must be skipped:\n${res.stdout}`).toBe(0)
+  expect(res.stdout).toContain('CLEAN')
+  expect(res.stdout, 'the directory is not reported as unrecognized').not.toContain('UNRECOGNIZED')
+}, 60_000)
+
 // --- ⑤ real key, D2 scenario, same scanner; count only ---
 
 it.skipIf(!REAL_KEY)('⑤ real-key D2 smoke re-scan: same scanner, key from env, hits=0', async () => {

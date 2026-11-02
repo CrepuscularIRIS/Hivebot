@@ -108,6 +108,7 @@ function scanFile(path, mode) {
     buf = readFileSync(path)
   } catch (e) {
     if (e.code === 'ENOENT') return // tracked file deleted in a worktree — nothing on disk
+    if (e.code === 'EISDIR') return // T-20: a directory entry (e.g. a submodule gitlink from git ls-files) is not a scannable file — its content lives in its own repo
     unrecognized.push(`${path}: unreadable (${e.code ?? e.message})`)
     return
   }

@@ -30,7 +30,7 @@ export interface M2Channel { port1: M2Port; port2: unknown }
 
 /** 原帧 tap 计数 + 拒绝记录：electronApp.evaluate 经 globalThis.__pbotsM2 读出（不新开 IPC 通道，④/D2）。 */
 export interface M2Stats {
-  downlink: { total: number; orphan: number; items: Record<string, number> }
+  downlink: { total: number; orphan: number; items: Record<string, number>; /** U-22 D2：assistant-stream chunk 帧按流计数（=== renderer chunkCount 口径）。 */ streamChunks: Record<string, number> }
   rejectedEndpoints: string[]
   rejectedSenders: number
   uplinkDropped: number
@@ -116,7 +116,7 @@ export function registerM2Mux(deps: M2Deps = {}): M2Handler {
   const makeChannel = deps.makeChannel ?? ((): M2Channel => new MessageChannelMain() as unknown as M2Channel)
 
   const stats: M2Stats = {
-    downlink: { total: 0, orphan: 0, items: {} },
+    downlink: { total: 0, orphan: 0, items: {}, streamChunks: {} },
     rejectedEndpoints: [],
     rejectedSenders: 0,
     uplinkDropped: 0,
@@ -149,6 +149,13 @@ export function registerM2Mux(deps: M2Deps = {}): M2Handler {
     stats.downlink.total += 1
     if (frame.type === 'item') {
       stats.downlink.items[frame.streamId] = (stats.downlink.items[frame.streamId] ?? 0) + 1
+      // U-22 D2：text-delta 帧细分计数——与 renderer reduce.applyChunk 的 chunkCount 同口径
+      // （wire 的 assistant-stream chunk 帧还含 block-start/end、usage、finish，非正文增量）
+      const value = frame.value as { type?: string; frame?: { type?: string; chunk?: { type?: string } } } | null
+      if (value !== null && typeof value === 'object' && value.type === 'assistant-stream'
+        && value.frame?.type === 'chunk' && value.frame.chunk?.type === 'text-delta') {
+        stats.downlink.streamChunks[frame.streamId] = (stats.downlink.streamChunks[frame.streamId] ?? 0) + 1
+      }
     }
     const owner = owners.get(frame.streamId)
     if (owner === undefined) {

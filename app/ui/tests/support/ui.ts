@@ -40,10 +40,11 @@ export function bashCall(command: string, id: string): object {
 
 export interface Env { rt: SdkRuntime; shell: ShellLaunch; page: Page; stop(): Promise<void> }
 
-export async function launchProduct(opts: ShellOptions = {}): Promise<Env> {
+export async function launchProduct(opts: ShellOptions & { ready?: boolean } = {}): Promise<Env> {
+  const { ready = true, ...shellOpts } = opts
   const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}`, cwd: mkdtempSync(join(tmpdir(), 'bot-u21-ws-')) })
-  const shell = await launchShell({ ...opts, env: { PBOTS_DSH_HANDOFF: rt.handoff, ...opts.env } })
-  await shell.page.waitForSelector('.shell', { timeout: 30_000 })
+  const shell = await launchShell({ ...shellOpts, env: { PBOTS_DSH_HANDOFF: rt.handoff, ...shellOpts.env } })
+  if (ready) await shell.page.waitForSelector('.shell', { timeout: 30_000 })
   return { rt, shell, page: shell.page, async stop() { await shell.stop(); await rt.stop() } }
 }
 

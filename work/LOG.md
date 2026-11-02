@@ -462,3 +462,10 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-02 15.4x 回报 | verifier U-21 = PASS（封面与原版几乎逐像素、7 对 token 亮暗真断言、15 探针、R 抽查+核实项吻合；2 FIX 记档：断线丢草稿 M、永久停止态 L——归 U-22）| **合并 U-21 → 4f0b404**（真 merge，35 文件 3068 行含字体/截图/PAB-final）| **派 /panel GU 两席**（A+C，一轮）| 在途：GU ×2、verifier U-00.fN
 2026-11-02 15:27 tick | GU ×2（~10min 截图亲验正常）与 verifier U-00.fN 在途 | 无 stale
 2026-11-02 15.4x GU-U21 汇总：A=PASS / C=REVISE → **REVISE（1 轮终局）**——视觉/交互/D9 双席通过；REVISE 项全归 U-22（m1 try/catch HIGH、丢草稿、停止态、重连拉列表；VERIFY 已重建）| LEARNINGS +verifier 产物必须写主仓 | **派 U-22（P-B 收口：markdown 接入 + D2/D4 + GU 清单 + FIX×2）**
+2026-11-02 15.5x 回报 | verifier U-00.fN = PASS（红绿实证字符串 ERR_ABORTED 容忍、29 删除精确核对；**追加发现：Shiki 复用前提被推翻 → U-22 改 npm shiki@4.6.0**，已 SendMessage）| **合并 U-00.fN → 7ee15a3**（.gitmodules+gitlink 删除、lock 大改）| PLAN U-00 ⑥ 的 submodule 断言标作废（纯文本无代码核减）| 4 LOW 记档 | 在途：builder U-22
+2026-11-02 15:37 tick | U-22 活跃（依赖调整中——Shiki 换装落实）| 无 stale
+2026-11-02 15:47 tick | U-22 首个 commit 7074e44（GU 四项加固 + markdown 接入——D 项收尾中）
+2026-11-02 15:57 tick | U-22 commit 后 ~20min（D 项 E2E 调试正常）
+2026-11-02 16:07 tick | U-22 第二个 commit b396645（全部 E2E 落地）——⚠ 注意其 worktree 的 work/ 镜像又出现了（builder 复制过去参考的），确认最终回报走主仓即可
+2026-11-02 16.1x 回报 | **builder U-22 完成**：ab1dd28→cadf6db 4 commits——GU-1 main try/catch（含 U-21 旧单测按新契约改写注明）、GU-2 草稿（真实 30s 超时注入）、GU-3 复位、GU-4 重连重拉、markdown（react-markdown+skipHtml + **shiki@4.6.0 npm**（卸 rehype-highlight）、链接门控、img 零请求、双主题 --shiki-dark）、D2 tap 计数（chunk 口径探针修正）、D4 代答终态、aborted 断言；193 单测+40 e2e（3.7m）；证据进主仓 evidence/PAB/ | 区域例外 1：m2-mux M2Stats 加 streamChunks（PLAN ⑤ 要求）| 派 verifier | 在途：verifier U-22
+2026-11-02 16:17 tick | verifier U-22 在途（40 e2e 复跑 3.7m×2 起，需时正常）

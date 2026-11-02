@@ -1,0 +1,5 @@
+== date: 2026-11-02 15:31:34 红基线：detach 5c6af7ac9ef2dd2f67237b01246933a4d5deea27（07d88d6 的父提交，无 isTolerableLoadError 修复），仅拷入新增用例 load-abort.spec.ts ==
+$ pnpm exec playwright test tests/e2e/shell/load-abort.spec.ts
+  ✘  1 tests/e2e/shell/load-abort.spec.ts:15:5 › 首个文档加载完成前 renderer 导航：ERR_ABORTED 容忍，进程不退出不重载 (5.5s)
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+  1 failed

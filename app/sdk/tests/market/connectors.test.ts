@@ -3,8 +3,8 @@
 //    p2temp/session.createWithConnectors gets `mcp__demo__ping` in its request
 //    tool table while a plain Y does not.
 // ③ The runtime's registered method table differs from the bare baseline
-//    (which keeps every @deepseek-ai/* enabled item) by exactly one method:
-//    p2temp/session.createWithConnectors.
+//    (which keeps every @deepseek-ai/* enabled item) by exactly two methods:
+//    p2temp/session.createWithConnectors + p2temp/preset.ensure (T-16, Q-008=A).
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -12,8 +12,12 @@ import { afterAll, beforeAll, expect, it } from 'vitest'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { BUNDLE_NAME, CONNECTOR_TOOL, MARKET_YML, REL_BUNDLE_NAME, REL_TOOL, readMethods, writeBundleFixture, writeObserverPatch, writeRelativeBundleFixture } from './support.ts'
 
-const SIGNATURE =
-  'p2temp/session.createWithConnectors({connectors: string[], agentPreset?: string, cwd?: string}) → {sessionId}'
+const SIGNATURES = [
+  // agentPreset is explicit at the SDK layer: main resolves the default
+  // (CONTRACT §3.1 / §8 item 2); p2temp itself rejects an omitted one.
+  'p2temp/session.createWithConnectors({connectors: string[], agentPreset: string, cwd?: string}) → {sessionId}',
+  'p2temp/preset.ensure({agentPreset: string, connectors: string[]}) → {presetId}',
+]
 
 let rt: Runtime
 let rtBare: Runtime
@@ -101,19 +105,22 @@ it('R14: a relative-path connector loads; its tool reaches the request tool tabl
   expect(tools).toContain(REL_TOOL)
 }, 180_000)
 
-it('the method table differs from the bare baseline by exactly the one p2temp method', async () => {
+it('the method table differs from the bare baseline by exactly the two p2temp methods', async () => {
   const full = await readMethods(rt.home, 'p2temp/session.createWithConnectors')
   const bare = new Set(await readMethods(rtBare.home, ''))
   const added = full.filter((m) => !bare.has(m))
   // pluginMarket/* methods come from the @deepseek-ai plugin-market service
   // that market.yml assembles; the baseline keeps them (G2-r2 item 3).
-  const own = added.filter((m) => !m.startsWith('pluginMarket/'))
-  expect(own).toEqual(['p2temp/session.createWithConnectors'])
-  expect(full.filter((m) => m.startsWith('p2temp/'))).toEqual(['p2temp/session.createWithConnectors'])
+  const own = added.filter((m) => !m.startsWith('pluginMarket/')).sort()
+  expect(own).toEqual(['p2temp/preset.ensure', 'p2temp/session.createWithConnectors'])
+  expect(full.filter((m) => m.startsWith('p2temp/')).sort()).toEqual([
+    'p2temp/preset.ensure',
+    'p2temp/session.createWithConnectors',
+  ])
 }, 120_000)
 
-it('the P2-TEMP annotation in src matches the signature verbatim', async () => {
+it('the P2-TEMP annotation in src matches both signatures verbatim', async () => {
   const source = readFileSync(join(import.meta.dirname, '..', '..', 'src', 'p2temp', 'index.mjs'), 'utf8')
   expect(source).toContain('P2-TEMP')
-  expect(source).toContain(SIGNATURE)
+  for (const signature of SIGNATURES) expect(source).toContain(signature)
 }, 30_000)

@@ -12,6 +12,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import P2TempService, { basePresetRows, normalizeConnectors, readConnectorRows } from '../../src/p2temp/index.mjs'
+import { presetIdOf } from '../../src/p2temp/preset-id.mjs'
 
 const results = []
 const case_ = async (name, fn) => {
@@ -25,13 +26,29 @@ const case_ = async (name, fn) => {
 
 /** Minimal cordis stand-in: Service only needs ctx.reflect.provide. */
 function fakeCtx(profileDir, over = {}) {
-  const calls = { registered: [], created: [] }
+  const calls = { registered: [], created: [], registerAttempts: [] }
+  const definitions =
+    over.definitions ?? new Map([['standard', { config: { plugins: [{ id: 'persona' }] } }]])
   const ctx = {
     reflect: { provide() {} },
     get: (key) => (over.get ? over.get(key) : key === 'profileContext' ? { dir: profileDir } : undefined),
     agentPresets: {
-      definitions: new Map([['standard', { config: { plugins: [{ id: 'persona' }] } }]]),
-      register: async (preset) => { calls.registered.push(preset) },
+      definitions,
+      // Mirrors the real registry (packages/preset/agent-preset-registry
+      // src/index.ts:99-101): duplicate ids throw, registration lands in the
+      // same in-memory definitions map the has-check reads. registerAttempts
+      // counts every call (throwing ones included) so tests can prove the
+      // service never even reaches register twice for one preset id; the
+      // activation delay opens the concurrent-registration window.
+      register:
+        over.register ??
+        (async (preset) => {
+          calls.registerAttempts.push(preset.id)
+          await new Promise((resolve) => setTimeout(resolve, 5))
+          if (definitions.has(preset.id)) throw new Error(`Duplicate agent preset: ${preset.id}`)
+          calls.registered.push(preset)
+          definitions.set(preset.id, { config: preset })
+        }),
     },
     sessionController: {
       create: async (args) => { calls.created.push(args); return { sessionId: `sid-${calls.created.length}` } },
@@ -159,26 +176,43 @@ await case_('basePresetRows returns recorded rows and rejects unknown presets / 
   assert.throws(() => basePresetRows({}, 'standard'), 'unknown agentPreset "standard"')
 })
 
-await case_('P2TempService happy path: base rows + connector rows, one-shot preset, session under temp id', async () => {
+await case_('presetIdOf: same content ⇒ same id; connector order and duplicates do not matter; different presets differ', () => {
+  const a = presetIdOf('standard', ['a', 'b'])
+  assert.equal(a, presetIdOf('standard', ['b', 'a']), 'order-insensitive')
+  assert.equal(a, presetIdOf('standard', ['a', 'a', 'b']), 'deduplicated')
+  assert.match(a, /^p2temp-[0-9a-f]{12}$/)
+  assert.notEqual(a, presetIdOf('coder', ['a', 'b']), 'base preset participates in the id')
+})
+
+await case_('presetIdOf: rejects missing or empty agentPreset and invalid connectors', () => {
+  for (const bad of [undefined, null, '', '  ']) {
+    assert.throws(() => presetIdOf(bad, ['a']), /requires an explicit agentPreset/)
+  }
+  for (const bad of [undefined, null, 'a', [], [1], [''], ['a', '']]) {
+    assert.throws(() => presetIdOf('standard', bad), /requires a non-empty connectors array/)
+  }
+})
+
+await case_('P2TempService happy path: base rows + connector rows, content-derived preset, session under temp id', async () => {
   const { ctx, calls } = fakeCtx(okProfile)
   const svc = new P2TempService(ctx, { some: 'config' })
   assert.equal(svc.config.some, 'config')
-  assert.equal(svc.tempPresets, 0)
-  const out = await svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'], cwd: '/tmp/w' })
+  const out = await svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'], agentPreset: 'standard', cwd: '/tmp/w' })
   assert.deepEqual(out, { sessionId: 'sid-1' })
   assert.equal(calls.registered.length, 1)
-  assert.match(calls.registered[0].id, /^p2temp-1-[0-9a-f]+$/)
+  assert.equal(calls.registered[0].id, presetIdOf('standard', ['@p2sdk-fixture/demo']))
   assert.deepEqual(calls.registered[0].plugins, [{ id: 'persona' }, { id: 'x' }])
   assert.deepEqual(calls.created, [{ cwd: '/tmp/w', agentPreset: calls.registered[0].id }])
 })
 
-await case_('P2TempService defaults agentPreset to standard and increments the one-shot counter', async () => {
+await case_('createWithConnectors: second identical call reuses the registered preset (no Duplicate, one register)', async () => {
   const { ctx, calls } = fakeCtx(okProfile)
   const svc = new P2TempService(ctx, {})
-  await svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'] })
-  await svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'] })
-  assert.match(calls.registered[0].id, /^p2temp-1-/)
-  assert.match(calls.registered[1].id, /^p2temp-2-/)
+  await svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'], agentPreset: 'standard' })
+  await svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'], agentPreset: 'standard' })
+  assert.equal(calls.registered.length, 1, 'has-check skips the second register')
+  assert.equal(calls.created.length, 2)
+  assert.equal(calls.created[0].agentPreset, calls.created[1].agentPreset)
   assert.equal(calls.created[0].cwd, undefined)
 })
 
@@ -187,12 +221,21 @@ await case_('P2TempService rejects a missing request and invalid connectors', as
   const svc = new P2TempService(ctx, {})
   await assert.rejects(() => svc.createWithConnectors(undefined), /connectors must be a non-empty array/)
   await assert.rejects(() => svc.createWithConnectors({ connectors: [] }), /connectors must be a non-empty array/)
+  // CONTRACT §8 item 2: default agentPreset resolution belongs to main alone;
+  // p2temp rejects an omitted one instead of silently assuming 'standard'.
+  await assert.rejects(
+    () => svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'] }),
+    /agentPreset must be an explicit/,
+  )
 })
 
 await case_('P2TempService rejects a run without profile context', async () => {
   const { ctx } = fakeCtx(okProfile, { get: () => undefined })
   const svc = new P2TempService(ctx, {})
-  await assert.rejects(() => svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'] }), /no profile context/)
+  await assert.rejects(
+    () => svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'], agentPreset: 'standard' }),
+    /no profile context/,
+  )
 })
 
 await case_('P2TempService rejects unknown presets and uninstalled connectors via the service path', async () => {
@@ -203,12 +246,87 @@ await case_('P2TempService rejects unknown presets and uninstalled connectors vi
     'unknown agentPreset "nope"',
   )
   await assert.rejects(
-    () => svc.createWithConnectors({ connectors: ['@nope/missing'] }),
+    () => svc.createWithConnectors({ connectors: ['@nope/missing'], agentPreset: 'standard' }),
     /is not installed under the profile/,
   )
 })
 
-await case_('REMOTE marker descriptor sits on the prototype with the createWithConnectors method', () => {
+await case_('presetEnsure: idempotent registration — content id, has-check skips an existing id', async () => {
+  const { ctx, calls } = fakeCtx(okProfile)
+  const svc = new P2TempService(ctx, {})
+  const first = await svc.presetEnsure({ agentPreset: 'standard', connectors: ['@p2sdk-fixture/demo'] })
+  assert.equal(first.presetId, presetIdOf('standard', ['@p2sdk-fixture/demo']))
+  assert.equal(calls.registered.length, 1)
+  assert.deepEqual(calls.registered[0].plugins, [{ id: 'persona' }, { id: 'x' }])
+  // Second ensure for the same recipe: the definition now exists, register is
+  // not even attempted (the restart-recovery path main calls per recipe).
+  const second = await svc.presetEnsure({ agentPreset: 'standard', connectors: ['@p2sdk-fixture/demo'] })
+  assert.equal(second.presetId, first.presetId)
+  assert.equal(calls.registered.length, 1)
+})
+
+await case_('presetEnsure/createWithConnectors: concurrent same-id calls share one in-flight registration (register reached once)', async () => {
+  const { ctx, calls } = fakeCtx(okProfile)
+  const svc = new P2TempService(ctx, {})
+  const [ensureOut, created] = await Promise.all([
+    svc.presetEnsure({ agentPreset: 'standard', connectors: ['@p2sdk-fixture/demo'] }),
+    svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'], agentPreset: 'standard' }),
+  ])
+  assert.equal(ensureOut.presetId, presetIdOf('standard', ['@p2sdk-fixture/demo']))
+  assert.equal(created.sessionId, 'sid-1')
+  assert.equal(calls.registerAttempts.length, 1, 'second concurrent call reuses the in-flight promise, register is never reached twice')
+  assert.equal(calls.registered.length, 1)
+  assert.equal(ctx.agentPresets.definitions.size, 2, 'standard + the one temp preset, nothing else')
+})
+
+await case_('ensure failure clears the in-flight slot: a retry after failure runs the full path again', async () => {
+  const { ctx, calls } = fakeCtx(okProfile, {
+    register: async (preset) => {
+      calls.registerAttempts.push(preset.id)
+      await new Promise((resolve) => setTimeout(resolve, 5))
+      throw new Error('activation failed')
+    },
+  })
+  const svc = new P2TempService(ctx, {})
+  await assert.rejects(() => svc.presetEnsure({ agentPreset: 'standard', connectors: ['@p2sdk-fixture/demo'] }), /activation failed/)
+  await assert.rejects(() => svc.presetEnsure({ agentPreset: 'standard', connectors: ['@p2sdk-fixture/demo'] }), /activation failed/)
+  assert.equal(calls.registerAttempts.length, 2, 'failed slot is cleared, retry starts a fresh registration')
+})
+
+await case_('presetEnsure: unrelated register failures propagate untouched', async () => {
+  const boom = async () => { throw new Error('activation failed') }
+  const { ctx } = fakeCtx(okProfile, { register: boom })
+  const svc = new P2TempService(ctx, {})
+  await assert.rejects(() => svc.presetEnsure({ agentPreset: 'standard', connectors: ['@p2sdk-fixture/demo'] }), /activation failed/)
+})
+
+await case_('presetEnsure: uninstalled connector throws a structured error naming it, poisoning no other preset', async () => {
+  const { ctx, calls } = fakeCtx(okProfile)
+  const svc = new P2TempService(ctx, {})
+  await assert.rejects(async () => {
+    await svc.presetEnsure({ agentPreset: 'standard', connectors: ['@nope/missing'] })
+  }, (error) => {
+    // Structured = code-discriminated RemoteError with the connector in
+    // details; the registry must be untouched (§8 item 1: one failed recipe
+    // never affects the other entries).
+    assert.equal(error.code, 'p2temp/connector-unavailable')
+    assert.deepEqual(error.details, { connector: '@nope/missing' })
+    assert.match(error.message, /@nope\/missing/)
+    return true
+  })
+  assert.equal(calls.registered.length, 0, 'no half-registered preset')
+  assert.ok(ctx.agentPresets.definitions.has('standard'), 'existing presets stay')
+  assert.equal([...ctx.agentPresets.definitions.keys()].filter((k) => k.startsWith('p2temp-')).length, 0)
+})
+
+await case_('presetEnsure: rejects missing agentPreset and invalid connectors', async () => {
+  const { ctx } = fakeCtx(okProfile)
+  const svc = new P2TempService(ctx, {})
+  await assert.rejects(() => svc.presetEnsure({ connectors: ['@p2sdk-fixture/demo'] }), /must be an explicit/)
+  await assert.rejects(() => svc.presetEnsure({ agentPreset: 'standard' }), /connectors must be a non-empty array/)
+})
+
+await case_('REMOTE marker descriptor sits on the prototype with both p2temp methods', () => {
   const desc = Object.getOwnPropertyDescriptor(
     Object.getPrototypeOf(new P2TempService(fakeCtx(okProfile).ctx, {})),
     '@deepseek-ai/dsh-typert-protocol/remote-methods',
@@ -216,7 +334,7 @@ await case_('REMOTE marker descriptor sits on the prototype with the createWithC
   assert.equal(desc.value.version, 1)
   assert.deepEqual(
     desc.value.methods.map((m) => m.exportName),
-    ['session.createWithConnectors'],
+    ['session.createWithConnectors', 'preset.ensure'],
   )
 })
 

@@ -92,6 +92,7 @@ test('(c) 页内 location.href 外部/ file:// 导航被拒，getURL 仍在 pbot
 test('(d) 同一 preload 载入 data:/file: 页面拿不到 window.pbots', async () => {
   const shell = await launchShell()
   try {
+    const mainId = await shell.app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]!.id)
     const filePage = join(mkdtempSync(join(tmpdir(), 'bot-U-00-page-')), 'x.html')
     writeFileSync(filePage, '<!doctype html><html><body>file page</body></html>')
     for (const target of ['data:text/html,<html><body>d</body></html>', `file://${filePage}`]) {
@@ -105,9 +106,10 @@ test('(d) 同一 preload 载入 data:/file: 页面拿不到 window.pbots', async
       await page.waitForLoadState('domcontentloaded')
       const hasPbots = await page.evaluate(() => typeof window.pbots)
       expect(hasPbots).toBe('undefined')
-      await shell.app.evaluate(({ BrowserWindow }) => {
-        for (const w of BrowserWindow.getAllWindows().slice(1)) w.destroy()
-      })
+      // U-23 去 flake：getAllWindows() 不保证主窗口在首位，slice(1) 偶发销毁主窗口（基线 6 次红 2 次）→ 按 id 只销毁新窗
+      await shell.app.evaluate(({ BrowserWindow }, keep) => {
+        for (const w of BrowserWindow.getAllWindows()) if (w.id !== keep) w.destroy()
+      }, mainId)
     }
   } finally { await shell.stop() }
 })

@@ -65,11 +65,12 @@ export function fakeOverlayPath(): string {
 
 /** Boot the p2sdk runtime in mock mode and return a connected client（runtime.ts 同款流程）。 */
 /** cwd：runtime 进程工作目录 = 未带 cwd 建的 session 的默认 cwd（产品 UI 建 bot 不带 cwd，U-21 起由临时目录承接，副作用不落仓内）。 */
-export async function launchSdkRuntime(opts: { patch: string; readyTimeoutMs?: number; cwd?: string } ): Promise<SdkRuntime> {
+/** home：复用上一运行期的 P2SDK_HOME（U-23 D10c1：删 bundle 后同 home 重启）；env：额外环境（市场目录源 URL 等）。 */
+export async function launchSdkRuntime(opts: { patch: string; readyTimeoutMs?: number; cwd?: string; home?: string; env?: Record<string, string> } ): Promise<SdkRuntime> {
   for (const name of ['P2SDK_LLM_API_KEY', 'DEEPSEEK_API_KEY', 'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'LITELLM_MASTER_KEY']) {
     delete process.env[name]
   }
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-runtime-'))
+  const home = opts.home ?? mkdtempSync(join(tmpdir(), 'p2sdk-runtime-'))
   const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
   const child = spawn(process.execPath, [join(SDK_ROOT, 'scripts', 'start.mjs')], {
     ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
@@ -81,6 +82,7 @@ export async function launchSdkRuntime(opts: { patch: string; readyTimeoutMs?: n
       P2SDK_PORT: '0',
       P2SDK_PATCH: opts.patch,
       P2SDK_READY_TIMEOUT_MS: String(opts.readyTimeoutMs ?? 60_000),
+      ...opts.env,
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   })

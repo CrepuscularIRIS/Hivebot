@@ -1,5 +1,5 @@
 // U-15 D1 E2E（PLAN U-15 ①；U-21 ② 起 D1 改走产品页新建对话框重跑）：起壳 → 建 bot（选 preset，经 M1；连接器路径经
-// M1 #4 → main 编排，CONTRACT §3.1，P-D 对话框补连接器前仍走 #dev-min 页）→ 发消息 → 流式气泡（assistant-stream chunk）→ assistant/message 定稿替换；
+// M1 #4 → main 编排，CONTRACT §3.1；U-23 起走产品对话框的连接器栏）→ 发消息 → 流式气泡（assistant-stream chunk）→ assistant/message 定稿替换；
 // 两个 bot 的 header.agentPreset === 'p2-alpha' / 'p2-beta'（+4 精确等值）。
 // fake LLM：首块后 gate 挂起，gate 文件出现后放行（app/sdk/tests/support/fake/plugin.mjs gateAfterChunk）。
 // preset fixture：app/sdk/profile/patches/presets.yml（经 P2SDK_PATCH 与 fake overlay 叠加）；
@@ -218,16 +218,14 @@ test('建 bot 经 M3（#4 编排→createWithConnectors）：勾选连接器 →
     expect(install.ok).toBe(true)
     expect(install.value?.application).not.toBe('failed')
 
-    // 连接器勾选在 P-D 补进产品对话框（U-23）前走 dev-min 页；其候选来自 boot 时的 listBundles：切页重载拉到已装 bundle
-    await page.evaluate(() => { location.hash = '#dev-min' })
-    await page.reload()
-    await page.waitForSelector(`input[type="checkbox"][value="${BUNDLE_NAME}"]`, { timeout: 20_000 })
-    await page.check(`input[type="checkbox"][value="${BUNDLE_NAME}"]`)
+    // U-23 ⑧：连接器勾选走产品对话框（候选 = 打开时的 #16 listBundles）
+    await page.click('[data-action="new-bot"]')
+    await page.check(`[data-connector-option="${BUNDLE_NAME}"] input[type="checkbox"]`, { timeout: 20_000 })
 
     const before = (await devBots(page)).map((b) => b.sessionId)
-    await page.click('#create-bot')
+    await page.click('[data-action="create-bot"]')
     await page.waitForFunction(
-      (old) => (window as unknown as { __pbotsDev: { bots: DevBot[] } }).__pbotsDev.bots.some((b) => !old.includes(b.sessionId)),
+      (old) => (window as unknown as { __pbotsDev: { bots: DevBot[] } }).__pbotsDev.bots.some((b) => !old.includes(b.sessionId) && b.preset !== null),
       before,
       { timeout: 30_000 }, // #4 编排：校验→presetIdOf→写 recipe→dsh #4（含 MCP 启动）
     )

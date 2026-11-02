@@ -15,6 +15,8 @@ export interface ShellLaunch {
 
 export interface ShellOptions {
   env?: Record<string, string>
+  /** 复用上一次的临时 HOME（同一 PBOTS_DATA_DIR，模拟 close→launch）。 */
+  home?: string
   extraArgs?: string[]
 }
 
@@ -23,7 +25,7 @@ export function sandboxHome(label: string): string {
 }
 
 export async function launchShell(opts: ShellOptions = {}): Promise<ShellLaunch> {
-  const home = sandboxHome('U-00')
+  const home = opts.home ?? sandboxHome('U-00')
   const app = await _electron.launch({
     args: [join(UI_ROOT, 'out', 'main', 'index.js'), '--disable-gpu', ...(opts.extraArgs ?? [])],
     cwd: UI_ROOT,

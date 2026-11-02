@@ -19,6 +19,9 @@ const ICONS = {
   plus: 0xea60, storefront: 0xf483, star: 0xf3fd, wrench: 0xeb6d, loading: 0xedca, 'x-circle': 0xea87,
   check: 0xeab2, x: 0xed82, stop: 0xed86, 'arrow-up': 0xeaa1, 'arrow-right': 0xea9c, 'arrow-down': 0xea9a,
   'chevron-down': 0xeab4, 'chevron-right': 0xeab6, 'circle-filled': 0xf38f,
+  // U-23 P-D/P-C（同一字体 cmap 实测）：锁定配置、失效角标、用此配置新建、info-pane 开合、市场返回/搜索
+  'lock-locked': 0xea75, 'slash-circle': 0xeabd, copy: 0xebcc, 'layout-sidebar-right': 0xec00,
+  'arrow-left': 0xea9b, 'magnifying-glass': 0xea6d,
 } as const
 
 export type IconName = keyof typeof ICONS

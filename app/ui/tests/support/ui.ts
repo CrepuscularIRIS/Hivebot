@@ -1,14 +1,22 @@
 // U-21 产品页 E2E 共用：fake LLM 脚本构造（events-replay.test.ts / d1.spec 同款帧形状）+ 产品 UI 操作。
 import { expect, type Page } from 'playwright/test'
-import { mkdtempSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { launchShell, type ShellLaunch, type ShellOptions } from './launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from './sdk-runtime.ts'
 
 export const SDK_ROOT = join(__dirname, '..', '..', '..', 'sdk')
 export const PRESETS_PATCH = join(SDK_ROOT, 'profile', 'patches', 'presets.yml')
 export const EVIDENCE = join(__dirname, '..', '..', '..', '..', 'work', 'p4-ui', 'evidence', 'PAB')
+/** U-23 证据一律写主仓 work/（LEARNINGS 2026-11-02：worktree 内的 work/ 随 remove 丢失）；worktree 下经 git common dir 定位主仓。 */
+export const PDC_EVIDENCE = ((): string => {
+  const common = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: __dirname, encoding: 'utf8' }).trim()
+  const dir = join(dirname(common), 'work', 'p4-ui', 'evidence', 'PDC')
+  mkdirSync(dir, { recursive: true })
+  return dir
+})()
 
 export function textCall(pieces: string[], opts: { gateId?: string; paceMs?: number } = {}): object {
   return {

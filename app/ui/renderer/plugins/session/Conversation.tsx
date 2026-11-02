@@ -4,11 +4,13 @@
 // - 审批卡 inline 挂在对应 callId 的行下（R1）；缺 callId → 本流末尾独立块（R2）；composer 位 36px 提示条（R1）。
 //   卡内无默认 Enter 批准、不抢焦点（R3）；「仅批准这一次」（R4）；提交态/终态文案（R5）；离线禁用作答（R20）。
 // - 流式：首块前三点气泡（R17）、逐 chunk 原位增长、assistant/message 定稿替换；底部 80px 内跟随，否则胶囊（R18）。
+// - c1 只读 bot：composer 位换失效横幅 +「用此配置新建 →」（U-23 PDC D5）。
 // - composer：Enter 发送 / Shift+Enter 换行 / IME 组字不发送；运行中主按钮为停止，Esc 不绑定（R19）；草稿按 bot 隔离（R21）。
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Icon, type IconName } from '../../theme/theme'
-import { answer, cancelTurn, getState, sendPrompt, setDraft, type Approval, type State } from '../../shell/store'
+import { answer, cancelTurn, getState, openNewBot, sendPrompt, setDraft, type Approval, type State } from '../../shell/store'
 import { Avatar, botInfo } from '../bots/Sidebar'
+import { cloneInit } from '../settings/InfoPane'
 import { toolSummary, toolTitle, type TimelineItem } from './reduce'
 import { Markdown } from './Markdown'
 
@@ -178,7 +180,15 @@ export function Conversation({ s, id }: { s: State; id: string }): JSX.Element {
         </button>
       )}
       {info.readOnly
-        ? <div className="readonly-bar" role="status">连接器已失效，请新建 bot</div>
+        ? (
+          // c1（PDC D5）：composer 位换横幅 + 主按钮「用此配置新建 →」；不自动重试、无 spinner，历史照常可读
+          <div className="readonly-bar" role="status" data-readonly-bar>
+            <Icon name="slash-circle" /><span>连接器已失效，请新建 bot</span>
+            <button type="button" className="btn primary" data-action="clone-config-bar" onClick={() => openNewBot(cloneInit(s, id))}>
+              用此配置新建 <Icon name="arrow-right" />
+            </button>
+          </div>
+        )
         : <Composer s={s} id={id} running={info.running} name={info.name} />}
     </section>
   )

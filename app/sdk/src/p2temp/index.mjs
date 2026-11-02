@@ -31,6 +31,7 @@ import { readFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { presetIdOf } from './preset-id.mjs'
+import { patchPluginManagerInstall } from '../market/wrapper.mjs'
 
 const require = createRequire(
   realpathSync(fileURLToPath(new URL('../../node_modules/@deepseek-ai/dsh-plugin-market/lib/index.js', import.meta.url))),
@@ -161,7 +162,7 @@ function requireExplicitAgentPreset(agentPreset) {
 }
 
 class P2TempService extends TypertRemoteService {
-  static inject = ['agentPresets', 'sessionController', 'profileContext']
+  static inject = ['agentPresets', 'sessionController', 'profileContext', 'pluginManager']
 
   constructor(ctx, config) {
     super(ctx, 'p2temp')
@@ -169,6 +170,16 @@ class P2TempService extends TypertRemoteService {
     /** In-flight registrations by preset id: concurrent same-id callers
      * (createWithConnectors / preset.ensure) share one register attempt. */
     this.inflight = new Map()
+    // U-25 市场安装接线：pluginManager.installBundle 对预置裸 npm MCP 包的坐标
+    // 自动改走生成的 wrapper bundle（src/market/wrapper.mjs）。两条市场链
+    // （market.yml / market-source.yml）都插入本插件，因此 P4 UI 经
+    // pluginManager/installBundle 的安装透传自动过 wrapper。restore 不挂
+    // effect：patch 状态无闭包泄漏，runtime 生命周期内恒定，重复构造由
+    // wrapper.mjs 的标记挡住。
+    const dshHome = process.env.DSH_HOME
+    if (typeof dshHome === 'string' && dshHome !== '') {
+      patchPluginManagerInstall(ctx.pluginManager, { dshHome })
+    }
   }
 
   /**

@@ -6,19 +6,21 @@
 //      registry.modelcontextprotocol.io, see scripts/fetch-market-fixture.mjs)
 //      carries ≥ N entries, all fetched, none hand-written, and the selected
 //      connector's registry entry is among them (连接器必须真实存在于源中).
-//   ② install the selected real connector (enabled:false) through the real
-//      pluginManager/installBundle flow — the wrapper bundle carries the
-//      official npm package @agent-infra/mcp-server-filesystem
-//      (io.github.bytedance/mcp-server-filesystem, stdio, official status
-//      active; the task-preferred @modelcontextprotocol/server-filesystem is
-//      NOT in the registry — verified 2026-11-02, hence this substitution).
-//   ②b (T-19) install straight from the LISTING's versions[].install — the
-//      spec is the registry package's real npm coordinate
-//      (@agent-infra/mcp-server-filesystem@1.2.29). pnpm really resolves and
-//      adds it (offline: from the store the devDependency filled); dsh then
-//      refuses it at its own semantic boundary — a bare MCP server package
-//      declares no dsh.bundle → structured `not-bundle`, NOT a registry 404
-//      on a made-up name (the pre-T-19 behavior).
+//   ② install the selected real connector (enabled:false) straight from the
+//      LISTING's versions[].install spec — the registry package's real npm
+//      coordinate (@agent-infra/mcp-server-filesystem@1.2.29). U-25: the
+//      runtime's market wrapper (src/market/wrapper.mjs, wired from p2temp)
+//      intercepts pluginManager/installBundle for preseeded bare npm MCP
+//      packages and installs a generated dsh wrapper bundle
+//      ($DSH_HOME/market-wrappers/…) carrying the mcp-client stdio row
+//      instead. The wrapper rides the preseeded devDependency (setup fills
+//      the pnpm store), so the whole path is offline-pure.
+//   ②b (U-25) the wrapper artifacts are real: the generated bundle declares
+//      dsh.bundle.patch (the exact field whose absence made main refuse this
+//      same spec `not-bundle` — T-19 ②b, work/p2-sdk/VERIFY-T-19.md ③), the
+//      patch row launches the real server with its registry-required named
+//      arg, and the profile records the wrapper as an installed dependency
+//      (nothing of the bare package is left selected).
 //   ②c (T-19) entries whose registry record carries no npm coordinate stay
 //      listed (marked `not-installable` in metadata.keywords) and an install
 //      attempt fails with a structured error, never silently.
@@ -35,7 +37,7 @@
 // the N below; X 的一轮对话中出现该工具的调用和结果事件 / 未启用的 session Y
 // 看不到这个工具 → ③ assertions.
 import { createServer, type Server } from 'node:http'
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -59,10 +61,15 @@ const CONNECTOR_SERVER = 'io.github.bytedance/mcp-server-filesystem'
 const CONNECTOR_MARKET_NAME = '@agent-infra/mcp-server-filesystem'
 /** listing 的 versions[].install 必须给出的真实 npm spec（devDep 锁定同一版本，离线 store 可供）。 */
 const CONNECTOR_INSTALL_SPEC = '@agent-infra/mcp-server-filesystem@1.2.29'
-/** wrapper bundle 名（承载真实 npm 包的启动配置，走 installBundle 装入 profile）。 */
-const WRAPPER = '@p2sdk-real/filesystem'
-/** X 启用后可见的连接器工具（serverName 'filesystem' + server 的 read_file）。 */
-const CONNECTOR_TOOL = 'mcp__filesystem__read_file'
+/**
+ * U-25 动态 wrapper 的确定性身份（src/market/wrapper.mjs 的 wrapperNameOf /
+ * serverNameOf 生成，字面量由 tests/unit/market-wrapper.proc.mjs 钉死——两处
+ * 漂移会在本文件红）。serverName = 末段(≤23) + '-' + sha256(全名)前 8 位。
+ */
+const WRAPPER = '@p2sdk-market/agent-infra__mcp-server-filesystem'
+const WRAPPER_SERVER_NAME = 'mcp-server-filesystem-3408f957'
+/** X 启用后可见的连接器工具（wrapper 的 serverName + server 的 read_file）。 */
+const CONNECTOR_TOOL = `mcp__${WRAPPER_SERVER_NAME}__read_file`
 
 interface FollowHandle {
   frames: Frame[]
@@ -79,8 +86,6 @@ const HELLO_TEXT = 'p2sdk-d6-connector-evidence'
 type ListedEntry = { name: string; title?: string; versions?: Array<{ version: string; install?: { spec?: string } }> }
 /** The full listing, paged once by ① and reused by ②b/②c。 */
 let allEntries: ListedEntry[] = []
-/** The install spec ① observed on the connector's listed version (consumed by ②b)。 */
-let listingInstallSpec = ''
 
 /** Serve the cached registry snapshot over loopback (plugin-market fetches http(s) only). */
 async function serveFixture(): Promise<{ url: string; close: () => Promise<void> }> {
@@ -119,41 +124,6 @@ function fakeOverlay(): string {
                 contextWindow: 131072
 `)
   return overlay
-}
-
-/**
- * The wrapper dsh bundle: package.json + JSON cordis patch inserting one
- * mcp-client row whose stdio command runs the REAL official npm package
- * (app/sdk devDependency, installed from registry.npmjs.org by setup). Same
- * shape as T-03's writeBundleFixture; machine-absolute paths are why it is
- * generated per run instead of stored.
- */
-function writeRealConnectorBundle(dir: string, allowedDir: string): string {
-  mkdirSync(dir, { recursive: true })
-  writeFileSync(join(dir, 'package.json'), `${JSON.stringify({
-    name: WRAPPER,
-    version: '1.0.0',
-    dsh: { bundle: { patch: './cordis.patch.yml' } },
-  }, null, 1)}\n`)
-  const dist = realpathSync(join(PKG_ROOT, 'node_modules', '@agent-infra', 'mcp-server-filesystem', 'dist', 'index.cjs'))
-  const mcpRow = {
-    id: 'real-filesystem-mcp',
-    // Absolute specifier: the $DSH_HOME profile workspace has no node_modules.
-    name: pathToFileURL(join(PKG_ROOT, 'node_modules', '@deepseek-ai', 'dsh-mcp-client', 'lib', 'index.js')).href,
-    config: {
-      serverName: 'filesystem',
-      transport: 'stdio',
-      command: process.execPath,
-      // The official server's own documented stdio contract: named arg
-      // --allowed-directories (registry packageArguments).
-      args: [dist, '--allowed-directories', allowedDir],
-      env: {},
-      cwd: '',
-      failOnStartupError: true,
-    },
-  }
-  writeFileSync(join(dir, 'cordis.patch.yml'), `${JSON.stringify([{ insert: [mcpRow] }])}\n`)
-  return dir
 }
 
 /** Scripted model calls (approval.test.ts chunk vocabulary). */
@@ -258,10 +228,12 @@ beforeAll(async () => {
   helloPath = join(workspace, 'hello.txt')
   writeFileSync(helloPath, HELLO_TEXT)
 
-  const scratch = mkdtempSync(join(tmpdir(), 'p2sdk-t09-'))
-  const wrapperDir = writeRealConnectorBundle(join(scratch, 'real-filesystem'), workspace)
+  // U-25: install straight from the LISTING spec — the runtime's market
+  // wrapper turns the bare npm coordinate into a generated wrapper bundle
+  // before dsh's installBundle sees it (pre-U-25 this exact call was refused
+  // `not-bundle`, T-19 ②b).
   installResult = await rt.client.call('pluginManager/installBundle', {
-    spec: wrapperDir,
+    spec: CONNECTOR_INSTALL_SPEC,
     options: { enabled: false },
   })
 }, 240_000)
@@ -299,7 +271,7 @@ it('① lists the cached registry snapshot through pluginMarket/search: >=N entr
   // mapping — this is what a user (or P4 UI) hands to installBundle.
   const listed = connector?.versions?.find((v) => v.install?.spec === CONNECTOR_INSTALL_SPEC)
   expect(listed, `connector lists the real npm install spec ${CONNECTOR_INSTALL_SPEC}`).toBeTruthy()
-  listingInstallSpec = listed?.install?.spec ?? ''
+  // beforeAll already installed exactly this spec through the U-25 wrapper.
 
   // The fixture's own bookkeeping agrees (N is measured, then pinned).
   const source = JSON.parse(readFileSync(join(FIXTURES, 'source.json'), 'utf8')) as { pluginCount: number }
@@ -309,10 +281,11 @@ it('① lists the cached registry snapshot through pluginMarket/search: >=N entr
   expect(indexes).toMatchObject([{ url: indexUrl }])
 }, 120_000)
 
-it('② installs the real connector bundle through installBundle (enabled:false)', async () => {
-  const install = installResult as { application?: string; error?: unknown }
+it('② installs the listing spec through the generated wrapper (enabled:false)', async () => {
+  const install = installResult as { application?: string; error?: unknown; target?: string; bundle?: string }
   expect(install?.application, `installBundle outcome: ${JSON.stringify(install).slice(0, 500)}`).not.toBe('failed')
   expect(install?.error).toBeUndefined()
+  expect(install?.bundle ?? install?.target, 'dsh installed the WRAPPER bundle, not the bare package').toBe(WRAPPER)
 
   // listBundles returns a bare BundleInfo[] array.
   const bundles = (await rt.client.call('pluginManager/listBundles', {})) as Array<{
@@ -324,24 +297,51 @@ it('② installs the real connector bundle through installBundle (enabled:false)
   expect(row?.enabled, 'the connector installed disabled — enabling is per-session via p2temp').toBe(false)
 }, 120_000)
 
-it('②b installs straight from the listing install spec: real npm package, dsh not-bundle boundary', async () => {
-  expect(listingInstallSpec, '① observed the listing install spec').toBe(CONNECTOR_INSTALL_SPEC)
-  const result = (await rt.client.call('pluginManager/installBundle', {
-    spec: listingInstallSpec,
-    options: { enabled: false },
-  })) as { application?: string; error?: { code?: string; diagnostic?: string } }
+it('②b the wrapper bundle is real on disk: dsh.bundle.patch present, registry-required arg baked, profile records it', async () => {
+  const wrapperDir = join(rt.home, 'market-wrappers', 'agent-infra__mcp-server-filesystem')
+  const manifest = JSON.parse(readFileSync(join(wrapperDir, 'package.json'), 'utf8')) as {
+    name: string; version: string; dsh?: { bundle?: { patch?: string } }
+  }
+  expect(manifest.name).toBe(WRAPPER)
+  expect(manifest.version).toBe('1.2.29')
+  // The exact field whose absence made dsh refuse this spec `not-bundle`
+  // (plugin-manager src/index.ts:984) — now present in the generated bundle.
+  expect(manifest.dsh?.bundle?.patch, 'the wrapper declares dsh.bundle.patch').toBe('./cordis.patch.yml')
 
-  // pnpm really resolved and added the real package (offline: from the store the
-  // devDependency filled); dsh then refused it at its own semantic boundary —
-  // a bare MCP server package declares no dsh.bundle. A made-up name instead
-  // dies inside pnpm with a registry 404 (`operation-error`), the pre-T-19 state.
-  expect(result?.application, `installBundle outcome: ${JSON.stringify(result).slice(0, 400)}`).toBe('failed')
-  expect(result?.error?.code, 'the refusal is dsh not-bundle, not a registry 404 on a made-up name').toBe('not-bundle')
+  const patch = JSON.parse(readFileSync(join(wrapperDir, 'cordis.patch.yml'), 'utf8')) as Array<{
+    insert?: Array<{ id: string; name: string; config: { serverName: string; transport: string; command: string; args: string[] } }>
+  }>
+  const row = patch.flatMap((p) => p.insert ?? [])[0]
+  expect(row.config.transport).toBe('stdio')
+  expect(row.config.command, 'launches with the runtime node').toBe(process.execPath)
+  // The official server's own documented stdio contract: named arg
+  // --allowed-directories (registry packageArguments, isRequired) — the
+  // wrapper's default value is the runtime workspace under $DSH_HOME.
+  expect(row.config.args.slice(-2), 'registry-required named arg with the workspace default').toEqual([
+    '--allowed-directories', join(rt.home, 'workspace'),
+  ])
+  expect(row.config.args[0].includes('mcp-server-filesystem'), 'entry is the real preseeded server').toBe(true)
+  expect(row.config.serverName).toBe(WRAPPER_SERVER_NAME)
 
-  // The refusal rolled the profile back: the bare package is not left selected.
+  // Persistence anchor: the profile recorded the wrapper as its dependency
+  // (pnpm add of the generated dir), and nothing of the BARE package is left.
+  const profiles = join(rt.home, 'profiles')
+  const deps = readdirSync(profiles, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => {
+      try {
+        return JSON.parse(readFileSync(join(profiles, e.name, 'package.json'), 'utf8')) as Record<string, unknown>
+      } catch {
+        return {}
+      }
+    })
+  const withWrapper = deps.filter((m) => typeof m.dependencies === 'object' && m.dependencies !== null
+    && WRAPPER in (m.dependencies as Record<string, unknown>))
+  expect(withWrapper.length, `a profile under ${profiles} records ${WRAPPER} as a dependency`).toBeGreaterThanOrEqual(1)
+
   const bundles = (await rt.client.call('pluginManager/listBundles', {})) as Array<{ name: string }>
-  expect(bundles.find((b) => b.name === CONNECTOR_MARKET_NAME), 'rollback left no selected bare package').toBeUndefined()
-}, 180_000)
+  expect(bundles.find((b) => b.name === CONNECTOR_MARKET_NAME), 'the bare npm package is never left as a bundle').toBeUndefined()
+}, 120_000)
 
 it('②c entries without an npm coordinate stay listed and fail with a structured error', async () => {
   // The fixture marks them (fetch-market-fixture.mjs T-19): listed, never installable.

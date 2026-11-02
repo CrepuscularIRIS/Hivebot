@@ -80,6 +80,13 @@ P2 阶段唯一新增的对外方法（**P2-TEMP：P3 可推翻**；实现在
 - `connectors` 是已安装在 profile 下、`package.json` 带 `dsh.bundle.patch`（JSON）
   的 bundle 名；安装走 `pluginManager.installBundle`（`enabled:false`），SDK 不自建
   安装器、不持久化状态、不做跨 session 调度、不支持对已开聊 session 热启用。
+- 市场裸包自动包装（U-25，`src/market/wrapper.mjs`）：`pluginManager/installBundle`
+  收到「已预置为 devDependency 的裸 npm MCP 包」的精确坐标（`name@x.y.z`）时，
+  安装时在 `$DSH_HOME/market-wrappers/<段>/` 生成最小 wrapper bundle（mcp-client
+  stdio 行，入口指向 app/sdk node_modules 里的预置副本），改装该 wrapper——裸包
+  坐标不再以 dsh `not-bundle` 收场（T-19 ②b 的边界）。其余 spec（本地目录、git、
+  未预置坐标、真 dsh bundle）原样透传；安装时必需参数（如 filesystem 的
+  `--allowed-directories`）取默认值 `$DSH_HOME/workspace`。
 - 错误形状：连接器未安装 / 无 patch / patch 非 JSON / insert 为空时抛结构化错误
   `p2temp/connector-unavailable`（RemoteError：`message` 为人读描述，
   `details.connector` = bundle 名），不影响其他 preset。

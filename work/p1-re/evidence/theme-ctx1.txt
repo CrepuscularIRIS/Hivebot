@@ -1,0 +1,35 @@
+pleFill`),...n(`purple`),brown:t(`brownFill`),...n(`brown`),diffAddedLineBackground:i(`bg/success-secondary`),diffAddedTextBackground:i(`bg/success-secondary-disabled`),diffRemovedLineBackground:i(`bg/danger-secondary`),diffRemovedTextBackground:i(`bg/danger-secondary-disabled`)}}var DRn=`sand-cursor-theme`,ORn=`sand-dark-tone`,kRn=`:root {
+  --cursor-radius-base: 8px;
+  --cursor-radius-lg: 10px;
+  --cursor-radius-xl: 14px;
+  --cursor-radius-2xl: 16px;
+  --cursor-radius-3xl: 18px;
+}`,ARn=`:root {
+${Object.entries(BVe).map(([e,t])=>`  --sand-letter-spacing-${e}: ${t}em;`).join(`
+`)}
+${Object.entries(VVe).map(([e,t])=>`  --sand-line-height-${e}: ${t}px;`).join(`
+`)}
+  --sand-transcript-prose-line-height: ${UVe}px;
+  --sand-transcript-prose-block-padding: 7px;
+  --sand-transcript-prose-one-line-height: ${WVe}px;
+  --sand-transcript-prose-bubble-radius: ${WVe/2}px;
+  --sand-agent-item-avatar-gap: 10px;
+  --sand-agent-item-title-gap: 1px;
+  --sand-agent-item-radius: 12px;
+  --sand-row-glyph-x-height-nudge: ${HVe}px;
+  --sand-menu-row-gap: 6px;
+  --sand-menu-row-height: 32px;
+  --sand-command-palette-row-gap: 10px;
+  --sand-page-title-variation-settings: "opsz" 12;
+  font-feature-settings: "case" 1, "calt" 1;
+}`,jRn=`:root {
+  --sand-menu-font-size: ${GVe[`--sand-font-size-base`]};
+  --sand-menu-line-height: ${qVe[`--sand-line-height-base`]};
+  --sand-menu-letter-spacing: ${KVe[`--sand-letter-spacing-base`]};
+  --sand-menu-radius: 16px;
+  --sand-menu-row-radius: 10px;
+  --sand-new-chat-menu-radius: 16px;
+  --sand-new-chat-menu-row-radius: 10px;
+  --sand-command-palette-radius: 18px;
+}`,MRn={light:`cursor-light`,dark:`cursor-dark`};function NRn(e){return MRn[e]}var PRn={light:Ge(u),dark:He.syntax};function FRn(e,{isXvfTypeface:t=!1,isChatProse15px:n=!1}){let r=uLt(t),i=pa[e];return[F({core:ERn(i),nonColor:{theme:{...He,fontFamily:{...He.fontFamily,sans:r.sans,mono:r.mono},syntax:PRn[e]}}}),kRn,bRn(i),CRn(),...t?[ARn]:[],...t&&n?[jRn]:[]].join(`
+`)}var IRn={regular:[`--cursor-font-weight-normal`,`--cursor-font-weight-regular`],medium:[`--cursor-font-weight-medium`],semibold:[`--cursor-font-weight-semibold`]};function LRn(e,t=!1){let n=document.documentElement.style,r=Ojn(e,t);for(let e of Ejn){let t=String(r[e]);n.setProperty(`--sand-font-weight-${e}`,t);for(let r of IRn[e])n.setProperty(r,t)}}function RRn(e,t={}){let n=document.documentElement;n.dataset.theme=MRn[e],n.style.colorScheme=e;let r=document.getElementById(DRn);if(r??(r=document.createElement(`style`),r.id=DRn),r.textContent=FRn(e,t),document.head.appendChild(r),document.getElementById(ORn)==null){let e=document.createElement(`style`);e.id=ORn,e.textContent=wRn(pa.dark),document.head.appendChild(e)}}function zRn(){return ya(async()=>{let{BOT_TEMPLATES_MARKETPLACE_URL:e}=await Promise.resolve().then(()=>RMt);return{BOT_TEMPLATES_MARKETPLACE_URL:e}},void 0,import.meta.url).then(({BOT_TEMPLATES_MARKETPLACE_URL:e})=>new URL(`/legal/referral-program-terms`,e).href)}function BRn(e){let t=document.activeElement;return t instanceof HTMLButtonElement&&t.dataset.agentId===e&&t.closest(`.sand-agents-sidebar`)!=null&&t.matches(`:focus-visible`)}function VRn(e){return[OQ.link({}).entrypointId].include

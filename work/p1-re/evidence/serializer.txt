@@ -1,0 +1,19 @@
+arpa`,`.onion`];function YF(e){return JF.some(t=>e===t.slice(1)||e.endsWith(t))}var XF=`visualization-escape`,ZF=`sand-canvas-frame-webgl-refused`;function QF(e){return`(function () {
+  const apply = Reflect.apply;
+  const descriptor = Object.getOwnPropertyDescriptor;
+  const none = [];
+  const replace = (holder, name, value) => Object.defineProperty(holder, name, { __proto__: null, value: value });
+  const post = window.parent.postMessage.bind(window.parent);
+  const nested = "iframe, frame, object, embed, fencedframe, portal";
+
+  // Window capture listeners run in the order they were added, so this one runs before any fragment listener can stop Escape (https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke).
+  const keyOf = descriptor(KeyboardEvent.prototype, "key").get;
+  window.addEventListener("keydown", (event) => {
+    if (apply(keyOf, event, none) === "Escape") post({ type: "${XF}" }, "*");
+  }, true);
+
+  // A keystroke in the host never activates this frame, so only the frame's own focus or activation lets script move focus (https://html.spec.whatwg.org/multipage/interaction.html#tracking-user-activation).
+  const hasFocus = document.hasFocus;
+  const activation = navigator.userActivation;
+  const isActive = descriptor(Object.getPrototypeOf(activation), "isActive").get;
+  // Script can focus a nested browsing context to flip document.hasFocus() true with no u

@@ -8,3 +8,4 @@ L-review-1 范围 7c2524f..d373b6b（12 个代码任务：T-01/T-02/T-03/T-04/T-
 T-13 REVIEW-pending-L f9dfc45
 L-review-2 范围 d373b6b..f9dfc45（REVIEW-L 修复：T-11/T-12/T-13/T-14 对应 R4/R1+R3/5/6/12/13/R2+R7/8/9/10/R14——复审 14 发现闭环 + 增量代码）
 L-review-2 结果 FAIL→T-13.f1（R1+R3 锁身份）、T-12.f1（R2 never preset）——修复链第 2 轮
+P4-BASE d0a8008（2026-11-02 W0 开工基线，T-16 已并入后前移；U-31 L 范围 = P4-BASE..HEAD）

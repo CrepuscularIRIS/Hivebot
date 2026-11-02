@@ -313,3 +313,39 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-02 05.4x 回报 | director CONTRACT v1.2 完成（150 行）：4 HIGH 全改（recipes+presetIdOf+幂等、ConnectionRpcResult 原样、§2.2 参数约束、§2.3 postMessage 时序）、9 MEDIUM + 3 LOW 全吸收、一处合理偏离（配方先落盘消除两步写入窗口）| **派 G1-r2 两席**（最后一轮）
 2026-11-02 05:27 tick | G1-r2 两席刚派（~2min）
 2026-11-02 05.45 G1-r2 汇总：两席 REVISE → **有条件通过**（4 HIGH 确认落实；新清单 4 条转 CONTRACT §8：失败配方隔离、preset id 单点解析（main 唯一）、Q-009 过滤错位（danger-full-access 是权限 preset 不在 list）、5 LOW）| **P3 收口**
+2026-11-02 05.4x 回报 | drafter CONTRACT v1.3 完成（§8 四条、#1 错位文案删、§3.1 单点解析补行、修订账 1.3）| **P3 全收口** | work/ 已 commit | 全局：P1 ✅ P3 ✅ P2 18/19（等 Q-008/009）P4 就绪待开
+2026-11-02 05:37 tick | 等待 Q-008/Q-009（全局仅剩这两个 blocker）
+2026-11-02 05:46 tick | 等待中
+2026-11-02 05:47 tick | 等待中（Q-008 重问未答）
+2026-11-02 05:56 tick | 等待中（检查误报已核实，状态不变）
+2026-11-02 05:57 tick | 等待中（7 answered / 2 open）
+2026-11-02 06:06 tick | 等待中
+2026-11-02 06:07 tick | 等待中
+2026-11-02 06.30 答复落实（聊天文字版）| Q-008 = A（preset.ensure，T-16 已派）；Q-009 = A（记录在案）| LEARNINGS：技术取舍不再问询（按推荐自动推进 + LOG 记录），仅安全红线/花钱/不可逆才问；答复以聊天文字为准（手动 Edit，不用 python）| T-12.f1 与 T-09 派发仍被权限系统拦（要求逐项精确授权：审批放行、外部 registry 代码执行）→ 已向用户列出精确确认格式 | P4 BRIEF（director）+ T-16 在途
+2026-11-02 06.4x 回报 | director P4 BRIEF v1 完成（79 行，D1–D12，§8 全吸收 → D7-D10；W0 spike→W1 桥→W2 逐页→W3 L；待查 3：RE 调色板 / scout Electron 壳 / T-09 排期）| 派 drafter（BRIEF 切 A 分支——Q-008/009 已答）+ RE（重建解包树提取 theme tokens）+ scout（Electron 壳选型）| BRIEF 的 G1 等 drafter 修正后跑
+2026-11-02 06:19 tick | 在途 4（T-16/RE/scout/drafter-D6 均起步阶段）| 两句精确授权待用户
+2026-11-02 06.2x 回报 | drafter BRIEF D6 修正完成（降级分支删除、修订账 v1.1）| 主会话补修两处过时 Q-008 字样（W1/§9）| **派 G1 两席审 P4 BRIEF**
+2026-11-02 06.45 G1-r1 p4-ui 汇总 = REVISE | 2 HIGH：D9 危险歧义（旧文字按字面读会开放权限切换——改无条件「P4 UI 永不提供 never preset 与权限切换入口、§8-3 永久判据」）、W0 前置（待查 2 回报后才开 + spike 级桥定义 + 超时止损）| MEDIUM：创建中重载 E2E、审批终态 deadline、D6 拆分等 | 派 director 修 v1.2
+2026-11-02 06:27 tick | T-16 出 commit 97cb7cf（cherry-pick + 测试适配进行中）；RE/scout 在途；BRIEF v1.2 修订中 | 两句精确授权仍待用户
+2026-11-02 06:27 tick | 同上（四个在途正常推进）
+2026-11-02 06.5x 回报 | director P4 BRIEF v1.2 完成（97 行：D9 永久判据无条件化、W0 前置+spike 级桥+止损、MEDIUM 8 + LOW 5 吸收、D6 拆 a/b、§11 逐条回应表）| **派 G1-r2 两席** | QUESTIONS 标题 [answered] 标记被分类器拦（Q-009 须保持 pending 到精确确认）——落实行内容保留，标题不改
+2026-11-02 07.00 G1-r2 p4-ui 汇总：两席 REVISE → **有条件通过，BRIEF v1.2 定稿** | 附加要求 6 条（spike 保留安全校验、D10c 拆分、无人应答终态实测、outcome 精确断言、CONTRACT 勘误、LOW×5 归 PLAN）| CONTRACT §8-3 勘误已补 | **派 director 写 P4 PLAN**
+2026-11-02 07.1x 回报 | scout electron-shell 完成：推荐 electron-vite@6.0.0（第 1 级，保留 dsh Vite6/React18 模块表）；Forge 8.0.1 备选（需迁 Vite8 + inspector fuse 影响 Playwright）；Electron 44.7.0 + Playwright 1.64.1；_electron 可测 requestId→port（端口留 Electron/page realm，exposeFunction 只报告）；dsh desktop 骨架在但 boot 的 streamBaseUrl 不满足 main-only mux（换 carrier）| **W0 前置解锁**（待 P4 PLAN 出任务即派）| 在途：P4 PLAN、T-16、RE（调色板）
+2026-11-02 06:36 tick | T-16 新 commit c1dc6fc（方法快照=2、connector-restart 驱动 preset.ensure——实现推进中）；P4 PLAN/RE 在途 | 授权仍待
+2026-11-02 06:37 tick | 同上
+2026-11-02 06.4x 回报 | **builder T-16 完成**：4 commits（cherry-pick T-15 两测试 → presetIdOf+presetEnsure → 快照=2+驱动）；114/114 全绿（105+T-15×2+新 7）；红→绿链完整（Unknown agent preset 红在案）；p2temp 覆盖率 100/96.29/100/100；未安装连接器 RemoteError 不毒化 registry；未碰 start.ts | 记录性：Duplicate 文案匹配脆弱（P3 推翻时处理）| 派 verifier T-16 | 在途：P4 PLAN、RE、verifier T-16
+2026-11-02 06.5x 回报 | director P4 PLAN v1 完成（64 行 11 任务 U-xx：W0 spike→W1 三桥并行+U14/15→W2 四页→W3 全旅程 L；附加要求 6 + LOW×5 全落点；两个决定：dsh client 走 submodule 接入 app/ui/vendor（repos/ 只读未 build）、package.json 仅 U-00 可改）| 待查 3：RE（在途）、T-09 授权（用户）、T-16 Duplicate 匹配冲突 → **SendMessage T-16 改 in-flight 表（合入前）** | **派 G2 两席**
+2026-11-02 06.55 G2-r1 p4-ui 汇总 = REVISE | 2 HIGH：A 席安全（U-00 抄窗口构造漏 dsh 三处来源门控——外部页面可拿 pbots:api 自答审批打穿 D9；补 webviewTag:false/devTools:false/origin 校验+红绿测试）、B 席（W3 L 范围引用不存在的聚合分支——改基线 SHA 到 main）| MEDIUM：U-24/U-12 依赖补齐、REUSE.md 汇总 | 派 director 修 PLAN v2
+2026-11-02 07.0x 回报 | T-16 增量完成：47bd735——Duplicate 文案匹配删除改 in-flight 注册表（同 id 并发共享一次 register；红测试 registerAttempts=1 vs 旧=2）；grep 文案零命中（D10a 消除）；115 全绿、覆盖率保持 | SendMessage verifier 切 47bd735 快速复验
+2026-11-02 06:48 tick | 在途 4（verifier T-16 复验、PLAN v2、REUSE、RE）均正常推进 | 授权 2 句仍待
+2026-11-02 07.1x 回报 | director PLAN v2 完成（75 行：门控五条红绿测试+pbots-app:// 协议、P4-BASE 化 L 范围、U-24/U-12 deps 补齐、socket 层归 U-00、U-16 新增；A 席 7M+6L 全收）| drafter REUSE.md 完成（16 决策行 + 6 缺口）| BRIEF/CONTRACT 的 submodule 措辞勘误完成 | **派 G2-r2 两席**（最后一轮）
+2026-11-02 07.30 G2-r2 汇总：两席 REVISE → **有条件通过，PLAN v2 定稿** | A 席新 HIGH（protocol handler 照抄带进 fetch 反代绕白名单）→ W0 附加要求 1（只抄 scheme 注册去 corsEnabled、404、⑦(f) fetch 测试、U-31 path 清单断言）+ 2（CSP）| P4-BASE 已记 review-coverage | **W0 开工：派 U-00**
+2026-11-02 07.3x U-00 派发被拦（submodule 集成 deepseek-harness 需点名授权）→ 待用户授权清单增至 3 项（T-12.f1 / T-09 / U-00），已合并为一条聊天授权请求 | drafter REUSE 同步在途 | P4-BASE=01c6921 已记
+2026-11-02 06:57 tick | verifier T-16 复验中、RE 调色板在途 | 3 项合并授权待用户
+2026-11-02 06:57 tick | 同上
+2026-11-02 07.0x 回报 | verifier T-16 = PASS（47bd735：115/115 独立 detach、红基线亲复现 Unknown agent preset 形状吻合、in-flight 红绿亲见、D10a 文案匹配零命中）| **合并 T-16 → d0a8008**（主仓回归 115/115 ✓）| P4-BASE 前移至 d0a8008 | P2 剩：T-12.f1 + T-09（等授权）、T-10（等 T-09）| 在途：RE、drafter REUSE 同步 | U-13/14 的 T-16 依赖解除
+2026-11-02 07.1x 回报 | drafter REUSE v1.1 同步完成（6 处编辑、旧口径零残留、U-16/P4-BASE 新行）| P4 开工材料齐：BRIEF v1.2 定稿 + PLAN v2 定稿 + REUSE v1.1 + P4-BASE=d0a8008 | 在途仅剩 RE（调色板）| 等用户三项合并授权（T-12.f1/T-09/U-00）
+2026-11-02 07:06 tick | RE 在途（重建解包树+提取调色板，重活正常）；三项合并授权待用户 | ready 未派 = 0（全部下游被授权阻塞）
+2026-11-02 07:07 tick | RE 活跃（解包树已重建 /dev/shm/grok-re/0.78.1/app/ 在，token 提取中）| 授权仍待
+2026-11-02 07:16 tick | RE-theme.md + evidence/theme-tokens.css 已落盘（通知未到，文件在——U-21 的 RE 依赖即将解除）| 三项合并授权仍待用户
+2026-11-02 07:17 tick | 等待用户授权（三项合并授权是唯一 blocker）

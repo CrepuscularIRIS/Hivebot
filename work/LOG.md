@@ -349,3 +349,75 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-02 07:07 tick | RE 活跃（解包树已重建 /dev/shm/grok-re/0.78.1/app/ 在，token 提取中）| 授权仍待
 2026-11-02 07:16 tick | RE-theme.md + evidence/theme-tokens.css 已落盘（通知未到，文件在——U-21 的 RE 依赖即将解除）| 三项合并授权仍待用户
 2026-11-02 07:17 tick | 等待用户授权（三项合并授权是唯一 blocker）
+2026-11-02 07.2x 回报 | **RE-theme 完成**：三层主题系统（palette 79 色×2 → --sand-* 语义 230×2 → --cursor-* 别名 125）；theme-tokens.css 1170 行 + 生成器可复现 + 52 项抽查零不一致；布局常量齐全（侧栏 280/240-400、气泡 min(640px,100%) 等）；--dsw-* 映射 ~40 行（U-21 直接消费）| **在途全部清零** | 唯一 blocker = 用户三项合并授权（T-12.f1 审批放行 / T-09 MCP registry / U-00 submodule）
+2026-11-02 07:26 tick | 等待三项合并授权（唯一 blocker）
+2026-11-02 07:27 tick | 等待授权
+2026-11-02 07:36 tick | 等待授权
+2026-11-02 07:37 tick | 等待授权
+2026-11-02 07:46 tick | 等待授权
+2026-11-02 07:48 tick | 等待授权
+2026-11-02 07:56 tick | 等待授权
+2026-11-02 07:57 tick | 等待授权
+2026-11-02 08:06 tick | 等待授权
+2026-11-02 08:07 tick | 等待授权
+2026-11-02 08:16 tick | 等待授权
+2026-11-02 08:17 tick | 等待授权
+2026-11-02 08:26 tick | 等待授权
+2026-11-02 08:27 tick | 等待授权
+2026-11-02 08:36 tick | 等待授权
+2026-11-02 08:37 tick | 等待授权
+2026-11-02 08:46 tick | 等待授权
+2026-11-02 08:47 tick | 等待授权
+2026-11-02 08:56 tick | 等待授权
+2026-11-02 08:57 tick | 等待授权
+2026-11-02 09:06 tick | 等待授权
+2026-11-02 09:11 tick | 等待授权
+2026-11-02 09:16 tick | 等待授权
+2026-11-02 09:17 tick | 等待授权
+2026-11-02 09:26 tick | 等待授权
+2026-11-02 09:27 tick | 等待授权
+2026-11-02 09.30 恢复全速 | CLAUDE.md 更新：权限回 bypass（用户：「auto mode 分类器拦截过多」）、进程规则按目标限制 + scripts/bot-reap 工具、process-ops 角色移除 | **三个积压任务全部派出**：T-12.f1（shell-ask 尊重显式 never，Q-009=A）、T-09（MCP registry 市场验收）、U-00（Electron 壳 spike + submodule）| 重复 cron 9ce29d4f 已清（保留 dab60ead）| ready 未派 = 0
+2026-11-02 09.4x 回报 | **builder T-12.f1 完成**：f13bbc5，3 文件 +176/−7；策略暴露面 ApprovalService.overrideOf（override??config??'ask' 折叠，锚点齐）；仅精确 'never' 放行、其余全 fail-closed（含读不到服务/抛错）；123/123（基线 115+8）；e2e 用 DSH_PERMISSION_MODE 复现死锁→解 | 派 verifier | 在途：verifier T-12.f1、T-09、U-00
+2026-11-02 09:47 tick | p2-sdk 19/21 · p4-ui U-00 在途 | load 4.2 | verifier T-12.f1 在途；T-09/U-00 起步（~17min 读材料/setup 正常）| 无 stale
+2026-11-02 09:57 tick | T-09 改 package.json（market 依赖钉版）✓ 活跃；U-00 建 .gitmodules（submodule 接入中）✓ 活跃；verifier T-12.f1 在途 | 无 stale
+2026-11-02 10.0x 回报 | **builder T-09 完成**：32bec17+4240ab4；**N=111**（registry 实测，sha256 存证）；连接器 = io.github.bytedance/mcp-server-filesystem（@agent-infra 1.2.29，stdio+npm official active）——**正当偏离**：预设的 @mcp/server-filesystem 实测不在 registry，按 R-5「真实存在于源中」换选并记录核实；五条全 PASS（含 $OFFLINE 119/119、preset.ensure id 一致）；devDep+frozen 离线供给取舍（vendor 不进 git）| 派 verifier（重点：替代复核）| 在途：verifier ×2（T-12.f1/T-09）、U-00
+2026-11-02 10.1x 回报 | verifier T-12.f1 = PASS（123/123×2；红验证 detach 还原证明绿非假绿——死锁签名命中；fail-closed 六情形逐条；放行仅精确 'never' 双来源均用户侧）| verifier 顺手 bot-reap 清旧孤儿 2 个（新规则生效）| **合并 T-12.f1 → c598815**（主仓回归 123/123）| **增量 L-2 三发现全闭环**（R1+R3→T-13.f1、R2→T-12.f1）| 在途：verifier T-09、U-00
+2026-11-02 10:08 tick | U-00 首个 commit ee77fb5（electron-vite 壳 + pbots-app:// + 冷启动 smoke 绿），origin-gate 测试编写中 ✓；verifier T-09 在途 | 无 stale
+2026-11-02 10:17 tick | U-00 推进（bac1743 修 vitest 5 环境检测）；verifier T-09 复跑中（连接器替代复核含重跑 fetch，耗时正常）
+2026-11-02 10.2x 回报 | verifier T-09 = PASS（替代裁定正当：字节级可复现 100+11=111、坏路径移包全红证明不可能假绿、devDep 取舍成立 frozen 单命令；记录项：发版时间系 npm modified 元数据）| **合并 T-09 → 6d33ca5**（主仓 setup+回归 127/127 ✓——注意：合并引入 market 用例后总数 127=123+4）| **派 T-10**（README + evidence 索引，P2 最后实现任务）| 在途：U-00、T-10
+2026-11-02 10.3x 回报 | **builder T-10 完成**：8889e9d，纯新增 7 文件（README 三节 + D3-D7 索引 + INDEX.md 全对应）；签名与 P2-TEMP grep 逐字一致（SIGNATURES-IDENTICAL）；发现：.npmrc 退路不存在于最终形态（README 只写 devEngines，正确）| 派 verifier 轻验 | U-00 推进快（40d08cb socket 层 tap+generation+ledger 13 单测）
+2026-11-02 10.4x 回报 | verifier T-10 = PASS（12 变量全核对、签名空 diff 复跑留证、scripts 一致；LOW×2 记档）| **合并 T-10 → b634e9d** | **P2 全部 18+3（.f 链）任务 done** | **派出口汇合 verifier**（$OFFLINE 全量 + 覆盖率 + 方法差集 + D1–D8 证据核对）| 之后：最终增量 L（f9dfc45..head）→ P2 收官 | 在途：U-00、出口汇合
+2026-11-02 10:37 tick | 出口汇合 verifier 在途（$OFFLINE 全量跑一轮 ~2min ×2 起，正常）；U-00 推进中 | 无 stale
+2026-11-02 10.4x 回报 | **出口汇合 = PASS 四项全过**（$OFFLINE 127/127 exit 0；覆盖率 92.98/86.88/96.49/94.94；方法差集恰 2；D1–D8 + 22 份 VERIFY 全 PASS）| verifier 顺手 bot-reap 清 2 个 9h 陈尸孤儿 | **启动最终增量 L**（f9dfc45..b634e9d）——PASS 即 P2 收官
+2026-11-02 10:47 tick | 最终 L 活跃（journal 10:47 更新）；U-00 推进中 | 无 stale
+2026-11-02 10:57 tick | 最终 L 活跃（journal 10:56）；U-00 无新 commit ~30min（在写 spike 桥/门控测试，下 tick 无变化则查）
+2026-11-02 11.00 用户指令落实 |「尽量和原来的 UI 保持一致」→ LEARNINGS + BRIEF D12 强化（并排对照原版参照为验收证；ux-proposer 输入固定为 RE 组件树+截图+token 表已是 BRIEF 既有防线）| P4 视觉还原度优先级定稿
+2026-11-02 11.1x 回报 | **最终 L = FAIL：5 CONFIRMED**（11 候选 8 verified 1 refuted）归三组：①shell-ask 异常路径回退部署 never → 放行（verifier 替身复现）②p2temp 双根因——重复连接器名污染共享 id（3 finder 同报）+ has-check 缓存 broken preset（修复后无法重试，verifier 用真实 registry 复现）③市场 listing 的 install spec 指向虚构 npm 包——真实用户全装不了（测试 wrapper 绕过）| 转 3 修复并行：**T-17**（fail-closed）、**T-18**（规范化去重+broken 抛错不缓存）、**T-19**（真实 npm spec 映射）| 修复轮次：T-12.f1 第 2 轮、T-16/T-09 各第 1 轮 | 修完跑 L-4 收口 | 在途：U-00、T-17/18/19
+2026-11-02 11:08 tick | 4 builder 在途（T-17/18/19 刚派 ~10min 读材料；U-00 无新 commit ~40min——写 spike 桥/门控测试中，下 tick 无变化 SendMessage 查）| QUESTIONS 0 open（技术取舍按 LEARNINGS 自动）
+2026-11-02 11.2x 回报 | builder T-17 完成：a9efa07——catch 里 return false（不回退 config）+ 契约注释；红用例（抛错+never→放行）转绿；128/128；边界说明：无 session+config never 仍放行（无 session 意图时部署默认即策略，与上游折叠一致）| 派 verifier 轻验 | 在途：verifier T-17、T-18、T-19、U-00
+2026-11-02 11:17 tick | U-00 推进 62f7490（保留集 31 包 + 静态闭包实测——spike 核心数据快出了）；verifier T-17 在途；T-18/19 读材料 | 无 stale
+2026-11-02 11.2x 回报 | verifier T-17 = PASS（语义矩阵 5/5、红验证 detach 单文件精确复现 R1、「无 session+config never 放行」边界经上游折叠核实正当）| **合并 T-17 → <新sha>**（最终 L R1 闭环）| 在途：T-18、T-19、U-00
+2026-11-02 11.3x 回报 | **builder U-00 完成**（11 commits，~1.7h 未触发止损）：四场景全绿 + **S5 实测 300s 零终态→U-16 方案 A（main 代答）**；门控 e2e 9 + 突变红 9；D9 拒绝 5 例 dsh 计数 0；闭包 306 包/静态 seed 29 构建走通（545 模块 9.6MB）；submodule @ce7073d；Q-spike 2 项按 LEARNINGS 授权自动定（U-16=A、typert 注记并 W1）；4 基建文件超清单（骨架必需）| LEARNINGS +Electron 44 四坑 | 派 verifier U-00 | 在途：verifier U-00、T-18、T-19
+2026-11-02 11.4x 回报 | **builder T-18 完成**：24a901a，3 文件 +257/−23——normalize 去重排序（注册与 id 同源）、register 后 broken 检查→注销死记录+抛 p2temp/preset-broken（details 含诊断）、has-check 不服务 broken；红 5+e2e 红（真实 registry 缺 name 返回「成功」精确复现 R2/R4）；132/132、p2temp 覆盖率 100/96.55/100/100 | fake registry 忠实镜像上游行为 | 派 verifier | 在途：verifier ×2（U-00/T-18）、T-19
+2026-11-02 11:27 tick | verifier ×2 在途（U-00 重量级含构建+突变复验 ~20min 正常）；T-19 ~50min 无 commit（核实 registry payload + fixture 重生成中，T-18 观察到其测试进程在跑=活跃）| 无 stale
+2026-11-02 11.4x 回报 | verifier T-18 = PASS（132/132×2、红基线独立复现精确命中 R2/R4 签名、真实 dsh 全链亲跑 broken→修→同 id 重注册→建 session、fake registry 与上游逐点一致）| **合并 T-18 → <新sha>**（最终 L R2-R5 闭环）| 在途：verifier U-00、T-19 | P2 修复链仅剩 T-19
+2026-11-02 11:37 tick | T-19 活跃（fetch 脚本 + index.json 重生成中——正是核心修复面）；verifier U-00 在途（重量级 ~30min 正常）| 无 stale
+2026-11-02 11.5x 回报 | verifier U-00 = PASS（4 突变抽验全红还原绿、S5 复跑 5.2m 确认 U-16 方案 A 事实依据、6 基建裁定可接受、截图像素结构验证如实记档）| **合并 U-00 → 22f806f**（36 文件 3304 行，submodule gitlink @ce7073d）| **W1 解锁——派 U-11/U-12/U-13 三桥并行**（U-16 排 U-12 后，区域重叠 m2-mux）
+2026-11-02 11:48 tick | load 3.7 | W1×3 刚派（~10min 读材料+install）；T-19 无 commit 但文件活跃（fetch+index.json 在改）| 无 stale | ready 未派 = 1（U-16 排 U-12 后）
+2026-11-02 11.5x 回报 | **builder T-19 完成**：39ae3eb——npm 坐标 = server.packages[] registryType='npm' 行（identifier+version），21/111 有坐标、90 条 keywords:["not-installable"] 结构化标记（install 报 pnpm 结构化错）；②b 真实 listing spec 安装走通至 dsh 边界 not-bundle（裸包正常边界）；129/129 在线+离线双绿 | **发现 a 记档→U-24 前置**：「一键装好」需裸包→dsh bundle 包装层（新任务，P4 市场页真实体验）；发现 c：not-installable 是 keywords 约定，P4 UI 读它禁安装按钮 | 派 verifier T-19（P2 最后一环）
+2026-11-02 11:57 tick | verifier T-19 在途；W1×3 ~20min（install+读材料正常）| 无 stale
+2026-11-02 12.0x 回报 | **builder U-11 完成**：08b1ae0，m1-api +163 行——白名单 16 方法（快照断言）+ D9 硬拒层（四类：credentials/account、/permission 方法行与命令行、configForms，独立于白名单）；§2.2 三约束；raw result details 原样；#3 滤 p2temp-*、#4 typert 壳校验；33 测试红转绿、56/56 + e2e 9/9 | 派 verifier | 在途：verifier ×2（T-19/U-11）、U-12、U-13
+2026-11-02 12.1x 回报 | verifier T-19 = PASS（npm 坐标逐字段三例一致、②b 亲跑 listing spec 至 dsh 边界回滚干净、②c 结构化 404）| **合并 T-19 → 552892c** | ⚠ 主仓回归 3 红（security ③⑤⑥）：**U-00 submodule gitlink（app/ui/vendor/ 目录）被 T-08 扫描器当文件读 EISDIR**——P4×P2 跨任务交互，合并后回归纪律再次抓住 | **派 T-20 小修**（scan.mjs 跳目录）| 在途：T-20、verifier U-11、U-12、U-13 | 最终 L-4 复审等 T-20 绿后跑
+2026-11-02 12:12 tick | U-13 首个 commit 2f87ef7（BotsMetaStore 原子写+队列）；T-20/U-12 起步；verifier U-11 在途 | 无 stale
+2026-11-02 12.2x 回报 | verifier U-11 = PASS（16 方法零增减、D9 四类 12/12、raw result 同引用实证、code 分类裁定与 U-15 口径一致）| **合并 U-11 → <新sha>**（W1 1/3）| 在途：T-20、U-12、U-13
+2026-11-02 12.3x 回报 | **builder U-13 完成**：2f87ef7+853f375——m3-meta 五模块（store/orchestrate/restore/preset-id 桥/index）；44 新测试（含屏障 env 门控 PBOTS_TEST_GATE_4）+ 突变验证 3 组；67/67+e2e 9/9+build 绿；preload M3 载荷一行修正（U-00 接缝）| 三发现待 verifier 裁定：测试替身的 Duplicate 文案（非生产）、tsc 基线缺失（U-00 未配）、preload 接缝追认 | 派 verifier | 在途：verifier ×2（U-13 + T-20/U-12 相关）、T-20、U-12
+2026-11-02 12:17 tick | T-20（~30min 小修在途偏久但 setup+全量跑一轮正常）/U-12（~40min 端口转交重活）无 commit——下 tick 无变化分别查；verifier U-13 在途
+2026-11-02 12.2x 回报 | builder T-20 完成：d5f290f——scanFile catch 加 EISDIR 跳过（与 ENOENT 对称，+15 行）+ ④c 目录跳过固化；红 3 转 136/136 绿 | 派 verifier 轻验 | 在途：verifier ×2（T-20/U-13）、U-12
+2026-11-02 12.3x 回报 | verifier U-13 = PASS（突变亲做 3 组红、三裁定：测试替身豁免→REVIEW-ALLOWLIST 首条、preload {op} 追认（CONTRACT 明文）、tsc 记档转 U-00.f 候补）| **合并 U-13 → <新sha>**（W1 2/3）| 在途：verifier T-20、U-12
+2026-11-02 12.4x 回报 | verifier T-20 = PASS（红复现 4 红签名 EISDIR、语义对称实证、区域 +15 行）| **合并 T-20 → aa9d934**（主仓回归 136/136 ✓）| **启动 L-4 终审**（b634e9d..aa9d934：T-17/18/19/20）——PASS 即 P2 收官 | 在途：L-4、U-12
+2026-11-02 12:30 tick | U-12 活跃（e496d65 preload 来源校验+debug-boot，m2-port e2e 编写中——~1.3h 端口转交重活正常）；L-4 活跃（journal 12:29）| 无 stale
+2026-11-02 12:37 tick | L-4 活跃（journal 12:33）；U-12 推进中 | 无 stale
+2026-11-02 12:47 tick | L-4 活跃（journal 12:47）；U-12 e2e 编写中 | 无 stale
+2026-11-02 12.5x 回报 | **builder U-12 完成**：250c91f，4 commits 11 文件 +1858——转交全时序（失败/10s/迟到/重连间隙不转死 socket）、归属 (a)(b)(c)、白名单恰三方法、双侧来源校验；单测 53 + e2e 15（6 条 m2-port 真通道真 dsh）| 三发现进 LEARNINGS（senderFrame undefined 非 null、port 帧 JSON 文本、审批同 Peer 绑定）| main.tsx +3 行待 verifier 裁定 | 派 verifier | 在途：L-4、verifier U-12
+2026-11-02 12:57 tick | L-4 活跃（journal 12:57）；verifier U-12 在途（复跑 e2e 含真超时需时）| 无 stale
+2026-11-02 13.0x 回报 | verifier U-12 = PASS（亲跑真 10s 超时+断链重连、白名单运行时快照 2/2、main.tsx +3 行追认、HANDOFF：U-15 必须接共享 ledger 实例 + FIX-LOW 白名单快照单测）| **合并 U-12 → <新sha>（W1 三桥全齐）**| 解锁 U-14/U-15/U-16

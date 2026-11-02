@@ -1,0 +1,20 @@
+2
+CURL-RC=6
+Already up to date
+Done in 308ms using pnpm v11.0.9
+$ vitest run
+
+ RUN  v5.0.5 /tmp/bot-wt/T-19/app/sdk
+
+[p2sdk] ready http://127.0.0.1:33471
+p2sdk: dsh pid 467544
+p2sdk: handoff /tmp/p2sdk-handoff-njWV5R
+p2sdk: no ready line within 1ms
+p2sdk: forwarding SIGTERM to dsh
+p2sdk: forwarding SIGTERM to dsh
+
+ Test Files  18 passed (18)
+      Tests  129 passed (129)
+   Start at  12:01:17
+   Duration  149.42s (tests 100%)
+

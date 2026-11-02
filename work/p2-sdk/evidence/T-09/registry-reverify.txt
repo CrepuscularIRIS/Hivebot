@@ -1,0 +1,40 @@
+== T-09 connector substitution re-verification (verifier, 2026-11-02 10:0x–10:1x) ==
+
+[1] registry refetch sha256 vs fixtures/market/source.json
+cac24c56c010784b24aa0da2a1951dd5a38c302cafc7306ff6914f99299fe02f  page.json
+85538caae6cf1ae14e2da31a7b5700fa01b3f4b70681a1c2a0eab897622508eb  search.json
+7:   "sha256": "cac24c56c010784b24aa0da2a1951dd5a38c302cafc7306ff6914f99299fe02f",
+12:   "sha256": "85538caae6cf1ae14e2da31a7b5700fa01b3f4b70681a1c2a0eab897622508eb",
+21:  "presentIn": "search=filesystem response (raw sha256 above)",
+-> page cac24c56... and search 85538caa... both MATCH source.json byte-for-byte
+
+[2] counts and union
+page: 100 search: 11 union: 111 (added by search: 11 )
+connector in search: true
+modelcontextprotocol filesystem variants in union: []
+
+[3] registry entry detail (search.json)
+{
+ "name": "io.github.bytedance/mcp-server-filesystem",
+ "version": "1.0.0",
+ "registryType": "npm",
+ "identifier": "@agent-infra/mcp-server-filesystem",
+ "identifierVersion": "latest",
+ "transport": {
+  "type": "stdio"
+ },
+ "packageArguments": [
+  {
+   "description": "Comma-separated list of allowed directories for file operations",
+   "isRequired": true,
+   "format": "string",
+   "type": "named",
+   "name": "allowed-directories"
+  }
+ ],
+ "repo": "https://github.com/bytedance/UI-TARS-desktop"
+}
+official: {"status":"active","statusChangedAt":"2025-09-09T06:16:36.369748Z","publishedAt":"2025-09-09T06:16:36.369748Z","updatedAt":"2025-09-09T06:16:36.369748Z","isLatest":true}
+
+[4] index.json regenerated from live registry via original script == committed fixture
+diff -> identical (INDEX-REGEN-IDENTICAL), worktree restored clean

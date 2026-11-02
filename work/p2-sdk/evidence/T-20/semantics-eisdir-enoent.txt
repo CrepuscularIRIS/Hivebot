@@ -1,0 +1,7 @@
+$ cd /tmp/bot-wt/T-20 && P2SCAN_SECRET=vfy-t20-nohit pnpm -C app/sdk exec node tests/e2e/security/scan.mjs --file /tmp/vfy-T-20-sem/adir --file /tmp/vfy-T-20-sem/nonexistent
+(adir = 真实存在的目录，模拟 submodule gitlink；nonexistent = 不存在路径，对应 ENOENT 分支)
+SCANNED files=2 pids=0
+CLEAN
+exit=0
+结论：EISDIR 与 ENOENT 行为完全对称——两者都不进 unrecognized、不产生 HIT、都不触发 FAIL；
+SCANNED files= 集合计数仍含目录项（与 ENOENT 的已删 tracked 文件同口径，报告行未改动）。

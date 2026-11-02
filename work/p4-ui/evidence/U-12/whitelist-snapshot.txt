@@ -1,0 +1,9 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/U-12/app/ui
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  12:58:20
+   Duration  161ms (transform 72%, import 18%, tests 5%, worker 4%)
+

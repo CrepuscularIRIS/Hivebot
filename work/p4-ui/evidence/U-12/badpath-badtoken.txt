@@ -1,0 +1,7 @@
+
+Running 1 test using 1 worker
+
+[badpath] error = Error: mux port transfer timed out after 10000ms
+  ✓  1 ../../../../vfy-U-12/badpath.spec.ts:9:5 › 坏路径：无效 token 的 handoff → main 存活，端口申请失败无端口 (12.3s)
+
+  1 passed (12.7s)

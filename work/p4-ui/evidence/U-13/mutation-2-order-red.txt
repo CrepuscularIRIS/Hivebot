@@ -1,0 +1,9 @@
+     × #4 被调时 recipe 已在盘上（mock #4 内同步读文件断言） 4ms
+     × #4 挂起不返回时 recipe 已落盘（直接读盘断言） 51ms
+     × #4 返回 !ok → 原样透传（含 details），孤儿 recipe 留在盘上不删 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/unit/m3/orchestrate.test.ts > createBotWithConnectors · D10b 编排顺序（recipe 先于 #4） > #4 被调时 recipe 已在盘上（mock #4 内同步读文件断言）
+ FAIL  tests/unit/m3/orchestrate.test.ts > createBotWithConnectors · D10b 编排顺序（recipe 先于 #4） > #4 挂起不返回时 recipe 已落盘（直接读盘断言）
+ FAIL  tests/unit/m3/orchestrate.test.ts > createBotWithConnectors · D10b 编排顺序（recipe 先于 #4） > #4 返回 !ok → 原样透传（含 details），孤儿 recipe 留在盘上不删
+ Test Files  1 failed (1)
+      Tests  3 failed | 17 passed (20)

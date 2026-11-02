@@ -1,0 +1,8 @@
+     × 省略与显式 defaultId 两次得同一 id，同一值贯穿 recipe 与 dsh 请求 20004ms
+     × #4 被调时 recipe 已在盘上（mock #4 内同步读文件断言） 20001ms
+     × 并发两次同 id 的 #4 都成功、recipe 恰一条（register 单飞在 SDK 侧 in-flight 表） 20001ms
+     × 未设 env：屏障路径不触发（waitGate 未被调用） 2ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/unit/m3/orchestrate.test.ts > createBotWithConnectors · D8 agentPreset 单点解析 > 省略与显式 defaultId 两次得同一 id，同一值贯穿 recipe 与 dsh 请求
+ FAIL  tests/unit/m3/orchestrate.test.ts > createBotWithConnectors · D10b 编排顺序（recipe 先于 #4） > #4 被调时 recipe 已在盘上（mock #4 内同步读文件断言）
+ FAIL  tests/unit/m3/orchestrate.test.ts > createBotWithConnectors · D10a 并发同 id > 并发两次同 id 的 #4 都成功、recipe 恰一条（register 单飞在 SDK 侧 in-flight 表）

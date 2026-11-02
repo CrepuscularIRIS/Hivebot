@@ -1,0 +1,142 @@
+== upstream repos/deepseek-harness @ ce7073d ==
+-- user-approval/src/index.ts :262-281 (effectivePolicy + overrideOf) --
+
+  /**
+   * The session's effective policy: its projected override, else the
+   * configured default (the schema already defaulted an omitted policy to
+   * `'ask'`; the `??` only narrows the optional-input TYPE).
+   * @param session - the exact accepted session whose policy applies.
+   * @returns the policy every ask for this session resolves under right now.
+   */
+  private effectivePolicy(session: Session): ApprovalPolicy {
+    return this.overrideOf(session) ?? this.config.policy ?? 'ask'
+  }
+
+  /**
+   * Read the session override without applying the configured default.
+   * @param session - session whose log supplies the override.
+   * @returns the last logged policy, or `undefined` without one.
+   */
+  overrideOf(session: Session): ApprovalPolicy | undefined {
+    return this.approvalStateOf(session).policy ?? undefined
+  }
+-- :292-303 (decide rejects before dispatch) --
+   */
+  private async decide(req: ApprovalRequest, session: Session): Promise<ApprovalOutcome> {
+    const signal = req.signal
+    if (signal?.aborted) return 'cancelled'
+    // The 'never' policy is decided HERE, before any dispatch: a listener
+    // registered with `prepend: true` after this service mounts would sit
+    // ahead of any gate LISTENER, so a listener-shaped gate cannot keep the
+    // documented promise that 'never' rejects deterministically regardless
+    // of registration order — only the service's own request path can.
+    if (this.effectivePolicy(session) === 'never') return 'rejected'
+    // Enter the promise chain BEFORE dispatching: a listener that throws
+    // SYNCHRONOUSLY (before its first await) must land in the same rejection
+-- permission-presets/src/index.ts :348-361 (derive fold) --
+  private derive(state: KnobState): string {
+    const sandbox = state.sandbox ?? this.ctx.shell.sandboxMode
+    const approval = state.approval ?? this.ctx.approval.config.policy ?? 'ask'
+    const matches = (spec: PresetSpec): boolean => spec.sandbox === sandbox && spec.approval === approval
+    if (state.preset !== null) {
+      const spec = this.specOf(state.preset)
+      if (spec !== undefined && matches(spec)) return state.preset
+      if (state.preset === AUTO_PRESET && spec?.sandbox === sandbox && approval === 'never') return AUTO_PRESET
+    }
+    for (const [name, spec] of Object.entries(this.presets)) {
+      if (matches(spec)) return name
+    }
+    return CUSTOM_PRESET
+  }
+-- :397-418 (set/apply writes approval events) --
+   */
+  set(session: Session, name: string): void {
+    this.apply(session, name, (policy) => { setApprovalPolicy(session, policy) })
+  }
+
+  /** Apply one preset through its durable identity and canonical knob setters. */
+  private apply(session: Session, name: string, setApproval: (policy: ApprovalPolicy) => void): void {
+    const spec = this.resolve(name)
+    if (name === AUTO_PRESET) this.autoAdmit?.()
+    const current = this.current(session)
+    const knobs = this.permissionState(session)
+    const updateKnobs = (): void => {
+      if (spec.sandbox !== (knobs.sandbox ?? this.ctx.shell.sandboxMode)) {
+        setSandboxMode(session, spec.sandbox)
+      }
+      if (spec.approval !== (knobs.approval ?? this.ctx.approval.config.policy ?? 'ask')) {
+        setApproval(spec.approval)
+      }
+    }
+    if (current !== name) session.append('permission/preset', { preset: name })
+    updateKnobs()
+  }
+-- :429-457 (pinInitialPermission) --
+  private pinInitialPermission(session: Session): void {
+    const state = this.permissionState(session)
+    const { preset, sandbox, approval, seeded } = state
+    if (preset === AUTO_PRESET) {
+      if (this.autoAdmit === undefined) {
+        throw new Error('permission: cannot restore preset "auto" without its active integration')
+      }
+      this.autoAdmit()
+    }
+    if (preset === null && sandbox === null && approval === null && !seeded) {
+      const name = this.defaultPreset
+      const spec = this.resolve(name)
+      session.append('permission/preset', { preset: name })
+      setSandboxMode(session, spec.sandbox)
+      setApprovalPolicy(session, spec.approval)
+      return
+    }
+
+    const effective = this.derive(state)
+    if (preset === null && effective !== CUSTOM_PRESET) {
+      session.append('permission/preset', { preset: effective })
+    }
+    if (sandbox === null) {
+      setSandboxMode(session, this.ctx.shell.sandboxMode as SandboxMode)
+    }
+    if (approval === null) {
+      setApprovalPolicy(session, this.ctx.approval.config.policy ?? 'ask')
+    }
+  }
+
+== npm @deepseek-ai/dsh-base@0.2.2-alpha.2 cordis.patch.yml ==
+246:        mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'
+259:    - id: approval
+260:      name: '@deepseek-ai/dsh-user-approval'
+262:        policy: !!js "(process.env.DSH_PERMISSION_MODE ?? 'workspace-write') === 'danger-full-access' ? 'never' : 'ask'"
+270:            approval: ask
+273:            approval: ask
+274:          danger-full-access:
+275:            sandbox: danger-full-access
+276:            approval: never
+346:              When ready, call exit_plan_mode with the complete plan markdown, starting with a # title. Make exit_plan_mode the only and final tool call in that assistant response: it presents the plan for approval, and implementation begins only in a later step after approval. Do not paste the final plan as a plain reply or ask "should I proceed?" through prose or ask_user_question. If review rejects it, incorporate the feedback and present again. If the review channel is unavailable or aborted, stay in plan mode and ask the user to switch modes manually; do not proceed with implementation.
+
+== permission-presets preset switch surface (compiled lib) ==
+ugrep: warning: node_modules/.pnpm/@deepseek-ai+dsh-permission-presets@0.2.2-alpha.2_d3d8b3608dd16beeeebc92e4a48b417c/node_modules/@deepseek-ai/dsh-permission-presets/lib/index.js: No such file or directory
+
+== shell-ask.mjs delegate paths ==
+44:    if (exec.name !== 'bash') return next()
+45:    if (approvalNever(ctx, exec)) return next()
+57:    if (typeof effective === 'string' && (STRICTLY_WIDER[effective] ?? []).includes(requested)) return next()
+== permission-presets compiled lib exposure (from /tmp/bot-wt/T-12.f1 app/sdk) ==
+213:				commandCtx.commands.register({
+264:		registerAuto(admit) {
+273:			}, "permissionPresets.registerAuto()");
+-- switch handler (user slash command, not a model tool) --
+							kind: "success",
+							text: `current preset ${this.current(agent.session)} (available: ${this.names.join(", ")})`
+						};
+						if (!this.names.includes(name)) return {
+							kind: "error",
+							text: `unknown preset "${name}" (available: ${this.names.join(", ")})`
+						};
+						this.apply(agent.session, name, (policy) => {
+							this.ctx.approval.setPolicy(agent, policy);
+						});
+						return {
+							kind: "success",
+							text: `preset ${name}`
+						};

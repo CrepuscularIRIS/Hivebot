@@ -1,0 +1,5 @@
+# 签名一致性自检：README 临时扩展节 vs src/p2temp/index.mjs 头注释（T-10 验收复跑，HEAD 8889e9d）
+$ cd /tmp/bot-wt/T-10/app/sdk
+$ diff <(sed -n "s/^- \`(p2temp/[^\`]*)\`\$/\1/p" README.md) <(sed -n "s/^\/\/   (p2temp\/.*)\$/\1/p" src/p2temp/index.mjs)
+DIFF-EMPTY: 两条签名逐字一致（两侧各 2 行，非空匹配）
+匹配数 README=2 src=2

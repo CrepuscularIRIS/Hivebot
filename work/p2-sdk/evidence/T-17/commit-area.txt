@@ -1,0 +1,5 @@
+a9efa0714ce8a9f6d6fabca674b1d8531ba2b1dd fix(p2-sdk): T-17 shell-ask overrideOf 抛错时 fail-closed 到 ask（最终 L R1）
+
+ app/sdk/src/policy/shell-ask.mjs  | 15 ++++++++++-----
+ app/sdk/tests/unit/policy.test.ts | 12 ++++++++++++
+ 2 files changed, 22 insertions(+), 5 deletions(-)

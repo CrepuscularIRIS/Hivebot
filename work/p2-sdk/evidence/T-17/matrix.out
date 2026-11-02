@@ -1,0 +1,5 @@
+PASS | 1 正常 never（override 可读） → NEXT（期望 NEXT）
+PASS | 2 config 未设 + overrideOf 抛错 → ASK（期望 ASK）
+PASS | 3 无 session + config=never → NEXT（期望 NEXT）
+PASS | 4 默认 preset pin 的 ask → ASK（期望 ASK）
+PASS | 5 抛错 + config=never（新用例场景，真 override=ask） → ASK（期望 ASK）

@@ -1,0 +1,8 @@
+ ✓ tests/e2e/approval.test.ts > D8: ordinary shell asks for approval; deny leaves no file; approve runs it; default permission is confined 2064ms
+ ✓ tests/e2e/approval.test.ts > D8: an approval granted in session Y does not release a pending shell call in session X 1902ms
+ ✓ tests/e2e/approval.test.ts > D8: a bash call whose sandbox_permissions repeats the effective mode still asks 1975ms
+ ✓ tests/e2e/approval.test.ts > R2: an explicit danger-full-access preset (approval=never) runs ordinary bash without asking 1779ms
+ ✓ tests/e2e/approval.test.ts > R1: a model-side shell cannot derive or find the launch token 2398ms
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Duration  10.25s (tests 100%)

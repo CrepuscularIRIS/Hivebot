@@ -1,0 +1,15 @@
+Already up to date
+Done in 301ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /home/lingxufeng/bot/app/sdk
+
+ ✓ tests/market/connectors.test.ts > X created with connectors sees the MCP tool; plain Y does not 439ms
+ ✓ tests/market/connectors.test.ts > R14: a relative-path connector loads; its tool reaches the request tool table 68ms
+ ✓ tests/market/connectors.test.ts > the method table differs from the bare baseline by exactly the two p2temp methods 1ms
+ ✓ tests/market/connectors.test.ts > the P2-TEMP annotation in src matches both signatures verbatim 0ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  10:36:22
+   Duration  5.44s (tests 99%, import 1%)
+

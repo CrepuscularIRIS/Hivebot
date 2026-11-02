@@ -1,0 +1,116 @@
+Already up to date
+Done in 297ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/T-20/app/sdk
+
+ ❯ tests/e2e/security.test.ts (8 tests | 4 failed) 23393ms
+   × ③ sentinel leak scan: fake run -> kill -9 -> restart -> 0 hits everywhere 3532ms
+   × ④c directory entry in the scan set is skipped, not UNRECOGNIZED 369ms
+   × ⑤ real-key D2 smoke re-scan: same scanner, key from env, hits=0 13487ms
+   × ⑥ real provider path sentinel: loopback stub receives the Bearer key, disk scan stays clean 2050ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/e2e/security.test.ts > ③ sentinel leak scan: fake run -> kill -9 -> restart -> 0 hits everywhere
+AssertionError: scan must be clean:
+secret-prefix: sk-canary-p2sdk-
+UNRECOGNIZED /tmp/bot-wt/T-20/app/ui/vendor/deepseek-harness: unreadable (EISDIR)
+SCANNED files=378 pids=2
+FAIL 0 hits, 1 unrecognized files
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ tests/e2e/security.test.ts:296:75
+    294|   const res = scan({ secret: sentinel, prefix: CANARY_PREFIX, home, fi…
+    295|   expect(res.stdout, 'scanner output carries paths/prefix only, never …
+    296|   expect(res.status, `scan must be clean:\n${res.stdout}\n${res.stderr…
+       |                                                                           ^
+    297|   expect(res.stdout).toContain('CLEAN')
+    298|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/e2e/security.test.ts > ④c directory entry in the scan set is skipped, not UNRECOGNIZED
+AssertionError: a directory entry must be skipped:
+UNRECOGNIZED /tmp/p2sdk-t20-dir-e63aCv/vendor-gitlink-like: unreadable (EISDIR)
+SCANNED files=1 pids=0
+FAIL 0 hits, 1 unrecognized files
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ tests/e2e/security.test.ts:371:75
+    369|   mkdirSync(sub)
+    370|   const res = scan({ secret: sentinel, files: [sub] })
+    371|   expect(res.status, `a directory entry must be skipped:\n${res.stdout…
+       |                                                                           ^
+    372|   expect(res.stdout).toContain('CLEAN')
+    373|   expect(res.stdout, 'the directory is not reported as unrecognized').…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/e2e/security.test.ts > ⑤ real-key D2 smoke re-scan: same scanner, key from env, hits=0
+AssertionError: real-key scan must be clean:
+UNRECOGNIZED /tmp/bot-wt/T-20/app/ui/vendor/deepseek-harness: unreadable (EISDIR)
+SCANNED files=375 pids=2
+FAIL 0 hits, 1 unrecognized files
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ tests/e2e/security.test.ts:413:84
+    411|
+    412|   const res = scan({ secret: REAL_KEY, home, files: [bootLog, d2Log], …
+    413|   expect(res.status, `real-key scan must be clean:\n${res.stdout}\n${r…
+       |                                                                                    ^
+    414|   expect(res.stdout, 'output never contains the real key').not.toConta…
+    415|   console.log('  ⑤ real-key scan hits=0 (scanner reported CLEAN)')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/e2e/security.test.ts > ⑥ real provider path sentinel: loopback stub receives the Bearer key, disk scan stays clean
+AssertionError: real-provider-path scan must be clean:
+secret-prefix: sk-canary-p2sdk-
+UNRECOGNIZED /tmp/bot-wt/T-20/app/ui/vendor/deepseek-harness: unreadable (EISDIR)
+SCANNED files=374 pids=2
+FAIL 0 hits, 1 unrecognized files
+
+: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ tests/e2e/security.test.ts:482:96
+    480|     const res = scan({ secret: sentinel, prefix: CANARY_PREFIX, home, …
+    481|     expect(res.stdout, 'scanner output carries paths/prefix only, neve…
+    482|     expect(res.status, `real-provider-path scan must be clean:\n${res.…
+       |                                                                                                ^
+    483|
+    484|     rt.client.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 4 passed (8)
+   Start at  12:25:18
+   Duration  23.53s (tests 100%)
+

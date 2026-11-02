@@ -1,0 +1,24 @@
+
+ RUN  v5.0.5 /tmp/vfy-t19
+
+stdout | probe.test.ts > probe-1 listing surface + ②b/②c real installs
+[probe] listing total: 111 fetched: 111
+[probe] connector title: io.github.bytedance/mcp-server-filesystem
+[probe] connector versions: [{"version":"1.2.29","publishTimestamp":1757398596,"source":{"type":"npm"},"engines":{},"install":{"spec":"@agent-infra/mcp-server-filesystem@1.2.29"},"compatibility":{"compatible":true}}]
+[probe] bare entry: @ac.inference.sh/mcp 2.0.1 | listed: true
+
+stdout | probe.test.ts > probe-1 listing surface + ②b/②c real installs
+[probe] ②c install result: {"stage":"install","target":"@ac.inference.sh/mcp@2.0.1","enabled":false,"changed":false,"application":"failed","registries":[null,"https://registry.npmmirror.com/"],"packageResult":{"exitCode":1,"output":"[ERR_PNPM_FETCH_404] GET https://registry.npmmirror.com/@ac.inference.sh%2Fmcp: Not Found - 404\n\nThis error happened while installing a direct dependency of /tmp/p2sdk-runtime-grfVPb/profiles/web\n\n@ac.inference.sh/mcp is not in the npm registry, or you have no permission to fetch it.\n\nNo
+
+stdout | probe.test.ts > probe-1 listing surface + ②b/②c real installs
+[probe] ②b install result: {"stage":"install","target":"@agent-infra/mcp-server-filesystem@1.2.29","enabled":false,"changed":false,"application":"failed","registries":[null],"packageResult":{"exitCode":0,"output":"Progress: resolved 1, reused 0, downloaded 0, added 0\n\ndependencies:\n+ @agent-infra/mcp-server-filesystem 1.2.29\n\nPackages: +90\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\nProgress: resolved 90, reused 90, downloaded 0, added 90, done\nDone in 677ms using pnpm v11.0.9\
+
+stdout | probe.test.ts > probe-1 listing surface + ②b/②c real installs
+[probe] bundles after refusals: ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-acp-app","@deepseek-ai/dsh-experimental-agent-team-profile","@deepseek-ai/dsh-experimental-inspector-profile","@deepseek-ai/dsh-headless","@deepseek-ai/dsh-sdk-app","@deepseek-ai/dsh-sdk-minimal","@deepseek-ai/dsh-experimental-voice-input-bundle","@deepseek-ai/dsh-experimental-auto-review","@deepseek-ai/dsh-experimental-cot-translation-bundle","@deepseek-ai/dsh-experimental-badge-skill-bundle","@deepseek-ai/dsh-experimental-ralph-bundle","@deepseek-ai/dsh-experimental-session-titles-bundle","@deepseek-ai/dsh-experimental-terminal-bundle","@deepseek-ai/dsh-experimental-liveshare","@deepseek-ai/dsh-experimental-session-search","@deepseek-ai/dsh-experimental-tool-worktree","@deepseek-ai/dsh-cua-bundle","@deepseek-ai/dsh-experimental-plugin-market-bundle","@deepseek-ai/dsh-personalized-recommendations","@deepseek-ai/dsh-experimental-forge-bundle","@deepseek-ai/dsh-subagent-claude-code","@deepseek-ai/dsh-subagent-codex"]
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  11:58:42
+   Duration  26.88s (tests 100%)
+

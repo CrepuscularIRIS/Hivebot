@@ -1,0 +1,18 @@
+Already up to date
+Done in 298ms using pnpm v11.0.9
+$ vitest run
+
+ RUN  v5.0.5 /tmp/bot-wt/T-19/app/sdk
+
+[p2sdk] ready http://127.0.0.1:37087
+p2sdk: dsh pid 462650
+p2sdk: handoff /tmp/p2sdk-handoff-BPMZiC
+p2sdk: no ready line within 1ms
+p2sdk: forwarding SIGTERM to dsh
+p2sdk: forwarding SIGTERM to dsh
+
+ Test Files  18 passed (18)
+      Tests  129 passed (129)
+   Start at  12:00:40
+   Duration  30.77s (tests 99%, import 1%)
+

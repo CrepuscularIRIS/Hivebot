@@ -185,6 +185,18 @@ describe('T-12.f1: explicit approval=never releases the ask', () => {
     expect(throwing({ name: 'bash', agent, arguments: { command: 'ls', description: 'x' } }, next)).toEqual(askShape)
   })
 
+  // T-17 (最终 L 复审 R1): overrideOf throws while the deployment config is
+  // 'never' — the session's real override may be the pinned 'ask' (the
+  // missing-seq projection throw, session-projection/src/index.ts:794-798),
+  // and swallowing the throw to fall back to the deployment default would
+  // silently release ordinary bash past the ask gate. Unreadable session
+  // intent fails closed to ask; config is only the deployment default.
+  it('still asks when overrideOf throws and the deployment config policy is never (fail closed)', () => {
+    const listener = registeredListener('workspace-write', approvalSvc('ask', 'never', true))
+    expect(listener({ name: 'bash', agent, arguments: { command: 'ls', description: 'x' } }, next))
+      .toEqual(askShape)
+  })
+
   it('still asks when the exec carries no agent/session (cannot prove never)', () => {
     const listener = registeredListener('workspace-write', approvalSvc('never'))
     expect(listener({ name: 'bash', arguments: { command: 'ls', description: 'x' } }, next)).toEqual(askShape)

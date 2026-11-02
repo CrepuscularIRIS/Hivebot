@@ -76,9 +76,11 @@ export function apply(ctx) {
  * - 折叠 `override ?? config ?? 'ask'` 镜像上游 effectivePolicy（user-approval
  *   index.ts:270-272）与 permission-presets derive（index.ts:348-361）。
  *
- * 读不到服务 / 拿不到 session / overrideOf 抛错 → false（照旧 ask，fail
- * closed：无法证明 never 就不放宽）。可选服务一律 ctx.get，不用 ctx.approval
- * 属性代理（deepseek-harness packages/CLAUDE.md postmortem 0001）。
+ * 读不到服务，或 overrideOf 抛错 → false（照旧 ask，fail closed：无法证明
+ * never 就不放宽；session 级意图存在却读不到时，部署默认不能代言它——
+ * T-17 最终 L R1）。拿不到 session 则无 override 可折叠，部署默认即有效
+ * 策略。可选服务一律 ctx.get，不用 ctx.approval 属性代理（deepseek-harness
+ * packages/CLAUDE.md postmortem 0001）。
  */
 function approvalNever(ctx, exec) {
   const svc = typeof ctx.get === 'function' ? ctx.get('approval') : undefined
@@ -89,8 +91,11 @@ function approvalNever(ctx, exec) {
     try {
       override = svc.overrideOf(session)
     } catch {
-      // 投影状态读不出：按无 override 处理（fail closed 方向）。
-      override = undefined
+      // 投影状态读不出（如 session log 缺序号，session-projection/src/
+      // index.ts:794-798）：session 级意图存在但不可证（可能是 pin 的 ask），
+      // 部署默认不能代言它 → 不回退 config（T-17 最终 L R1：config=never 时
+      // 曾因回退而放行），fail closed 到 ask。
+      return false
     }
   }
   const config = svc.config

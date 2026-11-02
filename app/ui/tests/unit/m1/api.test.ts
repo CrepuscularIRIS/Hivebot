@@ -208,6 +208,41 @@ describe('§2.2 $events/result 校验（ledger）', () => {
     expect(dsh.apiCount).toBe(1)
   })
 
+  it('R10：rpc 失败（ok:false）→ 错误透传且 pending 保留；重发成功才下账，之后同 eventId 再答 forbidden', async () => {
+    let fail = true
+    const { api, dsh, ledger } = makeApi(() => (fail
+      ? { ok: false, error: { code: 'gateway/unavailable', message: '503', details: {} } }
+      : { ok: true, value: null }))
+    const args = { clientId: 'cli-1', eventId: 'ev-1', outcome: { kind: 'result', value: 'allowed-once' } }
+    const res = await api({ method: '$events/result', args })
+    expect(res.ok).toBe(false)
+    expect(dsh.apiCount).toBe(1)
+    // 发送失败不得消费：pending 仍在，renderer 可重试
+    expect(ledger.pendingEvents().some((e) => e.eventId === 'ev-1')).toBe(true)
+    fail = false
+    const res2 = await api({ method: '$events/result', args })
+    expect(res2).toEqual({ ok: true, value: null })
+    expect(dsh.apiCount).toBe(2)
+    expect(ledger.pendingEvents().some((e) => e.eventId === 'ev-1')).toBe(false)
+    const res3 = await api({ method: '$events/result', args })
+    expect(expectFail(res3).code).toBe('pbots/forbidden')
+    expect(dsh.apiCount).toBe(2)
+  })
+
+  it('R10：rpc 抛异常（fetch 裸抛）→ pending 保留，重试仍可作答', async () => {
+    let throwOnce = true
+    const { api, dsh, ledger } = makeApi(() => {
+      if (throwOnce) { throwOnce = false; throw new Error('socket hang up') }
+      return { ok: true, value: null }
+    })
+    const args = { clientId: 'cli-1', eventId: 'ev-1', outcome: { kind: 'result', value: 'rejected' } }
+    await expect(api({ method: '$events/result', args })).rejects.toThrow('socket hang up')
+    expect(ledger.pendingEvents().some((e) => e.eventId === 'ev-1')).toBe(true)
+    const res = await api({ method: '$events/result', args })
+    expect(res.ok).toBe(true)
+    expect(ledger.pendingEvents().some((e) => e.eventId === 'ev-1')).toBe(false)
+  })
+
   it('无 ready clientId → forbidden', async () => {
     const ledger = new EventsLedger()
     ledger.record({ type: 'waterfall', event: 'approval/request', eventId: 'ev-1', agentId: 's-1', request: { toolName: 'bash' } })
@@ -238,11 +273,23 @@ describe('§2.2 #3/#4 参数约束（L2；typert 壳内字段）', () => {
     ['connectors 非数组', { connectors: 'x', agentPreset: 'p2-alpha' }],
     ['connectors 含非字符串', { connectors: ['a', 1], agentPreset: 'p2-alpha' }],
     ['agentPreset 为 p2temp-*', { connectors: ['a'], agentPreset: 'p2temp-abc' }],
+    ['R1 connectors 含 ../.. 逃逸名', { connectors: ['../..'], agentPreset: 'p2-alpha' }],
+    ['R1 connectors 含 @scope/.. 逃逸名', { connectors: ['@p2/..'], agentPreset: 'p2-alpha' }],
+    ['R1 connectors 含绝对路径名', { connectors: ['/abs/x'], agentPreset: 'p2-alpha' }],
+    ['R1 connectors 含多斜杠名', { connectors: ['@a/b/c'], agentPreset: 'p2-alpha' }],
   ])('#4 %s → invalid-args，dsh 计数 === 0', async (_name, request) => {
     const { api, dsh } = makeApi()
     const res = await api({ method: 'p2temp/session.createWithConnectors', args: { request } })
     expect(expectFail(res).code).toBe('pbots/invalid-args')
     expect(dsh.apiCount).toBe(0)
+  })
+
+  it('R1 #4 合法 scoped bundle 名（@p2sdk-fixture/demo）→ 透传', async () => {
+    const { api, dsh } = makeApi()
+    const args = { request: { connectors: ['@p2sdk-fixture/demo'], agentPreset: 'p2-alpha' } }
+    const res = await api({ method: 'p2temp/session.createWithConnectors', args })
+    expect(res.ok).toBe(true)
+    expect(dsh.apiCount).toBe(1)
   })
 
   it('#4 合法 → 透传（args 原样）', async () => {

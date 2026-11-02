@@ -75,6 +75,10 @@ describe('createBotWithConnectors · 校验（拒绝时 dsh 计数 === 0）', ()
     ['connectors 空数组', { agentPreset: 'p2-alpha', connectors: [] }],
     ['connectors 非字符串元素', { agentPreset: 'p2-alpha', connectors: ['a', 1] }],
     ['connectors 空白字符串', { agentPreset: 'p2-alpha', connectors: [' '] }],
+    ['R1 connectors 含 ../.. 逃逸名', { agentPreset: 'p2-alpha', connectors: ['a', '../..'] }],
+    ['R1 connectors 含 @scope/.. 逃逸名', { agentPreset: 'p2-alpha', connectors: ['@scope/..'] }],
+    ['R1 connectors 含绝对路径名', { agentPreset: 'p2-alpha', connectors: ['/abs/x'] }],
+    ['R1 connectors 含反斜杠逃逸名（Windows 形态）', { agentPreset: 'p2-alpha', connectors: ['..\\..\\x'] }],
     ['agentPreset 是 p2temp-*（#1 过滤掉的 preset）', { agentPreset: 'p2temp-xxx', connectors: ['a'] }],
     ['args 非对象', null],
   ])('%s → invalid-args', async (_name, args) => {

@@ -146,6 +146,19 @@ await case_('readConnectorRows rejects uninstalled connectors / manifests withou
   )
 })
 
+await case_('R1: readConnectorRows rejects bundle names that could escape the profile (traversal / absolute / multi-slash)', async () => {
+  // U-19 R1a：名字先于一切文件访问做形状校验——join(profileDir,'node_modules',name)
+  // 的拼接消费点不容许 ../、@scope/..、绝对路径、多斜杠、反斜杠（Windows 形态）。
+  for (const bad of ['../..', '../../x', '@scope/..', '/abs/x', 'C:/x', 'a/b/c', '..\\..\\x', '.', '..', '', ' ']) {
+    await assert.rejects(
+      () => readConnectorRows(okProfile, bad),
+      (error) => /p2temp\/connector-unavailable/.test(error.code) && /not a valid bundle name/.test(error.message),
+    )
+  }
+  // 合法形态不受影响：scoped 与裸 npm 名
+  assert.deepEqual(await readConnectorRows(okProfile, '@p2sdk-fixture/demo'), [{ id: 'x', name: 'x-pkg' }])
+})
+
 await case_('R14: readConnectorRows anchors relative and absolute insert names beside the patch', async () => {
   const profile = mkdtempSync(join(tmpdir(), 'p2temp-unit-'))
   const dir = join(profile, 'node_modules', '@p2sdk-fixture/rel')

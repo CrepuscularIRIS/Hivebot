@@ -15,12 +15,16 @@ describe('EventsLedger', () => {
     expect(l.validateResult('cli-1', 'ev-1', 'rejected')).toEqual({ ok: false, reason: 'no $events client ready' })
   })
 
-  it('ready + 未决 eventId + 合法 outcome → ok（成功即消费：同一 eventId 二次作答 → 拒）', () => {
+  it('R10：ready + 未决 eventId + 合法 outcome → ok（validate 只判资格不消费；consumeResult 才下账）', () => {
     const l = new EventsLedger()
     l.record(ready)
     l.record(waterfall)
     expect(l.validateResult('cli-1', 'ev-1', 'allowed-once')).toEqual({ ok: true })
+    // 发送失败保留 pending（可重试）：validate 之后条目仍在
+    expect(l.pendingEvents().some((e) => e.eventId === 'ev-1')).toBe(true)
+    expect(l.consumeResult('ev-1')).toBe(true)
     expect(l.validateResult('cli-1', 'ev-1', 'rejected')).toEqual({ ok: false, reason: 'eventId not pending' })
+    expect(l.consumeResult('ev-1')).toBe(false)
     l.record({ type: 'cancel', eventId: 'ev-1' })
     expect(l.validateResult('cli-1', 'ev-1', 'rejected')).toEqual({ ok: false, reason: 'eventId not pending' })
   })

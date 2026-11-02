@@ -42,7 +42,8 @@ export class EventsLedger {
     this.pending.delete(item.eventId)
   }
 
-  /** §2.2 校验：outcome 恰为 allowed-once|rejected；clientId 匹配 ready；eventId 未决（成功即消费，防重复作答）。 */
+  /** §2.2 校验（纯资格判定，不消费）：outcome 恰为 allowed-once|rejected；clientId 匹配 ready；eventId 未决。
+   * 消费时机在 consumeResult（R10：rpc 发送成功后才下账，发送失败保留 pending 可重试）。 */
   validateResult(clientId: unknown, eventId: unknown, value: unknown): { ok: true } | { ok: false; reason: string } {
     if (this.clientId === undefined) return { ok: false, reason: 'no $events client ready' }
     if (clientId !== this.clientId) return { ok: false, reason: 'clientId mismatch' }
@@ -50,7 +51,12 @@ export class EventsLedger {
     if (value !== 'allowed-once' && value !== 'rejected') {
       return { ok: false, reason: `outcome value must be 'allowed-once' or 'rejected', got ${JSON.stringify(value)}` }
     }
-    this.pending.delete(eventId)
     return { ok: true }
+  }
+
+  /** R10：下账（$events/result 发送成功后调用）。返回是否真的消费（false = 并发路径已消费）。 */
+  consumeResult(eventId: unknown): boolean {
+    if (typeof eventId !== 'string') return false
+    return this.pending.delete(eventId)
   }
 }

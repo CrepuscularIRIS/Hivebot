@@ -63,6 +63,24 @@ function requestOf(args: unknown): Record<string, unknown> {
   return typeof request === 'object' && request !== null ? (request as Record<string, unknown>) : {}
 }
 
+/**
+ * R1 合法 bundle 名（renderer 边界第一道）：scoped `@scope/name` 或裸 npm 名（npm 小写
+ * 字符集，段不以 '.' 开头）。拒绝 ../、@scope/..、绝对路径、多斜杠、反斜杠——SDK 侧
+ * readConnectorRows 用它们做 join(profileDir,'node_modules',name) 路径拼接。
+ * 与 app/sdk/src/p2temp/index.mjs 的 BUNDLE_NAME_RE 是同一规则（跨包各持一份）。
+ */
+export const BUNDLE_NAME_RE = /^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/
+
+/** R1：逐名检查；返回首个非法名的拒绝消息或 undefined（全通过）。 */
+export function invalidBundleNameReason(names: readonly unknown[]): string | undefined {
+  for (const name of names) {
+    if (typeof name !== 'string' || !BUNDLE_NAME_RE.test(name)) {
+      return `connector bundle name is not a valid npm package name: ${JSON.stringify(name)} (no path segments)`
+    }
+  }
+  return undefined
+}
+
 /** §2.2 参数约束；返回拒绝结果或 undefined（通过）。 */
 function checkArgs(method: string, args: unknown, ledger: EventsLedger): M1Result | undefined {
   if (method === 'pluginManager/installBundle') {
@@ -99,6 +117,9 @@ function checkArgs(method: string, args: unknown, ledger: EventsLedger): M1Resul
       if (!Array.isArray(connectors) || connectors.length === 0 || !connectors.every((c) => typeof c === 'string')) {
         return invalid('connectors must be a non-empty array of strings')
       }
+      // R1：名字形状校验（renderer 边界第一道；SDK readConnectorRows 兜底第二道）
+      const badName = invalidBundleNameReason(connectors)
+      if (badName !== undefined) return invalid(badName)
     }
     return undefined
   }
@@ -161,6 +182,14 @@ export function registerM1Api(deps: M1Deps = {}): (req: M1Request) => Promise<M1
       return forbidden('dsh connection not configured')
     }
     const result = await deps.dsh.rpc(method, req.args)
+    // R10：审批作答先发送后消费——rpc ok 才下账；失败（ok:false 或 throw）pending 保留可重试。
+    // consume 为 false = 并发路径已消费（gateway 同样只会收下一份作答），仅记日志。
+    if (method === '$events/result' && result.ok) {
+      const eventId = (req.args as { eventId?: unknown } | undefined)?.eventId
+      if (!ledger.consumeResult(eventId)) {
+        log(`$events/result consume skipped (eventId no longer pending after rpc): ${JSON.stringify(eventId)}`)
+      }
+    }
     return method === 'agentPresets/list' ? filterP2tempPresets(result) : result
   }
 }

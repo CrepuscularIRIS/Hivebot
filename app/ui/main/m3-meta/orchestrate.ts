@@ -3,6 +3,7 @@
 // presetIdOf 直接 import app/sdk/src/p2temp/preset-id.mjs（REUSE v1.1，不复制第二份）。
 import { existsSync } from 'node:fs'
 import { normalizedConnectors, presetIdOf } from './preset-id'
+import { invalidBundleNameReason } from '../m1-api'
 import type { BotsMetaStore } from './store'
 
 export type ConnectionRpcResult<T = unknown> =
@@ -71,6 +72,10 @@ export async function createBotWithConnectors(
   ) {
     return invalid('connectors must be a non-empty array of bundle names')
   }
+  // R1：bundle 名形状校验（#4 经 wrapM1WithOrchestration 直达此处，不经 m1-api checkArgs；
+  // 规则同 m1-api 的 BUNDLE_NAME_RE，SDK readConnectorRows 兜底第二道）。
+  const badBundleName = invalidBundleNameReason(connectors)
+  if (badBundleName !== undefined) return invalid(badBundleName)
   if (agentPreset !== undefined && (typeof agentPreset !== 'string' || agentPreset.trim() === '')) {
     return invalid('agentPreset must be a non-empty preset id')
   }

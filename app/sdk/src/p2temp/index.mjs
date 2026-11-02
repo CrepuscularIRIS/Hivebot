@@ -110,8 +110,21 @@ function presetBroken(id, diagnostic) {
   })
 }
 
+/** U-19 R1：合法 bundle 名 = scoped `@scope/name` 或裸 npm 名（npm 小写字符集，段不以 '.' 开头）。
+ * 拒绝 ../、@scope/..、绝对路径、多斜杠、反斜杠——它们都会在下方 join(profileDir,'node_modules',name)
+ * 拼接处逃出 profile。与 app/ui/main/m1-api/index.ts 的 BUNDLE_NAME_RE 是同一规则（跨包各持一份）。 */
+const BUNDLE_NAME_RE = /^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/
+
 /** 读一个已安装连接器 bundle 的 insert 行（patch 内容须为 JSON）。 */
 export async function readConnectorRows(profileDir, name) {
+  // U-19 R1：名字形状校验先于一切文件访问（readConnectorRows 是 connectors 名进入
+  // 路径拼接的唯一消费点；#4 与 #21 恢复重放都经过这里）。
+  if (typeof name !== 'string' || !BUNDLE_NAME_RE.test(name)) {
+    throw connectorUnavailable(
+      name,
+      `p2temp: connector ${JSON.stringify(name)} is not a valid bundle name (npm package name required; no path segments)`,
+    )
+  }
   const dir = join(profileDir, 'node_modules', name)
   let manifest
   try {

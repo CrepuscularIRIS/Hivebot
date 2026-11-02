@@ -43,3 +43,5 @@
 2026-11-02 U-18 builder 实测 vitest 5.0.5 teardown 坑 → teardown 会以零参调用 vi.mock 透传的 mock 一次，真 fs.rename 收到 undefined 抛 TypeError 污染已过的测试——测试里 mock fs 原语时在 mock 函数内对无参调用返回 undefined 并注释，别依赖 teardown 顺序。
 
 2026-11-02 verifier 把 VERIFY-U-21.md 写在 worktree 的 work/ 下，worktree remove 时随树丢失（GU 席无法独立核对）→ 派发提示词必须写明「报告一律写主仓 /home/lingxufeng/bot/work/...，绝不写 worktree 内的 work/」；主会话合并前应确认 VERIFY 文件已在主仓出现，再 worktree remove。
+
+2026-11-02 U-23 与 U-25 各自验证绿，合并后名字接缝断（wrapper 名 ≠ entry.name，market.spec main 上 2 红）——GU 前没人跑过合并后全量 → 两分支改动有交叠域（哪怕文件级零交集）时，合并后立即 main 全量回归是派 GU 前的硬闸门，不靠评审席读代码代跑。

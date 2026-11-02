@@ -76,3 +76,5 @@ v2 · 2026-11-02 · director（Opus 5.5）· 回应 `work/p4-ui/panels/G2-r1.md`
 | A-M5 区域与屏障钩子 | 已改 | U-13 ⑦ 屏障；W2 各行区域补 `tests/e2e/<页>*`；U-22 区域补 dev-min（删除） |
 | A-M6 D12① 放过 127.0.0.1 | 已改 | U-31 ②：`pbots-app://` 外请求数 === 0，跑生产 build |
 | A-LOW 其余 6 条 | 全收 | SHA 锚定 + bootstrap → U-00 ⑥/④(5)；关 renderer 澄清 → U-00 ④(4)；+2 条拒绝测试 → U-00 ②；ledger 联调 → U-15 ③；主 bot 重建分支 → U-21 ①；B/C 措辞 → §6-4 |
+
+> GU-PDC（2026-11-02 17:35）修订：U-31 除原范围外显式补——D10b 创建中重载 E2E、D7 直接调用侧（failNext+失效 bot 走真实 UI）；D8「省略路径」在 UI 不存在，关项。U-26 承接：接缝/D5/#11 分页/MEDIUM4。

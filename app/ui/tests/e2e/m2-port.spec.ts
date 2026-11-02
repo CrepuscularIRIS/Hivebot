@@ -208,7 +208,9 @@ test('① 10s 超时：socket 一直不就绪 → readyState=3 派发 error（�
   const handoff = mkdtempSync(join(tmpdir(), 'bot-U-12-badhandoff-'))
   writeFileSync(join(handoff, 'base-url'), 'http://127.0.0.1:9/')
   writeFileSync(join(handoff, 'launch-token'), 'nope')
-  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: handoff } })
+  // U-17：start() 现按指数退避重试（默认 30s 才放弃）；此处收紧首连超时，保持本用例
+  // 观察 M2 自身 10s 超时的原始意图（闸门随 start 失败分支尽早放行）。
+  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: handoff, PBOTS_DSH_START_TIMEOUT_MS: '500' } })
   try {
     await waitDev(shell.page)
     const rid = await shell.page.evaluate(() => (window as unknown as { __pbotsDev: { newSocket(): { requestId: string } } }).__pbotsDev.newSocket().requestId)
@@ -222,7 +224,14 @@ test('① 10s 超时：socket 一直不就绪 → readyState=3 派发 error（�
     }, rid)
     expect(handle.error).toContain('timed out')
     expect(handle.relays.filter((r2) => r2.ports > 0)).toEqual([]) // 任何时点都不带端口
-    const timeouts = await shell.app.evaluate(() => (globalThis as unknown as { __pbotsM2: { stats: { timeouts: number } } }).__pbotsM2.stats.timeouts)
+    // U-17：页面侧 10s 定时器与 main 侧 awaitLive 超时几乎同刻触发，立即读 stats 有毫秒级
+    // 竞态 —— 有界轮询等 main 侧计数落地（仍断言 main 确实走了超时分支）。
+    let timeouts = 0
+    for (const deadline = Date.now() + 5_000; Date.now() < deadline;) {
+      timeouts = await shell.app.evaluate(() => (globalThis as unknown as { __pbotsM2: { stats: { timeouts: number } } }).__pbotsM2.stats.timeouts)
+      if (timeouts >= 1) break
+      await new Promise((r) => setTimeout(r, 100))
+    }
     expect(timeouts).toBeGreaterThanOrEqual(1)
   } finally { await shell.stop() }
 })

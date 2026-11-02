@@ -101,11 +101,14 @@ export async function createBotWithConnectors(
     return { ok: false, error: { code: 'pbots/storage', message: `bots.json write failed: ${String(error)}`, details: {} } }
   }
 
-  // 5 调 dsh #4；!ok 原样透传（含 details）
+  // 5 调 dsh #4；!ok 原样透传（含 details）。typert wire 单参数方法包 {request:…} 壳
+  //   （U-15 联调实测：裸对象被 gateway arguments-invalid 拒 'unexpected "connectors"'）
   const result = await dsh.rpc('p2temp/session.createWithConnectors', {
-    connectors: names,
-    agentPreset: resolved,
-    ...(cwd !== undefined ? { cwd } : {}),
+    request: {
+      connectors: names,
+      agentPreset: resolved,
+      ...(cwd !== undefined ? { cwd } : {}),
+    },
   })
   if (!result.ok) return result
 

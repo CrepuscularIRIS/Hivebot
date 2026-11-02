@@ -107,8 +107,8 @@ describe('createBotWithConnectors · D8 agentPreset 单点解析', () => {
     expect(meta.recipes[expectedId]).toEqual({ agentPreset: 'p2-alpha', connectors: ['a', 'b'] })
     const createCalls = dsh.calls.filter((c) => c.method === 'p2temp/session.createWithConnectors')
     expect(createCalls.map((c) => c.args)).toEqual([
-      { connectors: ['a', 'b'], agentPreset: 'p2-alpha' },
-      { connectors: ['a', 'b'], agentPreset: 'p2-alpha' },
+      { request: { connectors: ['a', 'b'], agentPreset: 'p2-alpha' } }, // typert wire {request:…} 壳（U-15 联调修正）
+      { request: { connectors: ['a', 'b'], agentPreset: 'p2-alpha' } },
     ])
     // 缺省解析恰好调一次未过滤 #1；显式传入不调
     expect(dsh.calls.filter((c) => c.method === 'agentPresets/list').length).toBe(1)

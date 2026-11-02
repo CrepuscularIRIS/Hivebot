@@ -62,7 +62,7 @@ describe('restoreRecipes', () => {
     expect(dsh.calls.map((c) => c.method)).toEqual(['p2temp/preset.ensure', 'p2temp/preset.ensure'])
     // typert wire 壳（U-14 对真 runtime 实测：无壳被 gateway 拒 arguments-invalid）
     expect(dsh.calls.map((c) => c.args)).toEqual([
-      { request: { agentPreset: 'p2-alpha', connectors: ['a'] } },
+      { request: { agentPreset: 'p2-alpha', connectors: ['a'] } }, // typert wire {request:…} 壳（U-14/U-15 各自真链路实测）
       { request: { agentPreset: 'p2-beta', connectors: ['b'] } },
     ])
   })

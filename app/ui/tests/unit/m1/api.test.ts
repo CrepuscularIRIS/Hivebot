@@ -142,6 +142,23 @@ describe('§2.2 installBundle 强制 enabled:false（invalid-args）', () => {
     expect(dsh.apiCount).toBe(1)
     expect(dsh.calls[0]).toEqual({ method: 'pluginManager/installBundle', args: ['spec', { enabled: false }] })
   })
+
+  // U-15 联调实测 wire 形状：typert 命名参数 {spec, options}（位置数组会被 gateway 拒）
+  it('对象形态 {spec, options:{enabled:false}} → 透传 dsh（真链路形状）', async () => {
+    const { api, dsh } = makeApi()
+    const args = { spec: '/tmp/bundle', options: { enabled: false } }
+    const res = await api({ method: 'pluginManager/installBundle', args })
+    expect(res).toEqual({ ok: true, value: null })
+    expect(dsh.apiCount).toBe(1)
+    expect(dsh.calls[0]).toEqual({ method: 'pluginManager/installBundle', args })
+  })
+
+  it('对象形态省略 options → pbots/invalid-args，dsh 计数 === 0', async () => {
+    const { api, dsh } = makeApi()
+    const res = await api({ method: 'pluginManager/installBundle', args: { spec: '/tmp/bundle' } })
+    expect(expectFail(res).code).toBe('pbots/invalid-args')
+    expect(dsh.apiCount).toBe(0)
+  })
 })
 
 describe('§2.2 $events/result 校验（ledger）', () => {

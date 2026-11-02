@@ -66,7 +66,11 @@ function requestOf(args: unknown): Record<string, unknown> {
 /** §2.2 参数约束；返回拒绝结果或 undefined（通过）。 */
 function checkArgs(method: string, args: unknown, ledger: EventsLedger): M1Result | undefined {
   if (method === 'pluginManager/installBundle') {
-    const opts = Array.isArray(args) ? args[1] : undefined
+    // wire 形状：typert 命名参数 {spec, options}（U-15 联调实测：位置数组被 gateway 拒
+    // 'Remote payload must contain exactly one plain-object args field'）；数组分支保留兼容旧口径
+    const opts = Array.isArray(args)
+      ? args[1]
+      : (typeof args === 'object' && args !== null ? (args as { options?: unknown }).options : undefined)
     if (typeof opts !== 'object' || opts === null || (opts as { enabled?: unknown }).enabled !== false) {
       return invalid('installBundle requires an options object with enabled === false')
     }

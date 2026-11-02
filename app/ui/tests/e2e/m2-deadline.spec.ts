@@ -21,12 +21,12 @@ function sendPrompt(client: SdkRuntime['client'], sessionId: string, prompt: str
 
 async function waitEventsReady(page: Page, timeout = 20_000): Promise<string> {
   await page.waitForFunction(
-    () => (window as unknown as { __pbotsCarrier?: { events: { clientId?: string } } }).__pbotsCarrier?.events.clientId !== undefined,
+    () => (window as unknown as { __pbotsDev?: { events: { clientId?: string } } }).__pbotsDev?.events.clientId !== undefined,
     undefined,
     { timeout },
   )
   const clientId = await page.evaluate(() =>
-    (window as unknown as { __pbotsCarrier: { events: { clientId?: string } } }).__pbotsCarrier.events.clientId)
+    (window as unknown as { __pbotsDev: { events: { clientId?: string } } }).__pbotsDev.events.clientId)
   expect(typeof clientId).toBe('string')
   return clientId as string
 }
@@ -34,15 +34,15 @@ async function waitEventsReady(page: Page, timeout = 20_000): Promise<string> {
 async function waitWaterfall(page: Page, sessionId: string, timeout = 20_000): Promise<{ eventId: string }> {
   await page.waitForFunction(
     (sid) => {
-      const items = (window as unknown as { __pbotsCarrier: { events: { items: Array<{ type?: string; event?: string; agentId?: string; eventId?: string }> } } }).__pbotsCarrier.events.items
+      const items = (window as unknown as { __pbotsDev: { events: { items: Array<{ type?: string; event?: string; agentId?: string; eventId?: string }> } } }).__pbotsDev.events.items
       return items.some((it) => it.type === 'waterfall' && it.event === 'approval/request' && it.agentId === sid)
     },
     sessionId,
     { timeout },
   )
   const hit = await page.evaluate((sid) =>
-    (window as unknown as { __pbotsCarrier: { events: { items: Array<{ type?: string; event?: string; agentId?: string; eventId?: string }> } } })
-      .__pbotsCarrier.events.items.find((it) => it.type === 'waterfall' && it.event === 'approval/request' && it.agentId === sid),
+    (window as unknown as { __pbotsDev: { events: { items: Array<{ type?: string; event?: string; agentId?: string; eventId?: string }> } } })
+      .__pbotsDev.events.items.find((it) => it.type === 'waterfall' && it.event === 'approval/request' && it.agentId === sid),
     sessionId)
   return { eventId: hit.eventId as string }
 }

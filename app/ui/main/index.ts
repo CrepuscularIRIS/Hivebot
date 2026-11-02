@@ -10,10 +10,12 @@ import { createMainWindow } from './window'
 import { createReadyGate } from './ready'
 import { DshConnection } from './dsh/connect'
 import { EventsLedger } from './dsh/ledger'
-import { registerM1Api } from './m1-api'
+import { m1Ledger, registerM1Api, type M1Request, type M1Result } from './m1-api'
 import { registerM2Mux } from './m2-mux'
 import { registerM3Meta } from './m3-meta'
 import { ensureThenReady, restoreGated } from './m3-meta/ensure'
+import { createBotWithConnectors, type CreateBotArgs } from './m3-meta/orchestrate'
+import type { BotsMetaStore } from './m3-meta/store'
 
 if (process.type === 'browser') {
   // 必须在 app ready 前注册；单测导入本模块时（纯 node）跳过。
@@ -80,6 +82,25 @@ async function serveAppDocument(request: Request, root: string): Promise<Respons
   })
 }
 
+/**
+ * U-15 三桥接线：#4 方法路由进 M3 编排（CONTRACT §3.1「#4 由 main 编排，renderer 只发一次 M1」）。
+ * 编排自带校验（connectors 非空数组、agentPreset 非 p2temp-*、缺省解析 defaultId），拒绝时 dsh 不被调；
+ * 其余方法原样走 M1 基座（白名单/D9/参数约束由 U-11 层承担）。typert wire 的 {request:…} 壳在此解包。
+ */
+export function wrapM1WithOrchestration(
+  base: (req: M1Request) => Promise<M1Result>,
+  dsh: DshConnection | undefined,
+  store: BotsMetaStore,
+): (req: M1Request) => Promise<M1Result> {
+  return async function wired(req: M1Request): Promise<M1Result> {
+    if (req?.method === 'p2temp/session.createWithConnectors' && dsh !== undefined) {
+      const request = (req.args as { request?: unknown } | undefined)?.request ?? req.args
+      return createBotWithConnectors(dsh, store, request as CreateBotArgs)
+    }
+    return base(req)
+  }
+}
+
 async function main(): Promise<void> {
   const ready = createReadyGate()
   await app.whenReady()
@@ -117,17 +138,19 @@ async function main(): Promise<void> {
       log: (m: string) => console.log(`[spike] ${m}`),
     })
   } else {
-    const m1 = registerM1Api({ dsh })
+    // U-15 三桥接线：M3 先建（M1 的 #4 编排写它的 store）；M1+M2+M3 共享同一
+    // store/ledger（HANDOFF-MED：$events/result 校验读 m2 tap 写入的同一台账实例）。
+    const m3 = registerM3Meta({ dsh, dataDir: process.env.PBOTS_DATA_DIR ?? app.getPath('userData') })
+    const m1 = wrapM1WithOrchestration(registerM1Api({ dsh }), dsh, m3.store)
     // U-14（CONTRACT #21）：#21 恢复全部 settle 前 M1/M2 不就绪 —— 入口挂 restore 闸门
     const m1Gated = restoreGated(ready, m1)
     ipcMain.handle('pbots:api', (event, req) => { assertSender(event); return m1Gated(req) })
-    const m2 = registerM2Mux({ dsh })
+    const m2 = registerM2Mux({ dsh, ledger: m1Ledger })
     const m2Gated = restoreGated(ready, m2) as (event: Parameters<typeof m2>[0], req: Parameters<typeof m2>[1]) => void
     ipcMain.on('pbots:mux-port', (event, req) => {
       try { assertSender(event) } catch (error) { console.warn(error); return }
       void m2Gated(event, req)
     })
-    const m3 = registerM3Meta({ dsh, dataDir: process.env.PBOTS_DATA_DIR ?? app.getPath('userData') })
     ipcMain.handle('pbots:bots-meta', (event, req) => { assertSender(event); return m3.handler(req) })
 
     // U-14 先 restore 后 ready：dsh 连上 → 读盘完成 → #21 逐个 ensure（30s each 超时按
@@ -142,8 +165,9 @@ async function main(): Promise<void> {
         },
       )
     }
+    // main 侧观测面（U-15 ③ 断言口径：错 clientId 拒绝时 dsh /api 计数 === 0；不开新 IPC 通道）
+    ;(globalThis as { __pbotsDsh?: DshConnection }).__pbotsDsh = dsh
   }
-
   await mainWindow.loadURL(process.env.PBOTS_APP_URL ?? `${SCHEME}://app/`)
 
   app.on('window-all-closed', () => {

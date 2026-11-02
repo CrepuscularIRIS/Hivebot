@@ -21,6 +21,14 @@
 // closed，去重交给用户）。当前有效模式经 ctx.get('sandboxPolicy')
 // .resolve({session}) 读取，与 tool-bash resolveSandboxPolicy 同一暴露面
 // （必须按方法调用保留 this，拆成裸函数会丢服务实例）。
+//
+// T-12.f1（增量 L 复审 R2）：显式 approval=never 时整个策略放行。死锁链
+// （修复前）：本策略默认挂载后，用户切 danger-full-access preset
+// （approval=never），普通 bash 在这里返回 ask，而 user-approval 对 never
+// 在派发任何 answerer 之前就确定性 rejected（user-approval index.ts:301
+// decide），于是 bash 全灭且永远没人被询问。never 的语义是「该 session
+// 明确不走审批」，此时再问不是安全是死锁；精确匹配 'never' 才放行，
+// 默认 preset（workspace-write + ask）与一切中间值行为不变。
 export const name = 'p2sdk-shell-ask'
 
 /** 严格更宽表，来源: deepseek-harness@ce7073d packages/sandbox/sandbox/src/escalation.ts WIDER_MODES。 */
@@ -34,6 +42,7 @@ const STRICTLY_WIDER = {
 export function apply(ctx) {
   ctx.on('tools/pre-execute', (exec, next) => {
     if (exec.name !== 'bash') return next()
+    if (approvalNever(ctx, exec)) return next()
     const args = exec.arguments
     const requested = args !== null && typeof args === 'object' ? args.sandbox_permissions : undefined
     const ask = { kind: 'ask', reason: 'p2sdk policy: ordinary shell commands require user approval' }
@@ -48,4 +57,43 @@ export function apply(ctx) {
     if (typeof effective === 'string' && (STRICTLY_WIDER[effective] ?? []).includes(requested)) return next()
     return ask
   })
+}
+
+/**
+ * 该 bash 调用所属 session 的有效审批策略是否为显式 'never'（T-12.f1）。
+ *
+ * 折叠顺序与暴露面（来源: deepseek-harness@ce7073d）：
+ * - session override：ApprovalService.overrideOf(session)——读 session 的
+ *   approval/policy 事件投影（packages/interaction/user-approval/src/
+ *   index.ts:279-281）；preset 切换经 setApprovalPolicy 写入该事件
+ *   （packages/interaction/permission-presets/src/index.ts:398-418 set/apply），
+ *   新 session 由 pinInitialPermission 补写（:429-457，默认 preset 也写
+ *   'ask'，所以 override 有值 ≠ never）。
+ * - 部署默认：user-approval 插件 config.policy（构造器 public config，
+ *   user-approval index.ts:176-178；base bundle 在
+ *   DSH_PERMISSION_MODE=danger-full-access 时配 never，dsh-base
+ *   cordis.patch.yml approval 行）。
+ * - 折叠 `override ?? config ?? 'ask'` 镜像上游 effectivePolicy（user-approval
+ *   index.ts:270-272）与 permission-presets derive（index.ts:348-361）。
+ *
+ * 读不到服务 / 拿不到 session / overrideOf 抛错 → false（照旧 ask，fail
+ * closed：无法证明 never 就不放宽）。可选服务一律 ctx.get，不用 ctx.approval
+ * 属性代理（deepseek-harness packages/CLAUDE.md postmortem 0001）。
+ */
+function approvalNever(ctx, exec) {
+  const svc = typeof ctx.get === 'function' ? ctx.get('approval') : undefined
+  if (svc === null || typeof svc !== 'object') return false
+  const session = exec.agent === undefined ? undefined : exec.agent.session
+  let override
+  if (session !== undefined && typeof svc.overrideOf === 'function') {
+    try {
+      override = svc.overrideOf(session)
+    } catch {
+      // 投影状态读不出：按无 override 处理（fail closed 方向）。
+      override = undefined
+    }
+  }
+  const config = svc.config
+  const configured = config !== null && typeof config === 'object' ? config.policy : undefined
+  return (override ?? configured ?? 'ask') === 'never'
 }

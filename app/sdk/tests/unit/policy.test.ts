@@ -1,7 +1,7 @@
 // Unit tests for the shell-ask policy decision itself (src/policy/shell-ask.mjs).
 // The plugin's in-runtime wiring (loader row, approval round-trip over $events)
 // is covered end-to-end by tests/e2e/approval.test.ts.
-import { expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import * as plugin from '../../src/policy/shell-ask.mjs'
 
 interface RecordedListener {
@@ -14,9 +14,11 @@ interface RecordedListener {
  * `effectiveMode` is given, ctx.get('sandboxPolicy') serves a stub resolving
  * that mode (the same service tool-bash reads at
  * packages/shell/tool-bash/src/index.ts resolveSandboxPolicy); without it the
- * service is absent, as in a no-sandbox composition.
+ * service is absent, as in a no-sandbox composition. `approval` stubs
+ * ctx.get('approval') (the real service is dsh-user-approval: overrideOf +
+ * config.policy).
  */
-function fakeCtx(effectiveMode?: string): { listeners: RecordedListener[] } & {
+function fakeCtx(effectiveMode?: string, approval?: object): { listeners: RecordedListener[] } & {
   on(event: string, listener: RecordedListener['listener']): void
   get(name: string): unknown
 } {
@@ -30,14 +32,25 @@ function fakeCtx(effectiveMode?: string): { listeners: RecordedListener[] } & {
       if (name === 'sandboxPolicy' && effectiveMode !== undefined) {
         return { resolve: () => ({ mode: effectiveMode }) }
       }
+      if (name === 'approval' && approval !== undefined) {
+        return approval
+      }
       return undefined
     },
   }
 }
 
+/** An approval-service stub: overrideOf(session) → override, config.policy → configured. */
+function approvalSvc(override?: string, configured?: string, throws = false): object {
+  return {
+    overrideOf: throws ? () => { throw new Error('projection unavailable') } : () => override,
+    config: configured === undefined ? {} : { policy: configured },
+  }
+}
+
 /** The pre-execute listener apply() registered for one effective mode, or fail. */
-function registeredListener(effectiveMode?: string): RecordedListener['listener'] {
-  const ctx = fakeCtx(effectiveMode)
+function registeredListener(effectiveMode?: string, approval?: object): RecordedListener['listener'] {
+  const ctx = fakeCtx(effectiveMode, approval)
   plugin.apply(ctx as never)
   expect(ctx.listeners, 'the plugin registers exactly one listener').toHaveLength(1)
   expect(ctx.listeners[0].event).toBe('tools/pre-execute')
@@ -116,4 +129,64 @@ it('treats absent/null arguments as ordinary (asks)', () => {
   const listener = registeredListener('workspace-write')
   expect(listener({ name: 'bash' }, next)).toMatchObject({ kind: 'ask' })
   expect(listener({ name: 'bash', arguments: null }, next)).toMatchObject({ kind: 'ask' })
+})
+
+// T-12.f1 (增量 L 复审 R2): the session's effective approval policy folds as
+// overrideOf(session) ?? config.policy ?? 'ask' — the same fold as upstream
+// user-approval effectivePolicy (packages/interaction/user-approval/src/
+// index.ts:270-272) and permission-presets derive (permission-presets/src/
+// index.ts:348-361). An explicit 'never' (danger-full-access preset switch, or
+// the base bundle's DSH_PERMISSION_MODE=danger-full-access config) must let
+// bash through: user-approval rejects every ask deterministically under never
+// (index.ts:301), so an ask here is a guaranteed deny with nobody prompted —
+// the R2 deadlock. Every other value (the pinned 'ask' of the default preset
+// included) keeps asking, so the default preset's behavior is unchanged.
+describe('T-12.f1: explicit approval=never releases the ask', () => {
+  const agent = { session: {} }
+
+  it('delegates an ordinary bash call when the session override is never', () => {
+    const listener = registeredListener('danger-full-access', approvalSvc('never'))
+    expect(listener({ name: 'bash', agent, arguments: { command: 'ls', description: 'x' } }, next))
+      .toBe(nextResult)
+  })
+
+  it('delegates even with sandbox_permissions set (an ask under never is a guaranteed deny)', () => {
+    const listener = registeredListener('danger-full-access', approvalSvc('never'))
+    expect(listener({
+      name: 'bash', agent,
+      arguments: { command: 'ls', description: 'x', sandbox_permissions: 'danger-full-access', justification: 'repeat probe' },
+    }, next)).toBe(nextResult)
+  })
+
+  it('delegates when only the deployment config policy is never (no session override yet)', () => {
+    const listener = registeredListener('danger-full-access', approvalSvc(undefined, 'never'))
+    expect(listener({ name: 'bash', agent, arguments: { command: 'ls', description: 'x' } }, next))
+      .toBe(nextResult)
+  })
+
+  it('still asks when the override is the default preset pinned ask', () => {
+    const listener = registeredListener('workspace-write', approvalSvc('ask'))
+    expect(listener({ name: 'bash', agent, arguments: { command: 'ls', description: 'x' } }, next))
+      .toEqual(askShape)
+  })
+
+  it('still asks for any non-never policy value (only exact never releases)', () => {
+    const listener = registeredListener('workspace-write', approvalSvc('always'))
+    expect(listener({ name: 'bash', agent, arguments: { command: 'ls', description: 'x' } }, next))
+      .toEqual(askShape)
+  })
+
+  it('still asks when the approval service or its state is unreadable (fail closed)', () => {
+    const noSvc = registeredListener('workspace-write')
+    expect(noSvc({ name: 'bash', agent, arguments: { command: 'ls', description: 'x' } }, next)).toEqual(askShape)
+    const noOverrideNoConfig = registeredListener('workspace-write', approvalSvc(undefined, undefined))
+    expect(noOverrideNoConfig({ name: 'bash', agent, arguments: { command: 'ls', description: 'x' } }, next)).toEqual(askShape)
+    const throwing = registeredListener('workspace-write', approvalSvc(undefined, undefined, true))
+    expect(throwing({ name: 'bash', agent, arguments: { command: 'ls', description: 'x' } }, next)).toEqual(askShape)
+  })
+
+  it('still asks when the exec carries no agent/session (cannot prove never)', () => {
+    const listener = registeredListener('workspace-write', approvalSvc('never'))
+    expect(listener({ name: 'bash', arguments: { command: 'ls', description: 'x' } }, next)).toEqual(askShape)
+  })
 })

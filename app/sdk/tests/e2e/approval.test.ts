@@ -96,13 +96,14 @@ interface ApprovalRuntime extends Runtime {
  * provider, so a green ① proves the default chain asks (REVIEW R3/R5/R13's
  * "no P2SDK_PATCH set" trigger). PRESET_ONLY additionally disables the
  * default policy row to reproduce the pure preset composition red case.
+ * `extraEnv` adds child env (T-12.f1 passes DSH_PERMISSION_MODE).
  */
-async function launchApprovalRuntime(): Promise<ApprovalRuntime> {
+async function launchApprovalRuntime(extraEnv: Record<string, string> = {}): Promise<ApprovalRuntime> {
   clearRealKeys()
   const patches = PRESET_ONLY
     ? `${buildFakeOverlay()}:${buildNoAskOverlay()}`
     : buildFakeOverlay()
-  const rt = await launchRuntime({ env: { P2SDK_PATCH: patches } })
+  const rt = await launchRuntime({ env: { P2SDK_PATCH: patches, ...extraEnv } })
   return {
     ...rt,
     writeScript(sessionId: string, calls: object[]) {
@@ -384,6 +385,53 @@ it('D8: a bash call whose sandbox_permissions repeats the effective mode still a
     await waitForTurnEnds(stream.frames, 2)
     expect(existsSync(canaryAllowed), 'approved repeated-mode call created the canary').toBe(true)
 
+    stream.stop()
+  } finally {
+    feed.close()
+    await rt.stop()
+  }
+})
+
+// T-12.f1 (增量 L 复审 R2): a session running under an EXPLICIT
+// danger-full-access preset (approval=never) must not deadlock on ordinary
+// bash. The base bundle switches the whole composition with one env
+// (dsh-base cordis.patch.yml: sandbox-policy mode ← DSH_PERMISSION_MODE, and
+// the approval row policy=never when it is 'danger-full-access');
+// permission-presets then pins every fresh session to that preset
+// (approval/policy: never session override). Before the fix the default
+// shell-ask row returned {kind:'ask'} for every ordinary bash call and
+// user-approval resolved it 'rejected' BEFORE dispatching any prompt
+// (user-approval index.ts:301), so bash failed deterministically with nobody
+// asked — the R2 deadlock. The fix reads the session's effective approval
+// policy (override ?? config, same fold as upstream effectivePolicy) and
+// releases only on exact 'never'.
+it('R2: an explicit danger-full-access preset (approval=never) runs ordinary bash without asking', async () => {
+  const rt = await launchApprovalRuntime({ DSH_PERMISSION_MODE: 'danger-full-access' })
+  const feed = await openEvents(rt)
+  try {
+    // Prove the composition really is danger-full-access + never before
+    // asserting the release: default preset catalog and the session's pinned
+    // durable events must both show it (else the green would be vacuous).
+    const catalog = (await rt.client.call('permissionPresets/catalog', {})) as { defaultPreset: string }
+    expect(catalog.defaultPreset, 'the deployment default preset switched').toBe('danger-full-access')
+
+    const s1 = await createSessionAt(rt.client, rt.home)
+    const projections = (await rt.client.call('session/projections', { request: { sessionId: s1 } })) as {
+      values: { permissions?: { currentValue?: string } }
+    }
+    expect(projections.values.permissions?.currentValue, 'the fresh session pinned the preset').toBe('danger-full-access')
+
+    const canary = join(rt.home, 'workspace', 'canary-dfa')
+    rt.writeScript(s1, [bashCall(`touch ${canary}`), textCall('dfa 完成')])
+    const stream = await follow(rt.client, s1)
+
+    await sendPrompt(rt.client, s1, 'dfa 摸 canary')
+    await waitForTurnEnds(stream.frames, 1)
+    expect(existsSync(canary), 'ordinary bash ran under the explicit never preset').toBe(true)
+    expect(
+      feed.frames.some((f) => f.type === 'waterfall' && f.event === 'approval/request' && f.agentId === s1),
+      'no approval request was dispatched: the release came from the policy reading never',
+    ).toBe(false)
     stream.stop()
   } finally {
     feed.close()

@@ -1,0 +1,271 @@
+// 产品 store（U-21/PAB，PAB-final R0：由 dev-min/carrier.ts 演化，三桥接口不变）：
+// - 一条 CarrierSocket（= 一个 MessagePort）上跑 $events + 所有 session/follow 流；断链 300ms 重开，follow 全部重挂。
+// - bot 列表 = #9 session/list（wire 壳 {_request:{}}）+ M3 bots-meta；主 bot 缺失/失效 → #3 建默认 → #20 patch（C §5）。
+// - 运行态/活跃度来自 $events emit `api-session/status|activity`（覆盖未打开的 bot）；审批卡只来自 waterfall。
+// - 侧栏顺序首载定序后冻结（R9）；草稿按 bot 隔离（R21）。
+// E2E 观测面 window.__pbotsDev 与 dev-min 同形（m2-port / m2-deadline spec 依赖），只读旁路，不开新 IPC。
+import { useSyncExternalStore } from 'react'
+import { CarrierSocket, pageEnv } from '../carrier'
+import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../carrier/mux'
+import { initView, reduceFollow, type SessionView } from '../plugins/session/reduce'
+
+export interface Summary { sessionId: string; title: string | null; preset: string | null; running: boolean; updatedAt: number }
+export interface Approval {
+  eventId: string; agentId: string; toolName: string; callId: string | null; reason: string | null
+  phase: 'idle' | 'submitting' | 'submitted' | 'error'; value: 'allowed-once' | 'rejected' | null; error: string | null
+}
+export interface Recipe { agentPreset: string; connectors: string[]; live: boolean }
+export interface Meta { mainBotId: string | null; recipes: Record<string, Recipe> }
+export interface ApiResult { ok: boolean; value?: unknown; error?: { code: string; message: string } }
+
+export interface State {
+  boot: 'starting' | 'ready' | 'failed'
+  bootError: string | null
+  online: boolean
+  order: string[]
+  summaries: Record<string, Summary>
+  meta: Meta
+  views: Record<string, SessionView>
+  approvals: Approval[]
+  unread: Record<string, true>
+  selected: string | null
+  drafts: Record<string, string>
+  flash: string | null
+  notice: string | null
+}
+
+/** 冷启动等待上限（R15：超时换「引擎没有响应  重试 →」）。 */
+export const BOOT_TIMEOUT_MS = 60_000
+
+let state: State = {
+  boot: 'starting', bootError: null, online: false, order: [], summaries: {}, meta: { mainBotId: null, recipes: {} },
+  views: {}, approvals: [], unread: {}, selected: null, drafts: {}, flash: null, notice: null,
+}
+const listeners = new Set<() => void>()
+const set = (patch: Partial<State>): void => { state = { ...state, ...patch }; for (const l of [...listeners]) l() }
+const subscribe = (l: () => void): (() => void) => { listeners.add(l); return () => { listeners.delete(l) } }
+export const getState = (): State => state
+export const useStore = (): State => useSyncExternalStore(subscribe, getState)
+
+export function api(method: string, args?: unknown): Promise<ApiResult> {
+  if (window.pbots === undefined) return Promise.resolve({ ok: false, error: { code: 'pbots/unavailable', message: 'preload bridge missing' } })
+  return window.pbots.api(method, args)
+}
+
+type AnyRecord = Record<string, unknown>
+const rec = (v: unknown): AnyRecord => (typeof v === 'object' && v !== null ? v as AnyRecord : {})
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
+
+// ---- carrier：$events + follow 共用一条 mux ----
+const dev = { events: { clientId: undefined as string | undefined, items: [] as unknown[] }, clientIds: [] as string[], sessions: 0, sockets: [] as DevSocketHandle[] }
+let mux: PageMux | undefined
+const followed = new Set<string>()
+
+/** 轮询 stream.items（只增不改）：每到新 item 交给 onItem，流结束停。 */
+function pump(stream: MuxStream, onItem: (item: unknown) => void): void {
+  let seen = 0
+  const tick = (): void => {
+    if (seen < stream.items.length) {
+      for (; seen < stream.items.length; seen += 1) onItem(stream.items[seen])
+    }
+    if (!stream.done) setTimeout(tick, 40)
+  }
+  tick()
+}
+
+function openFollow(sessionId: string): void {
+  if (mux === undefined) return // 开 socket 后统一重挂
+  const stream = mux.open('session/follow', { request: { address: { kind: 'session', sessionId }, assistantStream: true } })
+  pump(stream, (item) => {
+    const view = reduceFollow(state.views[sessionId] ?? initView(sessionId), item)
+    const settled = (a: Approval): boolean => a.agentId === sessionId && a.callId !== null
+      && view.items.some((i) => i.kind === 'tool' && i.callId === a.callId && (i.decision !== null || i.status !== 'running'))
+    set({ views: { ...state.views, [sessionId]: view }, approvals: state.approvals.filter((a) => !settled(a)) })
+  })
+}
+
+function onEventsItem(item: unknown): void {
+  const it = rec(item)
+  if (it.type === 'ready' && typeof it.clientId === 'string') {
+    dev.events.clientId = it.clientId
+    if (dev.clientIds[dev.clientIds.length - 1] !== it.clientId) dev.clientIds.push(it.clientId)
+    set({ online: true })
+    return
+  }
+  if (it.type === 'waterfall' && it.event === 'approval/request' && typeof it.eventId === 'string') {
+    const req = rec(it.request)
+    const approval: Approval = {
+      eventId: it.eventId, agentId: String(it.agentId ?? ''), toolName: String(req.toolName ?? 'tool'),
+      callId: typeof req.callId === 'string' ? req.callId : null,
+      reason: typeof req.displayReason === 'string' ? req.displayReason : typeof req.reason === 'string' ? req.reason : null,
+      phase: 'idle', value: null, error: null,
+    }
+    set({ approvals: [...state.approvals.filter((a) => a.eventId !== approval.eventId), approval] })
+    return
+  }
+  if (it.type === 'cancel' && typeof it.eventId === 'string') {
+    set({ approvals: state.approvals.filter((a) => a.eventId !== it.eventId) })
+    return
+  }
+  if (it.type === 'emit' && Array.isArray(it.args)) {
+    const [sid, value] = it.args as [unknown, unknown]
+    const prev = typeof sid === 'string' ? state.summaries[sid] : undefined
+    if (prev === undefined) return
+    if (it.event === 'api-session/status' && typeof value === 'boolean') {
+      const finished = prev.running && !value && sid !== state.selected
+      set({
+        summaries: { ...state.summaries, [prev.sessionId]: { ...prev, running: value } },
+        unread: finished ? { ...state.unread, [prev.sessionId]: true } : state.unread,
+      })
+    }
+    if (it.event === 'api-session/activity' && typeof value === 'number') {
+      set({ summaries: { ...state.summaries, [prev.sessionId]: { ...prev, updatedAt: value } } })
+    }
+  }
+}
+
+function bootSession(): void {
+  const socket = new CarrierSocket(pageEnv())
+  socket.addEventListener('open', () => {
+    dev.sessions += 1
+    mux = new PageMux(socket)
+    const feed = mux.open('$events', {})
+    dev.events = { clientId: undefined, items: feed.items }
+    pump(feed, onEventsItem)
+    for (const sid of followed) openFollow(sid)
+  })
+  socket.addEventListener('close', () => {
+    for (const stream of [...(mux?.streams.values() ?? [])]) stream.done = true
+    mux = undefined
+    set({ online: false, approvals: [] }) // 未决审批在重连 ready 后由 gateway 补发（C §4）
+    setTimeout(bootSession, 300)
+  })
+}
+
+// ---- roster ----
+function summaryOf(item: AnyRecord): Summary {
+  const values = rec(rec(item.projections).values)
+  return {
+    sessionId: String(item.sessionId),
+    title: typeof values.title === 'string' && values.title !== '' ? values.title : null,
+    preset: typeof values.agentPreset === 'string' ? values.agentPreset : null,
+    running: item.running === true,
+    updatedAt: typeof item.updatedAt === 'number' ? item.updatedAt : 0,
+  }
+}
+
+async function loadRoster(): Promise<{ items: Summary[]; meta: Meta } | string> {
+  const [list, meta] = await Promise.all([
+    api('session/list', { _request: {} }),
+    window.pbots?.botsMeta('get') ?? Promise.resolve<ApiResult>({ ok: false, error: { code: 'pbots/unavailable', message: 'preload bridge missing' } }),
+  ])
+  if (!list.ok) return `session/list: ${list.error?.message ?? ''}`
+  if (!meta.ok) return `bots-meta: ${meta.error?.message ?? ''}`
+  const items = (rec(list.value).items as unknown[] | undefined ?? []).map(rec)
+    .filter((i) => typeof i.sessionId === 'string' && i.origin !== 'subagent' && i.parentSessionId === undefined)
+    .map(summaryOf)
+  const m = rec(meta.value)
+  return { items, meta: { mainBotId: typeof m.mainBotId === 'string' ? m.mainBotId : null, recipes: rec(m.recipes) as unknown as Record<string, Recipe> } }
+}
+
+async function start(): Promise<void> {
+  set({ boot: 'starting', bootError: null })
+  const deadline = Date.now() + BOOT_TIMEOUT_MS
+  let roster = await loadRoster()
+  while (typeof roster === 'string') {
+    if (Date.now() > deadline) { set({ boot: 'failed', bootError: roster }); return }
+    await sleep(500)
+    roster = await loadRoster()
+  }
+  const summaries: Record<string, Summary> = Object.fromEntries(roster.items.map((s) => [s.sessionId, s]))
+  let mainBotId = roster.meta.mainBotId
+  if (mainBotId === null || summaries[mainBotId] === undefined) {
+    // C §5 默认②：主 bot 缺失或指向已不存在的 session → #3 建默认 preset bot → #20 patch
+    const created = await api('session/create', { request: {} })
+    const sid = rec(created.value).sessionId
+    if (!created.ok || typeof sid !== 'string') { set({ boot: 'failed', bootError: `创建主 Bot 失败：${created.error?.message ?? ''}` }); return }
+    const patched = await window.pbots!.botsMeta({ op: 'patch', mainBotId: sid })
+    if (!patched.ok) { set({ boot: 'failed', bootError: `设置主 Bot 失败：${patched.error?.message ?? ''}` }); return }
+    mainBotId = sid
+    summaries[sid] = { sessionId: sid, title: null, preset: null, running: false, updatedAt: Date.now() }
+  }
+  const rest = Object.values(summaries).filter((s) => s.sessionId !== mainBotId).sort((a, b) => b.updatedAt - a.updatedAt)
+  set({ summaries, order: [mainBotId, ...rest.map((s) => s.sessionId)], meta: { ...roster.meta, mainBotId } })
+  select(mainBotId)
+  set({ boot: 'ready' })
+}
+
+// ---- actions ----
+export function select(sessionId: string): void {
+  if (!followed.has(sessionId)) { followed.add(sessionId); openFollow(sessionId) }
+  const { [sessionId]: _cleared, ...unread } = state.unread
+  set({ selected: sessionId, unread, notice: null })
+}
+
+/** 新建 bot 插在主 bot 之下第一位（R9），并选中。 */
+export function addCreated(sessionId: string, preset: string, notice: string | null): void {
+  const [main, ...rest] = state.order
+  set({
+    summaries: { ...state.summaries, [sessionId]: { sessionId, title: null, preset, running: false, updatedAt: Date.now() } },
+    order: main === undefined ? [sessionId] : [main, sessionId, ...rest.filter((id) => id !== sessionId)],
+    flash: sessionId,
+  })
+  select(sessionId)
+  if (notice !== null) set({ notice })
+  setTimeout(() => { if (state.flash === sessionId) set({ flash: null }) }, 600)
+}
+
+export function setDraft(sessionId: string, text: string): void {
+  set({ drafts: { ...state.drafts, [sessionId]: text } })
+}
+
+export function sendPrompt(sessionId: string, text: string): Promise<ApiResult> {
+  return api('session/prompt', {
+    request: { requestId: crypto.randomUUID(), sessionId, mode: 'queue', content: [{ type: 'text', text }] },
+  })
+}
+
+export function cancelTurn(sessionId: string): Promise<ApiResult> {
+  return api('session/cancel', { request: { sessionId } })
+}
+
+const patchApproval = (eventId: string, patch: Partial<Approval>): void =>
+  set({ approvals: state.approvals.map((a) => (a.eventId === eventId ? { ...a, ...patch } : a)) })
+
+/** 作答只发 allowed-once / rejected（C §4 不变式；main 校验 clientId/eventId，§2.2）。 */
+export async function answer(eventId: string, value: 'allowed-once' | 'rejected'): Promise<void> {
+  const a = state.approvals.find((x) => x.eventId === eventId)
+  if (a === undefined || a.phase === 'submitting' || a.phase === 'submitted' || !state.online) return
+  patchApproval(eventId, { phase: 'submitting', value, error: null })
+  let res: ApiResult
+  try {
+    res = await api('$events/result', { clientId: dev.events.clientId, eventId, outcome: { kind: 'result', value } })
+  } catch {
+    patchApproval(eventId, { phase: 'error', error: '提交结果未知，等待同步' }) // 席 C：不确定时不诱导盲重答
+    return
+  }
+  if (!res.ok) { patchApproval(eventId, { phase: 'error', value: null, error: res.error?.message ?? '提交失败' }); return }
+  if (a.callId === null) set({ approvals: state.approvals.filter((x) => x.eventId !== eventId) })
+  else patchApproval(eventId, { phase: 'submitted' })
+}
+
+export function retryBoot(): void { void start() }
+
+/** 启动：E2E 观测面 + boot socket + roster。 */
+export function startStore(): void {
+  ;(window as unknown as Record<string, unknown>).__pbotsDev = {
+    get events() { return dev.events },
+    get clientIds() { return dev.clientIds },
+    get sessions() { return dev.sessions },
+    get sockets() { return dev.sockets },
+    get bots() { return Object.values(state.views) },
+    get state() { return state },
+    newSocket(): DevSocketHandle { return newDevSocket((h) => { dev.sockets.push(h) }) },
+    openStream(endpoint: string, args?: unknown): MuxStream {
+      if (mux === undefined) throw new Error('boot mux not open yet')
+      return mux.open(endpoint, args)
+    },
+  }
+  bootSession()
+  void start()
+}

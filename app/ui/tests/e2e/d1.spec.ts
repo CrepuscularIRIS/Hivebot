@@ -1,5 +1,5 @@
-// U-15 D1 E2E（PLAN U-15 ①）：起壳 → 建 bot（选 preset，经 M1；连接器路径经 M1 #4 → main 编排，
-// CONTRACT §3.1）→ 发消息 → 流式气泡（assistant-stream chunk）→ assistant/message 定稿替换；
+// U-15 D1 E2E（PLAN U-15 ①；U-21 ② 起 D1 改走产品页新建对话框重跑）：起壳 → 建 bot（选 preset，经 M1；连接器路径经
+// M1 #4 → main 编排，CONTRACT §3.1，P-D 对话框补连接器前仍走 #dev-min 页）→ 发消息 → 流式气泡（assistant-stream chunk）→ assistant/message 定稿替换；
 // 两个 bot 的 header.agentPreset === 'p2-alpha' / 'p2-beta'（+4 精确等值）。
 // fake LLM：首块后 gate 挂起，gate 文件出现后放行（app/sdk/tests/support/fake/plugin.mjs gateAfterChunk）。
 // preset fixture：app/sdk/profile/patches/presets.yml（经 P2SDK_PATCH 与 fake overlay 叠加）；
@@ -11,6 +11,7 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
+import { createViaDialog, send } from '../support/ui.ts'
 
 const SDK_ROOT = join(__dirname, '..', '..', '..', 'sdk')
 const PRESETS_PATCH = join(SDK_ROOT, 'profile', 'patches', 'presets.yml')
@@ -77,43 +78,19 @@ interface DevBot { sessionId: string; preset: string | null; turnEnded: boolean;
 const devBots = (page: Page): Promise<DevBot[]> => page.evaluate(() =>
   (window as unknown as { __pbotsDev: { bots: DevBot[] } }).__pbotsDev.bots)
 
-async function waitPresetOptions(page: Page): Promise<void> {
-  await page.waitForFunction(
-    () => {
-      const sel = document.querySelector('#preset-select') as HTMLSelectElement | null
-      return sel !== null && [...sel.options].some((o) => o.value === 'p2-alpha') && [...sel.options].some((o) => o.value === 'p2-beta')
-    },
-    undefined,
-    { timeout: 20_000 },
-  )
-}
-
-async function createBot(page: Page, preset: string): Promise<string> {
-  const before = (await devBots(page)).map((b) => b.sessionId)
-  await page.selectOption('#preset-select', preset)
-  await page.click('#create-bot')
-  await page.waitForFunction(
-    (old) => (window as unknown as { __pbotsDev: { bots: DevBot[] } }).__pbotsDev.bots.some((b) => !old.includes(b.sessionId)),
-    before,
-    { timeout: 20_000 },
-  )
-  const created = (await devBots(page)).find((b) => !before.includes(b.sessionId))
-  return created!.sessionId
-}
-
-async function sendMessage(page: Page, text: string): Promise<void> {
-  await page.fill('#composer', text)
-  await page.click('#send')
-}
-
 /** 采样流式气泡文本直到定稿；返回去重后的文本序列（每项 = 一次增长后的全文）。 */
 async function sampleStreamingGrowth(page: Page, timeoutMs = 20_000): Promise<string[]> {
   const seen: string[] = []
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     const state = await page.evaluate(() => {
-      const streaming = document.querySelector('.bubble.streaming')
+      const streaming = document.querySelector('.bubble.streaming') as (Element & { __u21?: number }) | null
       const finals = document.querySelectorAll('.bubble.assistant.final').length
+      // 原位更新：首次见到的流式节点打标，之后每次采样必须仍是同一个 DOM 节点
+      const w = window as unknown as { __u21Node?: Element | null }
+      if (streaming !== null && w.__u21Node == null) w.__u21Node = streaming
+      if (streaming !== null && w.__u21Node !== streaming) throw new Error('streaming bubble replaced mid-stream (not in-place)')
+      if (streaming === null) w.__u21Node = null
       return { text: streaming?.textContent ?? null, finals }
     })
     if (state.text !== null && state.text !== seen[seen.length - 1]) seen.push(state.text)
@@ -128,13 +105,13 @@ test('D1：建 bot→发消息→流式增量→定稿；两 bot header.agentPre
   const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })
   try {
     const page = shell.page
-    await waitPresetOptions(page)
+    await page.waitForSelector('.shell', { timeout: 30_000 })
 
-    // 建 bot A（p2-alpha）：挂起流（首块后 gate）
-    const sidA = await createBot(page, 'p2-alpha')
+    // 建 bot A（p2-alpha，经产品新建对话框）：挂起流（首块后 gate）
+    const sidA = await createViaDialog(page, 'p2-alpha')
     const gateId = `u15-d1-a-${Date.now()}`
     rt.writeScriptCalls(sidA, [gatedCall(A_PIECES, gateId)])
-    await sendMessage(page, '你好 alpha')
+    await send(page, '你好 alpha')
 
     // 挂起态：DOM 有部分文本、没有定稿气泡（B D1）
     await page.waitForSelector('.bubble.streaming', { timeout: 20_000 })
@@ -157,9 +134,9 @@ test('D1：建 bot→发消息→流式增量→定稿；两 bot header.agentPre
     await expect.poll(async () => (await devBots(page)).find((b) => b.sessionId === sidA)?.turnEnded).toBe(true)
 
     // 建 bot B（p2-beta）：直接流式收尾
-    const sidB = await createBot(page, 'p2-beta')
+    const sidB = await createViaDialog(page, 'p2-beta')
     rt.writeScriptCalls(sidB, [plainCall(B_PIECES)])
-    await sendMessage(page, '你好 beta')
+    await send(page, '你好 beta')
     const bFinal = await sampleStreamingGrowth(page)
     await expect.poll(async () => page.locator('.bubble.assistant.final').last().textContent()).toBe(B_PIECES.join(''))
     expect(bFinal.length).toBeGreaterThanOrEqual(3) // ≥2 增量（派发 ③：≥2 增量 + turn end）
@@ -231,12 +208,7 @@ test('建 bot 经 M3（#4 编排→createWithConnectors）：勾选连接器 →
   const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })
   try {
     const page = shell.page
-    await page.waitForFunction(
-      () => (document.querySelector('#preset-select') as HTMLSelectElement | null)?.options.length !== undefined
-        && (document.querySelector('#preset-select') as HTMLSelectElement).options.length >= 1,
-      undefined,
-      { timeout: 20_000 },
-    )
+    await page.waitForSelector('.shell', { timeout: 30_000 }) // 产品壳就绪 = M1 已通
     // 预装连接器（M1 #15；§2.2 强制 enabled:false；wire 形状 = typert 命名参数 {spec, options}）
     const bundleDir = writeBundleFixture(mkdtempSync(join(tmpdir(), 'bot-u15-bundle-')))
     const install = await page.evaluate(
@@ -246,7 +218,8 @@ test('建 bot 经 M3（#4 编排→createWithConnectors）：勾选连接器 →
     expect(install.ok).toBe(true)
     expect(install.value?.application).not.toBe('failed')
 
-    // dev-min 的连接器候选来自 boot 时的 listBundles：重载页面拉到已装 bundle
+    // 连接器勾选在 P-D 补进产品对话框（U-23）前走 dev-min 页；其候选来自 boot 时的 listBundles：切页重载拉到已装 bundle
+    await page.evaluate(() => { location.hash = '#dev-min' })
     await page.reload()
     await page.waitForSelector(`input[type="checkbox"][value="${BUNDLE_NAME}"]`, { timeout: 20_000 })
     await page.check(`input[type="checkbox"][value="${BUNDLE_NAME}"]`)

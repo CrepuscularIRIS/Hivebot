@@ -1,0 +1,72 @@
+/* U-21 theme 插件：Grok sand token → dsh `--dsw-*` 别名层（RE-theme §5 映射表 + PAB 席 A §4 增补/更正）。
+   static 原始板不动；alias/specific 层全部指向 sand 语义 token，故亮/暗随 <html data-theme> 一起切换。
+   产品组件只消费 --dsw-*（有别名者）与 --sand-*（无别名者）。
+   字体与图标为原版本地资产（RE-ui-shell §2.2，私用复用，RE L6）：
+   来源 Grok Bot 0.78.1 app.asar dist/renderer/assets/{X-VF-C7NyO54W,XMono-VF-K4lk0ar0,cursor-icons-16-QUmxS7q3}.woff2 */
+@font-face { font-family: XVF; font-weight: 200 800; font-display: fallback; src: url(./fonts/X-VF.woff2) format('woff2'); }
+@font-face { font-family: 'XVF Mono'; font-weight: 200 800; font-display: fallback; src: url(./fonts/XMono-VF.woff2) format('woff2'); }
+@font-face { font-family: cursor-icons; font-display: block; src: url(./fonts/cursor-icons-16.woff2) format('woff2'); }
+
+:root {
+  --dsw-alias-bg-base: var(--sand-bg-chrome);
+  --dsw-alias-bg-layer-1: var(--sand-bg-elevated);
+  --dsw-alias-bg-layer-2: var(--sand-bg-pane);
+  --dsw-alias-bg-layer-3: var(--sand-bg-secondary);
+  --dsw-alias-bg-overlay: var(--sand-bg-secondary-active);
+  --dsw-alias-bg-mask-1: var(--sand-bg-scrim);
+  --dsw-specific-sidebar-fill: var(--sand-bg-sidebar);
+  --dsw-alias-label-primary: var(--sand-text-primary);
+  --dsw-alias-label-secondary: var(--sand-text-secondary);
+  --dsw-alias-label-tertiary: var(--sand-text-tertiary);
+  --dsw-alias-label-caption: var(--sand-text-quaternary);
+  --dsw-alias-border-l1: var(--sand-border-quaternary-translucent);
+  --dsw-alias-border-l2: var(--sand-border-tertiary-translucent);
+  --dsw-alias-border-l3: var(--sand-border-secondary-translucent);
+  --dsw-alias-border-l4: var(--sand-border-primary-translucent);
+  --dsw-alias-interactive-bg-hover: var(--sand-bg-hover);
+  --dsw-alias-interactive-bg-active: var(--sand-bg-active);
+  --dsw-alias-interactive-bg-hover-accent: var(--sand-bg-accent-secondary);
+  --dsw-alias-link: var(--sand-text-accent-primary);
+  --dsw-alias-button-info-fill: var(--sand-bg-accent-primary);
+  --dsw-alias-button-info-hover: var(--sand-bg-accent-primary-hover);
+  /* 席 A 更正：主按钮是单色反转系统，不是 accent 蓝（01-boot.png 无蓝色主按钮） */
+  --dsw-alias-button-primary-fill: var(--sand-bg-primary);
+  --dsw-alias-button-primary-hover: var(--sand-bg-primary-hover);
+  --dsw-alias-button-primary-label: var(--sand-text-inverted);
+  /* 席 A 增补：不映射就残留 DeepSeek 蓝（dsh 13 处消费） */
+  --dsw-alias-state-business-primary: var(--sand-text-accent-primary);
+  --dsw-alias-state-error-primary: var(--sand-text-danger-primary);
+  --dsw-alias-state-success-primary: var(--sand-text-success-primary);
+  --dsw-alias-state-warn-primary: var(--sand-bg-warn-primary);
+  --dsw-alias-state-done-primary: var(--sand-text-purple-primary);
+  --dsw-focus-ring-color: var(--sand-border-focus-primary);
+  --dsw-specific-bubble: var(--sand-fill-bubble-user);
+  --dsw-specific-input-major: var(--sand-bg-elevated);
+  --dsw-menu-surface-fill: var(--sand-bg-elevated);
+  --dsw-elevation-stroke-color: var(--sand-border-secondary-translucent);
+  --dsw-radius-xs: 4px;
+  --dsw-radius-sm: 8px;
+  --dsw-radius-md: 12px;
+  --dsw-radius-lg: 16px;
+  --dsw-radius-xl: 18px;
+  --dsh-font-family-text: var(--sand-font-sans-xvf);
+  --dsh-font-family-code: var(--sand-font-mono-xvf);
+  --dsh-chat-content-width: 708px;
+}
+/* 席 A 更正（黑底黑字坑）：light 用户气泡是 #1c1c1c 实底，气泡内正文色单独反转；dark 气泡半透明白，不覆盖 */
+:root[data-theme='cursor-light'] [data-message-bubble] { --dsw-alias-label-primary: #fcfcfc; --dsw-alias-link: #9ccaff; }
+
+html, body, #root { height: 100%; margin: 0; }
+body {
+  background: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-label-primary);
+  font-family: var(--dsh-font-family-text);
+  font-size: var(--sand-font-size-base);
+  line-height: var(--sand-line-height-base);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--dsw-focus-ring-color); outline-offset: 1px; }
+.icon { font-family: cursor-icons; font-size: 16px; line-height: 1; font-style: normal; display: inline-block; width: 16px; text-align: center; flex: none; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; } }

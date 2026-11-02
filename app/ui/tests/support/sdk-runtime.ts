@@ -64,13 +64,15 @@ export function fakeOverlayPath(): string {
 }
 
 /** Boot the p2sdk runtime in mock mode and return a connected client（runtime.ts 同款流程）。 */
-export async function launchSdkRuntime(opts: { patch: string; readyTimeoutMs?: number } ): Promise<SdkRuntime> {
+/** cwd：runtime 进程工作目录 = 未带 cwd 建的 session 的默认 cwd（产品 UI 建 bot 不带 cwd，U-21 起由临时目录承接，副作用不落仓内）。 */
+export async function launchSdkRuntime(opts: { patch: string; readyTimeoutMs?: number; cwd?: string } ): Promise<SdkRuntime> {
   for (const name of ['P2SDK_LLM_API_KEY', 'DEEPSEEK_API_KEY', 'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'LITELLM_MASTER_KEY']) {
     delete process.env[name]
   }
   const home = mkdtempSync(join(tmpdir(), 'p2sdk-runtime-'))
   const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
   const child = spawn(process.execPath, [join(SDK_ROOT, 'scripts', 'start.mjs')], {
+    ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
     env: {
       ...process.env,
       P2SDK_PROVIDER: 'mock',

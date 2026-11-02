@@ -45,10 +45,14 @@ test('(b) window.open 与 <a target=_blank> 均不开新窗，http(s) 交给 ope
       a.href = 'https://example.com/blank-click'
       a.target = '_blank'
       a.textContent = 'x'
+      // U-21 起首屏是全窗 fixed 启动封面（拖拽区）：探针元素浮到其上方、显式 no-drag，保证真实点击可达
+      const probe = 'position:fixed;left:0;z-index:10;-webkit-app-region:no-drag;'
+      a.style.cssText = `${probe}top:40px`
       document.body.appendChild(a)
       const b = document.createElement('button')
       b.id = 'win-open'
       b.textContent = 'o'
+      b.style.cssText = `${probe}top:80px`
       b.addEventListener('click', () => {
         const w = window.open('https://example.com/win-open')
         ;(globalThis as { __openRet?: string }).__openRet = String(w)
@@ -73,6 +77,9 @@ test('(c) 页内 location.href 外部/ file:// 导航被拒，getURL 仍在 pbot
   try {
     // 先桩 openExternal，防止真实 xdg-open 弹浏览器。
     await shell.app.evaluate(({ shell: sh }) => { sh.openExternal = (() => Promise.resolve()) as typeof sh.openExternal })
+    // U-21：首屏带本地字体后 load 变慢；首个文档未 load 完就发起导航会让 main 的 loadURL 以 ERR_ABORTED 拒绝
+    // → main().catch → app.exit(1)（main/index.ts 既有行为，已回报）。本条测的是已加载页面的导航门控，先等 load。
+    await shell.page.waitForLoadState('load')
     for (const target of ['https://example.com/nav', 'file:///tmp/x.html']) {
       await shell.page.evaluate((t) => { location.href = t }, target)
       await shell.page.waitForTimeout(500)

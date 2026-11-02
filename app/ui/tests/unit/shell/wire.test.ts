@@ -24,6 +24,8 @@ interface DshStub {
   calls: Array<{ method: string; args: unknown }>
   apiCount: number
   rpc(method: string, args: unknown): Promise<ConnectionRpcResult>
+  /** U-16 常驻 $events 循环会 await ready()；桩永不就绪（本文件不测 socket 层）。 */
+  ready(): Promise<never>
 }
 
 function dshStub(handlers: Record<string, unknown> = {}): DshStub {
@@ -37,6 +39,7 @@ function dshStub(handlers: Record<string, unknown> = {}): DshStub {
       if (hit instanceof Error) return { ok: false, error: { code: 'gateway/internal', message: String(hit), details: {} } }
       return { ok: true, value: hit ?? {} }
     },
+    ready: () => new Promise<never>(() => {}),
   }
   return stub
 }

@@ -1,6 +1,8 @@
-// 最小页面入口（U-00 骨架；U-12 的 debug-boot 3 行已按 VERIFY-U-12 建议随 U-15 回收）。
-// U-15 起渲染 dev-min 临时页面（D1 出口）；产品壳由 U-21+ 交付。
+// renderer 入口：U-21 起渲染产品壳（shell/App）；dev-min 临时页保留在 `#dev-min`（U-22 删除前的调试入口）。
 import { createRoot } from 'react-dom/client'
+import { applyTheme } from './theme/theme'
+import { App } from './shell/App'
+import { startStore } from './shell/store'
 import { DevMinApp } from './dev-min/app'
 
 declare global {
@@ -13,4 +15,7 @@ declare global {
   }
 }
 
-createRoot(document.getElementById('root')!).render(<DevMinApp />)
+applyTheme()
+const devMin = location.hash === '#dev-min'
+if (!devMin) startStore()
+createRoot(document.getElementById('root')!).render(devMin ? <DevMinApp /> : <App />)

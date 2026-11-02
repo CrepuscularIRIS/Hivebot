@@ -1,7 +1,8 @@
 // M3 bots.json 存储（U-13）：原子写（tmp + rename）+ 单一 Promise 写队列（D10e）。
 // v1 盘上形状 {version:1, mainBotId, recipes}——不含 bots 字段（D10d）。
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+// W1 R8：进程内单实例锁（双写者全量快照互覆）；W1 R9：flush 失败回滚内存态。
+import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
+import { join, resolve } from 'node:path'
 
 /** CONTRACT §3.1：recipes 按 presetId 存 {agentPreset, 规范化 connectors}。 */
 export interface Recipe {
@@ -19,6 +20,10 @@ export interface BotsMeta {
 /** 落盘文件名（$PBOTS_DATA_DIR/bots.json，CONTRACT M3 行）。 */
 export const BOTS_JSON = 'bots.json'
 
+// 进程内单实例锁（W1 R8）：同 dataDir 双 store 全量快照互相覆盖（store.ts 旧 :71-77）。
+// ponytail: 仅进程内锁，不跨进程；跨进程双开由 Electron app 级单实例兜底（未来需要再加锁文件）。
+const openStores = new Map<string, BotsMetaStore>()
+
 /** 单写者队列 + 原子写。所有变更先改内存、再串行落盘，读方永远看到完整 JSON。 */
 export class BotsMetaStore {
   readonly file: string
@@ -28,7 +33,20 @@ export class BotsMetaStore {
   private queue: Promise<unknown> = Promise.resolve()
 
   constructor(dataDir: string) {
-    this.file = join(dataDir, BOTS_JSON)
+    this.file = resolve(dataDir, BOTS_JSON)
+    const held = openStores.get(this.file)
+    if (held !== undefined) {
+      throw Object.assign(
+        new Error(`bots.json store already open: ${this.file} (single-writer; close() the first instance)`),
+        { code: 'PBOTS_STORE_LOCKED' },
+      )
+    }
+    openStores.set(this.file, this)
+  }
+
+  /** 释放单实例锁。生产进程内仅一个实例、随进程退出释放；测试模拟重启时调用。 */
+  close(): void {
+    if (openStores.get(this.file) === this) openStores.delete(this.file)
   }
 
   /** 启动读盘；ENOENT → 空 meta。坏 JSON / version 不符 → 记错，read() 抛。 */
@@ -72,23 +90,42 @@ export class BotsMetaStore {
     const snapshot = JSON.stringify(this.read())
     const tmp = `${this.file}.tmp`
     await mkdir(join(this.file, '..'), { recursive: true })
-    await writeFile(tmp, snapshot, 'utf8')
-    await rename(tmp, this.file)
+    try {
+      await writeFile(tmp, snapshot, 'utf8')
+      await rename(tmp, this.file)
+    } catch (error) {
+      // W1 R9：失败时不留半写 tmp（固定名本会被下次覆盖，但失败可见性更差）
+      await unlink(tmp).catch(() => undefined)
+      throw error
+    }
   }
 
-  /** #4 编排写配方：同 key 同值幂等（CONTRACT §3.1「重复写无害」）。 */
+  /** #4 编排写配方：同 key 同值幂等（CONTRACT §3.1「重复写无害」）。flush 失败回滚内存态（W1 R9）。 */
   putRecipe(presetId: string, recipe: Recipe): Promise<void> {
     return this.enqueue(async () => {
+      const prev = this.meta.recipes[presetId]
       this.meta.recipes[presetId] = { agentPreset: recipe.agentPreset, connectors: [...recipe.connectors] }
-      await this.flush()
+      try {
+        await this.flush()
+      } catch (error) {
+        if (prev === undefined) delete this.meta.recipes[presetId]
+        else this.meta.recipes[presetId] = prev
+        throw error
+      }
     })
   }
 
-  /** renderer 唯一可写字段（#20）。 */
+  /** renderer 唯一可写字段（#20）。flush 失败回滚内存态（W1 R9）。 */
   patchMainBotId(mainBotId: string | null): Promise<void> {
     return this.enqueue(async () => {
+      const prev = this.meta.mainBotId
       this.meta.mainBotId = mainBotId
-      await this.flush()
+      try {
+        await this.flush()
+      } catch (error) {
+        this.meta.mainBotId = prev
+        throw error
+      }
     })
   }
 }

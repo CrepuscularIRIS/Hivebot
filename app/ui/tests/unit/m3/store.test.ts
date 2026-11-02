@@ -28,6 +28,7 @@ describe('BotsMetaStore · D10d 盘上形状', () => {
     const first = new BotsMetaStore(dir)
     await first.init()
     await first.putRecipe('p2temp-bbbb2222', { agentPreset: 'p2-beta', connectors: ['x'] })
+    first.close() // W1 R8 单实例锁：模拟重启需先释放旧实例
     const second = new BotsMetaStore(dir)
     await second.init()
     expect(second.read()).toEqual({

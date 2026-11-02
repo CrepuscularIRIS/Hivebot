@@ -118,6 +118,30 @@ describe('patch · 形状（renderer 只写 mainBotId）', () => {
   })
 })
 
+describe('patch · wire 壳（W1 R4：session/list 参数名是 _request）', () => {
+  it('用 {_request:{}} 壳：fake gateway 只认 _request 形状，不再 arguments-invalid', async () => {
+    const dir = tmpHome()
+    const store = await seededStore(dir)
+    // 模拟上游 gateway 的参数校验：list(_request, signal)（repos/deepseek-harness
+    // session-controller/src/index.ts:278；SDK e2e 正确形态见 mock-demo.test.ts:56）。
+    const dsh = mockDsh({
+      'session/list': (args) => {
+        if (typeof args !== 'object' || args === null || !('_request' in args)) {
+          return { ok: false, error: { code: 'gateway/arguments-invalid', message: `session/list got ${JSON.stringify(args)}`, details: {} } }
+        }
+        return sessions(['s-1'])
+      },
+      'agentPresets/list': () => roster(['p2-alpha']),
+    })
+    const m3 = registerM3Meta({ dsh: dsh as never, store })
+    const result = await m3.handler({ op: 'patch', mainBotId: 's-1' })
+    // 修复前：{cursor:null} 被 gateway 判 arguments-invalid → pbots/unavailable
+    expect(result.ok).toBe(true)
+    const call = dsh.calls.find((c) => c.method === 'session/list')
+    expect(call?.args).toEqual({ _request: {} })
+  })
+})
+
 describe('patch · 语义', () => {
   it('mainBotId 不在 #9 列表 → invalid-args；在列表 → 落盘并返回带 live 的 view', async () => {
     const dir = tmpHome()

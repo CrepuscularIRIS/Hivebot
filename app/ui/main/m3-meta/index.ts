@@ -81,7 +81,8 @@ export function registerM3Meta(deps: M3Deps): M3Handle {
     if (deps.dsh === undefined) {
       return { ok: false, error: { code: 'pbots/unavailable', message: 'dsh connection not ready', details: {} } }
     }
-    const list = await deps.dsh.rpc('session/list', { cursor: null })
+    // W1 R4：上游 list(_request, signal) 的参数名是 _request——壳形态 {_request:{}}（VERIFY-U-15 终裁）
+    const list = await deps.dsh.rpc('session/list', { _request: {} })
     if (!list.ok) return stepFailed('session/list', list.error)
     const items = (list.value as { items?: Array<{ sessionId: string }> }).items ?? []
     if (!items.some((item) => item.sessionId === mainBotId)) {

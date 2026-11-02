@@ -1,6 +1,6 @@
 # BRIEF · p4-ui（Grok 风格前端 MVP，4 页封顶）
 
-v1.2 · 2026-11-02 · director（Opus 5.5）· 输入：`work/p3-contract/CONTRACT.md` v1.3（下称 C）、`panels/G1-r2{,-A,-B}.md`、`p1-re/RE-ui-shell.md`、`p1-re/evidence/01-boot.png`、`p1-re/ARCH-0.78.md` §4、`p3-contract/reuse/dsh-client-packages.md`（下称 scout-C）、QUESTIONS Q-008/Q-009、LEARNINGS、本目录 `panels/G1-r1{,-A,-B}.md`。
+v1.3 · 2026-11-02 · director（Opus 5.5）· 输入：`work/p3-contract/CONTRACT.md` v1.3（下称 C）、`panels/G1-r2{,-A,-B}.md`、`p1-re/RE-ui-shell.md`、`p1-re/evidence/01-boot.png`、`p1-re/ARCH-0.78.md` §4、`p3-contract/reuse/dsh-client-packages.md`（下称 scout-C）、QUESTIONS Q-008/Q-009、LEARNINGS、本目录 `panels/G1-r1{,-A,-B}.md`。
 口径：接口形状一律以 C 为准，本 BRIEF 不改任何接口；P4 任务需要改接口时，写 QUESTIONS（契约类）。
 
 ## 1. 目标与需求证明
@@ -22,7 +22,7 @@ v1.2 · 2026-11-02 · director（Opus 5.5）· 输入：`work/p3-contract/CONTRA
 ## 3. 路线（强制双方案）
 | | A 第 2 级集成（**选**） | B 第 3 级改造：去掉 Cordis，复制 JSX 自建 React 壳 |
 |---|---|---|
-| 做法 | git submodule 接入 `repos/deepseek-harness@ce7073d`（到 `app/ui/vendor/`，submodule 内 build）后 workspace 引用其 `packages/client/*` 和 `api/*/src/client`，原样不改；保留浏览器 Cordis、SlotRegistry、store、ClientSessions，以及 ui-chat、ui-approval、ui-tool、ui-plugin-market 等（C §2.1）；替换 root/layout 壳、bot 导航、品牌 slot、theme 插件和 Connection carrier | 只搬 `*.tsx` 展示层，注入 hooks、slot 渲染器、session 作用域、controller，全部自己补 |
+| 做法 | git submodule 接入 `repos/deepseek-harness@ce7073d`（到 `app/ui/vendor/`，submodule 内 build）后 workspace 引用其 `packages/client/*` 和 `api/*/src/client`，原样不改；保留浏览器 Cordis、SlotRegistry、store、ClientSessions，以及 ui-chat、ui-approval、ui-tool、ui-plugin-market 等（C §2.1）；替换 root/layout 壳、bot 导航、品牌 slot、theme 插件和 Connection carrier（勘误 2026-11-02：UI 层自写 React，dsh 组件骨架退出——R0 追认） | 只搬 `*.tsx` 展示层，注入 hooks、slot 渲染器、session 作用域、controller，全部自己补 |
 | 代价 | 插件闭包可能偏大（chat 要 sidebarRight/fileDrag，uiSession 要 remoteAccess），只能靠 spike 实测才知道 | 装配和订阅逻辑归我们自己维护，上游修 bug 我们拿不到，违背「搬运工优先」 |
 **放弃 B 的理由**：scout-C:18 判它为第 3 级，只在「不允许保留 Cordis」时才用；npm latest 版本与已核实的源码不一致（scout-C:17），第 1 级也走不通。B 只留作 spike 止损后的回退路线（§7 W0）。路线 C（保留 0.78.1 renderer 加适配层）已被 Q-007 否决。
 **样式**：按 scout-C §4，新写一个 theme 插件，把 Grok 的色板、间距、圆角映射到 `--dsw-*` token，字体映射到 `--dsh-font-family-text/code`，品牌 wordmark 走其独立变量（scout-C:160-162）；图标由 woff2 字形导出 SVG 后按 icon id 替换（待查 1④）；品牌换掉 `ui-brand-official`。**不**全局导入 Grok 那份 766KB stylex CSS，不引入 Tailwind 或其他样式库。
@@ -95,3 +95,4 @@ v1.2 · 2026-11-02 · director（Opus 5.5）· 输入：`work/p3-contract/CONTRA
 | v1 | 首版 | — |
 | v1.1 | D6 删降级分支与 `degraded (Q-008 pending)` 标注，只留恢复可用分支，注明依赖 T-16 preset.ensure（未合入则 blocked）。**补记**：v1.1 未同步 D9 末句「Q-009 暂定 B / 答 A 之前保持默认拒绝」，与 §9「已答 A」矛盾（G1-r1 HIGH-1），v1.2 修正 | QUESTIONS Q-008 落实行（2026-11-02 06:30） |
 | v1.2 | HIGH×2：D9 无条件化（永久判据）；W0 前置待查 2、spike 级桥、1 天止损。MEDIUM×8 全吸收：D10b 创建中重载 E2E、D4③ 终态与窗口、D6 拆 a/b 及 [T-16] 标记、D10c 失效态、P-A 最小建 bot 对话框、D2 计数点、图标 SVG。LOW×5 吸收，1 条转主会话 | `panels/G1-r1{,-A,-B}.md` |
+| v1.3 | §3 路线表「做法」列 A 补勘误注：UI 层自写 React，dsh 组件骨架退出（R0 追认）；接口不变 | p4-ui/ui/R0-ruling.md |

@@ -448,3 +448,17 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-02 14:27 tick | U-17（connect.ts 在改）/ U-21（wire.test 在改——可能顺带处理 ready mock）均活跃 | 无 stale
 2026-11-02 14:37 tick | U-17/U-21 无新 commit（~50min 实现中期正常，上 tick 文件活跃）| 下 tick 无变化分别查
 2026-11-02 14.4x 回报 | **builder U-17 完成**：bf65da7，5 文件——start 首败进同一 2^n 退避、rpc 30s 有界（PBOTS_DSH_START_TIMEOUT_MS 可配）→ pbots/unavailable、onDead 清 socket；166 单测+21 e2e | 新问题记档：a) wire.test 假 dsh 缺 ready()（一行测试修，U-21 在途改该文件可顺带）b) 迟到恢复 ready.setDshReady 不补发 c) rpcRaw 网络裸抛（R13 剩余）| 派 verifier | 在途：verifier U-17、frontend-dev U-21
+2026-11-02 14.5x 回报 | verifier U-17 = PASS（探针 2^n 退避/封顶/结构化超时/死柄出清实证、红基线 4 红对位、区域 4 文件）| **合并 U-17 → f40847f**（真 merge：index.ts 与 U-18 cursor 壳共存，合并后 182/182 全绿）| **W1 预审 13 条全部闭环**（8 成立→U-17/18/19 修、5 失效）| 遗留小项记档：wire.test 假 dsh 一行修（U-21 顺带）、迟到恢复 ready 补发（M）、rpcRaw 裸抛（L）| 在途：frontend-dev U-21（W2 前两页）
+2026-11-02 14:47 tick | U-21 活跃（window.ts titleBarOverlay + carrier/mux 提取复用 + dev-min 更新——实现中期）| 无 stale
+2026-11-02 14:57 tick | U-21 活跃（36 文件在改——真页面+theme 全规模实现中，~50min 正常）
+2026-11-02 15.0x 回报 | **frontend-dev U-21 完成**：e55ad0d——P-A+P-B 两页全实现（183 单测+30 e2e、四核实项结论、裁决 R1-R24 记 PAB-final.md、封面并排+亮暗截图、wire.test ready() 顺带修、titleBarOverlay 落地）| **R0 架构偏离**：renderer 未启 dsh client（自写 React、三桥未动）——理由三条（启动清单/白名单/先例）| 发现：main/index ERR_ABORTED 致 app.exit(1)（U-00 区既有，U-00.fN 候选）、wire 的 turn/end 真值 aborted 非 interrupted | **并行：verifier U-21（行为+截图目检）+ director R0 追认**
+2026-11-02 15.1x 回报 | **director R0 追认**（依据②决定性：ClientSessions 需 remote.commands/subagents 超白名单；条件 C1 markdown 用库/C2 关 raw HTML/C3 scout 反向确认；PLAN v2.1 决策 2a、REUSE v1.2、LEARNINGS +spike 宿主实证规则——director 已自行落盘）| 69 dsh 包退出 W2（按 scout-C 口径）；U-22 收缩为 P-B 收口（打断判据 aborted）；U-24 自写；语义锚点不入 CONTRACT | **派三**：drafter（CONTRACT/BRIEF 勘误）、scout（markdown 库 C3）、builder U-00.fN（删 29 死依赖+submodule+markdown 装入+loadURL 修）| 在途 4：verifier U-21 + 新三
+2026-11-02 15.2x 回报 | drafter 勘误完成（CONTRACT v1.4 §2.1 + BRIEF v1.3 §3，修订账各一行，快照存档）| 在途：verifier U-21、scout C3、U-00.fN
+2026-11-02 15:07 tick | 三路在途（verifier U-21 重量级 ~25min 正常；scout/U-00.fN 起步）| 无 stale
+2026-11-02 15.1x scout C3 因 API 流错误中断 → SendMessage resume（首次失败，非任务性失败不计轮次）
+2026-11-02 15.2x 回报 | scout C3 完成（resume 后）：推荐 react-markdown@10.1.0 + 复用 Shiki hook（dsh 已有）；反向确认非全优（rehype-highlight 超 6 月窗口、Streamdown 偏重）；安全要求（关 raw HTML、外链门控、图片零请求）；两处最小接入点已定位 | C3 闭环 | 在途：verifier U-21、U-00.fN
+2026-11-02 15:17 tick | verifier U-21（~35min 重量级含截图目检）与 U-00.fN（~30min 依赖清理含 6min install）在途正常 | 无 stale
+2026-11-02 15.3x 回报 | **builder U-00.fN 完成**：5c6af7a+07d88d6——删 29 dsh link 依赖 + submodule（零引用核实）+ 装 react-markdown@10.1.0（+rehype-highlight 7.0.2，与 scout「复用 Shiki」有出入——U-22 接入时按 scout 调整，记档）+ loadURL ERR_ABORTED 容忍（Electron 44 字符串 code 实证，e2e 红转绿）；185 单测+22 e2e | 遗留：U-00 ⑥ submodule SHA 断言作废待核减 | 派 verifier | 在途：verifier ×2（U-21/U-00.fN）
+2026-11-02 15.4x 回报 | verifier U-21 = PASS（封面与原版几乎逐像素、7 对 token 亮暗真断言、15 探针、R 抽查+核实项吻合；2 FIX 记档：断线丢草稿 M、永久停止态 L——归 U-22）| **合并 U-21 → 4f0b404**（真 merge，35 文件 3068 行含字体/截图/PAB-final）| **派 /panel GU 两席**（A+C，一轮）| 在途：GU ×2、verifier U-00.fN
+2026-11-02 15:27 tick | GU ×2（~10min 截图亲验正常）与 verifier U-00.fN 在途 | 无 stale
+2026-11-02 15.4x GU-U21 汇总：A=PASS / C=REVISE → **REVISE（1 轮终局）**——视觉/交互/D9 双席通过；REVISE 项全归 U-22（m1 try/catch HIGH、丢草稿、停止态、重连拉列表；VERIFY 已重建）| LEARNINGS +verifier 产物必须写主仓 | **派 U-22（P-B 收口：markdown 接入 + D2/D4 + GU 清单 + FIX×2）**

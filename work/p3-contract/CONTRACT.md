@@ -1,6 +1,6 @@
 # CONTRACT · Grok 风格前端 ⇄ P2 SDK
 
-**v1.3 · G1-r2 有条件通过** · v1 2026-11-02 00:59 · v1.1 05:05 · v1.2 2026-11-02 · v1.3 2026-11-02 · director
+**v1.4 · G1-r2 有条件通过** · v1 2026-11-02 00:59 · v1.1 05:05 · v1.2 2026-11-02 · v1.3 2026-11-02 · v1.4 2026-11-02 · director
 输入：panels/D-route-r1{,-A,-B}.md、panels/G1-r1{,-A,-B}.md、p1-re/ARCH-0.78.md §4、RE-ipc-rpc.md §3.4、RE-marketplace.md §2–3、p2-sdk/PLAN.md §1、QUESTIONS Q-003/Q-007/Q-008/Q-009、`reuse/dsh-client-packages.md`（scout）、`VERIFY-T-15.md`。
 锚点口径：`D/` = `repos/deepseek-harness@ce7073d`（与运行时 npm `0.2.2-alpha.2` 对照，PLAN §6 Q1）；`C/` = `D/packages/client`；`SC` = `D/packages/api/session-controller/src/index.ts`；`GW` = `D/packages/api/gateway/src`；T-15 测试 = `feat/T-15@a3758e0:app/sdk/tests/e2e/{connector-restart,events-replay}.test.ts`（尚未合入 main）。改动本契约里的任何接口形状 → 写 QUESTIONS（契约类），不得在 P4 任务里就地改。
 
@@ -54,6 +54,7 @@
 - **替换**（用外部插件和包装层）：root/layout 产品壳、bot 导航、品牌 slot（替换 `ui-brand-official`）、theme 插件（Grok 的颜色/间距/字体映射成 `--dsw-*` token，图标按 id 替换 sprite，`C/ui-theme/src/client/index.ts:72-96`），以及 Connection carrier。
 - **carrier 映射（G1-r1 两席支持）**：`installConnection` 显式传 `interactions:'answer'`（不传 location 时默认 `'none'`，$events 与审批会静默失效，`C/connection/src/client/index.ts:232`）。`transport.rpc.call('/api', endpoint, {args})` → M1 `invoke({method:endpoint, args})`（`C/connection/src/client/rpc.ts:295-309`；`GW/client/index.ts:458`）。不提供 `transport.rpc.open`（上游定位为进程内载体，`rpc.ts:311-313`），gateway 继续用 `RemoteStreamMuxClient`（`GW/client/index.ts:171,240-245`），其 socket 由 `transport.createWebSocket` 造（§2.3 的包装对象，`C/connection/src/client/socket.ts:12,47`；`index.ts:113,273`）。不改 `streamBaseUrl`，不设 `ownsHost`。
 - **bot 导航在产品壳自建**：dsh 的会话列表在 `ui-workspace`（深度绑定 workspaces/directoryPicker，`C/ui-workspace/src/client/index.ts:103-142`），是 session browser，不是 bot roster。bot 列表页 = 产品插件，数据取 #9 + #19，动作复用 ClientSessions（打开/rename），不把 bot 伪装成 workspace。**包分档**：`packages/client/` 共 69 包 = 可直接复用 4 / 需适配壳 24 / 深度绑定 41（scout §1）。chat 硬依赖 sidebarRight/fileDrag，conversation 依赖 fileUpload，uiSession 依赖 remoteAccess（scout :137），这些供应者照常装载，不用空 stub。不加载：ui-settings-account、ui-settings-models、ui-settings-web-search（凭证类）、product-analytics。**ui-plugin-manager 的「安装并启用」**：上游会传 `enabled:subject.selection`（`C/ui-plugin-manager/src/client/manager-store.ts:1277-1280`），产品壳须固定为 false 并隐藏该选项，否则按 §2.2 被拒。
+- **勘误**：UI 层自写（R0 追认 2026-11-02，p4-ui/ui/R0-ruling.md）：本节描述的 workspace 集成仅适用于 wire 协议参照与三桥实现；renderer 不启动 dsh client，[data-message-bubble] 等为 renderer 内部 DOM 钩子不入契约。
 
 ### 2.2 main 参数约束（不靠隐藏按钮守边界）
 - `pluginManager/installBundle`：`args[1]` 必须是对象且 `enabled === false`；省略、`true`、非布尔一律拒（`plugin-manager index.ts:1002`：`enabled !== false` 即启用）。
@@ -159,4 +160,5 @@ renderer 侧不手写：`$events` 由上游 `ClientRemoteEvents` 开（`GW/clien
 | 1.1→1.2 HIGH-4 | 已改：§2.3 端口转交时序（requestId → `webContents.postMessage` → preload 桥 → CONNECTING 包装 → 失败/超时/断线清理）；M2 从 invoke 改为 send + postMessage | G1-r1 B；Electron message-ports 文档 |
 | 1.1→1.2 MEDIUM 9/9 吸收 + LOW 3/3 | main 专用桥模块、不直接复用 examples/lib（§2）；M2 streamId 归属三条；`session/control` 直接入 M2；#4 改 main 编排、M3 只写 mainBotId（§3.1，配方先于 session 落盘，取代「两步写入补偿」）；只读态 roster 比对；spike 时限/四场景/批量判据/止损/审批闸门（§7.4，A+B 合并）；Q-009 never preset 滤除并说明（#1、§2.2）。LOW：#1 滤 `p2temp-*`；`interactions:'answer'`（§2.1）；品味项文案与「用此配置新建」（§7.5） | G1-r1 A MEDIUM×6 + LOW×3、B MEDIUM×3 + product_ruling |
 | 1.2→1.3 | 新增 §8（G1-r2 清单，panels/G1-r2.md）；#1 删 danger-full-access 错位过滤文案、改指 §8 第 3 条；§3.1 补 agentPreset 单点解析行 | panels/G1-r2.md |
+| 1.3→1.4 | 已改：§2.1 末追加勘误行——UI 层自写（R0 追认）：本节 workspace 集成仅适用于 wire 协议参照与三桥实现，renderer 不启动 dsh client，[data-message-bubble] 等语义锚点不入契约；不算接口改动，不走 C2 | p4-ui/ui/R0-ruling.md |
 > 勘误（2026-11-02，G1-r2 A 席第 3 条）：§8-3 中「Q-009 答 A 前保持默认拒绝」的条件句作废——两条拒绝（/permission 命令行、configForms 写）为 **P4 永久判据**，与任何问题答复无关（Q-009=A 仅指 SDK 侧 shell-ask 行为）；放宽须另开安全红线问题并引用用户原话。P4 边界以 p4-ui/BRIEF v1.2 D9 为准。

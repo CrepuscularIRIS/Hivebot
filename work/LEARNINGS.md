@@ -38,4 +38,8 @@
 
 2026-11-02 L-4 终审 13 发现全在范围外（app/ui 的 P4 代码，审查期间合并进 main 被 finder 扫入工作区）→ mm-review 对「head 漂移期间合并的无关代码」无隔离 → L 档跑在活跃开发期时，报告要按 diff 范围过滤发现再定 verdict；范围外发现按所在 slug 归口不丢弃（转 REVIEW-W1-pre.md）。
 
+2026-11-02 PLAN 决策 2 定「第 2 级集成 dsh client」，依据只是 spike 静态构建能过，到 W2 U-21 才发现 renderer 根本 boot 不起来（boot 依赖服务端注入，ClientSessions 需要的 remote 超出白名单），只能追认改为自写 → spike 验的是「能构建」，不是「在目标宿主里能跑」→ 以后凡是集成决策，spike 验收都必须包含「在目标宿主里实际 boot 并走通一条旅程」；只验构建的，结论标为「未实证」。
+
 2026-11-02 U-18 builder 实测 vitest 5.0.5 teardown 坑 → teardown 会以零参调用 vi.mock 透传的 mock 一次，真 fs.rename 收到 undefined 抛 TypeError 污染已过的测试——测试里 mock fs 原语时在 mock 函数内对无参调用返回 undefined 并注释，别依赖 teardown 顺序。
+
+2026-11-02 verifier 把 VERIFY-U-21.md 写在 worktree 的 work/ 下，worktree remove 时随树丢失（GU 席无法独立核对）→ 派发提示词必须写明「报告一律写主仓 /home/lingxufeng/bot/work/...，绝不写 worktree 内的 work/」；主会话合并前应确认 VERIFY 文件已在主仓出现，再 worktree remove。

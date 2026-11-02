@@ -26,6 +26,7 @@
     "ws": "8.22.1"
   },
   "devDependencies": {
+    "@agent-infra/mcp-server-filesystem": "1.2.29",
     "@deepseek-ai/dsh-llm-replay": "0.2.2-alpha.2",
     "@vitest/coverage-v8": "5.0.5",
     "vitest": "5.0.5"

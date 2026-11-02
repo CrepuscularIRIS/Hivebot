@@ -51,6 +51,16 @@ export const CSP = [
 
 export type AppPathResult = { status: 400 | 403; file?: undefined } | { status: 200; file: string }
 
+/**
+ * U-00.fN②：首屏初始导航被新导航取代（如页面导航打断加载）时 loadURL 以 ERR_ABORTED
+ * reject，属正常时序，容忍——不退出、不重载（新导航/门控已接管页面）。判定照抄
+ * 来源: deepseek-harness@ce7073d:apps/desktop/src/main.ts:506-512（promise reject 的
+ * code 为字符串；did-fail-load 事件回调的数字 code 是另一条路径，不在此判）。
+ */
+export function isTolerableLoadError(error: unknown): boolean {
+  return error instanceof Error && 'code' in error && (error as { code?: unknown }).code === 'ERR_ABORTED'
+}
+
 /** 静态资源路径解析（防穿越，来源 web-document.ts:22-25 改写为可单测纯函数）。 */
 export function resolveAppPath(root: string, rawPathname: string): AppPathResult {
   let pathname: string
@@ -172,7 +182,11 @@ async function main(): Promise<void> {
     // main 侧观测面（U-15 ③ 断言口径：错 clientId 拒绝时 dsh /api 计数 === 0；不开新 IPC 通道）
     ;(globalThis as { __pbotsDsh?: DshConnection }).__pbotsDsh = dsh
   }
+  // U-00.fN②：初始导航被 renderer 抢占导航取代时 ERR_ABORTED 不再 exit(1)
+  // （PAB-final §4：origin-gate (c) 首屏加载期导航曾稳定击穿进程）；其他错误仍走
+  // main().catch → app.exit(1)。
   await mainWindow.loadURL(process.env.PBOTS_APP_URL ?? `${SCHEME}://app/`)
+    .catch((error: unknown) => { if (!isTolerableLoadError(error)) throw error })
 
   app.on('window-all-closed', () => {
     if (process.env.PBOTS_HOLD_ON_CLOSE !== '1') app.quit()

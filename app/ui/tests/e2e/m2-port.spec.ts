@@ -27,10 +27,10 @@ async function launchM2Shell(rt: SdkRuntime): Promise<Shell> {
   return { app: shell.app, page: shell.page, stop: shell.stop }
 }
 
-/** 等页面模块脚本跑完（__pbotsCarrier 就位）。 */
-async function waitCarrier(page: Page, timeout = 10_000): Promise<void> {
+/** 等页面模块脚本跑完（__pbotsDev 就位）。 */
+async function waitDev(page: Page, timeout = 10_000): Promise<void> {
   await page.waitForFunction(
-    () => typeof (window as unknown as { __pbotsCarrier?: unknown }).__pbotsCarrier === 'object',
+    () => typeof (window as unknown as { __pbotsDev?: unknown }).__pbotsDev === 'object',
     undefined,
     { timeout },
   )
@@ -38,12 +38,12 @@ async function waitCarrier(page: Page, timeout = 10_000): Promise<void> {
 
 async function waitEventsReady(page: Page, timeout = 20_000): Promise<string> {
   await page.waitForFunction(
-    () => (window as unknown as { __pbotsCarrier?: { events: { clientId?: string } } }).__pbotsCarrier?.events.clientId !== undefined,
+    () => (window as unknown as { __pbotsDev?: { events: { clientId?: string } } }).__pbotsDev?.events.clientId !== undefined,
     undefined,
     { timeout },
   )
   const clientId = await page.evaluate(() =>
-    (window as unknown as { __pbotsCarrier: { events: { clientId?: string } } }).__pbotsCarrier.events.clientId)
+    (window as unknown as { __pbotsDev: { events: { clientId?: string } } }).__pbotsDev.events.clientId)
   expect(typeof clientId).toBe('string')
   return clientId as string
 }
@@ -89,15 +89,15 @@ async function createApprovalSession(rt: SdkRuntime): Promise<{ sessionId: strin
 async function waitWaterfall(page: Page, sessionId: string, timeout = 20_000): Promise<{ eventId: string }> {
   await page.waitForFunction(
     (sid) => {
-      const items = (window as unknown as { __pbotsCarrier: { events: { items: Array<{ type?: string; event?: string; agentId?: string; eventId?: string }> } } }).__pbotsCarrier.events.items
+      const items = (window as unknown as { __pbotsDev: { events: { items: Array<{ type?: string; event?: string; agentId?: string; eventId?: string }> } } }).__pbotsDev.events.items
       return items.some((it) => it.type === 'waterfall' && it.event === 'approval/request' && it.agentId === sid)
     },
     sessionId,
     { timeout },
   )
   const hit = await page.evaluate((sid) =>
-    (window as unknown as { __pbotsCarrier: { events: { items: Array<{ type?: string; event?: string; agentId?: string; eventId?: string }> } } })
-      .__pbotsCarrier.events.items.find((it) => it.type === 'waterfall' && it.event === 'approval/request' && it.agentId === sid),
+    (window as unknown as { __pbotsDev: { events: { items: Array<{ type?: string; event?: string; agentId?: string; eventId?: string }> } } })
+      .__pbotsDev.events.items.find((it) => it.type === 'waterfall' && it.event === 'approval/request' && it.agentId === sid),
     sessionId)
   return { eventId: hit.eventId as string }
 }
@@ -113,20 +113,20 @@ test('① 成功转交 + 两并发 requestId 不串线 + readyState 0→1 + tap 
     const cwd = mkdtempSync(join(tmpdir(), 'bot-U-12-ws-'))
     const { sessionId } = (await rt.client.call('session/create', { request: { cwd } })) as { sessionId: string }
     rt.writeScriptCalls(sessionId, [textCall('回三段'), textCall('收尾')])
-    const rid = await shell.page.evaluate(() => (window as unknown as { __pbotsCarrier: { newSocket(): { requestId: string } } }).__pbotsCarrier.newSocket().requestId)
+    const rid = await shell.page.evaluate(() => (window as unknown as { __pbotsDev: { newSocket(): { requestId: string } } }).__pbotsDev.newSocket().requestId)
     await shell.page.waitForFunction((r: string) => {
-      const sockets = (window as unknown as { __pbotsCarrier: { sockets: Array<{ requestId: string; readyStates: number[] }> } }).__pbotsCarrier.sockets
+      const sockets = (window as unknown as { __pbotsDev: { sockets: Array<{ requestId: string; readyStates: number[] }> } }).__pbotsDev.sockets
       return sockets.find((s) => s.requestId === r)?.readyStates.includes(1)
     }, rid, { timeout: 10_000 })
     const followStreamId = await shell.page.evaluate(({ r, sid }: { r: string; sid: string }) => {
-      const sockets = (window as unknown as { __pbotsCarrier: { sockets: Array<{ requestId: string; openStream(e: string, a?: unknown): { streamId: string } }> } }).__pbotsCarrier.sockets
+      const sockets = (window as unknown as { __pbotsDev: { sockets: Array<{ requestId: string; openStream(e: string, a?: unknown): { streamId: string } }> } }).__pbotsDev.sockets
       return sockets.find((s) => s.requestId === r)!.openStream('session/follow', { request: { address: { kind: 'session', sessionId: sid }, assistantStream: true } }).streamId
     }, { r: rid, sid: sessionId })
 
     // follow 开流快照先到（收到端口才 OPEN 已由 readyStates [0,1] 证）
     await shell.page.waitForFunction(
       ({ r }) => {
-        const s = (window as unknown as { __pbotsCarrier: { sockets: Array<{ requestId: string; frames: unknown[] }> } }).__pbotsCarrier.sockets.find((x) => x.requestId === r)
+        const s = (window as unknown as { __pbotsDev: { sockets: Array<{ requestId: string; frames: unknown[] }> } }).__pbotsDev.sockets.find((x) => x.requestId === r)
         return (s?.frames.length ?? 0) > 0
       },
       { r: rid },
@@ -136,7 +136,7 @@ test('① 成功转交 + 两并发 requestId 不串线 + readyState 0→1 + tap 
     // 流式 chunk 到齐 + 定稿
     await shell.page.waitForFunction(
       ({ r, want }) => {
-        const s = (window as unknown as { __pbotsCarrier: { sockets: Array<{ requestId: string; frames: unknown[] }> } }).__pbotsCarrier.sockets.find((x) => x.requestId === r)
+        const s = (window as unknown as { __pbotsDev: { sockets: Array<{ requestId: string; frames: unknown[] }> } }).__pbotsDev.sockets.find((x) => x.requestId === r)
         const frames = (s?.frames ?? []).map((f) => (typeof f === 'string' ? JSON.parse(f) : f)) as Array<{ type?: string; value?: { type?: string; frame?: { type?: string } } }>
         const chunks = frames.filter((f) => f.type === 'item' && f.value?.type === 'assistant-stream' && f.value.frame?.type === 'chunk')
         return chunks.length >= want
@@ -148,7 +148,7 @@ test('① 成功转交 + 两并发 requestId 不串线 + readyState 0→1 + tap 
     // 不串线：boot 的 $events 帧不进 follow 的 frames，反之亦然
     const cross = await shell.page.evaluate(
       ({ r }) => {
-        const carrier = (window as unknown as { __pbotsCarrier: { events: { items: unknown[] }; sockets: Array<{ requestId: string; frames: unknown[] }> } }).__pbotsCarrier
+        const carrier = (window as unknown as { __pbotsDev: { events: { items: unknown[] }; sockets: Array<{ requestId: string; frames: unknown[] }> } }).__pbotsDev
         const followFrames = carrier.sockets.find((x) => x.requestId === r)!.frames.map((f) => (typeof f === 'string' ? JSON.parse(f) : f)) as Array<{ value?: { type?: string } }>
         const eventsItems = carrier.events.items as Array<{ type?: string }>
         return {
@@ -163,7 +163,7 @@ test('① 成功转交 + 两并发 requestId 不串线 + readyState 0→1 + tap 
 
     // readyState 时间线与 relay 端口数（页面侧观察）
     const handle = await shell.page.evaluate((r: string) => {
-      const sockets = (window as unknown as { __pbotsCarrier: { sockets: Array<{ requestId: string; readyStates: number[]; relays: Array<{ ok: boolean; ports: number }> }> } }).__pbotsCarrier.sockets
+      const sockets = (window as unknown as { __pbotsDev: { sockets: Array<{ requestId: string; readyStates: number[]; relays: Array<{ ok: boolean; ports: number }> }> } }).__pbotsDev.sockets
       return sockets.find((x) => x.requestId === r)
     }, rid)
     expect(handle.readyStates[0]).toBe(0)
@@ -187,14 +187,14 @@ test('① 成功转交 + 两并发 requestId 不串线 + readyState 0→1 + tap 
 test('① 失败不带端口：dsh 未配置 → {ok:false,error}，readyState=3', async () => {
   const shell = await launchShell() // 无 PBOTS_DSH_HANDOFF
   try {
-    await waitCarrier(shell.page)
-    const rid = await shell.page.evaluate(() => (window as unknown as { __pbotsCarrier: { newSocket(): { requestId: string } } }).__pbotsCarrier.newSocket().requestId)
+    await waitDev(shell.page)
+    const rid = await shell.page.evaluate(() => (window as unknown as { __pbotsDev: { newSocket(): { requestId: string } } }).__pbotsDev.newSocket().requestId)
     await shell.page.waitForFunction((r: string) => {
-      const sockets = (window as unknown as { __pbotsCarrier: { sockets: Array<{ requestId: string; readyStates: number[] }> } }).__pbotsCarrier.sockets
+      const sockets = (window as unknown as { __pbotsDev: { sockets: Array<{ requestId: string; readyStates: number[] }> } }).__pbotsDev.sockets
       return sockets.find((s) => s.requestId === r)?.readyStates.includes(3)
     }, rid, { timeout: 5_000 })
     const handle = await shell.page.evaluate((r: string) => {
-      const sockets = (window as unknown as { __pbotsCarrier: { sockets: Array<{ requestId: string; error?: string; relays: Array<{ ok: boolean; ports: number }> }> } }).__pbotsCarrier.sockets
+      const sockets = (window as unknown as { __pbotsDev: { sockets: Array<{ requestId: string; error?: string; relays: Array<{ ok: boolean; ports: number }> }> } }).__pbotsDev.sockets
       return sockets.find((x) => x.requestId === r)
     }, rid)
     expect(handle.error).toContain('dsh connection not configured')
@@ -210,14 +210,14 @@ test('① 10s 超时：socket 一直不就绪 → readyState=3 派发 error（�
   writeFileSync(join(handoff, 'launch-token'), 'nope')
   const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: handoff } })
   try {
-    await waitCarrier(shell.page)
-    const rid = await shell.page.evaluate(() => (window as unknown as { __pbotsCarrier: { newSocket(): { requestId: string } } }).__pbotsCarrier.newSocket().requestId)
+    await waitDev(shell.page)
+    const rid = await shell.page.evaluate(() => (window as unknown as { __pbotsDev: { newSocket(): { requestId: string } } }).__pbotsDev.newSocket().requestId)
     await shell.page.waitForFunction((r: string) => {
-      const sockets = (window as unknown as { __pbotsCarrier: { sockets: Array<{ requestId: string; readyStates: number[] }> } }).__pbotsCarrier.sockets
+      const sockets = (window as unknown as { __pbotsDev: { sockets: Array<{ requestId: string; readyStates: number[] }> } }).__pbotsDev.sockets
       return sockets.find((s) => s.requestId === r)?.readyStates.includes(3)
     }, rid, { timeout: 15_000 })
     const handle = await shell.page.evaluate((r: string) => {
-      const sockets = (window as unknown as { __pbotsCarrier: { sockets: Array<{ requestId: string; error?: string; relays: Array<{ ports: number }> }> } }).__pbotsCarrier.sockets
+      const sockets = (window as unknown as { __pbotsDev: { sockets: Array<{ requestId: string; error?: string; relays: Array<{ ports: number }> }> } }).__pbotsDev.sockets
       return sockets.find((x) => x.requestId === r)
     }, rid)
     expect(handle.error).toContain('timed out')
@@ -284,7 +284,7 @@ test('④⑤ ledger 记 ready clientId 与未决 eventId；D4① 重载后未决
     expect(pending).toBe(true)
 
     // D4①：重载 renderer → 新 clientId、同 eventId 补发 → 批准后执行
-    const oldClientId = await shell.page.evaluate(() => (window as unknown as { __pbotsCarrier: { events: { clientId?: string } } }).__pbotsCarrier.events.clientId)
+    const oldClientId = await shell.page.evaluate(() => (window as unknown as { __pbotsDev: { events: { clientId?: string } } }).__pbotsDev.events.clientId)
     await shell.page.reload()
     const newClientId = await waitEventsReady(shell.page)
     expect(newClientId).not.toBe(oldClientId)
@@ -322,7 +322,7 @@ test('⑤ D4② 断开 mux socket 再重连：未决 waterfall 带新 clientId �
     rt.writeScriptCalls(sessionId, [bashCall(`touch ${canary}`), textCall('收尾')])
     await sendPrompt(rt.client, sessionId, 'turn-1')
     const { eventId } = await waitWaterfall(shell.page, sessionId)
-    const oldClientId = await shell.page.evaluate(() => (window as unknown as { __pbotsCarrier: { events: { clientId?: string } } }).__pbotsCarrier.events.clientId)
+    const oldClientId = await shell.page.evaluate(() => (window as unknown as { __pbotsDev: { events: { clientId?: string } } }).__pbotsDev.events.clientId)
 
     // 断链注入：terminate main 的 mux socket → die → 关全部 port → DshConnection 重连
     await shell.app.evaluate(() => (globalThis as unknown as { __pbotsM2: { testDropSocket(): void } }).__pbotsM2.testDropSocket())
@@ -330,13 +330,13 @@ test('⑤ D4② 断开 mux socket 再重连：未决 waterfall 带新 clientId �
     // 页面 W 收 close → debug boot 300ms 后重开 → 新 clientId；重连期间不转交死 socket（单测已证）
     await shell.page.waitForFunction(
       (old: string) => {
-        const c = (window as unknown as { __pbotsCarrier: { events: { clientId?: string } } }).__pbotsCarrier.events
+        const c = (window as unknown as { __pbotsDev: { events: { clientId?: string } } }).__pbotsDev.events
         return c.clientId !== undefined && c.clientId !== old
       },
       oldClientId as string,
       { timeout: 30_000 },
     )
-    const newClientId = await shell.page.evaluate(() => (window as unknown as { __pbotsCarrier: { events: { clientId?: string } } }).__pbotsCarrier.events.clientId)
+    const newClientId = await shell.page.evaluate(() => (window as unknown as { __pbotsDev: { events: { clientId?: string } } }).__pbotsDev.events.clientId)
     const replayed = await waitWaterfall(shell.page, sessionId)
     expect(replayed.eventId).toBe(eventId)
 

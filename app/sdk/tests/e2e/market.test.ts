@@ -12,6 +12,16 @@
 //      (io.github.bytedance/mcp-server-filesystem, stdio, official status
 //      active; the task-preferred @modelcontextprotocol/server-filesystem is
 //      NOT in the registry — verified 2026-11-02, hence this substitution).
+//   ②b (T-19) install straight from the LISTING's versions[].install — the
+//      spec is the registry package's real npm coordinate
+//      (@agent-infra/mcp-server-filesystem@1.2.29). pnpm really resolves and
+//      adds it (offline: from the store the devDependency filled); dsh then
+//      refuses it at its own semantic boundary — a bare MCP server package
+//      declares no dsh.bundle → structured `not-bundle`, NOT a registry 404
+//      on a made-up name (the pre-T-19 behavior).
+//   ②c (T-19) entries whose registry record carries no npm coordinate stay
+//      listed (marked `not-installable` in metadata.keywords) and an install
+//      attempt fails with a structured error, never silently.
 //   ③ X enabled / Y not (p2temp/session.createWithConnectors; preset.ensure
 //      must be available): X's request tool table contains the connector's
 //      tool, Y's contains no mcp__* tool; a scripted (fake LLM) turn drives X
@@ -42,8 +52,13 @@ const FIXTURES = join(PKG_ROOT, 'tests', 'e2e', 'fixtures', 'market')
 const N = 111
 /** 选定连接器：registry 真实条目名（快照 title 保留源身份；format-1 name 走确定性 npm 映射）。 */
 const CONNECTOR_SERVER = 'io.github.bytedance/mcp-server-filesystem'
-/** 同一条目的 format-1 映射名（fetch-market-fixture.mjs toNpmName 的确定输出）。 */
-const CONNECTOR_MARKET_NAME = '@io.github.bytedance/mcp-server-filesystem'
+/**
+ * 同一条目的 format-1 name（T-19）：registry packages[] 里声明的真实 npm 包名
+ * （registryType 'npm' 的 identifier），不再是 registry-name 的确定性改名。
+ */
+const CONNECTOR_MARKET_NAME = '@agent-infra/mcp-server-filesystem'
+/** listing 的 versions[].install 必须给出的真实 npm spec（devDep 锁定同一版本，离线 store 可供）。 */
+const CONNECTOR_INSTALL_SPEC = '@agent-infra/mcp-server-filesystem@1.2.29'
 /** wrapper bundle 名（承载真实 npm 包的启动配置，走 installBundle 装入 profile）。 */
 const WRAPPER = '@p2sdk-real/filesystem'
 /** X 启用后可见的连接器工具（serverName 'filesystem' + server 的 read_file）。 */
@@ -60,6 +75,12 @@ let closeIndex: () => Promise<void>
 let installResult: unknown
 let helloPath: string
 const HELLO_TEXT = 'p2sdk-d6-connector-evidence'
+/** One listed entry as pluginMarket/search returns it (T-19: versions[].install)。 */
+type ListedEntry = { name: string; title?: string; versions?: Array<{ version: string; install?: { spec?: string } }> }
+/** The full listing, paged once by ① and reused by ②b/②c。 */
+let allEntries: ListedEntry[] = []
+/** The install spec ① observed on the connector's listed version (consumed by ②b)。 */
+let listingInstallSpec = ''
 
 /** Serve the cached registry snapshot over loopback (plugin-market fetches http(s) only). */
 async function serveFixture(): Promise<{ url: string; close: () => Promise<void> }> {
@@ -254,14 +275,15 @@ it('① lists the cached registry snapshot through pluginMarket/search: >=N entr
   // pluginMarket/search caps limit at 100 — page through the 111-entry snapshot.
   const page = async (
     offset: number,
-  ): Promise<{ total: number; entries: Array<{ name: string; title?: string }> }> =>
+  ): Promise<{ total: number; entries: ListedEntry[] }> =>
     (await rt.client.call('pluginMarket/search', {
       url: indexUrl,
       query: { sort: { kind: 'index' }, text: '', offset, limit: 100 },
-    })) as { total: number; entries: Array<{ name: string; title?: string }> }
+    })) as { total: number; entries: ListedEntry[] }
   const first = await page(0)
   const rest = first.total > 100 ? await page(100) : { total: first.total, entries: [] }
   const entries = [...first.entries, ...rest.entries]
+  allEntries = entries
   expect(first.title).toBe('MCP official registry snapshot (offline mirror)')
   expect(first.total, `snapshot carries at least N=${N} entries`).toBeGreaterThanOrEqual(N)
   expect(entries.length, 'entries actually listed through the SDK surface').toBeGreaterThanOrEqual(N)
@@ -271,6 +293,13 @@ it('① lists the cached registry snapshot through pluginMarket/search: >=N entr
   const connector = entries.find((e) => e.name === CONNECTOR_MARKET_NAME)
   expect(connector, 'the selected connector really exists in the source snapshot').toBeTruthy()
   expect(connector?.title, 'the market entry keeps the original registry server name').toBe(CONNECTOR_SERVER)
+
+  // T-19: the listing's install target is the registry-declared real npm
+  // coordinate (packages[].identifier@version), not a made-up registry-name
+  // mapping — this is what a user (or P4 UI) hands to installBundle.
+  const listed = connector?.versions?.find((v) => v.install?.spec === CONNECTOR_INSTALL_SPEC)
+  expect(listed, `connector lists the real npm install spec ${CONNECTOR_INSTALL_SPEC}`).toBeTruthy()
+  listingInstallSpec = listed?.install?.spec ?? ''
 
   // The fixture's own bookkeeping agrees (N is measured, then pinned).
   const source = JSON.parse(readFileSync(join(FIXTURES, 'source.json'), 'utf8')) as { pluginCount: number }
@@ -294,6 +323,47 @@ it('② installs the real connector bundle through installBundle (enabled:false)
   expect(row, `${WRAPPER} appears in pluginManager/listBundles`).toBeTruthy()
   expect(row?.enabled, 'the connector installed disabled — enabling is per-session via p2temp').toBe(false)
 }, 120_000)
+
+it('②b installs straight from the listing install spec: real npm package, dsh not-bundle boundary', async () => {
+  expect(listingInstallSpec, '① observed the listing install spec').toBe(CONNECTOR_INSTALL_SPEC)
+  const result = (await rt.client.call('pluginManager/installBundle', {
+    spec: listingInstallSpec,
+    options: { enabled: false },
+  })) as { application?: string; error?: { code?: string; diagnostic?: string } }
+
+  // pnpm really resolved and added the real package (offline: from the store the
+  // devDependency filled); dsh then refused it at its own semantic boundary —
+  // a bare MCP server package declares no dsh.bundle. A made-up name instead
+  // dies inside pnpm with a registry 404 (`operation-error`), the pre-T-19 state.
+  expect(result?.application, `installBundle outcome: ${JSON.stringify(result).slice(0, 400)}`).toBe('failed')
+  expect(result?.error?.code, 'the refusal is dsh not-bundle, not a registry 404 on a made-up name').toBe('not-bundle')
+
+  // The refusal rolled the profile back: the bare package is not left selected.
+  const bundles = (await rt.client.call('pluginManager/listBundles', {})) as Array<{ name: string }>
+  expect(bundles.find((b) => b.name === CONNECTOR_MARKET_NAME), 'rollback left no selected bare package').toBeUndefined()
+}, 180_000)
+
+it('②c entries without an npm coordinate stay listed and fail with a structured error', async () => {
+  // The fixture marks them (fetch-market-fixture.mjs T-19): listed, never installable.
+  const index = JSON.parse(readFileSync(join(FIXTURES, 'index.json'), 'utf8')) as {
+    plugins: Array<{ name: string; title: string; metadata?: { keywords?: string[] }; versions: Array<{ version: string }> }>
+  }
+  const bare = index.plugins.find((p) => p.metadata?.keywords?.includes('not-installable'))
+  expect(bare, 'the regenerated fixture marks coordinate-less entries not-installable').toBeTruthy()
+
+  const visible = allEntries.find((e) => e.name === bare?.name)
+  expect(visible, 'the coordinate-less entry is still visible through the SDK listing').toBeTruthy()
+
+  const result = (await rt.client.call('pluginManager/installBundle', {
+    spec: `${bare?.name}@${bare?.versions[0]?.version}`,
+    options: { enabled: false },
+  })) as { application?: string; error?: { code?: string; diagnostic?: string } }
+  expect(result?.application, `install attempt fails loudly: ${JSON.stringify(result).slice(0, 300)}`).toBe('failed')
+  expect(typeof result?.error?.code, 'the failure is a structured refusal, not silence').toBe('string')
+  // Online the refusal is a registry 404 in ~2s; offline ($OFFLINE netns) pnpm's
+  // own fetch timeout/backoff makes the same refusal take ~70s — the 300s cap
+  // covers both without special-casing the environment.
+}, 300_000)
 
 it('③ X (connectors) sees and CALLS the real filesystem tool; Y never sees it', async () => {
   const cwd = join(rt.home, 'workspace')

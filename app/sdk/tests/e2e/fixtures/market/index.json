@@ -7,6 +7,11 @@
    "name": "@ac.inference.sh/mcp",
    "title": "ac.inference.sh/mcp",
    "description": "run any ai model. compose agents, stack knowledge, connect tools. one api, pay per run.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "2.0.1",
@@ -21,6 +26,11 @@
    "name": "@ac.snag/snag",
    "title": "ac.snag/snag",
    "description": "Gives your coding agent the captured console, network, replay and screenshot evidence for a bug.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -35,6 +45,11 @@
    "name": "@ac.tandem/docs-mcp",
    "title": "ac.tandem/docs-mcp",
    "description": "Remote MCP server for Tandem docs, install guides, SDKs, workflows, and agent setup help.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.3.2",
@@ -49,6 +64,11 @@
    "name": "@academy.apexai/apex-ai-academy",
    "title": "academy.apexai/apex-ai-academy",
    "description": "Co-Learn with your Agent: fact-checked AI lessons with Human and Agent views.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.2",
@@ -63,6 +83,11 @@
    "name": "@academy.ase/periodic-system",
    "title": "academy.ase/periodic-system",
    "description": "Practices for building software with coding agents, each with a test you check on your repo.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "2026.4.1",
@@ -77,6 +102,11 @@
    "name": "@ad.getle/leads",
    "title": "ad.getle/leads",
    "description": "Find B2B leads with verified work emails, find and verify emails, and run cold email outreach.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -91,6 +121,11 @@
    "name": "@ad.inside/inside-ads",
    "title": "ad.inside/inside-ads",
    "description": "Telegram ad exchange: estimate reach and cost with no account, then create and run campaigns.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -105,6 +140,11 @@
    "name": "@ae.beachclubs/mcp",
    "title": "ae.beachclubs/mcp",
    "description": "Search UAE beach clubs, day pass prices, amenities, opening hours and events across all 7 emirates.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.3.0",
@@ -119,6 +159,11 @@
    "name": "@ae.brainy/grocery-prices",
    "title": "ae.brainy/grocery-prices",
    "description": "Source-backed UAE costs: groceries, schools, housing, transport, utilities, telecom and relocation",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "2.0.0",
@@ -133,6 +178,11 @@
    "name": "@ae.datadubai/dubai-real-estate",
    "title": "ae.datadubai/dubai-real-estate",
    "description": "Dubai property prices, AED/sqft, sales, rents, yields and projects from DLD registered transactions.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.1.0",
@@ -147,6 +197,11 @@
    "name": "@ae.easyvoice/tts",
    "title": "ae.easyvoice/tts",
    "description": "Hosted text-to-speech MCP server: 66 voices in 9 languages, long-form narration, podcasts.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -161,6 +216,11 @@
    "name": "@ae.genosys/genosys",
    "title": "ae.genosys/genosys",
    "description": "Shop GENOSYS Korean skincare in the UAE from chat: find products, AED prices, order and pay.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.2.0",
@@ -175,6 +235,11 @@
    "name": "@ae.grovisor/grotax",
    "title": "ae.grovisor/grotax",
    "description": "UAE Corporate Tax: CT computation, SBR, penalties, free zone test, TP and health-check.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.3.0",
@@ -189,6 +254,11 @@
    "name": "@ae.plantguide/dubai-gardening",
    "title": "ae.plantguide/dubai-gardening",
    "description": "What to plant in Dubai, indoor plants, plant care in the heat, garden styles and Garden Care prices.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.1.0",
@@ -203,6 +273,11 @@
    "name": "@ae.projectory/mcp",
    "title": "ae.projectory/mcp",
    "description": "Find UAE off-plan developments and registered residential sales.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.6.0",
@@ -217,6 +292,11 @@
    "name": "@ae.propick/propick",
    "title": "ae.propick/propick",
    "description": "Manage your real-estate stock on Propick (Dubai): bulk listing sync, lookups and run reports.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -231,6 +311,11 @@
    "name": "@ae.waggle/fenlight",
    "title": "ae.waggle/fenlight",
    "description": "Google search results, forum threads, local and shopping data, keyword ideas, AI answer tracking.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.3.0",
@@ -245,6 +330,11 @@
    "name": "@ae.waggle/vera",
    "title": "ae.waggle/vera",
    "description": "Scrape, search and extract the public web. 3,000 free credits at https://vera.waggle.ae/signup",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.2.0",
@@ -259,6 +349,11 @@
    "name": "@aero.events/events",
    "title": "aero.events/events",
    "description": "Find aviation events: airshows, fly-ins, workshops and club meets. Public and read-only.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -273,6 +368,11 @@
    "name": "@africa.ugc/ugc",
    "title": "africa.ugc/ugc",
    "description": "The Human Ad Network. Campaigns, clipping, and Clip Studio from chat.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -287,6 +387,11 @@
    "name": "@ag.hood/name-service",
    "title": "ag.hood/name-service",
    "description": "Resolve .hood names on Robinhood Chain — forward/reverse, text records, availability & pricing.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.0",
@@ -301,6 +406,11 @@
    "name": "@agency.goji/goji",
    "title": "agency.goji/goji",
    "description": "Answers on AEO, SEO, web and brand from GOJI's published material. Melbourne, Australia.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -315,6 +425,11 @@
    "name": "@agency.justidea/justidea-agency",
    "title": "agency.justidea/justidea-agency",
    "description": "Services, prices, inquiries and free analytics, AI and Google visibility scans by JustIdea, Poland.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.2.0",
@@ -326,7 +441,7 @@
    ]
   },
   {
-   "name": "@agency.kesey/pretrip",
+   "name": "pretrip-mcp",
    "title": "agency.kesey/pretrip",
    "description": "Screen regulated-health marketing copy against source-cited rulesets, all 50 states.",
    "versions": [
@@ -343,6 +458,11 @@
    "name": "@agency.lona/trading",
    "title": "agency.lona/trading",
    "description": "AI-powered trading strategy development: backtesting, market data, and portfolio analysis",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "2.0.0",
@@ -357,6 +477,11 @@
    "name": "@agency.ottobot/business-contact-finder",
    "title": "agency.ottobot/business-contact-finder",
    "description": "Check how to contact a business website, and whether that contact path actually works.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.2.0",
@@ -371,6 +496,11 @@
    "name": "@agency.ottobot/contractor-license-changes",
    "title": "agency.ottobot/contractor-license-changes",
    "description": "Did this contractor's licence change? Observed lapses and reinstatements, not a snapshot.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.3",
@@ -385,6 +515,11 @@
    "name": "@agency.ottobot/licensed-house-painters",
    "title": "agency.ottobot/licensed-house-painters",
    "description": "Find licensed house painters in 11 US states, with dated license status from state boards.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.2",
@@ -399,6 +534,11 @@
    "name": "@agency.thebureauoflostcontext/bureau-public",
    "title": "agency.thebureauoflostcontext/bureau-public",
    "description": "Bureau-operated public read-only MCP service for public Context Packets and Cases.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "3.0.0",
@@ -413,6 +553,11 @@
    "name": "@agency.thirdhemisphere/ai-authority-index",
    "title": "agency.thirdhemisphere/ai-authority-index",
    "description": "Read-only CRISP scores and AI visibility data from Third Hemisphere's AI Authority Index.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -427,6 +572,11 @@
    "name": "@agency.zoll/ausfuhr",
    "title": "agency.zoll/ausfuhr",
    "description": "Regeln und Suchen zur Ausfuhr aus der EU: Kumulierung, Präferenznachweis, Incoterms, Warennummer",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -441,6 +591,11 @@
    "name": "@ai.0si/disclosures",
    "title": "ai.0si/disclosures",
    "description": "Korean (DART/KIND) and US SEC filings with AI summaries, direction labels and market reaction.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -455,6 +610,11 @@
    "name": "@ai.1325/mcp",
    "title": "ai.1325/mcp",
    "description": "Verified directory of 47,000+ Black-owned U.S. businesses. Search, profiles, maps, rewards.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.3",
@@ -469,6 +629,11 @@
    "name": "@ai.1clickwebsite/mcp",
    "title": "ai.1clickwebsite/mcp",
    "description": "Build and edit WordPress websites for local service businesses and run Lead Gen demo-site batches.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -483,6 +648,11 @@
    "name": "@ai.1court.state/court-directory",
    "title": "ai.1court.state/court-directory",
    "description": "US county court directory: clerk, courthouse address, e-filing, filing fees, and case lookup.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -494,7 +664,7 @@
    ]
   },
   {
-   "name": "@ai.2kw/mcp-server",
+   "name": "@2kw/ai-mcp-server",
    "title": "ai.2kw/mcp-server",
    "description": "EU-hosted AI platform: OpenAI-compatible LLM gateway, document extraction, transcription, agents.",
    "versions": [
@@ -511,6 +681,11 @@
    "name": "@ai.4ai/domains",
    "title": "ai.4ai/domains",
    "description": "Search 254 premium .ai domains for sale, get free .ai value estimates and real .ai sales data.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -525,6 +700,11 @@
    "name": "@ai.69ai/69ai",
    "title": "ai.69ai/69ai",
    "description": "Relationship network for AI agents and people: register, match, chat, dinner ideas, virtual gifts.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.5.0",
@@ -539,6 +719,11 @@
    "name": "@ai.aard/aard",
    "title": "ai.aard/aard",
    "description": "Official statistics from 170+ publishers, resolved from natural language with provenance.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.0",
@@ -553,6 +738,11 @@
    "name": "@ai.aarna/atars-mcp",
    "title": "ai.aarna/atars-mcp",
    "description": "Crypto market signals, technical indicators, and sentiment analysis for AI agents.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.0",
@@ -567,6 +757,11 @@
    "name": "@ai.abmeter/abmeter",
    "title": "ai.abmeter/abmeter",
    "description": "Run A/B experiments through your AI assistant. SDKs for Ruby, Python, JS, Node, React Native, Go.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.2.0",
@@ -578,12 +773,12 @@
    ]
   },
   {
-   "name": "@ai.achromat/mcp-server",
+   "name": "@achromat-ai/mcp-server",
    "title": "ai.achromat/mcp-server",
    "description": "Recall and calibrate policy-compliant tool-call arguments before execution. Does not run the tool.",
    "versions": [
     {
-     "version": "0.1.4",
+     "version": "0.1.3",
      "publishTimestamp": 1793364981,
      "source": {
       "type": "npm"
@@ -595,6 +790,11 @@
    "name": "@ai.actwise/ideation",
    "title": "ai.actwise/ideation",
    "description": "Actwise Ideation helps founders benchmark startup and product ideas before they build.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -609,6 +809,11 @@
    "name": "@ai.adadvisor/mcp-server",
    "title": "ai.adadvisor/mcp-server",
    "description": "Query Meta Ads performance data — accounts, campaigns, ad sets, ads, metrics & settings.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -623,6 +828,11 @@
    "name": "@ai.adako/ads",
    "title": "ai.adako/ads",
    "description": "Google, Meta, LinkedIn and ChatGPT Ads for AI assistants. Every change needs your approval.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.3.2",
@@ -634,7 +844,7 @@
    ]
   },
   {
-   "name": "@ai.adeu/adeu",
+   "name": "@adeu/mcp-server",
    "title": "ai.adeu/adeu",
    "description": "Automated DOCX Redlining Engine",
    "versions": [
@@ -651,6 +861,11 @@
    "name": "@ai.adkix/adkix",
    "title": "ai.adkix/adkix",
    "description": "Turn a website into a short 9:16 video ad: script, cast, voice, shots, music. Asks before spending.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -665,6 +880,11 @@
    "name": "@ai.adoraads/beauty",
    "title": "ai.adoraads/beauty",
    "description": "AI-native beauty ads, sponsored product discovery, and brand recommendations.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -679,6 +899,11 @@
    "name": "@ai.adplane/google-ads",
    "title": "ai.adplane/google-ads",
    "description": "Google, Meta, Microsoft and TikTok Ads in Claude or ChatGPT: reports and changes, created paused.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.31.0",
@@ -693,6 +918,11 @@
    "name": "@ai.adrails/adrails",
    "title": "ai.adrails/adrails",
    "description": "AI agents that build, test and monitor Meta Ads and Google Ads campaigns from your real data.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.2",
@@ -707,6 +937,11 @@
    "name": "@ai.adramp/google-ads",
    "title": "ai.adramp/google-ads",
    "description": "Google Ads MCP server — manage campaigns, keywords, and metrics.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.3",
@@ -721,6 +956,11 @@
    "name": "@ai.adrio/adrio",
    "title": "ai.adrio/adrio",
    "description": "Create Meta (Facebook and Instagram) ad creatives with AI and research competitor ads.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -735,6 +975,11 @@
    "name": "@ai.adsap/adsap",
    "title": "ai.adsap/adsap",
    "description": "Launch and manage Meta and Google Ads from your AI assistant. You approve every change first.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.73.0",
@@ -749,6 +994,11 @@
    "name": "@ai.adside/adside",
    "title": "ai.adside/adside",
    "description": "AI agents that manage paid ads on Meta, LinkedIn, and Google Ads from any MCP client.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -760,7 +1010,7 @@
    ]
   },
   {
-   "name": "@ai.adtest/adtest-mcp",
+   "name": "adtest-mcp",
    "title": "ai.adtest/adtest-mcp",
    "description": "AI-only ad scoring for Claude: score image, video or text ads on 13 dimensions before you spend.",
    "versions": [
@@ -777,6 +1027,11 @@
    "name": "@ai.advisorsai/service-navigator",
    "title": "ai.advisorsai/service-navigator",
    "description": "Describe a store's problem: get the matching service, its fixed price, and a request link.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.1.0",
@@ -791,6 +1046,11 @@
    "name": "@ai.advisorsai/store-readiness",
    "title": "ai.advisorsai/store-readiness",
    "description": "Ten machine-readable signals on one public page: the top miss if any, and a receipt we re-verify.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.6",
@@ -805,6 +1065,11 @@
    "name": "@ai.adweave/meta-ads-mcp",
    "title": "ai.adweave/meta-ads-mcp",
    "description": "Meta Ads MCP server with 47 tools for campaigns, creatives, audiences, and insights.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -819,6 +1084,11 @@
    "name": "@ai.aeoengine/best-ai-search-agency-aeo-report",
    "title": "ai.aeoengine/best-ai-search-agency-aeo-report",
    "description": "Free AEO visibility report MCP — run AI search audits for any domain.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "2.0.0",
@@ -830,7 +1100,7 @@
    ]
   },
   {
-   "name": "@ai.aetherwealth/mcp",
+   "name": "@aetherwealth/mcp",
    "title": "ai.aetherwealth/mcp",
    "description": "Aether Wealth MCP for AI assistants: trades, alerts, market data, macro calendar & indicators.",
    "versions": [
@@ -844,7 +1114,7 @@
    ]
   },
   {
-   "name": "@ai.aetherya/mcp",
+   "name": "@aetherya/mcp",
    "title": "ai.aetherya/mcp",
    "description": "Test decisions on a synthetic audience: studies, site audits, copy tests and post simulations.",
    "versions": [
@@ -861,6 +1131,11 @@
    "name": "@ai.aeviamodeler/aevia",
    "title": "ai.aeviamodeler/aevia",
    "description": "AI-powered life cycle assessment and modelling: connect to LCA databases, build and analyze systems",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -875,6 +1150,11 @@
    "name": "@ai.afg/afg",
    "title": "ai.afg/afg",
    "description": "Sandbox marketplace where AI agents hire agents for verified outcomes. Test money only.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.0",
@@ -889,6 +1169,11 @@
    "name": "@ai.afmr/discovery",
    "title": "ai.afmr/discovery",
    "description": "Read AFMR failure modes and discover scoped attestation and lift-evidence contracts.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -903,6 +1188,11 @@
    "name": "@ai.agenlify/catalog",
    "title": "ai.agenlify/catalog",
    "description": "Find AI tools by task, with pricing context, setup steps, limitations and official sources.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -914,7 +1204,7 @@
    ]
   },
   {
-   "name": "@ai.agent-bev/bev-door",
+   "name": "@agent-bev/mcp-server",
    "title": "ai.agent-bev/bev-door",
    "description": "The world's largest agentic B2B hub for beer, wine and spirits. Powered by CUVEE. Trade only.",
    "versions": [
@@ -931,6 +1221,11 @@
    "name": "@ai.agentberg/agentberg",
    "title": "ai.agentberg/agentberg",
    "description": "Agent-to-agent trading intelligence exchange. Publish findings, vote on quality, earn reputation.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.2.0",
@@ -945,6 +1240,11 @@
    "name": "@ai.agentboard/agentboard",
    "title": "ai.agentboard/agentboard",
    "description": "The public message board for AI agents: register in one call, introduce yourself, ask, read replies.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.0",
@@ -959,6 +1259,11 @@
    "name": "@ai.agentdm/agentdm",
    "title": "ai.agentdm/agentdm",
    "description": "Agent communication platform for agent to agent messaging via MCP. Messages, channels, skills.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "2.0.0",
@@ -973,6 +1278,11 @@
    "name": "@ai.agentese.lifeclaw/lifeclaw",
    "title": "ai.agentese.lifeclaw/lifeclaw",
    "description": "Call you, a person, or a business; find places, book or inquire by phone, and return the answer.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -987,6 +1297,11 @@
    "name": "@ai.agentgates/compute",
    "title": "ai.agentgates/compute",
    "description": "Confidential VMs (Intel TDX) by the hour, paid in USDC over x402: live plans, prices, how to buy.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1001,6 +1316,11 @@
    "name": "@ai.agentgates/mcp",
    "title": "ai.agentgates/mcp",
    "description": "Confidential compute and inference sold to agents over x402 USDC, plus an agent wallet over MCP.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1015,6 +1335,11 @@
    "name": "@ai.agentic-news/mcp",
    "title": "ai.agentic-news/mcp",
    "description": "AI-powered news intelligence — 21 tools for personalized monitoring, briefings, and semantic search",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1026,7 +1351,7 @@
    ]
   },
   {
-   "name": "@ai.agenticaffiliate/affiliate-networks-mcp",
+   "name": "affiliate-networks-mcp",
    "title": "ai.agenticaffiliate/affiliate-networks-mcp",
    "description": "Affiliate network reporting in your AI client. Bring your own keys. Most adapters experimental.",
    "versions": [
@@ -1043,6 +1368,11 @@
    "name": "@ai.agenticbooks/books",
    "title": "ai.agenticbooks/books",
    "description": "Startup books from live bank and billing feeds: P&L, balances, approvals, period close.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.0",
@@ -1057,6 +1387,11 @@
    "name": "@ai.agenticfabricationnetwork/ufp",
    "title": "ai.agenticfabricationnetwork/ufp",
    "description": "Turn designs into shipped parts: quote 3D printing, CNC, and decals, then check out.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.1",
@@ -1071,6 +1406,11 @@
    "name": "@ai.agenticplug/agent-ready-report",
    "title": "ai.agenticplug/agent-ready-report",
    "description": "Scan any public website and see how ready it is for AI agents and AI search, explained plainly.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1085,6 +1425,11 @@
    "name": "@ai.agenticshelf/graffeo",
    "title": "ai.agenticshelf/graffeo",
    "description": "Live MCP catalog for Graffeo Coffee Roasting - Simply the World's Finest Coffee since 1935.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.2",
@@ -1099,6 +1444,11 @@
    "name": "@ai.agenticshelf/mcp",
    "title": "ai.agenticshelf/mcp",
    "description": "Hosted MCP for e-commerce: live product catalog, stock, and pricing for AI agents.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1113,6 +1463,11 @@
    "name": "@ai.agenticshelf/puroair",
    "title": "ai.agenticshelf/puroair",
    "description": "Breathe with Confidence. Live MCP catalog for PuroAir HEPA air purifiers - stock, pricing, details.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -1127,6 +1482,11 @@
    "name": "@ai.agenticterminal/directory",
    "title": "ai.agenticterminal/directory",
    "description": "Verified merchants accepting agentic payments on Lightning/L402/BOLT12/USDT — search, verify, pay.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1141,6 +1501,11 @@
    "name": "@ai.agentlookups/counterscript",
    "title": "ai.agentlookups/counterscript",
    "description": "Free US drug-price benchmarks from federal data (CMS NADAC): a benchmark, not a price anyone owes.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -1155,6 +1520,11 @@
    "name": "@ai.agentlookups/greenlight",
    "title": "ai.agentlookups/greenlight",
    "description": "US plug-in solar (balcony solar) law registry with a daily UL 3700 certification watch.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1169,6 +1539,11 @@
    "name": "@ai.agentlookups/groundrules",
    "title": "ai.agentlookups/groundrules",
    "description": "The original text of US federal and state law, with official sources; never a summary or advice.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1183,6 +1558,11 @@
    "name": "@ai.agentlookups/groundtruth",
    "title": "ai.agentlookups/groundtruth",
    "description": "Federal environmental records near any US location, with dates and provenance; never a safety score.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -1197,6 +1577,11 @@
    "name": "@ai.agentlookups/overassessed",
    "title": "ai.agentlookups/overassessed",
    "description": "Maryland property-assessment fairness checks vs similar homes, with appeal windows and links.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1211,6 +1596,11 @@
    "name": "@ai.agentlookups/plumbline",
    "title": "ai.agentlookups/plumbline",
    "description": "Free contractor-license checks from official state records; a no-match never proves unlicensed.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.1",
@@ -1225,6 +1615,11 @@
    "name": "@ai.agentlookups/spoon-scout",
    "title": "ai.agentlookups/spoon-scout",
    "description": "Lab results, FDA recalls and additive rules for US packaged foods, with sources; never a grade.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1239,6 +1634,11 @@
    "name": "@ai.agentmash/agentmash",
    "title": "ai.agentmash/agentmash",
    "description": "All your bookmarks in one library. Share them with your AI agents. Read-only search over your saves.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.0",
@@ -1253,6 +1653,11 @@
    "name": "@ai.agentmesh/mesh",
    "title": "ai.agentmesh/mesh",
    "description": "Be an agent on the AgentMesh network: find agents, hire them, be hired, and read your mesh inbox.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1267,6 +1672,11 @@
    "name": "@ai.agentplaybooks/agentplaybooks",
    "title": "ai.agentplaybooks/agentplaybooks",
    "description": "Vendor-neutral home for portable agents: skills, MCP tools, memory, canvas, and secret proxy.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.10.0",
@@ -1281,6 +1691,11 @@
    "name": "@ai.agentrapay/agentra",
    "title": "ai.agentrapay/agentra",
    "description": "Identity oracle and trust layer for autonomous AI agents. Bidirectional KYA and trust scoring.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1295,6 +1710,11 @@
    "name": "@ai.agentroam/agentroam",
    "title": "ai.agentroam/agentroam",
    "description": "Buy travel eSIMs, gift cards and mobile top-ups with crypto — user confirms before any order.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1309,6 +1729,11 @@
    "name": "@ai.agentsindex/mcp",
    "title": "ai.agentsindex/mcp",
    "description": "The editors' index of AI-native software, from AI agents to the models and frameworks behind them.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1320,7 +1745,7 @@
    ]
   },
   {
-   "name": "@ai.agenttrust/mcp-server",
+   "name": "@agenttrust/mcp-server",
    "title": "ai.agenttrust/mcp-server",
    "description": "Identity, trust, and A2A orchestration for autonomous AI agents. Official A2A partner.",
    "versions": [
@@ -1337,6 +1762,11 @@
    "name": "@ai.agentui/apps",
    "title": "ai.agentui/apps",
    "description": "Create AgentUI data apps: define tables, read and write records, and run programs on your data.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.0.0",
@@ -1348,7 +1778,7 @@
    ]
   },
   {
-   "name": "@ai.agentutility/mcp-agentops",
+   "name": "@agentutility/mcp-agentops",
    "title": "ai.agentutility/mcp-agentops",
    "description": "MCP server for the @agentutility agentops cluster — pay-per-call x402 tools, no API keys, USDC on…",
    "versions": [
@@ -1362,7 +1792,7 @@
    ]
   },
   {
-   "name": "@ai.agentutility/mcp-bestiary",
+   "name": "@agentutility/mcp-bestiary",
    "title": "ai.agentutility/mcp-bestiary",
    "description": "MCP server for the @agentutility bestiary cluster — pay-per-call x402 tools, no API keys, USDC on…",
    "versions": [
@@ -1376,7 +1806,7 @@
    ]
   },
   {
-   "name": "@ai.agentutility/mcp-browser-workflow",
+   "name": "@agentutility/mcp-browser-workflow",
    "title": "ai.agentutility/mcp-browser-workflow",
    "description": "MCP server for the @agentutility browser-workflow cluster — pay-per-call x402 tools, no API keys…",
    "versions": [
@@ -1390,7 +1820,7 @@
    ]
   },
   {
-   "name": "@ai.agentutility/mcp-compose",
+   "name": "@agentutility/mcp-compose",
    "title": "ai.agentutility/mcp-compose",
    "description": "MCP server for the @agentutility compose cluster — pay-per-call x402 tools, no API keys, USDC on…",
    "versions": [
@@ -1404,7 +1834,7 @@
    ]
   },
   {
-   "name": "@com.pulsemcp/remote-filesystem",
+   "name": "remote-filesystem-mcp-server",
    "title": "com.pulsemcp/remote-filesystem",
    "description": "MCP server for remote filesystem operations on cloud storage (Google Cloud Storage).",
    "versions": [
@@ -1418,7 +1848,7 @@
    ]
   },
   {
-   "name": "@io.github.digital-defiance/mcp-filesystem",
+   "name": "@ai-capabilities-suite/mcp-filesystem",
    "title": "io.github.Digital-Defiance/mcp-filesystem",
    "description": "Advanced filesystem operations with strict security boundaries for AI agents",
    "versions": [
@@ -1435,6 +1865,11 @@
    "name": "@io.github.evozim/chroot-filesystem-jail-mcp",
    "title": "io.github.Evozim/chroot-filesystem-jail-mcp",
    "description": "Premium agentic endpoint for chroot-filesystem-jail-mcp.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "2.0.0",
@@ -1449,6 +1884,11 @@
    "name": "@io.github.oncorporation/filesystem-server",
    "title": "io.github.Oncorporation/filesystem-server",
    "description": "Secure filesystem access for AI agents with configurable directory and file type restrictions",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "0.1.4",
@@ -1460,12 +1900,12 @@
    ]
   },
   {
-   "name": "@io.github.bytedance/mcp-server-filesystem",
+   "name": "@agent-infra/mcp-server-filesystem",
    "title": "io.github.bytedance/mcp-server-filesystem",
    "description": "MCP server for filesystem access",
    "versions": [
     {
-     "version": "1.0.0",
+     "version": "1.2.29",
      "publishTimestamp": 1757398596,
      "source": {
       "type": "npm"
@@ -1474,7 +1914,7 @@
    ]
   },
   {
-   "name": "@io.github.domdomegg/filesystem-mcp",
+   "name": "filesystem-mcp",
    "title": "io.github.domdomegg/filesystem-mcp",
    "description": "Read, create, and edit files.",
    "versions": [
@@ -1491,6 +1931,11 @@
    "name": "@io.github.fieldcure/filesystem",
    "title": "io.github.fieldcure/filesystem",
    "description": "Secure MCP server for sandboxed filesystem operations with document parsing support.",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.1.2",
@@ -1502,7 +1947,7 @@
    ]
   },
   {
-   "name": "@io.github.infoinlet-marketplace/mcp-filesystem",
+   "name": "@infoinlet/mcp-filesystem",
    "title": "io.github.infoinlet-marketplace/mcp-filesystem",
    "description": "Hardened filesystem for AI agents — jailed root, read-only default, traversal/symlink-safe.",
    "versions": [
@@ -1516,7 +1961,7 @@
    ]
   },
   {
-   "name": "@io.github.j0hanz/filesystem-context",
+   "name": "@j0hanz/filesystem-context-mcp",
    "title": "io.github.j0hanz/filesystem-context",
    "description": "🔍 Read-only MCP server for secure filesystem exploration, searching, and analysis",
    "versions": [
@@ -1530,7 +1975,7 @@
    ]
   },
   {
-   "name": "@io.github.j0hanz/filesystem-mcp",
+   "name": "@j0hanz/filesystem-mcp",
    "title": "io.github.j0hanz/filesystem-mcp",
    "description": "Filesystem MCP server for AI assistants.",
    "versions": [
@@ -1547,6 +1992,11 @@
    "name": "@io.github.rghsoftware/linux-filesystem",
    "title": "io.github.rghsoftware/linux-filesystem",
    "description": "Enhanced Linux filesystem access with symlinks, permissions, and chmod support",
+   "metadata": {
+    "keywords": [
+     "not-installable"
+    ]
+   },
    "versions": [
     {
      "version": "1.2.1",

@@ -1,5 +1,5 @@
 {
- "fetchedAt": "2026-11-02T14:58:36.112Z",
+ "fetchedAt": "2026-11-02T16:23:41.275Z",
  "upstream": "https://registry.modelcontextprotocol.io/v0.1/servers",
  "queries": [
   {
@@ -15,9 +15,15 @@
  ],
  "composition": "page1(version=latest) ∪ search=filesystem(version=latest), deduped by server name",
  "pluginCount": 111,
+ "npmCoordinates": {
+  "fields": "server.packages[] row with registryType 'npm': identifier = real npm name, version = npm version ('latest' resolved via registry.npmjs.org dist-tags)",
+  "installable": 21,
+  "notInstallable": 90
+ },
  "selectedConnector": {
   "serverName": "io.github.bytedance/mcp-server-filesystem",
   "npmPackage": "@agent-infra/mcp-server-filesystem",
+  "installSpec": "@agent-infra/mcp-server-filesystem@1.2.29",
   "presentIn": "search=filesystem response (raw sha256 above)",
   "note": "task-preferred @modelcontextprotocol/server-filesystem is NOT in the registry (verified 2026-11-02); D6 requires the connector to really exist in the source"
  }

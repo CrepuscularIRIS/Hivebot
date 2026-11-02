@@ -18,7 +18,9 @@
 // src/types.ts:19-102（{format,title,description,plugins:[{name,title,
 // description,versions:[{version,publishTimestamp,source}]}]}）；publishTimestamp
 // 取 registry _meta official.publishedAt 的 Unix 秒（reuse/market-backend.md
-// 「版本时间优先取 registry 发布元数据」）。
+// 「版本时间优先取 registry 发布元数据」）。T-19：有 npm 坐标的条目 name/version
+// 用 packages[] 的真实坐标（install spec 因此指向 npm 上存在的包）；无坐标条目
+// metadata.keywords 标 not-installable，仅目录展示（安装走 pnpm 结构化拒绝）。
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -67,15 +69,72 @@ function toNpmName(registryName) {
   return collapsed
 }
 
-/** registry server 条目 → dsh format-1 plugin 行（字段投影 + 确定性改名）。 */
-function toPlugin(entry) {
+/** A precise SemVer, as dsh format-1 versions require (plugin-market-index types). */
+const SEMVER = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/u
+
+/**
+ * The entry's real npm coordinate from the registry payload (T-19): the first
+ * packages[] row delivered as npm. MCP registry field names, verified against
+ * the live /v0.1/servers response (2026-11-02): packages[].registryType 'npm',
+ * identifier = the real npm package name, version = the npm version to publish
+ * ('latest' when the record pins no precise one), registryBaseUrl = its registry.
+ */
+function npmPackageOf(entry) {
+  return (entry.server.packages ?? []).find(
+    (p) => p?.registryType === 'npm' && typeof p.identifier === 'string' && p.identifier !== '',
+  )
+}
+
+/**
+ * The precise npm version the listing's install spec must pin (T-19): a
+ * record-declared SemVer as is; 'latest' (the selected connector's record)
+ * resolved against registry.npmjs.org dist-tags — part of this script's one
+ * online run, so $OFFLINE consumers never pay for it.
+ */
+async function npmVersion(identifier, declared) {
+  if (typeof declared === 'string' && SEMVER.test(declared)) return declared
+  const url = `https://registry.npmjs.org/${identifier.replace('/', '%2F')}`
+  const res = await fetch(url, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(30_000) })
+  if (!res.ok) throw new Error(`${url} -> HTTP ${res.status}`)
+  const latest = (await res.json())?.['dist-tags']?.latest
+  if (typeof latest !== 'string' || !SEMVER.test(latest)) throw new Error(`no precise latest dist-tag for ${identifier}: ${String(latest)}`)
+  return latest
+}
+
+/**
+ * registry server 条目 → dsh format-1 plugin 行。有 npm 坐标的条目（T-19）用
+ * packages[] 的真实坐标：name = identifier、version = 真实 npm 版本，install
+ * spec（dsh marketInstallTarget 拼 name@version）因此指向 npm 上存在的包。
+ * 无坐标条目保留确定性改名仅作目录展示，metadata.keywords 标 not-installable
+ * （format-1 无第三种 source；安装尝试会走 pnpm 的结构化拒绝）。
+ */
+async function toPlugin(entry) {
   const s = entry.server
   const published = entry._meta?.['io.modelcontextprotocol.registry/official']?.publishedAt
   const ts = published !== undefined ? Math.floor(Date.parse(published) / 1000) : Math.floor(Date.now() / 1000)
+  const npmPkg = npmPackageOf(entry)
+  if (npmPkg !== undefined) {
+    if (!NPM_NAME.test(npmPkg.identifier)) {
+      throw new Error(`registry npm identifier is not a valid npm name: ${npmPkg.identifier}`)
+    }
+    const version = await npmVersion(npmPkg.identifier, npmPkg.version)
+    // npmjs.org (or absent) = the installing client's own default registry; a
+    // different registryBaseUrl travels with the version so pnpm asks the right one.
+    const registry = typeof npmPkg.registryBaseUrl === 'string' && npmPkg.registryBaseUrl !== 'https://registry.npmjs.org'
+      ? npmPkg.registryBaseUrl
+      : undefined
+    return {
+      name: npmPkg.identifier,
+      title: s.name,
+      description: s.description ?? '',
+      versions: [{ version, publishTimestamp: ts, source: registry === undefined ? { type: 'npm' } : { type: 'npm', registry } }],
+    }
+  }
   return {
     name: toNpmName(s.name),
     title: s.name,
     description: s.description ?? '',
+    metadata: { keywords: ['not-installable'] },
     versions: [{ version: s.version, publishTimestamp: ts, source: { type: 'npm' } }],
   }
 }
@@ -88,11 +147,13 @@ for (const e of search.body.servers) if (!byName.has(e.server.name)) byName.set(
 if (!byName.has(CONNECTOR_SERVER)) {
   throw new Error(`selected connector ${CONNECTOR_SERVER} absent from the fetched snapshot — source changed, re-verify`)
 }
-const plugins = [...byName.values()].map(toPlugin)
+const plugins = []
+for (const entry of byName.values()) plugins.push(await toPlugin(entry))
 const npmNames = new Set(plugins.map((p) => p.name))
 if (npmNames.size !== plugins.length) {
   throw new Error('registry-name → npm-name mapping collided inside the snapshot; refine the mapping')
 }
+const installable = plugins.filter((p) => !p.metadata?.keywords?.includes('not-installable')).length
 
 const index = {
   format: 1,
@@ -112,9 +173,15 @@ const source = {
   ],
   composition: 'page1(version=latest) ∪ search=filesystem(version=latest), deduped by server name',
   pluginCount: plugins.length,
+  npmCoordinates: {
+    fields: "server.packages[] row with registryType 'npm': identifier = real npm name, version = npm version ('latest' resolved via registry.npmjs.org dist-tags)",
+    installable,
+    notInstallable: plugins.length - installable,
+  },
   selectedConnector: {
     serverName: CONNECTOR_SERVER,
     npmPackage: '@agent-infra/mcp-server-filesystem',
+    installSpec: '@agent-infra/mcp-server-filesystem@1.2.29',
     presentIn: 'search=filesystem response (raw sha256 above)',
     note: 'task-preferred @modelcontextprotocol/server-filesystem is NOT in the registry (verified 2026-11-02); D6 requires the connector to really exist in the source',
   },

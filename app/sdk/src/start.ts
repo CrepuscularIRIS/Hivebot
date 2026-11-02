@@ -22,7 +22,7 @@
  */
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { closeSync, fstatSync, linkSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { closeSync, fstatSync, linkSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync, writeSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -203,11 +203,21 @@ export function isReadyLine(line: string): string | null {
 const LOCK_FILE = 'launcher.lock'
 
 interface LockView {
-  /** Recorded pid; null when the content is empty or not a pid. */
+  /** Recorded launcher pid; null when the content is empty or not a pid. */
   pid: number | null
+  /**
+   * Recorded dsh runtime pid (T-13, review R2/R10): the launcher appends it
+   * right after spawn. 0 = not yet spawned (or pre-T-13 single-pid lock).
+   */
+  dshPid: number
   /** Inode identity of the file the pid was read from. */
   dev: number
   ino: number
+}
+
+const toPid = (line: string | undefined): number | null => {
+  const n = Number((line ?? '').trim())
+  return Number.isInteger(n) && n > 0 ? n : null
 }
 
 /** Snapshot the lock file, or null when it is absent/unopenable. */
@@ -220,8 +230,8 @@ function readLock(lockPath: string): LockView | null {
   }
   try {
     const st = fstatSync(fd)
-    const pid = Number(readFileSync(fd, 'utf8').trim())
-    return { pid: Number.isInteger(pid) && pid > 0 ? pid : null, dev: st.dev, ino: st.ino }
+    const lines = readFileSync(fd, 'utf8').split('\n')
+    return { pid: toPid(lines[0]), dshPid: toPid(lines[1]) ?? 0, dev: st.dev, ino: st.ino }
   } catch {
     return null
   } finally {
@@ -244,25 +254,53 @@ function pidHeld(pid: number): boolean {
   return true
 }
 
+/** True when any pid recorded in the lock view is still alive (T-13: the home is held by the launcher OR its detached dsh). */
+function lockHeld(view: LockView): boolean {
+  if (view.pid !== null && pidHeld(view.pid)) return true
+  return view.dshPid > 0 && pidHeld(view.dshPid)
+}
+
+/** A held home lock: release, liveness re-verification, and dsh pid recording. */
+export interface HomeLockHold {
+  /** Unlink the lock only if it is still our inode; idempotent. */
+  release(): void
+  /**
+   * Re-verify this hold still owns lockPath (T-13, review R7/R8): a three-racer
+   * stale-reclaim can strand our inode aside while a third launcher publishes
+   * at lockPath. main() must call this before startRuntime and abort on false.
+   */
+  stillHeld(): boolean
+  /**
+   * Append the dsh child pid to the lock content (T-13, review R2/R10): the
+   * home stays held while the detached dsh outlives a crashed/killed launcher.
+   */
+  recordChildPid(pid: number): void
+}
+
 /**
  * One launcher per P2SDK_HOME (T-01.f2 acceptance ①, review R4): concurrent
  * launches would overwrite runtime-patch.yml and the handoff files under the
- * shared home. Acquisition publishes `<pid>\n` atomically via link(2) from an
- * O_EXCL temp file, so the lock path never shows a half-written lock (review
- * R1 interleave 1: an empty/unparsable lock is refused, never reclaimed).
- * Stale reclaim (dead pid) captures the path with rename(2) under a private
- * name and restores a live replacement it captured by mistake, so a reclaimer
- * paused mid-reclaim cannot delete the next holder's fresh lock (interleave
- * 2); release() only unlinks the inode it published (interleave 3). Returns a
- * release() thunk, or a user-facing error string when the home is held.
+ * shared home. Acquisition publishes `<launcherPid>\n<runtimePid>\n` (the
+ * runtime line is appended right after spawn, T-13) atomically via link(2)
+ * from an O_EXCL temp file, so the lock path never shows a half-written lock
+ * (review R1 interleave 1: an empty/unparsable lock is refused, never
+ * reclaimed). Stale reclaim (BOTH recorded pids dead — the detached dsh
+ * outlives a killed launcher, T-13 review R2/R10) captures the path with
+ * rename(2) under a private name and restores a live replacement it captured
+ * by mistake, so a reclaimer paused mid-reclaim cannot delete the next
+ * holder's fresh lock (interleave 2); release() only unlinks the inode it
+ * published (interleave 3). The launcher never deletes the lock on exit: the
+ * lock simply goes stale once its recorded pids die, and the next start
+ * reclaims it — so a crash while the dsh lives leaves the home protected
+ * (R2). Returns a hold, or a user-facing error string when the home is held.
  */
-export function acquireHomeLock(home: string): string | (() => void) {
+export function acquireHomeLockDetailed(home: string): string | HomeLockHold {
   const lockPath = join(home, LOCK_FILE)
-  const refuse = (pid: number) =>
-    `P2SDK_HOME "${home}" is already in use by launcher pid ${pid}: a second instance would clobber its runtime-patch.yml and handoff files`
+  const refuse = (view: LockView) =>
+    `P2SDK_HOME "${home}" is already in use by launcher pid ${view.pid}${view.dshPid > 0 ? ` and its runtime pid ${view.dshPid}` : ''}: a second instance would clobber its runtime-patch.yml and handoff files`
 
   /** Publish `<pid>\n` at lockPath atomically; null when someone else holds it. */
-  const publish = (): (() => void) | null => {
+  const publish = (): HomeLockHold | null => {
     const tmp = join(home, `.launcher-lock.${process.pid}.${randomUUID()}`)
     const fd = openSync(tmp, 'wx')
     writeFileSync(fd, `${process.pid}\n`)
@@ -289,32 +327,50 @@ export function acquireHomeLock(home: string): string | (() => void) {
     }
     const { dev, ino } = fstatSync(fd)
     let released = false
-    return () => {
-      if (released) return
-      released = true
-      try {
-        const st = statSync(lockPath)
-        if (st.dev === dev && st.ino === ino) unlinkSync(lockPath)
-      } catch {
-        /* already gone */
-      }
-      try {
-        closeSync(fd)
-      } catch {
-        /* already closed */
-      }
+    return {
+      release() {
+        if (released) return
+        released = true
+        try {
+          const st = statSync(lockPath)
+          if (st.dev === dev && st.ino === ino) unlinkSync(lockPath)
+        } catch {
+          /* already gone */
+        }
+        try {
+          closeSync(fd)
+        } catch {
+          /* already closed */
+        }
+      },
+      stillHeld() {
+        if (released) return false
+        const view = readLock(lockPath)
+        return view !== null && view.pid === process.pid && view.dev === dev && view.ino === ino
+      },
+      recordChildPid(pid: number) {
+        if (released || pid <= 0) return
+        // Single append through the identity-anchor fd: readers either see the
+        // launcher-only line or the completed runtime line, never a torn one,
+        // and the inode identity is preserved (no path rewrite).
+        try {
+          writeSync(fd, `${pid}\n`)
+        } catch {
+          /* the lock is gone; nothing to record */
+        }
+      },
     }
   }
 
   for (let attempt = 0; attempt < 3; attempt++) {
-    const release = publish()
-    if (release) return release
+    const hold = publish()
+    if (hold) return hold
     const view = readLock(lockPath)
     if (!view) continue // vanished between publish and read: race again
     if (view.pid === null) {
       return `P2SDK_HOME "${home}" has an uninitialized ${LOCK_FILE} (no pid recorded): if no launcher is mid-start on this home, remove ${lockPath} and retry`
     }
-    if (pidHeld(view.pid)) return refuse(view.pid)
+    if (lockHeld(view)) return refuse(view)
     // Stale (dead holder), review R1 interleave 2: unlink cannot carry an
     // identity condition, so a reclaimer paused between its read and its
     // delete would remove a lock another racer reclaimed and published since.
@@ -333,7 +389,7 @@ export function acquireHomeLock(home: string): string | (() => void) {
       // and a racer removing the stale lock frees its inode for immediate
       // reuse by the very next publish (observed under racing reclaimers), so
       // inode equality alone can mistake a fresh live lock for the stale one.
-      captured = readLock(aside) ?? { pid: null, dev: -1, ino: -1 }
+      captured = readLock(aside) ?? { pid: null, dshPid: 0, dev: -1, ino: -1 }
     } catch {
       continue // path vanished: another racer reclaimed it first
     }
@@ -341,7 +397,7 @@ export function acquireHomeLock(home: string): string | (() => void) {
       captured.pid === view.pid &&
       captured.dev === view.dev &&
       captured.ino === view.ino &&
-      !pidHeld(view.pid) // the dead pid must not have come alive (reuse) meanwhile
+      !lockHeld(captured) // neither recorded pid may have come alive (reuse) meanwhile
     ) {
       try {
         unlinkSync(aside) // exactly the stale inode we judged dead: remove it
@@ -350,13 +406,16 @@ export function acquireHomeLock(home: string): string | (() => void) {
       }
     } else {
       // We captured a live lock replaced since our read: restore it. If a
-      // third racer published at lockPath inside the capture→restore gap, the
+      // third racer publishes at lockPath inside the capture→restore gap, the
       // link fails EEXIST and we leave the captured inode aside rather than
       // destroy a live lock (a leaked inert file is the lesser evil).
       // ponytail: userspace floor — that µs capture→restore gap is the only
-      // remaining window (needs ≥3 racers); an airtight fix requires kernel
-      // arbitration (flock, as upstream dsh session locks use), unavailable in
-      // node:fs without a native addon.
+      // remaining window (needs ≥3 racers); the stranded holder detects the
+      // loss via stillHeld() before startRuntime (T-13), so the window can no
+      // longer produce two runtimes on one home unless the holder gates
+      // inside the gap itself. An airtight fix requires kernel arbitration
+      // (flock, as upstream dsh session locks use), unavailable in node:fs
+      // without a native addon.
       try {
         linkSync(aside, lockPath)
         unlinkSync(aside)
@@ -367,6 +426,12 @@ export function acquireHomeLock(home: string): string | (() => void) {
     }
   }
   return `P2SDK_HOME "${home}" lock is contended; retry`
+}
+
+/** Legacy-shaped acquireHomeLock: a bare release() thunk, or the error string. */
+export function acquireHomeLock(home: string): string | (() => void) {
+  const hold = acquireHomeLockDetailed(home)
+  return typeof hold === 'string' ? hold : () => hold.release()
 }
 
 function dshEntry(): string {
@@ -458,13 +523,26 @@ export async function main(cfg: StartConfig = resolveConfig()): Promise<number> 
     return 1
   }
   mkdirSync(cfg.home, { recursive: true })
-  const release = acquireHomeLock(cfg.home)
-  if (typeof release === 'string') {
-    process.stderr.write(`p2sdk: ${release}\n`)
+  const hold = acquireHomeLockDetailed(cfg.home)
+  if (typeof hold === 'string') {
+    process.stderr.write(`p2sdk: ${hold}\n`)
     return 1
   }
-  process.on('exit', release)
+  // T-13 (review R7/R8): a three-racer stale-reclaim can strand our lock aside
+  // while another launcher publishes at lockPath. Re-verify ownership before
+  // spawning: only the lockPath owner may enter startRuntime.
+  if (!hold.stillHeld()) {
+    process.stderr.write(`p2sdk: lost the launcher lock on "${cfg.home}" to a racing start; not spawning a runtime\n`)
+    hold.release()
+    return 1
+  }
   const handle = startRuntime(cfg)
+  // T-13 (review R2/R10): record the dsh pid so the home stays held while the
+  // detached dsh outlives this launcher (SIGKILL/OOM/EPIPE crash). The lock is
+  // deliberately NOT deleted on exit: it goes stale once both recorded pids
+  // die and the next start reclaims it — a crash with a live dsh leaves the
+  // home protected instead of wide open.
+  hold.recordChildPid(handle.child.pid ?? 0)
   process.stderr.write(`p2sdk: dsh pid ${handle.child.pid}\n`)
   // T-12 R1: the default handoff dir is a fresh random tmpdir the operator
   // could not otherwise know; the PATH is operator-facing metadata (stderr,

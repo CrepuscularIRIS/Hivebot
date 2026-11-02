@@ -61,6 +61,22 @@ describe('resolveConfig', () => {
     expect(cfg.handoff, 'per-launch random segment').not.toBe(resolveConfig({ P2SDK_PROVIDER: 'mock' }).handoff)
     expect(cfg.handoff, 'not the legacy fixed default').not.toContain('.dsh-handoff')
   })
+
+  // T-13 (REVIEW R9): two instances started with different P2SDK_HOME and no
+  // P2SDK_HANDOFF must not share a handoff dir — the per-launch random tmpdir
+  // keeps their launch-token/base-url files from clobbering each other.
+  it('gives concurrent instances on different homes distinct handoff dirs (no cross-home clobber)', () => {
+    const a = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/p2sdk-home-a' })
+    const b = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/p2sdk-home-b' })
+    expect(a.home).not.toBe(b.home)
+    expect(a.handoff).not.toBe(b.handoff)
+    expect(a.handoff, 'handoff is not derived from the home').not.toContain('p2sdk-home-a')
+    expect(b.handoff, 'handoff is not derived from the home').not.toContain('p2sdk-home-b')
+    for (const h of [a.handoff, b.handoff]) {
+      expect(h.startsWith(tmpdir()), `handoff under tmpdir (got ${h})`).toBe(true)
+      expect(existsSync(h), 'each default handoff dir exists').toBe(true)
+    }
+  })
 })
 
 describe('validateStart (acceptance ③)', () => {

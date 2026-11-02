@@ -32,7 +32,7 @@ export async function restoreRecipes(
     entries.map(async ([presetId, recipe]) => {
       const result = await Promise.race([
         // typert wire 壳 {request:…}（client.mjs:43 同款；无壳会被 gateway 按
-        // descriptor 拒 arguments-invalid——U-14 e2e 对真 runtime 实测）
+        // descriptor 拒 arguments-invalid——U-14 e2e 对真 runtime 实测；U-15 #4 同形）
         dsh.rpc('p2temp/preset.ensure', { request: { agentPreset: recipe.agentPreset, connectors: recipe.connectors } }),
         new Promise<{ ok: false; error: { code: string; message: string } }>((resolve) => {
           setTimeout(() => {

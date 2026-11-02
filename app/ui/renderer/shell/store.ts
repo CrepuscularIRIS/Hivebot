@@ -49,7 +49,12 @@ export const useStore = (): State => useSyncExternalStore(subscribe, getState)
 
 export function api(method: string, args?: unknown): Promise<ApiResult> {
   if (window.pbots === undefined) return Promise.resolve({ ok: false, error: { code: 'pbots/unavailable', message: 'preload bridge missing' } })
-  return window.pbots.api(method, args)
+  // U-22 [GU-1] renderer 层兜底：main 侧 handler 抛错时 ipcRenderer.invoke 会 reject
+  // （main 层 try/catch 之外的最后一道），断线期间 sendPrompt/cancelTurn/对话框提交不得裸抛。
+  return window.pbots.api(method, args).catch((error: unknown): ApiResult => ({
+    ok: false,
+    error: { code: 'pbots/unavailable', message: `bridge call failed: ${error instanceof Error ? error.message : String(error)}` },
+  }))
 }
 
 type AnyRecord = Record<string, unknown>
@@ -57,7 +62,12 @@ const rec = (v: unknown): AnyRecord => (typeof v === 'object' && v !== null ? v 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
 // ---- carrier：$events + follow 共用一条 mux ----
-const dev = { events: { clientId: undefined as string | undefined, items: [] as unknown[] }, clientIds: [] as string[], sessions: 0, sockets: [] as DevSocketHandle[] }
+const dev = {
+  events: { clientId: undefined as string | undefined, items: [] as unknown[] },
+  clientIds: [] as string[], sessions: 0, sockets: [] as DevSocketHandle[],
+  /** boot 的 $events 流（D4 E2E 注入：closeEvents 模拟 renderer 离场）。 */
+  eventsStream: undefined as MuxStream | undefined,
+}
 let mux: PageMux | undefined
 const followed = new Set<string>()
 
@@ -124,6 +134,21 @@ function onEventsItem(item: unknown): void {
   }
 }
 
+/** [GU-4] 重连后重拉 roster：只 merge 已在 order 中的行（R9 顺序冻结），running 回落置未读。 */
+async function refreshRoster(): Promise<void> {
+  const roster = await loadRoster()
+  if (typeof roster === 'string') return // 重连间隙拉不到：下次 open 再试（300ms 链路）
+  const summaries = { ...state.summaries }
+  const unread = { ...state.unread }
+  for (const item of roster.items) {
+    const prev = summaries[item.sessionId]
+    if (prev === undefined) continue // 未在列表中的新 session 不自动加入（新建走对话框）
+    if (prev.running && !item.running && item.sessionId !== state.selected) unread[item.sessionId] = true
+    summaries[item.sessionId] = item
+  }
+  set({ summaries, unread })
+}
+
 function bootSession(): void {
   const socket = new CarrierSocket(pageEnv())
   socket.addEventListener('open', () => {
@@ -131,8 +156,10 @@ function bootSession(): void {
     mux = new PageMux(socket)
     const feed = mux.open('$events', {})
     dev.events = { clientId: undefined, items: feed.items }
+    dev.eventsStream = feed
     pump(feed, onEventsItem)
     for (const sid of followed) openFollow(sid)
+    void refreshRoster() // [GU-4] 每代 socket 重开都重拉：断线期间结束的回合不再恒显「回复中」
   })
   socket.addEventListener('close', () => {
     for (const stream of [...(mux?.streams.values() ?? [])]) stream.done = true
@@ -264,6 +291,15 @@ export function startStore(): void {
     openStream(endpoint: string, args?: unknown): MuxStream {
       if (mux === undefined) throw new Error('boot mux not open yet')
       return mux.open(endpoint, args)
+    },
+    /** D2：boot mux 当前流快照（streamId ↔ endpoint 对应，供 main tap 计数按流断言）。 */
+    muxStreams(): Array<{ streamId: string; endpoint: string }> {
+      return [...(mux?.streams.values() ?? [])].map((s) => ({ streamId: s.streamId, endpoint: s.endpoint }))
+    },
+    /** D4 E2E 注入：关掉 boot $events 流（模拟 renderer 离场；main 侧 eventsStreams 清空 →
+     * 无人应答窗口开始累计）。与 m2 的 testDropSocket 同模式的测试钩子。 */
+    closeEvents(): void {
+      if (dev.eventsStream !== undefined && mux !== undefined) { mux.cancel(dev.eventsStream); dev.eventsStream = undefined }
     },
   }
   bootSession()

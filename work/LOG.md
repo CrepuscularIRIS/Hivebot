@@ -469,3 +469,16 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-02 16:07 tick | U-22 第二个 commit b396645（全部 E2E 落地）——⚠ 注意其 worktree 的 work/ 镜像又出现了（builder 复制过去参考的），确认最终回报走主仓即可
 2026-11-02 16.1x 回报 | **builder U-22 完成**：ab1dd28→cadf6db 4 commits——GU-1 main try/catch（含 U-21 旧单测按新契约改写注明）、GU-2 草稿（真实 30s 超时注入）、GU-3 复位、GU-4 重连重拉、markdown（react-markdown+skipHtml + **shiki@4.6.0 npm**（卸 rehype-highlight）、链接门控、img 零请求、双主题 --shiki-dark）、D2 tap 计数（chunk 口径探针修正）、D4 代答终态、aborted 断言；193 单测+40 e2e（3.7m）；证据进主仓 evidence/PAB/ | 区域例外 1：m2-mux M2Stats 加 streamChunks（PLAN ⑤ 要求）| 派 verifier | 在途：verifier U-22
 2026-11-02 16:17 tick | verifier U-22 在途（40 e2e 复跑 3.7m×2 起，需时正常）
+2026-11-02 16.3x **U-22 合并 → d175a75**（25 文件 778 行；主仓截图冲突按 verifier「commit 内为准」处理）| **P-B 完成、GU-U21 清单清零** | **W2 后两页开工：ux-proposer 双席（P-D 设置+P-C 市场）**| P-C 依赖齐（T-09/T-19 在 main）| 在途：ux ×2
+2026-11-02 16.4x 回报 | ux 席 C P-D+P-C 提案完成并代录 ui/PDC-proposal-C.md（壳内覆盖主区、D10c1/c2 拆分落地法、市场 21/90 分野处理、反提案：不做安装并启用大按钮/不隐藏不可装条目）| 等席 A
+2026-11-02 16.5x 回报 | ux 席 A P-D+P-C 提案完成（自落盘 109 行：info-pane 位置、c1 四处显示、市场三分类、三条反提案、**关键提醒：21 条裸装全 not-bundle 需包装层**）| **两席齐——派 frontend-dev U-23+24（两页合并任务，P-D 位置裁决权给它）+ builder U-25（动态包装层：裸 npm 包→本地 wrapper bundle→installBundle，最终 L 发现 a 立项）**| 在途 2
+2026-11-02 16:27 tick | U-23/U-25 起步（~10min 正常）| 无 stale
+2026-11-02 16:37 tick | U-23 活跃（Sidebar 接线）；U-25 起步中 | 无 stale
+2026-11-02 16:47 tick | U-23 无 commit ~30min（两页大实现正常）；U-25 活跃（p2temp 接线中）| 无 stale
+2026-11-02 16.5x 回报 | **builder U-25 完成**：cb4091c，6 文件——wrapper bundle（$DSH_HOME/market-wrappers/，结构对齐 T-09 手写样例）+ p2temp 构造时 patch installBundle（精确坐标四条件过滤，其余透传）——**两条市场链自动过 wrapper，app/ui 零改动**；148 双绿（在线+离线）+ coverage 93.21%；探明：dsh 无原生裸包机制（generator:167 只索引 isBundle、plugin-manager:984 无 dsh.bundle 拒）——自建合理 | 发现：其余 20 条需 devDep 预置（数据面后续补）、参数表仅 filesystem、already-installed 语义、allowed-dir 烘焙值归 P4 表单 | 派 verifier | 在途：verifier U-25、frontend-dev U-23
+2026-11-02 16:57 tick | verifier U-25 在途；U-23 ~50min（两页+30 既有 e2e 大实现正常）| 无 stale
+2026-11-02 17.0x 回报 | **frontend-dev U-23+24 完成**：39710e4——P-D info-pane 裁决（原版语义+浮层降级 900 宽实测）、P-C 三分类 90/20/1、D10c1 四显示、D11 DOM 零命中、dev-min 删除残留 0；193 单测+44 e2e（origin-gate (d) 顺带修复 8 连过）；发现 --workers=1 须显式传（配置内多文件不生效）| 两处产品变动待裁定（failNext 钩子、registry 透传）| U-21 遗留 5 进程 bot-reap 清 3 剩 1 复查 | 派 verifier | 在途：verifier ×2（U-23/U-25）
+已清零
+2026-11-02 17:07 tick | verifier ×2 在途（U-23 44 e2e ×2 起 + U-25 双仓复跑，需时正常）
+2026-11-01 17.1x 回报 | verifier U-25 = PASS（19/19 探针亲跑、双绿亲跑、Reflect.get own-property 亲证、四条件 7 负例）| **合并 U-25 → <新sha>**——市场一键装链路打通（filesystem 条目端到端绿；其余 20 条待 devDep 预置——数据面后续）| 在途：verifier U-23
+2026-11-02 17:17 tick | verifier U-23 在途（44 e2e×2 起需时）

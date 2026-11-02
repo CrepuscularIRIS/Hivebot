@@ -162,11 +162,15 @@ test('D10c1：删 bundle → close→launch → 四处失效、历史可读、co
     await expect(page.locator('[data-composer]')).toHaveCount(0)
     await expect(page.locator('.bubble.user')).toHaveText('c1 之前的消息')
     await expect(page.locator('.bubble.assistant.final')).toHaveText('历史-c1-前的回复')
-    // ④ pane 红点 + 模型 disabled
+    // ④ pane 红点 + 模型 disabled（U-26 ④：置灰可见 select:disabled、状态行换失效文案、不可设为主 Bot）
     if (await pane(page).count() === 0) await page.click('[data-action="toggle-info-pane"]')
     await expect(pane(page).locator('[data-connector-dead]')).toBeVisible()
     await expect(pane(page).locator('[data-pane-alert]')).toBeVisible()
     await expect(pane(page).locator('[data-pane-model]')).toBeDisabled()
+    await expect(pane(page).locator('[data-pane-model]')).toHaveCSS('opacity', '0.45')
+    await expect(pane(page).locator('[data-pane-model] ~ .pane-status')).toHaveText('连接器已失效，不能改模型')
+    await expect(pane(page).locator('[data-action="set-main"]')).toBeDisabled()
+    await expect(pane(page).locator('[data-action="set-main"]')).toHaveAttribute('title', '连接器已失效的 bot 不能设为主 Bot')
     await page.screenshot({ path: join(PDC_EVIDENCE, 'pd-c1-readonly.png') })
     // 不自动重试：无 spinner
     expect(await page.locator('.icon.spin, .corner-ring').count()).toBe(0)

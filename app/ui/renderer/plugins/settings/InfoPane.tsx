@@ -42,7 +42,7 @@ function loadCatalog(): Promise<{ options: ModelOption[]; fallback: string }> {
   return catalog
 }
 
-function ModelPicker({ s, id, disabled }: { s: State; id: string; disabled: boolean }): JSX.Element {
+function ModelPicker({ s, id, disabled, readOnly }: { s: State; id: string; disabled: boolean; readOnly: boolean }): JSX.Element {
   const [cat, setCat] = useState<{ options: ModelOption[]; fallback: string } | 'error' | null>(null)
   const [phase, setPhase] = useState<{ kind: 'idle' | 'saving' | 'saved' | 'error'; value?: string; message?: string }>({ kind: 'idle' })
   useEffect(() => { void loadCatalog().then(setCat, () => setCat('error')) }, [])
@@ -67,7 +67,7 @@ function ModelPicker({ s, id, disabled }: { s: State; id: string; disabled: bool
   return (
     <div className="pane-field">
       <select
-        data-pane-model aria-label="模型" value={shown} disabled={disabled || cat === null || cat === 'error' || phase.kind === 'saving'}
+        data-pane-model aria-label="模型" value={shown} disabled={readOnly || disabled || cat === null || cat === 'error' || phase.kind === 'saving'}
         onChange={(e) => void pick(e.target.value)}
       >
         {/* 当前值不在目录里（或未知）时仍如实显示，不伪装成目录项 */}
@@ -76,24 +76,28 @@ function ModelPicker({ s, id, disabled }: { s: State; id: string; disabled: bool
         {options.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
       </select>
       <span className={`pane-status${phase.kind === 'error' || cat === 'error' ? ' danger' : ''}`} role="status" data-model-status={phase.kind}>
-        {cat === null ? '正在加载…'
-          : cat === 'error' ? '无法加载模型列表'
-            : phase.kind === 'saving' ? '切换中…'
-              : phase.kind === 'saved' ? '已切换，下一轮生效'
-                : phase.kind === 'error' ? `切换失败：${phase.message}` : '仅影响此 Bot，下一轮生效'}
+        {readOnly ? '连接器已失效，不能改模型' // U-26 ④（GU-PDC-A MEDIUM）：c1 态下「下一轮生效」是误导
+          : cat === null ? '正在加载…'
+            : cat === 'error' ? '无法加载模型列表'
+              : phase.kind === 'saving' ? '切换中…'
+                : phase.kind === 'saved' ? '已切换，下一轮生效'
+                  : phase.kind === 'error' ? `切换失败：${phase.message}` : '仅影响此 Bot，下一轮生效'}
       </span>
     </div>
   )
 }
 
-function MainBotSection({ s, id }: { s: State; id: string }): JSX.Element {
+function MainBotSection({ s, id, readOnly }: { s: State; id: string; readOnly: boolean }): JSX.Element {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   useEffect(() => { setError(null) }, [id])
   if (id === s.meta.mainBotId) return <p className="pane-text" data-main-note>这是主 Bot，固定在侧栏顶部。</p>
   return (
     <div className="pane-field">
-      <button type="button" className="btn secondary" data-action="set-main" disabled={busy || !s.online} onClick={() => {
+      {/* U-26 ④（GU-PDC-A MEDIUM）：失效 bot 不能设为主 Bot——主 Bot 固定置顶且无删除入口，设成即顶栏死位 */}
+      <button type="button" className="btn secondary" data-action="set-main"
+        disabled={busy || !s.online || readOnly}
+        title={readOnly ? '连接器已失效的 bot 不能设为主 Bot' : undefined} onClick={() => {
         setBusy(true)
         setError(null)
         void setMainBot(id).then((r) => { setBusy(false); if (!r.ok) setError(`设置失败：${r.error?.message ?? ''}`) })
@@ -139,11 +143,11 @@ export function InfoPane({ s, id, width, overlay, onWidth, onClose }: {
         </section>
         <section className="pane-section" aria-labelledby="pane-model">
           <h3 id="pane-model">模型</h3>
-          <ModelPicker key={id} s={s} id={id} disabled={info.readOnly || !s.online} />
+          <ModelPicker key={id} s={s} id={id} disabled={!s.online} readOnly={info.readOnly} />
         </section>
         <section className="pane-section" aria-labelledby="pane-main">
           <h3 id="pane-main">主 Bot</h3>
-          <MainBotSection s={s} id={id} />
+          <MainBotSection s={s} id={id} readOnly={info.readOnly} />
         </section>
       </div>
     </aside>

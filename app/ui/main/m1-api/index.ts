@@ -150,6 +150,13 @@ export interface M1Deps {
 export const m1Ledger = new EventsLedger()
 
 /**
+ * U-26 ②（D5「main tap 断言收到的 enabled === false」）：renderer 经本桥透传的
+ * installBundle 调用记录（D9 拒绝的不进——记的是将发给 dsh 的调用）。
+ * electronApp.evaluate 经 globalThis.__pbotsM1 读出（不新开 IPC，与 __pbotsM2 同约定）。
+ */
+export const m1Installs: Array<{ spec: unknown; enabled: unknown }> = []
+
+/**
  * 注册 M1 处理器：白名单 → D9 硬拒 → §2.2 参数约束 → dsh.rpc 原样透传（raw-result，含 details）。
  * ipc 来源校验（event.senderFrame 匹配 pbots-app://app/ 主窗口主 frame）由 main/index.ts 的
  * assertPbotsSender 承担（U-00 交付，tests/e2e/shell/origin-gate.spec.ts (e) 已覆盖）。
@@ -157,6 +164,7 @@ export const m1Ledger = new EventsLedger()
 export function registerM1Api(deps: M1Deps = {}): (req: M1Request) => Promise<M1Result> {
   const ledger = deps.ledger ?? m1Ledger
   const log = deps.log ?? ((message: string) => { console.log(`[m1] ${message}`) })
+  ;(globalThis as { __pbotsM1?: unknown }).__pbotsM1 = { installs: m1Installs }
   return async function m1Api(req: M1Request): Promise<M1Result> {
     const method = req?.method
     if (typeof method !== 'string' || method === '') {
@@ -180,6 +188,10 @@ export function registerM1Api(deps: M1Deps = {}): (req: M1Request) => Promise<M1
     if (deps.dsh === undefined) {
       log(`denied (no dsh): ${method}`)
       return forbidden('dsh connection not configured')
+    }
+    if (method === 'pluginManager/installBundle') {
+      const args = (typeof req.args === 'object' && req.args !== null ? req.args : {}) as { spec?: unknown; options?: { enabled?: unknown } }
+      m1Installs.push({ spec: args.spec, enabled: args.options?.enabled })
     }
     let result: M1Result
     try {

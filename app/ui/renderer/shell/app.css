@@ -100,6 +100,10 @@ button.boot-action:hover { background: var(--dsw-alias-interactive-bg-hover); }
 .sk-bubble { height: 36px; border-radius: 18px; background: var(--dsw-alias-bg-layer-3); }
 .sk-bubble.left { width: 60%; }
 .sk-bubble.right { width: 40%; align-self: flex-end; }
+/* U-26 ③（#11 分页，席 C PAB-proposal-C:104）：transcript 顶部局部指示，失败只重试该页 */
+.older-bar { display: flex; justify-content: center; padding: 2px 0 10px; }
+.older-bar .btn { height: 26px; padding: 0 10px; font-size: var(--sand-font-size-xs); }
+.older-status { font-size: var(--sand-font-size-xs); color: var(--dsw-alias-label-tertiary); }
 .empty { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 18vh auto 0; text-align: center; }
 .empty .avatar { margin-bottom: 8px; }
 .empty-name { font-size: var(--sand-font-size-xl); line-height: var(--sand-line-height-xl); font-weight: 500; }
@@ -254,6 +258,8 @@ html[data-theme='cursor-dark'] .md .hl-tok { color: var(--shiki-dark, inherit); 
 .pane-field { align-self: stretch; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
 .pane-field select { align-self: stretch; height: 32px; border-radius: 10px; border: 1px solid var(--dsw-alias-border-l3); background: var(--dsw-alias-bg-layer-2);
   color: var(--dsw-alias-label-primary); padding: 0 8px; font-size: var(--sand-font-size-sm); }
+/* U-26 ④（GU-PDC-A MEDIUM）：c1 只读置灰要看得出来（.btn:disabled 同款 .45） */
+.pane-field select:disabled { opacity: .45; }
 .pane-status { font-size: var(--sand-font-size-xs); color: var(--dsw-alias-label-tertiary); }
 .pane-status.danger { color: var(--dsw-alias-state-error-primary); }
 .pane-text { margin: 0; font-size: var(--sand-font-size-sm); color: var(--dsw-alias-label-secondary); }

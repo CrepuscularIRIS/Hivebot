@@ -52,8 +52,20 @@ describe('session reduce（时间线）', () => {
       records: [{ type: 'event', event: { type: 'user/message', data: { id: 'u1', content: text('早'), source: { kind: 'user' } } } }],
       assistantStream: { activeAttempt: { stream: [{ type: 'text-delta', text: '半' }, { type: 'text-delta', text: '截' }] } },
     }], { ...initView('s'), items: [{ kind: 'notice', id: 'stale', tone: 'muted', text: '旧' }] })
-    expect(v).toMatchObject({ preset: 'p2-alpha', cwd: '/w', title: '研究助手', loaded: true, streaming: { text: '半截' } })
+    expect(v).toMatchObject({ preset: 'p2-alpha', cwd: '/w', title: '研究助手', loaded: true, streaming: { text: '半截' } } as Partial<SessionView>)
     expect(v.items).toEqual([{ kind: 'user', id: 'u1', text: '早' }])
+  })
+
+  it('U-26 ③（#11 分页）：snapshot 带 hasMore / 首条 seq；缺省 hasMore=false', () => {
+    const snap = (hasMore: boolean | undefined, seq: number | undefined): unknown => ({
+      type: 'snapshot', header: {}, hasMore,
+      records: [seq === undefined
+        ? { type: 'event', event: { type: 'user/message', data: { id: 'u1', content: text('早'), source: { kind: 'user' } } } }
+        : { type: 'event', event: { type: 'user/message', seq, data: { id: 'u1', content: text('早'), source: { kind: 'user' } } } }],
+    })
+    expect(run([snap(true, 7)])).toMatchObject({ hasMore: true, firstSeq: 7 } as Partial<SessionView>)
+    expect(run([snap(undefined, 9)])).toMatchObject({ hasMore: false, firstSeq: 9 } as Partial<SessionView>) // follow wire 缺省视为无更早
+    expect(run([snap(true, undefined)])).toMatchObject({ hasMore: true, firstSeq: null } as Partial<SessionView>) // 无 seq（异常帧）也可加载更早，beforeSeq 缺省
   })
 
   it('tool 行文案：Title Case + 常见参数摘要', () => {

@@ -7,7 +7,7 @@ import { api, closeMarket, openNewBot, type State } from '../../shell/store'
 import { tintOf } from '../bots/Sidebar'
 import { Markdown } from '../session/Markdown'
 import {
-  classify, enterMarket, install, installedNames, loadMore, openDetail, outcomeText, refreshBundles, retrySearch, setQuery, setSource,
+  classify, enterMarket, install, installedNameOf, installedNames, loadMore, openDetail, outcomeText, refreshBundles, retrySearch, setQuery, setSource,
   targetVersion, text, useMarket, type Entry, type Kind, type MarketState,
 } from './store'
 
@@ -55,7 +55,10 @@ function Row({ m, entry, installed, online }: { m: MarketState; entry: Entry; in
 }
 
 function Detail({ m, entry, online }: { m: MarketState; entry: Entry; online: boolean }): JSX.Element {
-  const kind = classify(entry, installedNames(m), m.outcomes[entry.name])
+  const installed = installedNames(m)
+  const kind = classify(entry, installed, m.outcomes[entry.name])
+  // U-26 ①：预勾实际 bundle 名——U-25 wrapper 安装后 #16 里是 @p2sdk-market/<段>（源名留给展示）
+  const bundle = installedNameOf(entry, installed)
   const version = targetVersion(entry)?.version
   const [doc, setDoc] = useState<string | 'none' | null>(null)
   useEffect(() => {
@@ -82,7 +85,7 @@ function Detail({ m, entry, online }: { m: MarketState; entry: Entry; online: bo
         {kind === 'installed' && (
           <>
             <p className="m-note ok"><Icon name="check" />已安装 · 不会全局启用。在新建 Bot 时勾选它。</p>
-            <button type="button" className="btn primary" data-action="new-with" onClick={() => newWith(entry.name)}>用它新建 Bot <Icon name="arrow-right" /></button>
+            <button type="button" className="btn primary" data-action="new-with" onClick={() => newWith(bundle ?? entry.name)}>用它新建 Bot <Icon name="arrow-right" /></button>
           </>
         )}
         {kind === 'browse' && (

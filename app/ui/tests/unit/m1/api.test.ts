@@ -2,7 +2,7 @@
 // 断言口径 PLAN §2（+4）：精确值断言；「dsh 没收到调用」统一 apiCount === 0。
 // 依据：work/p3-contract/CONTRACT.md §2/§2.2（v1.3）+ 勘误行、work/p4-ui/BRIEF.md D9、PLAN U-11 行。
 import { describe, expect, it } from 'vitest'
-import { M1_ALLOW, d9DeniedReason, registerM1Api } from '../../../main/m1-api'
+import { M1_ALLOW, d9DeniedReason, m1Installs, registerM1Api } from '../../../main/m1-api'
 import { EventsLedger } from '../../../main/dsh/ledger'
 import type { ConnectionRpcResult } from '../../../main/dsh/connect'
 
@@ -151,6 +151,17 @@ describe('§2.2 installBundle 强制 enabled:false（invalid-args）', () => {
     expect(res).toEqual({ ok: true, value: null })
     expect(dsh.apiCount).toBe(1)
     expect(dsh.calls[0]).toEqual({ method: 'pluginManager/installBundle', args })
+  })
+
+  it('U-26 ②（D5）：__pbotsM1 观测面只记透传成功的调用（拒绝不进）', async () => {
+    const start = m1Installs.length
+    const rejected = makeApi()
+    await rejected.api({ method: 'pluginManager/installBundle', args: { spec: 'x', options: { enabled: true } } })
+    expect(m1Installs.length).toBe(start) // enabled:true 拒绝 → 不记
+    const ok = makeApi()
+    await ok.api({ method: 'pluginManager/installBundle', args: { spec: '@scope/x@1.0.0', options: { enabled: false } } })
+    expect(m1Installs[start]).toEqual({ spec: '@scope/x@1.0.0', enabled: false })
+    expect(m1Installs.length).toBe(start + 1)
   })
 
   it('对象形态省略 options → pbots/invalid-args，dsh 计数 === 0', async () => {

@@ -4,6 +4,7 @@
 // - 三分类（P4）：已安装（entry.name ∈ #16 installed）> not-installable 标记（精确匹配，不被 install.spec 覆盖）> 有 install.spec。
 // - 安装（P5/P6）：#15 固定 {enabled:false}；看业务 application，不凭 M1 ok；成功后重拉 #16 核实。
 import { useSyncExternalStore } from 'react'
+import { wrapperNameOf } from '../../../../sdk/src/market/wrapper-name.mjs'
 import { api } from '../../shell/store'
 import { installedBundles, type Bundle } from '../settings/NewBotDialog'
 
@@ -58,13 +59,22 @@ export function targetVersion(entry: Entry): Version | undefined {
   return entry.versions?.find((v) => v.version === entry.defaultVersion) ?? entry.versions?.[0]
 }
 
-/** 三分类（P4）；not-bundle 之后本会话记为 unsupported（P5：不再给按钮、不自动重试）。 */
+/** 三分类（P4）；not-bundle 之后本会话记为 unsupported（P5：不再给按钮、不自动重试）。
+ * U-26 ①（GU-PDC-A HIGH-1）：U-25 起裸 npm 包装成 wrapper bundle 装（#16 返回 wrapper 名），
+ * 已装判定同时认源名与 wrapper 名——命名规则单点在 sdk wrapper.mjs 的 wrapperNameOf，不复制。 */
 export function classify(entry: Entry, installed: ReadonlySet<string>, outcome: Outcome | undefined): Kind {
-  if (installed.has(entry.name)) return 'installed'
+  if (installedNameOf(entry, installed) !== null) return 'installed'
   if (entry.metadata?.keywords?.includes('not-installable') === true) return 'browse'
   if (targetVersion(entry)?.install?.spec === undefined) return 'browse'
   if (outcome?.kind === 'failed' && outcome.code === 'not-bundle') return 'unsupported'
   return 'installable'
+}
+
+/** 该条目实际已装的 bundle 名（源名或 wrapper 名）；null = 未装。「用它新建 Bot」预勾它（#4 要 bundle 名）。 */
+export function installedNameOf(entry: Entry, installed: ReadonlySet<string>): string | null {
+  if (installed.has(entry.name)) return entry.name
+  const wrapper = wrapperNameOf(entry.name)
+  return installed.has(wrapper) ? wrapper : null
 }
 
 /** 失败分类文案（P5）：not-bundle 走专门说明；其它给 code + 原因。 */

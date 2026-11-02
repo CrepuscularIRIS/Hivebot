@@ -135,3 +135,52 @@ test('亮/暗截图：侧栏 + 会话（P-A / P-B 存证）', async () => {
     await env.stop()
   }
 })
+
+// U-26 ③（#11 分页，GU-PDC-A HIGH-2 / D6a）：follow 首窗有限（HISTORY_PAGE=40），窗口外更早历史
+// 走 transcript 顶部「加载更早」（session/events + hasMore）；失败只重试该页（failNext 注入 → 重试按钮）。
+test('#11 分页：长历史首窗有限，「加载更早」逐页补全；失败只重试该页', async () => {
+  test.setTimeout(240_000)
+  const env = await launchProduct()
+  try {
+    const { page, rt } = env
+    const main = (await devState(page)).meta.mainBotId!
+    // 45 轮（90 条 messages > 首窗 40）：经 SDK client 直发排队，fake 回复逐轮定稿
+    const TURNS = 45
+    rt.writeScriptCalls(main, Array.from({ length: TURNS }, (_, i) => textCall([`a${i + 1}`], { paceMs: 5 })))
+    for (let i = 1; i <= TURNS; i++) {
+      await rt.client.call('session/prompt', {
+        request: { requestId: `u26-page-${i}-${main}`, sessionId: main, mode: 'queue', content: [{ type: 'text', text: `TURN-${i}${i === 1 ? '-earliest' : ''}` }] },
+      })
+    }
+    await expect(page.locator(`[data-pane="${main}"] .bubble.assistant.final`).last()).toHaveText(`a${TURNS}`, { timeout: 120_000 })
+
+    // 重载触发 follow 快照重建：首窗 = 最近 HISTORY_PAGE 条，最早轮次在窗口外
+    await page.reload()
+    await page.waitForSelector('.shell', { timeout: 30_000 })
+    await expect(page.locator(`[data-pane="${main}"] .bubble.assistant.final`).last()).toHaveText(`a${TURNS}`, { timeout: 30_000 })
+    const pane = page.locator(`[data-pane="${main}"]`)
+    await expect(pane).toContainText(`TURN-${TURNS}`)
+    expect(await pane.innerText()).not.toContain('TURN-1-earliest') // 窗口外
+    await expect(page.locator('[data-older] [data-action="load-older"]')).toBeVisible()
+
+    // 失败只重试该页：注入一次性失败 → 顶部失败态 + 重试按钮；重试成功补页
+    await page.evaluate(() => (window as unknown as { __pbotsDev: { failNext(m: string): void } }).__pbotsDev.failNext('session/events'))
+    await page.click('[data-older] [data-action="load-older"]')
+    await expect(page.locator('[data-older] [data-action="retry-older"]')).toBeVisible()
+    // 逐页点到取尽（hasMore=false → 顶部条消失），最早一轮回到时间线
+    for (let i = 0; i < 6; i += 1) {
+      const btn = page.locator('[data-older] button')
+      if (await btn.count() === 0) break
+      await btn.click()
+      await page.waitForFunction(() => {
+        const bar = document.querySelector('[data-older]')
+        return bar === null || bar.querySelector('button') !== null // 本页 loading 结束（按钮回可点或取尽消失）
+      })
+    }
+    await expect(page.locator('[data-older]')).toHaveCount(0)
+    await expect(pane).toContainText('TURN-1-earliest')
+    await expect(pane).toContainText(`TURN-${TURNS}`) // prepend 不影响窗口内既有内容
+  } finally {
+    await env.stop()
+  }
+})

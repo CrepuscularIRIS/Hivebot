@@ -8,7 +8,7 @@
 // - composer：Enter 发送 / Shift+Enter 换行 / IME 组字不发送；运行中主按钮为停止，Esc 不绑定（R19）；草稿按 bot 隔离（R21）。
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Icon, type IconName } from '../../theme/theme'
-import { answer, cancelTurn, getState, openNewBot, sendPrompt, setDraft, type Approval, type State } from '../../shell/store'
+import { answer, cancelTurn, getState, loadOlder, openNewBot, sendPrompt, setDraft, type Approval, type State } from '../../shell/store'
 import { Avatar, botInfo } from '../bots/Sidebar'
 import { cloneInit } from '../settings/InfoPane'
 import { toolSummary, toolTitle, type TimelineItem } from './reduce'
@@ -121,12 +121,26 @@ export function Conversation({ s, id }: { s: State; id: string }): JSX.Element {
   const scroller = useRef<HTMLDivElement>(null)
   const atBottom = useRef(true)
   const [pill, setPill] = useState(false)
+  /** 「加载更早」prepend 前的视口锚点（首条 id + 当时 scrollHeight），加载后补偿 scrollTop（席 C）。 */
+  const anchor = useRef<{ id: string; height: number } | null>(null)
   const last = view?.items[view.items.length - 1]
   const thinking = info.running && view?.streaming === null && !(last?.kind === 'tool' && last.status === 'running')
+
+  const startOlder = (): void => {
+    const el = scroller.current
+    if (el !== null && view !== undefined) anchor.current = { id: view.items[0]?.id ?? '', height: el.scrollHeight }
+    void loadOlder(id)
+  }
 
   useLayoutEffect(() => {
     const el = scroller.current
     if (el === null) return
+    // U-26 ③：更早一页 prepend（首条 id 变化）→ scrollTop 补偿高度差，视口锚点不动
+    if (anchor.current !== null) {
+      const prepended = view?.items[0]?.id !== anchor.current.id
+      if (prepended) el.scrollTop += el.scrollHeight - anchor.current.height
+      anchor.current = null
+    }
     if (atBottom.current) el.scrollTop = el.scrollHeight
     else setPill(true)
   }, [view?.items.length, view?.streaming?.text, mine.length, thinking])
@@ -147,6 +161,15 @@ export function Conversation({ s, id }: { s: State; id: string }): JSX.Element {
         if (atBottom.current) setPill(false)
       }}>
         <div className="chat-col">
+          {view?.loaded === true && view.items.length > 0 && (view.hasMore || view.older.phase === 'error') && (
+            <div className="older-bar" data-older>
+              {view.older.phase === 'loading'
+                ? <span className="older-status" role="status">正在加载更早…</span>
+                : view.older.phase === 'error'
+                  ? <button type="button" className="btn secondary" data-action="retry-older" onClick={startOlder}>加载更早失败 · 重试</button>
+                  : <button type="button" className="btn secondary" data-action="load-older" onClick={startOlder}>加载更早</button>}
+            </div>
+          )}
           {view?.loaded !== true && (
             <div className="skeleton" aria-label="正在加载对话"><div className="sk-bubble left" /><div className="sk-bubble right" /></div>
           )}

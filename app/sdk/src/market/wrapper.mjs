@@ -24,6 +24,9 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+// U-26：命名规则单点在 wrapper-name.mjs（纯函数、零 node: 依赖，renderer 可直接 import）。
+import { wrapperNameOf } from './wrapper-name.mjs'
+export { wrapperNameOf }
 
 /** app/sdk 根（本文件在 src/market/ 下）：预置包与 dsh-mcp-client 都从这里解析。 */
 export const SDK_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -50,15 +53,8 @@ export function parseExactNpmSpec(spec) {
   return { name, version }
 }
 
-/** 包名 → wrapper 目录段：scope 与名字各 sanitized 后以 __ 相连。 */
-function dirSegmentOf(name) {
-  return name.replace(/^@/, '').split('/').map((seg) => seg.replace(/[^a-z0-9-._~]/g, '-')).join('__')
-}
-
-/** 包名 → wrapper bundle 名（p2temp/readConnectorRows 的 BUNDLE_NAME_RE 合法形状）。 */
-export function wrapperNameOf(name) {
-  return `@p2sdk-market/${dirSegmentOf(name)}`
-}
+/** 包名 → wrapper 目录段（wrapper-name.mjs 的内部函数，本文件多处使用）。 */
+const dirSegmentOf = (name) => name.replace(/^@/, '').split('/').map((seg) => seg.replace(/[^a-z0-9-._~]/g, '-')).join('__')
 
 /**
  * 包名 → mcp-client serverName（工具名 mcp__<serverName>__* 的命名空间）：

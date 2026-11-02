@@ -8,7 +8,7 @@
 import { useSyncExternalStore } from 'react'
 import { CarrierSocket, pageEnv } from '../carrier'
 import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../carrier/mux'
-import { initView, reduceFollow, type SessionView } from '../plugins/session/reduce'
+import { firstSeqOf, initView, olderItemsOf, reduceFollow, type SessionView } from '../plugins/session/reduce'
 
 export interface Summary { sessionId: string; title: string | null; preset: string | null; running: boolean; updatedAt: number }
 export interface Approval {
@@ -43,6 +43,8 @@ export interface State {
 
 /** 冷启动等待上限（R15：超时换「引擎没有响应  重试 →」）。 */
 export const BOOT_TIMEOUT_MS = 60_000
+/** follow 快照窗口 + #11 每页条数（U-26 ③：窗口外更早历史走「加载更早」分页）。 */
+export const HISTORY_PAGE = 40
 
 let state: State = {
   boot: 'starting', bootError: null, online: false, order: [], summaries: {}, meta: { mainBotId: null, recipes: {} },
@@ -98,7 +100,7 @@ function pump(stream: MuxStream, onItem: (item: unknown) => void): void {
 
 function openFollow(sessionId: string): void {
   if (mux === undefined) return // 开 socket 后统一重挂
-  const stream = mux.open('session/follow', { request: { address: { kind: 'session', sessionId }, assistantStream: true } })
+  const stream = mux.open('session/follow', { request: { address: { kind: 'session', sessionId }, assistantStream: true, maxMessages: HISTORY_PAGE } })
   pump(stream, (item) => {
     const view = reduceFollow(state.views[sessionId] ?? initView(sessionId), item)
     const settled = (a: Approval): boolean => a.agentId === sessionId && a.callId !== null
@@ -292,6 +294,45 @@ export function addCreated(sessionId: string, preset: string, notice: string | n
 
 export function setDraft(sessionId: string, text: string): void {
   set({ drafts: { ...state.drafts, [sessionId]: text } })
+}
+
+/**
+ * #11「加载更早」（U-26 ③）：session/events 取快照窗口之外的更早一页，prepend 到时间线。
+ * 失败只重试该页（beforeSeq 游标不变，席 C PAB-proposal-C:104）；空页视为取尽（防重复拉）。
+ */
+export async function loadOlder(sessionId: string): Promise<void> {
+  const view = state.views[sessionId]
+  if (view === undefined || !view.hasMore || view.older.phase === 'loading') return
+  set({ views: { ...state.views, [sessionId]: { ...view, older: { phase: 'loading' } } } })
+  const res = await api('session/events', {
+    request: {
+      address: { kind: 'session', sessionId },
+      ...(view.firstSeq !== null ? { beforeSeq: view.firstSeq } : {}),
+      maxMessages: HISTORY_PAGE,
+    },
+  })
+  const cur = state.views[sessionId]
+  if (cur === undefined) return // 视图已卸（理论不可达：follow 不随切走卸载）
+  if (!res.ok) {
+    set({ views: { ...state.views, [sessionId]: { ...cur, older: { phase: 'error' } } } })
+    return
+  }
+  const page = rec(res.value)
+  const records = Array.isArray(page.records) ? page.records : []
+  const seq = firstSeqOf(records)
+  set({
+    views: {
+      ...state.views,
+      [sessionId]: {
+        ...cur,
+        // 无 seq 可作下一页游标，或服务端报取尽 / 空页 → 按钮消失
+        hasMore: page.hasMore === true && records.length > 0 && seq !== null,
+        firstSeq: seq ?? cur.firstSeq,
+        items: [...olderItemsOf(records), ...cur.items],
+        older: { phase: 'idle' },
+      },
+    },
+  })
 }
 
 export function sendPrompt(sessionId: string, text: string): Promise<ApiResult> {

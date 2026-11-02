@@ -32,13 +32,41 @@ export interface SessionView {
   asked: Record<string, string>
   /** 快照已到（区分「加载中」与「空」）。 */
   loaded: boolean
+  /** 窗口外还有更早历史（follow snapshot hasMore / #11 session/events 分页，U-26 ③）。 */
+  hasMore: boolean
+  /** 窗口内最早 event 的 seq（#11 beforeSeq 游标；null = 无 seq 可翻）。 */
+  firstSeq: number | null
+  /** 「加载更早」状态（席 C PAB-proposal-C:104：顶部局部指示、失败只重试该页）。 */
+  older: OlderPhase
 }
+
+export interface OlderPhase { phase: 'idle' | 'loading' | 'error' }
 
 export function initView(sessionId: string): SessionView {
   return {
     sessionId, preset: null, cwd: null, title: null, model: null, running: false, turnEnded: false, endReason: null,
     items: [], streaming: null, chunkCount: 0, asked: {}, loaded: false,
+    hasMore: false, firstSeq: null, older: { phase: 'idle' },
   }
+}
+
+/** 一组 follow/#11 history records 里最早 event 的 seq（无 seq → null）。 */
+export function firstSeqOf(records: readonly unknown[]): number | null {
+  for (const record of records) {
+    const seq = rec(rec(record).event).seq
+    if (typeof seq === 'number') return seq
+  }
+  return null
+}
+
+/** 归约一页更早的 history records（{type:'event',event}[]，正序）为时间线 items（不带运行态）。 */
+export function olderItemsOf(records: readonly unknown[]): TimelineItem[] {
+  let out = initView('older')
+  for (const record of records) {
+    const wrapped = rec(record)
+    if (wrapped.type === 'event') out = reduceEvent(out, rec(wrapped.event))
+  }
+  return out.items
 }
 
 type AnyRecord = Record<string, unknown>
@@ -138,11 +166,14 @@ export function reduceFollow(view: SessionView, value: unknown): SessionView {
   const frame = rec(value)
   if (frame.type === 'snapshot') {
     const header = rec(frame.header)
+    const records = Array.isArray(frame.records) ? frame.records : []
     let out: SessionView = {
       ...initView(view.sessionId), preset: str(header.agentPreset), cwd: str(header.cwd),
       title: str(rec(rec(frame.projections).values).title), model: modelOf(rec(rec(frame.projections).values).modelSelection), loaded: true,
+      // U-26 ③：snapshot 自带 hasMore（follow wire，dsh client/transport.ts:200 同源）；首条 seq = #11 游标
+      hasMore: frame.hasMore === true, firstSeq: firstSeqOf(records),
     }
-    for (const record of Array.isArray(frame.records) ? frame.records : []) {
+    for (const record of records) {
       const wrapped = rec(record)
       if (wrapped.type === 'event') out = reduceEvent(out, rec(wrapped.event))
     }

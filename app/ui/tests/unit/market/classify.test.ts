@@ -1,7 +1,7 @@
 // U-23 P-C 三分类 / 失败文案 / 连接器候选（renderer/plugins/market/store.ts、settings/NewBotDialog.tsx 纯函数）。
 // 条目形状取自 T-19 快照经 pluginMarket/search 的 listing（versions[].install.spec；not-installable 在 metadata.keywords）。
 import { describe, expect, it } from 'vitest'
-import { classify, outcomeText, targetVersion, text, type Entry } from '../../../renderer/plugins/market/store'
+import { classify, installedNameOf, outcomeText, targetVersion, text, type Entry } from '../../../renderer/plugins/market/store'
 import { installedBundles } from '../../../renderer/plugins/settings/NewBotDialog'
 
 const entry = (name: string, extra: Partial<Entry> = {}): Entry => ({
@@ -15,6 +15,16 @@ describe('market classify（PDC-final P4/P5）', () => {
     expect(classify(ni, none, undefined)).toBe('browse')
     expect(classify(ni, new Set(['a']), undefined)).toBe('installed')
     expect(classify(entry('b', { metadata: { keywords: ['not-installable-ish'] } }), none, undefined)).toBe('installable')
+  })
+
+  it('U-26 ①（GU-PDC-A HIGH-1）：已装判定认 wrapper 名——#16 返回 @p2sdk-market/<段>（wrapperNameOf 规则，字面量钉死）', () => {
+    const fs = entry('@agent-infra/mcp-server-filesystem')
+    // 字面量与 app/sdk/src/market/wrapper.mjs wrapperNameOf 互为锚点（app/sdk/tests/e2e/market.test.ts:69 同款）
+    const wrapperName = '@p2sdk-market/agent-infra__mcp-server-filesystem'
+    expect(classify(fs, new Set([wrapperName]), undefined)).toBe('installed')
+    expect(installedNameOf(fs, new Set([wrapperName]))).toBe(wrapperName) // 「用它新建 Bot」预勾实际 bundle 名
+    expect(installedNameOf(fs, new Set(['@agent-infra/mcp-server-filesystem']))).toBe('@agent-infra/mcp-server-filesystem')
+    expect(installedNameOf(fs, none)).toBeNull()
   })
 
   it('无 install.spec → 只浏览；有 spec → 可装；not-bundle 后本会话不再给按钮，其它失败仍可重试', () => {

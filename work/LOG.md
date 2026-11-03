@@ -891,3 +891,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 17:34 P5-54 builder 完成（换心：切换+迁移+删除 -3898，6 产品缺陷修复，356+61 全绿，D 映射齐全，对照台三联上线）→ verifier 深验派发
 17:52 P5-54 合并 314b998（patch 方式含删除），回归后台 → P5-55（0.78.1 收口）+ P5-31（审批卡适配）并行已派；P5-57（市场/配置/停止钮 UI）立行 | p5 done 32/33
 17:59 P5-54 合并后回归全绿（356 单测 + 61 e2e exit 0）——main 正式跑在 0.18 renderer 上
+18:12 P5-31 builder 完成（ef7bbf0：Always/Never 隐藏+Execution 卡隐藏有据+命令全文，360+61）→ verifier 派发（最终 build 全量复跑）

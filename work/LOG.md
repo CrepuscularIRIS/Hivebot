@@ -873,3 +873,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 14:12 P5-53 builder 完成（b964c76：对照台 16 视图+U1′ 表 1142 行+persona 264 帧；发现 R3/S0 归档桩失真、0.18 缺时间分隔 producer、v3 工具行桩下丢行→立 P5-R10）→ verifier 派发
 14:31 P5-53 验收 PASS → 合并（对照台+U1′ 表入 main）；O4（run.mjs FAIL exit 0）记档 | p5 done 27/33
 14:32 P5-51 验收 PASS → 合并（P5-51.f1 盲区立行已派）；P5-52/56/R10 并行派出 | 在途 5：P5-22/52/56/R10/51.f1 + P5-51 回归后台 | p5 done 28/33
+14:39 P5-22 builder 完成（d957d17：D-1⑤ 全链+slirp supervisor+一次性许可，304 绿；通道判断=文件模式非 main 签发，论证在案交 director）→ verifier 深验派发

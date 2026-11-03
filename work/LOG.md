@@ -844,3 +844,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 12:18 p6-orchestration BRIEF v1 完成（核心发现：三段式+主 bot 派活=0.18 原版设计；推荐 R2 自建编排）→ G1 双席 + RE-1 派发；Q-018/019/020 已写
 12:20 L-UI v3 重组落地：superseded 7、改范围 5、新增 P5-50~56；P5-12 链已闭环不回退；P5-13 未派即废 | LEARNINGS 补观感根因
 12:21 p6 G1-r1 = REVISE（两席一致，7 HIGH：create_bot 回 main、send_to_bot 限权、位置折叠为基线、ack 兜底、委派侧门、回合≠终态、依赖补全）→ director 改 BRIEF v2
+12:23 P5-H2 验收 PASS → 合并 d1a7ed1，sdk 250 绿 | done 20/33（p5 计）

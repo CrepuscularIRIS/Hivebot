@@ -874,3 +874,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 14:31 P5-53 验收 PASS → 合并（对照台+U1′ 表入 main）；O4（run.mjs FAIL exit 0）记档 | p5 done 27/33
 14:32 P5-51 验收 PASS → 合并（P5-51.f1 盲区立行已派）；P5-52/56/R10 并行派出 | 在途 5：P5-22/52/56/R10/51.f1 + P5-51 回归后台 | p5 done 28/33
 14:39 P5-22 builder 完成（d957d17：D-1⑤ 全链+slirp supervisor+一次性许可，304 绿；通道判断=文件模式非 main 签发，论证在案交 director）→ verifier 深验派发
+14:47 P5-51 回归：vitest 346 绿；e2e 3 红定位——grok-shim 单跑绿（flake），d4d5d6+market 真红=**P5-21 连接器 ASK 化未适配旅程测试**（X 调 read_file 等卡超时）→ P5-21.f1 适配任务已派

@@ -178,3 +178,21 @@
 - slug：新 slug（待 director 立 BRIEF）｜ 类型：方向 ｜ 阻塞：无（p5-parity 收尾不受影响）｜ 提出：2026-11-03
 - 用户原话：「之前我们提到了dsh的superagent, 其实这些是也要被放到主grok bot中的. 可以采用这种思路去做其他的编排, 例如跨session之类的内容. 每一个都是一个personal agent. personal agent的行为, 就不应该每一条信息都回复, 而是只要一开始的收到, 以及打算怎么做, 以及最后的结果. 目前从个人使用体验上, 肯定superagent会好很多. dsh可能是一个核心吧. 这些我觉得也要去开发一下.」
 - 落实（主会话 2026-11-03）：①主 bot 吸收 superagent 能力（建子 bot/编排）；②跨 session 编排（SendToAgent 族）；③每个 bot = personal agent，**交互模型改三段式**（收到确认 → 打算怎么做 → 最终结果，不逐条回复）；④dsh 为核心。派 director 写新 slug BRIEF（输入：Q-001/Q-003 分工猜想、work/p2-sdk/reuse/superagent-compat.md、RE-features 的 Main Agent/SendToAgent/记忆清单）。
+
+## Q-018 [open] p6「superagent 好很多」具体指什么体验
+- slug：p6-orchestration ｜ 类型：方向（决定路线 R1/R2）｜ 阻塞：D-1 路线投票 ｜ 提出：2026-11-03
+- 背景：BRIEF v1 §9①。你说「从个人使用体验上肯定 superagent 会好很多」——三段式（收到→打算怎么做→结果）已定；剩下这个判断决定编排路线：R2 自建编排层（安静、后台并行、事件驱动通知）vs R1 直接集成 superagent 包（主动性：盯 GitHub/飞书等事件源、主动开工单）。BRIEF 推荐 R2（superagent 包面向团队工单+worker 免审批撞安全反例+上游 1 commit 无维护）。
+- 选项：A（推荐）：R2 自建编排（安静+并行）｜ B：R1 superagent 包（主动性/事件源）
+- 答复：
+
+## Q-019 [open] worker bot 默认在侧栏可见吗
+- slug：p6-orchestration ｜ 类型：产品 ｜ 阻塞：UI 任务 ｜ 提出：2026-11-03
+- 背景：BRIEF §9②。主 bot 建的 worker bot 是否默认显示在侧栏（可见=可点进去看过程；不可见=纯后台，需要单独入口管理）。0.18 原版行为待 RE 核实。
+- 选项：A（推荐）：可见（与现有 bot 列表一致，透明）｜ B：默认隐藏（安静，设置里开）
+- 答复：
+
+## Q-020 [open] 第一批只有主 bot 能编排？
+- slug：p6-orchestration ｜ 类型：范围 ｜ 阻塞：PLAN ｜ 提出：2026-11-03
+- 背景：BRIEF §9③。第一批：仅主 bot 有 CreateAgent/SendToAgent 等编排工具；普通 bot 之间互发消息是第二批。少一层递归复杂度。
+- 选项：A（推荐）：是，第一批仅主 bot 编排｜ B：所有 bot 平等编排
+- 答复：

@@ -1,5 +1,6 @@
 # BRIEF · p5-parity（UI 对齐原版 + 审批自主化）
 
+v3 · 2026-11-03 · director（Opus 5.5）· **L-UI 路线变更**（Q-014 用户答复：不截图，改「0.18 重构仓前端 1:1 移植 + 与 0.78.1 并排对照」）：新增 §12（覆盖 §2 L-UI 边界、§6 U1–U5、§11 W1-UI），文末「附：PLAN 重组指令（v3）」交主会话执行；L-AP 全部条款不变
 v2.1 · 2026-11-03 · director（Opus 5.5）· 增补（不重写）：回应 G1-r2 有条件通过（`panels/G1-r2.md` 6 条去重 HIGH），吸收已回报的 R1/R4/R5/R6；R2/R3 仍「待 R」。逐条处置见修订账 v2.1 段
 v2 · 2026-11-03 · director（Opus 5.5）· 回应 G1-r1 REVISE（`panels/G1-r1.md` 必须回应清单 7 条 HIGH，逐条处置见文末修订账）
 v1 · 2026-11-03 · 首版
@@ -203,6 +204,78 @@ R8 局限 4：A13、B7 的「静息态可见」按「正常使用必然出现的
 - **W2-AP（frontend-dev，review M）**：卡片三态、设置 pane 授权列表和撤销、迁移按钮、暂停开关（如选）、提问卡、新 M1 方法接入 → A5、A7、A8、A10、A13、A14。
 - **W3 收口**：U5 GU、A6 真模型冒烟、整分支 `mm-review L`。
 
+## 12. v3 增量：L-UI 改为「移植 0.18 前端 + 同数据并排对照」（覆盖 §2 L-UI 边界、§6 U1–U5、§11 W1-UI；L-AP 不变）
+
+### 12.1 用户原话与真实诉求
+用户（2026-11-03，Q-014 答复）：「这个逆向出来的不是很准，或者说 UI 风格不太一样，颜色也好，里面的很多 bot 的动画都不太行。重新做，我截图也没有办法全部截出来。你不如直接把这个 grok bot 0.18 的这个，先做出来，然后 1 比 1 对照去对比？我记得前端好像是 opus 5.5 去开发的」。
+真实诉求：**整体观感像原版**（配色氛围、构件形态、bot 头像动画），而不是「差异清单逐项打勾」。验收的参照必须是**能跑起来的完整原版渲染**，不能是截图或逐项数值（LEARNINGS 2026-11-03 末条）。「opus 5.5 开发」无法核实是指我们 P4 的 frontend-dev 还是 0.18 重构仓作者；两种情况结论相同：问题出在**视觉来源**，不在执行模型（见 12.3）。
+
+### 12.2 0.18 仓可移植性评估（`repos/grok-bot-0.18-reconstructed` @a9f633e，只读）
+| 面 | 事实（全部本次实读） | 对移植的含义 |
+|---|---|---|
+| 是什么 | `frontend/` 是可编辑的 React/TS 渲染器重构（322 文件、约 5.4 万行，`frontend/README.md`：「selected by the default macOS package」）；入口 `frontend/src/main.tsx` 只挂 `ProductionRenderer`（3734 行，140 个 import），**不依赖**原版 bundle。原版 bundle 只在 `DevShell` / fidelity 诊断路径用（`upstream.ts`、`vite.config.ts` 的 `/upstream`）。仓根 README 自己承认它「not a pixel-perfect replacement」 | 能独立构建运行；保真度高于我们（它直接搬原版样式），但不等于原版，所以仍需 0.78.1 对照收口 |
+| 框架 / 依赖 | React 19（我们 18.2）、Vite；外部依赖只有 `react`、`react-dom`、`@tiptap/*`（composer 富文本）；跨目录引用 `source/` 共 7 处（`shared/rpc/coordinator{,-port}`、`shared/sand-timeline-events`、`packages/proto/.../tools_pb`） | 依赖面小；renderer 升 React 19（旧 renderer 本来就要退役，不做兼容）；`source/` 那 4 个模块随树一起复制 |
+| 样式体系 | 主题由 `recovered/features/runtime-theme-token-installer.ts` 运行时注入 `:root`（130 色板 + `--cursor-*` 映射 + 半径，**数据驱动**，值是 0.18 的：accent `#1084fe`，0.78.1 为 `#1680f3`）；组件 CSS 直接带原版 stylex 原子类（如 `view.css:79-82` `.sand-1jq8d06`）和 `@evidence` 字节锚点；`color-mix` 15 处、半透明 rgba 23 处 | 换 0.78.1 色板 = 换一张数据表（我们已有 0.78.1 推导表 `app/ui/renderer/theme/sand-tokens.css` 与 `work/p1-re/evidence/gen-tokens.py`），不改组件 |
+| 动效 | 14 个 `@keyframes`，曲线族按组件区分（`.16,1,.3,1`、`.77,0,.175,1`、`.22,1,.36,1` 等）；**bot 头像是 SVG persona 引擎**（`onboarding/signed-in/character.tsx` 329 行：8 种形状 × 11 色，rAF 驱动，状态 thinking / searching / working / loading / orbit / sending，跟随指针，reduced-motion 分支；`conversation/workspace/agent-avatar.tsx` 按 dsh 活动映射状态，注释写明「原版没有首字母回退」） | 「bot 动画不行」的主因在这里，整件搬即可，只需在 shim 里提供 `currentActivity` |
+| 数据层 | 只认两个窗口对象：`window.coordinatorPort.claim()` 交付 MessagePort，帧格式 `{kind:'lifecycle'|'request'|'reply'|'event'}`，`COORDINATOR_PROTOCOL_VERSION = 1`（`production/coordinator-client.ts:10,99-162`）；`window.desktop` 桥（`recovered/contracts/desktop-bridge.ts`，约 100 个方法）。renderer 调用的 coordinator RPC 共 64 个，事件族约 15 个（agents / agent-upserted / transcript / tray / subagents / async-tasks …） | **帧格式与 0.78.1 相同**，只差版本号（R3 实测 0.78.1 为 3，`RE-stub-boot.md` §3）→ 同一个 shim 可同时喂 0.18 移植版和原版 0.78.1 bundle |
+| 与我们三桥的耦合面 | 我们实际用得到的 RPC 约 12 个：`listAgents` `searchAgents` `countAgents` `createAgent` `updateAgent` `openAgentTail` `getAgentTranscriptTail`/`Window` `sendPrompt` `resolveLocalToolPermission` `setAgentUnread`，加 `agents` / `agent-upserted` / `transcript` 三个事件族；其余约 50 个回空集 / null / 能力关（`getTrays→[]`、`getForeverBoxStatus→null`、`isAgentNetworkEnabled→false`）。最重的一块是 **dsh 事件 → coordinator transcript entry 的序列化**（消息 role/content、tool 行 name/summary/status、`local-tool-permission` ask 卡，形状 R3 已逆出） | shim 放 renderer 侧，下接我们现有 carrier（M1/M2），**C2 契约与 main 的 D9 守卫不动**；审批作答仍只发 `allowed-once` / `rejected` |
+| 运行时资产 | 字体、图标、图片按原版 hash 名从 0.18 安装包取（`frontend/manifests/renderer-runtime-assets.json`）；仓的 bootstrap 用 `hdiutil`（只有 macOS 能跑）；本机有 `research-archives/original/0.18.0/` 的 dmg 与 Windows `Setup.exe`（LFS 已拉到实体，155MB / 126MB），无 7z | 资产提取交 reverse-engineer（12.8 R9）；退路是用 0.78.1 解包树里的同名资产 |
+| 能直接搬（第 3 级，私用不分发） | `frontend/src/**` 整树、`source/` 中被引用的 4 个模块、`frontend/manifests/*` | 文件头写 `来源: github.com/b-nnett/grok-bot-0.18-reconstructed@a9f633e:<path>`，**不改上游文件**，以便日后对比 |
+| 要适配 | ① shim（新写，约 1 个 builder 任务）；② 色板数据换成 0.78.1；③ 0.18 → 0.78.1 的构件差异（R2 已列：侧栏头 icon 行、条目高 54、Connect apps 药丸、tool 裸行、审批卡 r24、titlebar 44/52、市场 overlay），用「我们自己的覆盖文件」实现，不就地改上游文件；④ 我们没有的功能（computer、org-chart、routines、voice、sharing、channels…）由 shim 返回能力关来隐藏，隐藏不了的入口才用覆盖文件屏蔽 | 见 12.6 新任务面 |
+| 0.18 仓本身能否跑 | 整仓**不能**在本机跑：打包链只支持 macOS（hdiutil、codesign），Node 要求 ≥26.5（本机 22.23），后端 `source/` 依赖 Cursor 云。**前端能跑**：`vite build` 后按 R3 的方法在 headless Chrome 里注入 preload 桩 + fake coordinator 即可挂载（与 R3 跑 0.78.1 同法，未实测 → 12.8 S0 首次验证） | 对照不靠 0.18 的后端，靠我们的 shim / fixture |
+
+**「1:1 移植」的准确含义（定稿）**：**整树搬前端、在它的契约之下换数据层**，不是「以它为视觉源逐组件重做」。理由：逐组件重做就是 P4–P5 一路走过的老路（我们的组件 + 抄来的数值），观感差距正是这样产生的（12.3）；而它的数据契约（coordinatorPort + desktop 桥）很窄、和 0.78.1 同构，在契约下面接 shim，比在 140 个 import 的 `ProductionRenderer` 里替换数据层改动少得多，也让上游文件保持原样。
+
+### 12.3 观感差距根因：「数值对、看起来不对」的系统性原因
+（对照依据：0.78.1 R3 渲染 `work/p5-parity/ref/r3-conv-light.png` 与我们的 `vfy-see-exp-light.jpeg`；代码依据如列）
+1. **组件来自 dsh 骨架，只是换了 token 皮**。我们的组件消费 `--dsw-*` 别名层（`app/ui/renderer/theme/dsw.css`），token 值是 0.78.1 的，但「哪个面用哪个 token」是推断出来的（文件里有「席 A 更正」「席 A 增补：不映射就残留 DeepSeek 蓝」这样的注释）。值对、指派错，误差会在每个面上累积。0.18 树直接用 `--cursor-*` / `--sand-*`，并带原版的 stylex 原子类。
+2. **构件形态不同，而审计的颗粒度是「差异行」**。截图对比：原版侧栏头是 40px 圆形 elevated 按钮，composer 是单行药丸（r9999，左 `+`、右麦克风），底部有 Connect apps 药丸，条目没有副标题和时间列；我们是小 icon 钮、「市场」行、方框 textarea、蓝色选中底。这些都是组件结构，不是 token。R8 的 83 行闭集只收「已识别的差异」，整屏构图从来不在闭集里，所以逐项清零之后仍然不像。
+3. **头像内容从未进过审计**。原版头像是 SVG persona 角色并带状态动画（12.2 动效行）；我们是纯色圆加首字母（`app/ui/renderer/plugins/bots/Sidebar.tsx:53-55`）。R8 A6 只量了 34px 尺寸。这是用户「bot 动画不太行」的直接原因，也说明盒模型审计看不见「元素里画的是什么」。
+4. **动效是 JS 驱动的，CSS 断言测不到**。persona 用 rAF，状态随活动切换；我们只有 6 个通用 keyframes（flash / breathe / spin / rise / pop / indeterminate，`app/ui/renderer/shell/app.css`），曲线零散。U4 计划只断言 `transition-duration` / `timing-function`，测不到这一类动效。
+5. **版本混用**。token 取 0.78.1（accent `#1680f3`），R8 中「fixed」项的依据是 0.18 值（accent `#1084fe`、条目 58 等，PLAN 决策 17 已发现），布局沿用 dsh。三个来源拼在一起，单项都有出处，整体却不属于任何一个版本。
+6. **透明叠色依赖底色**。原版大量使用半透明 token（`*-translucent`、rgba、`color-mix`），观感取决于下面那层底；别名映射一旦把某层底换成另一层，同一个 token 的颜色就「对但不像」。
+**已排除**：色彩空间。两边主色板都是 sRGB hex，我们的 oklch 只出现在 syntax 高亮 token（`sand-tokens.css:1108-1119`）。字体也已一致（XVF / XVF Mono / cursor-icons，取自原版资产）。
+**规则**（写进 LEARNINGS 由主会话执行）：观感对齐以「可运行的完整参照 + 同数据并排」为准；数值断言只用来防回归，不作为「像」的证据。
+
+### 12.4 路线（强制双方案）
+| | 路线 U-1 · 移植 0.18 前端 + 共用 shim（**选**） | 路线 U-2 · 直接用 0.78.1 原版 bundle 当我们的 renderer + 同一个 shim | 路线 U-0 · 维持现状继续逐项修 |
+|---|---|---|---|
+| 做法 | 12.2「1:1 含义」；用 R2 清单和并排差异，把 0.18 往 0.78.1 推 | R3 已证明能挂载（Chrome + 桩）；shim 按 v3 协议实现，原版 bundle 不改 | P5-16 / 17 / 15.f* 继续 |
+| 保真度 | 0.18 级，0.78.1 差异要逐项补（有清单） | 0.78.1 原样，构造上就一致 | 已被用户否定 |
+| 可改性 | 源码可改：提问卡（A14）、审批卡的 L-AP 语义、隐藏死入口都能做 | 压缩 bundle 改不了：A14 提问卡加不进去，只能在压缩代码上打补丁；出 bug 无法调试；约 200 个 RPC 都有回值校验器（R3 §3），一个形状不对就是 malformed | — |
+| 代价 | 移植 + shim + 差异补齐，约 5–7 个任务 | shim 面更大（v3 方法表约 200+），改不了 UI | 无限打磨（§4 死因 2 已发生） |
+**放弃 U-2 的理由**：本 slug 的 L-AP 一定要改 UI（提问卡 A14、审批卡只对连接器写工具给「始终允许」），U-2 做不到，或者只能靠给压缩代码打补丁，日后无法维护；它也不是用户点名的方案。**保留 U-2 的价值**：原版 bundle 作为**对照参照**（12.7），以及 S0 失败时的后备，届时作为 D-3 交 /panel。
+**放弃 U-0 的理由**：用户已否定；12.3 第 1、2 条说明继续逐项修不能收敛。
+**语言（默认，不问）**：原版是英文，「1:1」即英文界面；我们现有中文文案（「市场」「发送第一条消息开始」）随旧 renderer 一起退役。用户反对再加 i18n。
+
+### 12.5 逆向一问（L-UI v3 版）
+三个月后失败，最可能的死因：① **shim 序列化不对**，移植版在 fixture 下很漂亮，接上真实 dsh 事件流后大量 entry 显示「Couldn't render this」（R3 局限 1 已见过 entry 级 boundary）→ 防线：S0 必须走通一条真实旅程（LEARNINGS 2026-11-02「能构建 ≠ 能跑」），P5-51 用真实 fake-LLM 事件流做 e2e，并对每类 entry 断言「boundary 计数 = 0」；② **死入口**：大量原版功能入口点了没反应，比旧 UI 还糟 → 防线：U4′「静息态零死入口」；③ **两套 renderer 并存**，旧的迟迟不退役，每个功能写两遍 → 防线：移植启动后旧 renderer 冻结（只修阻断性 bug），切换任务 P5-54 设硬期限：P5-51 合入后即排。
+
+### 12.6 L-UI 的 DONE 条款 v3（替换 §6 的 U1–U5；U6 保留并扩展）
+| # | 条款 | 证伪方式 |
+|---|---|---|
+| U0 | 可行性（S0） | 0.18 `frontend/` 在隔离目录 vite build 成功；在 headless Chrome 中注入桩（协议 v1）后：侧栏列出 3 个 fixture bot（persona 头像 SVG 存在，`data-grok-state` 有值）；点开一个 bot，transcript 渲染出用户消息、tool 行、assistant 消息、`local-tool-permission` 卡；从 composer 发一条消息，fake coordinator 收到 `sendPrompt` 且帧合法；全程 entry 级 boundary（「Couldn't render this」）计数 = 0。任一项失败 → 回 director，按 12.4 改走 U-2 出 D-3 |
+| U1′ | 并排差异闭集清零 | 对照台（12.7）对每个参照视图 × 亮暗输出「原版 0.78.1 \| 移植版」截图对和 computed-style 差异表；差异表每一行都有终态：`fixed@<sha>`、`等价`（附理由），或 `waived:<产品没有该功能 / L-AP 产品裁决 / 原版 bug>`；空状态或理由不在枚举内 → FAIL。R2 清单（`RE-visual-078-values.md`）中的每个具名数值都必须出现在差异表里 |
+| U2′ | 数值防回归 | R2 / R8 已有数值断言迁移到新 renderer 的选择器，亮暗各一条；断言条数不少于迁移前（`visual*.spec.ts` 计数对比） |
+| U3′ | bot 动画 | fake 让 bot 依次思考 → 跑 bash → web_fetch：侧栏与会话头的头像 `data-grok-state` 依次为 `thinking` → `working` → `searching`，空闲时回到静息态；同一 bot 在两次启动之间形状和颜色不变（按 agentId 确定）；`emulateMedia({reducedMotion:'reduce'})` 下 `data-reduced-motion="true"` 且 rAF 不再推进（连续两帧 SVG 节点属性相同）；对照台抽帧：原版与移植版在同一状态、同一时间点的头像帧并排存档 |
+| U4′ | 静息态零死入口 | 4 个主视图（侧栏、会话、市场 overlay、设置 / info pane）中可见的每个可点击元素，点击后要么有可观察的效果（DOM 变化或 RPC 发出），要么被隐藏；脚本遍历 `button, [role=button], a`，列出「点击后无 DOM 变化且 shim 未收到 RPC」的元素，结果为 0 |
+| U5 | 并排对照（保留，基准变更） | 基准 = 对照台用**同一份 fixture** 驱动的原版 0.78.1 渲染（不再是截图）；GU 只跑一轮，REVISE 转一次性修复清单，终态 = U1′–U4′ 全绿 + 用户目视 |
+| U6 | 不回归（扩展） | P4 D1–D12 的行为 e2e 改为指向新 renderer 后全绿；P5-11 / P5-12 已合并的**行为**（侧栏搜索过滤、≤130px 折叠、thinking 行展开收起、时间分隔阈值 ≥900000ms 或跨自然日、未读线恰 1 条）在新 renderer 上各有一条 e2e 并且全绿 |
+
+### 12.7 对照方法（具体流程）
+0.18 仓无法整体运行（12.2 最后一行），所以对照台不依赖它的后端，而是**一份 fixture、两个（三个）渲染器**：
+1. **对照台 = R3 harness 的泛化**（`work/p5-parity/harness/grok-r3/{serve,stub-init,drive}.mjs`，移入 app 测试支撑目录）：`stub-init` 拆成「桥桩」+「fixture 驱动的 coordinator」，按渲染器发 `protocolVersion` 1 或 3。
+2. **fixture 一份**：3 个 bot（含主 bot）、一段会话（用户消息、thinking、bash 与 read 两种 tool 行、assistant markdown 含代码块、待决审批卡、跨 15 分钟的时间分隔、1 条未读），亮暗各一套。对两个协议版本的 entry 形状差异由 fixture 序列化层吸收（S0 时对照两边的 entry 校验器确认）。
+3. **左 = 原版 0.78.1**（`/dev/shm/grok-re/0.78.1/app/dist/renderer/`，重启丢失时按 RE-unpack §0 重建）；**右 = 移植版的 build**；两边都用 headless Chrome、1440×900@2、随机调试端口、每次运行独立 profile（R3 踩过的坑）。
+4. **每个视图产出**：截图对（拼成「ours | ref」）；对选择器清单逐个做 computed-style dump 并 diff，输出 U1′ 差异表；头像状态抽帧（同一时间点）。
+5. **第三列（P5-54 之后加）= 我们真实的 Electron 应用**：由 fake LLM 驱动、产生与 fixture 等价的会话，截同样的视图。它与右列的差异只可能来自 shim 或真实数据，从而把「移植保真」和「数据接入」两类问题分开。
+6. 视图清单：侧栏（展开、折叠）、会话（静息、运行中、待决审批）、市场 overlay、设置 / info pane；亮暗各一套。
+
+### 12.8 待查（v3 新增，主会话派）
+- **S0 → reverse-engineer（限 0.5–1 天；U0 即其验收）**：在 `/tmp/bot-s0-*` 隔离目录完成 0.18 `frontend/` 的 vite build（独立 node_modules，不碰 `repos/` 树），用 R3 方法以协议 v1 挂载，并走通 U0 的旅程；同时回答：① 0.18 与 0.78.1 的 transcript entry 形状差异（字段级）；② 0.18 前端对 `window.desktop` 实际调用了哪些方法、哪些在启动阶段必须有回值；③ `ProductionRenderer` 中哪些入口（computer / org-chart / routines / voice …）能被能力开关隐藏，哪些不能。
+- **R9 → reverse-engineer（可与 S0 合派）**：不用 sudo、不用 hdiutil，从本地 0.18 Windows `Setup.exe` 或 dmg 提取 `frontend/manifests/renderer-runtime-assets.json` 列出的资产，按其中的 sha256 逐个校验；无法提取时，列出可以用 0.78.1 同名资产替代的项。临时目录用 `/tmp/bot-r9-*`（LEARNINGS：沙箱前缀）。
+- **D-3 → /panel D（只在 S0 失败时出题）**：U-2「原版 bundle 当 renderer」与「回退 U-0」二选一。
+
 ## 修订账
 | 版本 | 编号 | 改了什么 | 为什么 |
 |---|---|---|---|
@@ -245,6 +318,7 @@ R8 局限 4：A13、B7 的「静息态可见」按「正常使用必然出现的
 | v2.1 | R4 输入（= B-M2 部分） | §7「现状」列全部填实（不再写「待 R4」）；A4 入口按全表；§1 列出五个侧门；§10.4 改为结论引用；④ 由 B-H1 回答，⑤ 转 R4b；A12 时限标「待 R4b」 | `reuse/r4-tool-gates.md` 已在 v2 定稿前落盘，v2 没有吸收（两席同指） |
 | v2.1 | R5 输入（= B-M2 部分） | 配置 id 改为 `sandbox`（§1、§3、A0）；证据引用从 `r5-run-5lSrb9` 改为最终的 `r5-run-qXloBM`；`runnerFailureSignatures` 取实测值；未答的 ②（fail closed）、③、⑤ 转为 W1-AP-0 验收或任务内容；§10.5 改为结论引用 | `reuse/r5-sandbox-probe.md` L62、L151：误写 id 时 overlay 静默不生效 |
 | v2.1 | R6 输入（= B-M2 部分） | §3「上游复用」写明自建最小 schema（第 5 级，有反向确认）+ 复用 `store.ts` 模式；A7 写入三条存储不变量（稳定身份、落盘成功才放行、写失败没有内存授权）；C2 ① 改为「写盘成功后才代答」；§10.6 改为结论引用 | `reuse/r6-grant-format.md` §1、§5、§6；G1-r2 汇总要求写进授权任务的验收 |
+| v3 | Q-014 答复（L-UI 路线） | 新增 §12：0.18 可移植性评估、观感根因 6 条（排除色彩空间）、路线 U-1 / U-2 / U-0 三选一（选 U-1，U-2 留作参照与后备 D-3）、DONE U0 / U1′–U4′ 替换 U1–U4、U5 基准改为同 fixture 驱动的原版渲染、U6 扩展到已合并的行为、对照台流程、S0 / R9 / D-3 待查；§2 中 L-UI 的「R8 闭集为边界」由 U1′ 差异闭集取代 | 用户 2026-11-03 原话（§12.1）；R3 已证明原版 bundle 可用桩挂载（`RE-stub-boot.md`）；0.18 与 0.78.1 的 coordinator 帧格式相同、只差版本号（`coordinator-client.ts:10,99-162`） |
 | v2.1 | 待 R | R2（U3/U4）、R3（U5 基准）仍在跑；新增 R4b（打断时限）、D-1（受控升权）、D-2（MCP 元数据桥）；§11 W1-AP-0 扩为 0a–0e，W1-AP 首批先出 D-1/D-2 | R2/R3 不阻塞 W1-AP-0 和 W1-UI 的 U1/U2 |
 
 ## 附：Q-013 需主会话同步修订的要点（director 不改 QUESTIONS）

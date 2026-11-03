@@ -809,3 +809,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 05:3x P5-15 回归全绿闭环（230+54）；P5-14 验收 PASS → 合并 965ab00（token+DPR2 spec，worktree 已清），回归后台跑中
 05:5x P5-05 验收 PASS（侧门退基线 3 红实证）→ 合并 8d473f0 + sdk 153 全绿；P5-11 验收 PASS → 合并 0c556fa，回归后台跑 | P5-11 GU 双席已派（只 1 轮）| done 8/33
 02:54 GU-P5-11 = REVISE（1 HIGH 无障碍名，两席同点）→ P5-11.f1 已立行待派 | A 席不变量断言建议一并纳入
+02:57 P5-11 回归红：A1 接缝（P5-15 断言旧值×P5-11 改新值，57 passed+1 failed；hairline ✘ 为预期失败标记）——预判过的 f1 立即派 | P5-12 已合并 4152c3f（回归等 f1 后一并跑）

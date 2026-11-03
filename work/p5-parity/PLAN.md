@@ -224,3 +224,4 @@ status：ready = 现在可派；todo = 只差本 PLAN 内的前序任务；block
 | P5-56 | bot 动画：persona 状态映射接 dsh 活动 + reduced-motion | frontend-dev | app/ui/renderer-grok/ | P5-51 | blocked | – | – | U3′ | |
 | P5-H3 | 【M·根因已实锤（REPORT-P5-H1 发现3）】沙箱系 6 测试文件 TEST_HOME 硬编码 .test-homes/p5-0X → 并行全量互踩哨兵即红——修法=TEST_HOME 每次运行唯一化（mkdtemp 后缀）+ 顺带排查 no ready line 线索 | builder | app/sdk/tests/e2e/sandbox-*.test.ts 的 TEST_HOME 定义 | – | todo | S | – | 两个并行全量（不同 worktree）同时跑全绿 ×3 | |
 | P5-H4 | 【L】fakeOverlay mkdtemp 不清理（/tmp 积 2411）——teardown 补 rm；与 H1 同族 | builder | app/sdk/tests/support/fake/ | P5-H1 | todo | S | – | 全量后 /tmp/p2sdk-* 零新增 | |
+| P5-R10 | RE 跟进：0.78.1 tool-call 行在桩下静默丢行（P5-53 发现3，字段二分无效，R3 原样复现）——定位根因补桩或确认 bundle 侧条件，P5-55/41 差异表保真依赖 | reverse-engineer | /dev/shm 解包树（只读） | – | todo | – | – | 桩下 tool 行渲染或给出不可渲染的机制结论 | |

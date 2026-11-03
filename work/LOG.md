@@ -870,3 +870,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 13:51 P5-25 回归绿闭环（317+64）；P5-21 合并 c8d41f7（never-roots 保 H2 版、mock-demo/start.test 三方合并 43 绿），sdk 全量后台 | p5 done 26/33 | P5-22 解锁待回归绿后派
 13:53 P5-21 回归全绿（35 files/289）闭环 → P5-22 受控联网升权已派（D-1⑤：request_network+一次性许可+slirp supervisor）| p5 done 26/33，在途：P5-22/51/53
 14:07 P5-51 builder 完成（40bcab8：shim 全落地 15 文件 +1469，审批卡渲染条件查清=Dock+scope/revision，333+63 全绿）→ verifier 派发
+14:12 P5-53 builder 完成（b964c76：对照台 16 视图+U1′ 表 1142 行+persona 264 帧；发现 R3/S0 归档桩失真、0.18 缺时间分隔 producer、v3 工具行桩下丢行→立 P5-R10）→ verifier 派发

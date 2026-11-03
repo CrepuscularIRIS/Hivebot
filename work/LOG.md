@@ -863,3 +863,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 13:09 P6-01 验收 PASS → 合并（33 例纯函数，零接线），ui 回归后台 | P5-50 verifier 已派 | p6 done 1/12
 13:12 P5-25 builder 完成（0ee7976：cwd 强制+mintWorkspace，41 单测+254 全量+63 e2e 绿）＋**stash 互踩事故已恢复**（LEARNINGS 立规：多 worktree 禁 stash）→ verifier 派发；截图已抢救入主仓
 13:17 P6-02 合并 0a18b2a（sdk 252 绿）；P6-01 回归绿（304+62）→ P6-04 D3 实测已派 | 清死任务残留 4 进程（T-19/P5-02；在跑的未动）| p6 done 2/12
+13:19 P5-50 验收 PASS → 合并 68858b5（332 文件入 main，frozen install+build 过；回归后台）；P5-51 shim 主力已派（含 foldTurns 接线+审批卡渲染条件查清）| run-e2e.sh PATH 劫持 low 项记档 | p5 done 24/33

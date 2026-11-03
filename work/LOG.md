@@ -881,3 +881,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 15:08 P5-56 验收 PASS → 合并（persona 映射补齐），p5 done 29/33
 15:13 P5-21.f1 验收 PASS → 合并（旅程答卡 3 处）| verifier 报 P5-52 worktree 残留 8 进程归属在跑任务不清
 15:19 P5-56 回归闭环：362 单测绿；e2e 3 红均有归属（2=已并的 f1 修复早于此跑、1=f2 在修、hairline=预期标记）
+15:28 P5-51.f2 builder 完成（e50f449：根因=spec canary 放错目录非产品 bug，argv 序实证工作区可见；spec 对齐 launchAligned）→ verifier 派发 | 清 /tmp bot-U-00-* 旧残留（6.4G→…，60min 前口径防误删在途）
+15:29 P5-51.f1 验收 PASS → 合并（盲区封死+canary 移工作区）| 在途：P5-52、f2 verifier

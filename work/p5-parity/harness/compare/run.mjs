@@ -166,9 +166,13 @@ async function main() {
       if (!files.ref || !files.ours) continue;
       const left = await fs.readFile(path.join(EVID_DIR, 'singles', files.ref));
       const right = await fs.readFile(path.join(EVID_DIR, 'singles', files.ours));
+      // P5-54 第三列：真实 Electron（app-column.spec.ts 先跑，产出 singles/<key>.app.png）存在就拼成三联
+      const appFile = path.join(EVID_DIR, 'singles', `${key}.app.png`);
+      const cols = [['REF 0.78.1', left.toString('base64')], ['OURS 0.18-port', right.toString('base64')]];
+      if (await exists(appFile)) cols.push(['APP Electron (fake LLM)', (await fs.readFile(appFile)).toString('base64')]);
       await stitchChrome.navigate('about:blank');
       await sleep(200);
-      await stitchChrome.evaluate(`document.body.innerHTML = ''; document.body.style.cssText = 'margin:0;background:#525c66'; const wrap = document.createElement('div'); wrap.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px'; for (const [label, b64] of [['REF 0.78.1', ${JSON.stringify(left.toString('base64'))}], ['OURS 0.18-port', ${JSON.stringify(right.toString('base64'))}]]) { const cell = document.createElement('div'); const h = document.createElement('div'); h.textContent = label; h.style.cssText = 'color:#fff;font:600 13px system-ui;padding:2px 6px'; const img = document.createElement('img'); img.src = 'data:image/png;base64,' + b64; img.style.cssText = 'width:100%;display:block;border:1px solid #999'; cell.append(h, img); wrap.append(cell); } document.body.append(wrap); 'ok'`);
+      await stitchChrome.evaluate(`document.body.innerHTML = ''; document.body.style.cssText = 'margin:0;background:#525c66'; const wrap = document.createElement('div'); wrap.style.cssText = 'display:grid;grid-template-columns:repeat(${cols.length},1fr);gap:8px;padding:8px'; for (const [label, b64] of ${JSON.stringify(cols)}) { const cell = document.createElement('div'); const h = document.createElement('div'); h.textContent = label; h.style.cssText = 'color:#fff;font:600 13px system-ui;padding:2px 6px'; const img = document.createElement('img'); img.src = 'data:image/png;base64,' + b64; img.style.cssText = 'width:100%;display:block;border:1px solid #999'; cell.append(h, img); wrap.append(cell); } document.body.append(wrap); 'ok'`);
       await sleep(450);
       const shot = await stitchChrome.screenshot();
       if (shot) { await fs.writeFile(path.join(EVID_DIR, 'pairs', `${key}.png`), shot); pairs += 1; }
@@ -191,6 +195,24 @@ async function main() {
           if (a !== b) diffRows.push({ view: viewKey, part: p.part, prop, ref: a, ours: b, diff: 'value' });
         }
       }
+    }
+    // P5-54 第三列：app（真实 Electron）对 ours（移植树 + 桩）的差异 = shim / 真实数据引入的问题（diff-type app-vs-ours）
+    const appStylesPath = path.join(EVID_DIR, 'styles', 'app.json');
+    if (await exists(appStylesPath)) {
+      const appStyles = JSON.parse(await fs.readFile(appStylesPath, 'utf8'));
+      for (const [viewKey, bySide] of Object.entries(styles)) {
+        for (const p of PARTS) {
+          const ours = bySide.ours?.[p.part] ?? null;
+          const app = appStyles[viewKey]?.[p.part] ?? null;
+          if (ours == null && app == null) continue;
+          if (ours == null || app == null) { diffRows.push({ view: viewKey, part: p.part, prop: '(element)', ref: ours == null ? 'ours MISSING' : 'ours present', ours: app == null ? 'app MISSING' : 'app present', diff: 'app-vs-ours' }); continue; }
+          for (const prop of STYLE_PROPS) {
+            const a = (ours[prop] || '').trim(), b = (app[prop] || '').trim();
+            if (a !== b) diffRows.push({ view: viewKey, part: p.part, prop, ref: `ours=${a}`, ours: `app=${b}`, diff: 'app-vs-ours' });
+          }
+        }
+      }
+      summary.appColumn = true;
     }
     const tsv = ['view\tpart\tproperty\tref(0.78.1)\tours(0.18)\tdiff-type', ...diffRows.map(r => [r.view, r.part, r.prop, r.ref, r.ours, r.diff].map(v => String(v).replace(/\t|\n/g, ' ')).join('\t'))].join('\n');
     await fs.writeFile(path.join(EVID_DIR, 'u1-diff.tsv'), tsv);

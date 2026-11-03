@@ -1,56 +1,27 @@
-// P5-12 E2E（work/p5-parity/PLAN.md P5-12 ①–⑤，定稿 work/p5-parity/ui/P5-12-final.md）：
-// ① fake 回复带 reasoning 块 → 推理阶段 live「思考中」行（无空流式气泡）→ 定稿独立 thinking 行，accent 图标、11px/600，鼠标 + 键盘开合；
-// ② 时间分隔：阈值 = 0.78.1 `emt=9e5` 900000ms 或跨自然日（work/p1-re/evidence/chunks/index.eager-app-iGTgHP_Q.js
-//    @1734517 常量、@1739705 判定函数 vmt）。runtime 真时钟造不出 15 分钟差，阈值 / 跨日 / 缺时在单测
-//    tests/unit/session/markers.test.ts；这里测「首条上方恒 1 条、阈值内两条消息之间 0 条」+ margin 0、几何间距 22±1（容器 gap 22，不叠 44）；
-// ③ 切走 bot 后它收到新回复，切回 → 未读线恰 1 条、在第一条未读之前、超一屏滚到线、停留期不动；再离开再回来 → 0 条；
-// ④ 数值亮暗各一遍 computed 断言。截图存 gitignored app/ui/test-output/P5-12/（U-33）。
-import { expect, test, type Locator, type Page } from 'playwright/test'
+// P5-12 B7 / B14 行为迁到 renderer-grok（U6）：
+// ① thinking 行：流式期出现（live）→ 定稿后仍是一条 thinking 行；鼠标点 / 键盘 Enter·Space 开合（aria-expanded + 详情区）；
+// ② 时间分隔（overrides/modules/markers.ts，0.78.1 vmt 语义）：首条上方恰 1 条、阈值（900000ms）内的后续消息不再出；几何 margin-bottom 22；
+// ③ 未读线：切走后对方回复 → 切回恰 1 条、位于首条未读回复之前；停留期新到的回复不移动它、不长第二条；切走再进 → 0 条。
+// 阈值 / 跨日 / 文案只在单测（tests/unit/grok-shim/markers.test.ts）测——runtime 真时钟造不出 15 分钟差。
+// 旧版「未读线超一屏滚到线」0.18 无此行为，记 REPORT-P5-54 差异表 → P5-55。亮暗各截一张。
+import { expect, test, type Page } from 'playwright/test'
 import { join } from 'node:path'
-import { createViaDialog, devState, evidenceOut, launchProduct, send, textCall } from '../support/ui.ts'
+import {
+  MAIN_TITLE, createBots, evidenceOut, finalAssistant, launchProduct, openBot, reasoningTextCall, send, textCall, transcript,
+} from '../support/ui.ts'
 
 const OUT = evidenceOut('P5-12')
-const THEMES = ['light', 'dark'] as const
+const thinkingRows = (page: Page) => page.locator('.sand-virtual-transcript .sand-outline-item[data-kind="thinking"]')
+const separators = (page: Page) => page.locator('.sand-virtual-transcript .sand-transcript-time-separator')
+const unreadLine = (page: Page) => page.locator('.sand-virtual-transcript .sand-unread-divider')
 
-/** fake LLM 一次调用：reasoning 块（dsh-llm-pi-ai thinking_* → block-start reasoning / reasoning-delta / block-end）再接正文块。 */
-function reasoningCall(reasoning: string[], text: string[], paceMs: number): object {
-  return {
-    chunks: [
-      { type: 'block-start', index: 0, blockType: 'reasoning' },
-      ...reasoning.map((t) => ({ type: 'reasoning-delta', index: 0, text: t })),
-      { type: 'block-end', index: 0, block: { type: 'reasoning', text: reasoning.join('') } },
-      { type: 'block-start', index: 1, blockType: 'text' },
-      ...text.map((t) => ({ type: 'text-delta', index: 1, text: t })),
-      { type: 'block-end', index: 1, block: { type: 'text', text: text.join('') } },
-      { type: 'usage', usage: { inputTokens: 10, outputTokens: 5 } },
-      { type: 'finish', reason: { kind: 'stop' } },
-    ],
-    paceMs,
+async function bothThemes(page: Page, name: string): Promise<void> {
+  for (const mode of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: mode })
+    await expect(page.locator('html')).toHaveAttribute('data-theme', `cursor-${mode}`)
+    await page.screenshot({ path: join(OUT, `${name}-${mode}.png`) })
   }
-}
-
-const css = (loc: Locator, props: string[]): Promise<Record<string, string>> =>
-  loc.evaluate((el, ps) => Object.fromEntries(ps.map((p) => [p, getComputedStyle(el).getPropertyValue(p)])), props)
-
-/** token 的 computed 颜色（探针元素，跟随当前 data-theme）。 */
-const tokenColor = (page: Page, token: string): Promise<string> => page.evaluate((t) => {
-  const el = document.createElement('div')
-  el.style.color = `var(${t})`
-  document.body.appendChild(el)
-  const c = getComputedStyle(el).color
-  el.remove()
-  return c
-}, token)
-
-async function theme(page: Page, mode: 'light' | 'dark'): Promise<void> {
-  await page.emulateMedia({ colorScheme: mode })
-  await expect(page.locator('html')).toHaveAttribute('data-theme', `cursor-${mode}`)
-}
-
-/** a 的下边到 b 的上边（px）。 */
-async function gap(a: Locator, b: Locator): Promise<number> {
-  const [ra, rb] = [(await a.boundingBox())!, (await b.boundingBox())!]
-  return rb.y - (ra.y + ra.height)
+  await page.emulateMedia({ colorScheme: 'light' })
 }
 
 test('B7 thinking 行（live → 定稿、鼠标 / 键盘开合）+ B14 时间分隔（首条 1 条、阈值内 0 条、几何 22）亮暗', async () => {
@@ -58,188 +29,103 @@ test('B7 thinking 行（live → 定稿、鼠标 / 键盘开合）+ B14 时间�
   const env = await launchProduct()
   try {
     const { page, rt } = env
-    await env.shell.app.evaluate(({ BrowserWindow }) => { BrowserWindow.getAllWindows()[0]!.setContentSize(1280, 820) })
-    const x = await createViaDialog(page, 'standard')
-    rt.writeScriptCalls(x, [
-      reasoningCall(['先想一想：', '比较 A 与 B', '\n第二行推理'], ['答案是 A。'], 700),
-      textCall(['第二条回复。']),
-      reasoningCall(['第三问推理首行', '\n第三问推理次行'], ['第三条回复。'], 1500),
+    const [x] = await createBots(page, [{ title: 'B7-X', preset: 'p2-alpha' }])
+    await openBot(page, 'B7-X')
+    const gate = `p554-b7-${Date.now()}`
+    rt.writeScriptCalls(x!, [
+      { ...(reasoningTextCall('先想一想这个问题的结构。', '答案是 42。', 150) as object), gateAfterChunk: 1, gateId: gate },
+      textCall(['第二轮回复。']),
     ])
-    await send(page, '问题一')
+    await send(page, '想一想')
 
-    // ① live：推理阶段只有「思考中」行，没有空流式气泡、也没有三点（同一帧原子取样）
-    const live = await page.waitForFunction(() => {
-      const row = document.querySelector('.thinking-row[data-live]')
-      if (row === null) return false
-      return {
-        label: row.querySelector('.thinking-label')?.textContent,
-        bubbles: document.querySelectorAll('.bubble.streaming').length,
-        dots: document.querySelectorAll('.bubble.thinking').length,
-      }
-    }, undefined, { timeout: 20_000 })
-    expect(await live.jsonValue()).toEqual({ label: '思考中', bubbles: 0, dots: 0 })
-
-    await expect(page.locator('.bubble.assistant.final')).toHaveText('答案是 A。', { timeout: 20_000 })
-    const row = page.locator('.thinking-row')
-    await expect(row).toHaveCount(1)
-    await expect(row).not.toHaveAttribute('data-live', /.*/)
-    await expect(row.locator('.thinking-label')).toHaveText('思考')
-    await expect(row.locator('.thinking-preview')).toHaveText('先想一想：比较 A 与 B')
-    // 独立成行、在气泡之前
-    expect(await row.evaluate((el) => el.nextElementSibling?.matches('.bubble.assistant.final'))).toBe(true)
+    // ① live：推理流式期就有 thinking 行（shim live-reasoning 条目）
+    await expect(thinkingRows(page)).toHaveCount(1, { timeout: 20_000 })
+    const { mkdirSync, writeFileSync } = await import('node:fs')
+    mkdirSync(join(rt.home, 'gates'), { recursive: true })
+    writeFileSync(join(rt.home, 'gates', gate), '')
+    await expect(finalAssistant(page).last()).toHaveText('答案是 42。', { timeout: 20_000 })
+    await expect(thinkingRows(page)).toHaveCount(1) // 定稿：仍恰一条（live 条目被持久 thinking 取代，不重复）
 
     // 鼠标开合
-    const btn = row.locator('button.tool-line')
-    await expect(btn).toHaveAttribute('aria-expanded', 'false')
-    await expect(row.locator('[data-thinking-detail]')).toHaveCount(0)
-    await btn.click()
-    await expect(btn).toHaveAttribute('aria-expanded', 'true')
-    const detail = row.locator('[data-thinking-detail]')
-    await expect(detail).toContainText('第二行推理')
-    expect(await btn.getAttribute('aria-controls')).toBe(await detail.getAttribute('id'))
-    await page.screenshot({ path: join(OUT, 'thinking-open-light.png') })
-    await btn.click()
-    await expect(detail).toHaveCount(0)
-    // 键盘开合：Enter 开、Space 收
-    await btn.focus()
+    const row = thinkingRows(page).first().locator('button.sand-outline-item__row')
+    await expect(row).toHaveAttribute('aria-expanded', 'false')
+    await row.click()
+    await expect(row).toHaveAttribute('aria-expanded', 'true')
+    await expect(thinkingRows(page).first().locator('.sand-outline-item__detail')).toContainText('先想一想这个问题的结构。')
+    await row.click()
+    await expect(row).toHaveAttribute('aria-expanded', 'false')
+    await expect(thinkingRows(page).first().locator('.sand-outline-item__detail')).toHaveCount(0)
+    // 键盘开合（原生 button：Enter / Space）
+    await row.focus()
     await page.keyboard.press('Enter')
-    await expect(btn).toHaveAttribute('aria-expanded', 'true')
+    await expect(row).toHaveAttribute('aria-expanded', 'true')
     await page.keyboard.press('Space')
-    await expect(btn).toHaveAttribute('aria-expanded', 'false')
-    await expect(row.locator('[data-thinking-detail]')).toHaveCount(0)
+    await expect(row).toHaveAttribute('aria-expanded', 'false')
 
-    // ② 第二条消息（阈值内）→ 全流 1 条分隔行，在首条（用户消息「问题一」）上方
-    await send(page, '问题二')
-    await expect(page.locator('.bubble.assistant.final').last()).toHaveText('第二条回复。', { timeout: 20_000 })
-    const seps = page.locator('.chat-col > [data-time-sep]')
-    await expect(seps).toHaveCount(1)
-    const sep = seps.first()
-    await expect(sep).toHaveAttribute('role', 'separator')
-    await expect(sep).toHaveText(/^今天 \d\d:\d\d$/)
-    const first = page.locator('.bubble.user.final').first()
-    await expect(first).toHaveText('问题一')
-    expect(await sep.evaluate((el) => (el.nextElementSibling as HTMLElement | null)?.textContent)).toBe('问题一')
-    // 几何：分隔行 → 首条 22±1（margin 0，靠容器 gap；不叠成 44）；分隔行顶 = chat-col 上内边距 28
-    expect(Math.abs(await gap(sep, first) - 22)).toBeLessThanOrEqual(1)
-    const colTop = (await page.locator('.chat-col').boundingBox())!.y
-    expect(Math.abs((await sep.boundingBox())!.y - colTop - 28)).toBeLessThanOrEqual(1)
-
-    // ④ 亮暗数值
-    for (const mode of THEMES) {
-      await theme(page, mode)
-      expect(await css(sep, ['font-size', 'text-align', 'margin-top', 'margin-bottom', 'color'])).toEqual({
-        'font-size': '11px', 'text-align': 'center', 'margin-top': '0px', 'margin-bottom': '0px', color: await tokenColor(page, '--sand-text-tertiary'),
-      })
-      expect(await css(row.locator('.tool-line > .icon'), ['color', 'font-family'])).toEqual({
-        color: await tokenColor(page, '--sand-text-accent-primary'), 'font-family': 'cursor-icons',
-      })
-      expect(await row.locator('.tool-line > .icon').textContent()).toBe(String.fromCodePoint(0xf429))
-      expect(await css(row.locator('.thinking-label'), ['font-size', 'font-weight', 'color'])).toEqual({
-        'font-size': '11px', 'font-weight': '600', color: await tokenColor(page, '--dsw-alias-label-secondary'),
-      })
-      expect(await css(btn, ['min-height', 'padding'])).toEqual({ 'min-height': '34px', padding: '7px 9px' })
-      await page.screenshot({ path: join(OUT, `thinking-sep-${mode}.png`) })
-    }
-    await theme(page, 'light')
-
-    // ⑤ P5-12.f1（GU-P5-12 第 1 条）：live 期展开并聚焦 → 定稿后同一节点、仍展开、焦点不丢、行不上跳
-    await send(page, '问题三')
-    const liveRow = page.locator('.thinking-row[data-live]')
-    const liveBtn = liveRow.locator('button.tool-line')
-    await expect(liveRow.locator('.thinking-label')).toHaveText('思考中', { timeout: 20_000 })
-    await liveBtn.focus()
-    await page.keyboard.press('Enter')
-    await expect(liveBtn).toHaveAttribute('aria-expanded', 'true')
-    await liveBtn.evaluate((el) => { (el as HTMLElement & { __f1?: boolean }).__f1 = true }) // 节点身份标记
-    await expect(page.locator('.bubble.assistant.final').last()).toHaveText('第三条回复。', { timeout: 20_000 })
-    const after = await page.evaluate(() => {
-      const rows = document.querySelectorAll('.thinking-row')
-      const r = rows[rows.length - 1]!
-      const b = r.querySelector<HTMLElement & { __f1?: boolean }>('button.tool-line')!
-      return {
-        live: r.hasAttribute('data-live'), label: r.querySelector('.thinking-label')?.textContent,
-        sameNode: b.__f1 === true, expanded: b.getAttribute('aria-expanded'), focused: document.activeElement === b,
-        detail: r.querySelector('[data-thinking-detail]')?.textContent,
-      }
-    })
-    expect(after).toEqual({ live: false, label: '思考', sameNode: true, expanded: 'true', focused: true, detail: '第三问推理首行\n第三问推理次行' })
+    // ② 时间分隔：首条上方恰 1 条；阈值内第二轮不再出
+    await expect(separators(page)).toHaveCount(1)
+    await expect(separators(page).first()).toHaveText(/^Today \d{1,2}:\d{2} (AM|PM)$/)
+    await send(page, '再来一轮')
+    await expect(finalAssistant(page).last()).toHaveText('第二轮回复。', { timeout: 20_000 })
+    await expect(separators(page)).toHaveCount(1)
+    // 首条分隔在第一条消息之前（DOM 顺序）
+    const order = await transcript(page).evaluate((el) => [...el.querySelectorAll('.sand-transcript-time-separator, .sand-transcript-row, .sand-outline-item')]
+      .map((n) => n.classList.contains('sand-transcript-time-separator') ? 'sep' : 'row'))
+    expect(order[0]).toBe('sep')
+    expect(await separators(page).first().evaluate((el) => getComputedStyle(el).marginBottom)).toBe('22px') // 几何 22（0.18 view.css）
+    await bothThemes(page, 'b7-b14')
   } finally {
     await env.stop()
   }
 })
 
-test('B14 未读线：切走后对方回复 → 切回恰 1 条、在首条未读前、超一屏滚到线、停留期不动；再进 0 条；亮暗', async () => {
+test('B14 未读线：切走后对方回复 → 切回恰 1 条、在首条未读前、停留期不动；再进 0 条；亮暗', async () => {
   test.setTimeout(120_000)
   const env = await launchProduct()
   try {
     const { page, rt } = env
-    await env.shell.app.evaluate(({ BrowserWindow }) => { BrowserWindow.getAllWindows()[0]!.setContentSize(1280, 820) })
-    const main = (await devState(page)).meta.mainBotId!
-    const x = await createViaDialog(page, 'standard')
-    const long = Array.from({ length: 60 }, (_, i) => `第 ${i + 1} 段`).join('\n\n') // 段落分隔，Markdown 下真成 60 段（超一屏）
-    rt.writeScriptCalls(x, [
-      textCall(['第一轮。']),
-      textCall(['第二轮回复\n\n', long], { paceMs: 1500 }),
-      textCall(['停留期新到。']),
-    ])
-    const itemX = page.locator(`.bot-item[data-session="${x}"]`)
-    const itemMain = page.locator(`.bot-item[data-session="${main}"]`)
-    const finals = page.locator('.bubble.assistant.final')
+    const [a] = await createBots(page, [{ title: 'UR-A', preset: 'p2-alpha' }])
+    await openBot(page, 'UR-A')
+    rt.writeScriptCalls(a!, [textCall(['第一轮回复。']), textCall(['切走后到达的回复。']), textCall(['停留期新到的回复。'])])
+    await send(page, '第一轮')
+    await expect(finalAssistant(page).last()).toHaveText('第一轮回复。', { timeout: 20_000 })
+    await expect(unreadLine(page)).toHaveCount(0) // 首访无基线
 
-    await send(page, '一')
-    await expect(finals).toHaveText(['第一轮。'], { timeout: 20_000 })
-    await expect(page.locator('[data-working]')).toHaveCount(0, { timeout: 20_000 })
-    await expect(page.locator('[data-unread-line]')).toHaveCount(0) // 首次进入无基线
+    // 切走（记已读边界）→ 对方在后台回复（SDK 侧直发，不经 renderer）
+    await openBot(page, MAIN_TITLE)
+    await rt.client.call('session/prompt', { request: { requestId: `p554-ur-${Date.now()}`, sessionId: a, mode: 'queue', content: [{ type: 'text', text: '后台一问' }] } })
+    await expect.poll(async () => JSON.stringify(await page.evaluate((sid) =>
+      (window as unknown as { __pbotsDev: { state: { views: Record<string, { items: unknown[] }> } } }).__pbotsDev.state.views[sid]?.items ?? [], a)), { timeout: 20_000 })
+      .toContain('切走后到达的回复。')
 
-    // 发出第二问后立刻切走：回复在 X 不可见时到达
-    await send(page, '二')
-    await itemMain.click()
-    await expect.poll(() => page.evaluate((sid) => {
-      const st = (window as unknown as { __pbotsDev: { state: { views: Record<string, { items: Array<{ kind: string }> }>; summaries: Record<string, { running: boolean }> } } }).__pbotsDev.state
-      return (st.views[sid]?.items.filter((i) => i.kind === 'assistant').length ?? 0) === 2 && st.summaries[sid]?.running === false
-    }, x), { timeout: 30_000 }).toBe(true)
-    await expect(itemX).toHaveAttribute('data-unread', 'true')
-
-    await itemX.click()
-    const line = page.locator('[data-unread-line]')
-    await expect(line).toHaveCount(1)
-    await expect(line).toHaveAttribute('role', 'separator')
-    await expect(line).toHaveText('新消息')
-    const next = (): Promise<string | undefined> => line.evaluate((el) => {
+    // 切回：恰 1 条，紧贴在首条未读的 bot 回复之前（之间至多一条时间分隔）
+    await openBot(page, 'UR-A')
+    await expect(unreadLine(page)).toHaveCount(1, { timeout: 10_000 })
+    const after = await unreadLine(page).evaluate((el) => {
       let n = el.nextElementSibling
-      while (n !== null && n.matches('[data-time-sep]')) n = n.nextElementSibling
-      return n?.textContent?.slice(0, 5)
+      while (n !== null && n.classList.contains('sand-transcript-time-separator')) n = n.nextElementSibling
+      return (n as HTMLElement | null)?.innerText ?? ''
     })
-    expect(await next()).toBe('第二轮回复')
-    // 超一屏 → 线滚到视口顶下 28（不贴底）
-    const tr = (await page.locator('.transcript').boundingBox())!
-    expect(Math.abs((await line.boundingBox())!.y - tr.y - 28)).toBeLessThanOrEqual(2)
-    // 几何：上一行 → 线、线 → 下一行 各 22±1
-    const prevEl = line.locator('xpath=preceding-sibling::*[1]')
-    const nextEl = line.locator('xpath=following-sibling::*[1]')
-    expect(Math.abs(await gap(prevEl, line) - 22)).toBeLessThanOrEqual(1)
-    expect(Math.abs(await gap(line, nextEl) - 22)).toBeLessThanOrEqual(1)
+    expect(after).toContain('切走后到达的回复。')
+    await expect(unreadLine(page)).toContainText('1 new message')
+    await bothThemes(page, 'b14-unread')
 
-    for (const mode of THEMES) {
-      await theme(page, mode)
-      expect(await css(line, ['font-size', 'column-gap', 'margin-top', 'margin-bottom', 'color'])).toEqual({
-        'font-size': '11px', 'column-gap': '10px', 'margin-top': '0px', 'margin-bottom': '0px', color: await tokenColor(page, '--sand-text-accent-primary'),
-      })
-      await page.screenshot({ path: join(OUT, `unread-${mode}.png`) })
-    }
-    await theme(page, 'light')
+    // 停留期：新到的回复不移动它、不长第二条
+    await send(page, '停留期再问')
+    await expect(finalAssistant(page).last()).toHaveText('停留期新到的回复。', { timeout: 20_000 })
+    await expect(unreadLine(page)).toHaveCount(1)
+    const stillBefore = await unreadLine(page).evaluate((el) => {
+      let n = el.nextElementSibling
+      while (n !== null && n.classList.contains('sand-transcript-time-separator')) n = n.nextElementSibling
+      return (n as HTMLElement | null)?.innerText ?? ''
+    })
+    expect(stillBefore).toContain('切走后到达的回复。')
 
-    // 停留期间新到消息：线不动、不长第二条
-    await send(page, '三')
-    await expect(finals.last()).toHaveText('停留期新到。', { timeout: 20_000 })
-    await expect(line).toHaveCount(1)
-    expect(await next()).toBe('第二轮回复')
-
-    // 离开再回来 → 已读，0 条
-    await itemMain.click()
-    await itemX.click()
-    await expect(finals.last()).toHaveText('停留期新到。')
-    await expect(page.locator('[data-unread-line]')).toHaveCount(0)
+    // 切走再进：已读完 → 0 条
+    await openBot(page, MAIN_TITLE)
+    await openBot(page, 'UR-A')
+    await expect(finalAssistant(page).last()).toHaveText('停留期新到的回复。')
+    await expect(unreadLine(page)).toHaveCount(0)
   } finally {
     await env.stop()
   }

@@ -24,10 +24,23 @@ node run.mjs
 `sidebar-collapsed`（折叠态 88px）、`info-pane`（设置/info pane）；`market` 为尝试项
 （0.78.1 footer「Connect apps」/ 0.18 footer「Plugins」，点击成功才产出截图）。
 
+## 第三列：真实 Electron（P5-54）
+
+```bash
+pnpm -C app/ui build && pnpm -C app/ui test:compare-app   # app-column.spec.ts：fake LLM 驱动等价会话，Xvfb
+node run.mjs                                            # 有 singles/*.app.png 就拼三联、u1-diff 加 app-vs-ours 行
+```
+
+`app-column.spec.ts` 用 app/ui 的 e2e 支撑起 fake runtime + 生产 build 壳（1440×900@2），按 fixture 文案跑出
+同样的会话（user → thinking → bash ×2（Allow once）→ assistant markdown → 第二条 user → 待决审批；Research Bot 1 条未读），
+对 `VIEWS` × 亮暗截 `singles/<view>.<theme>.app.png`，按 `PARTS` 的 ours 选择器（同一套 0.18 DOM）采样到 `styles/app.json`。
+app 与 ours 的差异只可能来自 shim 或真实数据：差异表里记为 `app-vs-ours`。
+
 ## 环境变量
 
 - `COMPARE_RIGHT_DIST`：右侧 build 目录。默认 `/tmp/bot-s0-build/.build/frontend-shell`（S0 的
-  隔离构建，重启即失）。P5-50 落地后改指 `app/ui/renderer-grok` 的 vite build。重建方法见
+  隔离构建，重启即失）。P5-50 落地后改指 `app/ui/renderer-grok` 的 vite build（P5-54 起 `app/ui/renderer-grok/.build/frontend-shell`
+  是带 shim 的产品构建，对照台要桩版用 `pnpm -C app/ui/renderer-grok build:upstream`）。重建方法见
   `RE-s0-portability.md` §构建要点（pnpm + vite，@tiptap 全家钉 3.14.0）。
 - `LEFT_ROOT`：0.78.1 解包树。默认 `/dev/shm/grok-re/0.78.1/app/dist/renderer`，丢失时按
   RE-unpack §0 重建。

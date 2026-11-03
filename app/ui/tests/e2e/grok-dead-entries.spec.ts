@@ -13,7 +13,6 @@ import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { bashCall, textCall } from '../support/ui.ts'
 
 const UI_ROOT = resolve(__dirname, '..', '..')
-const GROK_ROOT = join(UI_ROOT, 'renderer-grok', '.build', 'frontend-shell')
 const EVIDENCE = join(UI_ROOT, 'test-output', 'P5-52')
 const PRESETS_PATCH = join(UI_ROOT, '..', 'sdk', 'profile', 'patches', 'presets.yml')
 const TURN_PROMPT = 'dead entry probe'
@@ -105,7 +104,7 @@ test('U4′：死入口隐藏清单逐条生效 + 主视图遍历零死入口', 
   mkdirSync(EVIDENCE, { recursive: true })
   const ws = tmkdir('bot-p552-ws-') // P5-H1：登记，进程退出清扫
   const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}`, cwd: ws })
-  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff, PBOTS_APP_ROOT: GROK_ROOT } })
+  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })
   const page = shell.page
   try {
     // ---- 一个有内容的会话：用户消息、bash 行（审批 allow-once）、assistant markdown（代码块） ----

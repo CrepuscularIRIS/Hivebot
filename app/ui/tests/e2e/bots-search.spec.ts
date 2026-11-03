@@ -1,86 +1,67 @@
-// P5-11 ②：侧栏搜索（R2 A2：头部 search 钮 + 侧栏内任意可打印键触发）；名字子串过滤、大小写不敏感、无匹配空态、Esc 归还焦点；
-// 输入法组合 / 修饰键 / composer 内打字不触发。定稿 work/p5-parity/ui/P5-11-final.md。
+// P5-11 ② 侧栏搜索（R2 A2）的语义迁到 renderer-grok：0.18 的侧栏 Search 钮（及其上的可打印键）打开搜索面板
+// （command palette，sidebar-search-trigger.ts），名字子串过滤、大小写不敏感、无匹配空态、Esc 关闭、Enter 打开首条匹配；
+// 修饰键 / composer 内打字不触发。旧版「搜索框原位出现、带入首字符、计数文案」是 dsh 时代构件，差异记 REPORT-P5-54 → P5-55。
 import { expect, test } from 'playwright/test'
 import { join } from 'node:path'
-import { createViaDialog, evidenceOut, launchProduct } from '../support/ui.ts'
+import { botItem, composer, createBots, evidenceOut, launchProduct } from '../support/ui.ts'
 
-test('A2 搜索：可打印键带入 → 子串过滤 → 清空 → 无匹配 → Esc；IME / 修饰键 / composer 不触发', async () => {
-  test.setTimeout(90_000)
+test('A2 搜索：Search 钮 / 可打印键打开 → 子串过滤（大小写不敏感）→ 清空 → 无匹配 → Esc；Enter 打开首条；修饰键 / composer 不触发', async () => {
+  test.setTimeout(120_000)
   const env = await launchProduct()
   try {
     const { page } = env
-    await createViaDialog(page, 'p2-alpha')
-    await createViaDialog(page, 'p2-beta')
-    const items = page.locator('.bot-list .bot-item')
-    const input = page.locator('[data-sidebar-search]')
-    await expect(items).toHaveCount(3)
-    const names = await page.locator('.bot-title').allTextContents()
-    expect(new Set(names).size).toBe(3) // 3 个 bot 名各异
-    const alpha = names.find((n) => n.toLowerCase().includes('alpha'))!
-    expect(names.filter((n) => n.toLowerCase().includes('alpha'))).toHaveLength(1)
+    await createBots(page, [{ title: 'Alpha 研究', preset: 'p2-alpha' }, { title: 'Beta 写作', preset: 'p2-beta' }])
+    const palette = page.locator('section.sand-command-palette')
+    const input = palette.locator('input[aria-label="Search"]')
+    const searchBtn = page.locator('.sand-agents-sidebar__search')
+    const agentOption = (name: string) => palette.locator('[role="option"]', { hasText: name })
 
     // composer 里打字不被侧栏抢
-    await page.locator('[data-composer]').focus()
+    await composer(page).click()
     await page.keyboard.type('al')
-    await expect(input).toHaveCount(0)
-    await page.locator('[data-composer]').fill('')
+    await expect(palette).toHaveCount(0)
+    await page.keyboard.press('Backspace')
+    await page.keyboard.press('Backspace')
 
-    // 输入法组合中 / 带修饰键：不触发、不吞键
-    await items.first().focus()
-    for (const init of [{ key: 'a', isComposing: true }, { key: 'b', ctrlKey: true }, { key: 'c', metaKey: true }]) {
-      const prevented = await items.first().evaluate((el, i) => !el.dispatchEvent(new KeyboardEvent('keydown', { ...i, bubbles: true, cancelable: true })), init)
-      expect(prevented, JSON.stringify(init)).toBe(false)
+    // 修饰键 / 空格：不打开（mod+b 等是全局快捷键，由全局层消费，这里只断言搜索不被触发）
+    await searchBtn.focus()
+    for (const init of [{ key: 'j', ctrlKey: true }, { key: 'c', metaKey: true }, { key: 'd', altKey: true }]) {
+      await searchBtn.evaluate((el, i) => { el.dispatchEvent(new KeyboardEvent('keydown', { ...i, bubbles: true, cancelable: true })) }, init)
     }
-    await expect(input).toHaveCount(0)
+    await expect(palette).toHaveCount(0)
 
-    // 侧栏聚焦时敲可打印键 → 搜索框原位出现并带入该字符（首字符不重复）；大小写不敏感
-    await items.first().focus()
+    // 侧栏 Search 钮聚焦时敲可打印键 → 面板打开、输入框聚焦
     await page.keyboard.press('Shift+A')
+    await expect(palette).toBeVisible()
     await expect(input).toBeFocused()
-    await expect(input).toHaveValue('A')
-    await page.keyboard.type('LPHA')
-    await expect(input).toHaveValue('ALPHA')
-    await expect(items).toHaveCount(1)
-    await expect(items.first().locator('.bot-title')).toHaveText(alpha)
-    await expect(page.locator('[data-search-count]')).toHaveText('1 个结果')
+    await input.fill('ALPHA')
+    await expect(agentOption('Alpha 研究')).toHaveCount(1)
+    await expect(agentOption('Beta 写作')).toHaveCount(0)
     await page.screenshot({ path: join(evidenceOut('P5-11'), 'sidebar-search-light.png') })
 
-    // 清空 → 3 条，框保持打开且聚焦
-    await page.click('[data-action="search-clear"]')
-    await expect(input).toHaveValue('')
-    await expect(input).toBeFocused()
-    await expect(items).toHaveCount(3)
+    // 清空 → 两个 bot 都回来
+    await input.fill('')
+    await expect(agentOption('Alpha 研究')).toHaveCount(1)
+    await expect(agentOption('Beta 写作')).toHaveCount(1)
 
-    // 无匹配 → 空态文案
-    await page.keyboard.type('zz')
-    await expect(items).toHaveCount(0)
-    await expect(page.locator('[data-roster-state="no-match"]')).toHaveText('没有名字含「zz」的 Bot')
-    await expect(page.locator('[data-roster-state="empty"]')).toHaveCount(0)
+    // 无匹配 → 空态
+    await input.fill('zzqq')
+    await expect(palette.locator('[role="option"]')).toHaveCount(0)
+    await expect(palette).toContainText('No results')
 
-    // Esc → 清空并关闭，列表恢复，焦点回 search 钮
+    // Esc → 关闭
     await page.keyboard.press('Escape')
-    await expect(input).toHaveCount(0)
-    await expect(items).toHaveCount(3)
-    await expect(page.locator('[data-action="search"]')).toBeFocused()
+    await expect(palette).toHaveCount(0)
 
-    // 点 search 钮 → 空框聚焦；Enter 选首条匹配，查询保留
-    await page.click('[data-action="search"]')
+    // 点 Search 钮 → 空框聚焦；Enter 打开首条匹配
+    await searchBtn.click()
     await expect(input).toBeFocused()
     await expect(input).toHaveValue('')
-    await page.keyboard.type('beta')
+    await input.fill('beta')
+    await expect(palette.locator('[role="option"]').first()).toContainText('Beta 写作')
     await page.keyboard.press('Enter')
-    await expect(items).toHaveCount(1)
-    await expect(items.first()).toHaveAttribute('aria-selected', 'true')
-    await expect(input).toHaveValue('beta')
-
-    // 折叠 → 搜索关闭并清空，折叠态敲字不触发
-    await page.click('[data-action="search-clear"]')
-    await page.keyboard.press('Escape')
-    await page.click('[data-action="collapse-sidebar"]')
-    await items.first().focus()
-    await page.keyboard.press('b')
-    await expect(input).toHaveCount(0)
-    await page.click('[data-action="collapse-sidebar"]')
+    await expect(palette).toHaveCount(0)
+    await expect(botItem(page, 'Beta 写作')).toHaveAttribute('data-active', 'true')
   } finally {
     await env.stop()
   }

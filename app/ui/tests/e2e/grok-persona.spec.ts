@@ -14,7 +14,6 @@ import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { textCall } from '../support/ui.ts'
 
 const UI_ROOT = resolve(__dirname, '..', '..')
-const GROK_ROOT = join(UI_ROOT, 'renderer-grok', '.build', 'frontend-shell')
 const EVIDENCE = join(UI_ROOT, 'test-output', 'P5-56')
 const PRESETS_PATCH = join(UI_ROOT, '..', 'sdk', 'profile', 'patches', 'presets.yml')
 const SLOW_MS = 5_000 // bash sleep / web_fetch 慢响应：留够轮询窗口
@@ -80,7 +79,7 @@ test('U3′ persona：真实事件流逐态切换（侧栏+会话头）、两次
   const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}`, cwd: ws })
   let shell: ShellLaunch | undefined
   const launch = (home?: string): Promise<ShellLaunch> =>
-    launchShell({ ...(home !== undefined ? { home } : {}), env: { PBOTS_DSH_HANDOFF: rt.handoff, PBOTS_APP_ROOT: GROK_ROOT } })
+    launchShell({ ...(home !== undefined ? { home } : {}), env: { PBOTS_DSH_HANDOFF: rt.handoff } })
   try {
     shell = await launch()
     let page = shell.page

@@ -1,8 +1,9 @@
-// U-23 P-D 设置·bot 配置 E2E（派发验收 ①③；裁决 work/p4-ui/ui/PDC-final.md D1–D15）。
-// ① 对话框连接器栏（候选只来自 #16，勾选走 #4）→ info-pane（第三列 320）只读配置 / 无改 preset·连接器入口（D11）
-//   → 改模型失败回滚 + 成功「下一轮生效」、只对本 bot → 「用此配置新建」预填不提交 → 设主 Bot 置顶（#20）。
-// ③ D10c1：连接器 bot 有历史 → 删掉临时 HOME 里该 bundle（PLAN U-23 ③ 触发方式）→ 同 home close→launch（runtime + 壳）→
-//   四处失效显示、历史可读、composer 禁发；其他 bot 正常收发；横幅「用此配置新建」预填标出未装连接器。
+// U-23 P-D 设置·bot 配置 E2E（P5-54 起跑在 renderer-grok 上，按语义重写）：
+// 0.18 没有旧 P-D 的构件（新建对话框的 preset / 连接器栏、info-pane 只读配置 + 模型 select、「用此配置新建」、设主 Bot 按钮、
+// 失效横幅），这些 UI 承载记 REPORT-P5-54 差异表（交新任务）。这里锁的是它们背后的契约语义，在新 renderer 的同一条 preload 通道上验：
+// ① #4 连接器 bot：recipe 落盘 + header 冻结 p2temp-id + 新 renderer 的会话设置里没有改 preset / 连接器 / 权限的入口（D11 / D9 DOM）；
+//    #5 改模型只对本 bot 生效；#20 设主 bot 落盘、重载后侧栏置顶；
+// ③ D10c1：删 bundle → close→launch → 该 recipe live=false（M3），历史在新 renderer 里可读；其他 bot 正常收发。
 import { expect, test, type Page } from 'playwright/test'
 import { readFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
@@ -10,119 +11,88 @@ import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { DEMO_BUNDLE, MARKET_PATCH, tempBundle } from '../support/connectors.ts'
-import { PDC_EVIDENCE, PRESETS_PATCH, createViaDialog, devState, launchProduct, send, textCall } from '../support/ui.ts'
+import {
+  MAIN_TITLE, PRESETS_PATCH, api, devState, evidenceOut, finalAssistant, openBot, send, textCall, transcript, waitProductReady,
+} from '../support/ui.ts'
 
 const PATCH = (): string => `${MARKET_PATCH}:${PRESETS_PATCH}:${fakeOverlayPath()}`
+const PDC_EVIDENCE = evidenceOut('PDC')
 
-/** 走产品对话框勾连接器建 bot（#4）；返回新 sessionId。 */
-async function createWithConnector(page: Page, preset: string): Promise<string> {
-  const before = (await devState(page)).order
-  await page.click('[data-action="new-bot"]')
-  const dlg = page.locator('dialog[data-dialog="new-bot"]')
-  await dlg.locator(`[data-preset-option="${preset}"] input`).check({ timeout: 15_000 })
-  await dlg.locator(`[data-connector-option="${DEMO_BUNDLE}"] input`).check({ timeout: 15_000 })
-  await page.click('[data-action="create-bot"]')
-  await expect(dlg).toBeHidden({ timeout: 60_000 })
-  await expect.poll(async () => (await devState(page)).order.find((id) => !before.includes(id))).toBeTruthy()
-  return (await devState(page)).order.find((id) => !before.includes(id))!
+/** #4 建连接器 bot（0.18 无连接器栏：M1 直调），起唯一标题，reload 让 shim 重拉 roster。 */
+async function createWithConnector(page: Page, preset: string, title: string): Promise<string> {
+  const created = await api<{ sessionId: string }>(page, 'p2temp/session.createWithConnectors', { request: { connectors: [DEMO_BUNDLE], agentPreset: preset } })
+  expect(created.ok, JSON.stringify(created.error)).toBe(true)
+  const sid = created.value!.sessionId
+  expect((await api(page, 'session/rename', { request: { sessionId: sid, title } })).ok).toBe(true)
+  await page.reload()
+  await waitProductReady(page)
+  return sid
 }
 
-const pane = (page: Page) => page.locator('[data-info-pane]')
+/** M3 get：recipes 以 preset id 为键（p2temp-*），按连接器找本用例的那条。 */
+const connectorRecipe = async (page: Page): Promise<{ live?: boolean; connectors: string[] } | undefined> => {
+  const meta = (await page.evaluate(() => (window as unknown as { pbots: { botsMeta(op: 'get'): Promise<{ value: unknown }> } }).pbots.botsMeta('get'))).value as
+    { recipes?: Record<string, { live?: boolean; connectors: string[] }> } | undefined
+  return Object.values(meta?.recipes ?? {}).find((r) => r.connectors.includes(DEMO_BUNDLE))
+}
 
-test('P-D ①：连接器栏走 #4 → info-pane 只读配置 → 改模型回滚/生效 → 用此配置新建预填 → 设主 Bot 置顶', async () => {
+test('P-D ①：#4 连接器 bot → 会话设置无改配置入口（D11/D9）→ #5 改模型只对本 bot → #20 设主 Bot 置顶', async () => {
   test.setTimeout(180_000)
   const rt = await launchSdkRuntime({ patch: PATCH(), cwd: tmkdir('bot-u23-ws-') })
   await rt.client.call('pluginManager/installBundle', { spec: tempBundle(), options: { enabled: false } })
   const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })
   try {
     const page = shell.page
-    await page.waitForSelector('.shell', { timeout: 30_000 })
+    await waitProductReady(page)
     const mainId = (await devState(page)).meta.mainBotId!
+    const x = await createWithConnector(page, 'p2-alpha', 'PD-X')
+    await openBot(page, 'PD-X')
 
-    // 对话框：连接器候选只来自 #16（已装的 fixture 一条）
-    await page.click('[data-action="new-bot"]')
-    const dlg = page.locator('dialog[data-dialog="new-bot"]')
-    await expect(dlg.locator('[data-connector-option]')).toHaveCount(1, { timeout: 15_000 })
-    await page.screenshot({ path: join(PDC_EVIDENCE, 'pd-dialog-connectors.png') })
-    await page.click('dialog[data-dialog="new-bot"] .btn.secondary')
-    const x = await createWithConnector(page, 'p2-alpha')
-
-    // #4 证据：header 冻结 p2temp-id、bots.json recipe、非只读
-    await expect.poll(async () => page.getAttribute(`[data-session="${x}"]`, 'data-preset'), { timeout: 20_000 }).toMatch(/^p2temp-/)
+    // #4 证据：header 冻结 p2temp-id、bots.json recipe
+    await expect.poll(async () => (await devState(page)).views[x]?.preset, { timeout: 20_000 }).toMatch(/^p2temp-/)
     const recipes = Object.values((JSON.parse(readFileSync(join(shell.home, 'data', 'bots.json'), 'utf8')) as { recipes: Record<string, unknown> }).recipes)
     expect(recipes).toEqual([{ agentPreset: 'p2-alpha', connectors: [DEMO_BUNDLE] }])
-    await expect(page.locator(`[data-session="${x}"]`)).not.toHaveClass(/readonly/)
-    await expect(page.locator('[data-chat-meta]')).toContainText(`p2-alpha · ${DEMO_BUNDLE}`)
 
-    // info-pane：第三列、默认 320
-    await page.click('[data-action="toggle-info-pane"]')
-    await expect(pane(page)).toBeVisible()
-    expect(Math.round((await pane(page).boundingBox())!.width)).toBe(320)
-    await expect(pane(page).locator('[data-pane-preset]')).toContainText('p2-alpha')
-    await expect(pane(page).locator('[data-pane-connectors]')).toContainText(DEMO_BUNDLE)
-    // D11：没有改 preset / 连接器的入口（pane 内唯一的表单控件是模型 select）
-    expect(await pane(page).locator('input, textarea').count()).toBe(0)
-    expect(await pane(page).locator('select').count()).toBe(1)
-    // D11 / D9：P-D 无权限节、无权限切换入口
-    const paneText = (await pane(page).innerText()).toLowerCase()
-    for (const word of ['permission', '权限', 'danger-full-access', '始终允许']) expect(paneText).not.toContain(word)
+    // D11 / D9：会话设置（View agent settings）里没有改 preset / 连接器 / 权限的入口
+    await page.click('button[aria-label="View agent settings"]')
+    const settings = page.locator('.sand-info-pane[data-open]')
+    await expect(settings).toBeVisible({ timeout: 15_000 })
+    const settingsText = (await settings.innerText()).toLowerCase()
+    for (const word of ['preset', 'connector', 'permission', '权限', 'danger-full-access', '始终允许']) expect(settingsText, word).not.toContain(word)
+    await page.screenshot({ path: join(PDC_EVIDENCE, 'pd-agent-settings.png') })
+    await page.keyboard.press('Escape')
 
-    // 改模型：失败回滚（注入 #5 失败）→ 成功「下一轮生效」
-    const model = pane(page).locator('[data-pane-model]')
-    await expect(model).toBeEnabled({ timeout: 15_000 })
-    const target = await model.locator('option:not([disabled])').first().getAttribute('value')
-    expect(target).toBeTruthy()
-    const original = await model.inputValue()
-    await page.evaluate(() => (window as unknown as { __pbotsDev: { failNext(m: string): void } }).__pbotsDev.failNext('session/selectModel'))
-    await model.selectOption(target!)
-    await expect(pane(page).locator('[data-model-status="error"]')).toContainText('切换失败')
-    await expect(model).toHaveValue(original) // 回滚
-    await model.selectOption(target!)
-    await expect(pane(page).locator('[data-model-status="saved"]')).toHaveText('已切换，下一轮生效')
-    await expect(model).toHaveValue(target!)
-    await page.screenshot({ path: join(PDC_EVIDENCE, 'pd-info-pane.png') })
-    // 只对本 bot：主 bot 的 pane 仍是原值
-    await page.locator(`[data-session="${mainId}"]`).click()
-    await expect(pane(page).locator('[data-pane-model]')).toHaveValue(original)
-    await expect(pane(page).locator('[data-main-note]')).toBeVisible()
-    await page.locator(`[data-session="${x}"]`).click()
+    // #5：改模型只对本 bot 生效（follow 快照 modelSelection 投影）
+    const catalog = await api<{ groups?: Array<{ id: string; models: Array<{ id: string }> }> }>(page, 'session/modelCatalog', {})
+    expect(catalog.ok).toBe(true)
+    const group = catalog.value!.groups!.find((g) => g.models.length > 0)!
+    const target = { provider: group.id, model: group.models[0]!.id }
+    const mainModel = (await devState(page)).views[mainId]?.model ?? null
+    expect((await api(page, 'session/selectModel', { request: { sessionId: x, ...target } })).ok).toBe(true)
+    // 「下一轮生效」：X 跑一轮后 follow 快照的 modelSelection 投影 = 所选；主 bot 不受影响
+    rt.writeScriptCalls(x, [textCall(['换模型后的回复'], { paceMs: 20 })])
+    await send(page, '换了模型')
+    await expect(finalAssistant(page).last()).toHaveText('换模型后的回复', { timeout: 30_000 })
+    await page.reload()
+    await waitProductReady(page)
+    await openBot(page, 'PD-X')
+    await expect.poll(async () => (await devState(page)).views[x]?.model, { timeout: 20_000 }).toBe(`${target.provider}/${target.model}`)
+    expect((await devState(page)).views[mainId]?.model ?? null).toBe(mainModel)
 
-    // 用此配置新建：预填 preset / 连接器 / 模型，不提交
-    const before = (await devState(page)).order
-    await page.click('[data-action="clone-config-head"]')
-    await expect(dlg.locator('#new-bot-title')).toHaveText('用此配置新建')
-    await expect(dlg.locator('[data-preset-option="p2-alpha"] input')).toBeChecked({ timeout: 15_000 })
-    await expect(dlg.locator(`[data-connector-option="${DEMO_BUNDLE}"] input`)).toBeChecked()
-    await expect(dlg.locator('[data-model-select]')).toHaveValue(target!)
-    await page.screenshot({ path: join(PDC_EVIDENCE, 'pd-clone-prefill.png') })
-    expect((await devState(page)).order).toEqual(before)
-    await page.click('dialog[data-dialog="new-bot"] .btn.secondary')
-    await expect(dlg).toBeHidden()
-
-    // 暗色 + 窄窗：主列 < 424 时 pane 改覆盖式浮层（PDC D1 兜底）
-    await page.emulateMedia({ colorScheme: 'dark' })
-    await page.screenshot({ path: join(PDC_EVIDENCE, 'pd-info-pane-dark.png') })
-    await page.emulateMedia({ colorScheme: 'light' })
-    await shell.app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]!.setSize(900, 720))
-    await expect(pane(page)).toHaveClass(/overlay/)
-    await page.screenshot({ path: join(PDC_EVIDENCE, 'pd-info-pane-overlay.png') })
-    await shell.app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]!.setSize(1280, 820))
-    await expect(pane(page)).not.toHaveClass(/overlay/)
-
-    // 设主 Bot（#20）：成功后置顶 + bots.json + pane 文案
-    await pane(page).locator('[data-action="set-main"]').click()
-    await expect(page.locator('.bot-item').first()).toHaveAttribute('data-session', x)
-    await expect(page.locator('.bot-item').first()).toHaveAttribute('data-main', 'true')
-    await expect(pane(page).locator('[data-main-note]')).toBeVisible()
+    // #20 设主 Bot：落盘 + 重载后侧栏置顶（shim 主 bot 恒排第一）
+    const patched = await page.evaluate((id) => (window as unknown as { pbots: { botsMeta(op: { op: 'patch'; mainBotId: string }): Promise<{ ok: boolean }> } }).pbots.botsMeta({ op: 'patch', mainBotId: id }), x)
+    expect(patched.ok).toBe(true)
     expect((JSON.parse(readFileSync(join(shell.home, 'data', 'bots.json'), 'utf8')) as { mainBotId: string }).mainBotId).toBe(x)
-    await expect(page.locator(`[data-session="${mainId}"]`)).not.toHaveAttribute('data-main', 'true')
+    await page.reload()
+    await waitProductReady(page)
+    await expect.poll(async () => (await devState(page)).order[0]).toBe(x)
   } finally {
     await shell.stop()
     await rt.stop()
   }
 })
 
-test('D10c1：删 bundle → close→launch → 四处失效、历史可读、composer 禁发；其他 bot 正常', async () => {
+test('D10c1：删 bundle → close→launch → recipe live=false、历史在新 renderer 可读；其他 bot 正常', async () => {
   test.setTimeout(240_000)
   const cwd = tmkdir('bot-u23-ws-')
   const rt1 = await launchSdkRuntime({ patch: PATCH(), cwd })
@@ -131,11 +101,13 @@ test('D10c1：删 bundle → close→launch → 四处失效、历史可读、co
   let x: string
   try {
     const page = shell1.page
-    await page.waitForSelector('.shell', { timeout: 30_000 })
-    x = await createWithConnector(page, 'p2-alpha')
+    await waitProductReady(page)
+    x = await createWithConnector(page, 'p2-alpha', 'C1-X')
+    await openBot(page, 'C1-X')
     rt1.writeScriptCalls(x, [textCall(['历史-', 'c1-前的回复'], { paceMs: 20 })])
     await send(page, 'c1 之前的消息')
-    await expect(page.locator('.bubble.assistant.final')).toHaveText('历史-c1-前的回复', { timeout: 30_000 })
+    await expect(finalAssistant(page).last()).toHaveText('历史-c1-前的回复', { timeout: 30_000 })
+    expect((await connectorRecipe(page))?.live).toBe(true)
   } finally {
     await shell1.stop()
     await rt1.stop()
@@ -148,109 +120,22 @@ test('D10c1：删 bundle → close→launch → 四处失效、历史可读、co
   const shell2 = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt2.handoff }, home: shell1.home })
   try {
     const page = shell2.page
-    await page.waitForSelector('.shell', { timeout: 60_000 })
-    const item = page.locator(`[data-session="${x!}"]`)
-    await item.click()
-    // ① 侧栏：副行 + ⊘ 角标
-    await expect(item).toHaveClass(/readonly/)
-    await expect(item.locator('.bot-sub')).toHaveText('连接器已失效')
-    await expect(item.locator('[data-corner-off]')).toBeVisible()
-    // ② 头部连接器转 danger
-    await expect(page.locator('[data-meta-connectors]')).toHaveClass(/meta-dead/)
-    // ③ composer 位 = 失效横幅（禁发），历史可读
-    await expect(page.locator('[data-readonly-bar]')).toContainText('连接器已失效，请新建 bot')
-    await expect(page.locator('[data-composer]')).toHaveCount(0)
-    await expect(page.locator('.bubble.user')).toHaveText('c1 之前的消息')
-    await expect(page.locator('.bubble.assistant.final')).toHaveText('历史-c1-前的回复')
-    // ④ pane 红点 + 模型 disabled（U-26 ④：置灰可见 select:disabled、状态行换失效文案、不可设为主 Bot）
-    if (await pane(page).count() === 0) await page.click('[data-action="toggle-info-pane"]')
-    await expect(pane(page).locator('[data-connector-dead]')).toBeVisible()
-    await expect(pane(page).locator('[data-pane-alert]')).toBeVisible()
-    await expect(pane(page).locator('[data-pane-model]')).toBeDisabled()
-    await expect(pane(page).locator('[data-pane-model]')).toHaveCSS('opacity', '0.45')
-    await expect(pane(page).locator('[data-pane-model] ~ .pane-status')).toHaveText('连接器已失效，不能改模型')
-    await expect(pane(page).locator('[data-action="set-main"]')).toBeDisabled()
-    await expect(pane(page).locator('[data-action="set-main"]')).toHaveAttribute('title', '连接器已失效的 bot 不能设为主 Bot')
+    await waitProductReady(page)
+    await expect.poll(async () => (await connectorRecipe(page))?.live, { timeout: 30_000 }).toBe(false)
+    // 历史可读（不自动重试、无 boundary）
+    await openBot(page, 'C1-X')
+    await expect(transcript(page)).toContainText('c1 之前的消息', { timeout: 30_000 })
+    await expect(finalAssistant(page).last()).toHaveText('历史-c1-前的回复')
     await page.screenshot({ path: join(PDC_EVIDENCE, 'pd-c1-readonly.png') })
-    // 不自动重试：无 spinner
-    expect(await page.locator('.icon.spin, .corner-ring').count()).toBe(0)
-
-    // 横幅「用此配置新建」：预填 preset，未装连接器标出且不勾、提示将不带它创建
-    await page.click('[data-action="clone-config-bar"]')
-    const dlg = page.locator('dialog[data-dialog="new-bot"]')
-    await expect(dlg.locator('[data-preset-option="p2-alpha"] input')).toBeChecked({ timeout: 15_000 })
-    await expect(dlg.locator(`[data-connector-missing="${DEMO_BUNDLE}"]`)).toContainText('未安装')
-    await expect(dlg.locator('[data-missing-note]')).toContainText(`将不带 ${DEMO_BUNDLE} 创建`)
-    await page.screenshot({ path: join(PDC_EVIDENCE, 'pd-c1-clone-missing.png') })
-    await page.click('dialog[data-dialog="new-bot"] .btn.secondary')
 
     // 其他 bot 正常：主 bot 可发消息并收到回复
     const mainId = (await devState(page)).meta.mainBotId!
-    await page.locator(`[data-session="${mainId}"]`).click()
+    await openBot(page, MAIN_TITLE)
     rt2.writeScriptCalls(mainId, [textCall(['主 bot ', '照常'], { paceMs: 20 })])
     await send(page, 'c1 之后主 bot')
-    await expect(page.locator('.bubble.assistant.final').last()).toHaveText('主 bot 照常', { timeout: 30_000 })
+    await expect(finalAssistant(page).last()).toHaveText('主 bot 照常', { timeout: 30_000 })
   } finally {
     await shell2.stop()
     await rt2.stop()
-  }
-})
-
-// U-29 O2（REVIEW-P4终审）：NewBotDialog 异步初始化无失效保护 —— 打开 A 的克隆对话框、候选加载
-// 完成前关闭，再打开 B 的：A 轮次的迟到响应会覆盖 B 轮次的 preset 选择（混配、非用户所选）。
-// 修复 = effect cleanup 失效 token；E2E 经 __pbotsDev.slowNext 把第一轮 agentPresets/list 延迟，
-// 真实复现「旧轮次响应迟到」竞态。
-// U-32 O2（REVIEW-P4终审复审）：终局断言余量过薄（注入 2.5s 只固定等 3.0s，旧轮次响应落在
-// 断言后则假绿）—— 改事件屏障：等 main 侧 __pbotsDsh.apiCount（d1.spec 同观测面）数到旧轮次
-// RPC 真正发出（2.5s 延迟之后）才断言，不赌计时。
-test('P-D ④(O2)：关闭后重开，迟到的旧轮次候选不覆盖新预填（失效 token）', async () => {
-  test.setTimeout(120_000)
-  const env = await launchProduct()
-  try {
-    const { page, shell } = env
-    // main 侧已发出的 dsh /api 计数（main/index.ts 观测面，无新 IPC）
-    const dshApiCount = (): Promise<number> =>
-      shell.app.evaluate(() => (globalThis as unknown as { __pbotsDsh?: { apiCount: number } }).__pbotsDsh?.apiCount ?? -1)
-    const mainId = (await devState(page)).meta.mainBotId! // 默认 preset（p2-alpha）
-    const beta = await createViaDialog(page, 'p2-beta')
-    await expect.poll(async () => (await devState(page)).views[beta]?.preset, { timeout: 15_000 }).toBe('p2-beta')
-
-    // round1（将作废）：主 bot 的「用此配置新建」，agentPresets/list 注入 2.5s 延迟
-    // 屏障计数口径（窗口内 /api 调用方只有 NewBotDialog effect 的三连；roster 走 botsMeta
-    // 通道、$events 走 mux socket、Sidebar 时钟本地，均不进 apiCount）：
-    // round1 = listBundles + modelCatalog（即发）+ agentPresets/list（迟发）；round2 = 三连即发。
-    const base = await dshApiCount()
-    if (base < 0) throw new Error('O2 屏障失效：__pbotsDsh 未暴露（main 未连 dsh）')
-    await page.locator(`[data-session="${mainId}"]`).click()
-    await page.evaluate(() => (window as unknown as { __pbotsDev: { slowNext(m: string, ms: number): void } }).__pbotsDev.slowNext('agentPresets/list', 2_500))
-    await page.click('[data-action="clone-config-head"]')
-    const dlg = page.locator('dialog[data-dialog="new-bot"]')
-    await expect(dlg).toBeVisible()
-    await dlg.locator('.btn.secondary').click() // 候选在途时立即关闭（修复点的前置条件）
-    await expect(dlg).toBeHidden()
-
-    // round2：beta 的「用此配置新建」→ 预填 p2-beta（本轮 agentPresets/list 不延迟）
-    await page.locator(`[data-session="${beta}"]`).click()
-    await page.click('[data-action="clone-config-head"]')
-    await expect(dlg.locator('[data-preset-option="p2-beta"] input')).toBeChecked({ timeout: 15_000 })
-
-    // 事件屏障：等 round1 迟到的 agentPresets/list 真正发出（apiCount = base+6）。旧轮次
-    // RPC 落地前不断言；计数超越预期（窗口混入未预期 /api 调用）→ fail loud，不假绿。
-    const deadline = Date.now() + 20_000
-    for (;;) {
-      const cur = await dshApiCount()
-      if (cur === base + 6) break
-      if (cur > base + 6) throw new Error(`O2 屏障失效：apiCount=${cur} 超过预期 base+6=${base + 6}（窗口内混入未预期 /api 调用）`)
-      if (Date.now() > deadline) throw new Error(`O2 屏障超时：round1 迟到 RPC 未发出，apiCount=${cur}（预期 ${base + 6}）`)
-      await page.waitForTimeout(100)
-    }
-    // 响应尾程：RPC 已发出 → loopback 回包 + ipc 回 renderer + 微任务回调（毫秒级），500ms
-    // 覆盖尾程余量（屏障已消掉 2.5s 不确定区间；自证见 REPORT-U-32：摘 stale 守卫此用例必红）。
-    await page.waitForTimeout(500)
-    await expect(dlg.locator('[data-preset-option="p2-beta"] input')).toBeChecked() // 仍是新预填（修复前被 round1 覆盖回 p2-alpha）
-    await dlg.locator('.btn.secondary').click()
-    await expect(dlg).toBeHidden()
-  } finally {
-    await env.stop()
   }
 })

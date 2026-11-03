@@ -1,36 +1,18 @@
-// U-21 P-A E2E（PAB 验收 ①③ + U-21 ①②④）：冷启动主 bot 两分支、列表渲染（主 bot 首位 + 标记、无删除入口）、
-// 新建对话框全旅程（preset/模型候选 → 创建 → 插主 bot 下 → 选中 → composer 焦点）、侧栏 280 默认 / 240–400 调宽、
-// D9/D12② DOM 搜索、token computed-style 断言（≥5 个 --dsw-* 等于 theme-tokens.css）、启动封面与 01-boot.png 并排存证。
+// U-21 P-A E2E（PAB 验收 ①③ + U-21 ①②④；P5-54 起跑在 renderer-grok 上）：冷启动主 bot 两分支、侧栏渲染（主 bot 首位、无删除入口）、
+// 侧栏「New」新建（#3 → 插入并选中 → composer 可输入）、侧栏 280 默认 / 240–400 调宽并持久化、D9/D12② DOM 搜索、
+// 主题 token 落地（0.18 运行时主题：--cursor-* 亮暗两套 + body 字体 XVF）、引擎未就绪态存证（与 01-boot.png 并排）。
+// 0.18 没有的旧构件（新建对话框的 preset / 模型候选、主 bot 角标、启动封面）记 REPORT-P5-54 差异表，交 P5-55。
 import { expect, test } from 'playwright/test'
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell } from '../support/launch.ts'
-import { EVIDENCE, createViaDialog, devState, launchProduct } from '../support/ui.ts'
+import { EVIDENCE, MAIN_TITLE, botItem, composer, devState, launchProduct } from '../support/ui.ts'
 
-const TOKENS = join(__dirname, '..', '..', '..', '..', 'work', 'p1-re', 'evidence', 'theme-tokens.css')
+/** D9 / D12② 禁区词（innerText 小写）：删除入口、权限 preset、never 类 preset、账号登录、computer / SSH / billing。 */
+const FORBIDDEN = ['delete', '删除', 'sign in', 'log out', 'computer', 'ssh', 'billing', 'permission preset', 'danger-full-access', '始终允许']
 
-/** 从 theme-tokens.css 的 [data-theme="cursor-<mode>"] 首块读 --sand-<name> 值。 */
-function tokenValue(mode: 'light' | 'dark', name: string): string {
-  const css = readFileSync(TOKENS, 'utf8')
-  const start = css.indexOf(`[data-theme="cursor-${mode}"] {`)
-  const block = css.slice(start, css.indexOf('}', start))
-  const m = new RegExp(`--sand-${name}:\\s*([^;]+);`).exec(block)
-  if (m === null) throw new Error(`token --sand-${name} missing in ${mode}`)
-  return m[1]!.trim()
-}
-
-const PAIRS: Array<[string, string]> = [
-  ['--dsw-alias-bg-base', 'bg-chrome'],
-  ['--dsw-specific-sidebar-fill', 'bg-sidebar'],
-  ['--dsw-alias-bg-layer-2', 'bg-pane'],
-  ['--dsw-alias-label-primary', 'text-primary'],
-  ['--dsw-alias-border-l3', 'border-secondary-translucent'],
-  ['--dsw-specific-bubble', 'fill-bubble-user'],
-  ['--dsw-alias-button-primary-fill', 'bg-primary'],
-]
-
-test('冷启动 mainBotId 为空 → #3 建默认 bot → #20 patch；主 bot 首位带标记、无删除入口；D9/D12② DOM', async () => {
+test('冷启动 mainBotId 为空 → #3 建默认 bot → #20 patch；主 bot 首位、无删除入口；D9/D12② DOM', async () => {
   const env = await launchProduct()
   try {
     const { page, shell } = env
@@ -39,21 +21,20 @@ test('冷启动 mainBotId 为空 → #3 建默认 bot → #20 patch；主 bot �
     expect(s.order[0]).toBe(main)
     const meta = JSON.parse(readFileSync(join(shell.home, 'data', 'bots.json'), 'utf8')) as { mainBotId: string }
     expect(meta.mainBotId).toBe(main)
-    const first = page.locator('.bot-item').first()
-    await expect(first).toHaveAttribute('data-session', main)
-    await expect(first).toHaveAttribute('data-main', 'true')
-    await expect(first.locator('.corner-main')).toBeVisible()
-    await expect(first).toHaveAttribute('aria-selected', 'true')
-    // 无删除入口；D9：无权限 preset 入口 / never 类；D12②：无 Sign in / 账号 / computer / SSH / billing
-    const text = (await page.locator('body').innerText()).toLowerCase()
-    for (const word of ['删除', 'delete', 'sign in', 'account', '账号', 'computer', 'ssh', 'billing', 'permission', 'danger-full-access', '始终允许']) {
-      expect(text, `DOM 不应出现「${word}」`).not.toContain(word)
+    await expect(page.locator('.sand-agent-item')).toHaveCount(1)
+    await expect(page.locator('.sand-agent-item').first()).toHaveAttribute('aria-label', MAIN_TITLE)
+    await expect(page.locator('.sand-agent-item').first()).toHaveAttribute('data-active', 'true')
+    // 行菜单（右键）：无 Delete / Duplicate（P5-52 剥掉无实底回调）
+    await page.locator('.sand-agent-item').first().click({ button: 'right' })
+    const menu = page.locator('[role="menu"]')
+    if (await menu.count() > 0) {
+      const items = (await menu.innerText()).toLowerCase()
+      expect(items).not.toContain('delete')
+      expect(items).not.toContain('duplicate')
+      await page.keyboard.press('Escape')
     }
-    await page.click('[data-action="new-bot"]')
-    await expect(page.locator('[data-preset-option]').first()).toBeVisible({ timeout: 15_000 })
-    const dlg = (await page.locator('dialog[data-dialog="new-bot"]').innerText()).toLowerCase()
-    expect(dlg).not.toContain('danger-full-access')
-    expect(dlg).not.toContain('permission')
+    const text = (await page.locator('body').innerText()).toLowerCase()
+    for (const word of FORBIDDEN) expect(text, `DOM 不应出现「${word}」`).not.toContain(word)
   } finally {
     await env.stop()
   }
@@ -68,38 +49,26 @@ test('冷启动 mainBotId 指向已不存在的 session → 重建主 bot 并 pa
     expect(main).toMatch(/^session-/)
     expect(main === 'session-gone').toBe(false)
     expect((JSON.parse(readFileSync(join(data, 'bots.json'), 'utf8')) as { mainBotId: string }).mainBotId).toBe(main)
-    await expect(env.page.locator('.bot-item').first()).toHaveAttribute('data-session', main)
+    expect((await devState(env.page)).order[0]).toBe(main)
   } finally {
     await env.stop()
   }
 })
 
-test('新建对话框全旅程：preset/模型候选 → 创建 → 插主 bot 下并选中 → composer 焦点；Esc 关闭回焦点', async () => {
+test('侧栏「New」：#3 建 bot → 侧栏插入并选中 → composer 可输入；新 bot 有 follow 视图', async () => {
   const env = await launchProduct()
   try {
     const { page } = env
-    // Esc 关闭，焦点回「新建 Bot」
-    await page.click('[data-action="new-bot"]')
-    await expect(page.locator('dialog[data-dialog="new-bot"]')).toBeVisible()
-    await expect(page.locator('dialog[data-dialog="new-bot"]')).toContainText('配置随 bot 固定，换配置需新建')
-    await expect(page.locator('[data-preset-option="p2-alpha"]')).toBeVisible({ timeout: 15_000 })
-    await expect(page.locator('[data-preset-option="p2-beta"]')).toBeVisible()
-    await expect(page.locator('[data-preset-option="standard"] input')).toBeChecked() // 默认项预选
-    const models = await page.locator('[data-model-select] option').allTextContents()
-    expect(models.length).toBeGreaterThanOrEqual(2) // 跟随默认 + #2 候选
-    await page.keyboard.press('Escape')
-    await expect(page.locator('dialog[data-dialog="new-bot"]')).toBeHidden()
-    expect(await page.evaluate(() => document.activeElement?.getAttribute('data-action'))).toBe('new-bot')
-
-    const main = (await devState(page)).meta.mainBotId!
-    const sid = await createViaDialog(page, 'p2-alpha', 'p2fake/p2fake')
-    const s = await devState(page)
-    expect(s.order.slice(0, 2)).toEqual([main, sid]) // 插在主 bot 之下第一位
-    await expect(page.locator(`.bot-item[data-session="${sid}"]`)).toHaveAttribute('aria-selected', 'true')
-    await expect(page.locator('[data-chat-meta]')).toHaveText('p2-alpha')
-    await expect.poll(() => page.evaluate(() => document.activeElement?.hasAttribute('data-composer'))).toBe(true)
-    await expect(page.locator('.pane-notice')).toHaveCount(0) // #5 成功，无「模型未切换」
-    await expect.poll(async () => (await devState(page)).views[sid]?.preset).toBe('p2-alpha')
+    const before = (await devState(page)).order
+    await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
+    await expect.poll(async () => (await devState(page)).order.length, { timeout: 30_000 }).toBe(before.length + 1)
+    const sid = (await devState(page)).order.find((id) => !before.includes(id))!
+    await expect(page.locator('.sand-agent-item')).toHaveCount(2)
+    await expect(page.locator('.sand-agent-item[data-active="true"]')).toHaveCount(1)
+    await expect.poll(async () => (await devState(page)).views[sid]?.cwd ?? null, { timeout: 30_000 }).not.toBeNull()
+    await composer(page).click()
+    await page.keyboard.type('hello')
+    await expect(page.locator('button[aria-label="Send message"]')).toBeVisible()
   } finally {
     await env.stop()
   }
@@ -109,72 +78,71 @@ test('侧栏 280 默认；拖拽调宽夹紧 240–400；重载后保持', async
   const env = await launchProduct()
   try {
     const { page } = env
-    const width = (): Promise<number> => page.locator('.sidebar').evaluate((el) => Math.round(el.getBoundingClientRect().width))
+    const width = (): Promise<number> => page.locator('aside.sand-agents-sidebar').evaluate((el) => Math.round(el.getBoundingClientRect().width))
     expect(await width()).toBe(280)
     const drag = async (dx: number): Promise<void> => {
-      const b = (await page.locator('.resizer').boundingBox())!
-      await page.mouse.move(b.x + b.width / 2, b.y + 200)
+      const b = (await page.locator('.sand-sidebar-resize-handle').boundingBox())!
+      const y = b.y + b.height / 2 // 0.18 的把手只覆盖侧栏列表区高度（版式残留归 P5-55）
+      await page.mouse.move(b.x + b.width / 2, y)
       await page.mouse.down()
-      await page.mouse.move(b.x + b.width / 2 + dx, b.y + 200, { steps: 5 })
+      await page.mouse.move(b.x + b.width / 2 + dx, y, { steps: 5 })
       await page.mouse.up()
     }
     await drag(-200)
-    expect(await width()).toBe(240)
+    await expect.poll(width).toBe(240)
     await drag(400)
-    expect(await width()).toBe(400)
+    await expect.poll(width).toBe(400)
     await drag(-60)
-    expect(await width()).toBe(340)
+    await expect.poll(width).toBeGreaterThanOrEqual(338) // 0.18 按「指针 x − 侧栏左缘」取宽，把手中心与右缘差几 px
+    const dragged = await width()
+    expect(dragged).toBeLessThanOrEqual(342)
     await page.reload()
-    await page.waitForSelector('.shell', { timeout: 30_000 })
-    expect(await width()).toBe(340)
+    await expect(botItem(page, MAIN_TITLE)).toBeVisible({ timeout: 60_000 })
+    await expect.poll(width).toBe(dragged) // 持久化（clientPersistence）
   } finally {
     await env.stop()
   }
 })
 
-test('token 落地：≥5 个 --dsw-* computed 值 == theme-tokens.css（亮/暗）；body 字体含 XVF', async () => {
+// D12③ 的「body 字体含 XVF」「--dsw-* == 0.78.1 token 表」在 0.18 移植树上不成立（0.18 用系统字体栈 + 0.18 色板），
+// 记 REPORT-P5-54 差异表交 P5-55（换 0.78.1 色板与字体的覆盖文件）；这里锁运行时主题机制本身。
+test('主题落地：0.18 运行时主题装 --cursor-* 亮暗两套且随系统切换', async () => {
   const env = await launchProduct()
   try {
     const { page } = env
+    const probe = (): Promise<Record<string, string>> => page.evaluate(() => {
+      const cs = getComputedStyle(document.documentElement)
+      return Object.fromEntries(['--cursor-bg-editor', '--cursor-text-primary', '--cursor-stroke-tertiary', '--cursor-bg-sidebar', '--cursor-text-secondary']
+        .map((n) => [n, cs.getPropertyValue(n).trim()]))
+    })
+    const seen: Record<string, Record<string, string>> = {}
     for (const mode of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme: mode })
       await expect(page.locator('html')).toHaveAttribute('data-theme', `cursor-${mode}`)
-      for (const [dsw, sand] of PAIRS) {
-        const got = await page.evaluate((name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim(), dsw)
-        expect(got, `${mode} ${dsw}`).toBe(tokenValue(mode, sand))
-      }
+      seen[mode] = await probe()
+      for (const [name, value] of Object.entries(seen[mode]!)) expect(value, `${mode} ${name}`).not.toBe('')
     }
-    expect(await page.evaluate(() => getComputedStyle(document.body).fontFamily)).toContain('XVF')
-    // 席 A 坑：light 用户气泡内正文色单独反转
-    await page.emulateMedia({ colorScheme: 'light' })
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'cursor-light')
-    const bubbleLabel = await page.evaluate(() => {
-      const el = document.createElement('div')
-      el.setAttribute('data-message-bubble', '')
-      document.body.append(el)
-      const v = getComputedStyle(el).getPropertyValue('--dsw-alias-label-primary').trim()
-      el.remove()
-      return v
-    })
-    expect(bubbleLabel).toBe('#fcfcfc')
+    // 亮暗两套确实不同（运行时主题按 resolved 换整张表，不是只换 data-theme）
+    expect(seen.light!['--cursor-bg-editor']).not.toBe(seen.dark!['--cursor-bg-editor'])
+    expect(seen.light!['--cursor-text-primary']).not.toBe(seen.dark!['--cursor-text-primary'])
+    // 图标字体（cursor-icons，R9 资产）已加载
+    await expect.poll(() => page.evaluate(() => [...document.fonts].some((f) => f.family.includes('cursor-icons') && f.status === 'loaded'))).toBe(true)
   } finally {
     await env.stop()
   }
 })
 
-test('启动封面：引擎未就绪时复刻 01-boot.png（无 Sign in / Terms），截图与原版并排存证', async () => {
-  const shell = await launchShell() // 不配 dsh：M1 不就绪，封面常驻
+test('引擎未就绪（未配 dsh）：空壳挂载不崩、无 Sign in / Terms；截图与原版 01-boot.png 并排存证', async () => {
+  const shell = await launchShell() // 不配 dsh：M1 不就绪
   try {
     const { page } = shell
     await shell.app.evaluate(({ BrowserWindow }) => { BrowserWindow.getAllWindows()[0]!.setContentSize(1040, 760) })
     await page.emulateMedia({ colorScheme: 'dark' })
-    await expect(page.locator('[data-boot-cover]')).toBeVisible({ timeout: 15_000 })
-    await expect(page.locator('[data-boot-cover]')).toContainText('Grok Bot')
-    await expect(page.locator('[data-boot-cover]')).toContainText('Your team of always-on Bots that you can give real work to')
-    await expect(page.locator('[data-boot-cover] [role="status"]')).toHaveText('正在启动本地引擎…')
+    await expect(page.locator('.sand-shell')).toBeVisible({ timeout: 15_000 })
     const text = (await page.locator('body').innerText()).toLowerCase()
     expect(text).not.toContain('sign in')
     expect(text).not.toContain('terms')
+    expect(text).not.toContain("couldn't render this")
     await page.evaluate(() => document.fonts.ready)
     mkdirSync(EVIDENCE, { recursive: true })
     await page.screenshot({ path: join(EVIDENCE, 'boot-cover-dark.png') })

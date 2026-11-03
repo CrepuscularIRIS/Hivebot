@@ -1,15 +1,16 @@
 // P5-25（Q-015 C2-②，R4 §4）工作目录强制 E2E——走真实 launcher（launchSdkRuntime 的
 // start.mjs 全链，P5-01 wrapper 生效）+ 生产 build Electron 壳：
-// ① 新建 bot 后 follow header.cwd === $PBOTS_DATA_DIR/workspaces/<botId>，目录存在（#3 主 bot + #4 对话框）；
+// ① 新建 bot 后 follow header.cwd === $PBOTS_DATA_DIR/workspaces/<botId>，目录存在（#3 主 bot + 侧栏 New）；
 // ② renderer 传 cwd（#3/#4）→ pbots/invalid-args；
 // ③ 两个 bot 工作区互不可见：X 的 bash（批准后、wrapper 内）test -e Y 的哨兵为假，
 //    自工作区哨兵为真（正对照，防「全瞎」假绿）；反向对称。
+// P5-54 起跑在 renderer-grok 上：新建走 0.18 侧栏「New」（shim createAgent → #3），审批走 Local tool permissions dock。
 import { expect, test } from 'playwright/test'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { sandboxHome, launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
-import { PRESETS_PATCH, bashCall, createViaDialog, devState, evidenceOut, send, textCall } from '../support/ui.ts'
+import { PRESETS_PATCH, bashCall, createBots, devState, evidenceOut, openBot, permissionDock, send, textCall, waitProductReady } from '../support/ui.ts'
 
 const PATCH = `${PRESETS_PATCH}:${fakeOverlayPath()}`
 const EVIDENCE = evidenceOut('P5-25')
@@ -20,7 +21,7 @@ async function launchAligned() {
   const dataDir = join(home, 'data')
   const rt = await launchSdkRuntime({ patch: PATCH, dataDir })
   const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff }, home })
-  await shell.page.waitForSelector('.shell', { timeout: 30_000 })
+  await waitProductReady(shell.page)
   return { rt, shell, page: shell.page, dataDir, async stop() { await shell.stop(); await rt.stop() } }
 }
 
@@ -36,9 +37,11 @@ test('① header.cwd 强制 + ② renderer 传 cwd 即拒', async () => {
       .toBe(join(dataDir, 'workspaces', main))
     expect(existsSync(join(dataDir, 'workspaces', main)), '工作区目录建好').toBe(true)
 
-    // ① #4：对话框新建 bot（无连接器路径走 #3；这里用勾选连接器的 #4 路径不需要——
-    //    #4 的注入已在单测/wire 层覆盖，此格补 UI 全链的 #3 对话框变体）
-    const x = await createViaDialog(page, 'standard')
+    // ① 侧栏「New」新建 bot（shim createAgent → #3；#4 的注入已在单测/wire 层覆盖，此格补 UI 全链的 #3 变体）
+    const before = (await devState(page)).order
+    await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
+    await expect.poll(async () => (await devState(page)).order.find((id) => !before.includes(id)), { timeout: 30_000 }).toBeTruthy()
+    const x = (await devState(page)).order.find((id) => !before.includes(id))!
     await expect.poll(async () => (await devState(page)).views[x]?.cwd, { timeout: 30_000 })
       .toBe(join(dataDir, 'workspaces', x))
     expect(existsSync(join(dataDir, 'workspaces', x))).toBe(true)
@@ -70,9 +73,7 @@ test('③ 两个 bot 工作区互不可见（bash 在 wrapper 内，X 看不见 
     const { page, rt, dataDir } = env
     // 两个探针 bot 都用 standard preset（带 bash + shell-ask，SPIKE §7）；
     // boot 主 bot 的上游 default preset 不保证带 bash，不参与探针。
-    const x = await createViaDialog(page, 'standard')
-    const y = await createViaDialog(page, 'standard')
-    await expect.poll(async () => (await devState(page)).views[y]?.cwd, { timeout: 30_000 }).toBeTruthy()
+    const [x, y] = await createBots(page, [{ title: 'P25-X', preset: 'standard' }, { title: 'P25-Y', preset: 'standard' }]) as [string, string]
     const xws = join(dataDir, 'workspaces', x)
     const yws = join(dataDir, 'workspaces', y)
 
@@ -90,11 +91,9 @@ test('③ 两个 bot 工作区互不可见（bash 在 wrapper 内，X 看不见 
       ),
       textCall(['完成。']),
     ])
-    await page.click(`.bot-item[data-session="${x}"]`) // createViaDialog(y) 后 selected=y，切回 X 再发
+    await openBot(page, 'P25-X')
     await send(page, '探测工作区')
-    const rowX = page.locator('.tool-row[data-call-id="p25-x"]')
-    await rowX.locator('[data-approval-card]').waitFor({ timeout: 20_000 })
-    await rowX.locator('[data-action="approve"]').click()
+    await permissionDock(page).locator('button', { hasText: 'Allow once' }).click({ timeout: 20_000 })
     await expect.poll(() => existsSync(join(xws, 'probe-x')), { timeout: 30_000 }).toBe(true)
     const probeX = readFileSync(join(xws, 'probe-x'), 'utf8')
     expect(probeX, `X 的 bash 里 Y 哨兵必须不可见（got ${probeX}）`).toContain('y-unseen')
@@ -109,11 +108,9 @@ test('③ 两个 bot 工作区互不可见（bash 在 wrapper 内，X 看不见 
       ),
       textCall(['完成。']),
     ])
-    await page.click(`.bot-item[data-session="${y}"]`)
+    await openBot(page, 'P25-Y')
     await send(page, '探测工作区')
-    const rowY = page.locator('.tool-row[data-call-id="p25-y"]')
-    await rowY.locator('[data-approval-card]').waitFor({ timeout: 20_000 })
-    await rowY.locator('[data-action="approve"]').click()
+    await permissionDock(page).locator('button', { hasText: 'Allow once' }).click({ timeout: 20_000 })
     await expect.poll(() => existsSync(join(yws, 'probe-y')), { timeout: 30_000 }).toBe(true)
     const probeY = readFileSync(join(yws, 'probe-y'), 'utf8')
     expect(probeY, `Y 的 bash 里 X 工作区必须不可见（got ${probeY}）`).toContain('x-unseen')

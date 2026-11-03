@@ -61,3 +61,5 @@
 2026-11-03 RE agent 把工作目录建在 /tmp/grok-r3-*（不在 bot 沙箱清单），残留 4 个 server 进程 bot-reap/hook 都拒收 → 给 RE/verifier 的派发提示词统一要求临时目录用 /tmp/bot-<任务> 前缀（沙箱清单内），否则清理只能交用户手工。
 
 2026-11-03 P5-02（基点在 P5-01.f1 之前）也改了 sandbox-hardened.test.ts，主会话按文件清单 checkout 合并时把 .f1 的布局分叉修复整个盖掉、main 复红——清单 checkout 不是合并 → 合并任何分支前先 `git diff <base>..<head> --name-only` 与「合并窗口内该文件已被别的 commit 改过」对一遍，命中就 git merge-file 三方合并（base=分支基点）或让分支先 rebase；.f 修复尤其容易成为受害者。
+
+2026-11-03 P5-03 builder 实测 fake 插件坑：cursors 按会话持内存游标，同会话第二次 writeScriptCalls 覆盖脚本不重置（第二次模型调用按旧游标取新文件条目，拿到纯文本零 tool result）→ e2e 每 turn 用新会话，或一次写全整段脚本；多 turn 工具用例莫名"没调工具"先查这个。

@@ -28,6 +28,14 @@ import { isPathUnder } from './containment.mjs'
 /** guard 行 config.roots 的必需数组字段（全部 canonical 绝对路径）。 */
 const REQUIRED_ROOT_KEYS = ['hardRoots', 'dataMaskRoots', 'homes', 'toolchainDirs', 'policyRoots']
 
+/**
+ * P5-03（0c，G1-r2 #2）：工具名硬 NEVER —— 第二道防线。approval.yml 按 id
+ * 整 config 覆盖把 preset 行里的 tool-plugin-manager 禁用后，后层 --patch 仍
+ * 可按 id 重新启用该行；重新启用也不放行：plugin_manager 能改 profile /
+ * 装 bundle（宿主侧代码），在 pre-execute waterfall 最前直接 deny，不出卡。
+ */
+const NEVER_TOOLS = new Set(['plugin_manager'])
+
 /** resolveRoots 的产物：决策 13 判定序直接消费的三张表。 */
 /** @returns {{hardRoots: string[], softRoots: string[], toolchainDirs: string[], policyRoots: string[]}} */
 
@@ -182,6 +190,9 @@ export function apply(ctx, config) {
   const resolved = resolveRoots(roots)
 
   ctx.on('tools/pre-execute', async (exec, next) => {
+    if (NEVER_TOOLS.has(exec.name)) {
+      return { kind: 'deny', reason: `p2sdk-fs-guard: tool "${exec.name}" is not available (plugin management is disabled by policy; overrides cannot re-enable it)` }
+    }
     const known = new Set(['read', 'read_image', 'write', 'edit', 'grep', 'glob', 'present'])
     if (!known.has(exec.name)) return next()
 

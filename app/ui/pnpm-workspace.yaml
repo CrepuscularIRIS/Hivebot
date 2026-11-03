@@ -1,5 +1,6 @@
 packages:
   - '.'
+  - 'renderer-grok'
 allowBuilds:
   esbuild: true
   node: true

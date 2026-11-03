@@ -1,5 +1,5 @@
 {
-  "ts": "2026-11-03T17:55:07.505Z",
+  "ts": "2026-11-03T18:39:26.742Z",
   "mode": "real",
   "model": "glm-5.3-flash",
   "llmBase": "http://127.0.0.1:4001",
@@ -12,18 +12,214 @@
   "personaBaseFirstLine": "You are a coding agent powered by the {{model}} model.",
   "entries": [
     {
+      "id": "m1-create-todo",
+      "rep": 1,
+      "outcome": "turn/end",
+      "sessionId": "session-08718cf9-f304-480a-acd6-aa15b13bb58b",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m1-create-todo-1.jsonl"
+    },
+    {
+      "id": "m1-create-todo",
+      "rep": 2,
+      "outcome": "turn/end",
+      "sessionId": "session-ab11d210-18ea-4ac2-a322-2367426456f0",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m1-create-todo-2.jsonl"
+    },
+    {
+      "id": "m1-create-todo",
+      "rep": 3,
+      "outcome": "turn/end",
+      "sessionId": "session-ca8985dc-1489-4234-b8c1-4769b1f19f2c",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m1-create-todo-3.jsonl"
+    },
+    {
+      "id": "m2-count-md",
+      "rep": 1,
+      "outcome": "turn/end",
+      "sessionId": "session-71f38983-3ea0-4cc5-9489-cfbde5506272",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m2-count-md-1.jsonl"
+    },
+    {
+      "id": "m2-count-md",
+      "rep": 2,
+      "outcome": "turn/end",
+      "sessionId": "session-5e32c45f-42ff-4e91-8b38-503c3422ed98",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m2-count-md-2.jsonl"
+    },
+    {
+      "id": "m2-count-md",
+      "rep": 3,
+      "outcome": "turn/end",
+      "sessionId": "session-7c12cbec-669e-4431-adbd-92585d9220ea",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m2-count-md-3.jsonl"
+    },
+    {
       "id": "m3-date-note",
       "rep": 1,
       "outcome": "turn/end",
-      "sessionId": "session-d0e824bf-3770-47ec-9b2e-71ed6d4cf1f5",
-      "raw": "/tmp/bot-wt/P6-02/work/p6-orchestration/evidence/D3/raw/m3-date-note-1.jsonl"
+      "sessionId": "session-8453569d-bd4b-4ab3-b3e0-e4c03df1da11",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m3-date-note-1.jsonl"
+    },
+    {
+      "id": "m3-date-note",
+      "rep": 2,
+      "outcome": "turn/end",
+      "sessionId": "session-46d337bd-b058-41b8-9ee5-4fd649cef296",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m3-date-note-2.jsonl"
+    },
+    {
+      "id": "m3-date-note",
+      "rep": 3,
+      "outcome": "turn/end",
+      "sessionId": "session-0c6de31b-bf36-4fff-962f-91c1873dc50d",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m3-date-note-3.jsonl"
+    },
+    {
+      "id": "m4-largest-file",
+      "rep": 1,
+      "outcome": "turn/end",
+      "sessionId": "session-84285535-c7aa-4181-bb8e-e56fd996d22b",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m4-largest-file-1.jsonl"
+    },
+    {
+      "id": "m4-largest-file",
+      "rep": 2,
+      "outcome": "turn/end",
+      "sessionId": "session-d5ecf7fc-ed5f-4e38-ac02-7477549848fb",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m4-largest-file-2.jsonl"
+    },
+    {
+      "id": "m4-largest-file",
+      "rep": 3,
+      "outcome": "turn/end",
+      "sessionId": "session-1ef7bc64-c917-4af9-8f12-1160447f5a96",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m4-largest-file-3.jsonl"
+    },
+    {
+      "id": "m5-run-python",
+      "rep": 1,
+      "outcome": "turn/end",
+      "sessionId": "session-cbd50d95-f639-4f0d-b9d3-aa174eb7cfe9",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m5-run-python-1.jsonl"
+    },
+    {
+      "id": "m5-run-python",
+      "rep": 2,
+      "outcome": "turn/end",
+      "sessionId": "session-3f419d74-66a0-4312-9299-45bc629f25f6",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m5-run-python-2.jsonl"
+    },
+    {
+      "id": "m5-run-python",
+      "rep": 3,
+      "outcome": "turn/end",
+      "sessionId": "session-69fb063a-8cee-464b-b0db-aeabe5ba0896",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/m5-run-python-3.jsonl"
+    },
+    {
+      "id": "s1-env-var",
+      "rep": 1,
+      "outcome": "turn/end",
+      "sessionId": "session-607eb62e-5488-4760-826d-5990c0695187",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s1-env-var-1.jsonl"
+    },
+    {
+      "id": "s1-env-var",
+      "rep": 2,
+      "outcome": "turn/end",
+      "sessionId": "session-01e5d218-a1f2-4a09-ac6b-f098a745cedc",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s1-env-var-2.jsonl"
+    },
+    {
+      "id": "s1-env-var",
+      "rep": 3,
+      "outcome": "turn/end",
+      "sessionId": "session-c8ce719d-b03c-4a08-8610-a1b8b70b724b",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s1-env-var-3.jsonl"
+    },
+    {
+      "id": "s2-arithmetic",
+      "rep": 1,
+      "outcome": "turn/end",
+      "sessionId": "session-51c4f7f7-f839-477e-a7b1-de1534d66e98",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s2-arithmetic-1.jsonl"
+    },
+    {
+      "id": "s2-arithmetic",
+      "rep": 2,
+      "outcome": "turn/end",
+      "sessionId": "session-feb03642-b226-4e63-9f52-8c5518230b2f",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s2-arithmetic-2.jsonl"
+    },
+    {
+      "id": "s2-arithmetic",
+      "rep": 3,
+      "outcome": "turn/end",
+      "sessionId": "session-9803bb07-6a3d-466b-8b68-38937be5e3d2",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s2-arithmetic-3.jsonl"
+    },
+    {
+      "id": "s3-translate",
+      "rep": 1,
+      "outcome": "turn/end",
+      "sessionId": "session-554aa956-0a7a-49c2-9549-8393079129a2",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s3-translate-1.jsonl"
+    },
+    {
+      "id": "s3-translate",
+      "rep": 2,
+      "outcome": "turn/end",
+      "sessionId": "session-92b59069-2bbf-4521-abb0-cc1df46b3068",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s3-translate-2.jsonl"
+    },
+    {
+      "id": "s3-translate",
+      "rep": 3,
+      "outcome": "turn/end",
+      "sessionId": "session-4d7bac55-e478-472e-901f-ee87290853f7",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s3-translate-3.jsonl"
+    },
+    {
+      "id": "s4-git-diff",
+      "rep": 1,
+      "outcome": "turn/end",
+      "sessionId": "session-871ba83d-2257-41f7-b814-073dbff32d63",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s4-git-diff-1.jsonl"
+    },
+    {
+      "id": "s4-git-diff",
+      "rep": 2,
+      "outcome": "turn/end",
+      "sessionId": "session-27ae6b0b-316b-40b6-ba6e-8ab53de9e2a2",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s4-git-diff-2.jsonl"
+    },
+    {
+      "id": "s4-git-diff",
+      "rep": 3,
+      "outcome": "turn/end",
+      "sessionId": "session-fc592caa-f486-46ae-b8b7-19bf250fb07a",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s4-git-diff-3.jsonl"
     },
     {
       "id": "s5-color-mix",
       "rep": 1,
       "outcome": "turn/end",
-      "sessionId": "session-fbfc7483-d37f-4afc-8627-1f1a51d34a00",
-      "raw": "/tmp/bot-wt/P6-02/work/p6-orchestration/evidence/D3/raw/s5-color-mix-1.jsonl"
+      "sessionId": "session-23d18823-4a1f-444c-826f-f62e2a3c0f57",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s5-color-mix-1.jsonl"
+    },
+    {
+      "id": "s5-color-mix",
+      "rep": 2,
+      "outcome": "turn/end",
+      "sessionId": "session-e4adb705-a9bc-4a9c-bf1d-1d4bb84db624",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s5-color-mix-2.jsonl"
+    },
+    {
+      "id": "s5-color-mix",
+      "rep": 3,
+      "outcome": "turn/end",
+      "sessionId": "session-1e3af4a2-b889-4288-9429-b0d327dc7630",
+      "raw": "/tmp/bot-wt/P6-04/work/p6-orchestration/evidence/D3/raw/s5-color-mix-3.jsonl"
     }
   ]
 }

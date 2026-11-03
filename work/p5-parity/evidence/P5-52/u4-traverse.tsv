@@ -1,0 +1,44 @@
+view	clickable	effect
+sidebar+conversation	New||BUTTON|	mut=64	rpc=createAgent,listAgents,openAgentTail,listAgents,getAgentWorkflows,getTeachRecordingStatus,getListenerIntegrations,getForeverBoxStatus,getSubagents,getAsyncTasks	unhandled=	ok	1457ms
+sidebar+conversation	Search|Search|BUTTON|	mut=11	rpc=	unhandled=	ok	1445ms
+sidebar+conversation	|Plugins|BUTTON|	mut=20	rpc=getPluginSyncStatus,getAgentWorkflows	unhandled=	ok	1447ms
+sidebar+conversation	Account|P Pbots pbots-local@pbots.local|BUTTON|	mut=8	rpc=	unhandled=	ok	1424ms
+sidebar+conversation	View agent settings|P5-52 probe|BUTTON|	mut=4	rpc=	unhandled=	ok	1419ms
+sidebar+conversation	|Bash echo p552|BUTTON|	mut=4	rpc=	unhandled=	ok	1429ms
+sidebar+conversation	|the docs|A|	SKIP(外链，main openExternal)
+message hover	New chat|New chat now|BUTTON|	mut=42	rpc=openAgentTail,listAgents,getAgentWorkflows,getTeachRecordingStatus,getListenerIntegrations,getForeverBoxStatus,getSubagents,getAsyncTasks	unhandled=	ok	1515ms
+message hover	More message actions||BUTTON|	mut=5	rpc=	unhandled=	ok	1495ms
+message more menu	|Copy|BUTTON|menuitem	mut=3	rpc=	unhandled=	ok	1540ms
+agent row menu	|Edit Profile|BUTTON|menuitem	mut=9	rpc=	unhandled=	ok	1490ms
+agent row menu	|Move to new section|BUTTON|menuitem	mut=5	rpc=	unhandled=	ok	1463ms
+agent row menu	|Pin|BUTTON|menuitem	mut=11	rpc=	unhandled=	ok	1502ms
+agent row menu	|Mark as Unread|BUTTON|menuitem	mut=19	rpc=setAgentUnread	unhandled=	ok	1465ms
+agent row menu	|Copy conversation ID|BUTTON|menuitem	mut=5	rpc=	unhandled=	ok	1470ms
+account menu	|Settings|DIV|menuitem	mut=13	rpc=isEgressTunnelAvailable	unhandled=	ok	1506ms
+account menu	|About|DIV|menuitem	mut=10	rpc=	unhandled=	ok	1476ms
+search palette	|Agents|BUTTON|tab	mut=14	rpc=	unhandled=	ok	1500ms
+search palette	|Actions|BUTTON|tab	mut=23	rpc=	unhandled=	ok	1471ms
+search palette	|P5-52 probe Agent|BUTTON|option	mut=5	rpc=	unhandled=	ok	1467ms
+search palette	|Chat Settings Current chat Action|BUTTON|option	mut=6	rpc=	unhandled=	ok	1464ms
+search palette	|Settings: General Settings Action|BUTTON|option	mut=12	rpc=isEgressTunnelAvailable	unhandled=	ok	1468ms
+search palette	|Plugins Action|BUTTON|option	mut=22	rpc=getPluginSyncStatus,getAgentWorkflows	unhandled=	ok	1477ms
+search palette	|Theme: System Settings · Appearance Acti|BUTTON|option	mut=5	rpc=	unhandled=	ok	1458ms
+search palette	|Theme: Light Settings · Appearance Actio|BUTTON|option	mut=5	rpc=	unhandled=	ok	1487ms
+search palette	|Theme: Dark Settings · Appearance Action|BUTTON|option	mut=6	rpc=	unhandled=	ok	1497ms
+market overlay	Close|×|BUTTON|	mut=4	rpc=	unhandled=	ok	1520ms
+market overlay	|Yours|BUTTON|tab	mut=7	rpc=	unhandled=	ok	1470ms
+market overlay	Filter plugins|Filter|BUTTON|	mut=2	rpc=	unhandled=	ok	1482ms
+market Yours tab	|Marketplace|BUTTON|tab	mut=7	rpc=	unhandled=	ok	2301ms
+market filter menu	|✓ All types|BUTTON|menuitemradio	mut=3	rpc=	unhandled=	ok	2319ms
+market filter menu	|Connectors|BUTTON|menuitemradio	mut=9	rpc=	unhandled=	ok	2281ms
+market filter menu	|Skills|BUTTON|menuitemradio	mut=9	rpc=	unhandled=	ok	2298ms
+market filter menu	|✓ All|BUTTON|menuitemradio	mut=3	rpc=	unhandled=	ok	2289ms
+market filter menu	|Team|BUTTON|menuitemradio	mut=9	rpc=	unhandled=	ok	2302ms
+market filter menu	|Public|BUTTON|menuitemradio	mut=9	rpc=	unhandled=	ok	2297ms
+settings General	New chat|New chat 1m|BUTTON|	mut=9	rpc=	unhandled=	ok	1542ms
+settings General	Close||BUTTON|	mut=7	rpc=	unhandled=	ok	1514ms
+settings General	Copy email address||BUTTON|	mut=2	rpc=	unhandled=	ok	1518ms
+settings General	Theme|Follow System|BUTTON|	mut=5	rpc=	unhandled=	ok	1521ms
+settings General	Timezone|Auto-detect (America/New York)|BUTTON|	mut=4	rpc=	unhandled=	ok	1527ms
+settings General	Execution on Local Computer|Ask every time|BUTTON|	mut=5	rpc=	unhandled=	ok	1515ms
+info pane (agent settings)	Close details||BUTTON|	mut=4	rpc=	unhandled=	ok	1478ms

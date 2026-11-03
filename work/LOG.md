@@ -804,3 +804,6 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 02:32 D-1 = ⑤ 会话级联网许可（两席一致，含席 A argv 哈希一次性收紧 + supervisor 握手序，D1-r1.md 汇总）| D-2 席 B=②，等席 A
 02:33 D-2 分歧（A=③/B=②）→ Q-016（暂按 ③+第7行执行标暂定）；Q-015 ①补 serverName 禁 __ 防键碰撞；B-HIGH 注册代际绑定进 P5-23/24 验收
 04:5x P5-07 回归全绿（build+230 单测+54 e2e）闭环；P5-15 验收 PASS → 合并 8f70c07（仅 visual.spec.ts，worktree 已清），回归后台跑中
+02:37 P5-05 builder 完成（158f0b0：never→deny 单点、三工具委派探针、153 sdk 测试绿、正对照实证）→ verifier 已派 | 环境注：/tmp worktree×bwrap 会遮 pnpm node/PTC bootstrap，P5-01/P5-06 派发时要带 overlay 说明
+02:41 P5-12 builder 完成（97d8cb9：阈值实证落地/思考行/未读线/markRead；app.css 越区 1 行已追认=滚动 bug 修复）→ verifier 待派
+05:3x P5-15 回归全绿闭环（230+54）；P5-14 验收 PASS → 合并 965ab00（token+DPR2 spec，worktree 已清），回归后台跑中

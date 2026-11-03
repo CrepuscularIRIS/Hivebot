@@ -209,3 +209,4 @@ status：ready = 现在可派；todo = 只差本 PLAN 内的前序任务；block
 | P5-01.f1 | ⑧ 布局探针修复：main 检出上 skill_append 探针结果缺失（worktree 绿/main 红的布局写死问题）；两布局都绿 | builder | app/sdk/tests/e2e/sandbox-hardened.test.ts | P5-01 | done | M | – | 主仓+detach worktree 双布局 ⑧ 绿 + sdk 全量绿 | |
 | P5-H1 | 测试运行时清理：sdk runtime.ts afterAll 补 rm（/tmp/p2sdk-runtime-* 已积 3020）+ ui e2e HOME 目录 teardown 清理 | builder | app/sdk/tests/support/runtime.ts + app/ui/tests/support/ | – | todo | S | – | 全量跑完 /tmp/bot-*、/tmp/p2sdk-runtime-* 零新增残留 | |
 | P5-04.f1 | 补 PLAN P5-04 行 ④（dfa 启动态 write/edit 会话级拒绝）与 ⑤（guard/shell-ask 顺序组合格） | builder | app/sdk/src/policy/guard.mjs + tests/e2e/guard-escalation.test.ts | P5-04 | todo | M | – | 两格先红后绿 + sdk 全量绿 | |
+| P5-H2 | flaky 修复：never-roots.test policyRoots（gitdir 解析）全量并发下偶发红（今日 3 次、复跑均绿、单文件 6/6 绿）——定位并发根因（git 子进程/共享 tmp）并修 | builder | app/sdk/tests/unit/never-roots.test.ts + src/policy/never-roots.mjs | – | todo | S | – | 全量连跑 5 次零红 | |

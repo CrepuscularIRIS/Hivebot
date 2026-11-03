@@ -1,0 +1,390 @@
+[
+  {
+    "index": 0,
+    "stubborn": false,
+    "command": "sleep 600 & wait",
+    "sessionId": "session-117bb813-cb87-44ae-9382-f022abbcc4de",
+    "wall0": 1793688752725,
+    "ackMs": 11.77750500000002,
+    "treeExitMs": 6.32965299999978,
+    "turnEndMs": 11.815070999999989,
+    "response": {
+      "accepted": true
+    },
+    "observed": [
+      {
+        "pid": 1378026,
+        "ppid": 1377750,
+        "state": "S",
+        "start": "9860390",
+        "exit": "0\n",
+        "cmd": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /tmp/r4b-probe/run-G1ZP7V/workspace /tmp/r4b-probe/run-G1ZP7V/workspace -- bash -c sleep 600 & wait"
+      },
+      {
+        "pid": 1378028,
+        "ppid": 1378026,
+        "state": "S",
+        "start": "9860390",
+        "exit": "0\n",
+        "cmd": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /tmp/r4b-probe/run-G1ZP7V/workspace /tmp/r4b-probe/run-G1ZP7V/workspace -- bash -c sleep 600 & wait"
+      },
+      {
+        "pid": 1378029,
+        "ppid": 1378028,
+        "state": "S",
+        "start": "9860391",
+        "exit": "0\n",
+        "cmd": "bash -c sleep 600 & wait"
+      },
+      {
+        "pid": 1378035,
+        "ppid": 1378029,
+        "state": "S",
+        "start": "9860391",
+        "exit": "0\n",
+        "cmd": "sleep 600"
+      }
+    ],
+    "exits": [
+      {
+        "pid": 1378026,
+        "ms": 6.293562999999722,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378028,
+        "ms": 6.311631999999918,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378029,
+        "ms": 6.319250000000011,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378035,
+        "ms": 6.325347999999849,
+        "state": "gone",
+        "exit": null
+      }
+    ],
+    "survivors": [],
+    "modelCallsBeforeResume": 2,
+    "modelCallsAfterResume": 3,
+    "continued": true,
+    "noNewTools": true,
+    "cancelledTurnEnd": [
+      {
+        "type": "event",
+        "event": {
+          "type": "turn/end",
+          "seq": 31,
+          "time": 1793688752733,
+          "data": {
+            "turn": 1,
+            "reason": {
+              "kind": "aborted",
+              "reason": {
+                "kind": "user"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "index": 1,
+    "stubborn": false,
+    "command": "sleep 600 & wait",
+    "sessionId": "session-b6217d2c-1d2a-48a6-82b3-b8f329482761",
+    "wall0": 1793688753288,
+    "ackMs": 6.9516270000003715,
+    "treeExitMs": 4.535997000000407,
+    "turnEndMs": 6.96306500000037,
+    "response": {
+      "accepted": true
+    },
+    "observed": [
+      {
+        "pid": 1378297,
+        "ppid": 1377750,
+        "state": "S",
+        "start": "9860448",
+        "exit": "0\n",
+        "cmd": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /tmp/r4b-probe/run-G1ZP7V/workspace /tmp/r4b-probe/run-G1ZP7V/workspace -- bash -c sleep 600 & wait"
+      },
+      {
+        "pid": 1378298,
+        "ppid": 1378297,
+        "state": "S",
+        "start": "9860448",
+        "exit": "0\n",
+        "cmd": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /tmp/r4b-probe/run-G1ZP7V/workspace /tmp/r4b-probe/run-G1ZP7V/workspace -- bash -c sleep 600 & wait"
+      },
+      {
+        "pid": 1378299,
+        "ppid": 1378298,
+        "state": "S",
+        "start": "9860449",
+        "exit": "0\n",
+        "cmd": "bash -c sleep 600 & wait"
+      },
+      {
+        "pid": 1378300,
+        "ppid": 1378299,
+        "state": "S",
+        "start": "9860449",
+        "exit": "0\n",
+        "cmd": "sleep 600"
+      }
+    ],
+    "exits": [
+      {
+        "pid": 1378297,
+        "ms": 4.5038040000004,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378298,
+        "ms": 4.520040000000336,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378299,
+        "ms": 4.5267579999999725,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378300,
+        "ms": 4.532765000000381,
+        "state": "gone",
+        "exit": null
+      }
+    ],
+    "survivors": [],
+    "modelCallsBeforeResume": 2,
+    "modelCallsAfterResume": 3,
+    "continued": true,
+    "noNewTools": true,
+    "cancelledTurnEnd": [
+      {
+        "type": "event",
+        "event": {
+          "type": "turn/end",
+          "seq": 31,
+          "time": 1793688753293,
+          "data": {
+            "turn": 1,
+            "reason": {
+              "kind": "aborted",
+              "reason": {
+                "kind": "user"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "index": 2,
+    "stubborn": false,
+    "command": "sleep 600 & wait",
+    "sessionId": "session-eb4e39fc-b83c-457b-b4eb-31a6c8ea9de8",
+    "wall0": 1793688753829,
+    "ackMs": 8.765080000000125,
+    "treeExitMs": 4.860170999999809,
+    "turnEndMs": 8.77808099999993,
+    "response": {
+      "accepted": true
+    },
+    "observed": [
+      {
+        "pid": 1378349,
+        "ppid": 1377750,
+        "state": "S",
+        "start": "9860500",
+        "exit": "0\n",
+        "cmd": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /tmp/r4b-probe/run-G1ZP7V/workspace /tmp/r4b-probe/run-G1ZP7V/workspace -- bash -c sleep 600 & wait"
+      },
+      {
+        "pid": 1378350,
+        "ppid": 1378349,
+        "state": "S",
+        "start": "9860500",
+        "exit": "0\n",
+        "cmd": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /tmp/r4b-probe/run-G1ZP7V/workspace /tmp/r4b-probe/run-G1ZP7V/workspace -- bash -c sleep 600 & wait"
+      },
+      {
+        "pid": 1378351,
+        "ppid": 1378350,
+        "state": "S",
+        "start": "9860501",
+        "exit": "0\n",
+        "cmd": "bash -c sleep 600 & wait"
+      },
+      {
+        "pid": 1378352,
+        "ppid": 1378351,
+        "state": "S",
+        "start": "9860502",
+        "exit": "0\n",
+        "cmd": "sleep 600"
+      }
+    ],
+    "exits": [
+      {
+        "pid": 1378349,
+        "ms": 4.834386999999879,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378350,
+        "ms": 4.845226999999795,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378351,
+        "ms": 4.850364999999783,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378352,
+        "ms": 4.85488899999973,
+        "state": "gone",
+        "exit": null
+      }
+    ],
+    "survivors": [],
+    "modelCallsBeforeResume": 2,
+    "modelCallsAfterResume": 3,
+    "continued": true,
+    "noNewTools": true,
+    "cancelledTurnEnd": [
+      {
+        "type": "event",
+        "event": {
+          "type": "turn/end",
+          "seq": 31,
+          "time": 1793688753835,
+          "data": {
+            "turn": 1,
+            "reason": {
+              "kind": "aborted",
+              "reason": {
+                "kind": "user"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "index": 3,
+    "stubborn": true,
+    "command": "trap '' TERM; sleep 600 & wait",
+    "sessionId": "session-c32308e0-018b-4901-996a-4d3ea5f6770f",
+    "wall0": 1793688754375,
+    "ackMs": 3.302751000000171,
+    "treeExitMs": 5.503958999999668,
+    "turnEndMs": 10.670004999999946,
+    "response": {
+      "accepted": true
+    },
+    "observed": [
+      {
+        "pid": 1378394,
+        "ppid": 1377750,
+        "state": "S",
+        "start": "9860555",
+        "exit": "0\n",
+        "cmd": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /tmp/r4b-probe/run-G1ZP7V/workspace /tmp/r4b-probe/run-G1ZP7V/workspace -- bash -c trap '' TERM; sleep 600 & wait"
+      },
+      {
+        "pid": 1378395,
+        "ppid": 1378394,
+        "state": "S",
+        "start": "9860555",
+        "exit": "0\n",
+        "cmd": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /tmp/r4b-probe/run-G1ZP7V/workspace /tmp/r4b-probe/run-G1ZP7V/workspace -- bash -c trap '' TERM; sleep 600 & wait"
+      },
+      {
+        "pid": 1378396,
+        "ppid": 1378395,
+        "state": "S",
+        "start": "9860556",
+        "exit": "0\n",
+        "cmd": "bash -c trap '' TERM; sleep 600 & wait"
+      },
+      {
+        "pid": 1378397,
+        "ppid": 1378396,
+        "state": "S",
+        "start": "9860556",
+        "exit": "0\n",
+        "cmd": "sleep 600"
+      }
+    ],
+    "exits": [
+      {
+        "pid": 1378394,
+        "ms": 5.480152000000089,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378395,
+        "ms": 5.49018199999955,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378396,
+        "ms": 5.495538000000124,
+        "state": "gone",
+        "exit": null
+      },
+      {
+        "pid": 1378397,
+        "ms": 5.500613000000158,
+        "state": "gone",
+        "exit": null
+      }
+    ],
+    "survivors": [],
+    "modelCallsBeforeResume": 2,
+    "modelCallsAfterResume": 3,
+    "continued": true,
+    "noNewTools": true,
+    "cancelledTurnEnd": [
+      {
+        "type": "event",
+        "event": {
+          "type": "turn/end",
+          "seq": 31,
+          "time": 1793688754379,
+          "data": {
+            "turn": 1,
+            "reason": {
+              "kind": "aborted",
+              "reason": {
+                "kind": "user"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+]

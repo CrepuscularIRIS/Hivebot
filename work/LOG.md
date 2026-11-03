@@ -800,3 +800,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 03:3x /tmp 卫生：清 2 小时前 bot-* 残留 14764 个（24G→9.8G；保留 1253 个近 2h 的=在途 e2e 正在用）；根因=e2e helper 从不清理测试 HOME，待立任务修 helper teardown | P5-14 verifier 已派
 02:27 P5-11 builder 完成（ebd724c：三钮贴左/+钮接 new-bot/CSS 星标/0.18 持久化键；56 e2e 零 flaky；自修折叠横向滚动）→ 待派 verifier
 03:5x D-1 scout 回报（slirp 官方静态包/免sudo ①⑤有条件成立/②不可行/DNS 别名补项）→ D-1+D-2 两道 /panel D 双席投票已派（4 judge）
+02:31 P5-07 验收 PASS（红基线抽查过）→ 合并 4abc513（6 文件清单，worktree 已清）| main 回归后台跑中 | testAnswerEvent 二值签名记入 P5-28 派发提示词

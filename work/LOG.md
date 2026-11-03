@@ -830,3 +830,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 05:14 P5-02 回归红根因=清单 checkout 盖掉 .f1（P5-02 同文件、基点更早）→ git merge-file 三方合并修复，sdk 全量 223 绿 | LEARNINGS 记账
 06:12 P5-03 builder 完成（1ff7c17：整 config 覆盖+guard 双保险，dump-config 实证，227 sdk 绿）→ verifier 派发 | LEARNINGS：fake 插件会话游标坑
 06:38 P5-03 验收 PASS（防线独立性实证）→ 合并 d6a2859；回归首跑 2 红复跑 227 全绿（第 2 次首跑红，flaky 观察中）| P5-04 已派 + P5-H1 清理任务立行 | done 15/33
+07:02 P5-04 builder 完成（e5291aa：dfa 判定 +20 行，①-④ 全 PASS 红基线扎实，231 绿）→ verifier 派发；④⑤ 两格转 P5-04.f1

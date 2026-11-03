@@ -839,3 +839,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 11:25 P5-01.f2 完成（71b91be：根因=bwrap MS_NODEV 版本敏感；修复=--ro-bind-data 空文件机制无关；249 绿）→ verifier 派发
 11:49 P5-01.f2 合并 c6eb56b（249 绿）——W1-AP-0 全部收口 | P5-H1+H2 已派（最后的非阻塞任务）| done 19/33
 12:10 四问全答落地（Q-013 A+web 允许；Q-014 B+路线变更 0.18 一比一移植；Q-015 A；Q-016 A）| Q-017 立项：superagent 编排+personal agent 三段式 | L-UI 观感对齐 LEARNINGS
+12:12 用户答复全部落实 → L-AP 主体第一波 4 builder 已派（P5-21/25/27/28，P5-22/23/24 按依赖排后面）；L-UI 任务 HOLD 待路线 v3；2 director 已派（L-UI 修订 + p6-orchestration BRIEF）| 在途 8：H1/H2/4 builder/2 director

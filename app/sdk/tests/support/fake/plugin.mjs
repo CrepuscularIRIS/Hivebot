@@ -136,6 +136,15 @@ class FakeAdapter {
         userTexts: options.messages
           .filter((m) => m.role === 'user')
           .map((m) => (m.content ?? []).filter((b) => b?.type === 'text').map((b) => b.text).join('')),
+        // P5-06：子代理会话的 tool/result 网关不给直接 follow（P5-05 同款限制），
+        // 上一轮工具结果随下一次模型调用回到这里 —— 记下来作为子会话格的观测通道。
+        toolResults: options.messages
+          .filter((m) => m.role === 'tool')
+          .map((m) => ({
+            toolCallId: m.toolCallId ?? null,
+            isError: m.isError === true,
+            text: (m.content ?? []).filter((b) => b?.type === 'text').map((b) => b.text).join(''),
+          })),
       })}\n`,
     )
 

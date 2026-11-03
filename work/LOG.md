@@ -866,3 +866,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 13:19 P5-50 验收 PASS → 合并 68858b5（332 文件入 main，frozen install+build 过；回归后台）；P5-51 shim 主力已派（含 foldTurns 接线+审批卡渲染条件查清）| run-e2e.sh PATH 劫持 low 项记档 | p5 done 24/33
 13:21 P5-21 builder 完成（8266351：Q-013 全表+门控五态+fail-closed，281 绿，stash 对照红基线）→ verifier 派发 | 决策 16 解读分歧（web 是否随门关）记档待 director
 13:25 P5-50 回归全绿（304 单测+62 e2e+renderer-grok check diff=0）闭环
+13:50 P6-04 验收 PASS → 合并（D3 数据+计分器，30/30 全过）| p6 done 3/12；1a 波全部收口（01/02/04 done，03 等 P5-51）

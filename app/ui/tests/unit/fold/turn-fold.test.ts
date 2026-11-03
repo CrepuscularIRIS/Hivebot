@@ -2,7 +2,7 @@
 // 输入 fixtures 模拟 reduce.ts 归约结果（items + hasMore/running），只 import 类型不跑归约。
 import { describe, expect, it } from 'vitest'
 import { foldTurns } from '../../../renderer/fold/turn-fold'
-import type { TimelineItem } from '../../../renderer/plugins/session/reduce'
+import type { TimelineItem } from '../../../renderer/session/reduce'
 
 // ---- fixtures：与 reduce.ts 产出形状一致（reduce.ts:110-161）----
 const u = (id: string, text = id): TimelineItem => ({ kind: 'user', id, text })

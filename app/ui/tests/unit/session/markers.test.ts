@@ -1,4 +1,4 @@
-// P5-12 B7 thinking 行 + B14 时间分隔 / 未读线（renderer/plugins/session/reduce.ts）。
+// P5-12 B7 thinking 行 + B14 时间分隔 / 未读线（renderer/session/reduce.ts）。
 // 阈值证据（0.78.1，work/p1-re/evidence/chunks/index.eager-app-iGTgHP_Q.js）：@1734517 常量 `emt=9e5`（900000ms = 15 分钟）；
 // @1739705 判定函数 `vmt(e,t)`：上一条无时间 → 出；|Δ| >= 900000（含等号）→ 出；跨本地自然日 → 出。
 // 0.18 重建仓只有 time-separator 类型（model.ts:287-297），无生成器——阈值不取 0.18。
@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   SEP_GAP_MS, firstUnreadId, initView, latestAt, reduceFollow, timeLabel, withMarkers, type SessionView, type TimelineItem,
-} from '../../../renderer/plugins/session/reduce'
+} from '../../../renderer/session/reduce'
 
 const at = (y: number, mo: number, d: number, h: number, mi: number, s = 0): number => new Date(y, mo - 1, d, h, mi, s).getTime()
 const u = (id: string, t?: number): TimelineItem => ({ kind: 'user', id, text: id, ...(t !== undefined ? { at: t } : {}) })

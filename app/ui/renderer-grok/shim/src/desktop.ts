@@ -10,9 +10,19 @@ export interface DesktopOptions {
   authId: string
   platform?: NodeJS.Platform
   appVersion?: string
+  /** P5-54：preload 的 webFrame.getZoomFactor 实底（缺省 1，单测 / 无 preload 时）。 */
+  getZoomFactor?: () => number
+  /** P5-54：持久化读在它之后才回（= coordinator 握手完成）。上游 openAgent 先抓 transport 世代再等 ready，
+   * ready 会 ++世代——由持久化恢复的选中 bot 若在握手前 openAgent，tail 回值必被作废，#11 分页游标永远装不上。
+   * 读排到握手之后，恢复出来的 openAgent 就落在新世代里。缺省不排队（单测）。 */
+  persistenceGate?: Promise<void>
 }
 
-type AnyWindow = Window & { matchMedia(q: string): { matches: boolean; addEventListener(type: string, l: () => void): void } }
+type AnyWindow = Window & {
+  matchMedia(q: string): { matches: boolean; addEventListener(type: string, l: () => void): void }
+  addEventListener(type: 'resize', l: () => void): void
+  removeEventListener(type: 'resize', l: () => void): void
+}
 
 const noUnsub: Unsubscribe = () => {}
 const listener = (): Unsubscribe => noUnsub
@@ -26,7 +36,15 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
 
   let permission: 'ask' | 'never' = 'ask'
   const themeListeners = new Set<(state: ThemeState) => void>()
-  let theme: ThemeState = { preference: 'system', resolved: win.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light' }
+  const darkQuery = win.matchMedia('(prefers-color-scheme: dark)')
+  let theme: ThemeState = { preference: 'system', resolved: darkQuery.matches ? 'dark' : 'light' }
+  // 跟随系统（Electron nativeTheme → prefers-color-scheme）：preference=system 时系统切换要推给上游 theme.onChanged，
+  // 否则 0.18 只在启动时读一次底色（P5-54 实测：emulateMedia dark 后 data-theme 仍 cursor-light）
+  darkQuery.addEventListener('change', () => {
+    if (theme.preference !== 'system') return
+    theme = { preference: 'system', resolved: darkQuery.matches ? 'dark' : 'light' }
+    for (const l of [...themeListeners]) l(theme)
+  })
 
   const auth: DesktopBridge['cursorAccount']['getStatus'] extends () => Promise<infer T> ? T : never = {
     kind: 'logged-in', authId: opts.authId, email: `${opts.authId}@pbots.local`, displayName: 'Pbots', isAnysphereUser: false,
@@ -41,8 +59,15 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
   return {
     platform: opts.platform ?? 'linux',
     isDev: false,
-    getZoomFactor: () => 1,
-    onZoomFactorEvent: listener,
+    getZoomFactor: () => opts.getZoomFactor?.() ?? 1,
+    // 缩放（Ctrl ± / 0，Electron 默认菜单）在页面侧表现为 resize：resize 时读 webFrame 实值，变了才通知
+    onZoomFactorEvent: (l) => {
+      if (opts.getZoomFactor === undefined) return noUnsub
+      let last = opts.getZoomFactor()
+      const onResize = (): void => { const z = opts.getZoomFactor!(); if (z !== last) { last = z; l(z) } }
+      win.addEventListener('resize', onResize)
+      return () => win.removeEventListener('resize', onResize)
+    },
     getWindowState: () => Promise.resolve({ isFullscreen: false, isMaximized: false }),
     onWindowStateEvent: listener,
     windowControls: {
@@ -140,7 +165,9 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
       setComputerUseModel: (m) => Promise.resolve(m),
       getAvailableModels: () => Promise.resolve([]),
       clientPersistence: {
-        read: (key: string) => Promise.resolve(persisted(key)),
+        read: (key: string) => (opts.persistenceGate ?? Promise.resolve())
+          .then(() => new Promise<void>((r) => setTimeout(r, 0))) // 让 client.ready 的 then（++世代）先跑完
+          .then(() => persisted(key)),
         write: (key: string, value: string) => { persist(key, value); return Promise.resolve() },
         remove: (key: string) => { persist(key, null); return Promise.resolve() },
         listKeys: (prefix: string) => Promise.resolve(Object.keys(store).filter((k) => k.startsWith(`pbots.shim.${prefix}`)).map((k) => k.slice('pbots.shim.'.length))),
@@ -168,7 +195,11 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
     readAttachmentBytes: () => Promise.resolve(null),
     downloadAttachment: () => Promise.resolve(true),
     getLinkMetadata: () => Promise.resolve(null),
-    openExternal: () => Promise.resolve(),
+    // P5-54：外链实底 = window.open → main setWindowOpenHandler（只把 http(s) 交 shell.openExternal、恒拒新窗，U-00 门控）
+    openExternal: (url: string) => {
+      try { if (['http:', 'https:'].includes(new URL(url).protocol)) win.open(url, '_blank', 'noopener') } catch { /* 非法 URL：忽略 */ }
+      return Promise.resolve()
+    },
     openCloudAgent: () => Promise.resolve(),
     stageAttachmentBytes: () => Promise.resolve({ ok: false, reason: 'failed' }),
     commitStagedAttachments: () => Promise.resolve(null),

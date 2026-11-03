@@ -6,7 +6,7 @@
 // ③终止原因 aborted|interrupted|cancelled 都归兜底 (e)——(b)(e) 的 notice 直接用 reduce endNotice
 // 已产出的条目（source:'reduce'），折叠只新增 (d) 一种 notice（source:'fold'），不重复显示。
 
-import type { TimelineItem, ToolStatus } from '../plugins/session/reduce'
+import type { TimelineItem, ToolStatus } from '../session/reduce'
 
 export type FoldEntry = (
   | { kind: 'user'; id: string; text: string }

@@ -3,7 +3,7 @@
 // transcriptToolCallStatus/transcriptLocalToolPermissionStatus 的取值路径）。
 import { describe, expect, it } from 'vitest'
 import { foldTurns } from '../../../renderer/fold/turn-fold'
-import type { TimelineItem, ToolStatus } from '../../../renderer/plugins/session/reduce'
+import type { TimelineItem, ToolStatus } from '../../../renderer/session/reduce'
 import { permissionEntry, toRawEntries, type RawEntry } from '../../../renderer-grok/shim/src/entries'
 
 type ToolItem = Extract<TimelineItem, { kind: 'tool' }>

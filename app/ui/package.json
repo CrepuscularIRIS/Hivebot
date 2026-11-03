@@ -16,7 +16,7 @@
     "postinstall": "node node_modules/electron/install.js",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "build": "electron-vite build",
+    "build": "electron-vite build && pnpm -C renderer-grok build && node scripts/stage-renderer.mjs",
     "test": "vitest run",
     "test:e2e": "sh scripts/run-e2e.sh"
   },

@@ -1,7 +1,7 @@
 // P5-51 · shim agent 投影单测：dsh roster/会话态 → 0.18 agent 记录（production/model.ts
 // projectRendererAgent 消费）+ persona currentActivity 推导（agent-avatar.tsx activityState 消费）。
 import { describe, expect, it } from 'vitest'
-import { initView } from '../../../renderer/plugins/session/reduce'
+import { initView } from '../../../renderer/session/reduce'
 import { activityOf, toAgentRecord } from '../../../renderer-grok/shim/src/agents'
 import { personaStateFromAgent } from '../../../renderer-grok/frontend/src/recovered/features/conversation/workspace/agent-avatar'
 

@@ -1,7 +1,7 @@
-// P-B 会话归约单测（renderer/plugins/session/reduce.ts）：帧形状取自 U-21 真 runtime wire 探针
+// P-B 会话归约单测（renderer/session/reduce.ts）：帧形状取自 U-21 真 runtime wire 探针
 // （tool/call → approval/asked → approval/decided → tool/result；取消后 turn/end.reason.kind === 'aborted'）。
 import { describe, expect, it } from 'vitest'
-import { initView, reduceFollow, toolSummary, toolTitle, type SessionView } from '../../../renderer/plugins/session/reduce'
+import { initView, reduceFollow, toolSummary, toolTitle, type SessionView } from '../../../renderer/session/reduce'
 
 const ev = (type: string, data: unknown): unknown => ({ type: 'event', event: { type, data } })
 const text = (t: string): unknown[] => [{ type: 'text', text: t }]

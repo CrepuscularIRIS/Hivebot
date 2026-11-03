@@ -7,8 +7,8 @@
 // - 推送：roster 变化 → agents 事件；view 变化 → transcript snapshot 事件（S0 坑1 口径）
 // ponytail: snapshot 全量推（每事件一次 JSON 序列化），流式高频场景的增量 diff 留 P5-54 优化。
 import { CarrierSocket, pageEnv } from '../../../renderer/carrier'
-import { PageMux, type MuxStream } from '../../../renderer/carrier/mux'
-import { initView, olderItemsOf, reduceFollow, type SessionView } from '../../../renderer/plugins/session/reduce'
+import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../../../renderer/carrier/mux'
+import { initView, olderItemsOf, reduceFollow, type SessionView } from '../../../renderer/session/reduce'
 import { serialize, permissionEntry, type RawEntry } from './entries'
 import { activityOf, toAgentRecord } from './agents'
 import type { CoordinatorDeps } from './coordinator'
@@ -19,9 +19,11 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 
 interface ApiResult { ok: boolean; value?: unknown; error?: { code: string; message: string } }
 interface Summary { sessionId: string; title: string | null; running: boolean; updatedAt: number }
-interface Ask { agentId: string; command: string; at: number }
+interface Ask { agentId: string; callId: string | null; command: string; at: number }
 
 const HISTORY_PAGE = 40
+/** tail 回值时 follow 快照还没到：回这个探针游标，首次取更早页时再按 live 窗口定（transcriptWindow）。 */
+const TAIL_PROBE = Number.MAX_SAFE_INTEGER
 /** 0.18 sidebar 新建会话按钮的 createAgent 实参名（ProductionRenderer.tsx:2815）。 */
 const NEW_CHAT = 'New chat'
 
@@ -42,7 +44,27 @@ export interface ShimData {
   answers: Array<{ eventId: string; value: string }>
   /** E2E 观测面：view items 原样（诊断 tool result）。 */
   debugItems(agentId: string): unknown[]
+  /** E2E 观测面 window.__pbotsDev（P5-54 从旧 renderer store 平移，契约同名同形：m2-port / m2-deadline /
+   * d4-deadline / questions-answer 等 carrier 级 spec 依赖）。只读旁路 + 测试注入钩子，不开新 IPC。 */
+  dev: DevSurface
   start(): void
+}
+
+export interface DevSurface {
+  readonly events: { clientId: string | undefined; items: unknown[] }
+  readonly clientIds: string[]
+  readonly sessions: number
+  readonly sockets: DevSocketHandle[]
+  /** 已 follow 的会话视图（D1/D2：preset / chunkCount / turnEnded / cwd …）。 */
+  readonly bots: SessionView[]
+  readonly state: { order: string[]; meta: { mainBotId: string | null }; views: Record<string, SessionView> }
+  newSocket(): DevSocketHandle
+  openStream(endpoint: string, args?: unknown): MuxStream
+  muxStreams(): Array<{ streamId: string; endpoint: string }>
+  /** D4 注入：关掉 boot $events 流（模拟 renderer 离场）。 */
+  closeEvents(): void
+  /** 故障注入：下一次 method 调用直接返回该错误（一次性）。 */
+  failNext(method: string, code?: string, message?: string): void
 }
 
 export function createShimData(opts: ShimDataOptions): ShimData {
@@ -66,7 +88,19 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   const followed = new Set<string>()
   const followStreams = new Map<string, MuxStream>()
 
-  const { api, metaApi } = opts
+  const dev = {
+    events: { clientId: undefined as string | undefined, items: [] as unknown[] },
+    clientIds: [] as string[], sessions: 0, sockets: [] as DevSocketHandle[],
+    eventsStream: undefined as MuxStream | undefined,
+  }
+  const injected = new Map<string, { code: string; message: string }>()
+  const metaApi = opts.metaApi
+  const api = (method: string, args?: unknown): Promise<ApiResult> => {
+    const fault = injected.get(method)
+    if (fault === undefined) return opts.api(method, args)
+    injected.delete(method)
+    return Promise.resolve({ ok: false, error: fault })
+  }
 
   const agentName = (id: string): string => {
     const s = summaries[id]
@@ -109,9 +143,20 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     return [...main, ...askEntries(agentId)]
   }
 
+  // 首个 openAgentTail 回值之前不推该 bot 的 transcript 快照：上游 openAgent 见 entriesByAgent 已有条目就不再取 tail，
+  // 而分页游标（nextBeforeSeq）只随 tail 回值安装——先推快照会让重入的 openAgent 抢掉游标，#11 永不翻页（P5-54 实测）。
+  const tailed = new Set<string>()
+  const pushTranscript = (agentId: string): void => { if (tailed.has(agentId)) push.transcript(agentId) }
+
   const onFollowItem = (agentId: string, item: unknown): void => {
-    views.set(agentId, reduceFollow(views.get(agentId) ?? initView(agentId), item))
-    push.transcript(agentId)
+    const view = reduceFollow(views.get(agentId) ?? initView(agentId), item)
+    views.set(agentId, view)
+    // 已在会话流里定局的审批（main deadline 代答 / 别处作答后 $events 不再发 cancel）从 dock 收掉——旧 store 同口径
+    for (const [eventId, ask] of asks) {
+      if (ask.agentId === agentId && ask.callId !== null
+        && view.items.some((i) => i.kind === 'tool' && i.callId === ask.callId && (i.decision !== null || i.status !== 'running'))) asks.delete(eventId)
+    }
+    pushTranscript(agentId)
     push.agents() // running/activity 随 view 变化（persona 动态）
   }
 
@@ -178,15 +223,21 @@ export function createShimData(opts: ShimDataOptions): ShimData {
 
   const onEventsItem = (item: unknown): void => {
     const it = rec(item)
-    if (it.type === 'ready' && typeof it.clientId === 'string') { eventsClientId = it.clientId; return }
+    if (it.type === 'ready' && typeof it.clientId === 'string') {
+      eventsClientId = it.clientId
+      dev.events.clientId = it.clientId
+      if (dev.clientIds[dev.clientIds.length - 1] !== it.clientId) dev.clientIds.push(it.clientId)
+      return
+    }
     if (it.type === 'waterfall' && it.event === 'approval/request' && typeof it.eventId === 'string') {
       const req = rec(it.request)
       asks.set(it.eventId, {
         agentId: String(it.agentId ?? ''),
+        callId: typeof req.callId === 'string' ? req.callId : null,
         command: typeof req.displayReason === 'string' ? req.displayReason : typeof req.reason === 'string' ? req.reason : String(req.toolName ?? 'tool'),
         at: Date.now(),
       })
-      push.transcript(String(it.agentId ?? ''))
+      pushTranscript(String(it.agentId ?? ''))
       push.agents()
       return
     }
@@ -209,8 +260,11 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   const bootSession = (): void => {
     const socket = new CarrierSocket(pageEnv())
     socket.addEventListener('open', () => {
+      dev.sessions += 1
       mux = new PageMux(socket)
       const feed = mux.open('$events', {})
+      dev.events = { clientId: undefined, items: feed.items }
+      dev.eventsStream = feed
       let seen = 0
       const tick = (): void => {
         for (; seen < feed.items.length; seen += 1) onEventsItem(feed.items[seen])
@@ -234,12 +288,22 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     openAgentTail: (id) => {
       followed.add(id)
       openFollow(id)
-      return { entries: entriesOf(id), nextBeforeSeq: null }
-    },
-    transcriptWindow: async (id) => {
-      // #11 加载更早：beforeSeq 游标 = 当前 dsh 窗口首 seq（顺序翻页；响应迟到由上游去重）
+      tailed.add(id)
+      // #11 游标：上游 pagination 只随 tail 回值安装一次（installInitialPage），而回值必须立刻回——openAgent 早于
+      // coordinator ready 发出，ready 会 ++transport 世代、作废迟到的回值（P5-54 实测）。快照未到时回探针游标
+      // TAIL_PROBE：滚到顶时由 transcriptWindow 换成 live 窗口首 seq（或判定无更早历史）。
       const view = views.get(id)
-      const before = view?.firstSeq
+      const nextBeforeSeq = view?.loaded !== true ? TAIL_PROBE : view.hasMore && view.firstSeq !== null ? view.firstSeq : null
+      return { entries: entriesOf(id), nextBeforeSeq }
+    },
+    transcriptWindow: async (id, cursor) => {
+      // #11 加载更早：cursor = 上游 pagination 持有的游标（首页来自 openAgentTail，之后来自上一页 nextBeforeSeq）。
+      // 更早的页不并入 view：上游把分页条目与 live 快照按 id 合并（mergeOlderTranscriptEntries），快照重推不会冲掉它们。
+      const view = views.get(id)
+      if (cursor === TAIL_PROBE && view !== undefined && view.loaded && (!view.hasMore || view.firstSeq === null)) {
+        return { entries: [], threadCounts: {} } // 无 nextBeforeSeq → 上游置 exhausted
+      }
+      const before = cursor === TAIL_PROBE ? view?.firstSeq ?? undefined : cursor
       const res = await api('session/events', {
         request: {
           address: { kind: 'session', sessionId: id },
@@ -273,7 +337,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       if (!res.ok) throw new Error(res.error?.message ?? '$events/result failed')
       const ask = asks.get(input.requestId)
       asks.delete(input.requestId)
-      if (ask !== undefined) push.transcript(ask.agentId)
+      if (ask !== undefined) pushTranscript(ask.agentId)
       push.agents()
     },
     setAgentUnread: (id, value) => { if (value) unread.add(id); else unread.delete(id); push.agents() },
@@ -305,9 +369,29 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     },
   }
 
+  const devSurface: DevSurface = {
+    get events() { return dev.events },
+    get clientIds() { return dev.clientIds },
+    get sessions() { return dev.sessions },
+    get sockets() { return dev.sockets },
+    get bots() { return [...views.values()] },
+    get state() { return { order: [...order], meta: { mainBotId }, views: Object.fromEntries(views) } },
+    newSocket: () => newDevSocket((h) => { dev.sockets.push(h) }),
+    openStream(endpoint, args) {
+      if (mux === undefined) throw new Error('boot mux not open yet')
+      return mux.open(endpoint, args)
+    },
+    muxStreams: () => [...(mux?.streams.values() ?? [])].map((s) => ({ streamId: s.streamId, endpoint: s.endpoint })),
+    closeEvents() {
+      if (dev.eventsStream !== undefined && mux !== undefined) { mux.cancel(dev.eventsStream); dev.eventsStream = undefined }
+    },
+    failNext(method, code = 'pbots/test-fault', message = 'injected by E2E') { injected.set(method, { code, message }) },
+  }
+
   return {
     deps,
     answers,
+    dev: devSurface,
     debugItems: (agentId) => [...(views.get(agentId)?.items ?? [])],
     wire(target) { push.agents = target.agents; push.transcript = target.transcript },
     agentsPayload: () => order.map(recordOf),

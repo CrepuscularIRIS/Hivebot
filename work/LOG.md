@@ -848,3 +848,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 12:27 p6 BRIEF v2 完成（14 行修订账；0.18 自带折叠行可复用；1a 两条立即开工/一条等 P5-51）→ G1-r2 终轮派发 | P5-51 描述已同步折叠函数映射 | p6 PLAN 同步点 2-5 记档待 PLAN 期执行
 12:27 P5-27 builder 完成（91a4988：上游达标 4.7-6.25ms 零产品改动，251 sdk 绿）→ verifier 抽验派发
 12:30 p6 G1-r2 两席 REVISE → 有条件通过；2 HIGH（折叠语义三件套、并发闭环）进 v2.1+PLAN 首批
+12:38 p6 BRIEF v2.1 + PLAN v1 完成（12 任务：1a ready 2 / 1b blocked 7 / S-1~4 待派；D-2 题干 §4）→ 派 P6-01/02 + D-2 panel D | P5 状态列同步 running

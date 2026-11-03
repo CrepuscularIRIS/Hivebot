@@ -1,0 +1,65 @@
+P5-51 独立复跑记录（verifier，2026-11-03）
+worktree: /tmp/bot-vfy-p5-51（detached @ 40bcab8，主 worktree /tmp/bot-wt/P5-51 未动）
+HOME=/tmp/bot-vfy-p5-51-home
+
+[1] app/sdk: pnpm install --frozen-lockfile
+    Done in 2m 54.8s using pnpm v11.0.9（sdk 无 build 脚本，纯源码包）
+[2] app/ui: pnpm install --frozen-lockfile + node node_modules/electron/install.js
+    Done in 2m 1.5s + postinstall: Done
+[3] renderer-grok: pnpm build
+    ✓ built in 28ms（shim.iife.js 27.87 kB）
+[4] renderer-grok: pnpm check
+    upstream diff=0: 332 files
+[5] inject 幂等：build 两次后 index.html 中 shim.iife.js 出现次数 = 1
+    <script defer src="./shim.iife.js"></script>（行13）在 module bundle（行14）之前
+[6] app/ui: pnpm build → UI_BUILD_OK
+[7] vitest tests/unit/grok-shim → Test Files 4 passed, Tests 29 passed
+[8] e2e grok-shim.spec.ts → 1 passed (6.6s)
+[9] vitest 全量 → Test Files 33 passed, Tests 333 passed
+[10] e2e 全量 → 63 passed (6.8m)
+[11] 区域：git diff --stat 9e8cab3..40bcab8 = 15 files, +1469 -1
+     全部位于 app/ui/renderer-grok/{README.md,package.json,scripts/inject-shim.mjs,shim/*} + app/ui/tests/{unit,e2e}/grok-shim*
+     与申报一致；上游树（frontend/、source/、assets/）零改动（[4]）
+
+--- 红基线 ①（entries.ts:71 摘 role:'assistant'）---
+sed 摘除 → rebuild → bundle 确认（.build/frontend-shell/shim.iife.js 与 .build/shim/shim.iife.js md5 相同，
+message 分支无 role，仅剩 live-stream 1 处）
+e2e grok-shim.spec → 1 passed（【不红——测试盲区】）
+DOM 探针（红 build，回合结束 idle 后 +1500ms）：
+  PROBE_DUMP {"messages":[{"role":"assistant","text":"探针消息"},{"role":"user","text":"好的。"},
+   {"role":"user","text":"结果：\n\n```python\nprint(1)\n```\n完。"}],"preCount":0,"shimPresent":true}
+  → 持久 assistant 正文确实落 user 侧、markdown 不渲染（pre=0），但 spec 不红
+再摘 live-stream（entries.ts:88）的 role → spec 红：
+  Error: expect(locator).toHaveCount(expected) failed - unexpected value "0"（spec.ts:107 pre toHaveCount(1)）
+  → pre=1 断言实际由流式窗口的 live-stream 条目（88 行自带 role）撑住，持久序列化的侧别无断言
+绿 build 对照探针（回合结束 idle 后）：
+  PROBE_GREEN {"messages":[{"role":"assistant","text":"探针绿"},{"role":"assistant","text":"好的。"},
+   {"role":"assistant","text":"结果：\n\nprint(1)\n完。"}],"preCount":1}
+  → 产品行为正确：持久条目带 role → assistant 侧渲染 markdown；仅 e2e 断言存在盲区
+恢复（git checkout -- entries.ts）→ rebuild → check upstream diff=0 → spec 1 passed
+
+--- 红基线 ②（desktop.ts:128 ceiling 'ask'→'always'）---
+sed → rebuild → e2e：
+  Error: expect(locator).toBeDisabled() failed（spec.ts:97 Always allow 按钮）
+  1 failed
+恢复 → rebuild → check upstream diff=0 → spec 1 passed
+→ 禁用断言真实有效（disabled 属性级，由 ceiling 驱动的上游机制）
+
+--- D9 复核 ---
+coordinator.ts:50-51 dshValueOf：allow-once/always→allowed-once，其余（deny/never/任意串）→rejected；
+类型签名 dshValue: 'allowed-once' | 'rejected'（编译期白名单）
+data.ts:271-272 answers.push 在 $events/result 发送处（观测面=真实发送值）
+coordinator.test.ts:147-158：4 种 resolution → ['allowed-once','rejected','rejected','allowed-once']
+e2e spec.ts:126-127：answers.map(value).sort() toEqual ['allowed-once','rejected']（含 29 单测与 63 e2e 内实跑）
+单飞（坑④）：data.ts:144-149 rosterFlight 共享执行（boot 重试与 socket 重开并发时共享同一次 roster 拉取，防双建主 bot）
+判侧（坑①）：entries.ts:71 + model.ts:446 实证（见红基线①）
+
+--- 截图说明 ---
+turn1-light.png / turn2-light.png（playwright page.screenshot，1280x820 PNG，RGB）
+本环境 Read 工具对图片一律转 CDN 上传、analyze_image MCP 对任意 URL（含公网对照图）返回 400，无法目视；
+客观证据：file=合法 PNG 1280x820、平均色 RGB(249,249,249)=light 主题与测试名吻合、
+page.screenshot 机制上只含 Electron 页面（xvfb 内，非 x11grab 全屏，不可能拍到桌面其他窗口）、
+截图前一刻 DOM 断言（containText 各消息、pre=1、dock disabled）全部通过。
+
+--- 验收结束时状态 ---
+git rev-parse HEAD = 40bcab8（未漂移）；git status --short 空（探针已删、sed 改动全部恢复）

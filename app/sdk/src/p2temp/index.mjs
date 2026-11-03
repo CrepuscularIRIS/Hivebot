@@ -184,15 +184,25 @@ class P2TempService extends TypertRemoteService {
 
   /**
    * p2temp/session.createWithConnectors — 临时 preset + session/create。
-   * @param { {connectors: string[], agentPreset: string, cwd?: string} } request
+   * P5-25：main 侧预生成 botId 并随 sessionId 透传（上游 sessionController.create 的
+   * claim 路径对不存在的 id 即按该 id + cwd 新建，header.cwd 因此 = workspaces/<botId>，
+   * 见 packages/api/session-controller/src/agent.ts createSession/claim）。
+   * @param { {connectors: string[], agentPreset: string, cwd?: string, sessionId?: string} } request
    * @returns {Promise<{sessionId: string}>}
    */
   async createWithConnectors(request) {
-    const { connectors, agentPreset, cwd } = request ?? {}
+    const { connectors, agentPreset, cwd, sessionId } = request ?? {}
     normalizeConnectors(connectors)
     requireExplicitAgentPreset(agentPreset)
+    if (sessionId !== undefined && (typeof sessionId !== 'string' || sessionId.trim() === '')) {
+      throw new Error('p2temp: sessionId must be a non-empty string when provided')
+    }
     const presetId = await this.ensurePreset(agentPreset, connectors)
-    const value = await this.ctx.sessionController.create({ cwd, agentPreset: presetId })
+    const value = await this.ctx.sessionController.create({
+      cwd,
+      agentPreset: presetId,
+      ...(sessionId !== undefined ? { sessionId } : {}),
+    })
     return { sessionId: value.sessionId }
   }
 

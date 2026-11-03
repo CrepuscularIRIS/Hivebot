@@ -14,7 +14,7 @@ import { m1Ledger, registerM1Api, type M1Request, type M1Result } from './m1-api
 import { registerM2Mux } from './m2-mux'
 import { registerM3Meta, type M3Handle } from './m3-meta'
 import { ensureThenReady, restoreGated } from './m3-meta/ensure'
-import { createBotWithConnectors, type CreateBotArgs, type DshLike } from './m3-meta/orchestrate'
+import { createBotWithConnectors, createSessionForcedWorkspace, type CreateBotArgs, type DshLike, type SessionCreateArgs } from './m3-meta/orchestrate'
 import type { BotsMetaStore } from './m3-meta/store'
 
 if (process.type === 'browser') {
@@ -101,12 +101,17 @@ export function wrapM1WithOrchestration(
   base: (req: M1Request) => Promise<M1Result>,
   dsh: DshConnection | undefined,
   store: BotsMetaStore,
+  dataDir: string,
   failed?: Set<string>,
 ): (req: M1Request) => Promise<M1Result> {
   return async function wired(req: M1Request): Promise<M1Result> {
-    if (req?.method === 'p2temp/session.createWithConnectors' && dsh !== undefined) {
+    // P5-25（Q-015 C2-②）：#3/#4 的 cwd 由 main 强制为 workspaces/<botId>，均路由进编排。
+    if (dsh !== undefined && (req?.method === 'p2temp/session.createWithConnectors' || req?.method === 'session/create')) {
       const request = (req.args as { request?: unknown } | undefined)?.request ?? req.args
-      return createBotWithConnectors(dsh, store, request as CreateBotArgs, { failed })
+      const opts = { dataDir, ...(failed !== undefined ? { failed } : {}) }
+      return req.method === 'p2temp/session.createWithConnectors'
+        ? createBotWithConnectors(dsh, store, request as CreateBotArgs, opts)
+        : createSessionForcedWorkspace(dsh, request as SessionCreateArgs, opts)
     }
     return base(req)
   }
@@ -228,14 +233,17 @@ async function main(): Promise<void> {
   } else {
     // U-15 三桥接线：M3 先建（M1 的 #4 编排写它的 store）；M1+M2+M3 共享同一
     // store/ledger（HANDOFF-MED：$events/result 校验读 m2 tap 写入的同一台账实例）。
+    // P5-25：数据根与 m3 store 同源（单写者数据目录），#3/#4 编排用它强制
+    // cwd = <dataDir>/workspaces/<botId>（Q-015 C2-②）。
+    const dataDir = process.env.PBOTS_DATA_DIR ?? app.getPath('userData')
     const m3 = registerM3Meta({
       dsh,
-      dataDir: process.env.PBOTS_DATA_DIR ?? app.getPath('userData'),
+      dataDir,
       // U-28 R6：restore 未 settle 时 M3 get 返回 pbots/restore-pending（不给出误导性
       // live=false —— renderer loadRoster 缓存首个 meta 且 restore 后不刷新）。
       restoreSettled: () => ready.status().restore !== false,
     })
-    const m1 = wrapM1WithOrchestration(registerM1Api({ dsh }), dsh, m3.store, m3.failed)
+    const m1 = wrapM1WithOrchestration(registerM1Api({ dsh }), dsh, m3.store, dataDir, m3.failed)
     // U-14（CONTRACT #21）：#21 恢复全部 settle 前 M1/M2 不就绪 —— 入口挂 restore 闸门
     const m1Gated = restoreGated(ready, m1)
     ipcMain.handle('pbots:api', (event, req) => { assertSender(event); return m1Gated(req) })

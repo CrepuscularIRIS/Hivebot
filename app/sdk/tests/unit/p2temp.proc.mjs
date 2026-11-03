@@ -252,6 +252,22 @@ await case_('P2TempService happy path: base rows + connector rows, content-deriv
   assert.deepEqual(calls.created, [{ cwd: '/tmp/w', agentPreset: calls.registered[0].id }])
 })
 
+await case_('P5-25 createWithConnectors: sessionId 透传到 sessionController.create；非法类型 fail loud；缺省不传字段', async () => {
+  const { ctx, calls } = fakeCtx(okProfile)
+  const svc = new P2TempService(ctx, {})
+  const out = await svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'], agentPreset: 'standard', cwd: '/tmp/w', sessionId: 'session-abc' })
+  assert.equal(out.sessionId, 'sid-1')
+  assert.deepEqual(calls.created[0], { cwd: '/tmp/w', agentPreset: calls.registered[0].id, sessionId: 'session-abc' })
+  // 缺省：不出现 sessionId 字段（既有调用方行为不变）
+  await svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'], agentPreset: 'standard', cwd: '/tmp/w' })
+  assert.equal('sessionId' in calls.created[1], false)
+  // 非法类型：拒绝（main 只传 string；wire 边界防御）
+  await assert.rejects(
+    () => svc.createWithConnectors({ connectors: ['@p2sdk-fixture/demo'], agentPreset: 'standard', sessionId: 42 }),
+    /sessionId must be a non-empty string/,
+  )
+})
+
 await case_('createWithConnectors: second identical call reuses the registered preset (no Duplicate, one register)', async () => {
   const { ctx, calls } = fakeCtx(okProfile)
   const svc = new P2TempService(ctx, {})

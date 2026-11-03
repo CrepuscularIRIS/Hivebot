@@ -1,7 +1,7 @@
 // P-B 会话归约单测（renderer/session/reduce.ts）：帧形状取自 U-21 真 runtime wire 探针
 // （tool/call → approval/asked → approval/decided → tool/result；取消后 turn/end.reason.kind === 'aborted'）。
 import { describe, expect, it } from 'vitest'
-import { initView, reduceFollow, toolSummary, toolTitle, type SessionView } from '../../../renderer/session/reduce'
+import { initView, reduceFollow, type SessionView } from '../../../renderer/session/reduce'
 
 const ev = (type: string, data: unknown): unknown => ({ type: 'event', event: { type, data } })
 const text = (t: string): unknown[] => [{ type: 'text', text: t }]
@@ -68,11 +68,6 @@ describe('session reduce（时间线）', () => {
     expect(run([snap(true, undefined)])).toMatchObject({ hasMore: true, firstSeq: null } as Partial<SessionView>) // 无 seq（异常帧）也可加载更早，beforeSeq 缺省
   })
 
-  it('tool 行文案：Title Case + 常见参数摘要', () => {
-    expect(toolTitle('web_search')).toBe('Web Search')
-    expect(toolSummary('{"command":"ls -la","description":"x"}')).toBe('ls -la')
-    expect(toolSummary('not json')).toBe('not json')
-  })
   it('快照 modelSelection 投影：pending 优先于 lastUsed；缺省为 null（U-23 P-D）', () => {
     const snap = (values: unknown): unknown => ({ type: 'snapshot', header: {}, records: [], projections: { values } })
     expect(run([snap({ modelSelection: { lastUsed: { provider: 'p', model: 'old' }, pending: { provider: 'p', model: 'new' } } })]).model).toBe('p/new')

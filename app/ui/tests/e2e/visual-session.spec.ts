@@ -63,6 +63,7 @@ test('B7 thinking 行（live → 定稿、鼠标 / 键盘开合）+ B14 时间�
     rt.writeScriptCalls(x, [
       reasoningCall(['先想一想：', '比较 A 与 B', '\n第二行推理'], ['答案是 A。'], 700),
       textCall(['第二条回复。']),
+      reasoningCall(['第三问推理首行', '\n第三问推理次行'], ['第三条回复。'], 1500),
     ])
     await send(page, '问题一')
 
@@ -140,6 +141,28 @@ test('B7 thinking 行（live → 定稿、鼠标 / 键盘开合）+ B14 时间�
       await page.screenshot({ path: join(OUT, `thinking-sep-${mode}.png`) })
     }
     await theme(page, 'light')
+
+    // ⑤ P5-12.f1（GU-P5-12 第 1 条）：live 期展开并聚焦 → 定稿后同一节点、仍展开、焦点不丢、行不上跳
+    await send(page, '问题三')
+    const liveRow = page.locator('.thinking-row[data-live]')
+    const liveBtn = liveRow.locator('button.tool-line')
+    await expect(liveRow.locator('.thinking-label')).toHaveText('思考中', { timeout: 20_000 })
+    await liveBtn.focus()
+    await page.keyboard.press('Enter')
+    await expect(liveBtn).toHaveAttribute('aria-expanded', 'true')
+    await liveBtn.evaluate((el) => { (el as HTMLElement & { __f1?: boolean }).__f1 = true }) // 节点身份标记
+    await expect(page.locator('.bubble.assistant.final').last()).toHaveText('第三条回复。', { timeout: 20_000 })
+    const after = await page.evaluate(() => {
+      const rows = document.querySelectorAll('.thinking-row')
+      const r = rows[rows.length - 1]!
+      const b = r.querySelector<HTMLElement & { __f1?: boolean }>('button.tool-line')!
+      return {
+        live: r.hasAttribute('data-live'), label: r.querySelector('.thinking-label')?.textContent,
+        sameNode: b.__f1 === true, expanded: b.getAttribute('aria-expanded'), focused: document.activeElement === b,
+        detail: r.querySelector('[data-thinking-detail]')?.textContent,
+      }
+    })
+    expect(after).toEqual({ live: false, label: '思考', sameNode: true, expanded: 'true', focused: true, detail: '第三问推理首行\n第三问推理次行' })
   } finally {
     await env.stop()
   }

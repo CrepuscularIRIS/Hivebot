@@ -68,20 +68,24 @@ test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动�
     await expect.poll(async () => page.locator('[data-grok-state]').count()).toBeGreaterThan(0)
     await expect(page.locator('.ProseMirror[contenteditable="true"]')).toBeVisible({ timeout: 20_000 })
 
-    // 主 bot sessionId（shim boot 自建的默认 standard bot，带 bash+shell-ask）；
-    // fake bash 在会话 cwd（= runtime cwd = ws，沙箱内可写且宿主可见）落地 canary
+    // 主 bot sessionId（shim boot 自建的默认 standard bot，带 bash+shell-ask）
     const list = await rt.client.call('session/list', { _request: {} }) as { items?: Array<{ sessionId: string; origin?: string }> }
     const sid = list.items?.find((i) => i.origin !== 'subagent')?.sessionId
     expect(sid).toBeTruthy()
 
     // ---- 回合 1：reasoning + ack + bash(审批 allow-once) + 尾正文 markdown ----
-    const okCanary = join(ws, 'p551-ok')
-    const rejectCanary = join(ws, 'p551-reject')
+    // canary 落 session workspace：P5-25 起 #3/#4 的 cwd 由 main 强制为
+    // $PBOTS_DATA_DIR/workspaces/<botId>（orchestrate.ts；shellChildEnv 设 PBOTS_DATA_DIR=
+    // <home>/data），沙箱只 bind 数据根——canary 写 runtime cwd（ws）沙箱内不可见（f1 期间实证）。
+    // bash cwd 即 workspace，用相对路径 touch。
+    const wsDir = join(shell.home, 'data', 'workspaces', sid!)
+    const okCanary = join(wsDir, 'p551-ok')
+    const rejectCanary = join(wsDir, 'p551-reject')
     // fake 脚本游标逐条消费且不随重写复位（LEARNINGS P5-03）：两个回合的 4 条一次写全
     rt.writeScriptCalls(sid!, [
-      reasoningAckTool('先想想怎么做。', '好的，先看一下环境。', `touch ${okCanary}`, 'call-a'),
+      reasoningAckTool('先想想怎么做。', '好的，先看一下环境。', 'touch p551-ok', 'call-a'),
       textCall(['完成。结果如下：\n\n```python\nprint(42)\n```\n收工。']),
-      bashCall(`touch ${rejectCanary}`, 'call-r'),
+      bashCall('touch p551-reject', 'call-r'),
       textCall(['不执行，已拒绝。']),
     ])
     await grokSend(page, '请检查环境并执行')
@@ -126,6 +130,17 @@ test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动�
     const answers = await page.evaluate(() => (window as unknown as { __pbotsShim?: { answers: Array<{ eventId: string; value: string }> } }).__pbotsShim?.answers ?? [])
     expect(answers.map((a) => a.value).sort()).toEqual(['allowed-once', 'rejected'])
     await page.screenshot({ path: join(EVIDENCE, 'turn2-light.png') })
+
+    // ---- f1（VERIFY-P5-51）：持久条目侧别。流式期的 pre=1 由 live-stream 条目（entries.ts:88
+    // 自带 role）撑住，live 定稿即消失；reload 后 transcript 只剩持久序列化条目，判侧全靠
+    // entries.ts:71 的 role:'assistant'——摘掉它则正文落 user 侧纯文本 <p>（无 markdown），此段必红 ----
+    await page.reload()
+    await expect(page.locator('.sand-agent-item')).toHaveCount(1, { timeout: 60_000 })
+    const persisted = page.locator('.sand-virtual-transcript .sand-message[data-role="assistant"]').filter({ hasText: '收工。' })
+    await expect(persisted).toHaveCount(1, { timeout: 30_000 })
+    // markdown 代码块：UserMessageContent 纯 <p> 无 pre；scope 限定在该消息内，避开 tool/thinking 卡的 pre
+    await expect(persisted.locator('pre')).toHaveCount(1)
+    await page.screenshot({ path: join(EVIDENCE, 'reload-light.png') })
   } finally {
     await env.stop()
   }

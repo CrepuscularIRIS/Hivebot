@@ -8,6 +8,12 @@ const OUT = evidenceOut('P5-11')
 const css = (loc: Locator, props: string[]): Promise<Record<string, string>> =>
   loc.evaluate((el, ps) => Object.fromEntries(ps.map((p) => [p, getComputedStyle(el).getPropertyValue(p)])), props)
 const sidebarWidth = (page: Page): Promise<number> => page.locator('.sidebar').evaluate((el) => Math.round(el.getBoundingClientRect().width))
+const centerY = async (loc: Locator): Promise<number> => { const b = (await loc.boundingBox())!; return b.y + b.height / 2 }
+// 条目中心 − 列表内容区（扣边框）中心
+const offCenterX = (item: Locator): Promise<number> => item.evaluate((el) => {
+  const l = el.closest('.bot-list')!, lr = l.getBoundingClientRect(), r = el.getBoundingClientRect()
+  return r.x + r.width / 2 - (lr.x + l.clientLeft + l.clientWidth / 2)
+})
 
 async function theme(page: Page, mode: 'light' | 'dark'): Promise<void> {
   await page.emulateMedia({ colorScheme: mode })
@@ -36,19 +42,23 @@ test('A1 头部三钮 24×24 r6 同组贴左 / A13 折叠 78：条目 54·paddin
       expect(xs).toEqual([headX + 16, headX + 16 + 26, headX + 16 + 52])
       await expect(head.locator('.grok-mark')).toHaveCount(0)
       await page.screenshot({ path: join(OUT, `sidebar-expanded-${mode}.png`) })
+      const collapseBtn = page.locator('[data-action="collapse-sidebar"]')
+      const yExpanded = await centerY(collapseBtn)
 
-      // ③ 折叠：宽 78 → 条目 54 / padding 9 / 只剩头像；头部 padding 4、search 隐藏
-      await page.click('[data-action="collapse-sidebar"]')
+      // ③ 折叠：宽 78 → 条目 54 居中 / padding 9 / 只剩头像；search 隐藏
+      // P5-11.f1（GU-P5-11 A-M）：头部只断言不变量——collapse 钮中心 y 两态相等（点下不跳），不写死 padding / 高度（P5-16 改 titlebar 档）
+      await collapseBtn.click()
       expect(await sidebarWidth(page)).toBe(78)
       await expect(page.locator('[data-action="collapse-sidebar"]')).toHaveAttribute('aria-expanded', 'false')
       const item = page.locator('.bot-item').nth(1)
       expect(Math.round((await item.boundingBox())!.width)).toBe(54)
-      expect(await css(item, ['padding', 'min-height'])).toEqual({ padding: '9px', 'min-height': '54px' })
+      expect(Math.abs(await offCenterX(item))).toBeLessThanOrEqual(1)
+      expect(Math.abs((await centerY(collapseBtn)) - yExpanded)).toBeLessThanOrEqual(1)
+      expect(await css(item, ['padding'])).toEqual({ padding: '9px' })
       await expect(item.locator('.bot-text')).toBeHidden()
       await expect(item.locator('time')).toBeHidden()
       await expect(item.locator('.avatar')).toBeVisible()
       await expect(item).toHaveAttribute('title', /.+/)
-      expect(await css(head, ['padding'])).toEqual({ padding: '4px' })
       await expect(page.locator('[data-action="search"]')).toBeHidden()
       await expect(page.locator('[data-action="new-bot"]')).toBeVisible()
       expect(await page.locator('.bot-list').evaluate((el) => (el as HTMLElement).offsetHeight === el.clientHeight)).toBe(true) // 无横向滚动条占位
@@ -64,6 +74,7 @@ test('A1 头部三钮 24×24 r6 同组贴左 / A13 折叠 78：条目 54·paddin
       expect(await css(item, ['padding'])).toEqual({ padding: '8px' })
       await expect(item.locator('.bot-text')).toBeVisible()
       expect(await css(head, ['padding'])).toEqual({ padding: '12px 16px' })
+      expect(Math.abs((await centerY(collapseBtn)) - yExpanded)).toBeLessThanOrEqual(1)
     }
     await theme(page, 'light')
 
@@ -97,6 +108,27 @@ test('A1 头部三钮 24×24 r6 同组贴左 / A13 折叠 78：条目 54·paddin
     expect(await sidebarWidth(page)).toBe(78)
     await drag(200)
     expect(await sidebarWidth(page)).toBe(278)
+  } finally {
+    await env.stop()
+  }
+})
+
+// P5-11.f1（GU-P5-11 必须回应 1）：折叠态文字 span display:none，「市场」钮靠 aria-label 保住可达名；图标 aria-hidden 不进名称
+test('折叠 78 下「市场」钮可按名称定位，悬停有 title', async () => {
+  test.setTimeout(60_000)
+  const env = await launchProduct()
+  try {
+    const { page } = env
+    await page.click('[data-action="collapse-sidebar"]')
+    expect(await sidebarWidth(page)).toBe(78)
+    const market = page.getByRole('button', { name: '市场', exact: true })
+    await expect(market).toBeVisible()
+    await expect(market).toHaveAttribute('data-action', 'market')
+    await expect(market).toHaveAttribute('title', '市场')
+    await expect(market.locator('span')).toBeHidden()
+    await expect(market.locator('.icon')).toHaveAttribute('aria-hidden', 'true')
+    await market.click()
+    await expect(market).toHaveAttribute('aria-current', 'page')
   } finally {
     await env.stop()
   }

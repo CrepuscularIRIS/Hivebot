@@ -24,7 +24,8 @@
 
 /* A13：容器 ≤130px（R2：头部 padding 4 居中；条目宽 54 / padding 9 / 只剩头像） */
 @container sand-sidebar (max-width: 130px) {
-  .sidebar .sidebar-head { padding: 4px; justify-content: center; }
+  /* 只收横向到 4（R2）；纵向留 12 与展开态一致，头部同高 → collapse 钮点下不跳（P5-11.f1，不变量见 visual-sidebar） */
+  .sidebar .sidebar-head { padding-inline: 4px; justify-content: center; }
   .sidebar .head-btn[data-action='search'] { display: none; }
   .sidebar .menu-row { justify-content: center; padding: 0; }
   .sidebar .menu-row > span { display: none; }

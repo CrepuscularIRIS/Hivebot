@@ -203,7 +203,7 @@ export function Sidebar({ s, width, onWidth, onNew }: {
         )}
       </div>
       <nav className="sidebar-menu">
-        <button type="button" className={`menu-row${s.page === 'market' ? ' active' : ''}`} data-action="market" aria-current={s.page === 'market' ? 'page' : undefined} onClick={openMarket}>
+        <button type="button" className={`menu-row${s.page === 'market' ? ' active' : ''}`} data-action="market" aria-label="市场" title="市场" aria-current={s.page === 'market' ? 'page' : undefined} onClick={openMarket}>
           <Icon name="storefront" /><span>市场</span>
         </button>
       </nav>

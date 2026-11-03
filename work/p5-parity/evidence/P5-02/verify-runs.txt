@@ -1,0 +1,61 @@
+P5-02 验收复跑记录（verifier，2026-11-03）
+worktree: /tmp/bot-wt/P5-02 @ e0f6b010d3c8b97a71806f6dcaa9314543bf728d（基 93cbc7b，3 commits，验收期间 git status 干净）
+所有命令均以 HOME=/tmp/bot-P5-02/home 独立复跑。
+
+[1] sdk 全量（第一跑，无 flake）
+$ pnpm -C /tmp/bot-wt/P5-02/app/sdk test
+ Test Files  27 passed (27)
+      Tests  223 passed (223)
+   Duration  37.70s
+
+[2] app/ui build
+$ pnpm -C /tmp/bot-wt/P5-02/app/ui build
+✓ built in 1.09s
+
+[3] app/ui 单测
+ Test Files  28 passed (28)
+      Tests  245 passed (245)
+   Duration  3.86s
+
+[4] e2e 抽验 journeys 单文件
+$ pnpm -C /tmp/bot-wt/P5-02/app/ui run test:e2e tests/e2e/journeys/d4-d5-d6-journey.spec.ts
+  ✓  1 › D4→D5→D6 全旅程：审批批准执行 → 市场装 filesystem→新建→调工具 → 重启恢复（含连接器 bot 调工具）(13.3s)
+  1 passed (13.7s)
+
+[5] guard-fs.test.ts 基线（未改动）
+$ pnpm -C /tmp/bot-wt/P5-02/app/sdk exec vitest run tests/e2e/guard-fs.test.ts
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Duration  35.46s
+
+[6] 变异验红（4 处 deny→allow 语义，改的是断言不是产品代码）
+M1 ① line321 isError toBe(true)→toBe(false)（含 read 哨兵格）
+M2 ② line387 expectDeny(r1,0,'.ssh') → expect(r1.isError).toBe(false)（bash 建符号链接格）
+M3 ⑤ line463 /proc/self/environ grep isError toBe(true)→toBe(false)
+M4 ⑥ line484 同级 other-bot read isError toBe(true)→toBe(false)
+结果：
+ ❯ tests/e2e/guard-fs.test.ts (9 tests | 4 failed)
+   × ① … 483ms   AssertionError: home-cred/p5-02-30de43-0 isError MUTATION-ALLOW: expected true to be false
+   × ② … 496ms   AssertionError: MUTATION-ALLOW symlink: expected true to be false
+   × ⑤ … 236ms   AssertionError: MUTATION-ALLOW proc environ: expected true to be false
+   × ⑥ … 645ms   AssertionError: MUTATION-ALLOW sibling: expected true to be false
+   × 之外的 ③④⑦⑧⑨ 仍绿（Tests 4 failed | 5 passed）
+变异后立即恢复原文件（备份回拷），git status 无输出 = 干净。
+
+[7] ⑨ launcher fail loud 专项复跑（恢复后）
+$ pnpm -C /tmp/bot-wt/P5-02/app/sdk exec vitest run tests/e2e/guard-fs.test.ts -t '⑨'
+ Test Files  1 passed (1)
+      Tests  1 passed | 8 skipped (9)
+
+[8] 单源核验（读码）
+- src/policy/never-roots.mjs 是唯一清单定义（CREDENTIAL_HOME_ENTRIES/TOOLCHAIN_*/HOME_OUTSIDE_NEVER + computeRoots）
+- src/start.ts#sandboxRow：wrapper argv（--home/--mask/--never/--tool/--policy）全部来自 computeRoots（start.ts:186-198）
+- src/start.ts#guardRow：guard 行 config.roots 五组（hardRoots/dataMaskRoots/homes/toolchainDirs/policyRoots）同样来自 computeRoots（start.ts:219-227）
+- src/policy/guard.mjs 不 import never-roots（roots 仅经 config 注入，requireRoots 校验缺失即抛）
+- '/proc' 字面量仅出现在 never-roots.mjs guardHardRoots(:159)；neverRoots/maskRoots 不含 /proc → wrapper argv 拿不到 /proc
+- bwrap-wrap.py:104 将 --proc 透传给 bwrap（沙箱自己挂新 procfs）→ wrapper 侧遮 /proc 会砸沙箱 procfs，划分合理；文件工具 /proc 读洞由 guard 堵（⑤ 实测 + stock 差分）
+
+[9] 区域核对
+$ git diff --numstat 93cbc7b..e0f6b01 → 12 files, +1273/-10
+申报头部「11 文件 +1264/-56」计数有误（申报逐条清单本身 = 12 项）；全部 12 文件在申报范围内（PLAN 区域 + 报告声明的 never-roots.mjs 与三处接缝测试）
+approval.yml 实读：insert 列表 p2sdk-fs-guard 在 p2sdk-shell-ask 之前 ✓

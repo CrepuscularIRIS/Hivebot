@@ -815,3 +815,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 03:07 P5-15.f1 完成（bc61024：A1 断言改不变量、u2-table fixed@0c556fa、60 e2e 绿零产品改动）→ verifier 抽验派发
 03:11 P5-15.f1 验收 PASS → 合并 6efffab（A1 不变量断言+u2-table），main 回归后台跑（应恢复全绿）
 03:14 P5-11.f1 验收 PASS（61bf31d）→ 合并等 main 回归收尾 | LEARNINGS：run-e2e.sh 不重建=假绿风险，源码改动任务必须先 build
+03:14 P5-12.f1 完成（2472126：live 行并入 keyed 数组用前驱 id，节点复用；新 e2e 修前三 false）→ verifier 抽验派发
+03:18 P5-15.f1 回归全绿（243+60，A1 闭合 main 恢复绿）；P5-11.f1 合并 43d9984，回归后台跑 | done 10/33

@@ -1,0 +1,29 @@
+{
+  "ts": "2026-11-03T17:55:07.505Z",
+  "mode": "real",
+  "model": "glm-5.3-flash",
+  "llmBase": "http://127.0.0.1:4001",
+  "litellm": {
+    "ok": true,
+    "hasModel": true,
+    "modelCount": 21
+  },
+  "presetSectionSha256": "c7c53cd4e281e361191cbdecf873d2c6c5a5d9d7e56277091bf0d54a9734b356",
+  "personaBaseFirstLine": "You are a coding agent powered by the {{model}} model.",
+  "entries": [
+    {
+      "id": "m3-date-note",
+      "rep": 1,
+      "outcome": "turn/end",
+      "sessionId": "session-d0e824bf-3770-47ec-9b2e-71ed6d4cf1f5",
+      "raw": "/tmp/bot-wt/P6-02/work/p6-orchestration/evidence/D3/raw/m3-date-note-1.jsonl"
+    },
+    {
+      "id": "s5-color-mix",
+      "rep": 1,
+      "outcome": "turn/end",
+      "sessionId": "session-fbfc7483-d37f-4afc-8627-1f1a51d34a00",
+      "raw": "/tmp/bot-wt/P6-02/work/p6-orchestration/evidence/D3/raw/s5-color-mix-1.jsonl"
+    }
+  ]
+}

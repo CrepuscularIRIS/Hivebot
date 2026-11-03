@@ -7,14 +7,17 @@
 // - c1 只读 bot：composer 位换失效横幅 +「用此配置新建 →」（U-23 PDC D5）。
 // - U-27（RE-visual-audit B6/B8/B10）：tool 行 = 0.18 outline-item 描边卡（+6px 旋转箭头）；审批卡 r10 / 14·16 / 小按钮，
 //   提交后整卡收成 outcome 单行；composer = 0.18 prompt-shell（9px / r16 / 输入 ≥48 + 动作行），不做 mic/附件。
+// - P5-12（P5-12-final.md）：B7 reasoning → 气泡前独立 thinking 行（tool 行外壳、accent 图标、默认收起）；推理阶段出 live「思考中」行，
+//   不再画空流式气泡。B14 时间分隔（0.78.1 15 分钟 / 跨日）+ 未读线（进入时冻结，卸载时 markRead 记边界）。
 // - composer：Enter 发送 / Shift+Enter 换行 / IME 组字不发送；运行中主按钮为停止，Esc 不绑定（R19）；草稿按 bot 隔离（R21）。
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { Icon, type IconName } from '../../theme/theme'
-import { answer, cancelTurn, getState, loadOlder, openNewBot, sendPrompt, setDraft, type Approval, type State } from '../../shell/store'
+import { answer, cancelTurn, getState, loadOlder, markRead, openNewBot, sendPrompt, setDraft, type Approval, type State } from '../../shell/store'
 import { Avatar, botInfo } from '../bots/Sidebar'
 import { cloneInit } from '../settings/InfoPane'
-import { toolSummary, toolTitle, type TimelineItem } from './reduce'
+import { firstUnreadId, toolSummary, toolTitle, withMarkers, type TimelineItem } from './reduce'
 import { Markdown } from './Markdown'
+import './session.css'
 
 type ToolItem = Extract<TimelineItem, { kind: 'tool' }>
 
@@ -73,6 +76,28 @@ function ToolRow({ item, approval, online }: { item: ToolItem; approval: Approva
         {open && <pre className="tool-detail">{item.args}{item.result !== null ? `\n\n${item.result}` : ''}</pre>}
       </div>
       {approval !== undefined && <ApprovalCard approval={approval} args={item.args} online={online} />}
+    </div>
+  )
+}
+
+/** 0.18 thinking-medium 字形（cursor-icons-16 cmap 0xf429 实测）；不进 theme 图标表以免越区，P5-16 统一时可并入。 */
+const THINKING_GLYPH = String.fromCodePoint(0xf429)
+
+/** B7 thinking 行（0.18 transcript.tsx:600-614 结构，外壳复用 tool 行）：默认收起，整行 button 开合。 */
+function ThinkingRow({ text, live }: { text: string; live: boolean }): JSX.Element {
+  const [open, setOpen] = useState(false)
+  const detailId = useId()
+  return (
+    <div className="tool-row thinking-row" data-kind="thinking" data-live={live || undefined}>
+      <div className="tool-card">
+        <button type="button" className="tool-line" aria-expanded={open} aria-controls={open ? detailId : undefined} onClick={() => setOpen(!open)}>
+          <i className="icon" aria-hidden="true">{THINKING_GLYPH}</i>
+          <span className="thinking-label">{live ? '思考中' : '思考'}</span>
+          <span className="thinking-preview">{text.trim().split('\n')[0]}</span>
+          <span className="tool-chevron" aria-hidden="true" />
+        </button>
+        {open && <pre className="tool-detail" id={detailId} data-thinking-detail>{text}</pre>}
+      </div>
     </div>
   )
 }
@@ -138,7 +163,14 @@ export function Conversation({ s, id }: { s: State; id: string }): JSX.Element {
   /** 「加载更早」prepend 前的视口锚点（首条 id + 当时 scrollHeight），加载后补偿 scrollTop（席 C）。 */
   const anchor = useRef<{ id: string; height: number } | null>(null)
   const last = view?.items[view.items.length - 1]
-  const thinking = info.running && view?.streaming === null && !(last?.kind === 'tool' && last.status === 'running')
+  const streaming = view?.streaming ?? null
+  const reasoning = streaming?.reasoning ?? ''
+  // 三点：回复中且既无正文也无推理（含 start 帧后、首个 text-delta 前——原来这里是一个空流式气泡）
+  const thinking = info.running && (streaming === null || (streaming.text === '' && reasoning === '')) && !(last?.kind === 'tool' && last.status === 'running')
+  /** B14 未读线起点：进入时按 readMark 冻结（停留期间新到的消息不移动它、不长出第二条）。 */
+  const [unreadBefore] = useState(() => firstUnreadId(view?.items ?? [], s.readMark[id]))
+  const unreadRef = useRef<HTMLDivElement>(null)
+  useEffect(() => () => markRead(id), [id])
 
   const startOlder = (): void => {
     const el = scroller.current
@@ -157,7 +189,19 @@ export function Conversation({ s, id }: { s: State; id: string }): JSX.Element {
     }
     if (atBottom.current) el.scrollTop = el.scrollHeight
     else setPill(true)
-  }, [view?.items.length, view?.streaming?.text, mine.length, thinking])
+  }, [view?.items.length, view?.streaming?.text, reasoning, mine.length, thinking])
+
+  // B14：进入时线以下内容超一屏 → 线滚到视口顶下 28px（chat-col 上内边距），否则维持贴底
+  useLayoutEffect(() => {
+    const el = scroller.current
+    const line = unreadRef.current
+    if (el === null || line === null) return
+    const top = line.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop
+    if (el.scrollHeight - top > el.clientHeight) {
+      el.scrollTop = top - 28
+      atBottom.current = false
+    }
+  }, [])
 
   const scrollToEnd = (): void => {
     const el = scroller.current
@@ -195,13 +239,19 @@ export function Conversation({ s, id }: { s: State; id: string }): JSX.Element {
               <div className="empty-hint">发送第一条消息开始</div>
             </div>
           )}
-          {view?.items.map((item) => {
+          {view !== undefined && withMarkers(view.items, Date.now(), unreadBefore).map((item) => {
+            if (item.kind === 'time-sep') return <div key={item.id} className="time-sep" role="separator" data-time-sep>{item.label}</div>
+            if (item.kind === 'unread') {
+              return <div key={item.id} ref={unreadRef} className="unread-line" role="separator" aria-label="以下为新消息" data-unread-line>新消息</div>
+            }
+            if (item.kind === 'thinking') return <ThinkingRow key={item.id} text={item.text} live={false} />
             if (item.kind === 'user') return <div key={item.id} className="bubble user final" data-message-bubble>{item.text}</div>
             if (item.kind === 'assistant') return <div key={item.id} className="bubble assistant final" data-assistant-bubble><Markdown text={item.text} /></div>
             if (item.kind === 'notice') return <div key={item.id} className={`turn-notice ${item.tone}`}>{item.text}</div>
             return <ToolRow key={item.id} item={item} online={s.online} approval={mine.find((a) => a.callId === item.callId)} />
           })}
-          {view?.streaming != null && <div className="bubble assistant streaming" data-streaming><Markdown text={view.streaming.text} /></div>}
+          {reasoning !== '' && <ThinkingRow key="live-thinking" text={reasoning} live={streaming?.text === ''} />}
+          {streaming !== null && streaming.text !== '' && <div className="bubble assistant streaming" data-streaming><Markdown text={streaming.text} /></div>}
           {thinking && <div className="bubble assistant thinking" aria-label="正在思考"><span /><span /><span /></div>}
           {orphans.map((a) => <ApprovalCard key={a.eventId} approval={a} args={null} online={s.online} />)}
         </div>

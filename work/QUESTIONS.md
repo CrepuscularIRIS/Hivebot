@@ -118,27 +118,29 @@
 - 答复：（2026-11-03 00:0x 用户聊天原话：「现在我们打算把UI先打磨到Grok Bot一致的level. 然后主bot部分…我记得Personal Agent是不会比如说权限也好, 这些其实是不会给Grok Bot去做的…一般是bot自己去完成, 只有一些问题会询问. 这种调整, 可能是我们要去做的」→ 新方向 = ①UI 对齐原版 level + ②审批模型改原版自主分级（ceiling NEVER/ASK/ALWAYS + ALWAYS 卡 + always-allow 管理），替代 A-D 选项）
 - 落实（主会话 2026-11-03）：派 director 写新阶段 BRIEF（①视觉对齐深化 ②审批自主化）；审批默认档位表属高风险（执行审批语义），方案出来后开 QUESTIONS 请用户确认再动工。
 
-## Q-013 [open] 审批默认档位表（L-AP 高风险，逐行确认；v2 按 G1-r1 修订）
-- slug：p5-parity ｜ 类型：高风险（审批语义）｜ 阻塞：L-AP 中除 W1-AP-0（沙箱加固，只收紧不放宽）与 W1-AP-q（ledger 修复）以外的实现 ｜ 提出：2026-11-03 00:30，v2 修订 01:40
-- 背景（v2，BRIEF v2 §7）：方向你已给（bot 自己完成，只有一些问题询问）。**真实后果说明**：现状沙箱只拦「写」，读和网络默认放行（实测沙箱内 `ls ~/.ssh` 可见）——所以第 1 行的「自主」前提是我们先加 wrapper（断网 + 遮住 HOME/数据目录/handoff），wrapper 通过 A0 测试前第 1 行按 ASK 跑。生效后的 ALWAYS = 写仅限工作目录、无网络、HOME 不可见、/tmp 不跨调用；系统目录仍可只读。
-- 档位表 v2（# / 类别 / 默认）：
-  1. bash 沙箱内（工作目录内读写无升权）→ **ALWAYS**（A0 通过前 ASK；核心改动）
-  2. bash 升权（含联网 curl/pip、写工作目录外、danger-full-access）→ **ASK，不可始终允许**（卡片显示完整命令；联网已定稿并入本行）
+## Q-013 [open] 审批默认档位表（L-AP 高风险，逐行确认；v2.1 终版）
+- slug：p5-parity ｜ 类型：高风险（审批语义）｜ 阻塞：L-AP 中除 W1-AP-0（全入口纯收紧：wrapper、凭证拒读写、移除 plugin_manager、拒裸升权、子代理同表——**不等本答复**）与 W1-AP-q（ledger 修复）以外的实现 ｜ 提出：2026-11-03 00:30，v2 01:40，v2.1 02:30
+- 背景（v2.1）：方向你已给（bot 自己完成，只有一些问题询问）。**真实后果 7 条**：①「无网络」只针对 bash——bot 读到的东西可能经 web 工具外发；②工具链（conda/pnpm 等）只读挂回：能跑 `python x.py`，不能 `pip install`；③今天批准升权 = 该命令完全没有沙箱，W1-AP-0 起先直接拒绝，受控升权路径（D-1）落地前 bot 不能联网也不能写工作目录外；④子代理里的 bash 今天不问，W1-AP-0 起改为拒绝（等你答复后按档位放行）；⑤连接器（MCP）进程不在沙箱里；⑥原版默认全部 ask（我们比原版更自主）；⑦沙箱加固前 `ls ~/.ssh` 可见——W1-AP-0 修。
+- 档位表 v2.1（# / 类别 / 默认）：
+  1. bash 沙箱内（工作目录内读写无升权；例 `python x.py`）→ **ALWAYS**（A0 通过前 ASK；现状：根会话每条都问、子代理不问）
+  2. bash 升权（联网 curl/pip、写工作目录外、danger-full-access）→ **ASK 只走受控升权路径（凭证始终遮住）；D-1 落地前直接拒绝**，不可始终允许
   3. 文件工具工作目录内 → ALWAYS
-  4. 文件读工作目录外 → **ASK，不可始终允许**（按 realpath 判定）
-  5. 凭证路径（~/.ssh、credentials*、~/.grokbot、launch token/handoff 目录、授权文件、HOME 外凭证清单）→ **NEVER，代码常量**——配置损坏、常驻授权、任何回退都不能改变
-  6. 连接器读工具（readOnlyHint=true）→ ALWAYS
-  7. 连接器写/未标注 → **ASK 可「始终允许」**（唯一可始终允许的类别，bot×工具）
-  8. 连接器 destructiveHint=true → ASK+警示，是否允许始终允许——**推荐否**
-  9. 权限 preset 切换 / permission 命令 → NEVER（不变）
+  4. 文件读工作目录外 → **ASK，不可始终允许**（realpath 判定；子代理里为拒绝）
+  5. 凭证路径（~/.ssh、credentials*、~/.grokbot、launch token/handoff、授权文件、DSH_HOME 等）→ **NEVER 读写都拒，代码常量，W1-AP-0 就落地不等答复**
+  6. 连接器读（readOnlyHint=true）→ ALWAYS（**需 D-2 元数据桥；桥接前一律按第 7 行处理**）
+  7. 连接器写/未标注 → **ASK 可「始终允许」**（唯一可始终允许类别，bot×工具；桥接前所有连接器按本行）
+  8. 连接器 destructiveHint=true → ASK+警示，是否可始终允许：**推荐否**（否=桥接前任何连接器都拿不到 always）
+  9. 权限 preset 切换 / permission 命令 / **plugin_manager 全部 action** → **NEVER（纯收紧，W1-AP-0 落地）**
+  10. **web_fetch / web_search → 草案 ALWAYS（=现状不放宽）；备选 ASK——请你定（重点行）**
+  11. 其他进程内工具（R4 全表 32 个）→ ALWAYS（=现状，信息列出，无异议不用答）
 - 另定四件：
-  - (b) 「始终允许」作用域：**仅连接器写工具**，每 bot × 工具（备选所有 bot 共享）
-  - (c) bot 设置里按连接器调读/写档位：**不做**（UI 只读+撤销）
-  - (d) 全局「暂停自主」开关（只能收窄不能放宽）：**推荐做**
-  - (e) 现有 bot（含主 bot）怎么办：**推荐设置里手动迁移**到独立工作区（旧会话不动、文件不搬）；备选新建主 bot / 保持全 ASK
+  - (b) 「始终允许」作用域：仅连接器写工具，**每 bot × 工具**（备选所有 bot 共享=原版做法，R1）；推荐按 bot
+  - (c) bot 设置按连接器调读/写档位：**不做**（原版有三值档位 UI，我们 UI 只读+撤销）
+  - (d) 全局「暂停自主」开关（只能收窄）：**推荐做**
+  - (e) 现有 bot（含主 bot）：**推荐设置里手动迁移**（旧会话不动、文件不搬）
 - 选项：
-  - A（推荐）：整表按 v2 确认（含 b=仅连接器×每bot、c=不做、d=做、e=迁移）
-  - B：部分行改（请指明行号和新档位）
+  - A（推荐）：整表按 v2.1 确认（含第 10 行 web=ALWAYS、b=仅连接器×每bot、c=不做、d=做、e=迁移）
+  - B：部分行改（请指明行号和新档位；重点行 1、2、8、10）
 - 答复：
 
 ## Q-014 [open] UI 基准：能否由你登录 0.78.1 截约 10 张参照图
@@ -152,8 +154,8 @@
 ## Q-015 [open] 契约变更 C2：审批自主化的接口与不变式修订（v2 六件）
 - slug：p5-parity ｜ 类型：契约 ｜ 阻塞：W1-AP/W2-AP 实现（调研与 W1-AP-0/q 不受影响）｜ 提出：2026-11-03 00:30，v2 修订 01:40
 - 背景：BRIEF v2 §10.9，与 Q-013 配套，Q-013 答复前不合入。
-- 内容六件：① M1 新增 `pbots/approvals.alwaysAllow {eventId}`（main 反查工具+bot、写授权文件、代答 allowed-once；**仅连接器写工具的 eventId 有效**）/ `approvals.list {sessionId}` / `approvals.revoke {sessionId, toolName}`；② session/create 的 cwd 改由 main 强制为 `workspaces/<botId>`，renderer 传入即拒；③ P4B D3「无始终允许入口」修订为「仅连接器写工具可始终允许」，D9 其余不变，「renderer 只发 allowed-once/rejected」不变式保持；④ SDK shell-ask 由必问泛化为按档位查表；⑤ 新增 `pbots/bots.migrateWorkspace`（用户触发的旧 bot 迁移，Q-013 (e) 的落地）；⑥ M1/M2 增加对 dsh `user-questions/request` 提问事件的作答分支（A14/R7 落地）。
+- 内容六件（v2.1 增补两条语义）：① M1 新增 `pbots/approvals.alwaysAllow {eventId}`（main 反查工具+bot、**写盘成功后才代答 allowed-once**；仅连接器写工具的 eventId 有效）/ `approvals.list {sessionId}` / `approvals.revoke {sessionId, serverName+rawName}`（**稳定身份键，不用归一化 toolName**）；② session/create 的 cwd 改由 main 强制为 `workspaces/<botId>`，renderer 传入即拒；③ P4B D3「无始终允许入口」修订为「仅连接器写工具可始终允许」，D9 其余不变，「renderer 只发 allowed-once/rejected」不变式保持；④ SDK shell-ask 由必问泛化为按档位查表；⑤ 新增 `pbots/bots.migrateWorkspace`（用户触发的旧 bot 迁移，Q-013 (e) 的落地）；⑥ M1/M2 增加对 dsh `user-questions/request` 提问事件的作答分支（A14/R7 落地）。
 - 选项：
-  - A（推荐）：六件全准
+  - A（推荐）：六件全准（含 v2.1 增补两条语义）
   - B：有修改（请指明）
 - 答复：

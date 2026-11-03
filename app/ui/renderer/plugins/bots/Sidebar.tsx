@@ -3,8 +3,10 @@
 // 多选/拖拽/pin/账号 footer（BRIEF §2、D12②）。项 = 48px 两行（R7）、角标 corner-{ring,dot,main}（R8）、
 // monogram + botTint（R10）、排序冻结（R9）、调宽 240–400（R6）。建 bot 对话框 U-23 起移到 plugins/settings/NewBotDialog.tsx。
 // U-23：「市场」行启用（PDC-final P1）；c1 失效 bot 头像加 ⊘ 角标（D5，字形 + 文案，不只靠颜色）。
-import { useRef, type KeyboardEvent } from 'react'
-import { GrokMark, Icon } from '../../theme/theme'
+// U-27（RE-visual-audit A1/A4–A6/A8/A14）：项 = 0.18 `sand-agent-item` 规格（grid 34px 1fr auto、≥58px、头像 34、
+// trailing 相对时间）；头部去品牌位只留拖拽区；列表空态 / 断线态。
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { Icon } from '../../theme/theme'
 import { openMarket, select, type State } from '../../shell/store'
 import { Resizer } from '../../shell/Resizer'
 
@@ -12,7 +14,7 @@ const TINTS = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'magenta', 'p
 
 export interface BotInfo {
   id: string; name: string; preset: string; connectors: string[]; readOnly: boolean; main: boolean
-  running: boolean; pending: boolean; unread: boolean; tint: string
+  running: boolean; pending: boolean; unread: boolean; tint: string; updatedAt: number
 }
 
 /** Bot 视图投影（CONTRACT §3.1）：preset/connectors/readOnly 由 header.agentPreset + recipes 推出。 */
@@ -33,6 +35,7 @@ export function botInfo(s: State, id: string): BotInfo {
     pending: s.approvals.some((a) => a.agentId === id),
     unread: s.unread[id] === true,
     tint: tintOf(id),
+    updatedAt: sum?.updatedAt ?? 0,
   }
 }
 
@@ -51,19 +54,30 @@ export function Avatar({ info, size }: { info: BotInfo; size: number }): JSX.Ele
   )
 }
 
+/** 0.18 sidebar.tsx relativeTime（now/Xm/Xh/Xd）的本地化版；0 = 未知不显示。 */
+export function relativeTime(updatedAt: number, now: number): string {
+  if (updatedAt <= 0) return ''
+  const minutes = Math.round(Math.max(0, now - updatedAt) / 60_000)
+  if (minutes < 1) return '刚刚'
+  if (minutes < 60) return `${minutes} 分钟`
+  const hours = Math.round(minutes / 60)
+  return hours < 24 ? `${hours} 小时` : `${Math.round(hours / 24)} 天`
+}
+
 function subtitle(info: BotInfo): { text: string; tone: string } {
   if (info.pending) return { text: '等待批准', tone: 'warn' }
-  if (info.running) return { text: '回复中', tone: 'secondary' }
+  if (info.running) return { text: '回复中', tone: 'accent' } // A9：working 副行 accent（0.18 __activity）
   if (info.readOnly) return { text: '连接器已失效', tone: 'danger' }
   if (info.connectors.length > 0) return { text: `${info.preset} · ${info.connectors.length} 个连接器`, tone: 'tertiary' }
   // 无标题时标题已是 preset 名（席 A），副行不重复，项退为单行
   return { text: info.name === info.preset ? '' : info.preset, tone: 'tertiary' }
 }
 
-function BotItem({ s, id }: { s: State; id: string }): JSX.Element {
+function BotItem({ s, id, now }: { s: State; id: string; now: number }): JSX.Element {
   const info = botInfo(s, id)
   const sub = subtitle(info)
   const selected = s.selected === id
+  const when = relativeTime(info.updatedAt, now)
   const state = info.pending ? '，等待批准' : info.running ? '，回复中' : info.unread ? '，有新回复' : ''
   return (
     <div
@@ -75,7 +89,7 @@ function BotItem({ s, id }: { s: State; id: string }): JSX.Element {
       onClick={() => select(id)}
     >
       <span className="avatar-wrap">
-        <Avatar info={info} size={28} />
+        <Avatar info={info} size={34} />
         {info.running && <span className="corner-ring" />}
         {info.pending ? <span className="corner-dot warn" title="等待批准" />
           : info.unread ? <span className="corner-dot accent" title="有新回复" />
@@ -85,7 +99,10 @@ function BotItem({ s, id }: { s: State; id: string }): JSX.Element {
         <span className="bot-title">{info.name}</span>
         {sub.text !== '' && <span className={`bot-sub ${sub.tone}`}>{sub.text}</span>}
       </span>
-      {info.main && <span className="corner-main" title="主 Bot"><Icon name="star" /></span>}
+      <span className="bot-trailing">
+        {when !== '' && <time dateTime={new Date(info.updatedAt).toISOString()} data-updated>{when}</time>}
+        {info.main && <span className="corner-main" title="主 Bot"><Icon name="star" /></span>}
+      </span>
     </div>
   )
 }
@@ -96,6 +113,8 @@ export function Sidebar({ s, width, onWidth, onNew }: {
   s: State; width: number; onWidth(w: number, persist: boolean): void; onNew(): void
 }): JSX.Element {
   const listRef = useRef<HTMLDivElement>(null)
+  const [now, setNow] = useState(Date.now)
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 60_000); return () => clearInterval(t) }, [])
   const onListKey = (e: KeyboardEvent<HTMLDivElement>): void => {
     const opts = [...(listRef.current?.querySelectorAll<HTMLElement>('[role=option]') ?? [])]
     const i = opts.indexOf(document.activeElement as HTMLElement)
@@ -108,7 +127,8 @@ export function Sidebar({ s, width, onWidth, onNew }: {
   }
   return (
     <aside className="sidebar" aria-label="Bot 侧栏">
-      <div className="sidebar-head drag"><GrokMark size={18} /></div>
+      {/* A1：0.18/0.78.1 侧栏头部均无品牌位，只留 titlebar 拖拽区 */}
+      <div className="sidebar-head drag" />
       <nav className="sidebar-menu">
         <button type="button" className="menu-row" data-action="new-bot" onClick={onNew}>
           <Icon name="plus" /><span>新建 Bot</span><kbd>Ctrl+N</kbd>
@@ -118,7 +138,15 @@ export function Sidebar({ s, width, onWidth, onNew }: {
         </button>
       </nav>
       <div className="bot-list" role="listbox" aria-label="Bot 列表" ref={listRef} onKeyDown={onListKey}>
-        {s.order.map((id) => <BotItem key={id} s={s} id={id} />)}
+        {/* A14：0.18 RosterStatus。列表在本地缓存，断线时不清空，只在顶部挂「无法连接」状态（自动重连，无手动重试） */}
+        {!s.online && (
+          <div className="roster-state" role="status" data-roster-state="unreachable">
+            <span className="roster-state-head"><span className="dot warn" />连不上本地引擎</span>
+            <span className="roster-state-body">Bot 都还在，正在重连…</span>
+          </div>
+        )}
+        {s.order.length === 0 && <div className="roster-empty" data-roster-state="empty">还没有 Bot</div>}
+        {s.order.map((id) => <BotItem key={id} s={s} id={id} now={now} />)}
       </div>
       <Resizer spec={SIDEBAR} width={width} side="right" label="调整侧栏宽度" onWidth={onWidth} />
     </aside>

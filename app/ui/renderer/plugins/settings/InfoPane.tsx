@@ -1,6 +1,6 @@
 // P-D bot 配置 info-pane（U-23；裁决见 work/p4-ui/ui/PDC-final.md）。
 // 位置 D1：原版会话头「View agent settings」→ 右侧 info-pane（RE-ui-shell §3.2/§3.4）= 主网格第三列，
-// 宽 320（280–400 可调，键 sand.infoPane.width）；主列 < 424 时改覆盖式浮层（App 判定）。
+// 宽 320（280–480 可调，U-27 C1 按 0.18 sidebar-layout-state 放宽，键 sand.infoPane.width）；主列 < 424 时改覆盖式浮层（App 判定）。
 // 层级 D3（席 C）：名称 → 失效提示 → 锁定配置 →「用此配置新建」→ 模型 → 主 Bot。
 // 配置只读无编辑控件（D11 / C §7.5）；模型 #5 选中即生效、下一轮起、失败回滚（D8）；设主 Bot #20 成功才置顶（D9）。
 import { useEffect, useState } from 'react'
@@ -9,7 +9,7 @@ import { api, changeModel, openNewBot, setMainBot, type DialogInit, type State }
 import { Resizer, type ColumnSpec } from '../../shell/Resizer'
 import { Avatar, botInfo } from '../bots/Sidebar'
 
-export const INFO_PANE: ColumnSpec = { min: 280, max: 400, initial: 320, key: 'sand.infoPane.width' }
+export const INFO_PANE: ColumnSpec = { min: 280, max: 480, initial: 320, key: 'sand.infoPane.width' }
 
 export const currentModel = (s: State, id: string): string | null => s.models[id] ?? s.views[id]?.model ?? null
 
@@ -120,7 +120,7 @@ export function InfoPane({ s, id, width, overlay, onWidth, onClose }: {
         <Avatar info={info} size={24} />
         <span className="pane-name">{info.name}</span>
         {info.main && <span className="pane-badge"><Icon name="star" />主 Bot</span>}
-        <button type="button" className="icon-btn" aria-label="关闭配置栏" onClick={onClose}><Icon name="x" /></button>
+        <button type="button" className="icon-btn" aria-label="关闭配置栏" title="关闭配置栏" onClick={onClose}><Icon name="chevrons-right" /></button>
       </header>
       <div className="pane-scroll">
         {info.readOnly && (

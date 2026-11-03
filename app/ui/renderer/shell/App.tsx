@@ -80,6 +80,7 @@ export function App(): JSX.Element {
             {info !== null && (
               <>
                 <span className="chat-title">{info.name}</span>
+                {info.running && <span className="chat-working" role="status" data-working>回复中</span>}
                 {/* D11：preset / 连接器只读显示（锁形），无改动入口；c1 时连接器转 danger（D5） */}
                 <span className="chat-meta">
                   <Icon name="lock-locked" />

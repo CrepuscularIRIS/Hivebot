@@ -5,6 +5,8 @@
 //   卡内无默认 Enter 批准、不抢焦点（R3）；「仅批准这一次」（R4）；提交态/终态文案（R5）；离线禁用作答（R20）。
 // - 流式：首块前三点气泡（R17）、逐 chunk 原位增长、assistant/message 定稿替换；底部 80px 内跟随，否则胶囊（R18）。
 // - c1 只读 bot：composer 位换失效横幅 +「用此配置新建 →」（U-23 PDC D5）。
+// - U-27（RE-visual-audit B6/B8/B10）：tool 行 = 0.18 outline-item 描边卡（+6px 旋转箭头）；审批卡 r10 / 14·16 / 小按钮，
+//   提交后整卡收成 outcome 单行；composer = 0.18 prompt-shell（9px / r16 / 输入 ≥48 + 动作行），不做 mic/附件。
 // - composer：Enter 发送 / Shift+Enter 换行 / IME 组字不发送；运行中主按钮为停止，Esc 不绑定（R19）；草稿按 bot 隔离（R21）。
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Icon, type IconName } from '../../theme/theme'
@@ -25,9 +27,16 @@ const DECISION: Record<string, { icon: IconName; text: string; tone: string }> =
 
 function ApprovalCard({ approval, args, online }: { approval: Approval; args: string | null; online: boolean }): JSX.Element {
   const busy = approval.phase === 'submitting' || approval.phase === 'submitted'
-  const status = approval.phase === 'submitting' ? '正在提交决定…'
-    : approval.phase === 'submitted' ? (approval.value === 'allowed-once' ? '已批准，等待工具结果' : '已拒绝，等待回合继续')
-      : approval.error
+  if (approval.phase === 'submitted') {
+    // B8：0.18 已决审批整卡替换为 outcome 一行（secondary 色）；工具结果到达后由行内 tool-decision 接手
+    return (
+      <div className="approval-outcome" role="status" tabIndex={-1} data-approval-card data-approval-outcome={approval.value ?? ''}
+        data-event-id={approval.eventId} data-call-id={approval.callId ?? ''}>
+        {approval.value === 'allowed-once' ? '已批准，等待工具结果' : '已拒绝，等待回合继续'}
+      </div>
+    )
+  }
+  const status = approval.phase === 'submitting' ? '正在提交决定…' : approval.error
   return (
     <div className="approval-card" role="group" aria-label="等待你的批准" tabIndex={-1}
       data-approval-card data-event-id={approval.eventId} data-call-id={approval.callId ?? ''}>
@@ -50,16 +59,19 @@ function ToolRow({ item, approval, online }: { item: ToolItem; approval: Approva
   const decided = item.decision === null ? undefined : DECISION[item.decision] ?? { icon: 'x' as IconName, text: item.decision, tone: 'muted' }
   return (
     <div className="tool-row" data-call-id={item.callId} data-status={item.status}>
-      <button type="button" className="tool-line" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <Icon name={icon} className={item.status === 'running' && !item.awaiting ? 'spin' : item.status === 'failed' ? 'danger' : undefined} />
-        <span className="tool-name">{toolTitle(item.name)}</span>
-        <span className="tool-summary">{toolSummary(item.args)}</span>
-        {item.awaiting && item.decision === null && <span className="tool-flag warn">等待批准</span>}
-      </button>
-      {decided !== undefined && (
-        <div className={`tool-decision ${decided.tone}`} data-decision={item.decision}><Icon name={decided.icon} />{decided.text}</div>
-      )}
-      {open && <pre className="tool-detail">{item.args}{item.result !== null ? `\n\n${item.result}` : ''}</pre>}
+      <div className="tool-card">
+        <button type="button" className="tool-line" aria-expanded={open} onClick={() => setOpen(!open)}>
+          <Icon name={icon} className={item.status === 'running' && !item.awaiting ? 'spin' : item.status === 'failed' ? 'danger' : undefined} />
+          <span className="tool-name">{toolTitle(item.name)}</span>
+          <span className="tool-summary">{toolSummary(item.args)}</span>
+          {item.awaiting && item.decision === null && <span className="tool-flag warn">等待批准</span>}
+          <span className="tool-chevron" aria-hidden="true" />
+        </button>
+        {decided !== undefined && (
+          <div className={`tool-decision ${decided.tone}`} data-decision={item.decision}><Icon name={decided.icon} />{decided.text}</div>
+        )}
+        {open && <pre className="tool-detail">{item.args}{item.result !== null ? `\n\n${item.result}` : ''}</pre>}
+      </div>
       {approval !== undefined && <ApprovalCard approval={approval} args={item.args} online={online} />}
     </div>
   )
@@ -94,18 +106,20 @@ function Composer({ s, id, running, name }: { s: State; id: string; running: boo
             if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) { e.preventDefault(); void send() }
           }}
         />
-        {running
-          ? <button type="button" className="send stop" data-action="stop" aria-label="停止" disabled={stopping}
-            onClick={() => {
-              setStopping(true)
-              // [GU-3]（席 C-L）：失败两条路都复位 stopping——!ok 走 then，裸抛走 catch，不得永久 disabled
-              void cancelTurn(id)
-                .then((r) => { if (!r.ok) { setStopping(false); setError(`停止失败：${r.error?.message ?? ''}`) } })
-                .catch((e: unknown) => { setStopping(false); setError(`停止失败：${e instanceof Error ? e.message : String(e)}`) })
-            }}>
-            <Icon name="stop" />
-          </button>
-          : <button type="submit" className="send" data-action="send" aria-label="发送" disabled={draft.trim() === ''}><Icon name="arrow-up" /></button>}
+        <div className="composer-actions">
+          {running
+            ? <button type="button" className="send stop" data-action="stop" aria-label="停止" disabled={stopping}
+              onClick={() => {
+                setStopping(true)
+                // [GU-3]（席 C-L）：失败两条路都复位 stopping——!ok 走 then，裸抛走 catch，不得永久 disabled
+                void cancelTurn(id)
+                  .then((r) => { if (!r.ok) { setStopping(false); setError(`停止失败：${r.error?.message ?? ''}`) } })
+                  .catch((e: unknown) => { setStopping(false); setError(`停止失败：${e instanceof Error ? e.message : String(e)}`) })
+              }}>
+              <Icon name="stop" />
+            </button>
+            : <button type="submit" className="send" data-action="send" aria-label="发送" disabled={draft.trim() === ''}><Icon name="arrow-up" /></button>}
+        </div>
       </form>
       {error !== null && <div className="composer-error" role="alert">{error}</div>}
     </div>

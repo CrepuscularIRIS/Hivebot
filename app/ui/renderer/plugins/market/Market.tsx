@@ -46,7 +46,7 @@ function Row({ m, entry, installed, online }: { m: MarketState; entry: Entry; in
   return (
     <div className="m-row" data-entry={entry.name} data-kind={kind}>
       <button type="button" className="m-main" onClick={() => openDetail(entry.name)}>
-        <Mono name={entry.name} size={32} />
+        <Mono name={entry.name} size={36} />
         <span className="m-text"><span className="m-title">{title}</span><span className="m-desc">{text(entry.description) || entry.name}</span></span>
       </button>
       <Status m={m} entry={entry} kind={kind} online={online} />
@@ -188,7 +188,7 @@ export function Market({ s }: { s: State }): JSX.Element {
                 : <div className="m-list" data-installed-list>
                   {m.bundles.map((b) => (
                     <div key={b.name} className="m-row" data-bundle={b.name}>
-                      <span className="m-main static"><Mono name={b.name} size={32} />
+                      <span className="m-main static"><Mono name={b.name} size={36} />
                         <span className="m-text"><span className="m-title">{b.name}</span><span className="m-desc">{b.description ?? '已安装 · 在新建 Bot 时勾选它'}</span></span>
                       </span>
                       <button type="button" className="btn secondary" data-action="new-with" onClick={() => newWith(b.name)}>用它新建 Bot <Icon name="arrow-right" /></button>

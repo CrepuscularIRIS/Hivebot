@@ -22,6 +22,8 @@ const ICONS = {
   // U-23 P-D/P-C（同一字体 cmap 实测）：锁定配置、失效角标、用此配置新建、info-pane 开合、市场返回/搜索
   'lock-locked': 0xea75, 'slash-circle': 0xeabd, copy: 0xebcc, 'layout-sidebar-right': 0xec00,
   'arrow-left': 0xea9b, 'magnifying-glass': 0xea6d,
+  // U-27 C2：info-pane 关闭钮（0.18 chevrons-right，cmap 实测）
+  'chevrons-right': 0xf31d,
 } as const
 
 export type IconName = keyof typeof ICONS

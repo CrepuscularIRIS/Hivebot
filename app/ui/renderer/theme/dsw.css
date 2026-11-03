@@ -66,6 +66,7 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
+:root { font-synthesis: none; } /* U-27 E3：0.18 production.css，防伪粗体/伪斜体 */
 button, input, textarea, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--dsw-focus-ring-color); outline-offset: 1px; }
 .icon { font-family: cursor-icons; font-size: 16px; line-height: 1; font-style: normal; display: inline-block; width: 16px; text-align: center; flex: none; }

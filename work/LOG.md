@@ -754,3 +754,6 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 22:07 tick | L-6 复审仍在跑（verify 阶段，22:07 活跃；发现：1 minor CONFIRMED + 1 REFUTED，无重大） | 无事可派：P4 PLAN 全 done，等 L-6 verdict 定收口 | ready 未派 = 0 | 未答 Q-010
 22:08 tick | L-6 复审仍在跑（verify 阶段，journal 18 行，agent 22:07 仍活跃；无 critical/major） | 无事可派：P4 全 done 等 L-6 verdict | ready 未派 = 0 | 未答 Q-010 | load 2.5 正常
 22:17 L-6 复审完成：PASS（0 critical/major，unfixed 0；4 CONFIRMED minor 全在测试支撑代码 → U-32 已派 builder，worktree /tmp/bot-wt/U-32）| P4 阶段完成判定四项全满足 → QUESTIONS 加 Q-011（P4 验收），PushNotification 已发 | ready 未派 = 0 | 未答 Q-010、Q-011
+22:18 tick | U-32 builder 在跑（worktree 已建 /tmp/bot-wt/U-32，报告未出）| 无事可派：等 U-32 回报后走 verifier | ready 未派 = 0 | 未答 Q-010、Q-011 | load 2.6
+22:27 tick | U-32 在跑（feat/U-32 无新 commit，builder 读文档/写红测试阶段，未 stale）| 无事可派 | ready 未派 = 0 | 未答 Q-010、Q-011 | load 2.8
+22:37 Q-010/Q-011 落实：用户「我们已经是回复了」按 A 解读——P2、P4 验收通过，MVP 四阶段全部完成（U-32 测试侧 minor 在途，合并后收口）| QUESTIONS 全部 answered，无 open 问题

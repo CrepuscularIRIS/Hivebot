@@ -21,7 +21,8 @@ Third-rung copy (CLAUDE.md §3) of `github.com/b-nnett/grok-bot-0.18-reconstruct
   backed by the M1/M2 carrier (`window.pbots`). `pnpm build` also emits `shim.iife.js` and injects it into the built
   `index.html` as a classic script (runs before the deferred module bundle); `pnpm build:upstream` skips that step.
   Transcript entries are serialized via P6-01 `renderer/fold/turn-fold` (imported across packages, unchanged).
-  Approval answers only ever send `allowed-once` / `rejected`; `localToolPermission.ceiling()` reports `"ask"` so the
-  upstream store disables "Always allow".
+  Approval answers only ever send `allowed-once` / `rejected`. The approval card is overridden (P5-31,
+  `overrides/modules/local-tool-view.tsx`): only Allow once / Deny once, plus the full action text (bash command, or the
+  `request_network` reason); `localToolPermission` reports and stores `"ask"` only, as a backstop.
 
 Dependencies are separate from the old renderer (React 19, every @tiptap/* package pinned exactly at 3.14.0, no wildcard override).

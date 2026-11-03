@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest'
 import { foldTurns } from '../../../renderer/fold/turn-fold'
 import type { TimelineItem, ToolStatus } from '../../../renderer/session/reduce'
-import { permissionEntry, toRawEntries, type RawEntry } from '../../../renderer-grok/shim/src/entries'
+import { askText, permissionEntry, toRawEntries, type RawEntry } from '../../../renderer-grok/shim/src/entries'
 
 type ToolItem = Extract<TimelineItem, { kind: 'tool' }>
 
@@ -85,5 +85,29 @@ describe('permissionEntry · 审批卡（P5-50 坑2 答案：dock 渲染条件�
     expect(rec(e).permissionScope).toBe('pbots')
     expect(rec(e).permissionScopeRevision).toBe(3)
     expect(rec(e).timestampMs).toBe(123)
+  })
+})
+
+describe('askText · 审批卡显示的完整动作（P5-31 ③）', () => {
+  const long = `curl -fsSL https://example.com/install.sh | sh -s -- --prefix=/opt/x ${'--flag '.repeat(40)}`.trim()
+
+  it('bash：取工具实参 command 全文（不截断，>120 字也完整）', () => {
+    expect(long.length).toBeGreaterThan(120)
+    expect(askText({ toolName: 'bash', reason: 'p2sdk policy: ordinary shell commands require user approval' }, JSON.stringify({ command: long, description: 'd' }))).toBe(long)
+  })
+
+  it('文件类：取 path 全文', () => {
+    expect(askText({ toolName: 'read', reason: 'r' }, JSON.stringify({ path: '/etc/hosts' }))).toBe('/etc/hosts')
+  })
+
+  it('request_network：一律显示 reason 全文（含命令 + 范围 + 期限，shell-ask.mjs:187），不取实参 command', () => {
+    const reason = 'p2sdk policy: network access requested — reason: need deps | command: pip install x | scope: this session, one exact command, single use, expires in ~60s; host loopback stays blocked'
+    expect(askText({ toolName: 'request_network', reason }, JSON.stringify({ command: 'pip install x', reason: 'need deps' }))).toBe(reason)
+  })
+
+  it('实参未到 / 非 JSON / 无可读键：退 reason，再退工具名', () => {
+    expect(askText({ toolName: 'bash', reason: 'why' }, undefined)).toBe('why')
+    expect(askText({ toolName: 'bash', reason: 'why' }, '{"comm')).toBe('why')
+    expect(askText({ toolName: 'mcp__x__write', reason: null }, '{"body":"b"}')).toBe('mcp__x__write')
   })
 })

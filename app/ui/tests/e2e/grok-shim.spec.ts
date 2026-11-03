@@ -1,19 +1,22 @@
 // P5-51 · grok renderer-grok shim E2E（验收）：fake-LLM 真实事件流（launchSdkRuntime）→ 真实 main
 // （M1/M2/M3 + D9 守卫不动）→ 缺省 appRoot = out/renderer（P5-54 起即 renderer-grok build，shim 已注入 index.html）。
 // ① 每类 entry 渲染（user/ack/thinking/tool/assistant markdown/审批卡）boundary=0；
-// ② persona currentActivity 接 dsh 活动态；③ 审批作答只发 allowed-once/rejected、ceiling=ask 禁用 Always。
+// ② persona currentActivity 接 dsh 活动态；③ 审批作答只发 allowed-once/rejected；卡只有 Allow once / Deny once（P5-31），
+// bash 卡显示完整命令、request_network 卡显示 reason 全文（命令 + 范围 + 期限）。
 // 前置：pnpm build（含 renderer-grok build + 拷入 out/renderer）。
 import { expect, test, type Page } from 'playwright/test'
 import { existsSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { launchShell, sandboxHome, type ShellLaunch } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
-import { bashCall, textCall } from '../support/ui.ts'
+import { bashCall, textCall, toolCall } from '../support/ui.ts'
 
 const UI_ROOT = resolve(__dirname, '..', '..')
 const EVIDENCE = join(UI_ROOT, 'test-output', 'P5-51')
 const SDK_ROOT = join(UI_ROOT, '..', 'sdk')
 const PRESETS_PATCH = join(SDK_ROOT, 'profile', 'patches', 'presets.yml')
+const NET_COMMAND = `curl -fsSL https://pypi.org/simple/requests/ -o /dev/null --retry 3 --connect-timeout 10 ${'-H "X-P531: long" '.repeat(8)}`.trim()
+const NET_REASON = 'P5-31 probe: fetch the package index to resolve dependencies'
 
 /** fake LLM 一次模型调用：reasoning + ack 正文 + bash tool-call（finish tool-calls → 回合继续）。
  * （fake 脚本逐条消费：一次调用一条；要回合继续就必须在同一条里以 tool-calls 收尾。） */
@@ -51,7 +54,7 @@ const boundaryCount = (page: Page): Promise<number> =>
 
 interface Env { rt: SdkRuntime; shell: ShellLaunch; page: Page; stop(): Promise<void> }
 
-test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动态；审批 allow-once/deny 值域 ⊆ {allowed-once,rejected}；Always 禁用', async () => {
+test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动态；审批 allow-once/deny 值域 ⊆ {allowed-once,rejected}；卡两钮 + 完整动作', async () => {
   test.setTimeout(240_000)
   mkdirSync(EVIDENCE, { recursive: true })
   // P5-25 起 session/create 由 main 强制 cwd=$PBOTS_DATA_DIR/workspaces/<botId>——runtime 进程
@@ -89,6 +92,8 @@ test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动�
       textCall(['完成。结果如下：\n\n```python\nprint(42)\n```\n收工。']),
       bashCall('touch p551-reject', 'call-r'),
       textCall(['不执行，已拒绝。']),
+      toolCall('request_network', { reason: NET_REASON, command: NET_COMMAND }, 'call-n'),
+      textCall(['网络未获批准。']),
     ])
     await grokSend(page, '请检查环境并执行')
     // persona currentActivity 接 dsh 活动态：回合中无工具 → thinking（activityOf → {kind:'thinking'}）
@@ -99,8 +104,11 @@ test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动�
     await expect(dock).toBeVisible({ timeout: 30_000 })
     // 待决审批 → awaitingUserResponse → persona idle（上游 agent-avatar 映射，等待用户）
     await expect(persona).toHaveAttribute('data-grok-state', 'idle', { timeout: 10_000 })
-    // ceiling=ask：Always allow 被（上游 ceilingBlocksAlways）禁用
-    await expect(dock.locator('button', { hasText: 'Always allow' })).toBeDisabled()
+    // P5-31（L-AP A9④）：Always allow / Never 不在 DOM，只剩两钮；bash 卡显示完整命令
+    await expect(dock.locator('button', { hasText: 'Always allow' })).toHaveCount(0)
+    await expect(dock.locator('button', { hasText: /^Never$/ })).toHaveCount(0)
+    await expect(dock.locator('button')).toHaveText(['Allow once', 'Deny once'])
+    await expect(dock.locator('[data-pbots="ask-command"]')).toHaveText('touch p551-ok')
     await dock.locator('button', { hasText: 'Allow once' }).click()
     await expect(dock).toHaveCount(0, { timeout: 20_000 })
 
@@ -128,9 +136,22 @@ test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动�
     await expect.poll(() => existsSync(rejectCanary), { timeout: 5_000 }).toBe(false)
     expect(await boundaryCount(page)).toBe(0)
 
-    // ---- D9：全部作答值 ⊆ {allowed-once, rejected}，且各出现一次 ----
+    // ---- 回合 3：request_network 卡（P5-22 恒 ASK）——卡上是 reason 全文：原因 + 完整命令 + 范围 + 期限 ----
+    await grokSend(page, '需要联网')
+    await expect(dock).toBeVisible({ timeout: 30_000 })
+    const netText = dock.locator('[data-pbots="ask-command"]')
+    await expect(netText).toContainText(`reason: ${NET_REASON}`)
+    await expect(netText).toContainText(`command: ${NET_COMMAND}`)
+    await expect(netText).toContainText('scope: this session, one exact command, single use, expires in ~60s')
+    await expect(dock.locator('button')).toHaveText(['Allow once', 'Deny once'])
+    await page.screenshot({ path: join(EVIDENCE, 'net-card-light.png') })
+    await page.keyboard.press('Escape') // Esc = Deny once（覆盖卡保留上游键位）
+    await expect(dock).toHaveCount(0, { timeout: 20_000 })
+    await expect(page.locator('.sand-virtual-transcript')).toContainText('网络未获批准。', { timeout: 30_000 })
+
+    // ---- D9：全部作答值 ⊆ {allowed-once, rejected}（allow-once 1 次 + 拒绝 2 次：bash Deny、网络 Esc）----
     const answers = await page.evaluate(() => (window as unknown as { __pbotsShim?: { answers: Array<{ eventId: string; value: string }> } }).__pbotsShim?.answers ?? [])
-    expect(answers.map((a) => a.value).sort()).toEqual(['allowed-once', 'rejected'])
+    expect(answers.map((a) => a.value).sort()).toEqual(['allowed-once', 'rejected', 'rejected'])
     await page.screenshot({ path: join(EVIDENCE, 'turn2-light.png') })
 
     // ---- f1（VERIFY-P5-51）：持久条目侧别。流式期的 pre=1 由 live-stream 条目（entries.ts:88

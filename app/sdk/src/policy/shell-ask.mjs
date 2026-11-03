@@ -1,40 +1,52 @@
-// p2sdk D8 审批策略（T-07）：普通 shell 调用必须先经用户批准。
+// p2sdk 档位策略（T-07/T-12/P5-05 历史见下；P5-21 泛化为查表）。
 //
-// 为什么存在（evidence/D8-approval.md 红用例）：dsh 现成的权限件——
-// user-approval（ask/never）与 permission-presets——表达不了「普通 shell
-// 必问」：tool-bash 的现成询问入口只有显式 sandbox_permissions 升权
-// （来源: deepseek-harness@ce7073d packages/shell/tool-bash/src/index.ts
-// approveBashEscalation），preset 的 ask 不会拦截普通调用。所以在这里挂
-// dsh 的 tools/pre-execute 扩展点（packages/core/tools/src/pipeline.ts
-// prepare → serviceAsk → ctx.approval.request），把每个未升权的 bash 调用
-// 转成 {kind:'ask'}，由内置审批服务走 $events 问用户；拒绝/无应答 =
-// fail closed（serviceAsk 映射为 deny），批准只放行一次（allowed-once）。
-// 集成路径决策见 work/p2-sdk/reuse/ext-mapping.md:34。
+// P5-21（PLAN p5-parity，Q-013 全表确认 2026-11-03）：由「普通 shell 必问」泛化
+// 为按 profile/tiers.json 查档位表（REUSE 行：改造现有 shell-ask 为查表）。表是
+// 数据（BRIEF (c)：档位表放 profile 文件，UI 只读），可被 runtime patch / 后置
+// overlay 的 config.tiers 整体覆盖（同 id 整键替换 config，cordis-plugin-include
+// applyEntryPatches）。行号引 Q-013 终版编号：
+//   第 1 行 bash → sandbox-allow：ALWAYS 仅在 policy-state 实例校验通过时成立
+//     （决策 13⑤/16——main 连上本实例后写 instance = sha256(launch-token) 进它
+//     自己的数据目录（P5-29），SDK 只认 instance 与本实例相符的状态；文件缺失/
+//     非法 JSON/paused/fault/版本不符/instance 不符 → ALWAYS 退 ASK，NEVER 不变）。
+//     wrapper 是否生效由实例校验 + 运行期 fail-closed 共同证明：launcher 恒写
+//     sandbox 行，wrapper 坏 → bash 执行失败（A9 ⑤，P5-01 ⑤ 直测），不存在
+//     「无卡且裸跑」路径。
+//   第 3/4 行 文件工具 → workspace-read / workspace-write：候选（复用 guard 的
+//     extractPaths）经 ctx.fs.resolve（realpath）后全部在会话 workspaceRoot 子树
+//     内 → 门开时 allow、门关时 ASK；读类任一候选在区外 → ASK（不可始终允许，
+//     Q-013 用户确认）；写类区外 → next()，交上游 workspace-write fence（审批
+//     改变不了 fence，出卡是表演；A3 的越界写由 fence + guard 承担）。
+//   第 7 行 连接器（mcp__ 前缀）→ ask：P5-23 元数据桥落地前的回退，一律出卡。
+//   第 10 行 web / 第 11 行 其他进程内工具 → allow（= 现状不拦，Q-013「维持」，
+//     显式入表；不因门关收紧——门只收回 P5 新授的自主：bash 与工作区内文件）。
+//   NEVER（凭证、plugin_manager、dfa 升权/会话）由 guard 在最外层承担，不在此
+//     重复（决策 2/6；guard 先于本插件，本插件看到的调用都已过 NEVER）。
+// 档位表损坏（文件非法 / config.tiers 非法 / 值不在词表 / 缺 default 键）→
+//   A9 ②：所有 ALWAYS/ASK 一律退 ASK 并记一行 console.error（fail closed，但
+//   不拒启动——与 guard 的 fail loud 不同：问用户是可用态，拒绝是停摆）。
+// ASK 结果在 approvalPolicy=never 的会话（子代理、dfa 部署）一律拒绝（P5-05，
+//   G1-r2 #1）；门开时的 ALWAYS 类在 never 会话照常执行（A9 ⑦——执行仍在
+//   wrapper 内，由 wrapper 遮蔽兜底）。
+// 判定顺序（A9）：NEVER（guard）> 档位配置 > 常驻授权（main 侧代答，不在 SDK）
+//   > 故障回退（本文件的门关/表坏 → ASK）。
 //
-// T-12（REVIEW R6/R12）：带 sandbox_permissions 不再整体放行。上游对
-// 「重复当前有效模式」的调用两边都不问——validateBashArgs 在
-// sandbox_permissions === effectiveMode 时提前 return（tool-bash
-// index.ts:83），approveEscalation 对 mode === effectiveMode 直接返回
-// （packages/sandbox/sandbox/src/escalation.ts:174）——所以只有「严格宽于
-// 当前有效模式」的升权才委托 tool-bash 自己的审批（避免双重弹窗）；
-// 同模式重复、更窄、未知值、或解析不到当前模式，一律在这里问（fail
-// closed，去重交给用户）。当前有效模式经 ctx.get('sandboxPolicy')
-// .resolve({session}) 读取，与 tool-bash resolveSandboxPolicy 同一暴露面
-// （必须按方法调用保留 this，拆成裸函数会丢服务实例）。
-//
-// P5-05（G1-r2 #1，PLAN p5-parity 决策 10）：T-12.f1 的「never 放行」被有意
-// 反转——不再是死锁，而是立即拒绝。可达 never 的两类会话都没有应答者：
-// ① 被委派子代理（上游 child-agent.ts captureDelegatedPolicyOverrides 把
-// 子会话 approval 钉成 'never'，workflow 的 agent() 走同一条
-// subagents.startActivation），T-12.f1 的放行让子代理普通 bash 零交互执行
-// （A-H1 侧门，tests/e2e/subagent-policy.test.ts 的红用例为证）；② 部署侧
-// DSH_PERMISSION_MODE=danger-full-access（childEnv 透传 DSH_*）落到 never，
-// 且该模式下 write / edit 不受 fs-sandbox 约束（P5-04 一并拒绝该模式下的
-// bash / write / edit）。所以本策略原本返回 ask 的情形在 never 会话改为
-// {kind:'deny'}，原因固定字面串；严格更宽的升权仍委托 tool-bash 自己的
-// 审批（user-approval 对 never 确定性 rejected，deny 非放行）。其余策略
-// 值（默认 preset 钉的 'ask' 在内）行为不变。
+// ── 历史（保留的语义）──
+// T-07（D8）：dsh 现成权限件表达不了「普通 shell 必问」，挂 tools/pre-execute
+//   把未升权 bash 转成 {kind:'ask'}，经内置审批服务走 $events 问用户；拒绝/
+//   无应答 = fail closed，批准只放行一次。
+// T-12（R6/R12）：只有「严格宽于当前有效模式」的 sandbox_permissions 升权才委托
+//   tool-bash 自己的审批（避免双重弹窗）；同模式重复、更窄、未知值、解析不到
+//   当前模式，一律在这里问（fail closed）。这一段是结构逻辑（第 2 行），不走
+//   档位表，表坏时也保留。
+// P5-05（决策 10）：never 会话的 ask 改为立即 deny（原因固定字面串）。
 export const name = 'p2sdk-shell-ask'
+
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { isPathUnder } from './containment.mjs'
+import { resolveTargets } from './resolve.mjs'
 
 /** 严格更宽表，来源: deepseek-harness@ce7073d packages/sandbox/sandbox/src/escalation.ts WIDER_MODES。 */
 const STRICTLY_WIDER = {
@@ -43,26 +55,173 @@ const STRICTLY_WIDER = {
   'danger-full-access': [],
 }
 
-/** 宿主平面注册一次，作用于全部 session（作用域事件对根监听器可达）。 */
-export function apply(ctx) {
-  ctx.on('tools/pre-execute', (exec, next) => {
-    if (exec.name !== 'bash') return next()
-    // P5-05：never 会话没有应答者（见文件头），原本 ask 的情形改为立即 deny。
-    const decision = approvalNever(ctx, exec)
-      ? { kind: 'deny', reason: 'approval unavailable in this session' }
-      : { kind: 'ask', reason: 'p2sdk policy: ordinary shell commands require user approval' }
-    const args = exec.arguments
-    const requested = args !== null && typeof args === 'object' ? args.sandbox_permissions : undefined
-    if (requested === undefined) return decision
-    // 解析当前有效模式（tool-bash resolveSandboxPolicy 同款调用）；拿不到就问。
-    const policy = typeof ctx.get === 'function' ? ctx.get('sandboxPolicy') : undefined
-    let effective
-    if (policy !== null && typeof policy === 'object' && typeof policy.resolve === 'function') {
-      const standing = policy.resolve(exec.agent === undefined ? {} : { session: exec.agent.session })
-      effective = standing !== null && typeof standing === 'object' ? standing.mode : undefined
+/** 档位表（profile/tiers.json）的词表；行语义见文件头。 */
+const TIER_KINDS = new Set(['allow', 'ask', 'sandbox-allow', 'workspace-read', 'workspace-write'])
+
+/** ask 卡原因（进审批卡的 reason，P5-07 的账本读 request.toolName，不读这里）。 */
+const ASK = {
+  bash: 'p2sdk policy: ordinary shell commands require user approval',
+  readOut: 'p2sdk policy: reading files outside the workspace requires user approval',
+  readGate: 'p2sdk policy: reading in the workspace requires user approval (autonomy suspended)',
+  writeGate: 'p2sdk policy: writing in the workspace requires user approval (autonomy suspended)',
+  mcp: 'p2sdk policy: connector tools require user approval (metadata bridge pending)',
+  fallback: 'p2sdk policy: tier table unavailable; failing closed to per-call approval',
+}
+const NEVER_DENY = { kind: 'deny', reason: 'approval unavailable in this session' }
+
+/**
+ * 实例 id：sha256(launch-token)。main（P5-29）读同一个 handoff 文件算同一个
+ * 值写进 policy-state.instance —— 两值相等 ⇔ 写状态的 main 连的就是本实例，
+ * 且 main 的数据目录在本实例已遮蔽的 mask 根里（决策 13⑤/16 的机械证明）。
+ */
+export function instanceOf(token) {
+  return createHash('sha256').update(String(token)).digest('hex')
+}
+
+/**
+ * 读一处 policy-state，判断它是否放行本实例的 ALWAYS 档。
+ * @param {string[]} paths 候选路径（数据根推导，start.ts 写进 runtime patch）。
+ * @param {string} instanceId 本实例 id（instanceOf）；空串 = 拿不到 token → 恒 false。
+ */
+export function policyStateValid(paths, instanceId) {
+  if (instanceId === '' || !Array.isArray(paths)) return false
+  for (const p of paths) {
+    if (typeof p !== 'string') continue
+    let state
+    try {
+      state = JSON.parse(readFileSync(p, 'utf8'))
+    } catch {
+      continue // 缺失 / 不可读 / 非法 JSON → 该候选不放行
     }
-    if (typeof effective === 'string' && (STRICTLY_WIDER[effective] ?? []).includes(requested)) return next()
-    return decision
+    if (state === null || typeof state !== 'object') continue
+    if (state.version !== 1) continue
+    if (state.paused === true) continue
+    if (state.fault !== undefined) continue
+    if (state.instance !== instanceId) continue
+    return true
+  }
+  return false
+}
+
+/**
+ * 档位表加载与校验（apply 时一次；表不是运行时状态，mid-session 改文件不生效，
+ * 与 policy-state 的逐调用重读相反——决策 16 只要求后者「不重启即生效」）。
+ * config.tiers 覆盖文件表（后置 overlay / 测试注入）；任何一处非法 → corrupt，
+ * 全部退 ASK 并记一行日志（A9 ②）。返回 null = corrupt。
+ */
+export function loadTiers(config) {
+  const fromConfig = config !== null && typeof config === 'object' && config.tiers !== undefined
+  if (fromConfig) return validateTiers(config.tiers)
+  const file = readTierFile()
+  return file === null ? null : validateTiers(file)
+}
+
+function validateTiers(source) {
+  if (source === null || typeof source !== 'object' || Array.isArray(source)) return corrupt('tier table is not an object')
+  if (typeof source.default !== 'string' || !TIER_KINDS.has(source.default)) return corrupt('no valid "default" row')
+  for (const [tool, kind] of Object.entries(source)) {
+    if (typeof kind !== 'string' || !TIER_KINDS.has(kind)) return corrupt(`unknown tier "${String(kind)}" for "${tool}"`)
+  }
+  return source
+}
+
+let tierFileCache
+function readTierFile() {
+  if (tierFileCache === undefined) {
+    try {
+      tierFileCache = JSON.parse(readFileSync(new URL('../../profile/tiers.json', import.meta.url), 'utf8'))
+    } catch (err) {
+      console.error(`p2sdk-shell-ask: tier table invalid (${err instanceof Error ? err.message : String(err)}); failing closed to per-call approval`)
+      tierFileCache = null
+    }
+  }
+  return tierFileCache
+}
+
+function corrupt(detail) {
+  console.error(`p2sdk-shell-ask: tier table invalid (${detail}); failing closed to per-call approval`)
+  return null
+}
+
+/**
+ * 宿主平面注册一次，作用于全部 session（作用域事件对根监听器可达）。
+ * config 由 start.ts 的 runtime patch 行注入（同 id 整键替换 approval.yml 的
+ * insert 行 config）：handoff（launch-token 所在，launcher-only 值，不进 dsh env）
+ * 与 policyStatePaths（数据根推导，决策 16a）。缺 config（裸挂本插件）→ 门恒关
+ * → bash/工作区文件全 ASK，与 T-12 时代行为一致（fail closed）。
+ */
+export function apply(ctx, config = {}) {
+  const tiers = loadTiers(config)
+  const cfg = config !== null && typeof config === 'object' ? config : {}
+  const policyStatePaths = Array.isArray(cfg.policyStatePaths) ? cfg.policyStatePaths : []
+  const handoffDir = typeof cfg.handoff === 'string' && cfg.handoff.length > 0 ? cfg.handoff : undefined
+  let cachedInstance
+  const instanceId = () => {
+    if (cachedInstance !== undefined) return cachedInstance
+    cachedInstance = ''
+    if (handoffDir !== undefined) {
+      try {
+        const token = readFileSync(join(handoffDir, 'launch-token'), 'utf8').trim()
+        if (token) cachedInstance = instanceOf(token)
+      } catch {
+        /* token 还没写好/读不到 → 空 id → 门关（fail closed） */
+      }
+    }
+    return cachedInstance
+  }
+
+  ctx.on('tools/pre-execute', async (exec, next) => {
+    const ask = (reason) => (approvalNever(ctx, exec) ? NEVER_DENY : { kind: 'ask', reason })
+
+    // bash：T-12 的升权去重结构逻辑先行（不走档位表），其后按第 1 行判定。
+    if (exec.name === 'bash') {
+      const args = exec.arguments
+      const requested = args !== null && typeof args === 'object' ? args.sandbox_permissions : undefined
+      if (requested !== undefined) {
+        // 解析当前有效模式（tool-bash resolveSandboxPolicy 同款调用）；拿不到就问。
+        const policy = typeof ctx.get === 'function' ? ctx.get('sandboxPolicy') : undefined
+        let effective
+        if (policy !== null && typeof policy === 'object' && typeof policy.resolve === 'function') {
+          const standing = policy.resolve(exec.agent === undefined ? {} : { session: exec.agent.session })
+          effective = standing !== null && typeof standing === 'object' ? standing.mode : undefined
+        }
+        if (typeof effective === 'string' && (STRICTLY_WIDER[effective] ?? []).includes(requested)) return next()
+        // 同模式重复/更窄/未知 → 落到下方档位判定（fail closed）
+      }
+      if (tiers === null) return ask(ASK.fallback)
+      return (tiers.bash ?? tiers.default) === 'sandbox-allow' && policyStateValid(policyStatePaths, instanceId())
+        ? next()
+        : ask(ASK.bash)
+    }
+
+    // 表坏 → 一律 ASK（A9 ②；NEVER 已由 guard 在外层处理，不受影响）。
+    if (tiers === null) return ask(ASK.fallback)
+    const kind = tiers[exec.name] ?? (typeof exec.name === 'string' && exec.name.startsWith('mcp__') ? tiers.mcp : tiers.default)
+    if (kind === 'allow' || kind === 'ask') {
+      return kind === 'allow' ? next() : ask(ASK.mcp)
+    }
+    if (kind === 'sandbox-allow') {
+      return policyStateValid(policyStatePaths, instanceId()) ? next() : ask(ASK.bash)
+    }
+    // workspace 档：realpath 后判「是否全部候选都在会话工作区子树内」。
+    const fs = typeof ctx.get === 'function' ? ctx.get('fs') : null
+    if (fs === null || typeof fs !== 'object' || typeof fs.resolve !== 'function') {
+      return kind === 'workspace-write' ? next() : ask(ASK.readOut)
+    }
+    const { targets, total, workspaceRoot } = await resolveTargets(ctx, exec, fs)
+    if (total === 0) return next() // 无路径候选（guard 已放行）→ 无从判区外
+    const allInside = workspaceRoot !== undefined
+      && targets.length === total
+      && (await Promise.all(targets.map((t) => isPathUnder(t, workspaceRoot)))).every(Boolean)
+    if (kind === 'workspace-read') {
+      return allInside
+        ? (policyStateValid(policyStatePaths, instanceId()) ? next() : ask(ASK.readGate))
+        : ask(ASK.readOut)
+    }
+    // workspace-write：区内按门放行/出卡；区外交上游 fence（越界写由 fence 拒，
+    // 审批改不了 fence——出卡是表演，A3 的格由 fence + guard 承担）。
+    if (!allInside) return next()
+    return policyStateValid(policyStatePaths, instanceId()) ? next() : ask(ASK.writeGate)
   })
 }
 

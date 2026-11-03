@@ -65,14 +65,18 @@ function expandEntry(home, entry) {
 /** 宿主 tmp 下既有 p2sdk-handoff-* 目录（其他实例的 token 交接目录）。
  * ponytail: 只收最近修改的 32 个 —— argv 有界（bwrap 参数上限 9000），测试残留会
  * 无限增长；其余由 workspace-write 的 --tmpfs /tmp 覆盖，read-only 会话里更旧的
- * handoff 仍可见（需要时按 liveness 过滤或换成 tmpfs 下统一布局）。 */
+ * handoff 仍可见（需要时按 liveness 过滤或换成 tmpfs 下统一布局）。stat 竞态
+ * （并行测试清各自的 handoff tmpdir）直接跳过该目录 —— 清单少一个可选项，
+ * 遮蔽兜底不变（P5-21 单测并行跑出的 ENOENT）。 */
 const HANDOFF_SIBLING_CAP = 32
 function handoffSiblings() {
   let names
   try { names = readdirSync(tmpdir()) } catch { return [] }
   const dirs = names.filter((n) => n.startsWith('p2sdk-handoff-')).map((n) => join(tmpdir(), n)).filter((p) => isDir(p))
   return dirs
-    .map((p) => ({ p, m: statSync(p).mtimeMs }))
+    .flatMap((p) => {
+      try { return [{ p, m: statSync(p).mtimeMs }] } catch { return [] }
+    })
     .sort((a, b) => b.m - a.m)
     .slice(0, HANDOFF_SIBLING_CAP)
     .map((x) => x.p)

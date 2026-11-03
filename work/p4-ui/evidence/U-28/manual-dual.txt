@@ -1,0 +1,7 @@
+== 手工双开坏路径（测试框架外，node spawn，2026-11-02 20:52） ==
+A: first pid=3811511 alive=true
+A: second exit=0 alive=false
+A: second stderr 含提示=true
+A: stderr 行: [pbots] Personal Bots 已在运行（单实例锁），本进程退出。
+A: first 仍存活=true
+B: 不同 userData 两实例均存活=true (p1=true p2=true)  ← 锁按 userData 分键，不误杀合法双装

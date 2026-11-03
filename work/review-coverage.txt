@@ -11,3 +11,6 @@ L-review-2 结果 FAIL→T-13.f1（R1+R3 锁身份）、T-12.f1（R2 never prese
 P4-BASE d0a8008（2026-11-02 W0 开工基线，T-16 已并入后前移；U-31 L 范围 = P4-BASE..HEAD）
 L-review-3 范围 f9dfc45..b634e9d（P2 最终收尾：T-16/T-13.f1/T-12.f1/T-09/T-10；前置出口汇合 VERIFY-exit PASS 四项）
 L-review-4 范围 b634e9d..aa9d934（P2 终审：T-17/T-18/T-19/T-20 对应最终 L 的 5 发现 + 扫描器回归修复）
+L-review-5 范围 d0a8008..70c5925（P4 终审：U-00~U-27 全部合并任务 = P4-BASE..HEAD；前置 U-31 全旅程 PASS）
+L-review-5 结果 FAIL→U-28（R1-R6 恢复链）、U-29（R7-R9 代答/M3罩/env）——修复链第 1 轮
+L-review-6 范围 86b4c2c..1e18112（P4 终审复审：U-28/U-29 对应 L-5 的 9 发现——验证修复闭环）

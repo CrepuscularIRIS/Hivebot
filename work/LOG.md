@@ -597,3 +597,150 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-02 19.34 tick | 同上
 2026-11-02 19.34 tick | 同上
 2026-11-02 19.4x 回报 | **frontend-dev U-27 完成**：50dc353（rebase 到 U-31 后 main）——21 项修复（P0 7 / P1 4 / P2 3+条件显示 3 / P3 7）+ 新 visual.spec.ts；跳过 [78]×12 / 范围外 19 / 等价 7 / 缺数据 2 / 不可考 3；196 单测 + 51/52 e2e（唯一红=后台 shell 缺 LITELLM_MASTER_KEY 的 fail-fast，与改动无关）| **合并 U-27 → 70c5925**（主仓 196 ✓）| **视觉打磨 round 1 完成** | 剩：整分支 L（P4-BASE..70c5925）→ P4 收官 | U-27 在途时的截图覆盖已恢复 HEAD 版
+2026-11-02 19.4x **启动 P4 整分支终审 L**（d0a8008..70c5925，覆盖全部 U- 任务）——PASS 即 P4 收官
+2026-11-02 19.37 tick | P4 终审 L-5 活跃（journal 19:35）；QUESTIONS 仅 Q-010 open；在途 0 builder；ready 未派 = 0（等 L-5 结果）
+2026-11-02 19.47 tick | L-5 活跃（journal 19:47）
+2026-11-02 19.48 tick | L-5 活跃
+2026-11-02 19.48 tick | 同上
+2026-11-02 19.49 tick | L-5 活跃（~12min——L 档 18+ agents 需 20-30min 正常）
+2026-11-02 19.50 tick | L-5 活跃
+2026-11-02 19.50 tick | 同上
+2026-11-02 19.51 tick | L-5 finder 阶段（journal 稳定——verifier 阶段启动中）
+2026-11-02 19.52 tick | L-5 verifier 阶段推进中（journal ~3min 无新——6 verifier 并行跑 e2e 复现正常）
+2026-11-02 19.52 tick | L-5 活跃（journal 19:52）
+2026-11-02 19.53 tick | 同上
+2026-11-02 19.54 tick | L-5 verifier 深度验证中（~17min 总时长——前次 L 档 27-32min，正常等）
+2026-11-02 19.54 tick | 同上
+2026-11-02 19.55 tick | 同上（verifier 跑 e2e 复现——每条发现需跑真实 runtime）
+2026-11-02 19.55 tick | 同上
+2026-11-02 19.56 tick | L-5 ~19min（journal 4min 未动——verifier 深度复现，下 tick 无更新 SendMessage 查 workflow）
+2026-11-02 19.56 tick | 同上
+2026-11-02 19.57 tick | L-5 journal 5min 未动——前次 L-4 同阶段也停 5-8min（verifier 各自跑 e2e），再等 1 tick
+2026-11-02 19.57 tick | 同上
+2026-11-02 19.58 tick | L-5 journal 6min 未动——L 档 verifier 可能跑完整 e2e（~5min×多轮），再等 1 tick 后查
+2026-11-02 19.58 tick | 同上
+2026-11-02 19.59 tick | L-5 journal 7min 未动——最后等待窗口，下 tick 无更新则检查 journal 行数判断是否僵死
+2026-11-02 19.59 tick | L-5 journal 32 行（finder 6×2 + verify 若干——verifier 阶段中段）；L-4 到 46 行终审用了 32min，当前 ~22min——继续等
+2026-11-02 20.00 tick | L-5 journal 32 行稳定（verifier 并行复现中——workflow 通知会到达，不干预）
+2026-11-02 20.01 tick | L-5 journal 32 行稳定（verifier 阶段——等通知）
+2026-11-02 20.01 tick | L-5 workflow 进程活跃（1 wf + 28 playwright/vitest 子进程——verifier 并行复现中，正常）
+2026-11-02 20.03 tick | L-5 verifier 仍在跑（e2e 全量复现 × 6 席 × 可能多轮——每轮 ~5min）
+2026-11-02 20.03 tick | 同上
+2026-11-02 20.04 tick | L-5 journal 增至 37 行（verifier 结果陆续回来——接近收口）
+2026-11-02 20.05 tick | 同上（37 行——收口中）
+2026-11-02 20.05 tick | 同上
+2026-11-02 20.06 tick | L-5 后段（37 行稳定——最后几个 verifier 或汇总阶段）
+2026-11-02 20.06 tick | L-5 workflow 进程活着（1）、37 行——等最后 verifier + 报告生成
+2026-11-02 20.07 tick | L-5 journal 38 行——最后一个 verifier 完成，即将出报告
+2026-11-02 20.08 tick | L-5 journal 39 行——汇总中
+2026-11-02 20.08 tick | 同上（汇总阶段）
+2026-11-02 20.09 tick | L-5 报告未落——通知即将到达
+2026-11-02 20.09 tick | L-5 workflow 活跃、报告生成中——等通知（不再逐分钟查）
+2026-11-02 20.10 tick | 同上
+2026-11-02 20.10 tick | 同上
+2026-11-02 20.11 tick | L-5 等通知
+2026-11-02 20.11 tick | L-5 workflow 活跃（报告写作阶段——通知将到达）
+2026-11-02 20.15 回报 | **P4 终审 L-5 = FAIL：9 CONFIRMED major**（21 候选 13 verified）| 归组：A=m3/main 恢复链 6 条（R1 锁双开、R2 RPC 抛错退出重试、R3/R4 首连超时永久跳过恢复、R5 failed 集不清除、R6 M3 未包 restoreGated）、B=deadline+renderer 2 条（R7 M3 路径无 throw 罩、R8 代答 rejection 逸出）、C=测试 1 条（R9 env key 删致真模型旅程失效）| MEDIUM：分页版本绑定、对话框 async 竞态、follow 快照 turn/start 缺失、HOME 隔离 | 转 3 修复任务
+2026-11-02 20.2x **派 U-28**（恢复链 6 条）+ **U-29**（代答/M3 罩/env 3 条 + MEDIUM 2 条）并行 | 在途 2
+2026-11-02 20.14 tick | U-28/U-29 起步（~2min install+读清单）| 无 stale
+2026-11-02 20.15 tick | 同上（install 阶段）
+2026-11-02 20.15 tick | 同上
+2026-11-02 20.16 tick | U-28/U-29 ~7min install/读清单——正常
+2026-11-02 20.17 tick | 同上（读 REVIEW 原文+源码定位中）
+2026-11-02 20.17 tick | 同上
+2026-11-02 20.18 tick | U-28/U-29 ~9min 无文件——下 tick 无变化分别 SendMessage 查
+2026-11-02 20.18 tick | 同上
+2026-11-02 20.19 tick | U-28/U-29 ~10min 无痕迹 → SendMessage 查状态（可能 install 慢或读 REVIEW 原文）
+2026-11-02 20.20 tick | 同上（查询排队）
+2026-11-02 20.21 tick | 同上
+2026-11-02 20.21 U-28 回应：调研完毕（方案已定——onConnected 重连补跑、pending 结构化错误喂 renderer），依赖刚装好，进入 TDD 红测试 | stale 解除
+2026-11-02 20.22 tick | U-28 TDD 进行中（刚报）；U-29 等回应
+2026-11-02 20.22 tick | 同上
+2026.11-02 20.23 U-29 回应：调研/设计完毕（方案定），依赖双仓 install 后台中 | stale 解除 | 两路均正常推进
+2026-11-02 20.23 tick | U-28/U-29 均 TDD 推进中，无 stale
+2026-11-02 20.24 tick | 同上（TDD 红测试编写中）
+2026-11-02 20.26 tick | U-28 活跃（7 文件——红测试+实现落地中）；U-29 活跃（3 文件）| 无 stale
+2026-11-02 20.26 tick | 同上
+2026-11-02 20.27 tick | 同上（U-28 7 文件 / U-29 5 文件——TDD 实现推进中）
+2026-11-02 20.28 tick | U-28 推进（9 文件）/ U-29 推进（6 文件）
+2026-11-02 20.28 tick | 同上（推进中）
+2026-11-02 20.29 tick | U-28（12 文件）/ U-29（8 文件）推进
+2026-11-02 20.30 tick | 同上（U-28 12 / U-29 9——稳定推进）
+2026-11-02 20.31 tick | U-29 增至 14 文件（MEDIUM 补修扩展中）| U-28 稳定 12 | 无 stale
+2026-11-02 20.32 tick | U-28（13）/ U-29（15）——两路全规模实现推进中
+2026-11-02 20.33 tick | 同上
+2026-11-02 20.33 tick | 同上（14/14——可能在跑单测验证轮次）
+2026-11-02 20.34 tick | 同上
+2026-11-02 20.35 tick | U-28/29 文件稳定（14/15——可能在跑 e2e 验证，~20min 实现期正常）
+2026-11-02 20.35 tick | 同上
+2026-11-02 20.37 tick | U-28 增至 21 文件（P2 重连补跑 M3 门控落地中）；U-29 16 | 推进正常
+2026-11-02 20.38 tick | 同上（21/17）
+2026-11-02 20.39 tick | 同上（文件稳定——可能各自在跑 e2e/单测验证轮次）
+2026-11-02 20.39 tick | **U-28 首个 commit 0988baa**（恢复链 6 条修复），worktree 干净——等回报或全量验证中 | U-29 仍在实现
+2026-11-02 20.4x 回报 | **builder U-28 完成**：0988baa，12 文件 +550——R1 双开退出（不用 showErrorBox 有据）、R2 两处 try/catch、R3/R4 恢复挂 onConnected（超时仅放行 U-17 语义保留）、R5 双路径清 failed、R6 restore-pending 喂 renderer 现有 500ms 重试（零 renderer 改动）；TDD 12 条红→绿；209 单测+52 e2e | **派 verifier** | U-29 在途
+2026-11-02 20.4x 回报 | **builder U-29 完成**：8b816fc，17 文件 +452——①R7 safeRpc+metaApi（四处调用点）②R8 代答 catch 保留 pending（REVIEW 原文依据，取舍有据）③R9 sdkChildEnv（env 副本不 delete）+ envOrDotenv（.env 兜底）④O1 gen 换代丢弃 ⑤O2 dialog 失效 token + slowNext 钩子；206 单测+53 e2e（d1-real-model 全量首绿=R9 实证）| overBudget 3 条记档（connect rpc 无超时/ready waiter 泄漏/mutations.sh）| **派 verifier** | 在途：verifier ×2（U-28/U-29）
+2026-11-02 20.43 tick | verifier ×2 在途（各跑 50+ e2e 复跑需 ~10min）
+2026-11-02 20.43 tick | 同上
+2026-11-02 20.44 tick | 同上（复跑中）
+2026-11-02 20.45 tick | 同上
+2026-11-02 20.46 tick | verifier ×2 复跑中（209+52 / 206+53 各 ~10min——正常）
+2026-11-02 20.46 tick | 同上
+2026-11-02 20.47 tick | 同上
+2026-11-02 20.48 tick | verifier ×2 ~7min——各 50+ e2e 复跑 + 红基线 detach，正常等
+2026-11-02 20.49 tick | 同上
+2026-11-02 20.50 tick | 同上（e2e ~5min×可能多轮）
+2026-11-02 20.51 tick | 同上
+2026-11-02 20.52 tick | 同上
+2026-11-02 20.53 tick | verifier ×2 ~12min——e2e 全量串行双轮次正常偏长，下 tick 无报告则查
+2026-11-02 20.54 tick | 同上
+2026-11-02 20.55 回报 | verifier U-29 = PASS（206/53 复跑、d1 全量首绿=R9 实证、R8 取舍终裁符合 REVIEW 原文、slowNext 追认、五组红基线自证）| ⚠ MERGE 预警：U-28 R2 与 U-29 R7 同根因（m3 rpc-reject），交叠 m3-meta/index.ts + 单测——合并策略：U-28 先进，U-29 rebase 后保 safeRpc 版本去重，合并后 main 全量回归 | 在途：verifier U-28
+2026-11-02 20.57 tick | verifier U-28 在途（209+52 e2e 复跑 + detach 红基线需时）
+2026-11-02 20.57 tick | 同上
+2026-11-02 20.58 tick | 同上
+2026-11-02 21.0x 回报 | verifier U-28 = PASS（209/52 复跑、双开框架外真进程亲跑、12 红基线 detach 全红、R6 renderer diff=0 确认）| **合并 U-28 → 86b4c2c** | **SendMessage U-29 rebase 到 86b4c2c**（m3-meta/index.ts 冲突保 safeRpc，R2 由 safeRpc 覆盖）| rebase 后全量 → 合并 → main 全量回归 → L-6 复审
+2026-11-02 20.59 tick | U-29 rebase 进行中
+2026-11-02 21.00 tick | U-29 rebase 活跃（17 文件——冲突解决+适配中）
+2026-11-02 21.01 tick | 同上（rebase/适配进行中）
+2026-11-02 21.01 tick | 同上
+2026-11-02 21.03 tick | U-29 rebase 完成（4835a31），worktree 干净——全量验证中或回报在即
+2026-11-02 21.03 tick | U-29 rebase 后验证中（2 文件）
+2026-11-02 21.04 tick | U-29 head 5144d2c（rebase 后续 commit）——接近回报
+2026-11-02 21.05 tick | U-29 5144d2c——等回报
+2026-11-02 21.06 tick | U-29 rebase 后全量跑中（rebase + 联调适配 + build/test/e2e ~10min 正常）
+2026-11-02 21.07 tick | 同上（e2e 53 条串行 ~5.7m）
+2026-11-02 21.1x U-29 rebase 完成：5144d2c（保 safeRpc 去重、R6 完整、测试统一格式、R7 并入）；217 单测+54 e2e 全绿 | 派 verifier 轻量复验
+2026-11-02 21.13 tick | verifier U-29 rebase 复验中
+2026-11-02 21.13 tick | 复验未落——在途
+2026-11-02 21.15 tick | 同上
+2026-11-02 21.17 tick | verifier 复验中（54 e2e 串行 ~6min——正常）
+2026-11-02 21.17 tick | 同上
+2026-11-02 21.19 tick | 复验跑中（e2e 后半段）
+2026-11-02 21.20 tick | 同上
+2026-11-02 21.20 tick | 同上
+2026-11-02 21.21 tick | 复验尾段（~10min——54 条 e2e 串行正常）
+2026-11-02 21.22 tick | 同上
+2026-11-02 21.23 tick | 同上
+2026-11-02 21.24 tick | 同上（复验 ~12min）
+2026-11-02 21.25 tick | 同上——通知即将到达，不再逐分钟查
+2026-11-02 21.25 tick | 同上
+2026-11-02 21.26 tick | 同上
+2026-11-02 21.27 tick | 同上（等通知）
+2026-11-02 21.29 tick | 复验 ~18min——54 条 e2e ×2 轮（全量+抽跑亲验）需时正常，继续等通知
+2026-11-02 21.30 tick | 同上
+2026-11-02 21.32 tick | 复验 ~21min——超长但 verifier 有 detach 红基线 + 抽亲跑，可能 3 轮 e2e；下 tick 无果 SendMessage 查
+2026-11-02 21.32 tick | 同上
+2026-11-02 21.34 tick | 复验 ~22min → SendMessage 查状态
+2026-11-02 21.36 tick | 同上（查询排队）
+2026-11-02 21.37 tick | 同上
+2026-11-02 21.38 tick | 同上
+2026-11-02 21.39 tick | 同上（等回应或通知）
+2026-11-02 21.40 tick | 同上
+2026-11-02 21.40 tick | 同上
+2026-11-02 21.41 tick | 同上——e2e 54 条 ×2-3 轮 + detach 约 30min 属正常上限，等通知
+2026-11-02 21.42 tick | 同上
+2026-11-02 21.42 tick | 同上
+2026-11-02 21.43 tick | 同上
+2026-11-02 21.44 tick | 同上——等 verifier 通知
+2026-11-02 21.45 tick | 同上
+2026-11-02 21.46 tick | 同上
+2026-11-02 21.5x **U-28 + U-29 全部合并**（86b4c2c + 1e18112）；main 全量 217 单测 + 50 e2e 全绿 ✓ | **启动 L-6 复审**（86b4c2c..1e18112，验 9 发现闭环）——PASS 即 P4 收官

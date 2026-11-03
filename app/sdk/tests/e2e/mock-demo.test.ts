@@ -8,7 +8,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { snapshotFrames } from '../../examples/lib/client.mjs'
+import { connect, snapshotFrames } from '../../examples/lib/client.mjs'
 import { main, resolveConfig, startRuntime } from '../../src/start.ts'
 import {
   childEnvHas,
@@ -164,16 +164,43 @@ describe('T-01.f3 credential isolation + snapshot barrier', () => {
       const drained = (async () => {
         for await (const f of stream) frames.push(f)
       })()
+      // P5-21：工作区外的 ../launch-token 读现在先落到档位表第 4 行（ASK）——
+      // 开一个应答侧把卡拒绝掉（本用例的属性是「token 不进 transcript」，不是
+      // 「读在哪一层失败」）；$DSH_HOME 下的 env-derive 读仍被 P5-02 guard 拒。
+      const feedClient = await connect({ baseUrl: rt2.baseUrl, token: rt2.token, interactions: 'answer' })
+      const events = await feedClient.socket.open('$events', {})
+      const eventFrames: Array<{ type: string; clientId?: string; event?: string; eventId?: string; agentId?: string }> = []
+      const eventDrained = (async () => { for await (const f of events) eventFrames.push(f as never) })().catch(() => {})
+      const readyDeadline = Date.now() + 5000
+      while (!eventFrames.some((f) => f.type === 'ready') && Date.now() < readyDeadline) {
+        await new Promise((r) => setTimeout(r, 50))
+      }
+      const clientId = eventFrames.find((f) => f.type === 'ready')?.clientId ?? ''
       await sendPrompt(rt2.client, sessionId, '读一下 ../launch-token')
+      const answered = new Set<string>()
+      const settleDeadline = Date.now() + 30_000
+      for (;;) {
+        for (const f of eventFrames) {
+          if (f.type === 'waterfall' && f.event === 'approval/request' && f.agentId === sessionId && !answered.has(f.eventId ?? '')) {
+            answered.add(f.eventId ?? '')
+            await feedClient.call('$events/result', { clientId, eventId: f.eventId, outcome: { kind: 'result', value: 'rejected' } })
+          }
+        }
+        if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
+        if (Date.now() > settleDeadline) throw new Error('turn/end 未到（审批未应答？）')
+        await new Promise((r) => setTimeout(r, 50))
+      }
       await waitForTurnEnd(frames)
       stream.cancel()
       void drained
+      events.cancel()
+      void eventDrained
+      feedClient.close()
 
       const all = JSON.stringify(frames)
-      // P5-02：$DSH_HOME 下的 env-derive 读现在先被文件工具 guard 拒（比
-      // 「文件不存在」更强的主动防御）；工作区外的 ../launch-token 仍由上游
-      // 报 FS_NOT_FOUND。两次 read 都失败，token 与 handoff 路径不进 transcript。
-      expect(all, 'relative read fails at the tool layer (FS_NOT_FOUND)').toMatch(/not found/)
+      // 工作区外读被档位策略出卡并拒绝（P5-21 第 4 行）；env-derive 读被 guard
+      // 拒（P5-02）。两次 read 都失败，token 与 handoff 路径不进 transcript。
+      expect(all, 'out-of-workspace read is gated by the tier policy and rejected').toMatch(/p2sdk policy/)
       expect(all, 'env-derive read is denied by the P5-02 guard').toMatch(/p2sdk-fs-guard/)
       expect(all).not.toContain(token)
       expect(all).not.toContain(rt2.handoff)

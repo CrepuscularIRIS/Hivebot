@@ -43,6 +43,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
+import { connect } from '../../examples/lib/client.mjs'
 import type { Frame } from '../support/fake/harness.ts'
 import { sendPrompt } from '../support/fake/harness.ts'
 
@@ -381,9 +382,36 @@ it('③ X (connectors) sees and CALLS the real filesystem tool; Y never sees it'
   expect(yTools.filter((n) => n.startsWith('mcp__')), 'Y (not enabled) sees no connector tool').toEqual([])
 
   // The scripted turn on X: model calls the connector tool, then closes with text.
+  // P5-21：连接器工具落档位表第 7 行（ASK，桥前回退）——开一个应答侧把卡批掉，
+  // 批准后 stdio server 真跑，tool/result 断言（真实输出）语义不变。
+  const feedClient = await connect({ baseUrl: rt.baseUrl, token: rt.token, interactions: 'answer' })
+  const events = await feedClient.socket.open('$events', {})
+  const eventFrames: Array<{ type: string; clientId?: string; event?: string; eventId?: string; agentId?: string }> = []
+  const eventDrained = (async () => { for await (const f of events) eventFrames.push(f as never) })().catch(() => {})
+  const readyDeadline = Date.now() + 5000
+  while (!eventFrames.some((f) => f.type === 'ready') && Date.now() < readyDeadline) {
+    await new Promise((r) => setTimeout(r, 50))
+  }
+  const clientId = eventFrames.find((f) => f.type === 'ready')?.clientId ?? ''
   const handle = await follow(x)
   await sendPrompt(rt.client, x, '读一下 hello.txt')
-  await waitForFrame(handle.frames, (f) => f.type === 'event' && f.event?.type === 'turn/end', 60_000, 'X turn/end')
+  const answered = new Set<string>()
+  const turnDeadline = Date.now() + 60_000
+  for (;;) {
+    for (const f of eventFrames) {
+      if (f.type === 'waterfall' && f.event === 'approval/request' && f.agentId === x && !answered.has(f.eventId ?? '')) {
+        answered.add(f.eventId ?? '')
+        await feedClient.call('$events/result', { clientId, eventId: f.eventId, outcome: { kind: 'result', value: 'allowed-once' } })
+      }
+    }
+    if (handle.frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
+    if (Date.now() > turnDeadline) throw new Error('X turn/end 未到（连接器审批未应答？）')
+    await new Promise((r) => setTimeout(r, 50))
+  }
+  expect(answered.size, 'P5-21 第 7 行：连接器调用出卡（桥前回退）').toBe(1)
+  events.cancel()
+  void eventDrained
+  feedClient.close()
 
   const callFrame = handle.frames.find(
     (f) => f.type === 'event' && f.event?.type === 'tool/call' && JSON.stringify(f).includes(CONNECTOR_TOOL),

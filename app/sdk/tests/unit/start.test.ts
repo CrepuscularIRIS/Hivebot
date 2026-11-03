@@ -321,6 +321,29 @@ describe('writeRuntimePatch · guard 行 (P5-02 决策 6/13)', () => {
   })
 })
 
+describe('writeRuntimePatch · shell-ask 行 (P5-21 决策 16a)', () => {
+  it('生成 id: p2sdk-shell-ask 行：handoff + 从数据根推导的 policyStatePaths（无独立 env）', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p521-patch-'))
+    const data = join(dir, 'data')
+    mkdirSync(data, { recursive: true })
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, PBOTS_DATA_DIR: data })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yaml).toContain('id: p2sdk-shell-ask')
+    expect(yaml).toMatch(new RegExp(`handoff: '${cfg.handoff.replaceAll("'", "''")}'`))
+    expect(yaml).toContain(join(data, 'policy-state.json'))
+    expect(yaml, '不写已取消的独立 env 通道（P2SDK_POLICY_STATE）').not.toContain('P2SDK_POLICY_STATE')
+  })
+
+  it('PBOTS_DATA_DIR 未设时 policyStatePaths 覆盖两个缺省数据根', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p521-def-'))
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, HOME: dir })
+    mkdirSync(join(dir, '.config', 'pbots-ui'), { recursive: true })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yaml).toContain(join(dir, '.config', 'pbots-ui', 'policy-state.json'))
+  })
+})
+
+
 describe('writeRuntimePatch · sandbox 行 (P5-01 决策 4)', () => {
   it('生成 id: sandbox 行：python3 -I wrapper、遮蔽/挂回清单、bwrap: 失败签名', () => {
     const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p5-patch-'))

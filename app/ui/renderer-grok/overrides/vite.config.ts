@@ -21,6 +21,7 @@ export const MODULE_OVERRIDES: Record<string, string> = {
   'recovered/features/conversation/workspace/rich-text-editor.tsx': 'rich-text-editor.tsx',
   'recovered/features/settings/overlay/view.tsx': 'settings-view.tsx',
   'recovered/features/settings/overlay/panels.tsx': 'settings-panels.tsx',
+  'recovered/features/permissions/local-tool/view.tsx': 'local-tool-view.tsx',
 }
 
 const byUpstream = new Map(Object.entries(MODULE_OVERRIDES).map(([up, ours]) => [path.join(src, up), path.join(here, 'modules', ours)]))

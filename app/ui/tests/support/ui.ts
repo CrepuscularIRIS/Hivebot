@@ -34,12 +34,17 @@ export function textCall(pieces: string[], opts: { gateId?: string; paceMs?: num
 }
 
 export function bashCall(command: string, id: string): object {
-  const args = JSON.stringify({ command, description: 'U-21 approval probe' })
+  return toolCall('bash', { command, description: 'U-21 approval probe' }, id)
+}
+
+/** fake LLM 一次模型调用：单个 tool-call（finish tool-calls → 回合继续）。 */
+export function toolCall(name: string, input: object, id: string): object {
+  const args = JSON.stringify(input)
   return {
     chunks: [
       { type: 'block-start', index: 0, blockType: 'tool-call' },
-      { type: 'tool-call-delta', index: 0, id, name: 'bash', argumentsDelta: args },
-      { type: 'block-end', index: 0, block: { type: 'tool-call', id, name: 'bash', arguments: args } },
+      { type: 'tool-call-delta', index: 0, id, name, argumentsDelta: args },
+      { type: 'block-end', index: 0, block: { type: 'tool-call', id, name, arguments: args } },
       { type: 'usage', usage: { inputTokens: 10, outputTokens: 5 } },
       { type: 'finish', reason: { kind: 'tool-calls' } },
     ],

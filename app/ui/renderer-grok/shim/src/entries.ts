@@ -15,17 +15,31 @@ export type RawEntry = Record<string, unknown> & { id: string; kind: string }
 
 const ts = (at: number | undefined): number => at ?? Date.now()
 
-/** 工具行单行摘要：args 里常见键（command/path/query/url）优先，截 120 字。 */
-function toolSummary(name: string, args: string, result: string | null): string {
+/** 工具实参里第一个常见键（command/path/query/url）的全文；非 JSON / 无键 → null。 */
+function argText(args: string): string | null {
   try {
     const parsed = JSON.parse(args) as Record<string, unknown>
     for (const key of ['command', 'path', 'file_path', 'query', 'url']) {
       const v = parsed[key]
-      if (typeof v === 'string' && v !== '') return v.slice(0, 120)
+      if (typeof v === 'string' && v !== '') return v
     }
   } catch { /* 原样 */ }
+  return null
+}
+
+/** 工具行单行摘要：argText 优先，截 120 字。 */
+function toolSummary(name: string, args: string, result: string | null): string {
+  const text = argText(args)
+  if (text !== null) return text.slice(0, 120)
   if (result !== null && result !== '') return result.replace(/\s+/g, ' ').slice(0, 120)
   return args === '' ? name : args.slice(0, 120)
+}
+
+/** 审批卡显示的完整动作（P5-31 ③，不截断）：request_network 的 reason 已含命令 + 范围 + 期限
+ * （sdk shell-ask.mjs:187），一律显示 reason；其余取同 callId 工具行实参全文，拿不到退 reason、再退工具名。 */
+export function askText(ask: { toolName: string; reason: string | null }, args: string | undefined): string {
+  const fromArgs = ask.toolName === 'request_network' || args === undefined ? null : argText(args)
+  return fromArgs ?? ask.reason ?? ask.toolName
 }
 
 export interface SerializeInput {

@@ -1,8 +1,9 @@
 // P5-51 · window.desktop 扁平桥（0.18 preload 形状，非 0.78.1 的 desktop.main.*）。
 // 实底清单 = RE-s0 run-stublogs（启动必需 + 旅程外按需）；其余方法返回空/能力关。
-// localToolPermission：ceiling 恒 "ask" → 上游 ceilingBlocksAlways 把「Always allow」禁用
-// （P5-31 v3：L-AP 语义由 shim 下发，不改上游文件）；set("always") 拒存回 "ask" →
-// 上游 resolveLocalToolPermissionAction 检测 stored!==requested 自动降级 allow-once（view.tsx:92-97）。
+// localToolPermission：恒 "ask"（L-AP：档位由 sdk 档位表 + NEVER 常量决定，renderer 没有写入口）。
+// ceiling 恒 "ask"、set 一律拒存回 "ask"——P5-31 起审批卡（overrides/modules/local-tool-view.tsx）只有
+// Allow once / Deny once、设置不渲染该下拉，这两条是兜底：万一 always/never 到达，上游
+// resolveLocalToolPermissionAction 检测 stored!==requested 降级 allow-once / deny（view.tsx:92-97）。
 import type { DesktopBridge, ThemeState, Unsubscribe } from '../../frontend/src/recovered/contracts/desktop-bridge'
 
 export interface DesktopOptions {
@@ -34,7 +35,6 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
     try { if (value === null) store.removeItem(`pbots.shim.${key}`); else store.setItem(`pbots.shim.${key}`, value) } catch { /* 私有模式等：静默 */ }
   }
 
-  let permission: 'ask' | 'never' = 'ask'
   const themeListeners = new Set<(state: ThemeState) => void>()
   const darkQuery = win.matchMedia('(prefers-color-scheme: dark)')
   let theme: ThemeState = { preference: 'system', resolved: darkQuery.matches ? 'dark' : 'light' }
@@ -144,15 +144,11 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
     autoReviewInstructions: { get: () => Promise.resolve({ isEnabled: false, allowInstructions: [], blockInstructions: [] }), set: (v) => Promise.resolve(v) },
     secrets: { list: () => Promise.resolve({ keys: [], isPersistent: false }), reveal: () => Promise.resolve(null), upsert: () => Promise.resolve({ synced: false }), remove: () => Promise.resolve({ synced: false }) },
     localToolPermission: {
-      get: () => Promise.resolve(permission),
-      set: (v: unknown) => {
-        // 拒存 always（D9/L-AP：始终允许不进 renderer 侧授权）；never 生效到本 renderer 会话
-        if (v === 'never') permission = 'never'
-        return Promise.resolve(permission)
-      },
+      get: () => Promise.resolve('ask'),
+      set: () => Promise.resolve('ask'),
       ceiling: () => Promise.resolve('ask'),
       recordApproval: () => Promise.resolve(),
-      clearApprovals: () => { permission = 'ask'; return Promise.resolve() },
+      clearApprovals: () => Promise.resolve(),
     },
     agent: {
       getPinnedAgents: () => Promise.resolve([]),

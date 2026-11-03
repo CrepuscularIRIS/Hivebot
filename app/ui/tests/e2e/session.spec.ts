@@ -1,6 +1,6 @@
 // U-21 P-B E2E（PAB 验收 ②；P5-54 起跑在 renderer-grok 上）：
 // ① D3 审批往返：Local tool permissions dock 只在发起 bot 的会话里出现，侧栏 Needs attention 标记；Deny once → 不执行 + 行 failed；
-//    Allow once → 执行 + 行 done；「Always allow」禁用且作答值域 ⊆ {allowed-once, rejected}（完全隐藏归 P5-31）。
+//    Allow once → 执行 + 行 done；卡上只有 Allow once / Deny once（P5-31：Always allow / Never 不在 DOM）、显示完整命令，作答值域 ⊆ {allowed-once, rejected}。
 // ② composer：Shift+Enter 换行、IME 组字 Enter 不发送、Enter 发送；草稿按 bot 隔离；打断（M1 session/cancel，0.18 无停止钮）→ aborted。
 // ③ 亮/暗截图存证；④ #11 分页：首窗有限，滚到顶自动取更早页，注入失败只重试该页。流式 ≥3 增量与定稿替换见 d1.spec.ts。
 import { expect, test } from 'playwright/test'
@@ -14,7 +14,7 @@ import {
 const shimAnswers = (page: import('playwright/test').Page): Promise<string[]> =>
   page.evaluate(() => ((window as unknown as { __pbotsShim: { answers: Array<{ value: string }> } }).__pbotsShim.answers).map((a) => a.value))
 
-test('D3 审批往返：dock 仅本 bot、侧栏 Needs attention；Deny → 不执行；Allow once → 执行；Always 禁用', async () => {
+test('D3 审批往返：dock 仅本 bot、侧栏 Needs attention；Deny → 不执行；Allow once → 执行；卡只有两钮 + 完整命令', async () => {
   const env = await launchProduct()
   try {
     const { page, rt } = env
@@ -34,7 +34,11 @@ test('D3 审批往返：dock 仅本 bot、侧栏 Needs attention；Deny → 不�
     const dock = permissionDock(page)
     await expect(dock).toBeVisible({ timeout: 20_000 })
     await expect(toolRows(page).last()).toContainText('touch')
-    await expect(dock.locator('button', { hasText: 'Always allow' })).toBeDisabled()
+    // P5-31（L-AP A9④）：bash 卡无始终允许、无 Never——DOM 中按钮数 === 0；只剩 Allow once / Deny once；完整命令（绝对路径全文）可见
+    await expect(dock.locator('button', { hasText: 'Always allow' })).toHaveCount(0)
+    await expect(dock.locator('button', { hasText: /^Never$/ })).toHaveCount(0)
+    await expect(dock.locator('button')).toHaveText(['Allow once', 'Deny once'])
+    await expect(dock.locator('[data-pbots="ask-command"]')).toHaveText(`touch ${rejectCanary}`)
     await page.screenshot({ path: join(EVIDENCE, 'approval-light.png') })
     await page.emulateMedia({ colorScheme: 'dark' })
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'cursor-dark')

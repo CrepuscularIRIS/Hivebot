@@ -9,7 +9,7 @@
 import { CarrierSocket, pageEnv } from '../../../renderer/carrier'
 import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../../../renderer/carrier/mux'
 import { initView, olderItemsOf, reduceFollow, type SessionView } from '../../../renderer/session/reduce'
-import { serialize, permissionEntry, type RawEntry } from './entries'
+import { askText, serialize, permissionEntry, type RawEntry } from './entries'
 import { activityOf, toAgentRecord } from './agents'
 import type { CoordinatorDeps } from './coordinator'
 
@@ -19,7 +19,7 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 
 interface ApiResult { ok: boolean; value?: unknown; error?: { code: string; message: string } }
 interface Summary { sessionId: string; title: string | null; running: boolean; updatedAt: number }
-interface Ask { agentId: string; callId: string | null; command: string; at: number }
+interface Ask { agentId: string; callId: string | null; toolName: string; reason: string | null; at: number }
 
 const HISTORY_PAGE = 40
 /** tail 回值时 follow 快照还没到：回这个探针游标，首次取更早页时再按 live 窗口定（transcriptWindow）。 */
@@ -126,7 +126,10 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     for (const [eventId, ask] of asks) {
       if (ask.agentId !== agentId) continue
       revision += 1
-      out.push(permissionEntry({ id: `perm-${eventId}`, requestId: eventId, scope: opts.authId, revision, at: ask.at, command: ask.command }))
+      // 完整动作按同 callId 工具行实参现算（approval/request 先于工具行到达时退 reason，下一次推送补上）
+      const tool = views.get(agentId)?.items.find((i) => i.kind === 'tool' && i.callId === ask.callId)
+      const command = askText(ask, tool?.kind === 'tool' ? tool.args : undefined)
+      out.push(permissionEntry({ id: `perm-${eventId}`, requestId: eventId, scope: opts.authId, revision, at: ask.at, command }))
     }
     return out
   }
@@ -234,7 +237,9 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       asks.set(it.eventId, {
         agentId: String(it.agentId ?? ''),
         callId: typeof req.callId === 'string' ? req.callId : null,
-        command: typeof req.displayReason === 'string' ? req.displayReason : typeof req.reason === 'string' ? req.reason : String(req.toolName ?? 'tool'),
+        toolName: String(req.toolName ?? 'tool'),
+        // displayReason 是本地化对象 {en,…}（dsh-user-approval types.d.ts:65），优先于 reason
+        reason: typeof rec(req.displayReason).en === 'string' ? rec(req.displayReason).en as string : typeof req.reason === 'string' ? req.reason : null,
         at: Date.now(),
       })
       pushTranscript(String(it.agentId ?? ''))

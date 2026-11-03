@@ -50,9 +50,10 @@ test('D12①/② + D11/D9 DOM + 8 张截图：零外网请求、token 零泄漏�
     const pluginsText = (await page.locator('body').innerText()).toLowerCase()
     await page.keyboard.press('Escape')
     await openSettings(page)
-    // 设置里的「Execution on Local Computer」是本地工具审批档（L-AP，P5-52 交 P5-31 改文案/下拉），不是 computer-use 入口：扫描前剔除该卡文案
+    // P5-31 起设置不渲染「Execution on Local Computer」下拉与团队 ceiling 文案（L-AP 档位不归 renderer），扫描不再剔除任何文案
     const settingsText = (await page.locator('.sand-settings-panel').innerText()).toLowerCase()
-      .replace(/execution on local computer/g, '').replace(/run tasks on your computer/g, '')
+    expect(settingsText).not.toContain('execution on local computer')
+    expect(settingsText).not.toContain("team's admin")
     await page.locator('.sand-settings-panel__close').click()
     await openBot(page, 'U31-A')
     await page.click('button[aria-label="View agent settings"]')

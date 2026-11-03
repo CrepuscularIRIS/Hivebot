@@ -63,13 +63,12 @@ describe('localToolPermission · ceiling=ask（P5-31 v3：shim 下发，不改�
     await expect(d.localToolPermission.ceiling()).resolves.toBe('ask')
   })
 
-  it('get → "ask"；set("always") 拒存回 "ask"（上游 resolveLocalToolPermissionAction 检测 stored!==requested → 降级 allow-once）；set("never") 生效', async () => {
+  it('get → "ask"；set 一律拒存回 "ask"（L-AP：档位由 sdk 档位表 + NEVER 常量定，renderer 无写入口；P5-31 起卡与设置都不再发 always/never）', async () => {
     const d = b(mkWindow())
     await expect(d.localToolPermission.get()).resolves.toBe('ask')
     await expect(d.localToolPermission.set('always')).resolves.toBe('ask')
+    await expect(d.localToolPermission.set('never')).resolves.toBe('ask')
     await expect(d.localToolPermission.get()).resolves.toBe('ask')
-    await expect(d.localToolPermission.set('never')).resolves.toBe('never')
-    await expect(d.localToolPermission.get()).resolves.toBe('never')
     await expect(d.localToolPermission.clearApprovals()).resolves.toBeUndefined()
   })
 })

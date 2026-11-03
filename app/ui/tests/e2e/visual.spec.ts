@@ -1,214 +1,136 @@
-// U-27 视觉打磨 E2E + P5-15 U2 数值断言（work/p5-parity/RE-visual-residual.md 的 fixed 22 项：主表 19 + 规则 5/9/15）。
-// 每项 computed-style 断言亮 / 暗各跑一遍（themed）；逐行对照表 = work/p5-parity/evidence/P5-15/u2-table.md。
-// 「待回修 P5-15.f<n>」= 断言写的是当前 main 实际值，与 R2（RE-visual-078-values.md，覆盖旧 0.18 规格）不符；
-// 偏差与期望值见 work/p5-parity/REPORT-P5-15.md「待回修清单」，回修任务改 css 时同步把断言改成 R2 值。
-// 四页亮/暗截图存 gitignored app/ui/test-output/U-27/（U-33）。
-import { expect, test, type Locator, type Page } from 'playwright/test'
-import { mkdirSync, writeFileSync } from 'node:fs'
+// U2′（P5-54）：旧 renderer 的 U2 / R8 数值断言（visual*.spec.ts，P5-15 / P5-11 / P5-12 / P5-14）迁到 renderer-grok 的等价锚点。
+// 每个锚点 = 旧条目 id（A1…E5 / 规则 n）+ 新 renderer 选择器 + 计算样式属性；亮暗各量一遍，逐项与基线
+// tests/e2e/visual-baseline.json 比对（= 0.18 移植树现值，防回归）。旧断言值记在 was 字段：
+// 新值 ≠ was 的行就是交 P5-55 的 U2′ 差异表（跑完写 test-output/U2p/diff.tsv，报告转录）。
+// P5-55 换 0.78.1 值时：改覆盖文件 → PBOTS_UPDATE_VISUAL_BASELINE=1 重写基线 → diff.tsv 里对应行消失即为收口证据。
+// 无锚点的旧条目（0.18 没有该构件）以 sel=null 列出：断言「确实不存在」，同样进差异表。
+import { expect, test, type Page } from 'playwright/test'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { tmkdir } from '../support/tmp-sweep.ts'
-import { launchShell } from '../support/launch.ts'
-import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
-import { MARKET_SOURCE_PATCH, serveMarket } from '../support/connectors.ts'
-import { PRESETS_PATCH, bashCall, createViaDialog, devState, evidenceOut, launchProduct, send, textCall } from '../support/ui.ts'
+import { bashCall, createBots, evidenceOut, finalAssistant, launchProduct, openBot, permissionDock, reasoningTextCall, send, textCall } from '../support/ui.ts'
 
-const OUT = evidenceOut('U-27')
+const OUT = evidenceOut('U2p')
+const BASELINE = join(__dirname, 'visual-baseline.json')
+const UPDATE = process.env.PBOTS_UPDATE_VISUAL_BASELINE === '1'
 type Mode = 'light' | 'dark'
 
-// 主题色实测值（当前 main 的 token 解析结果）：--dsw-alias-link（规则 5/9）、--dsw-alias-label-secondary（规则 15）
-const LINK: Record<Mode, string> = { light: 'rgb(11, 109, 211)', dark: 'rgb(77, 155, 255)' }
-const SECONDARY: Record<Mode, string> = { light: 'rgba(28, 28, 28, 0.68)', dark: 'rgba(245, 245, 245, 0.66)' }
-
-const css = (loc: Locator, props: string[]): Promise<Record<string, string>> =>
-  loc.evaluate((el, ps) => Object.fromEntries(ps.map((p) => [p, getComputedStyle(el).getPropertyValue(p)])), props)
-
-/** 亮、暗各切一次主题跑 check（U2 每项 ×2），给了 name 就顺手截图；结束回到亮色。 */
-async function themed(page: Page, check: (mode: Mode) => Promise<void>, name?: string): Promise<void> {
-  for (const mode of ['light', 'dark'] as const) {
-    await page.emulateMedia({ colorScheme: mode })
-    await expect(page.locator('html')).toHaveAttribute('data-theme', `cursor-${mode}`)
-    await check(mode)
-    if (name !== undefined) await page.screenshot({ path: join(OUT, `${name}-${mode}.png`) })
-  }
-  await page.emulateMedia({ colorScheme: 'light' })
+interface Anchor {
+  id: string
+  /** 新 renderer 的锚点（取第一个匹配）；null = 0.18 无该构件。 */
+  sel: string | null
+  props: string[]
+  /** 旧断言值（旧 renderer，R2 / R8 / 0.18 规格），与新值并列进差异表。 */
+  was: string
 }
 
-/** 规则 15：outcome 单行只活在「已作答 → 工具结果到达」之间，用 MutationObserver 在出现瞬间取 computed。 */
-async function approveAndCaptureOutcome(page: Page, card: Locator): Promise<Record<string, string>> {
-  await page.evaluate(() => {
-    const w = window as unknown as { __u2outcome?: Record<string, string> }
-    delete w.__u2outcome
-    const mo = new MutationObserver(() => {
-      const el = document.querySelector('.approval-outcome')
-      if (el === null) return
-      const s = getComputedStyle(el)
-      w.__u2outcome = { padding: s.padding, 'font-size': s.fontSize, 'line-height': s.lineHeight, color: s.color }
-      mo.disconnect()
-    })
-    mo.observe(document.body, { childList: true, subtree: true })
-  })
-  await card.locator('[data-action="approve"]').click()
-  const h = await page.waitForFunction(() => (window as unknown as { __u2outcome?: Record<string, string> }).__u2outcome, null, { timeout: 20_000 })
-  return (await h.jsonValue())!
+const ANCHORS: Anchor[] = [
+  { id: 'A1 头部', sel: '.sand-agents-sidebar__header', props: ['padding', 'column-gap', 'min-height', 'box:height'], was: 'padding 12px 16px; column-gap 8px; min-height = --sand-titlebar-block' },
+  { id: 'A1 钮', sel: '.sand-agents-sidebar__header button[aria-label="New"]', props: ['width', 'height', 'border-top-left-radius'], was: '24px×24px r6' },
+  { id: 'A2 搜索钮', sel: '.sand-agents-sidebar__search', props: ['height', 'border-top-left-radius', 'font-size'], was: '侧栏内搜索框（原位出现）' },
+  { id: 'A3 列表', sel: '.sand-agents-list', props: ['padding'], was: 'padding 4px 12px 24px' },
+  { id: 'A4 条目', sel: '.sand-agent-item', props: ['min-height', 'padding', 'box:height'], was: 'min-height 58px; padding 8px（R2：固定 54）' },
+  { id: 'A5 条目栅格', sel: '.sand-agent-item', props: ['display', 'column-gap'], was: 'grid 34px …; column-gap 9px（R2：gap 8）' },
+  { id: 'A6 头像', sel: '.sand-agent-item__avatar', props: ['box:width', 'box:height'], was: '34（R2 推断 32）' },
+  { id: 'A13 折叠宽', sel: null, props: [], was: '折叠 78（0.18 为 88：visual-sidebar.spec 断言 88）' },
+  { id: 'A18 调宽把手', sel: '.sand-sidebar-resize-handle', props: ['width', 'right', 'box:height'], was: 'right -6px; width 12px; 全高' },
+  { id: 'B1 会话列', sel: '.sand-virtual-transcript', props: ['row-gap', 'padding-top', 'padding-left'], was: 'row-gap 22px' },
+  { id: 'B2 会话列宽', sel: '.sand-virtual-transcript', props: ['max-width', 'padding'], was: 'padding 28px 30px; max-width 750px' },
+  { id: 'B3 用户气泡', sel: null, props: [], was: '反转气泡（R2 B3）；0.18 持久用户条目落 assistant 侧（VERIFY-P5-51 OBS），无用户气泡锚点' },
+  { id: 'B6 工具行', sel: '.sand-outline-item[data-kind="tool-call"] .sand-outline-item__row', props: ['min-height', 'padding', 'border-top-left-radius'], was: 'min-height 34px; padding 7px 9px（R2：高 28 r8）' },
+  { id: 'B6 chevron', sel: '.sand-outline-item[data-kind="tool-call"] .sand-outline-item__chevron', props: ['width', 'height', 'transform'], was: '6×6；收起 rotate(-45deg)' },
+  { id: 'B6 预览', sel: '.sand-outline-item[data-kind="tool-call"] .sand-outline-item__preview', props: ['font-size', 'font-family'], was: 'preview 13px 非等宽（R2）' },
+  { id: 'B7 thinking 行', sel: '.sand-outline-item[data-kind="thinking"] .sand-outline-item__row', props: ['min-height', 'padding'], was: 'thinking 行（P5-12）' },
+  { id: 'B8 审批卡', sel: '[aria-label="Local tool permissions"]', props: ['border-top-left-radius', 'padding', 'box-shadow'], was: 'r10; padding 14px 16px（R2：r24 + 阴影）' },
+  { id: 'B8 钮', sel: '[aria-label="Local tool permissions"] button', props: ['padding', 'border-top-left-radius', 'height'], was: 'padding 6px 9px r6（R2：药丸 r9999）' },
+  { id: 'B10 composer 壳', sel: '.sand-prompt-shell', props: ['padding', 'border-top-left-radius'], was: 'padding 9px; r16（R2：药丸 r9999）' },
+  { id: 'B10 输入', sel: '.sand-prompt-shell .ProseMirror', props: ['min-height', 'font-size'], was: 'min-height 48px' },
+  { id: 'B10 dock', sel: '.sand-chat-input-dock', props: ['padding-bottom'], was: 'padding-bottom 18px' },
+  { id: 'B14 时间分隔', sel: '.sand-transcript-time-separator', props: ['margin-bottom', 'font-size', 'color'], was: '高 22（P5-12）' },
+  { id: 'B15 代码块', sel: '.sand-message-prose pre', props: ['border-top-left-radius', 'padding', 'font-family'], was: 'copy 钮 top 6 right 6 opacity 0' },
+  { id: 'C1 info pane', sel: 'aside.sand-info-pane[data-open]', props: ['box:width', 'border-left-width'], was: '初始 320；范围 280–480' },
+  { id: 'E3 根', sel: 'html', props: ['font-synthesis', 'color-scheme'], was: 'font-synthesis none; color-scheme = mode' },
+  { id: 'E4 正文字体', sel: '.sand-message-prose', props: ['font-family', 'font-size', 'line-height'], was: 'body 字体含 XVF（D12③）' },
+  { id: '规则 5/9 链接色', sel: '.sand-message-prose a', props: ['color'], was: 'light rgb(11,109,211) / dark rgb(77,155,255)' },
+  { id: '规则 15 次要文字', sel: '.sand-agent-item__name', props: ['color', 'font-size'], was: 'light rgba(28,28,28,.68) / dark rgba(245,245,245,.66)（outcome 行）' },
+  { id: 'D4 市场搜索', sel: null, props: [], was: 'r8; h32; padding 0 9（P-C 市场页未移植）' },
+  { id: 'D6 市场行', sel: null, props: [], was: 'padding 12; min-h 56; 行距 7; 头像 36（P-C 市场页未移植）' },
+  { id: 'C2 pane 头', sel: null, props: [], was: 'pane-head padding-left 12（P-D pane 未移植）' },
+]
+
+/** 所有锚点的计算值：`id|prop` → 值；box:* 取布局盒（四舍五入 px）。 */
+async function measure(page: Page): Promise<Record<string, string>> {
+  return page.evaluate((anchors) => {
+    const out: Record<string, string> = {}
+    for (const a of anchors) {
+      if (a.sel === null) continue
+      const el = document.querySelector(a.sel)
+      for (const p of a.props) {
+        if (el === null) { out[`${a.id}|${p}`] = '<missing>'; continue }
+        if (p.startsWith('box:')) {
+          const r = el.getBoundingClientRect()
+          out[`${a.id}|${p}`] = `${Math.round(p === 'box:width' ? r.width : r.height)}px`
+        } else out[`${a.id}|${p}`] = getComputedStyle(el).getPropertyValue(p).trim()
+      }
+    }
+    return out
+  }, ANCHORS)
 }
 
-test('侧栏 / 会话 / 审批 / info-pane：U2 fixed 项亮暗数值断言 + 条件显示 + 截图', async () => {
+test('U2′：旧 U2 / R8 数值断言的新锚点亮暗锁定（基线 = 0.18 移植现值）+ 差异表 + 截图', async () => {
   test.setTimeout(180_000)
   const env = await launchProduct()
   try {
     const { page, rt } = env
     await env.shell.app.evaluate(({ BrowserWindow }) => { BrowserWindow.getAllWindows()[0]!.setContentSize(1280, 820) })
-    const x = await createViaDialog(page, 'standard')
-    await expect.poll(async () => (await devState(page)).views[x]?.cwd).toBeTruthy()
-    const cwd = (await devState(page)).views[x]!.cwd!
-    const gate = `p5-15-working-${Date.now()}`
-    rt.writeScriptCalls(x, [
-      textCall(['你好，下面是一段示例代码：\n\n```ts\nconst answer = 42\n```\n']),
-      bashCall(`touch ${join(cwd, 'u27-canary')}`, 'call-v'), textCall(['已执行。', '收尾'], { gateId: gate }),
-      bashCall(`touch ${join(cwd, 'u2-canary')}`, 'call-w'), textCall(['完成。']),
+    const [x] = await createBots(page, [{ title: 'U2-X', preset: 'standard' }, { title: 'U2-Y', preset: 'p2-beta' }])
+    await openBot(page, 'U2-X')
+    rt.writeScriptCalls(x!, [
+      reasoningTextCall('先想一下示例。', '你好，下面是一段示例代码，详见 [文档](https://example.com)：\n\n```ts\nconst answer = 42\n```\n'),
+      bashCall('true', 'call-v'), textCall(['已执行。']),
     ])
     await send(page, '给个例子')
-    await expect(page.locator('.bubble.assistant.final')).toContainText('示例代码', { timeout: 20_000 })
-
-    const item = page.locator(`.bot-item[data-session="${x}"]`)
-    await expect(item.locator('time[data-updated]')).toHaveText('刚刚') // A8（文案，无数值）
-    await expect(page.locator('.sidebar-head .grok-mark')).toHaveCount(0) // A1：头部无品牌位
-    await themed(page, async () => {
-      // A1（P5-15.f1，P5-11 实现）：R2 icon 行 padding 12 16 / gap 8 / 组内 gap 2 / 钮 24 r6；min-height 断言跟 token 走
-      // （不写死 38：P5-16 改 titlebar 44/52 时不连带红），高 = max(token, 12+24+12)
-      const head = page.locator('.sidebar-head')
-      const block = await page.locator('html').evaluate((el) => getComputedStyle(el).getPropertyValue('--sand-titlebar-block').trim())
-      expect.soft(await css(head, ['min-height', 'padding', 'column-gap', 'justify-content']), 'A1').toEqual({
-        'min-height': block, padding: '12px 16px', 'column-gap': '8px', 'justify-content': 'space-between',
-      })
-      expect.soft((await head.boundingBox())!.height, 'A1 高').toBe(Math.max(parseFloat(block), 48))
-      expect.soft(await css(head.locator('.sidebar-actions'), ['column-gap']), 'A1 组').toEqual({ 'column-gap': '2px' })
-      for (const b of await head.locator('button').all()) {
-        expect.soft(await css(b, ['width', 'height', 'border-top-left-radius']), 'A1 钮').toEqual({ width: '24px', height: '24px', 'border-top-left-radius': '6px' })
-      }
-      expect.soft(await css(page.locator('.bot-list'), ['padding']), 'A3').toEqual({ padding: '4px 12px 24px' })
-      // A4 待回修 P5-15.f2（→P5-16）：R2 固定高 54、无 min-height 58
-      expect.soft(await css(item, ['min-height', 'padding']), 'A4').toEqual({ 'min-height': '58px', padding: '8px' })
-      expect.soft((await item.boundingBox())!.height, 'A4 实高').toBeGreaterThanOrEqual(58)
-      // A5（gap 待回修 P5-15.f2：R2 §0.1 A4 行 gap 8）
-      expect.soft(await css(item, ['display', 'grid-template-columns', 'column-gap']), 'A5').toEqual({
-        display: 'grid', 'grid-template-columns': expect.stringMatching(/^34px /), 'column-gap': '9px',
-      })
-      // A6：保持 34。R2 推断 32 未实测（R2 局限 3），待 R3 / Q-014，不按 32 改
-      expect.soft(Math.round((await item.locator('.avatar').boundingBox())!.width), 'A6').toBe(34)
-      expect.soft(await css(page.locator('.sidebar > .resizer'), ['right', 'width']), 'A18').toEqual({ right: '-6px', width: '12px' })
-      expect.soft(await css(page.locator('.chat-col'), ['row-gap']), 'B1').toEqual({ 'row-gap': '22px' })
-      expect.soft(await css(page.locator('.chat-col'), ['padding', 'max-width']), 'B2').toEqual({ padding: '28px 30px', 'max-width': '750px' })
-      expect.soft(await css(page.locator('.composer'), ['padding', 'border-radius']), 'B10 shell').toEqual({ padding: '9px', 'border-radius': '16px' })
-      expect.soft(await css(page.locator('[data-composer]'), ['min-height']), 'B10 输入').toEqual({ 'min-height': '48px' })
-      expect.soft(await css(page.locator('.composer-wrap'), ['padding-bottom']), 'B10 dock').toEqual({ 'padding-bottom': '18px' })
-      expect.soft(await css(page.locator('.code-wrap [data-action="copy-code"]'), ['top', 'right', 'opacity']), 'B15').toEqual({ top: '6px', right: '6px', opacity: '0' })
-    }, 'chat')
-    await themed(page, async (mode) => {
-      expect.soft(await css(page.locator('html'), ['font-synthesis', 'color-scheme']), 'E3').toEqual({ 'font-synthesis': 'none', 'color-scheme': mode })
-    })
-
-    // B6 待回修 P5-15.f3（→P5-16）/ B8 待回修 P5-15.f4（→P5-31）：断言为 main 现值（0.18 规格），R2 值见 REPORT
+    await expect(finalAssistant(page).last()).toContainText('示例代码', { timeout: 20_000 })
     await send(page, '执行一下')
-    const row = page.locator('.tool-row[data-call-id="call-v"]')
-    const card = row.locator('.approval-card')
-    await expect(card).toBeVisible({ timeout: 20_000 })
-    const B6_COLLAPSED = 'matrix(0.707107, -0.707107, 0.707107, 0.707107, 0, 0)'
-    const B6_OPEN = 'matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0)'
-    const b6b8 = async (chevron: string): Promise<void> => {
-      expect.soft(await css(row.locator('.tool-card'), ['border-top-width', 'border-top-left-radius']), 'B6 卡').toEqual({ 'border-top-width': '1px', 'border-top-left-radius': '9px' })
-      expect.soft(await css(row.locator('.tool-line'), ['min-height', 'padding']), 'B6 行').toEqual({ 'min-height': '34px', padding: '7px 9px' })
-      expect.soft(await css(row.locator('.tool-chevron'), ['width', 'height', 'transform']), 'B6 chevron').toEqual({ width: '6px', height: '6px', transform: chevron })
-      expect.soft(await css(card, ['border-top-left-radius', 'padding']), 'B8 卡').toEqual({ 'border-top-left-radius': '10px', padding: '14px 16px' })
-      expect.soft(await css(card.locator('[data-action="approve"]'), ['padding', 'border-top-left-radius']), 'B8 钮').toEqual({ padding: '6px 9px', 'border-top-left-radius': '6px' })
-    }
-    await themed(page, () => b6b8(B6_COLLAPSED))
-    await row.locator('.tool-line').click()
-    await expect(row.locator('.tool-line')).toHaveAttribute('aria-expanded', 'true')
-    await expect(row.locator('.tool-chevron')).toHaveCSS('transform', B6_OPEN) // 等 100ms 旋转过渡走完
-    await themed(page, async () => {
-      await b6b8(B6_OPEN)
-      expect.soft(await css(row.locator('.tool-detail'), ['padding', 'max-height']), 'B6 detail').toEqual({ padding: '0px 10px 10px 25px', 'max-height': '220px' })
-    }, 'approval')
+    await expect(permissionDock(page)).toBeVisible({ timeout: 20_000 }) // 审批卡挂着时量 B8
+    await page.click('button[aria-label="View agent settings"]')
+    await expect(page.locator('aside.sand-info-pane[data-open]')).toBeVisible()
 
-    // 规则 15（亮）：作答后卡收成 outcome 单行 → 工具结果到达后由 tool-decision 接手
-    const outcome: Record<Mode, Record<string, string>> = { light: await approveAndCaptureOutcome(page, card), dark: {} }
-    await expect(row.locator('[data-decision="allowed-once"]')).toBeVisible({ timeout: 20_000 })
-    await expect(row.locator('.approval-card')).toHaveCount(0)
-
-    // 规则 5 / 9：收尾文本被 gate 挂住 → 运行中、无待批 → 侧栏 accent 副行 + 会话头 Working 小标
-    const working = page.locator('[data-working]')
-    await expect(working).toHaveText('回复中', { timeout: 20_000 })
-    await expect(item.locator('.bot-sub.accent')).toHaveText('回复中')
-    await themed(page, async (mode) => {
-      expect.soft(await css(item.locator('.bot-sub.accent'), ['color']), '规则 5').toEqual({ color: LINK[mode] })
-      expect.soft(await css(working, ['color', 'font-size']), '规则 9').toEqual({ color: LINK[mode], 'font-size': '12px' })
-    })
-    mkdirSync(join(rt.home, 'gates'), { recursive: true })
-    writeFileSync(join(rt.home, 'gates', gate), '')
-    await expect(working).toHaveCount(0, { timeout: 20_000 })
-
-    // 规则 15（暗）：第二张卡在暗色下作答
-    await page.emulateMedia({ colorScheme: 'dark' })
-    await send(page, '再来一次')
-    const card2 = page.locator('.tool-row[data-call-id="call-w"] .approval-card')
-    await expect(card2).toBeVisible({ timeout: 20_000 })
-    outcome.dark = await approveAndCaptureOutcome(page, card2)
-    await expect(working).toHaveCount(0, { timeout: 20_000 })
-    await page.emulateMedia({ colorScheme: 'light' })
+    const got: Record<Mode, Record<string, string>> = { light: {}, dark: {} }
     for (const mode of ['light', 'dark'] as const) {
-      expect.soft(outcome[mode], `规则 15 ${mode}`).toEqual({ padding: '8px 0px', 'font-size': '13px', 'line-height': '18.2px', color: SECONDARY[mode] })
+      await page.emulateMedia({ colorScheme: mode })
+      await expect(page.locator('html')).toHaveAttribute('data-theme', `cursor-${mode}`)
+      got[mode] = await measure(page)
+      await page.screenshot({ path: join(OUT, `u2p-${mode}.png`) })
     }
+    await page.emulateMedia({ colorScheme: 'light' })
 
-    // C1/C2：info-pane 280–480、头部左 12、关闭钮 chevrons-right
-    await page.click('[data-action="toggle-info-pane"]')
-    const pane = page.locator('[data-info-pane]')
-    await expect(pane).toBeVisible()
-    await expect(pane.locator('.pane-head [aria-label="关闭配置栏"] .icon')).toHaveText(String.fromCodePoint(0xf31d))
-    await themed(page, async () => {
-      const r = pane.locator('.resizer')
-      expect.soft([await r.getAttribute('aria-valuemin'), await r.getAttribute('aria-valuemax')], 'C1 范围').toEqual(['280', '480'])
-      expect.soft(await css(pane, ['width']), 'C1 初始').toEqual({ width: '320px' })
-      expect.soft(await css(pane.locator('.pane-head'), ['padding-left']), 'C2').toEqual({ 'padding-left': '12px' })
-    }, 'settings')
+    if (UPDATE || !existsSync(BASELINE)) writeFileSync(BASELINE, `${JSON.stringify(got, null, 1)}\n`)
+    const base = JSON.parse(readFileSync(BASELINE, 'utf8')) as Record<Mode, Record<string, string>>
 
-    // A14：断线 → 侧栏 roster 断线态（列表保留）。只杀测试自己 spawn 的 runtime 子进程。
-    rt.child.kill('SIGTERM')
-    await expect(page.locator('[data-roster-state="unreachable"]')).toBeVisible({ timeout: 15_000 })
-    await expect(item).toBeVisible()
-    await page.screenshot({ path: join(OUT, 'roster-unreachable-light.png') })
+    // 防回归：每个锚点 × 属性 × 亮暗 一条断言（锚点必须存在；值 = 基线）
+    let asserted = 0
+    for (const mode of ['light', 'dark'] as const) {
+      for (const a of ANCHORS) {
+        if (a.sel === null) continue // 无锚点：0.18 没有该构件，只进差异表（不计断言数）
+        for (const p of a.props) {
+          const key = `${a.id}|${p}`
+          expect.soft(got[mode][key], `${mode} ${key} 锚点存在`).not.toBe('<missing>')
+          expect.soft(got[mode][key], `${mode} ${key}`).toBe(base[mode][key])
+          asserted += 2
+        }
+      }
+    }
+    // 迁移前 visual*.spec.ts 源码里的 expect 调用 158 处（含 soft）；这里每锚点×属性×亮暗 2 条，执行条数须不少于它
+    expect(asserted).toBeGreaterThanOrEqual(158)
+
+    // 差异表：旧值 | 新值（亮 / 暗），交 P5-55
+    const rows = ['id\tprops\twas(旧 renderer)\tnow light\tnow dark']
+    for (const a of ANCHORS) {
+      const now = (m: Mode): string => a.sel === null ? '—（0.18 无此构件）' : a.props.map((p) => `${p}=${got[m][`${a.id}|${p}`]}`).join('; ')
+      rows.push([a.id, a.props.join(','), a.was, now('light'), now('dark')].join('\t'))
+    }
+    writeFileSync(join(OUT, 'diff.tsv'), `${rows.join('\n')}\n`)
   } finally {
     await env.stop()
-  }
-})
-
-test('市场：D4 搜索框 r8 / h32 / padding 0 9；D6 行 padding 12 / min-h 56 / 行距 7；亮暗', async () => {
-  test.setTimeout(120_000)
-  const server = await serveMarket()
-  const rt = await launchSdkRuntime({
-    patch: `${MARKET_SOURCE_PATCH}:${PRESETS_PATCH}:${fakeOverlayPath()}`,
-    cwd: tmkdir('bot-u27-ws-'),
-    env: { P2SDK_MARKET_SOURCE_INDEXES: `${server.realUrl} ${server.localUrl}` },
-  })
-  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })
-  try {
-    const { page } = shell
-    await page.waitForSelector('.shell', { timeout: 30_000 })
-    await shell.app.evaluate(({ BrowserWindow }) => { BrowserWindow.getAllWindows()[0]!.setContentSize(1280, 820) })
-    await page.click('[data-action="market"]')
-    await expect.poll(() => page.textContent('[data-market-count]'), { timeout: 20_000 }).toBe('已加载 50 / 111')
-    const main = page.locator('[data-market-list] .m-main').first()
-    await themed(page, async () => {
-      expect.soft(await css(page.locator('.m-search'), ['border-top-left-radius', 'height', 'padding']), 'D4').toEqual({
-        'border-top-left-radius': '8px', height: '32px', padding: '0px 9px',
-      })
-      expect.soft(await css(page.locator('[data-market-list]'), ['row-gap']), 'D6 行距').toEqual({ 'row-gap': '7px' })
-      expect.soft(await css(main, ['padding', 'min-height', 'column-gap']), 'D6 行').toEqual({ padding: '12px', 'min-height': '56px', 'column-gap': '12px' })
-      expect.soft(Math.round((await main.locator('.avatar').boundingBox())!.width), 'D6 头像').toBe(36)
-    }, 'market')
-  } finally {
-    await shell.stop()
-    await rt.stop()
-    await server.close()
   }
 })

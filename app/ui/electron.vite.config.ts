@@ -1,9 +1,11 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
-import react from '@vitejs/plugin-react'
 import { resolve } from 'node:path'
 
-// 布局按 work/p4-ui/PLAN.md §2（main/preload/renderer 顶层目录，非脚手架的 src/ 布局）。
+// 布局按 work/p4-ui/PLAN.md §2（main/preload 顶层目录，非脚手架的 src/ 布局）。
 // sandbox preload 必须打成单文件 CJS（work/p4-ui/reuse/electron-shell.md:45）。
+// P5-54：renderer 不再由 electron-vite 构建——产品 renderer = renderer-grok（0.18 移植树 + shim），
+// 由 package.json build 的第二步 `pnpm -C renderer-grok build` 产出后整目录拷进 out/renderer/
+// （main 的缺省 appRoot 不变：out/main/../renderer）。
 export default defineConfig({
   main: {
     root: 'main',
@@ -22,14 +24,5 @@ export default defineConfig({
       rollupOptions: { output: { entryFileNames: 'index.cjs', format: 'cjs' } },
     },
     plugins: [externalizeDepsPlugin()],
-  },
-  renderer: {
-    root: 'renderer',
-    build: {
-      outDir: resolve('out/renderer'),
-      rollupOptions: { input: resolve('renderer/index.html') },
-    },
-    plugins: [react()],
-    resolve: { dedupe: ['react', 'react-dom'] },
   },
 })

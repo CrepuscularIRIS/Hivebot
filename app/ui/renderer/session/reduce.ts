@@ -1,6 +1,7 @@
 // P-B 会话视图归约（U-21/PAB）：session/follow 下行 item → 时间线。
 // 帧形状 = CONTRACT §3.3 + U-21 wire 实测（work/p4-ui/ui/PAB-final.md R19：取消后 turn/end.reason.kind
-// === 'aborted'）。纯函数、不可变；产品 store 与单测共用。
+// === 'aborted'）。纯函数、不可变；renderer-grok shim（data.ts / entries.ts / agents.ts）与单测共用。
+// P5-54：旧 renderer 退役后从 plugins/session/ 移到这里；时间分隔 / 未读线随 UI 迁到 renderer-grok/overrides/modules/markers.ts。
 // 审批卡不在这里：活跃卡只来自 $events waterfall（席 C：approval/asked 历史不生成可点按钮），
 // 这里只记审计态（asked → tool.awaiting，decided → tool.decision）。
 
@@ -213,77 +214,4 @@ export function reduceFollow(view: SessionView, value: unknown): SessionView {
     return view // end：等 assistant/message 定稿替换
   }
   return view
-}
-
-// ---- P5-12 B14：时间分隔 / 未读线（渲染期派生，不进 store） ----
-
-/** 0.78.1 时间分隔阈值（work/p1-re/evidence/chunks/index.eager-app-iGTgHP_Q.js @1734517 `emt=9e5`）。 */
-export const SEP_GAP_MS = 900_000
-
-export type Row = TimelineItem | { kind: 'time-sep'; id: string; label: string } | { kind: 'unread'; id: string }
-
-const sameDay = (x: number, y: number): boolean => new Date(x).toDateString() === new Date(y).toDateString()
-const pad = (n: number): string => String(n).padStart(2, '0')
-
-/** E78 `UR` zh-CN 形：今天 / 昨天 / 同年 `11月3日周二` / 跨年 `2025年11月3日`，后接 HH:mm。手写，不走 Intl（避开 ICU 差异）。 */
-export function timeLabel(at: number, now: number): string {
-  const d = new Date(at)
-  const hm = `${pad(d.getHours())}:${pad(d.getMinutes())}`
-  if (sameDay(at, now)) return `今天 ${hm}`
-  const y = new Date(now)
-  y.setDate(y.getDate() - 1)
-  if (sameDay(at, y.getTime())) return `昨天 ${hm}`
-  const md = `${d.getMonth() + 1}月${d.getDate()}日`
-  if (d.getFullYear() === new Date(now).getFullYear()) return `${md}周${'日一二三四五六'[d.getDay()]} ${hm}`
-  return `${d.getFullYear()}年${md} ${hm}`
-}
-
-/**
- * 时间线 + 分隔 / 未读线（0.78.1 E78@1739705 `vmt`）：上一条带时间的行不存在、|Δ| >= 15 分钟、或跨本地自然日 → 该行前插分隔；
- * 无 at 的行跳过且不更新 prev。未读线（至多一条）在 unreadBefore 那行前，顺序 未读线 → 分隔 → 行（E78 `Emt`）。
- */
-export function withMarkers(items: readonly TimelineItem[], now: number, unreadBefore: string | null): Row[] {
-  const out: Row[] = []
-  let prev: number | null = null
-  for (const item of items) {
-    if (item.id === unreadBefore) out.push({ kind: 'unread', id: 'unread-line' })
-    if (item.at !== undefined) {
-      if (prev === null || Math.abs(item.at - prev) >= SEP_GAP_MS || !sameDay(item.at, prev)) {
-        out.push({ kind: 'time-sep', id: `sep-${item.id}`, label: timeLabel(item.at, now) })
-      }
-      prev = item.at
-    }
-    out.push(item)
-  }
-  return out
-}
-
-/** 时间线里最新的 at（离开 bot 时记为已读边界）；无带时间的行 → null。 */
-export function latestAt(items: readonly TimelineItem[]): number | null {
-  let max: number | null = null
-  for (const item of items) if (item.at !== undefined && (max === null || item.at > max)) max = item.at
-  return max
-}
-
-/** 未读起点：第一个 at > readMark 且不是用户本人消息的行；无基线 → null。 */
-export function firstUnreadId(items: readonly TimelineItem[], readMark: number | undefined): string | null {
-  if (readMark === undefined) return null
-  return items.find((i) => i.at !== undefined && i.at > readMark && i.kind !== 'user')?.id ?? null
-}
-
-/** 工具名 → Title Case（原版 tool-call 行：name→Title Case + summary，RE-ui-shell §3.2）。 */
-export function toolTitle(name: string): string {
-  return name.split(/[_\-\s]+/).filter(Boolean).map((w) => w[0]!.toUpperCase() + w.slice(1)).join(' ')
-}
-
-/** 单行摘要：优先 command / path / query 等常见参数，否则原始 JSON。 */
-export function toolSummary(args: string): string {
-  try {
-    const parsed = rec(JSON.parse(args))
-    for (const key of ['command', 'path', 'file_path', 'query', 'url', 'pattern']) {
-      const v = str(parsed[key])
-      if (v !== null) return v
-    }
-  } catch { /* 原样显示 */ }
-  return args
 }

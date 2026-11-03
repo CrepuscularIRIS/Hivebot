@@ -2,7 +2,7 @@
 // 消费端：production/model.ts projectRendererAgent（字段按其实读：id/name/isMain/currentActivity/
 // hasUnread 仅 true 带/isRunning 仅 true 带/awaitingUserResponse 原样）；
 // persona 状态映射：recovered/.../agent-avatar.tsx activityState（kind/tool/verb 三词表）。
-import type { SessionView } from '../../../renderer/plugins/session/reduce'
+import type { SessionView } from '../../../renderer/session/reduce'
 
 export interface AgentInput {
   sessionId: string

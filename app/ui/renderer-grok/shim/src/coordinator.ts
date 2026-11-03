@@ -35,7 +35,6 @@ function defaultReply(method: string, deps: CoordinatorDeps): unknown | undefine
     case 'isAgentNetworkEnabled': case 'isGlobalSearchEnabled': case 'isEgressTunnelAvailable':
       return false
     case 'getForeverBoxStatus': case 'ensureForeverBox': case 'getCloudAgentInfo': case 'getSharingState':
-    case 'getAgentTranscriptTail':
       return null
     case 'getTeachRecordingStatus': return TEACH_IDLE
     case 'getListenerIntegrations': return {}
@@ -57,6 +56,8 @@ export interface CoordinatorServer {
   requests: string[]
   /** E2E 观测面（U4′）：没有 handler 的方法（failed unknown-method）——点击触发它 = 死入口。 */
   unhandled: string[]
+  /** 首次 hello → ready 握手完成（P5-54：desktop 持久化读按它排队，见 desktop.ts persistenceGate）。 */
+  ready: Promise<void>
 }
 
 /** 端口对工厂：页面用 MessageChannel；单测注入内存对（Node 无 addEventListener 语义）。 */
@@ -73,6 +74,8 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
   const queued: Array<{ family: string; payload: unknown }> = []
   const requests: string[] = []
   const unhandled: string[] = []
+  let markReady: () => void = () => {}
+  const readyOnce = new Promise<void>((resolve) => { markReady = resolve })
 
   const pushEvent = (family: string, payload: unknown): void => {
     if (active !== null && ready) active.postMessage({ kind: 'event', family, payload })
@@ -97,10 +100,16 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
           const id = typeof args.id === 'string' ? args.id : ''
           const page = deps.openAgentTail(id)
           // S0 坑1 解法：回值的同时同步推 transcript snapshot（entriesByAgent 由事件路径填充，
-          // 与 RPC 回值竞态解耦——openAgent 世代竞态下回值会被作废，事件不会）
+          // 与 RPC 回值竞态解耦——openAgent 世代竞态下回值会被作废，事件不会）。
+          // P5-54：先回值、后推事件——事件先到会填 entriesByAgent，引起的重入 openAgent 先 ++世代再因「已有条目」
+          // 早退，把在途回值作废，分页游标（只随回值安装）就丢了（#11 永不翻页）。
+          reply(requestId, page)
           pushEvent('transcript', { type: 'snapshot', activeAgentId: id, entries: page.entries })
-          return reply(requestId, page)
+          return
         }
+        // P5-54：上游 pagination 的 fetchPage 走 getAgentTranscriptTail({id, limit, beforeSeq})（ProductionRenderer.tsx:976），
+        // 与 getAgentTranscriptWindow 同一实底（此前回 null → #11 翻页恒空）
+        case 'getAgentTranscriptTail':
         case 'getAgentTranscriptWindow': {
           const id = typeof args.id === 'string' ? args.id : ''
           const beforeSeq = typeof args.beforeSeq === 'number' ? args.beforeSeq : undefined
@@ -145,6 +154,7 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
       if (frame.kind === 'lifecycle' && frame.phase === 'hello') {
         ready = true
         port.postMessage({ kind: 'lifecycle', phase: 'ready', protocolVersion: 1 })
+        markReady()
         while (queued.length > 0) {
           const e = queued.shift()!
           port.postMessage({ kind: 'event', family: e.family, payload: e.payload })
@@ -174,5 +184,6 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
     emit: pushEvent,
     requests,
     unhandled,
+    ready: readyOnce,
   }
 }

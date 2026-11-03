@@ -13,7 +13,7 @@ test('双开：同 userData 的第二个实例拿不到锁、提示并自行退�
   const home = tmkdir('bot-U-28-si-')
   const first = await launchShell({ home })
   try {
-    await expect(first.page.locator('[data-boot-cover]')).toBeVisible({ timeout: 15_000 })
+    await expect(first.page.locator('.sand-shell')).toBeVisible({ timeout: 15_000 })
 
     // 第二实例：同 HOME/XDG/PBOTS_DATA_DIR（= 同 userData → 同一把单实例锁）
     const electronPath = createRequire(join(UI_ROOT, 'package.json'))('electron') as string
@@ -46,7 +46,7 @@ test('双开：同 userData 的第二个实例拿不到锁、提示并自行退�
     expect(outcome).toBe(0)
     expect(stderr).toContain('已在运行') // console 提示（guardSingleInstance 的 alert）
     // 第一个实例仍在服役
-    await expect(first.page.locator('[data-boot-cover]')).toBeVisible()
+    await expect(first.page.locator('.sand-shell')).toBeVisible()
   } finally {
     await first.stop()
   }

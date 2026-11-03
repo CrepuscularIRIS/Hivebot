@@ -13,5 +13,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["main/**/*.ts", "preload/**/*.ts", "renderer/**/*.tsx", "renderer/**/*.ts", "tests/**/*.ts", "electron.vite.config.ts", "vitest.config.ts", "playwright.config.ts"]
+  "include": ["main/**/*.ts", "preload/**/*.ts", "renderer/**/*.ts", "tests/**/*.ts", "electron.vite.config.ts", "vitest.config.ts", "playwright.config.ts"]
 }

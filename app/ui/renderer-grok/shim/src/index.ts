@@ -9,6 +9,8 @@ import { createShimData, type ShimData } from './data'
 interface PbotsPreload {
   api(method: string, args?: unknown): Promise<{ ok: boolean; value?: unknown; error?: { code: string; message: string } }>
   botsMeta(op: 'get' | { op: 'patch'; mainBotId: string }): Promise<{ ok: boolean; value?: unknown; error?: { code: string; message: string } }>
+  /** P5-54 preload 窗口实底（preload/index.ts）。 */
+  window?: { platform: 'win32'; getZoomFactor(): number }
 }
 
 export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unknown; coordinatorPort?: unknown }): void {
@@ -17,8 +19,17 @@ export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unkn
   if (pbots === undefined) throw new Error('pbots preload bridge missing: shim requires window.pbots (M1/M2/M3)')
 
   // 能力开关（P5-52）：platform='win32' = 「宿主画原生窗口控件」（main/window.ts titleBarOverlay），
-  // 上游 WindowChrome 走 win32 分支：只留拖拽层、不渲染自绘 Minimize/Maximize/Close（windowControls 桩无实底）。
-  win.desktop = createDesktopBridge(win, { authId: 'pbots-local', platform: 'win32' })
+  // 上游 WindowChrome 走 win32 分支：只留拖拽层、不渲染自绘 Minimize/Maximize/Close。
+  // P5-54：platform / zoom 由 preload 给实底（pbots.window）；platform 恒为 win32 外观语义，绝不取 process.platform。
+  const host = pbots.window
+  let openGate: () => void = () => {}
+  const persistenceGate = new Promise<void>((resolve) => { openGate = resolve })
+  win.desktop = createDesktopBridge(win, {
+    persistenceGate,
+    authId: 'pbots-local',
+    platform: host?.platform ?? 'win32',
+    ...(host !== undefined ? { getZoomFactor: () => host.getZoomFactor() } : {}),
+  })
 
   const data = createShimData({
     authId: 'pbots-local',
@@ -26,6 +37,7 @@ export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unkn
     metaApi: (op) => pbots.botsMeta(op).catch((error: unknown) => ({ ok: false, error: { code: 'pbots/unavailable', message: String(error) } })),
   })
   const server = createCoordinatorServer(data.deps)
+  void server.ready.then(openGate)
   data.wire({
     agents: () => server.emit('agents', data.agentsPayload()),
     transcript: (agentId) => server.emit('transcript', data.transcriptPayload(agentId)),
@@ -40,6 +52,7 @@ export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unkn
     requests: server.requests,
     unhandled: server.unhandled,
   }
+  ;(win as unknown as { __pbotsDev?: ShimData['dev'] }).__pbotsDev = data.dev
   data.start()
 }
 

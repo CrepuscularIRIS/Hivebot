@@ -8,7 +8,7 @@
 // - 审批卡 → send-message + local-tool-permission + ask + permissionScope/Revision（dock 渲染硬条件，
 //   P5-50 坑2 根因：S0 桩没带这两个字段 → pendingLocalToolPermission 恒 null → 卡不渲染）
 import { foldTurns, type FoldOutput } from '../../../renderer/fold/turn-fold'
-import type { SessionView, TimelineItem } from '../../../renderer/plugins/session/reduce'
+import type { SessionView, TimelineItem } from '../../../renderer/session/reduce'
 
 /** 0.18 transcript raw entry（id+kind 起码，其余按 kind 开放）。 */
 export type RawEntry = Record<string, unknown> & { id: string; kind: string }

@@ -18,6 +18,7 @@ export const MODULE_OVERRIDES: Record<string, string> = {
   'production/agent-row-actions-model.ts': 'agent-row-actions-model.ts',
   'production/CommandPalette.tsx': 'CommandPalette.tsx',
   'recovered/features/conversation/workspace/transcript.tsx': 'transcript.tsx',
+  'recovered/features/conversation/workspace/rich-text-editor.tsx': 'rich-text-editor.tsx',
   'recovered/features/settings/overlay/view.tsx': 'settings-view.tsx',
   'recovered/features/settings/overlay/panels.tsx': 'settings-panels.tsx',
 }

@@ -1,8 +1,8 @@
 // P5-51 · grok renderer-grok shim E2E（验收）：fake-LLM 真实事件流（launchSdkRuntime）→ 真实 main
-// （M1/M2/M3 + D9 守卫不动）→ PBOTS_APP_ROOT 指 renderer-grok build（shim 已注入 index.html）。
+// （M1/M2/M3 + D9 守卫不动）→ 缺省 appRoot = out/renderer（P5-54 起即 renderer-grok build，shim 已注入 index.html）。
 // ① 每类 entry 渲染（user/ack/thinking/tool/assistant markdown/审批卡）boundary=0；
 // ② persona currentActivity 接 dsh 活动态；③ 审批作答只发 allowed-once/rejected、ceiling=ask 禁用 Always。
-// 前置：cd renderer-grok && pnpm build（shim.iife.js 注入）。
+// 前置：pnpm build（含 renderer-grok build + 拷入 out/renderer）。
 import { expect, test, type Page } from 'playwright/test'
 import { existsSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
@@ -11,7 +11,6 @@ import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/s
 import { bashCall, textCall } from '../support/ui.ts'
 
 const UI_ROOT = resolve(__dirname, '..', '..')
-const GROK_ROOT = join(UI_ROOT, 'renderer-grok', '.build', 'frontend-shell')
 const EVIDENCE = join(UI_ROOT, 'test-output', 'P5-51')
 const SDK_ROOT = join(UI_ROOT, '..', 'sdk')
 const PRESETS_PATCH = join(SDK_ROOT, 'profile', 'patches', 'presets.yml')
@@ -61,7 +60,7 @@ test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动�
   const home = sandboxHome('P5-51')
   const dataDir = join(home, 'data')
   const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}`, dataDir })
-  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff, PBOTS_APP_ROOT: GROK_ROOT }, home })
+  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff }, home })
   const page = shell.page
   const env: Env = { rt, shell, page, async stop() { await shell.stop(); await rt.stop() } }
   try {

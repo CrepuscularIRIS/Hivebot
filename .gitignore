@@ -4,3 +4,7 @@ dist/
 *.log
 .env
 .env.*
+# p5 起调研探针的运行时产物（含临时 token / credentials），绝不入库
+work/*/evidence/**/handoff/
+work/*/evidence/**/runtime/
+work/*/evidence/**/*.lock

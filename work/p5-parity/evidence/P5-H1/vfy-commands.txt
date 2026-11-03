@@ -1,0 +1,44 @@
+# VERIFY P5-H1 独立复跑（verifier，2026-11-03 13:09-13:35）
+# 分支 feat/P5-H1 @ /tmp/bot-wt/P5-H1，HEAD=f2831a8（与申报一致，验收期间无漂移，工作区干净）
+# 私有 TMPDIR：/tmp/bot-vfy-h1/{sdk,ui}（公开 /tmp 被并行 agent 污染，不可用于计数）
+
+## 1) sdk 全量（TMPDIR=/tmp/bot-vfy-h1/sdk pnpm -C app/sdk test）
+$ pnpm test  (vitest run)
+ Test Files  32 passed (32)
+      Tests  253 passed (253)
+   Duration  88.65s
+$ for p in p2sdk-runtime- p2sdk-handoff- bot- p2sdk-fake-patch-; do find /tmp/bot-vfy-h1/sdk -maxdepth 1 -name "${p}*" | wc -l; done
+0 / 0 / 0 / 0     ← 四类前缀残留全 0
+（对照：同 TMPDIR 其余 p2sdk-* 动物园前缀残留 147 个——builder 已在 REPORT 新问题1 申报为后续任务）
+
+## 2) ui（TMPDIR=/tmp/bot-vfy-h1/ui）
+$ pnpm test
+ Test Files  29 passed (29)
+      Tests  249 passed (249)
+$ pnpm build && pnpm test:e2e   （run-e2e.sh → xvfb-run playwright test，共跑 2 遍）
+  61 passed (6.7m) / 61 passed (6.8m)，无 failed/flaky 行
+  （第 1 遍输出里 visual-hairline #55 有 ✘ 记号但汇总 61 passed——读源码确认是该用例
+   test.fail(true, 'P5-14.f1...') 预期失败标记，main 上既有，与本任务无关；
+   单独复跑该 spec：2 passed, EXIT=0）
+$ for p in p2sdk-runtime- p2sdk-handoff- bot- p2sdk-fake-patch-; do find /tmp/bot-vfy-h1/ui -maxdepth 2 -name "${p}*" | wc -l; done
+0 / 0 / 0 / 0     ← 四类前缀残留全 0；TMPDIR 仅剩 5 项（node-compile-cache、.org.chromium.Chromium.*×3、playwright-transform-cache，均为浏览器/工具缓存）
+
+## 3) 机制抽验
+$ pnpm exec vitest run tests/unit/tmp-sweep.test.ts        （sdk）
+ Tests  4 passed (4)   ← 含「只删登记的：同前缀未登记的兄弟目录幸存（按创建记录，不按前缀扫删）」
+$ pnpm exec vitest run tests/unit/support/tmp-sweep.test.ts （ui）
+ Tests  4 passed (4)   ← 同名对照用例在位
+其余 3 例：建目录并登记 sweep 后消失 / 清理失败只 warn 不抛 / 幂等
+diff 抽验（92d0cc8..f2831a8）：
+- app/sdk/tests/support/runtime.ts：mkdtempSync(join(tmpdir(),'p2sdk-runtime-'/'p2sdk-handoff-')) → tmkdir(...)（仅登记替换）
+- app/ui/tests/e2e/settings.spec.ts：cwd: mkdtempSync(join(tmpdir(),'bot-u23-ws-')) → cwd: tmkdir('bot-u23-ws-')
+- 两包 vitest.config.ts 增 setupFiles=['tests/support/tmp-sweep.setup.ts']（afterAll(sweepTmpDirs)，vitest 5 worker 不跑 exit 钩子）
+
+## 4) 区域
+bae5a1c = 43 files, +327/-120（与申报逐字一致）；f2831a8 = 2 files, +18/-1；合计 44 files
+全部位于 tests/ 与 vitest.config.ts；无产品代码（runtime.ts/sdk-runtime.ts 均为 tests/support 测试支撑，改动仅登记钩子）
+
+## 5) 偏差合理性（stop() 不立即删，改退出清扫）
+- app/ui/tests/e2e/settings.spec.ts:147-148：rmSync 删 bundle 后 launchSdkRuntime({ home: rt1.home }) 同 home 重启
+- app/sdk/tests/e2e/restart.test.ts:203-207：killTree9 后 bootHome(home, patch, handoff) 复用同一 home/handoff 断言历史完整
+两处 stop/kill 后都必须复用原 home —— 立即删除会打断用例；登记簿+退出清扫设计成立

@@ -827,3 +827,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 03:58 P5-01.f1 合并 0b730c8：sdk 首跑 1 红（身份未捕获）→ 复跑×2 全绿 24/188（load 9 下 flaky 嫌疑，持续观察）；P5-01 回归闭环 | done 13/33
 04:44 P5-02 builder 完成（e0f6b01：guard.mjs+containment 复制+单源 never-roots，①-⑪ 自验全 PASS，sdk 223+ui 245/61 绿）→ verifier 深验派发
 05:05 P5-02 验收 PASS（4 格变异验红）→ 合并 e964f6f，双包回归后台 | P5-03 已派（deps 解除）| done 14/33
+05:14 P5-02 回归红根因=清单 checkout 盖掉 .f1（P5-02 同文件、基点更早）→ git merge-file 三方合并修复，sdk 全量 223 绿 | LEARNINGS 记账

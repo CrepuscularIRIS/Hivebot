@@ -851,3 +851,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 12:38 p6 BRIEF v2.1 + PLAN v1 完成（12 任务：1a ready 2 / 1b blocked 7 / S-1~4 待派；D-2 题干 §4）→ 派 P6-01/02 + D-2 panel D | P5 状态列同步 running
 12:39 P5-28 builder 完成（eb6e73a：提问作答通道+纯校验，271 单测+62 e2e 绿，20 红基线）→ verifier 派发 | P5 PLAN 状态列修复
 12:39 RE-1 回报（worker 通知=侧栏 task 折页+OS 通知；Q-019 实证：原版 worker=task 线程+hidden_from_sidebar）→ 派 P5-28 verifier + P6-01/02 + p6 D-2 双席 | 在途 10
+12:43 p6 D-2：②③④ 一致（a/a/b）；⑤ 分歧→Q-021（暂定 A 收窄版）；3 条 HIGH 并入契约（#3+#6 顺序、删选项b、安全语义集）| 补派 S-1/S-2 scout

@@ -102,6 +102,15 @@ describe('protocol v1 · 握手与帧', () => {
     await expect(call(client, frames, 'noSuchMethod')).rejects.toThrow(/unknown-method/)
     client.close()
   })
+
+  it('U4′ 观测面（P5-52）：requests 记全部到达方法，unhandled 只记无 handler 的', async () => {
+    const { client, frames, server } = handshake(baseDeps())
+    await call(client, frames, 'getTrays')
+    await expect(call(client, frames, 'duplicateAgent')).rejects.toThrow(/unknown-method/)
+    expect(server.requests).toEqual(['getTrays', 'duplicateAgent'])
+    expect(server.unhandled).toEqual(['duplicateAgent'])
+    client.close()
+  })
 })
 
 describe('13 RPC 实底清单 · 回值形状', () => {

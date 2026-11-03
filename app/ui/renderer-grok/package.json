@@ -5,7 +5,7 @@
   "type": "module",
   "description": "0.18 renderer port (P5-50). Upstream tree under frontend/ + source/, see SOURCES.tsv",
   "scripts": {
-    "build": "vite build --config frontend/vite.config.ts && cp assets/runtime/* .build/frontend-shell/assets/ && vite build --config shim/vite.config.ts && node scripts/inject-shim.mjs",
+    "build": "vite build --config overrides/vite.config.ts && cp assets/runtime/* .build/frontend-shell/assets/ && vite build --config shim/vite.config.ts && node scripts/inject-shim.mjs",
     "build:upstream": "vite build --config frontend/vite.config.ts && cp assets/runtime/* .build/frontend-shell/assets/",
     "check": "node scripts/check-upstream.mjs && cd assets/runtime && sha256sum -c --quiet ../SHA256SUMS",
     "mount": "xvfb-run -a --server-args=\"-screen 0 1600x1000x24\" node harness/mount.mjs"

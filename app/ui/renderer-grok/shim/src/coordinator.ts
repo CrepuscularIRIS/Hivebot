@@ -53,6 +53,10 @@ const dshValueOf = (resolution: unknown): 'allowed-once' | 'rejected' =>
 export interface CoordinatorServer {
   claim(consumer: { onPort(port: ShimPort): void }): { request(): void; release(): void }
   emit(family: string, payload: unknown): void
+  /** E2E 观测面（U4′）：收到的 request 方法名，按到达顺序。 */
+  requests: string[]
+  /** E2E 观测面（U4′）：没有 handler 的方法（failed unknown-method）——点击触发它 = 死入口。 */
+  unhandled: string[]
 }
 
 /** 端口对工厂：页面用 MessageChannel；单测注入内存对（Node 无 addEventListener 语义）。 */
@@ -67,6 +71,8 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
   let active: ShimPort | null = null
   let ready = false
   const queued: Array<{ family: string; payload: unknown }> = []
+  const requests: string[] = []
+  const unhandled: string[] = []
 
   const pushEvent = (family: string, payload: unknown): void => {
     if (active !== null && ready) active.postMessage({ kind: 'event', family, payload })
@@ -82,6 +88,7 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
 
   const handleRequest = async (frame: { requestId: string; method: string; args: unknown }): Promise<void> => {
     const { requestId, method } = frame
+    requests.push(method)
     const args = (typeof frame.args === 'object' && frame.args !== null ? frame.args : {}) as Record<string, unknown>
     try {
       switch (method) {
@@ -119,6 +126,7 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
         default: {
           const value = defaultReply(method, deps)
           if (value !== undefined) return reply(requestId, value)
+          unhandled.push(method)
           return replyFailed(requestId, 'unknown-method', `coordinator has no handler for ${method}`)
         }
       }
@@ -164,5 +172,7 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
       }
     },
     emit: pushEvent,
+    requests,
+    unhandled,
   }
 }

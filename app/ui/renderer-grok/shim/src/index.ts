@@ -16,7 +16,9 @@ export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unkn
   const pbots = win.pbots
   if (pbots === undefined) throw new Error('pbots preload bridge missing: shim requires window.pbots (M1/M2/M3)')
 
-  win.desktop = createDesktopBridge(win, { authId: 'pbots-local', platform: 'linux' })
+  // 能力开关（P5-52）：platform='win32' = 「宿主画原生窗口控件」（main/window.ts titleBarOverlay），
+  // 上游 WindowChrome 走 win32 分支：只留拖拽层、不渲染自绘 Minimize/Maximize/Close（windowControls 桩无实底）。
+  win.desktop = createDesktopBridge(win, { authId: 'pbots-local', platform: 'win32' })
 
   const data = createShimData({
     authId: 'pbots-local',
@@ -32,9 +34,11 @@ export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unkn
     claim(consumer: { onPort(port: unknown): void }) { return server.claim(consumer as Parameters<typeof server.claim>[0]) },
   }
   // E2E 观测面（只读）：审批作答值域断言（D9）+ 诊断 dump
-  ;(win as unknown as { __pbotsShim?: { answers: ShimData['answers']; debugItems(a: string): unknown[] } }).__pbotsShim = {
+  ;(win as unknown as { __pbotsShim?: { answers: ShimData['answers']; debugItems(a: string): unknown[]; requests: string[]; unhandled: string[] } }).__pbotsShim = {
     answers: data.answers,
     debugItems: data.debugItems,
+    requests: server.requests,
+    unhandled: server.unhandled,
   }
   data.start()
 }

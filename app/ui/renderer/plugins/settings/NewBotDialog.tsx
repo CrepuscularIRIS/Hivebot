@@ -47,7 +47,11 @@ export function NewBotDialog({ init }: { init: DialogInit | null }): JSX.Element
     setPresets(null)
     setChecked(init.connectors ?? [])
     loadBundles()
+    // O2（REVIEW-P4终审）：失效 token —— 关闭后重开（或换 init 再开）时旧轮次的迟到响应
+    // 不得覆盖新一轮的 preset / 模型选择（checked 已由本轮同步设置，混配 = 非用户所选）。
+    let stale = false
     void Promise.all([api('agentPresets/list', {}), api('session/modelCatalog', {})]).then(([p, c]) => {
+      if (stale) return
       if (!p.ok) { setError(`无法加载基础配置：${p.error?.message ?? ''}`); setPresets([]); return }
       const list = ((p.value as { presets?: Preset[] }).presets ?? [])
       setPresets(list)
@@ -63,6 +67,7 @@ export function NewBotDialog({ init }: { init: DialogInit | null }): JSX.Element
         if (init.model !== undefined && options.some((o) => o.value === init.model)) setModel(init.model)
       }
     })
+    return () => { stale = true } // open 翻转（关闭 / 重开）即作废在途轮次
   }, [open]) // 只在开合时重载候选（init 随开合一起变）
 
   const installedNames = Array.isArray(bundles) ? bundles.map((b) => b.name) : []

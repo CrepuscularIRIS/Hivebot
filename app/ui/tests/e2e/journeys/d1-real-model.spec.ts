@@ -1,20 +1,23 @@
 // U-31 全旅程 ①（PLAN U-31 ①④ + GU-PDC 修订）：D1/D2 走真模型——
 // 起壳 → 新建对话框选 preset 建 bot → 发消息 → LiteLLM glm-5.3-flash 真模型流式回复
 // （流式气泡 → 定稿替换 + turn/end），main M2 原帧 tap 计数 === renderer chunkCount（D2 原帧转发无丢失）。
-// key 只经 env 传入 child（sdk-runtime.ts 会先清 process.env 里的 key 名再叠加 opts.env），
-// 不打印、不进断言。LITELLM_MASTER_KEY 未设置时本条直接失败（真模型证据缺失 = FAIL，不静默 skip）。
+// key 只经 env 传入 child（sdk-runtime.ts 在子进程 env 副本上剔除凭证 key 再叠加 opts.env，
+// R9 后不再修改 worker 的 process.env），不打印、不进断言。凭证取值 = process.env 优先、
+// app/ui/.env 兜底（后台派发 shell 不继承交互 shell 的 key，VERIFY-U-31 实证；.env 值不进 git）。
+// 两处都无时本条直接失败（真模型证据缺失 = FAIL，不静默 skip）。
 import { expect, test } from 'playwright/test'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { launchShell } from '../../support/launch.ts'
+import { envOrDotenv } from '../../support/creds.ts'
 import { launchSdkRuntime } from '../../support/sdk-runtime.ts'
 import { PRESETS_PATCH, createViaDialog, devState, send } from '../../support/ui.ts'
 
 test('D1+D2 真模型：对话框建 bot → LiteLLM 流式回复 → 定稿 + turn/end；M2 原帧 tap === chunkCount', async () => {
   test.setTimeout(180_000)
-  const apiKey = process.env.LITELLM_MASTER_KEY
-  expect(apiKey, 'LITELLM_MASTER_KEY 未设置：真模型旅程无凭证').toBeTruthy()
+  const apiKey = envOrDotenv('LITELLM_MASTER_KEY', join(__dirname, '..', '..', '..', '.env'))
+  expect(apiKey, 'LITELLM_MASTER_KEY 未设置（process.env 与 app/ui/.env 均无）：真模型旅程无凭证').toBeTruthy()
   const rt = await launchSdkRuntime({
     patch: PRESETS_PATCH,
     cwd: mkdtempSync(join(tmpdir(), 'bot-u31-ws-')),

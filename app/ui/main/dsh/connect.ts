@@ -67,6 +67,7 @@ export class DshConnection {
   private loopStarted = false
   private readyWaiters: Array<(g: number) => void> = []
   private firstConnectWaiters: Array<(g: number) => void> = []
+  private connectedListeners: Array<(g: number) => void> = []
   /** main 侧已发出的 /api 调用计数（断言口径：拒绝时必须 === 0）。 */
   apiCount = 0
 
@@ -76,6 +77,13 @@ export class DshConnection {
   }
 
   get currentGeneration(): number { return this.generation }
+
+  /** U-28 R3/R4：注册「连接成功」侦听器（首连与每次后台重连都触发，generation ≥1）。
+   * main 的 #21 恢复编排挂它 —— start() 超时 reject 后重连成功仍能补跑 preset.ensure，
+   * 不再被一次性的首连 promise 永久跳过。listener 抛错被吞（不破坏后续 waiter）。 */
+  onConnected(listener: (generation: number) => void): void {
+    this.connectedListeners.push(listener)
+  }
 
   /** 连接并完成首次 /connect + ws open；之后再断线自动重连。
    * U-17（R2/R3）：首连失败与断线走同一条指数退避重试路径；start() 在
@@ -128,6 +136,13 @@ export class DshConnection {
     })
     for (const w of this.readyWaiters.splice(0)) w(this.generation)
     for (const w of this.firstConnectWaiters.splice(0)) w(this.generation)
+    for (const l of [...this.connectedListeners]) {
+      try {
+        l(this.generation)
+      } catch (error) {
+        console.warn(`[dsh] onConnected listener failed: ${String(error)}`)
+      }
+    }
   }
 
   private scheduleReconnect(): void {

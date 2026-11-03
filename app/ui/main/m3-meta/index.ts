@@ -21,6 +21,11 @@ export interface M3Deps {
   store?: BotsMetaStore
   /** 恢复编排（U-14 restoreRecipes）写入的失败集合；get 的 live 计算并入。 */
   failed?: Set<string>
+  /** U-28 R6：#21 restore 是否已 settle（main 注入 ready.status()）。未 settle 时 get
+   * 返回 pbots/restore-pending 而非误导性 live=false —— renderer loadRoster 的 500ms
+   * 重试循环会消化该错误，settle 后拿到正确视图；不挂起（不卡 renderer）。缺省 = 已
+   * settle（行为与 U-13 一致，dsh 未配置等场景）。 */
+  restoreSettled?: () => boolean
 }
 
 /** 注册句柄：main/index.ts 用 handler 注册 IPC；U-11/U-14 消费 store/failed/init。 */
@@ -48,6 +53,10 @@ export function registerM3Meta(deps: M3Deps): M3Handle {
   const failed = deps.failed ?? new Set<string>()
 
   const liveView = async (): Promise<M3Result> => {
+    // U-28 R6：restore 未 settle → pending 结构化错误（不查 #1，不给 boot 期误导 live）。
+    if (deps.restoreSettled !== undefined && !deps.restoreSettled()) {
+      return { ok: false, error: { code: 'pbots/restore-pending', message: 'preset restore in progress', details: {} } }
+    }
     let meta: BotsMeta
     try {
       meta = store.read()
@@ -57,7 +66,14 @@ export function registerM3Meta(deps: M3Deps): M3Handle {
     if (deps.dsh === undefined) {
       return { ok: false, error: { code: 'pbots/unavailable', message: 'dsh connection not ready', details: {} } }
     }
-    const roster = await deps.dsh.rpc('agentPresets/list', {})
+    // U-28 R2：rpc 可能 reject（rpcRaw 网络层 fetch/JSON 异常）——转结构化错误，handler
+    // 不得 reject（renderer 的 botsMeta 是裸 await，rejection 卡死 boot；U-22 GU-1 同根因）。
+    let roster: Awaited<ReturnType<DshLike['rpc']>>
+    try {
+      roster = await deps.dsh.rpc('agentPresets/list', {})
+    } catch (error) {
+      return { ok: false, error: { code: 'pbots/unavailable', message: `agentPresets/list threw: ${String(error)}`, details: {} } }
+    }
     if (!roster.ok) return stepFailed('agentPresets/list', roster.error)
     const ids = new Set(roster.value.presets.map((p: { id: string }) => p.id))
     const recipes: BotsMetaView['recipes'] = {}
@@ -82,7 +98,13 @@ export function registerM3Meta(deps: M3Deps): M3Handle {
       return { ok: false, error: { code: 'pbots/unavailable', message: 'dsh connection not ready', details: {} } }
     }
     // W1 R4：上游 list(_request, signal) 的参数名是 _request——壳形态 {_request:{}}（VERIFY-U-15 终裁）
-    const list = await deps.dsh.rpc('session/list', { _request: {} })
+    // U-28 R2：同 get —— rpc reject 转结构化 pbots/unavailable，不落盘。
+    let list: Awaited<ReturnType<DshLike['rpc']>>
+    try {
+      list = await deps.dsh.rpc('session/list', { _request: {} })
+    } catch (error) {
+      return { ok: false, error: { code: 'pbots/unavailable', message: `session/list threw: ${String(error)}`, details: {} } }
+    }
     if (!list.ok) return stepFailed('session/list', list.error)
     const items = (list.value as { items?: Array<{ sessionId: string }> }).items ?? []
     if (!items.some((item) => item.sessionId === mainBotId)) {

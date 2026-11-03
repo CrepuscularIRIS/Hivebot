@@ -30,6 +30,9 @@ export interface CreateBotArgs {
 export interface GateOptions {
   /** 注入点：单测断言「未设 env 时屏障路径不触发」。 */
   waitGate?: (file: string) => Promise<void>
+  /** U-28 R5：恢复失败集合（registerM3Meta 持有的同一实例）。#4 成功注册同 presetId 时
+   * 从中清除 —— 否则启动恢复失败过的配方恒 live=false、bot 恒只读（终审 R5）。 */
+  failed?: Set<string>
 }
 
 const invalid = (message: string): ConnectionRpcResult<never> => ({
@@ -116,6 +119,10 @@ export async function createBotWithConnectors(
     },
   })
   if (!result.ok) return result
+
+  // 5.5 U-28 R5：同 presetId 重新创建成功 → 清除启动恢复留下的失败标记（live 回 true）。
+  // failed 与 registerM3Meta 持有同一实例（main/index.ts wrapM1WithOrchestration 传入）。
+  opts.failed?.delete(presetId)
 
   // 6 ⑦ env 门控屏障：停在 recipe 已落盘、session 已建、#4 响应未交付调用方
   const gateFile = process.env[GATE_4_ENV]

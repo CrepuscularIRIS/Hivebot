@@ -203,3 +203,46 @@ describe('DshConnection U-17（R2/R3/R13）', () => {
 })
 
 void wsGenerations
+
+// U-28 R3/R4：连接成功事件（onConnected）——首连超时 reject 后后台重连成功、以及断线
+// 重连，都必须能被 main 观察到（恢复编排挂它补跑 #21，不再被一次性 start() 永久跳过）。
+describe('DshConnection U-28（R3/R4）：onConnected', () => {
+  beforeEach(() => {
+    connectFailures = 0
+    connectTimestamps.length = 0
+  })
+
+  it('start() 超时 reject 后服务恢复 → 后台重连成功仍触发 onConnected（generation 1）', async () => {
+    connectFailures = Number.POSITIVE_INFINITY
+    const conn = new DshConnection({
+      baseUrl: base(), token: 't', interactions: 'answer',
+      backoffMs: 10, backoffMaxMs: 20, startTimeoutMs: 100,
+    })
+    try {
+      await expect(conn.start()).rejects.toThrow('dsh connect timed out after 100ms')
+      const got: number[] = []
+      conn.onConnected((g) => got.push(g))
+      connectFailures = 0 // 服务恢复
+      await new Promise((r) => setTimeout(r, 600))
+      expect(got).toEqual([1])
+      expect(conn.currentGeneration).toBe(1)
+    } finally { conn.stop() }
+  })
+
+  it('断线重连 → 再次触发（generation 2）；listener 抛错不破坏后续 waiter', async () => {
+    const conn = new DshConnection({
+      baseUrl: base(), token: 't', interactions: 'answer', backoffMs: 50,
+    })
+    try {
+      const got: number[] = []
+      conn.onConnected(() => { throw new Error('listener boom') })
+      conn.onConnected((g) => got.push(g))
+      const g1 = await conn.start()
+      expect(g1).toBe(1)
+      const current = await conn.ready() // 坏 listener 未破坏 ready waiter
+      ;(current as unknown as { ws: { close(): void } }).ws.close()
+      await new Promise((r) => setTimeout(r, 900))
+      expect(got).toEqual([1, 2])
+    } finally { conn.stop() }
+  })
+})

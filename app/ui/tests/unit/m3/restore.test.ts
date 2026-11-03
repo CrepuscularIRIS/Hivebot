@@ -120,4 +120,25 @@ describe('restoreRecipes', () => {
       vi.useRealTimers()
     }
   })
+
+  // U-28 R5（补跑侧）：首跑失败留下的 failed 标记，重连补跑 restore 成功时要清除
+  // （R3/R4 的补跑链路才真正恢复 live=true）。
+  it('补跑成功 → failed 集合清除（U-28 R5）', async () => {
+    const dir = tmpHome()
+    const store = await storeWith(dir, { [R_GOOD]: { agentPreset: 'p2-alpha', connectors: ['a'] } })
+    const failed = new Set([R_GOOD])
+    // 首跑失败（连接器缺失）
+    let installed = false
+    const dsh = mockDsh({
+      'p2temp/preset.ensure': () =>
+        (installed ? { ok: true, value: { presetId: R_GOOD } } : { ok: false, error: { code: 'p2temp/connector-unavailable', message: 'not installed', details: {} } }) as never,
+    })
+    await restoreRecipes(dsh, store, { failed })
+    expect([...failed]).toEqual([R_GOOD])
+    // 修复后补跑成功 → 清除
+    installed = true
+    const outcomes = await restoreRecipes(dsh, store, { failed })
+    expect(outcomes.find((o) => o.presetId === R_GOOD)?.ok).toBe(true)
+    expect([...failed]).toEqual([])
+  })
 })

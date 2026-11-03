@@ -7,14 +7,14 @@ import { extname, resolve, sep } from 'node:path'
 import { app, BrowserWindow, ipcMain, MessageChannelMain, protocol } from 'electron'
 import { SCHEME, assertPbotsSender } from './sender'
 import { createMainWindow } from './window'
-import { createReadyGate } from './ready'
+import { createReadyGate, type ReadyGate } from './ready'
 import { DshConnection } from './dsh/connect'
 import { EventsLedger } from './dsh/ledger'
 import { m1Ledger, registerM1Api, type M1Request, type M1Result } from './m1-api'
 import { registerM2Mux } from './m2-mux'
-import { registerM3Meta } from './m3-meta'
+import { registerM3Meta, type M3Handle } from './m3-meta'
 import { ensureThenReady, restoreGated } from './m3-meta/ensure'
-import { createBotWithConnectors, type CreateBotArgs } from './m3-meta/orchestrate'
+import { createBotWithConnectors, type CreateBotArgs, type DshLike } from './m3-meta/orchestrate'
 import type { BotsMetaStore } from './m3-meta/store'
 
 if (process.type === 'browser') {
@@ -101,17 +101,89 @@ export function wrapM1WithOrchestration(
   base: (req: M1Request) => Promise<M1Result>,
   dsh: DshConnection | undefined,
   store: BotsMetaStore,
+  failed?: Set<string>,
 ): (req: M1Request) => Promise<M1Result> {
   return async function wired(req: M1Request): Promise<M1Result> {
     if (req?.method === 'p2temp/session.createWithConnectors' && dsh !== undefined) {
       const request = (req.args as { request?: unknown } | undefined)?.request ?? req.args
-      return createBotWithConnectors(dsh, store, request as CreateBotArgs)
+      return createBotWithConnectors(dsh, store, request as CreateBotArgs, { failed })
     }
     return base(req)
   }
 }
 
+/** U-28 R1：单实例锁守卫 —— store.ts 的进程内单写者锁此前没有跨进程兜底，双开两进程
+ * 会用各自内存快照整体覆盖 bots.json（终审 R1）。返回 false = 已有实例持锁（调用方应
+ * 提示并退出）；拿到锁时注册 second-instance → 聚焦已有窗口。提示走注入的 alert
+ * （生产 = console.error；不用 dialog.showErrorBox —— 它在 Linux 模态阻塞至人工确认，
+ * 「退出」不能依赖交互，自动化/远程场景会挂死）。 */
+export interface SingleInstanceAppLike {
+  requestSingleInstanceLock(): boolean
+  on(event: 'second-instance', listener: () => void): unknown
+}
+
+export function guardSingleInstance(
+  appLike: SingleInstanceAppLike,
+  focus: () => void,
+  alert: (title: string, message: string) => void,
+): boolean {
+  if (appLike.requestSingleInstanceLock()) {
+    appLike.on('second-instance', focus)
+    return true
+  }
+  alert('pbots', 'Personal Bots 已在运行（单实例锁），本进程退出。')
+  return false
+}
+
+/** U-28 R3/R4 的连接依赖形状（DshConnection 满足；单测用最小 fake）。 */
+export interface ReconnectRestoreDeps extends DshLike {
+  onConnected(listener: (generation: number) => void): unknown
+}
+
+/**
+ * U-28 R3/R4：#21 恢复编排挂「连接成功」事件（首连 + 后台重连都触发，串行不叠跑）。
+ * 此前恢复只挂在一次性的 dshStart 成功分支上 —— 首连超时 reject 后即使后台重连成功，
+ * preset.ensure 也永不补跑（终审 R3/R4）。setDshReady 同样挪到此处（超时后重连成功时
+ * ready 闸门的 dsh 条件也要补开）。restore 幂等；成功配方清 failed（R5），live 翻回。
+ */
+export function wireRestoreOnReconnect(
+  dsh: ReconnectRestoreDeps,
+  m3: M3Handle,
+  ready: ReadyGate,
+  log: (message: string) => void = (m) => console.warn(m),
+): void {
+  let run: Promise<void> = Promise.resolve()
+  dsh.onConnected((generation) => {
+    ready.setDshReady()
+    log(`[m3] dsh connected (generation ${generation}); running preset restore`)
+    run = run
+      .then(async () => {
+        await m3.init
+        await ensureThenReady({ dsh, store: m3.store, failed: m3.failed, ready })
+      })
+      .catch((error) => log(`[m3] restore rerun failed: ${String(error)}`))
+  })
+}
+
 async function main(): Promise<void> {
+  // U-28 R1：双开保护（app 级单实例锁，store.ts 单写者锁的跨进程兜底）。拿不到锁 →
+  // 提示并退出；已有实例在 second-instance 时聚焦自身窗口。
+  if (
+    !guardSingleInstance(
+      app,
+      () => {
+        const win = BrowserWindow.getAllWindows()[0]
+        if (win !== undefined) {
+          if (win.isMinimized()) win.restore()
+          win.focus()
+        }
+      },
+      (title, message) => { console.error(`[${title}] ${message}`) },
+    )
+  ) {
+    app.quit()
+    return
+  }
   const ready = createReadyGate()
   await app.whenReady()
   const appRoot = process.env.PBOTS_APP_ROOT ?? resolve(__dirname, '..', 'renderer')
@@ -132,8 +204,10 @@ async function main(): Promise<void> {
     const startTimeoutMs = Number(process.env.PBOTS_DSH_START_TIMEOUT_MS ?? '') || 30_000
     dsh = new DshConnection({ baseUrl, token, interactions: 'answer', startTimeoutMs })
     dshStart = dsh.start()
-    // U-17（R2/R3）：派生 promise 自带 rejection handler —— 超时 reject 由下方 U-14 分支善后
-    void dshStart.then(() => ready.setDshReady(), () => {})
+    // U-17（R2/R3）：派生 promise 自带 rejection handler —— 超时 reject 由下方 U-14 分支善后。
+    // U-28 R3/R4：setDshReady 与恢复编排挪到 wireRestoreOnReconnect 的连接成功事件；
+    // 此行仅作 spike 桥路径的 unhandledRejection 防护保留。
+    void dshStart.then(() => {}, () => {})
   }
 
   const assertSender = (event: Parameters<typeof assertPbotsSender>[0]): void =>
@@ -154,8 +228,14 @@ async function main(): Promise<void> {
   } else {
     // U-15 三桥接线：M3 先建（M1 的 #4 编排写它的 store）；M1+M2+M3 共享同一
     // store/ledger（HANDOFF-MED：$events/result 校验读 m2 tap 写入的同一台账实例）。
-    const m3 = registerM3Meta({ dsh, dataDir: process.env.PBOTS_DATA_DIR ?? app.getPath('userData') })
-    const m1 = wrapM1WithOrchestration(registerM1Api({ dsh }), dsh, m3.store)
+    const m3 = registerM3Meta({
+      dsh,
+      dataDir: process.env.PBOTS_DATA_DIR ?? app.getPath('userData'),
+      // U-28 R6：restore 未 settle 时 M3 get 返回 pbots/restore-pending（不给出误导性
+      // live=false —— renderer loadRoster 缓存首个 meta 且 restore 后不刷新）。
+      restoreSettled: () => ready.status().restore !== false,
+    })
+    const m1 = wrapM1WithOrchestration(registerM1Api({ dsh }), dsh, m3.store, m3.failed)
     // U-14（CONTRACT #21）：#21 恢复全部 settle 前 M1/M2 不就绪 —— 入口挂 restore 闸门
     const m1Gated = restoreGated(ready, m1)
     ipcMain.handle('pbots:api', (event, req) => { assertSender(event); return m1Gated(req) })
@@ -167,17 +247,16 @@ async function main(): Promise<void> {
     })
     ipcMain.handle('pbots:bots-meta', (event, req) => { assertSender(event); return m3.handler(req) })
 
-    // U-14 先 restore 后 ready：dsh 连上 → 读盘完成 → #21 逐个 ensure（30s each 超时按
-    // 失败、allSettled、失败进 failed set 不阻断）→ 放行 restore 条件。dsh 起不来时
-    // dsh 条件本就不开，此处只补 settle 观察面，不跑恢复。
-    if (dsh !== undefined && dshStart !== undefined) {
-      void dshStart.then(
-        async () => { await m3.init; await ensureThenReady({ dsh, store: m3.store, failed: m3.failed, ready }) },
-        (error) => {
-          console.warn(`[m3] restore skipped: dsh start failed: ${String(error)}`)
-          ready.setRestoreSettled([...m3.failed])
-        },
-      )
+    // U-14 先 restore 后 ready：连接成功 → 读盘完成 → #21 逐个 ensure（30s each 超时按
+    // 失败、allSettled、失败进 failed set 不阻断）→ 放行 restore 条件。U-28 R3/R4：编排
+    // 挂「连接成功」事件而非一次性的 dshStart —— 首连超时 reject 只放行闸门（U-17 语义，
+    // M1/M2 不永久挂），后台重连成功时补跑 preset.ensure，#21 不再被永久跳过。
+    if (dsh !== undefined) {
+      wireRestoreOnReconnect(dsh, m3, ready)
+      dshStart?.catch((error) => {
+        console.warn(`[m3] first connect timed out; restore deferred to reconnect: ${String(error)}`)
+        ready.setRestoreSettled([...m3.failed])
+      })
     }
     // main 侧观测面（U-15 ③ 断言口径：错 clientId 拒绝时 dsh /api 计数 === 0；不开新 IPC 通道）
     ;(globalThis as { __pbotsDsh?: DshConnection }).__pbotsDsh = dsh

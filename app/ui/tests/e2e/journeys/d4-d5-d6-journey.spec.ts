@@ -90,6 +90,10 @@ test('D4→D5→D6 全旅程：审批批准执行 → 市场装 filesystem→新
     rt1.writeScriptCalls(x, [mcpCall({ path: hello }), textCall(['D5 读取完成'])])
     await page.click(`.bot-item[data-session="${x}"]`)
     await send(page, '读一下文件')
+    // P5-21 连接器 ASK 化（Q-016 ③）：mcp__ 调用出审批卡，先批准 allowed-once（P5-21.f1，答卡模式同上方 D4 段）
+    const rowX = page.locator(`[data-pane="${x}"] .tool-row`)
+    await rowX.locator('[data-approval-card]').waitFor({ timeout: 20_000 })
+    await rowX.locator('[data-action="approve"]').click()
     await expect(page.locator(`[data-pane="${x}"] .tool-row[data-status="done"]`), 'X 实调连接器工具').toBeVisible({ timeout: 60_000 })
     await page.locator(`[data-pane="${x}"] .tool-row .tool-line`).click()
     await expect(page.locator(`[data-pane="${x}"] .tool-detail`)).toContainText('u31-d5-journey-evidence')
@@ -126,6 +130,10 @@ test('D4→D5→D6 全旅程：审批批准执行 → 市场装 filesystem→新
     writeFileSync(hello2, 'u31-d6b-after-restart')
     rt2.writeScriptCalls(x!, [mcpCall({ path: hello2 }), textCall(['重启后读取完成'])])
     await send(page, '再读一次')
+    // P5-21 连接器 ASK 化：重启后同样先批准 allowed-once（P5-21.f1）
+    const rowX2 = page.locator(`[data-pane="${x!}"] .tool-row`)
+    await rowX2.locator('[data-approval-card]').waitFor({ timeout: 20_000 })
+    await rowX2.locator('[data-action="approve"]').click()
     await expect(page.locator(`[data-pane="${x!}"] .tool-row[data-status="done"]`), 'D6b：连接器 bot 重启后仍能调工具').toBeVisible({ timeout: 60_000 })
   } finally {
     await shell2.stop()

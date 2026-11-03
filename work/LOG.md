@@ -781,3 +781,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 00:45 W0 回报：R8 残余表完成（闭集 83 行：19 fixed + 24 等价 + 6 open-in + 10 waived，U1 闭集就绪）| G1-r1 REVISE → director 已派改 BRIEF v2（7 HIGH 逐条回应，含 runnerCommand 加固前置、档位表 3/5 行改逐次 ASK）
 00:51 R5 回报：bwrap 写隔离好/读+网放行（原语可行，runnerCommand 可接网络隔离+路径遮蔽）、Landlock 回退共享 /tmp 不等价、DSH_HOME 泄漏向量 | 安全事故处置：探针 token 被 git add work/ 带入 → d9f8659+6e2bdc6 清除 27 文件 + gitignore + LEARNINGS（均死 token/mock，无真实 key，仓未 push）| R4 回报：32 工具表、MCP 过 pre-execute 但不问且 hint 不暴露、cwd 省略回退 runtime 启动 cwd
 00:53 BRIEF v2 完成（7 HIGH 逐条回应：runnerCommand 加固=A0 前置、A4 入口矩阵、A11 迁移、A4b loopback、A9 fail-closed 保 NEVER、仅连接器可始终允许）| QUESTIONS Q-013 重写为 v2（9 行表+四件 b-e）、Q-014 补降级口径、Q-015 扩为六件 | G1-r2 两席已派（终轮）| R6 回报：自建最小 botId×toolName schema
+01:5x W0 回报：R1 审批模型（11 action→4 类、默认 ask、一次性批 1h TTL、standing-grants 仅 iMessage/use-app、autoReview=云端 LLM 复核、MCP 权限 settings.json 三档 tools/reads/writes、按钮 Allow→Always→Don't 顺序与分类语义）——待 R 条款交 director 出 v2.x 增补
+02:0x G1-r2 两席均 REVISE → 有条件通过（不再开 r3）；6 条 HIGH 去重清单落 panels/G1-r2.md，转 PLAN 首批任务 + BRIEF v2.1 修订账

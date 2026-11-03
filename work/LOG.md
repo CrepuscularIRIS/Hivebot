@@ -766,3 +766,9 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 23:00 U-32 builder 回报完成（3 commits，tests/ 6 文件 +140/-17，224 单测+54 e2e 绿，e2e 已全程 Xvfb）→ verifier 已派（独立复跑含 Xvfb 全量，反向自证抽查）| U-33 等 U-32 合并
 23:07 tick | verifier 在验 U-32（REPORT-U-32.md 已落主仓；vitest/playwright 进程 28 个在跑，Xvfb 下）| 无事可派 | ready 未派 = 0 | load 3.7
 23:13 U-32 验收 PASS（head 4af3c9b，三项复跑独立绿，O1-O4 全 PASS）→ 已合并 e1e9a15（6 文件逐清单 checkout，worktree 已清）| main 回归：build✓ 单测 224/224✓ e2e Xvfb 后台跑中 | U-33 已派（xvfb 默认 + evidence 不刷脏，含逃生门 PBOTS_E2E_NO_XVFB）
+23:17 tick | main e2e 回归在跑（34/54 段落中，Xvfb 下绿）；U-33 builder 开工（worktree 已建）| 无事可派 | ready 未派 = 0 | load 3.4
+23:18 U-32 合并后 main 全量回归收口：build✓ + 单测 224/224✓ + Xvfb e2e 54/54✓（5.5m，零弹窗）——U-32 彻底闭环
+23:27 tick | U-33 在跑（无 commit，6 文件在改：脚本+evidence 路径，正常推进）| 无事可派 | ready 未派 = 0 | load 4.1
+23:31 U-33 builder 回报完成（a437d55，6 文件 +28/-33，run-e2e.sh 默认 Xvfb + evidence 出 test-output；自跑 54 绿主仓干净）→ verifier 已派
+23:37 tick | verifier 在验 U-33（测试进程 31 个在跑，Xvfb 下）| 无事可派 | ready 未派 = 0 | load 4.8 高但单 e2e 流可承受
+23:43 U-33 验收 PASS → 合并 db3f9b0（6 文件，run-e2e.sh/evidence test-output，worktree 已清）| main 回归：build✓ 单测 224/224✓ e2e 新脚本后台跑 | PLAN U-33 done；QUESTIONS 加 Q-012 下一阶段方向

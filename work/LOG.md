@@ -893,3 +893,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 17:59 P5-54 合并后回归全绿（356 单测 + 61 e2e exit 0）——main 正式跑在 0.18 renderer 上
 18:12 P5-31 builder 完成（ef7bbf0：Always/Never 隐藏+Execution 卡隐藏有据+命令全文，360+61）→ verifier 派发（最终 build 全量复跑）
 18:27 P5-31 验收 PASS → 合并 a26aaab（vitest 360 绿），e2e 后台 | 在途：P5-55
+18:34 P5-31 回归闭环（61 e2e exit 0）

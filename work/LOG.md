@@ -838,3 +838,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 10:57 P5-06 验收 PASS（514 格实质成立）→ 合并 666b9f3，sdk 248 绿 | P5-01.f2 已派（最后尾巴）| done 18/33；W1-AP-0 主体收口
 11:25 P5-01.f2 完成（71b91be：根因=bwrap MS_NODEV 版本敏感；修复=--ro-bind-data 空文件机制无关；249 绿）→ verifier 派发
 11:49 P5-01.f2 合并 c6eb56b（249 绿）——W1-AP-0 全部收口 | P5-H1+H2 已派（最后的非阻塞任务）| done 19/33
+12:10 四问全答落地（Q-013 A+web 允许；Q-014 B+路线变更 0.18 一比一移植；Q-015 A；Q-016 A）| Q-017 立项：superagent 编排+personal agent 三段式 | L-UI 观感对齐 LEARNINGS

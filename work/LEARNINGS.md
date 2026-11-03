@@ -67,3 +67,5 @@
 2026-11-03 P5-04.f1 实测：approval.yml insert 行加载顺序不可靠（两种排列 shell-ask 都先注册居 waterfall 外层，guard 收不到 bash exec；此前用例恰好都区分不了顺序）→ 往 pre-execute waterfall 插需要「先于 shell-ask」的插件一律用 cordis prepend（ctx.on(..., true)，vendor/cordis events register unshift），不赌 yaml 行序；凡验收里有「X 在 Y 之前」语义，测试必须能区分顺序（组合差分格），否则是空转。
 
 2026-11-03 P5-06 测试侧五条（builder 实测）：①runtime.ts 硬编码 P2SDK_PROVIDER='mock'，real-provider e2e 必须显式 env 覆盖为 'real'；②委派子会话 id 是裸 uuid 且后台异步，识别须 prompt 标记+日志行边界；③fake 的 toolResults 逐轮累积，断言前按 toolCallId 去重；④ptc worker bootstrap 必须放会话工作区内（/tmp 会被沙箱 --tmpfs 遮掉）；⑤上游 write 有 read-before-write 规则，伪造写用例先满足读前提。
+
+2026-11-03 用户对当前 UI 的反馈：「逆向出来的不是很准，UI 风格不太一样，颜色也好，很多 bot 的动画都不太行」——token 级数值审计（U-27/P5-11~15）逐项都对，但整体观感（色彩氛围、动效节奏、风格）仍明显偏离 → 数值断言防回归可以，**观感对齐必须以「可运行的完整参照」为准**（0.18 重构仓 1:1 移植 + 与 0.78.1 并排跑对照）；「每项都符合规格」不等于「看起来像」。L-UI 路线据此变更（Q-014 落实）。

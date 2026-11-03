@@ -822,3 +822,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 03:26 P5-12.f1 验收 PASS → 合并+回归后台（回归完成后 P5-12 整链闭环）| 在途：P5-01 verifier、R3
 03:33 P5-01 验收 PASS → 合并 5b45892（wrapper/never-roots/start 接线，12 文件）| 回归后台（sdk 全量 + ui 全量）| W1-AP-0 还剩 P5-02（todo→ready）
 03:40 R3 回报：**能**——桩 coordinator 启动 0.78.1 renderer 成功，真字体参照截图 4 张进 work/p5-parity/ref/（含审批卡），harness 可复跑（2 分钟/张）；U5 基准降级链第二级就绪，P5-41 只剩 Q-014 | 残留 4 个 server（8877-8880，cwd 已删）hook 拒杀交用户
+03:43 P5-01 回归：ui 61 绿；sdk 1 红=⑧ 布局探针（worktree 绿/main 红的测试写死问题）→ P5-01.f1 已派（双布局回归）+ 已通知 P5-02 排除该用例

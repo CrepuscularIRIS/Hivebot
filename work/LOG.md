@@ -744,3 +744,13 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-02 21.45 tick | 同上
 2026-11-02 21.46 tick | 同上
 2026-11-02 21.5x **U-28 + U-29 全部合并**（86b4c2c + 1e18112）；main 全量 217 单测 + 50 e2e 全绿 ✓ | **启动 L-6 复审**（86b4c2c..1e18112，验 9 发现闭环）——PASS 即 P4 收官
+2026-11-02 21.55 tick | L-6 起步（journal 2 行——finder 刚开始）
+2026-11-02 21.56 tick | 同上
+2026-11-02 21.57 tick | L-6 journal 8 行——finder 推进中
+2026-11-02 21.58 tick | L-6 finder 阶段（8 行——范围小 422 行 diff，可能比 L-5 快很多）
+2026-11-02 21.59 tick | L-6 journal 11 行——推进中
+2026-11-02 22.01 tick | L-6 journal 14 行——verify 阶段推进
+2026-11-02 22.02 tick | L-6 journal 15 行——接近收口
+22:07 tick | L-6 复审仍在跑（verify 阶段，22:07 活跃；发现：1 minor CONFIRMED + 1 REFUTED，无重大） | 无事可派：P4 PLAN 全 done，等 L-6 verdict 定收口 | ready 未派 = 0 | 未答 Q-010
+22:08 tick | L-6 复审仍在跑（verify 阶段，journal 18 行，agent 22:07 仍活跃；无 critical/major） | 无事可派：P4 全 done 等 L-6 verdict | ready 未派 = 0 | 未答 Q-010 | load 2.5 正常
+22:17 L-6 复审完成：PASS（0 critical/major，unfixed 0；4 CONFIRMED minor 全在测试支撑代码 → U-32 已派 builder，worktree /tmp/bot-wt/U-32）| P4 阶段完成判定四项全满足 → QUESTIONS 加 Q-011（P4 验收），PushNotification 已发 | ready 未派 = 0 | 未答 Q-010、Q-011

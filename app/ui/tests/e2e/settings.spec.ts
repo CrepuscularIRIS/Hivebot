@@ -200,16 +200,27 @@ test('D10c1：删 bundle → close→launch → 四处失效、历史可读、co
 // 完成前关闭，再打开 B 的：A 轮次的迟到响应会覆盖 B 轮次的 preset 选择（混配、非用户所选）。
 // 修复 = effect cleanup 失效 token；E2E 经 __pbotsDev.slowNext 把第一轮 agentPresets/list 延迟，
 // 真实复现「旧轮次响应迟到」竞态。
+// U-32 O2（REVIEW-P4终审复审）：终局断言余量过薄（注入 2.5s 只固定等 3.0s，旧轮次响应落在
+// 断言后则假绿）—— 改事件屏障：等 main 侧 __pbotsDsh.apiCount（d1.spec 同观测面）数到旧轮次
+// RPC 真正发出（2.5s 延迟之后）才断言，不赌计时。
 test('P-D ④(O2)：关闭后重开，迟到的旧轮次候选不覆盖新预填（失效 token）', async () => {
   test.setTimeout(120_000)
   const env = await launchProduct()
   try {
-    const { page } = env
+    const { page, shell } = env
+    // main 侧已发出的 dsh /api 计数（main/index.ts 观测面，无新 IPC）
+    const dshApiCount = (): Promise<number> =>
+      shell.app.evaluate(() => (globalThis as unknown as { __pbotsDsh?: { apiCount: number } }).__pbotsDsh?.apiCount ?? -1)
     const mainId = (await devState(page)).meta.mainBotId! // 默认 preset（p2-alpha）
     const beta = await createViaDialog(page, 'p2-beta')
     await expect.poll(async () => (await devState(page)).views[beta]?.preset, { timeout: 15_000 }).toBe('p2-beta')
 
     // round1（将作废）：主 bot 的「用此配置新建」，agentPresets/list 注入 2.5s 延迟
+    // 屏障计数口径（窗口内 /api 调用方只有 NewBotDialog effect 的三连；roster 走 botsMeta
+    // 通道、$events 走 mux socket、Sidebar 时钟本地，均不进 apiCount）：
+    // round1 = listBundles + modelCatalog（即发）+ agentPresets/list（迟发）；round2 = 三连即发。
+    const base = await dshApiCount()
+    if (base < 0) throw new Error('O2 屏障失效：__pbotsDsh 未暴露（main 未连 dsh）')
     await page.locator(`[data-session="${mainId}"]`).click()
     await page.evaluate(() => (window as unknown as { __pbotsDev: { slowNext(m: string, ms: number): void } }).__pbotsDev.slowNext('agentPresets/list', 2_500))
     await page.click('[data-action="clone-config-head"]')
@@ -223,9 +234,20 @@ test('P-D ④(O2)：关闭后重开，迟到的旧轮次候选不覆盖新预填
     await page.click('[data-action="clone-config-head"]')
     await expect(dlg.locator('[data-preset-option="p2-beta"] input')).toBeChecked({ timeout: 15_000 })
 
-    // 等 round1 的迟到响应到达（2.5s 延迟）——修复前它 setPresetId(p2-alpha) 覆盖新选择
-    await page.waitForTimeout(3_000)
-    await expect(dlg.locator('[data-preset-option="p2-beta"] input')).toBeChecked() // 仍是新预填
+    // 事件屏障：等 round1 迟到的 agentPresets/list 真正发出（apiCount = base+6）。旧轮次
+    // RPC 落地前不断言；计数超越预期（窗口混入未预期 /api 调用）→ fail loud，不假绿。
+    const deadline = Date.now() + 20_000
+    for (;;) {
+      const cur = await dshApiCount()
+      if (cur === base + 6) break
+      if (cur > base + 6) throw new Error(`O2 屏障失效：apiCount=${cur} 超过预期 base+6=${base + 6}（窗口内混入未预期 /api 调用）`)
+      if (Date.now() > deadline) throw new Error(`O2 屏障超时：round1 迟到 RPC 未发出，apiCount=${cur}（预期 ${base + 6}）`)
+      await page.waitForTimeout(100)
+    }
+    // 响应尾程：RPC 已发出 → loopback 回包 + ipc 回 renderer + 微任务回调（毫秒级），500ms
+    // 覆盖尾程余量（屏障已消掉 2.5s 不确定区间；自证见 REPORT-U-32：摘 stale 守卫此用例必红）。
+    await page.waitForTimeout(500)
+    await expect(dlg.locator('[data-preset-option="p2-beta"] input')).toBeChecked() // 仍是新预填（修复前被 round1 覆盖回 p2-alpha）
     await dlg.locator('.btn.secondary').click()
     await expect(dlg).toBeHidden()
   } finally {

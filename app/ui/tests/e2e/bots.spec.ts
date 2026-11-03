@@ -2,9 +2,9 @@
 // 新建对话框全旅程（preset/模型候选 → 创建 → 插主 bot 下 → 选中 → composer 焦点）、侧栏 280 默认 / 240–400 调宽、
 // D9/D12② DOM 搜索、token computed-style 断言（≥5 个 --dsw-* 等于 theme-tokens.css）、启动封面与 01-boot.png 并排存证。
 import { expect, test } from 'playwright/test'
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell } from '../support/launch.ts'
 import { EVIDENCE, createViaDialog, devState, launchProduct } from '../support/ui.ts'
 
@@ -60,7 +60,7 @@ test('冷启动 mainBotId 为空 → #3 建默认 bot → #20 patch；主 bot �
 })
 
 test('冷启动 mainBotId 指向已不存在的 session → 重建主 bot 并 patch', async () => {
-  const data = mkdtempSync(join(tmpdir(), 'bot-u21-data-'))
+  const data = tmkdir('bot-u21-data-')
   writeFileSync(join(data, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'session-gone', recipes: {}, bots: {} }))
   const env = await launchProduct({ env: { PBOTS_DATA_DIR: data } })
   try {

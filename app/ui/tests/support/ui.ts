@@ -1,8 +1,8 @@
 // U-21 产品页 E2E 共用：fake LLM 脚本构造（events-replay.test.ts / d1.spec 同款帧形状）+ 产品 UI 操作。
 import { expect, type Page } from 'playwright/test'
-import { mkdirSync, mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from './tmp-sweep.ts'
 import { launchShell, type ShellLaunch, type ShellOptions } from './launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from './sdk-runtime.ts'
 
@@ -50,7 +50,7 @@ export interface Env { rt: SdkRuntime; shell: ShellLaunch; page: Page; stop(): P
 
 export async function launchProduct(opts: ShellOptions & { ready?: boolean } = {}): Promise<Env> {
   const { ready = true, ...shellOpts } = opts
-  const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}`, cwd: mkdtempSync(join(tmpdir(), 'bot-u21-ws-')) })
+  const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}`, cwd: tmkdir('bot-u21-ws-') })
   const shell = await launchShell({ ...shellOpts, env: { PBOTS_DSH_HANDOFF: rt.handoff, ...shellOpts.env } })
   if (ready) await shell.page.waitForSelector('.shell', { timeout: 30_000 })
   return { rt, shell, page: shell.page, async stop() { await shell.stop(); await rt.stop() } }

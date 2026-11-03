@@ -1,11 +1,11 @@
 // BotsMetaStore：原子写、单一 Promise 队列（D10e）、盘上形状（D10d）、坏文件处理。
 import { describe, expect, it } from 'vitest'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { BOTS_JSON, BotsMetaStore } from '../../../main/m3-meta/store'
 
-const tmpHome = (): string => mkdtempSync(join(tmpdir(), 'bot-p4-U-13-store-'))
+const tmpHome = (): string => tmkdir('bot-p4-U-13-store-')
 
 describe('BotsMetaStore · D10d 盘上形状', () => {
   it('v1 不含 bots 字段；recipes 按 presetId 存 {agentPreset, connectors}', async () => {

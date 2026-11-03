@@ -9,6 +9,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { describe, expect, it } from 'vitest'
 
 const WRAPPER = join(fileURLToPath(import.meta.url), '..', '..', '..', 'sandbox', 'bwrap-wrap.py')
@@ -149,7 +150,7 @@ describe('真实 exec 冒烟（不经 dry-run）', () => {
     const secDir = mkdtempSync('/var/tmp/bot-p5-01f2-sec-')
     const secret = join(secDir, 'token')
     writeFileSync(secret, 'TOPSECRET')
-    const ws = mkdtempSync(join(tmpdir(), 'bot-p5-01f2-ws-'))
+    const ws = tmkdir('bot-p5-01f2-ws-')
     const res = runWrapper(['--home', '/tmp/p5-01f2-h', '--mask', secret, ...profileArgs(ws), '--',
       '/bin/sh', '-c', `o=$(cat '${secret}' 2>/dev/null); echo "rc=$? bytes=\${#o}"; test -f '${secret}'; echo "type_f=$?"; test -s '${secret}'; echo "size_s=$?"`])
     expect(res.status, `stderr: ${res.stderr}`).toBe(0)

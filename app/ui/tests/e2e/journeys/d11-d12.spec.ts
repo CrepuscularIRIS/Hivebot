@@ -3,9 +3,8 @@
 // D12② DOM 无 Sign in/account/computer/SSH/billing；D11/D9 DOM 复扫（无改 preset/连接器入口、无 never 类）；
 // D12③ 截图存证：4 页（会话/市场/设置/新建对话框）× 亮/暗共 8 张 → gitignored app/ui/test-output/U-31/（U-33）。
 import { expect, test } from 'playwright/test'
-import { mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { launchShell } from '../../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../../support/sdk-runtime.ts'
 import { MARKET_SOURCE_PATCH, serveMarket } from '../../support/connectors.ts'
@@ -19,7 +18,7 @@ test('D12①/② + D11/D9 DOM + 8 张截图：零外网请求、token 零泄漏�
   const server = await serveMarket()
   const rt = await launchSdkRuntime({
     patch: `${MARKET_SOURCE_PATCH}:${PRESETS_PATCH}:${fakeOverlayPath()}`,
-    cwd: mkdtempSync(join(tmpdir(), 'bot-u31-ws-')),
+    cwd: tmkdir('bot-u31-ws-'),
     env: { P2SDK_MARKET_SOURCE_INDEXES: `${server.realUrl} ${server.localUrl}` },
   })
   const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })

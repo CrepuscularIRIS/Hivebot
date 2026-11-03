@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { acquireHomeLock, acquireHomeLockDetailed, processStarttime, type HomeLockHold } from '../../src/start.ts'
 import { launcherSpawnEnv } from '../support/runtime.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 /** A pid that exists for no process (kill → ESRCH), as used in review R1's reproduction. */
 const DEAD_PID = 2_147_483_647
@@ -74,7 +75,7 @@ afterEach(() => {
 
 /** Boot scripts/start.mjs in mock mode until the `p2sdk: dsh pid N` stderr line (no ready wait). */
 async function bootForLockTest(home: string): Promise<{ child: ChildProcess; dshPid: number; output: () => string }> {
-  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
+  const handoff = tmkdir('p2sdk-handoff-')
   homes.push(handoff)
   const child = spawn(process.execPath, [join(PKG_ROOT, 'scripts', 'start.mjs')], {
     env: {

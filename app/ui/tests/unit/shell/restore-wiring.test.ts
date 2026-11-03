@@ -18,9 +18,8 @@ import { registerM3Meta, type M3Handle } from '../../../main/m3-meta'
 import { BotsMetaStore } from '../../../main/m3-meta/store'
 import { presetIdOf } from '../../../main/m3-meta/preset-id'
 import { createReadyGate } from '../../../main/ready'
-import { mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 
 interface FakeDsh {
   calls: Array<{ method: string; args: unknown }>
@@ -56,7 +55,7 @@ const until = async (cond: () => boolean, ms = 2_000): Promise<void> => {
 describe('wireRestoreOnReconnect（U-28 R3/R4/R5）', () => {
   it('首连 ensure 失败 → failed/live=false；重连成功补跑 restore → failed 清空、live=true', async () => {
     const presetId = presetIdOf('p2-alpha', ['a'])
-    const store = new BotsMetaStore(mkdtempSync(join(tmpdir(), 'bot-U-28-wire-')))
+    const store = new BotsMetaStore(tmkdir('bot-U-28-wire-'))
     await store.init()
     await store.putRecipe(presetId, { agentPreset: 'p2-alpha', connectors: ['a'] })
 
@@ -98,7 +97,7 @@ describe('wireRestoreOnReconnect（U-28 R3/R4/R5）', () => {
 
   it('两次连接事件不叠跑：restore 串行（第二次等第一次 settle 后才发下一批 ensure）', async () => {
     const presetId = presetIdOf('p2-alpha', ['b'])
-    const store = new BotsMetaStore(mkdtempSync(join(tmpdir(), 'bot-U-28-wire2-')))
+    const store = new BotsMetaStore(tmkdir('bot-U-28-wire2-'))
     await store.init()
     await store.putRecipe(presetId, { agentPreset: 'p2-alpha', connectors: ['b'] })
     let inFlight = 0

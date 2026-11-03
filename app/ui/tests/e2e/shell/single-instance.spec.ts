@@ -5,13 +5,12 @@
 import { expect, test } from 'playwright/test'
 import { spawn } from 'node:child_process'
 import { createRequire } from 'node:module'
-import { mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { launchShell, UI_ROOT } from '../../support/launch.ts'
 
 test('双开：同 userData 的第二个实例拿不到锁、提示并自行退出（code 0），第一个实例不受影响', async () => {
-  const home = mkdtempSync(join(tmpdir(), 'bot-U-28-si-'))
+  const home = tmkdir('bot-U-28-si-')
   const first = await launchShell({ home })
   try {
     await expect(first.page.locator('[data-boot-cover]')).toBeVisible({ timeout: 15_000 })

@@ -10,9 +10,9 @@
 //    mcp__…__read_file 出结果；未勾选的 bot Y 工具表无 mcp__*；
 // ④ not-bundle（GU-PDC-A 建议：换成「19 条未预置条目」的等价构造）：local 裸包真 pnpm → 结构化拒 → unsupported。
 import { expect, test, type Page } from 'playwright/test'
-import { mkdtempSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell, type ShellLaunch } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
 import { BARE_PLUGIN, LOCAL_PLUGIN, MARKET_SOURCE_PATCH, serveMarket, tempBundle, type MarketServer } from '../support/connectors.ts'
@@ -71,7 +71,7 @@ async function launchMarket(): Promise<Env> {
   const server = await serveMarket()
   const rt = await launchSdkRuntime({
     patch: `${MARKET_SOURCE_PATCH}:${PRESETS_PATCH}:${fakeOverlayPath()}`,
-    cwd: mkdtempSync(join(tmpdir(), 'bot-u23-ws-')),
+    cwd: tmkdir('bot-u23-ws-'),
     env: { P2SDK_MARKET_SOURCE_INDEXES: `${server.realUrl} ${server.localUrl}` },
   })
   const pre = (await rt.client.call('pluginManager/installBundle', { spec: tempBundle(PRE_INSTALLED), options: { enabled: false } })) as { application?: string }

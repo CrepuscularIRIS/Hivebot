@@ -6,9 +6,8 @@
 // app/ui/.env 兜底（后台派发 shell 不继承交互 shell 的 key，VERIFY-U-31 实证；.env 值不进 git）。
 // 两处都无时本条直接失败（真模型证据缺失 = FAIL，不静默 skip）。
 import { expect, test } from 'playwright/test'
-import { mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { launchShell } from '../../support/launch.ts'
 import { envOrDotenv } from '../../support/creds.ts'
 import { launchSdkRuntime } from '../../support/sdk-runtime.ts'
@@ -20,7 +19,7 @@ test('D1+D2 真模型：对话框建 bot → LiteLLM 流式回复 → 定稿 + t
   expect(apiKey, 'LITELLM_MASTER_KEY 未设置（process.env 与 app/ui/.env 均无）：真模型旅程无凭证').toBeTruthy()
   const rt = await launchSdkRuntime({
     patch: PRESETS_PATCH,
-    cwd: mkdtempSync(join(tmpdir(), 'bot-u31-ws-')),
+    cwd: tmkdir('bot-u31-ws-'),
     env: { P2SDK_PROVIDER: 'litellm', P2SDK_LLM_API_KEY: apiKey! },
   })
   const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })

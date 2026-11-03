@@ -1,9 +1,9 @@
 // #4 编排（D8/D10a/D10b/D7/⑦ 屏障）与 deriveBots（D10d）。
 // presetIdOf 直接 import app/sdk/src/p2temp/preset-id.mjs（REUSE v1.1 决策行，不复制第二份）。
 import { describe, expect, it } from 'vitest'
-import { mkdtempSync, readFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { BOTS_JSON, BotsMetaStore, type BotsMeta } from '../../../main/m3-meta/store'
 import {
   GATE_4_ENV,
@@ -13,7 +13,7 @@ import {
 } from '../../../main/m3-meta/orchestrate'
 import { presetIdOf } from '../../../main/m3-meta/preset-id'
 
-const tmpHome = (): string => mkdtempSync(join(tmpdir(), 'bot-p4-U-13-orch-'))
+const tmpHome = (): string => tmkdir('bot-p4-U-13-orch-')
 /** 拒绝路径不写盘：文件可能根本不存在。 */
 const readMetaOrMissing = (dir: string): BotsMeta | null => {
   try {

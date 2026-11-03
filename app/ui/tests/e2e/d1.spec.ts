@@ -5,10 +5,10 @@
 // preset fixture：app/sdk/profile/patches/presets.yml（经 P2SDK_PATCH 与 fake overlay 叠加）；
 // connector fixture：app/sdk/tests/market/support.ts writeBundleFixture 的内联最小版（T-15 同款）。
 import { expect, test, type Page } from 'playwright/test'
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
 import { createViaDialog, send } from '../support/ui.ts'
@@ -210,7 +210,7 @@ test('建 bot 经 M3（#4 编排→createWithConnectors）：勾选连接器 →
     const page = shell.page
     await page.waitForSelector('.shell', { timeout: 30_000 }) // 产品壳就绪 = M1 已通
     // 预装连接器（M1 #15；§2.2 强制 enabled:false；wire 形状 = typert 命名参数 {spec, options}）
-    const bundleDir = writeBundleFixture(mkdtempSync(join(tmpdir(), 'bot-u15-bundle-')))
+    const bundleDir = writeBundleFixture(tmkdir('bot-u15-bundle-'))
     const install = await page.evaluate(
       (dir: string) => (window as unknown as { pbots: { api(m: string, a?: unknown): Promise<{ ok: boolean; value?: { application?: string }; error?: { code: string; message: string } }> } }).pbots.api('pluginManager/installBundle', { spec: dir, options: { enabled: false } }),
       bundleDir,

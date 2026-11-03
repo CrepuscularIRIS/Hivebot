@@ -4,10 +4,10 @@
 // through $P2SDK_HOME/fake (script JSON + T-01⑧ gate-file barrier), and the
 // T-01② process-tree listener criterion (`ss`, loopback only, no new listeners).
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { tmkdir } from '../tmp-sweep.ts'
 import { expect } from 'vitest'
 import { snapshotFrames, type DshClient } from '../../../examples/lib/client.mjs'
 import { launchRuntime, type Runtime } from '../runtime.ts'
@@ -143,7 +143,7 @@ export async function launchFakeRuntime(opts: { env?: Record<string, string> } =
  * whole). Loaded through the T-01 launcher's P2SDK_PATCH passthrough.
  */
 function overlayEnv(): Record<string, string> {
-  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-fake-patch-'))
+  const dir = tmkdir('p2sdk-fake-patch-')
   const pluginUrl = pathToFileURL(join(PKG_ROOT, 'tests', 'support', 'fake', 'plugin.mjs')).href
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(
@@ -211,7 +211,7 @@ export function sendPrompt(client: DshClient, sessionId: string, prompt: string)
  * ../launch-token` from inside the session finds nothing.
  */
 export async function createSession(client: DshClient, _home?: string): Promise<string> {
-  const work = mkdtempSync(join(tmpdir(), 'p2sdk-work-'))
+  const work = tmkdir('p2sdk-work-')
   const { sessionId } = (await client.call('session/create', { request: { cwd: work } })) as {
     sessionId: string
   }

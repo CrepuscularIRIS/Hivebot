@@ -3,9 +3,9 @@
 // D6 J3×J4（close→launch 重启：列表/主 bot/历史都在；D6b 连接器 bot 重启后仍能调工具）。
 // preset：standard（D4，带 bash + shell-ask）；filesystem wrapper 名与 market.spec 锚点一致。
 import { expect, test } from 'playwright/test'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { launchShell } from '../../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../../support/sdk-runtime.ts'
 import { MARKET_SOURCE_PATCH, serveMarket, type MarketServer } from '../../support/connectors.ts'
@@ -37,7 +37,7 @@ const PATCH = `${MARKET_SOURCE_PATCH}:${PRESETS_PATCH}:${fakeOverlayPath()}`
 test('D4→D5→D6 全旅程：审批批准执行 → 市场装 filesystem→新建→调工具 → 重启恢复（含连接器 bot 调工具）', async () => {
   test.setTimeout(420_000)
   const server = await serveMarket()
-  const cwd = mkdtempSync(join(tmpdir(), 'bot-u31-ws-'))
+  const cwd = tmkdir('bot-u31-ws-')
   const rt1 = await launchSdkRuntime({ patch: PATCH, cwd, env: { P2SDK_MARKET_SOURCE_INDEXES: `${server.realUrl} ${server.localUrl}` } })
   const shell1 = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt1.handoff } })
   let a: string

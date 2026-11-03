@@ -1,9 +1,8 @@
 // U-15 三桥接线单测：#4 方法路由进 M3 编排（写 recipe 先于 dsh #4）、共享 ledger 单例
 // （HANDOFF-MED：m1 默认 m1Ledger 与 registerM2Mux({ledger}) 必须同一实例）。
 import { describe, expect, it, vi } from 'vitest'
-import { mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 
 vi.mock('electron', () => ({
   app: { getPath: () => '/tmp' },
@@ -46,7 +45,7 @@ function dshStub(handlers: Record<string, unknown> = {}): DshStub {
 
 describe('wrapM1WithOrchestration（#4 路由，CONTRACT §3.1）', () => {
   it('#4 → M3 编排：recipe 落盘、dsh 收到 #4，base 不被调用', async () => {
-    const store = new BotsMetaStore(mkdtempSync(join(tmpdir(), 'bot-u15-wire-')))
+    const store = new BotsMetaStore(tmkdir('bot-u15-wire-'))
     await store.init()
     const roster = dshStub({ 'agentPresets/list': { presets: [{ id: 'p2-alpha', isDefault: true }] }, 'p2temp/session.createWithConnectors': { sessionId: 's-orch' } })
     const baseCalls: M1Request[] = []
@@ -69,7 +68,7 @@ describe('wrapM1WithOrchestration（#4 路由，CONTRACT §3.1）', () => {
   })
 
   it('#4 编排校验拒绝时 dsh #4 不被调用（connectors 空）', async () => {
-    const store = new BotsMetaStore(mkdtempSync(join(tmpdir(), 'bot-u15-wire-')))
+    const store = new BotsMetaStore(tmkdir('bot-u15-wire-'))
     await store.init()
     const dsh = dshStub({})
     const wired = wrapM1WithOrchestration(async () => ({ ok: true, value: {} }), dsh as unknown as Parameters<typeof wrapM1WithOrchestration>[1], store)
@@ -82,7 +81,7 @@ describe('wrapM1WithOrchestration（#4 路由，CONTRACT §3.1）', () => {
   })
 
   it('非 #4 方法原样走 base', async () => {
-    const store = new BotsMetaStore(mkdtempSync(join(tmpdir(), 'bot-u15-wire-')))
+    const store = new BotsMetaStore(tmkdir('bot-u15-wire-'))
     await store.init()
     const seen: M1Request[] = []
     const base = async (req: M1Request): Promise<ConnectionRpcResult> => { seen.push(req); return { ok: true, value: { via: 'base' } } }
@@ -93,7 +92,7 @@ describe('wrapM1WithOrchestration（#4 路由，CONTRACT §3.1）', () => {
   })
 
   it('dsh 未配置时 #4 也走 base（forbidden not configured 由基座承担）', async () => {
-    const store = new BotsMetaStore(mkdtempSync(join(tmpdir(), 'bot-u15-wire-')))
+    const store = new BotsMetaStore(tmkdir('bot-u15-wire-'))
     await store.init()
     const seen: M1Request[] = []
     const base = async (req: M1Request): Promise<ConnectionRpcResult> => { seen.push(req); return { ok: false, error: { code: 'pbots/forbidden', message: 'dsh connection not configured', details: {} } } }

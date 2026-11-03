@@ -4,9 +4,9 @@
 // fake 脚本协议与 helpers 来源：app/sdk/tests/support/fake/harness.ts、
 // app/sdk/tests/e2e/events-replay.test.ts（bashCall/textCall/sendPrompt/createSession 同源）。
 import { expect, test, type ElectronApplication, type Page } from 'playwright/test'
-import { existsSync, mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell, UI_ROOT } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
 
@@ -80,7 +80,7 @@ function textCall(text: string): object {
 
 /** 建默认 preset 会话（bash + shell-ask，SPIKE §7）并返回 cwd（副作用 canary 必须在会话 cwd 内）。 */
 async function createApprovalSession(rt: SdkRuntime): Promise<{ sessionId: string; cwd: string }> {
-  const cwd = mkdtempSync(join(tmpdir(), 'bot-U-12-ws-'))
+  const cwd = tmkdir('bot-U-12-ws-')
   const { sessionId } = (await rt.client.call('session/create', { request: { cwd } })) as { sessionId: string }
   return { sessionId, cwd }
 }
@@ -110,7 +110,7 @@ test('① 成功转交 + 两并发 requestId 不串线 + readyState 0→1 + tap 
     const bootClientId = await waitEventsReady(shell.page)
 
     // 第二个并发 requestId：session/follow 流
-    const cwd = mkdtempSync(join(tmpdir(), 'bot-U-12-ws-'))
+    const cwd = tmkdir('bot-U-12-ws-')
     const { sessionId } = (await rt.client.call('session/create', { request: { cwd } })) as { sessionId: string }
     rt.writeScriptCalls(sessionId, [textCall('回三段'), textCall('收尾')])
     const rid = await shell.page.evaluate(() => (window as unknown as { __pbotsDev: { newSocket(): { requestId: string } } }).__pbotsDev.newSocket().requestId)
@@ -205,7 +205,7 @@ test('① 失败不带端口：dsh 未配置 → {ok:false,error}，readyState=3
 })
 
 test('① 10s 超时：socket 一直不就绪 → readyState=3 派发 error（真 10s 计时）', async () => {
-  const handoff = mkdtempSync(join(tmpdir(), 'bot-U-12-badhandoff-'))
+  const handoff = tmkdir('bot-U-12-badhandoff-')
   writeFileSync(join(handoff, 'base-url'), 'http://127.0.0.1:9/')
   writeFileSync(join(handoff, 'launch-token'), 'nope')
   // U-17：start() 现按指数退避重试（默认 30s 才放弃）；此处收紧首连超时，保持本用例

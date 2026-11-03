@@ -2,10 +2,10 @@
 // （rename 失败时内存态与磁盘一致，不留半写、不丢先前好状态）。
 // rename 用 vi.mock 部分替换（默认仍 passthrough 真实现），其余 fs 原样。
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { rename } from 'node:fs/promises'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:fs/promises')>()
@@ -18,7 +18,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
 
 const { BOTS_JSON, BotsMetaStore } = await import('../../../main/m3-meta/store')
 
-const tmpHome = (): string => mkdtempSync(join(tmpdir(), 'bot-p4-U-18-store-'))
+const tmpHome = (): string => tmkdir('bot-p4-U-18-store-')
 const mockedRename = vi.mocked(rename)
 
 beforeEach(() => mockedRename.mockClear())

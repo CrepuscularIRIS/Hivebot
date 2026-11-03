@@ -4,9 +4,9 @@
 // 偏差与期望值见 work/p5-parity/REPORT-P5-15.md「待回修清单」，回修任务改 css 时同步把断言改成 R2 值。
 // 四页亮/暗截图存 gitignored app/ui/test-output/U-27/（U-33）。
 import { expect, test, type Locator, type Page } from 'playwright/test'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { MARKET_SOURCE_PATCH, serveMarket } from '../support/connectors.ts'
@@ -187,7 +187,7 @@ test('市场：D4 搜索框 r8 / h32 / padding 0 9；D6 行 padding 12 / min-h 5
   const server = await serveMarket()
   const rt = await launchSdkRuntime({
     patch: `${MARKET_SOURCE_PATCH}:${PRESETS_PATCH}:${fakeOverlayPath()}`,
-    cwd: mkdtempSync(join(tmpdir(), 'bot-u27-ws-')),
+    cwd: tmkdir('bot-u27-ws-'),
     env: { P2SDK_MARKET_SOURCE_INDEXES: `${server.realUrl} ${server.localUrl}` },
   })
   const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })

@@ -4,12 +4,12 @@
 // fake ctx / fixture profile 来源: app/sdk/tests/unit/p2temp.proc.mjs:19-27,39-93,96-107
 // （改动：TS 化 + hangRegisterFor 注入「注册永不返回」）。
 import { describe, expect, it } from 'vitest'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createRequire } from 'node:module'
 import { realpathSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { BotsMetaStore } from '../../../main/m3-meta/store'
 import { ensureThenReady, restoreGated } from '../../../main/m3-meta/ensure'
 import { createReadyGate } from '../../../main/ready'
@@ -72,7 +72,7 @@ function serviceDsh(ctx: unknown): DshLike {
 
 /** 已安装连接器 fixture（p2temp.proc.mjs:96-107 同构：package.json + JSON patch）。 */
 function fixtureProfile(bundles: string[]): string {
-  const profile = mkdtempSync(join(tmpdir(), 'bot-U-14-profile-'))
+  const profile = tmkdir('bot-U-14-profile-')
   for (const bundle of bundles) {
     const dir = join(profile, 'node_modules', bundle)
     mkdirSync(dir, { recursive: true })
@@ -86,7 +86,7 @@ const delay = (ms: number): Promise<'shut'> => new Promise((r) => setTimeout(() 
 const race = <T>(p: Promise<T>, ms: number): Promise<T | 'shut'> => Promise.race([p, delay(ms)])
 
 async function storeWithRecipes(recipes: Record<string, { agentPreset: string; connectors: string[] }>): Promise<BotsMetaStore> {
-  const store = new BotsMetaStore(mkdtempSync(join(tmpdir(), 'bot-U-14-data-')))
+  const store = new BotsMetaStore(tmkdir('bot-U-14-data-'))
   await store.init()
   for (const [id, recipe] of Object.entries(recipes)) await store.putRecipe(id, recipe)
   return store
@@ -127,7 +127,7 @@ describe('ensureThenReady（U-14 启动恢复屏障）', () => {
   })
 
   it('坏 bots.json（读盘失败）：ensureThenReady 不抛、outcomes 为空、gate 照常开（§8-1 不毒化启动）', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'bot-U-14-bad-'))
+    const dir = tmkdir('bot-U-14-bad-')
     writeFileSync(join(dir, 'bots.json'), '{oops')
     const store = new BotsMetaStore(dir)
     await store.init()

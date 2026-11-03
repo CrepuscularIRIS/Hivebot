@@ -4,10 +4,10 @@
 // （§8-1/D7），failed 进 ready 载荷。fixture 与安装方式来源:
 // app/sdk/tests/e2e/connector-restart.test.ts:178-192 + tests/market/support.ts:41-64。
 import { expect, test, type ElectronApplication } from 'playwright/test'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
 
@@ -71,13 +71,13 @@ test('restore：好 recipe ensure 成功 live=true、坏 recipe 失败不阻断 
   try {
     // 预置：装连接器 fixture + 建一个真连接器 bot（上一运行期的状态）
     const install = await rt.client.call('pluginManager/installBundle', {
-      spec: writeBundleFixture(join(mkdtempSync(join(tmpdir(), 'bot-U-14-fix-')), 'demo-mcp')),
+      spec: writeBundleFixture(join(tmkdir('bot-U-14-fix-'), 'demo-mcp')),
       options: { enabled: false },
     })
     if (install?.application === 'failed' || install?.error) {
       throw new Error(`installBundle failed: ${JSON.stringify(install).slice(0, 2000)}`)
     }
-    const cwd = mkdtempSync(join(tmpdir(), 'bot-U-14-ws-'))
+    const cwd = tmkdir('bot-U-14-ws-')
     const { sessionId } = (await rt.client.call('p2temp/session.createWithConnectors', {
       request: { connectors: [BUNDLE_NAME], agentPreset: 'standard', cwd },
     })) as { sessionId: string }
@@ -86,7 +86,7 @@ test('restore：好 recipe ensure 成功 live=true、坏 recipe 失败不阻断 
     const presetIdOf = await loadPresetIdOf()
     const good = presetIdOf('standard', [BUNDLE_NAME])
     const bad = presetIdOf('standard', ['bot-u-14-gone'])
-    const dataDir = mkdtempSync(join(tmpdir(), 'bot-U-14-data-'))
+    const dataDir = tmkdir('bot-U-14-data-')
     writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({
       version: 1,
       mainBotId: null,

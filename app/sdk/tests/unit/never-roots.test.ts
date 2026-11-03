@@ -4,6 +4,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir, userInfo } from 'node:os'
 import { join } from 'node:path'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { describe, expect, it } from 'vitest'
 import {
   CREDENTIAL_HOME_ENTRIES,
@@ -64,7 +65,7 @@ function fakeTree(): { home: string; dataDir: string; passwdHome: string } {
 describe('computeRoots', () => {
   it('homes 去重（envHome == passwdHome 只留一份）；maskRoots 覆盖决策 15 的数据根与运行时根', () => {
     const { home, dataDir } = fakeTree()
-    const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
+    const handoff = tmkdir('p2sdk-handoff-')
     const roots = computeRoots({
       envHome: home, passwdHome: home, home: join(home, '.dsh-x'), handoff,
       dataDirs: [dataDir], pkgRoot: join(home, 'pkg'),
@@ -78,7 +79,7 @@ describe('computeRoots', () => {
 
   it('neverRoots：凭证类别实体 + .claude* 通配展开 + 数据根下 policy-state/standing-grants + 工具链凭证', () => {
     const { home, dataDir, passwdHome } = fakeTree()
-    const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
+    const handoff = tmkdir('p2sdk-handoff-')
     const roots = computeRoots({
       envHome: home, passwdHome, home: join(home, '.dsh-x'), handoff,
       dataDirs: [dataDir], pkgRoot: join(home, 'pkg'),
@@ -99,8 +100,8 @@ describe('computeRoots', () => {
 
   it('handoff 通配：宿主 /tmp 下既有 p2sdk-handoff-* 目录也遮蔽（决策 13 ①）', () => {
     const { home, dataDir } = fakeTree()
-    const mine = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
-    const sibling = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
+    const mine = tmkdir('p2sdk-handoff-')
+    const sibling = tmkdir('p2sdk-handoff-')
     const roots = computeRoots({
       envHome: home, passwdHome: home, home: join(home, '.dsh-x'), handoff: mine,
       dataDirs: [dataDir], pkgRoot: join(home, 'pkg'),
@@ -133,7 +134,7 @@ describe('computeRoots', () => {
 
   it('guardRoots（P5-02 决策 13 ①/③ 划分）：hardRoots 含 /proc 与全部硬根、dataMaskRoots 排除 HOME 子树', () => {
     const { home, dataDir, passwdHome } = fakeTree()
-    const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
+    const handoff = tmkdir('p2sdk-handoff-')
     const roots = computeRoots({
       envHome: home, passwdHome, home: join(home, '.dsh-x'), handoff,
       dataDirs: [dataDir], pkgRoot: join(home, 'pkg'),

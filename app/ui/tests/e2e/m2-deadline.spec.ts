@@ -6,9 +6,9 @@
 //    全程代答计数 === 0。
 // fake 脚本协议与 helpers 同 m2-port.spec.ts（来源 app/sdk/tests/support/fake/harness.ts）。
 import { expect, test, type Page } from 'playwright/test'
-import { existsSync, mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
 
@@ -77,7 +77,7 @@ function textCall(text: string): object {
 }
 
 async function createApprovalSession(rt: SdkRuntime): Promise<{ sessionId: string; cwd: string }> {
-  const cwd = mkdtempSync(join(tmpdir(), 'bot-U-16-ws-'))
+  const cwd = tmkdir('bot-U-16-ws-')
   const { sessionId } = (await rt.client.call('session/create', { request: { cwd } })) as { sessionId: string }
   return { sessionId, cwd }
 }

@@ -859,3 +859,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 13:06 P6-02 builder 完成（真模型冒烟出现真实三段式；250 sdk 绿；偏差 4 条有据）→ verifier 派发
 13:07 P5-H1 builder 完成（tmp-sweep 登记簿机制，sdk/ui 全绿四类残留全 0）→ verifier 派发 | **H3 根因实锤=TEST_HOME 硬编码并行互踩**，行已更新 | 新问题 4 条记档（zoo 前缀 60 处/生产 handoff/…）
 13:08 P5-28 回归全绿（271 单测 + 62 e2e，load 13 下）闭环 | p5 done 23/33
+13:08 P5-50 builder 完成（d7f2369：332 文件 diff=0 入仓、React19/tiptop 钉版、Electron 桩挂载亮暗双过、主 ui 245+61 零回归；发现 S0 审批卡证据矛盾→P5-51 查）→ verifier 派发
+13:09 P6-01 验收 PASS → 合并（33 例纯函数，零接线），ui 回归后台 | P5-50 verifier 已派 | p6 done 1/12

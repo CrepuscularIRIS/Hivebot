@@ -279,8 +279,12 @@ function maskProbeScript(home: string, handoff: string): string {
     `probe data_otherbot test -e '${join(DATA_DIR, 'workspaces', 'other-bot', 'wm')}'`,
     `probe dsh_session test -e '${join(home, 'session-log-sentinel')}'`,
     `probe handoff test -e '${handoff}'`,
-    // HOME 外清单两项是普通文件（80/1628 字节）：文件根被 /dev/null 覆盖后 test -e 仍 0，用 -s（只看大小）
+    // HOME 外清单两项是普通文件（80/1628 字节）：文件根遮蔽后是空普通文件（f2），test -e 仍 0，用 -s（只看大小）
     `probe ppp_chap test -s /etc/ppp/chap-secrets`,
+    // f2 钉死不变量：cat rc=0 且空（旧 --ro-bind /dev/null 原语在 bwrap MS_NODEV 下 rc=1，跨版本漂移）；
+    // 类型必须是普通文件（旧原语是字符设备 crw 1,3）
+    `probe ppp_cat cat /etc/ppp/chap-secrets`,
+    `probe ppp_type test -f /etc/ppp/chap-secrets`,
     `probe ppp_pap test -s /etc/ppp/pap-secrets`,
     'probe bus_sock test -S /run/user/$UID/bus',
     `probe condarc_s test -s '${join(PASSWD_HOME, 'miniconda3', '.condarc')}'`,
@@ -352,6 +356,9 @@ it('② 遮蔽：凭证/数据/交接/D-Bus/HOME 外哨兵不可见，工具链�
   expectProbe(r, 'dsh_session', '1')
   expectProbe(r, 'handoff', '1')
   expectProbe(r, 'ppp_chap', '1')
+  // f2：空普通文件 0644——cat 恒 rc=0、test -f 恒 0（rc 与类型双钉死，不再 [01] 漂移）
+  expectProbe(r, 'ppp_cat', '0')
+  expectProbe(r, 'ppp_type', '0')
   expectProbe(r, 'ppp_pap', '1')
   expectProbe(r, 'bus_sock', '1')
   // v2.1：工具链文件根被 /dev/null 覆盖 → test -e 仍 0，用 -s（只看大小不读内容）
@@ -367,6 +374,10 @@ it('② 遮蔽：凭证/数据/交接/D-Bus/HOME 外哨兵不可见，工具链�
   for (const name of ['home_ssh', 'passwd_ssh', 'passwd_codex', 'data_token', 'data_otherbot', 'ppp_chap', 'ppp_pap', 'bus_sock', 'condarc_s', 'aau_s']) {
     expectProbe(sr, name, '0')
   }
+  // f2 差分：stock 的 /etc/ppp/chap-secrets 是真实 root:0600 文件 → cat EACCES rc=1、
+  // 类型普通文件 0；加固侧被空普通文件 0644 覆盖 → cat rc=0（方向：遮蔽后更可读但零字节）
+  expectProbe(sr, 'ppp_cat', '1')
+  expectProbe(sr, 'ppp_type', '0')
   // 既有防护命中（标注，不计入本 slug 防线）：stock 的 --tmpfs /tmp 同样遮住 /tmp 下的
   // DSH_HOME 与 handoff（R5 §①），两侧同为退出码 1
   expectProbe(sr, 'dsh_session', '1')

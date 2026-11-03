@@ -8,7 +8,7 @@
 #                            [--tool T]... [--policy P]...
 #                            <dsh bwrap profile args> -- <command argv>
 # 挂载序：base(--ro-bind / / …) → --unshare-net → 遮蔽（--mask：目录 --tmpfs /
-# 文件 --ro-bind /dev/null）→ 工具链白名单 --ro-bind 挂回 → 工作区重 --bind
+# 文件 --perms 0644 --ro-bind-data 空fd）→ 工具链白名单 --ro-bind 挂回 → 工作区重 --bind
 # （等于/包含任一 --home → 拒绝）→ 策略代码根 --ro-bind（决策 14）→ 落在挂回/
 # 重 bind 目录之下的硬 NEVER 根再遮一次（v2.1）→ 命令。
 # 一切自身错误：stderr 打 `bwrap: ` 前缀、非零退出、不 exec。唯一例外（v2.1）：
@@ -42,11 +42,23 @@ def is_under(path, root):
 
 
 def hide_args(path):
-    """遮蔽一个根：目录 --tmpfs；文件 --ro-bind /dev/null（test -e 仍 0、-s 为 1）。"""
+    """遮蔽一个根：目录 --tmpfs；文件 --perms 0644 --ro-bind-data <空fd>（P5-01.f2）。
+
+    旧原语 --ro-bind /dev/null 在 bwrap 0.9.0 下对一切用户 bind 强制 MS_NODEV
+    （bind-mount.c: new_flags = current_flags | (devices ? 0 : MS_NODEV) | …），
+    字符设备在 nodev 挂载上 open 必 EACCES（cat rc=1；老版本 bwrap 不加 nodev 则
+    rc=0——跨版本/跨启动漂移，见 evidence/P5-01/f2-boot-probe.txt 与 P5-06 verify
+    f2-repro.txt）。改为挂空普通文件（内容取自宿主 /dev/null 读到的 0 字节），
+    open 只走 DAC（0644），rc 恒 0、内容恒空、类型恒普通文件，与 boot 态无关。"""
     if os.path.isdir(path):
         return ['--tmpfs', path]
     if os.path.isfile(path):
-        return ['--ro-bind', '/dev/null', path]
+        try:
+            fd = os.open('/dev/null', os.O_RDONLY)  # 宿主侧读 0 字节；fd 不关闭，exec 时继承给 bwrap
+        except OSError as e:
+            die('open /dev/null for mask %s failed: %s' % (path, e))
+        os.set_inheritable(fd, True)
+        return ['--perms', '0644', '--ro-bind-data', str(fd), path]
     return []
 
 

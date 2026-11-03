@@ -62,8 +62,9 @@ export type M2Handler = ((event: IpcMainEvent, req: M2Request) => void) & {
   /** E2E 断链注入：关掉当前 socket，触发真实重连路径。 */
   testDropSocket(): void
   /** E2E 作答注入：经 main 自己的 peer 调 $events/result（U-11 M1 白名单落成前的测试通道；
-   * 审批作答要求与 $events 流同一 Peer，node 侧测试客户端属另一 Peer 会被 gateway 拒）。 */
-  testAnswerEvent(clientId: string, eventId: string, value: 'allowed-once' | 'rejected'): Promise<unknown>
+   * 审批作答要求与 $events 流同一 Peer，node 侧测试客户端属另一 Peer 会被 gateway 拒）。
+   * P5-28：value 扩为「审批二值 | 提问结构化 answers」，二者都装 {kind:'result', value}（VERIFY-P5-07 跟进项）。 */
+  testAnswerEvent(clientId: string, eventId: string, value: 'allowed-once' | 'rejected' | { answers: Array<{ id: string; selected: string[]; custom?: string }> }): Promise<unknown>
 }
 
 /** main 归属标记（socket.open 自开的流；与 port 归属共用 owners 表）。 */
@@ -351,7 +352,7 @@ export function registerM2Mux(deps: M2Deps = {}): M2Handler {
       const socket = wired as (DshMuxSocket & { ws?: { terminate?: () => void } }) | undefined
       try { socket?.ws?.terminate?.() } catch { /* 已死 */ }
     },
-    testAnswerEvent(clientId: string, eventId: string, value: 'allowed-once' | 'rejected'): Promise<unknown> {
+    testAnswerEvent(clientId: string, eventId: string, value: 'allowed-once' | 'rejected' | { answers: Array<{ id: string; selected: string[]; custom?: string }> }): Promise<unknown> {
       if (deps.dsh === undefined) return Promise.resolve(undefined)
       return deps.dsh.rpc('$events/result', { clientId, eventId, outcome: { kind: 'result', value } })
     },

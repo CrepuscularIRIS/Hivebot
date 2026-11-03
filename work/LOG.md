@@ -811,3 +811,6 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 02:54 GU-P5-11 = REVISE（1 HIGH 无障碍名，两席同点）→ P5-11.f1 已立行待派 | A 席不变量断言建议一并纳入
 02:57 P5-11 回归红：A1 接缝（P5-15 断言旧值×P5-11 改新值，57 passed+1 failed；hairline ✘ 为预期失败标记）——预判过的 f1 立即派 | P5-12 已合并 4152c3f（回归等 f1 后一并跑）
 03:01 GU-P5-12 = REVISE（1 轮制）→ P5-12.f1 立行（节点身份/焦点）；P5-16 验收点名 thinking 裸行化三断言+字号层级
+03:04 P5-11.f1 完成（61bf31d：aria-label+不变量断言先红后绿；附 padding-inline 一行有据修正）→ verifier 抽验派发
+03:07 P5-15.f1 完成（bc61024：A1 断言改不变量、u2-table fixed@0c556fa、60 e2e 绿零产品改动）→ verifier 抽验派发
+03:11 P5-15.f1 验收 PASS → 合并 6efffab（A1 不变量断言+u2-table），main 回归后台跑（应恢复全绿）

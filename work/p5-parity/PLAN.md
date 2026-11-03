@@ -199,7 +199,7 @@ status：ready = 现在可派；todo = 只差本 PLAN 内的前序任务；block
 ### 3.4 P5-15 待回修（.f，源自 REPORT-P5-15.md，数值以 R2 为准；回修时同步改 visual.spec 断言）
 | id | 任务 | owner | 区域 | deps | status | review | 捷径 | 验收 | evidence |
 |---|---|---|---|---|---|---|---|---|---|
-| P5-15.f1 | A1 头部 icon 行（collapse/search/NewBot 24px r6、titlebar token、padding 12 16、gap 8） | frontend-dev | renderer/plugins/bots/Sidebar.tsx + shell/app.css | P5-11 | todo | GU | R2 值 | visual-sidebar 断言亮暗 + 既有 e2e 绿 | |
+| P5-15.f1 | A1 头部 icon 行（collapse/search/NewBot 24px r6、titlebar token、padding 12 16、gap 8） | frontend-dev | renderer/plugins/bots/Sidebar.tsx + shell/app.css | P5-11 | done | GU | R2 值 | visual-sidebar 断言亮暗 + 既有 e2e 绿 | |
 | P5-15.f2 | A4+A5 高度/gap（固定高 54、padding 8、gap 8） | frontend-dev | shell/app.css | P5-16 | todo | GU | R2 值 | visual 断言亮暗 | |
 | P5-15.f3 | B6 tool 行裸行化（高 28、r8、hover 7%、chevron right/down、preview 13px 非等宽） | frontend-dev | shell/app.css + session/Conversation.tsx | P5-16 | todo | GU | R2 值（推翻 0.18 描边卡） | visual-session 断言亮暗 | |
 | P5-15.f4 | B8 审批卡 r24 药丸按钮 | frontend-dev | shell/app.css（审批卡样式） | P5-31 | todo | GU | R2 值 | 视觉断言并入 P5-31 GU | |

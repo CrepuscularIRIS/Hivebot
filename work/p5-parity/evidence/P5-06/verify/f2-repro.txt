@@ -1,0 +1,10 @@
+== P5-01.f2 复现（verifier，2026-11-03 10:40，boot 7.0.0-42-generic，bwrap 0.9.0）==
+--- wrapper 直跑 x3（--mask /etc/ppp/chap-secrets，argv 同 dry-run：--ro-bind /dev /dev/null）---
+run1: rc=1 bytes=0 stderr=cat: /etc/ppp/chap-secrets: Permission denied
+run2: rc=1 bytes=0 stderr=cat: /etc/ppp/chap-secrets: Permission denied
+run3: rc=1 bytes=0 stderr=cat: /etc/ppp/chap-secrets: Permission denied
+--- 无遮蔽基线 ---
+rc=1 stderr=cat: /etc/ppp/chap-secrets: Permission denied
+--- 裸 bwrap（可读文件对照）: --ro-bind /dev/null /etc/hostname ---
+cat → Permission denied rc=1；ls -l 显示 crw-rw-rw- 1,3 nobody:nogroup（挂载在生效，inode 已是 /dev/null 设备节点，但 open 该 bind 得 EACCES）
+--- 同沙箱内 cat /dev/null（--dev tmpfs 原生节点）rc=0 ---

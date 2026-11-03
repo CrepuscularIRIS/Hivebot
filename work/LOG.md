@@ -835,3 +835,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 08:29 P5-04.f1 完成（a21cc2c：④⑤ 补格 + 发现 insert 顺序不可靠→prepend 修复；236 绿）→ verifier 派发；P5-06 依赖本分支先合 | LEARNINGS：prepend 不赌行序
 08:46 P5-04.f1 合并 5f7df8e（236 绿，prepend 生效）；P5-06 矩阵已派——W1-AP-0 收口件 | done 17/33
 10:41 P5-06 builder 完成（c298eb2：514 格全 PASS 零红，顺序哨兵未触发；开 P5-01.f2；248 sdk 绿）→ verifier 派发
+10:57 P5-06 验收 PASS（514 格实质成立）→ 合并 666b9f3，sdk 248 绿 | P5-01.f2 已派（最后尾巴）| done 18/33；W1-AP-0 主体收口

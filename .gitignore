@@ -8,3 +8,5 @@ dist/
 work/*/evidence/**/handoff/
 work/*/evidence/**/runtime/
 work/*/evidence/**/*.lock
+# P5-01 决策 8：沙箱类测试 HOME（/home/lingxufeng/bot/.test-homes/p5-<任务>）
+.test-homes/

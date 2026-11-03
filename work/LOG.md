@@ -887,3 +887,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 15:42 f2 合并后全量回归：**362 单测 + 66 e2e 全绿**——main 恢复完全绿，grok-shim/旅程红全部收口 | p5 done 30/33
 15:57 P5-52 builder 完成（cd8a3c8：23 隐藏+3 修活，模块覆盖新机制，42 项点击零死，365+304+66）→ verifier 派发
 16:13 P5-52 验收 PASS → 合并（31/33）| 派 P5-54 切换
+16:24 P5-52 回归闭环：365 单测绿 + e2e 2 红单跑全绿（d1 真模型计时/visual 旧 renderer 等待=已知负载 flake 家族）| 在途：P5-54 切换（大活）

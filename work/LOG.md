@@ -790,3 +790,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 04:3x G2-r1 = REVISE（两席一致；9 HIGH 汇总进 panels/G2-r1.md：NEVER 清单+environ、策略代码可写、隐藏依赖、loopback、漏依赖、裸升权、fail-closed、R2 吸收、清单闭环）→ 交 director 改 PLAN v2
 04:5x PLAN v2 + REUSE.md 补全（bwrap LGPL-2+、0.18 仓仅参照）；Q-013 后果说明补 ⑧⑨（HOME 点目录默认拒+/proc 拒；旧 bot 迁移前写不了工作区）| G2-r2 两席已派（终轮）+ R4b scout 补派（P5-27 的依赖，之前漏派）
 05:2x G2-r2 两席均 REVISE → 有条件通过；5 条去重清单（P5-04/05 双原因、工具链再遮、loopback 网关探针、MASK 缺省布局、wrapper 缺失格前缀）转 PLAN v2.1
+05:4x R4b 回报：打断实测 4.5-6.3ms 全树退出（TERM→KILL 宽限 3000ms）、session/cancel 可续会话、无单轮工具数硬上限——P5-27 解除 R4b 依赖（5000ms 阈值）；REUSE.md R4b 行已补

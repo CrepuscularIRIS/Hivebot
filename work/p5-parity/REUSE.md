@@ -24,4 +24,4 @@ v0 骨架 · 2026-11-03 · director（Opus 5.5）。汇总 `work/p5-parity/reuse
 | 0.18 视觉参照 | 只参照不搬码 | 3（参照） | R8 锚点（`view.css`、`sidebar.tsx`、`transcript.tsx` 等） | 无独立许可证（非官方重构仓）；仅参照不搬码，私用不分发（CLAUDE.md §4） | `RE-visual-residual.md`（非官方重构仓，仅参照不搬码；私用不分发 CLAUDE.md §4） | P5-11–P5-14 |
 | 审批卡行为 / 文案 | 逆向结论作规格 | 4 | 0.78.1 chunk-Bbgcfm9R | 私用 | `RE-approval-model.md` §4（R1）；R2 §B9 | P5-31、P5-32 |
 | 受控升权 | 待 D-1 | — | 候选见 PLAN §5 D-1 ①–⑤ | — | PLAN §5 | P5-22 |
-| 中途打断 | 先测上游 abort 链路，不达标再改 | 1 | dsh 现有 abort | MIT | 待 R4b · TODO(主会话) R4b 回报后补 | P5-27 |
+| 中途打断 | 先测上游 abort 链路，不达标再改 | 1 | dsh 现有 abort（UI 走 session/cancel；TERM→KILL 宽限 3000ms） | MIT | reuse/r4b-interrupt.md 实测：全树退出 4.5-6.3ms、可续会话；P5-27 验收阈值 5000ms | P5-27 |

@@ -215,10 +215,10 @@ status：ready = 现在可派；todo = 只差本 PLAN 内的前序任务；block
 ### 3.5 L-UI v3：0.18 前端移植（重组指令 2026-11-03，BRIEF §12；派发顺序 S0/R9 → P5-50∥P5-53 → P5-51 → P5-52∥P5-56 → P5-54 → P5-55 → P5-41）
 | id | 任务 | owner | 区域 | deps | status | review | 捷径 | 验收（可证伪） | evidence |
 |---|---|---|---|---|---|---|---|---|---|
-| P5-50 | 移植树入仓：0.18 frontend/src/** + 4 个 source/ 模块复制到 app/ui/renderer-grok/（文件头注来源，不改内容）；renderer 升 React19+tiptap；R9 资产入仓；新 renderer 可 vite build 并在 Electron 桩挂载 | frontend-dev | app/ui/renderer-grok/（新） | S0, R9 | blocked | – | 第 3 级复制改造（repos/grok-bot-0.18-reconstructed@a9f633e，私用不分发） | U0 旅程在我们 Electron 复现；与上游逐文件 diff=0（覆盖文件除外） | |
+| P5-50 | 移植树入仓：0.18 frontend/src/** + 4 个 source/ 模块复制到 app/ui/renderer-grok/（文件头注来源，不改内容）；renderer 升 React19+tiptap（全钉 3.14.0）；R9 资产入仓；新 renderer 可 vite build 并在 Electron 桩挂载 | frontend-dev | app/ui/renderer-grok/（新） | S0, R9 | running | – | 第 3 级复制改造（repos/grok-bot-0.18-reconstructed@a9f633e，私用不分发） | U0 旅程在我们 Electron 复现；与上游逐文件 diff=0（覆盖文件除外） | |
 | P5-51 | coordinator shim + desktop 桥（renderer 侧下接 M1/M2）：~12 RPC + 3 事件族；dsh 事件→transcript entry（**assistant 文本经 p6-1a 折叠函数映射：第一工具前=ack、最后工具后=result、中间入 thinking 行**——0.18 自带折叠行复用，p6 BRIEF v2 §2.3）；其余返回空/能力关；persona currentActivity；审批作答只发 allowed-once/rejected | builder | app/ui/renderer-grok/shim/（新） | P5-50 | blocked | M | – | fake-LLM 真实事件流每类 entry 渲染、boundary=0；作答值集合 ⊆ {allowed-once,rejected}；D9 拒绝测试全绿 | |
 | P5-52 | 死入口隐藏（能力开关优先，其次覆盖文件） | frontend-dev | app/ui/renderer-grok/ | P5-51 | blocked | – | – | U4′ | |
-| P5-53 | 对照台：fixture、v1/v3 双协议、截图对、computed-style diff 表、头像抽帧（R3 harness 泛化） | builder | work/p5-parity/harness/compare/ + 脚本 | S0 | blocked | – | 复用 R3 harness（grok-r3） | 同 fixture 两侧完成渲染 boundary=0；输出 U1′ 差异表初版 | |
+| P5-53 | 对照台：fixture、v1/v3 双协议、截图对、computed-style diff 表、头像抽帧（R3 harness 泛化） | builder | work/p5-parity/harness/compare/ + 脚本 | S0 | running | – | 复用 R3 harness（grok-r3） | 同 fixture 两侧完成渲染 boundary=0；输出 U1′ 差异表初版 | |
 | P5-54 | 切换：Electron 加载新 renderer、删旧 renderer/{plugins,shell}；P4 D1-D12 与 P5-11/12 行为 e2e 改指新 renderer；U2′ 断言迁移 | frontend-dev | app/ui/{main,renderer,renderer-grok}/ | P5-51, P5-52 | blocked | GU(1轮) | – | U6、U2′；对照台第三列（真实 Electron）上线 | |
 | P5-55 | 0.18→0.78.1 收口：色板换 0.78.1（gen-tokens.py）；按 U1′ 差异表逐行处理（R2 清单全覆盖）；只写覆盖文件 | frontend-dev | app/ui/renderer-grok/overrides/ | P5-53, P5-54 | blocked | GU(并入P5-41) | R2 值作检查清单 | U1′ | |
 | P5-56 | bot 动画：persona 状态映射接 dsh 活动 + reduced-motion | frontend-dev | app/ui/renderer-grok/ | P5-51 | blocked | – | – | U3′ | |

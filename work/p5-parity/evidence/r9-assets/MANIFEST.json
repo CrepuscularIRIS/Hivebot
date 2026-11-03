@@ -1,0 +1,431 @@
+{
+  "generated": "2026-11-03",
+  "task": "R9 (S0+R9, p5-parity)",
+  "sources": {
+    "0.18_original_dmg": "/home/lingxufeng/bot/repos/grok-bot-0.18-reconstructed/research-archives/original/0.18.0/macos-arm64/Grok_Bot_0.18.0.dmg (sha256 a253ccd8... per artifacts.json; NOT extracted: no 7z/dmg2img on host, bsdtar lacks UDIF support)",
+    "0.18_setup_exe": ".../windows-x64/Grok_Bot_0.18.0_Setup.exe (NSIS; needs 7z, absent)",
+    "0.78.1_unpack_tree": "/dev/shm/grok-re/0.78.1/app/dist/renderer/assets (source of every extracted file here)"
+  },
+  "key_finding": "ALL 18 assets in frontend/manifests/renderer-runtime-assets.json are byte-identical (sha256) between the 0.18 manifest and the 0.78.1 renderer tree -> the fallback substitution path is complete; no dmg extraction needed for the manifest list.",
+  "bot_avatar_note": "Bot avatars are NOT image assets: 0.18 draws SVG personas in code (frontend/src/recovered/features/onboarding/signed-in/character.tsx, 8 shapes x 11 colors, rAF states). The S0 build renders them without any external asset.",
+  "files": [
+    {
+      "file": "renderer-runtime-assets/app-icon-C7NKj2u7.png",
+      "sha256": "79e6a73e634ce7ad8d1982739e9064bcc9c9ec5106bdd7281d7514ee68169ad2",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/apollo-B0sEgAUH.png",
+      "sha256": "f6f384e4105595e7a65c9fb99d3bb1acf6b1f3a0579114e0499e96217801481a",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/ashby-BidvOSTU.png",
+      "sha256": "54cbf3075bfc899e8be9517069ef81cf841cd3fbaf7a46d444a7c0cceca0988b",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/box-DrJB_xON.png",
+      "sha256": "7a6a446cacfeeefddbfde7225a50545b3d18d323155c75957ed2137ad634c9c7",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/calendly-DYRMkyLM.svg",
+      "sha256": "0ea3b3784f04256aa1dbe27c1e7b8a01a83c29be470f3326e0fd18003cd353f0",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/canva-djBDOrSx.svg",
+      "sha256": "b8af24ff29cd5dacc1a6cf55be060a7639acb5c0e50e65b00f344288e4452a72",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/clay-CXmF7QZG.png",
+      "sha256": "be4e9d359788e8917a61f6b7972721fbb13377a541772cca1960949bb7daa1ae",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/databricks-NEF0SRYx.png",
+      "sha256": "124d2031fc5d9eabdfe17ffadeb66da9f18eedc29af71a870d3956e02062195b",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/demo-computer-wallpaper-BO7Ye4dV.jpg",
+      "sha256": "90e253579c5e6ff18cb03059bbe380d64263222be48360802cda58e3d8392216",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/mailchimp-AFHOmIeb.svg",
+      "sha256": "beed6f58fe17a9e7430e3f632429a0dd1dfec24879d86c43370506ee7e52cee4",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/nooks-Da6AC940.png",
+      "sha256": "9ce39076ea63b6dba09f383d73107f5ce6e83265223b88c94680863edb50cc4c",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/quickbooks-N88wePET.png",
+      "sha256": "70fa3cf66911871dc2c34557e843e5b1b818bed60d20f89bae8c41b449c4e5d9",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/rippling-cz7o1jpc.png",
+      "sha256": "1f8e1b805bc847d35f2ca96f53c3bf13f5705d40d4eba859522d35f39685a1e5",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/salesforce-DuGcPENR.svg",
+      "sha256": "b336c25a3fd584a58b9c7d286054802d17d6d4adb41cb995aedc031e4f4340ca",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/snowflake-B53K53W6.png",
+      "sha256": "f4a98db83cd5ac180fef571d5907f0f405a56662348c8c803b02c62ed795b975",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/tableau-DMgl1MR0.png",
+      "sha256": "e991eb03b713a7695f8a925ba2918c132505781556c907ebf123c2cd3e25cb55",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/workday-DI2a8j1o.svg",
+      "sha256": "a09892f94ee5990e0f16b41852eca1a115de9b80264e7607e8055b4c1a9caeca",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "renderer-runtime-assets/zoominfo-kXQt8h27.png",
+      "sha256": "672af7a026b514c043d0dc611aea8ac8bff8e17c56e44027b0a04a6316206142",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": true,
+      "matches_018_manifest_sha256": true
+    },
+    {
+      "file": "fonts/KaTeX_AMS-Regular-BQhdFMY1.woff2",
+      "sha256": "0cdd387c9590a1a9f9794560022dbb59654a7d86f187aa0c81495ad42d3a7308",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Caligraphic-Bold-Dq_IR9rO.woff2",
+      "sha256": "de7701e42cf1f4cf0b766c03fb27977207eee2f4fd5d76fa82188406da43ea4c",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Caligraphic-Regular-Di6jR-x-.woff2",
+      "sha256": "5d53e70ad607c2352162dec9e0923fb54ecdafaccbf604cd8dcf7d00facb989b",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Fraktur-Bold-CL6g_b3V.woff2",
+      "sha256": "74444efd593c005e3f4573b44524704c0af0a937fe911cca9e94068d0d140d3f",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Fraktur-Regular-CTYiF6lA.woff2",
+      "sha256": "51814d270d06ff0255dba0799994fa4d8c84d11f09951d47595f4abb1f3602dc",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Main-Bold-Cx986IdX.woff2",
+      "sha256": "0f60d1b897938ec918c8ce073092411baf9438f6739465693ff18b0f9d20b021",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Main-BoldItalic-DxDJ3AOS.woff2",
+      "sha256": "99cd42a3c072d918f2f44984a807cf7aa16e13545fd0875fc07c6c65f99e715b",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Main-Italic-NWA7e6Wa.woff2",
+      "sha256": "97479ca6cce906abc961ecac96faa5f9ca2e61b8e7670d475826bcdee9a7c267",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Main-Regular-B22Nviop.woff2",
+      "sha256": "c2342cd8b869e01752a9321dc17213fc40d4d04c79688c1d43f2cf316abd7866",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Math-BoldItalic-CZnvNsCZ.woff2",
+      "sha256": "dc47344dbb6cb5b655c8460d561f4df5f501b90c804ad3c6cec65fe322351ab1",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Math-Italic-t53AETM-.woff2",
+      "sha256": "7af58c5ec8f132a2ddde9027c6d7814decce4d3b822a11192a42a20e2e973264",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_SansSerif-Bold-D1sUS0GD.woff2",
+      "sha256": "e99ae51144bf1232efcc1bfe5add36262c6866b0faab24fa75740e1b98577a62",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_SansSerif-Italic-C3H0VqGB.woff2",
+      "sha256": "00b26ac825e2095056396e0553b8ac26d3f8ad158c3826e28b4c45b385c4714a",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_SansSerif-Regular-DDBCnlJ7.woff2",
+      "sha256": "68e8c73ef42afd3ccec58bf0fba302cce448938e7fc020a5e31f8a952eee1342",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Script-Regular-D3wIWfF6.woff2",
+      "sha256": "036d4e95149b69ff9bcc0cd55771efeb25ffa3947293e69acd78d5ac328c684b",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Size1-Regular-mCD8mA8B.woff2",
+      "sha256": "6b47c40166b6dbe21a5dfca7718413f2147fd2399be1ba605d8ad39cedf25dfe",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Size2-Regular-Dy4dx90m.woff2",
+      "sha256": "d04c54219f9eaec6d4d4fd42dfb28785975a4794d6b2fc71e566b9cd6db842dd",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Size4-Regular-Dl5lxZxV.woff2",
+      "sha256": "a4af7d414440a1c1790825cfb700cf9cf43b0f2c4b04f0ebc523011ad9853ec0",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/KaTeX_Typewriter-Regular-CO6r4hn1.woff2",
+      "sha256": "71d517d67827787cfabdf186914cc3358eda539e37931941f2b2fd4a21f68c0b",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/X-VF-C7NyO54W.woff2",
+      "sha256": "0e287249b246a4fa1b2e87c15a1f95daa831938a44e2c2a0b1a61a0df8b18a43",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/XMono-VF-K4lk0ar0.woff2",
+      "sha256": "2a5fda92be2d5288468b6e231ca260135acb6e913e77a37634c145eb4d93e341",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "fonts/cursor-icons-16-QUmxS7q3.woff2",
+      "sha256": "420c80f80c2e1f094b91ae993799c93dcba4afc7372a0ccfe8a29d53c64593a7",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false,
+      "note": "0.78.1 font set; 0.18 tokens use system font stacks"
+    },
+    {
+      "file": "sounds/gallery-loop-B8hAOxyN.mp3",
+      "sha256": "105165ff8fd330e65e3e207721a5f0fe599a51301731f0c5bfaf665a485a9006",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "sounds/tmp-1-open-blip-D1y74m9N.wav",
+      "sha256": "7e454b7dd0aed424afccaa4c858f46415158fa39a85e5f2dbd657cb32411eaa6",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "sounds/tmp-2-tick-DY1KrPne.wav",
+      "sha256": "6c50642ba6a388a95400501e0f2d3b0185f93d7342ea3eb308c6a7143c717db1",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "sounds/tmp-3-double-tick-CdEXJqnB.wav",
+      "sha256": "c166fb491094d42216523c7fa80003b78b6ed701a56e80333d1ad4dc41d52383",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "sounds/tmp-4-chime-a-CH10PUxT.wav",
+      "sha256": "5d9408bab724f5ecf3f712c3809d275f4ec937b5e93b32c315533676bd12fc09",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "sounds/tmp-5-chime-b-B3aR0Am-.wav",
+      "sha256": "8ae218b2d3764cc1c056ca3792c5e922ea5d45631d3cdf5218e8667282e26b6b",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/amex-AaP9BS1g.svg",
+      "sha256": "6e99f67dd43ebadf1ff8bfe9e26e89f015ebddb1ef32c889f815708555345fe8",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/amex-BY11FWZr.svg",
+      "sha256": "bc95cce8bf9511b8b435a07144ce0d9d4dbdae796725fc278d871bfbaa7c5515",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/cloud-snow-DEN0DiIg.webp",
+      "sha256": "da20254a724f6e8064dc0f32a4d1d4a07507bad91e0291f398a5d5fd908333f5",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/demo-computer-wallpaper-BO7Ye4dV.jpg",
+      "sha256": "90e253579c5e6ff18cb03059bbe380d64263222be48360802cda58e3d8392216",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/grok-bot-wallpaper-CmASvogy.jpg",
+      "sha256": "21e208b9cd4240a106ffafe7dd6011162306ada799477e1f946a9be0075fd475",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/hour-phila-lamp-detail-FyPZ3edz.webp",
+      "sha256": "febd65bd72d2008905e3a8d737432cd1ec1f2865b578a0b054e54e9374daff8f",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/hour-phila-lamp-sDruKN28.webp",
+      "sha256": "5698704058fe11810483e586ce3b1da31c7c9d864387df8a492a4babdfbf2b6e",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/hudson-lamp-DLyPqIR4.webp",
+      "sha256": "311ff4890b48ff4b350991b844bf88880e9e2c637c63583eabb22e8792e084ba",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/link-dE5q15v1.svg",
+      "sha256": "24782fa174ca0b26642c254118b094a1969d031c3e606561924c340ff4a7503f",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/lumia-lamp-BKhb7V7g.webp",
+      "sha256": "8ef42976c61bf2a33f5042824d9ab3f83472ebfd0f9f1e40f74663033aa1b5a0",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/microsoft-teams-DWYJSf49.svg",
+      "sha256": "5ef681422416ba40d8738dcbafd2108a82b5b13f99362ee49b7fbb13cbee2c37",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/obsidian-lamp-DVo9PYfr.webp",
+      "sha256": "0e34488eb6f877cc7c31444eb5da42923197bb7beb9a1217c269b0b80480d51b",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/sage-bar-lamp-packshot-DBFShtgj.webp",
+      "sha256": "fceaa385afce0be1e62d093a194e2e451e67aef0d655ae58e429ebf64d19a652",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/telegram-QYZUMR6n.png",
+      "sha256": "a66619d5ea73ac2d56e571db9191fc5d70e712341fc91315fe2abbac33fabc31",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/whatsapp-Ck_8ZWxq.png",
+      "sha256": "8c22e277edfd2d44f6f22fd1379082f08fcbb3dc1b7c42a934d863125ad8ed2e",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/yelp-logo-BKDbPMyz.svg",
+      "sha256": "cf1b52968959b2f8174ae26e4565567a8bfb852cbab2d7bf4e3b0b2869333334",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    },
+    {
+      "file": "imagery/yelp-logo-dark-nOA51Nth.svg",
+      "sha256": "d622955c04e31aad7f9e4de0b0698fad165287f86cb4192cee95d1ed1dd6924d",
+      "origin": "0.78.1 deb renderer assets",
+      "in_018_manifest": false
+    }
+  ]
+}

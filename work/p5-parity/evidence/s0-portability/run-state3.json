@@ -1,0 +1,5 @@
+{
+  "sendPromptSeen": 1,
+  "boundaryCount": 0,
+  "bodyTail": "n ~/q3 and summarize the deltas.\n\n\nThinking\nThe user wants a quarterly delta summary. I should list ~/q3, read the spreadsheets, compute deltas, and present the biggest movers.\n\nBash\npython analyze.py --quarter q3\n\nRead\nread ~/q3/summary.md\n\nRevenue is up 12% QoQ. Biggest movers:\n\nSubscriptions +18%\nChurn -2pts\nprint(top_movers(q3))\n\n\n\nFull breakdown below.\n\n\n\n\n\n\n\n\n\n\nResearch Bot's screen"
+}

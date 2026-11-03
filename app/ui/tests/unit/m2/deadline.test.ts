@@ -35,6 +35,15 @@ const waterfall = (eventId: string) => ({
   request: { toolName: 'bash' },
 })
 
+/** P5-07：提问 waterfall（上游投影后的 request：questions 保留，无 toolName）。 */
+const questionWaterfall = (eventId: string) => ({
+  type: 'waterfall' as const,
+  event: 'user-questions/request',
+  eventId,
+  agentId: 'ag-1',
+  request: { questions: [{ id: 'q1', question: 'Q?', header: 'H', options: [] }] },
+})
+
 /** 假时钟驱动的被测组件：手动 review()，nowMs 由测试拨动。 */
 function setup(opts: { mounted?: boolean; clientId?: string | undefined; deadlineMs?: number } = {}) {
   const ledger = new EventsLedger()
@@ -221,5 +230,42 @@ describe('U-16 审批无人应答 deadline（假时钟）', () => {
     } finally {
       process.off('unhandledRejection', onUnhandled)
     }
+  })
+})
+
+// P5-07 ③：deadline 按事件类别分支——审批仍代答字符串 value 'rejected'；
+// 提问发协议级 {kind:'rejected'}（GW stream-protocol.ts:87-137），绝不发字符串值。
+describe('P5-07 deadline 按事件类别分支（假时钟）', () => {
+  it('③ 审批与提问各一条未决、无端口挂载满 deadline → 审批 {kind:"result",value:"rejected"} 恰 1 次；提问 {kind:"rejected"} 恰 1 次、{kind:"result"} 0 次', async () => {
+    const s = setup({ deadlineMs: 1_000 })
+    s.ledger.record(waterfall('ev-approval'))
+    s.ledger.record(questionWaterfall('ev-question'))
+    s.review() // t=0：两条同时起算
+    s.advance(1_000) // 同时到期
+    await flush()
+    await flush() // 等 void answer() 完成
+    expect(s.calls).toHaveLength(2)
+    const outcomeOf = (eventId: string): { kind: string; value?: unknown; error?: unknown } => {
+      const call = s.calls.find((c) => (c.args as { eventId?: string }).eventId === eventId)
+      if (call === undefined) throw new Error(`no rpc call for ${eventId}`)
+      return (call.args as { outcome: { kind: string; value?: unknown; error?: unknown } }).outcome
+    }
+    expect(outcomeOf('ev-approval')).toEqual({ kind: 'result', value: 'rejected' })
+    const q = outcomeOf('ev-question')
+    expect(q.kind).toBe('rejected')
+    expect(q.value).toBeUndefined() // 绝不带字符串 value
+    // 协议级 rejection 的 error 形状可被上游 parseRemoteEventRejection 接受（name/message 必填）
+    const error = q.error as { name?: unknown; message?: unknown }
+    expect(typeof error.name).toBe('string')
+    expect(error.name.length).toBeGreaterThan(0)
+    expect(typeof error.message).toBe('string')
+    // 恰 1 次：后续轮次不再发
+    s.advance(10_000)
+    s.review()
+    await flush()
+    expect(s.calls).toHaveLength(2)
+    expect(s.dl.stats.answers).toBe(2)
+    // 两条都下账
+    expect(s.ledger.pendingEvents()).toEqual([])
   })
 })

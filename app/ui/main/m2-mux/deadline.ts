@@ -7,10 +7,17 @@
 // 因此 renderer 的 clientId 在其端口关闭（流被 cancel）后不可用作答——main 常驻自持一条
 // $events 订阅（m2-mux/index.ts 随每代 socket 重开），代答用它自己的 clientId 经自己的连接发。
 import type { ConnectionRpcResult, DshConnection } from '../dsh/connect'
-import type { EventsLedger } from '../dsh/ledger'
+import type { EventsLedger, LedgerEntry } from '../dsh/ledger'
 
 /** 默认观察窗口 = 2×10s（BRIEF D4③：2×已知超时；10s = M2 转交超时 PORT_TRANSFER_TIMEOUT_MS）。 */
 export const APPROVAL_DEADLINE_DEFAULT_MS = 20_000
+
+/** P5-07：提问事件到期的协议级拒绝 error（GW stream-protocol.ts:349-357：name 非空 + message，可选 code）。 */
+export const QUESTION_DEADLINE_REJECTION = {
+  name: 'PbotsQuestionDeadline',
+  message: 'question unanswered at deadline',
+  code: 'pbots/deadline',
+} as const
 
 export interface ApprovalDeadlineDeps {
   /** main 自己的 mux 连接（同 Peer 作答，LEARNINGS 2026-11-02 U-12 条③）。 */
@@ -46,9 +53,11 @@ export function approvalDeadlineMsFromEnv(env: NodeJS.ProcessEnv = process.env):
 }
 
 /**
- * 未决审批的 fail-closed 监督：pending 且无 renderer $events 端口挂载连续满 deadline，
- * 才经 main 连接以 main 常驻订阅的 clientId 代答 value 'rejected'（只此一种 outcome）。
- * 挂载即清零观察窗口（宽限：重连/在场的 renderer 可接手）。
+ * 未决事件的 fail-closed 监督：pending 且无 renderer $events 端口挂载连续满 deadline，
+ * 才经 main 连接以 main 常驻订阅的 clientId 代答。P5-07 按事件类别分支：审批代答
+ * value 'rejected'（只此一种 outcome）；提问发协议级 {kind:'rejected'}（GW
+ * stream-protocol.ts:87-137），绝不发字符串值。挂载即清零观察窗口（宽限：重连/在场的
+ * renderer 可接手）。
  */
 export function createApprovalDeadline(deps: ApprovalDeadlineDeps, stats?: ApprovalDeadlineStats): ApprovalDeadline {
   const deadlineMs = deps.deadlineMs ?? APPROVAL_DEADLINE_DEFAULT_MS
@@ -60,18 +69,21 @@ export function createApprovalDeadline(deps: ApprovalDeadlineDeps, stats?: Appro
   const answered = new Set<string>()
   const inFlight = new Set<string>()
 
-  async function answer(eventId: string): Promise<void> {
+  async function answer(entry: LedgerEntry): Promise<void> {
     const clientId = deps.mainClientId()
     if (clientId === undefined) return // main 订阅未 ready：留待下一轮（窗口继续累计）
+    const eventId = entry.eventId
     inFlight.add(eventId)
     try {
+      // P5-07：审批代答字符串 value 'rejected'（原行为）；提问发协议级 {kind:'rejected'}，
+      // 让 Host 侧提问 waterfall 以异常收场（GW/index.ts:708-762 cancelRemoteEvent），
+      // 绝不把字符串 'rejected' 当提问结果。
+      const outcome = entry.event === 'approval/request'
+      ? { kind: 'result', value: 'rejected' } as const
+      : { kind: 'rejected', error: QUESTION_DEADLINE_REJECTION } as const
       let result: ConnectionRpcResult
       try {
-        result = await deps.dsh.rpc('$events/result', {
-          clientId,
-          eventId,
-          outcome: { kind: 'result', value: 'rejected' },
-        })
+        result = await deps.dsh.rpc('$events/result', { clientId, eventId, outcome })
       } catch (error) {
         // R8（REVIEW-P4终审）：rpcRaw 的 fetch / res.json 网络层异常以 rejection 逃出 DshLike 契约。
         // answer() 由 `void answer(eventId)` 启动、无接收方，rejection 逃出 = 主进程 unhandled
@@ -89,7 +101,7 @@ export function createApprovalDeadline(deps: ApprovalDeadlineDeps, stats?: Appro
         // cancel 帧（gateway 只推给其余被 deliver 方），本地下账与等价的 gateway cancel 帧
         // 同义——renderer 作答路径的 cancel 帧到达时 record 幂等。
         deps.ledger.record({ type: 'cancel', eventId })
-        log(`answered ${eventId} 'rejected' after ${deadlineMs}ms unanswered (client ${clientId})`)
+        log(`answered ${eventId} ${outcome.kind} after ${deadlineMs}ms unanswered (client ${clientId})`)
       } else {
         // gateway 幂等 no-op 或瞬断：事件仍未决，下一轮重试（clientId 可能已换代）
         log(`answer rpc for ${eventId} failed: ${result.error.message}; will retry`)
@@ -101,19 +113,20 @@ export function createApprovalDeadline(deps: ApprovalDeadlineDeps, stats?: Appro
 
   function review(): void {
     const now = (deps.now ?? Date.now)()
-    const pending = new Set(deps.ledger.pendingEvents().map((e) => e.eventId))
+    const pending = deps.ledger.pendingEvents()
+    const pendingIds = new Set(pending.map((e) => e.eventId))
     for (const eventId of [...since.keys()]) {
-      if (!pending.has(eventId)) since.delete(eventId) // 已下账（gateway cancel / renderer 作答）
+      if (!pendingIds.has(eventId)) since.delete(eventId) // 已下账（gateway cancel / renderer 作答）
     }
     if (deps.isPortMounted()) {
       since.clear() // 宽限：renderer 在场
       return
     }
-    for (const eventId of pending) {
-      if (answered.has(eventId) || inFlight.has(eventId)) continue
-      const start = since.get(eventId) ?? now
-      since.set(eventId, start)
-      if (now - start >= deadlineMs) void answer(eventId)
+    for (const entry of pending) {
+      if (answered.has(entry.eventId) || inFlight.has(entry.eventId)) continue
+      const start = since.get(entry.eventId) ?? now
+      since.set(entry.eventId, start)
+      if (now - start >= deadlineMs) void answer(entry)
     }
   }
 

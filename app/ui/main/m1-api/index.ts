@@ -103,6 +103,10 @@ function checkArgs(method: string, args: unknown, ledger: EventsLedger): M1Resul
       || (outcome.value !== 'allowed-once' && outcome.value !== 'rejected')) {
       return invalid(`outcome must be {kind:'result', value:'allowed-once'|'rejected'}`)
     }
+    // P5-07：提问事件不接受审批字符串 outcome（对提问事件这是参数错，非资格错；作答分支 = P5-28）
+    if (ledger.pendingEventKind(eventId) === 'user-questions/request') {
+      return invalid('user-questions events cannot be answered with approval outcome values (structured answers arrive in P5-28)')
+    }
     const check = ledger.validateResult(clientId, eventId, outcome.value)
     if (!check.ok) return forbidden(`$events/result rejected: ${check.reason}`)
     return undefined

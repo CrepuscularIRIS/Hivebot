@@ -191,6 +191,10 @@ function sandboxRow(cfg: StartConfig): string {
     extraMaskRoots: cfg.extraMaskRoots,
     pkgRoot: PKG_ROOT,
   })
+  // P5-22（D-1 ⑤）：联网许可根（数据根下，整棵已在 maskRoots 内被 wrapper
+  // --tmpfs 遮蔽、guard 软遮蔽兜底——bash test -e 退出码 1）与 slirp4netns
+  // 静态二进制（sandbox/bin/README.md 记来源与 sha256）。wrapper 命中许可才走
+  // supervisor；目录缺失 = 无许可 = 断网路径，不预创建。
   const argv = [
     '/usr/bin/python3', '-I', join(PKG_ROOT, 'sandbox', 'bwrap-wrap.py'),
     ...roots.homes.flatMap((p) => ['--home', p]),
@@ -198,6 +202,8 @@ function sandboxRow(cfg: StartConfig): string {
     ...roots.neverRoots.flatMap((p) => ['--never', p]),
     ...roots.toolchainDirs.flatMap((p) => ['--tool', p]),
     ...roots.policyRoots.flatMap((p) => ['--policy', p]),
+    '--permit-root', join(cfg.dataDirs[0] ?? cfg.home, 'network-permits'),
+    '--slirp', join(PKG_ROOT, 'sandbox', 'bin', 'slirp4netns'),
   ]
   return `\
 - id: sandbox
@@ -259,6 +265,23 @@ function shellAskRow(cfg: StartConfig): string {
 }
 
 /**
+ * P5-22（D-1 定稿 ⑤）：p2sdk-request-net 行的运行时 config（同 id 整键替换，
+ * approval.yml 的 insert 行不带 config）。permitDir 与 sandboxRow 的
+ * --permit-root 同源于 dataDirs[0]（单一推导，两侧可机械对证）；ttlMs 生产
+ * 恒 60000（D1-r1 TTL≈60s），仅测试经 P2SDK_TEST_NET_TTL_MS 注入短值——
+ * launcher-only 名字，childEnv 只透传 P2SDK_* 前缀，本行在 launcher 侧消费。
+ */
+function requestNetRow(cfg: StartConfig): string {
+  const ttl = Number(process.env.P2SDK_TEST_NET_TTL_MS) > 0 ? Number(process.env.P2SDK_TEST_NET_TTL_MS) : 60_000
+  return `\
+- id: p2sdk-request-net
+  config:
+    permitDir: ${yamlScalar(join(cfg.dataDirs[0] ?? cfg.home, 'network-permits'))}
+    ttlMs: ${ttl}
+`
+}
+
+/**
  * Generated overlay applied after profile/patches/p2sdk.yml: inserted rows need
  * absolute plugin specifiers because the $DSH_HOME profile workspace has no
  * node_modules to resolve package names against.
@@ -293,6 +316,7 @@ export function writeRuntimePatch(cfg: StartConfig): string {
   rows.push(sandboxRow(cfg))
   rows.push(guardRow(cfg))
   rows.push(shellAskRow(cfg))
+  rows.push(requestNetRow(cfg))
   writeFileSync(path, rows.join(''))
   return path
 }

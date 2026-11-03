@@ -32,6 +32,13 @@
     - id: p2sdk-shell-ask
       # 相对本 patch 文件目录（profile/patches/）。
       name: ../../src/policy/shell-ask.mjs
+    # P5-22（D-1 定稿 ⑤）：受控升权签发侧——模型可见工具 request_network，
+    # 每次 ASK（shell-ask 硬分支出卡，无始终允许）；批准后 execute 写一次性
+    # 许可文件（mask 根内，bash 不可见）。运行时值（permitDir/ttlMs）由
+    # src/start.ts#writeRuntimePatch 的 request-net 行按同 id 整键注入 config，
+    # 本文件不携带 config（与 guard/shell-ask 行同机制）。
+    - id: p2sdk-request-net
+      name: ../../src/policy/request-net.mjs
 
 # ── P5-03（0c，G1-r2 #2）：plugin_manager 移除 · 第一道（preset 整 config 覆盖）──
 # dsh 的 patch 合并（cordis-plugin-include applyEntryPatches）对非 insert 行是

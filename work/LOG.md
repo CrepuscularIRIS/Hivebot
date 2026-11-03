@@ -757,3 +757,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 22:18 tick | U-32 builder 在跑（worktree 已建 /tmp/bot-wt/U-32，报告未出）| 无事可派：等 U-32 回报后走 verifier | ready 未派 = 0 | 未答 Q-010、Q-011 | load 2.6
 22:27 tick | U-32 在跑（feat/U-32 无新 commit，builder 读文档/写红测试阶段，未 stale）| 无事可派 | ready 未派 = 0 | 未答 Q-010、Q-011 | load 2.8
 22:37 Q-010/Q-011 落实：用户「我们已经是回复了」按 A 解读——P2、P4 验收通过，MVP 四阶段全部完成（U-32 测试侧 minor 在途，合并后收口）| QUESTIONS 全部 answered，无 open 问题
+22:38 tick | U-32 推进中：2 commit 已落（O4 凭证剥离、O2 竞态屏障改 main 侧 apiCount），工作树 2 文件在改（O1/O3）| 无事可派 | ready 未派 = 0 | 无 open 问题（MVP 已验收）| load 3.6 偏高，盯 e2e
+22:47 用户反馈：e2e 测试弹窗刺眼 → U-33 立项（xvfb-run 包 test:e2e，默认虚拟显示），排 U-32 后；前置：用户自己 sudo 装 xvfb（已请求）

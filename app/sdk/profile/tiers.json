@@ -1,0 +1,14 @@
+{
+  "default": "allow",
+  "bash": "sandbox-allow",
+  "read": "workspace-read",
+  "read_image": "workspace-read",
+  "glob": "workspace-read",
+  "grep": "workspace-read",
+  "present": "workspace-read",
+  "write": "workspace-write",
+  "edit": "workspace-write",
+  "web_fetch": "allow",
+  "web_search": "allow",
+  "mcp": "ask"
+}

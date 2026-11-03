@@ -11,20 +11,10 @@ import {
   main,
   mockReplayOverride,
   normalizeApiBase,
-  resolveConfig as resolveConfigRaw,
+  resolveConfig,
   validateStart,
   writeRuntimePatch,
 } from '../../src/start.ts'
-import { tmkdir, trackTmpDir } from '../support/tmp-sweep.ts'
-
-// P5-H1：resolveConfig 不带 P2SDK_HANDOFF 时兜底会急切 mkdtemp 一个 handoff
-// （本文件单测故意覆盖该兜底，每次调用漏一个）；在 import 边界登记，文件末清扫。
-type StartConfig = ReturnType<typeof resolveConfigRaw>
-const resolveConfig = (env: NodeJS.ProcessEnv): StartConfig => {
-  const cfg = resolveConfigRaw(env)
-  if (!env.P2SDK_HANDOFF) trackTmpDir(cfg.handoff)
-  return cfg
-}
 
 describe('resolveConfig', () => {
   it('applies the documented defaults for an empty env', () => {
@@ -250,15 +240,9 @@ describe('main', () => {
       }
       delete process.env.P2SDK_LLM_API_KEY
       delete process.env.P2SDK_PROVIDER
-      // P5-H1：main() 无参时内部 resolveConfig() 触发 handoff 兜底 mkdtemp（登记簿
-      // 不可见）；显式给一个登记过的 handoff，被测的仍是 API key 校验失败路径
-      const prevHandoff = process.env.P2SDK_HANDOFF
-      process.env.P2SDK_HANDOFF = tmkdir('p2sdk-handoff-')
       const code = await main()
       expect(code).toBe(1)
       expect(errors.join('')).toContain('P2SDK_LLM_API_KEY')
-      if (prevHandoff === undefined) delete process.env.P2SDK_HANDOFF
-      else process.env.P2SDK_HANDOFF = prevHandoff
       for (const [key, value] of Object.entries(previous)) {
         if (value === undefined) delete process.env[key]
         else process.env[key] = value
@@ -336,6 +320,29 @@ describe('writeRuntimePatch · guard 行 (P5-02 决策 6/13)', () => {
     expect(yaml).toContain(join(dir, 'data'))
   })
 })
+
+describe('writeRuntimePatch · shell-ask 行 (P5-21 决策 16a)', () => {
+  it('生成 id: p2sdk-shell-ask 行：handoff + 从数据根推导的 policyStatePaths（无独立 env）', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p521-patch-'))
+    const data = join(dir, 'data')
+    mkdirSync(data, { recursive: true })
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, PBOTS_DATA_DIR: data })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yaml).toContain('id: p2sdk-shell-ask')
+    expect(yaml).toMatch(new RegExp(`handoff: '${cfg.handoff.replaceAll("'", "''")}'`))
+    expect(yaml).toContain(join(data, 'policy-state.json'))
+    expect(yaml, '不写已取消的独立 env 通道（P2SDK_POLICY_STATE）').not.toContain('P2SDK_POLICY_STATE')
+  })
+
+  it('PBOTS_DATA_DIR 未设时 policyStatePaths 覆盖两个缺省数据根', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p521-def-'))
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, HOME: dir })
+    mkdirSync(join(dir, '.config', 'pbots-ui'), { recursive: true })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yaml).toContain(join(dir, '.config', 'pbots-ui', 'policy-state.json'))
+  })
+})
+
 
 describe('writeRuntimePatch · sandbox 行 (P5-01 决策 4)', () => {
   it('生成 id: sandbox 行：python3 -I wrapper、遮蔽/挂回清单、bwrap: 失败签名', () => {

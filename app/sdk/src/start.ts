@@ -240,6 +240,25 @@ function guardRow(cfg: StartConfig): string {
 }
 
 /**
+ * P5-21（决策 16a）：p2sdk-shell-ask 行的运行时 config。loader 对同 id 行整键
+ * 替换 config（cordis-plugin-include applyEntryPatches），approval.yml 的 insert
+ * 行不带 config，运行时值全在这里：handoff（launch-token 所在；插件算
+ * sha256(launch-token) 得本实例 id——main 连上后把同一个 sha256 写进它自己数据
+ * 目录的 policy-state.instance，P5-29）与 policyStatePaths（从数据根推导，
+ * PBOTS_DATA_DIR 或缺省布局，决策 15 同源——不设独立 env，路径两侧同源可机械
+ * 证明）。档位表本身在 profile/tiers.json（静态数据，插件自读），不经此行。
+ */
+function shellAskRow(cfg: StartConfig): string {
+  const list = (xs: readonly string[]): string => (xs.length === 0 ? ' []' : `\n${xs.flatMap((p) => [`        - ${yamlScalar(p)}`]).join('\n')}`)
+  return `\
+- id: p2sdk-shell-ask
+  config:
+    handoff: ${yamlScalar(cfg.handoff)}
+    policyStatePaths:${list(cfg.dataDirs.map((d) => join(d, 'policy-state.json')))}
+`
+}
+
+/**
  * Generated overlay applied after profile/patches/p2sdk.yml: inserted rows need
  * absolute plugin specifiers because the $DSH_HOME profile workspace has no
  * node_modules to resolve package names against.
@@ -273,6 +292,7 @@ export function writeRuntimePatch(cfg: StartConfig): string {
 `)
   rows.push(sandboxRow(cfg))
   rows.push(guardRow(cfg))
+  rows.push(shellAskRow(cfg))
   writeFileSync(path, rows.join(''))
   return path
 }

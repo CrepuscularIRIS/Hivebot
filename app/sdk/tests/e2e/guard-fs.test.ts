@@ -148,7 +148,11 @@ function textCall(text: string): object {
 
 interface ToolResultView { toolCallId: string; isError: boolean; text: string }
 
-/** 一个纯文件工具 turn（无审批）：返回按 toolCallId 索引的结果 + 本会话 asked 数。 */
+/** 一个文件工具 turn：返回按 toolCallId 索引的结果 + 本会话 asked 数。
+ *  P5-21 起 shell-ask 按档位表对文件工具出卡（工作区内=门控 ALWAYS、区外=ASK；
+ *  本文件的运行时没配 policy-state → 门关 → 区内调用也出卡）。本文件测的是
+ *  guard 的 NEVER 判定（deny 的格永不出卡，asked 恒 0 不受影响）；成功格的卡由
+ *  这里自动 allowed-once 应答（批准后执行，成功/内容断言语义不变）。 */
 async function toolTurn(
   h: GuardRuntime,
   cwd: string,
@@ -162,10 +166,17 @@ async function toolTurn(
   await h.client.call('session/prompt', {
     request: { requestId: `p5-02-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'P5-02 探针' }] },
   })
+  const answered = new Set<string>()
   const deadline = Date.now() + 60_000
   for (;;) {
+    for (const f of h.feed.frames) {
+      if (f.type === 'waterfall' && f.event === 'approval/request' && f.agentId === sessionId && !answered.has(f.eventId ?? '')) {
+        answered.add(f.eventId ?? '')
+        await h.feed.answer(f, 'allowed-once')
+      }
+    }
     if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
-    if (Date.now() > deadline) throw new Error(`turn/end 未到；尾部：${JSON.stringify(frames.slice(-4))}`)
+    if (Date.now() > deadline) throw new Error(`turn/end 未到；asked=${answered.size}；尾部：${JSON.stringify(frames.slice(-4))}`)
     await new Promise((r) => setTimeout(r, 50))
   }
   stream.cancel()

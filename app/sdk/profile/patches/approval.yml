@@ -15,7 +15,12 @@
 # 值，决策 6 单源 never-roots.mjs）；该行缺失时 guard 加载失败（fail loud）。
 # 「普通 shell 必问」（shell-ask）是 preset 表达不了的
 # （evidence/D8-approval.md 红用例），插件把每个未升权的 bash 调用交给内置
-# 审批服务经 $events 问用户。
+# 审批服务经 $events 问用户。P5-21 起本插件泛化为档位查表（表在
+# profile/tiers.json，Q-013 全表确认）：bash 第 1 行与文件工作区内第 3 行的
+# ALWAYS 仅在 policy-state 实例校验通过时成立（决策 13⑤/16）；运行时值
+# （handoff 路径 + 从数据根推导的 policy-state 路径）由 src/start.ts 的
+# runtime patch 行按同 id 整键注入本行 config（与 guard 行同机制），本文件
+# 不携带 config。
 - insert:
     # P5-04.f1 ⑤ 实测（guard-handler enter 探针）：insert 行的加载顺序不可靠，
     # 两种排列下 shell-ask 都先注册、waterfall 里居外层，guard 收不到 bash

@@ -1,0 +1,14 @@
+/* P5-12（work/p5-parity/ui/P5-12-final.md）：B7 thinking 行 + B14 时间分隔 / 未读线。
+   thinking 行外壳复用 app.css 的 .tool-card/.tool-line/.tool-chevron/.tool-detail（P5-16 切 B6 时一并跟随），这里只加修饰。
+   参照 0.18 view.css:194-196,258-264（不搬码）；0.78.1 B6：thinking 图标 accent、preview 非 mono。 */
+.thinking-row .tool-line > .icon { color: var(--sand-text-accent-primary); }
+.thinking-label { flex: none; font-size: 11px; font-weight: 600; color: var(--dsw-alias-label-secondary); }
+.thinking-preview { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.thinking-row .tool-detail { font-family: inherit; }
+.thinking-row[data-live] .tool-line > .icon { animation: breathe 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .thinking-row[data-live] .tool-line > .icon { animation: none; } }
+
+/* 分隔行 margin 0：.chat-col 已是 gap 22px，0.18 的 margin 0 0 22px 照抄会叠成 44（派发修订 ③）。 */
+.time-sep { margin: 0; font-size: 11px; line-height: 16px; color: var(--sand-text-tertiary); text-align: center; }
+.unread-line { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 11px; line-height: 16px; font-weight: 500; color: var(--sand-text-accent-primary); }
+.unread-line::before, .unread-line::after { content: ''; flex: 1; height: 1px; background: color-mix(in srgb, var(--sand-text-accent-primary) 35%, transparent); }

@@ -6,11 +6,14 @@
 
 export type ToolStatus = 'running' | 'done' | 'failed'
 
-export type TimelineItem =
+/** `at` = 事件信封 event.time（session-format types.ts:32）；无 time 的事件不带（P5-12 B14 分隔 / 未读线）。 */
+export type TimelineItem = (
   | { kind: 'user'; id: string; text: string }
   | { kind: 'assistant'; id: string; text: string }
+  | { kind: 'thinking'; id: string; text: string }
   | { kind: 'tool'; id: string; callId: string; name: string; args: string; status: ToolStatus; result: string | null; awaiting: boolean; decision: string | null }
   | { kind: 'notice'; id: string; tone: 'muted' | 'danger'; text: string }
+) & { at?: number }
 
 export interface SessionView {
   sessionId: string
@@ -24,8 +27,8 @@ export interface SessionView {
   turnEnded: boolean
   endReason: string | null
   items: TimelineItem[]
-  /** 流式中正文（assistant/message 到达前）；null = 无进行中的流。 */
-  streaming: { text: string } | null
+  /** 流式中正文（assistant/message 到达前）；null = 无进行中的流。reasoning = reasoning-delta 累加（P5-12 B7 live 行）。 */
+  streaming: { text: string; reasoning?: string } | null
   /** assistant-stream text chunk 计数（E2E 断言）。 */
   chunkCount: number
   /** approval/asked id → callId（decided 只带 id）。 */
@@ -76,12 +79,12 @@ type AnyRecord = Record<string, unknown>
 const rec = (value: unknown): AnyRecord => (typeof value === 'object' && value !== null ? value as AnyRecord : {})
 const str = (value: unknown): string | null => (typeof value === 'string' && value !== '' ? value : null)
 
-export function contentText(content: unknown): string {
+export function contentText(content: unknown, type = 'text', sep = ''): string {
   if (!Array.isArray(content)) return ''
-  return content.map((block) => {
+  return content.flatMap((block) => {
     const b = rec(block)
-    return b.type === 'text' && typeof b.text === 'string' ? b.text : ''
-  }).join('')
+    return b.type === type && typeof b.text === 'string' && b.text !== '' ? [b.text] : []
+  }).join(sep)
 }
 
 const updateTool = (view: SessionView, callId: string, patch: Partial<Extract<TimelineItem, { kind: 'tool' }>>): SessionView => ({
@@ -100,15 +103,23 @@ function endNotice(turn: unknown, reason: AnyRecord): TimelineItem | null {
 
 function reduceEvent(view: SessionView, event: AnyRecord): SessionView {
   const data = rec(event.data)
+  const at = typeof event.time === 'number' ? { at: event.time } : {}
   switch (event.type) {
     case 'user/message': {
       if (rec(data.source).kind !== 'user') return view // 只显示用户本人消息（runtime-context 等注入不显示）
-      return { ...view, items: [...view.items, { kind: 'user', id: str(data.id) ?? `u-${view.items.length}`, text: contentText(data.content) }] }
+      return { ...view, items: [...view.items, { kind: 'user', id: str(data.id) ?? `u-${view.items.length}`, text: contentText(data.content), ...at }] }
     }
     case 'assistant/message': {
-      const text = contentText(rec(data.message).content)
+      const content = rec(data.message).content
+      const text = contentText(content)
+      // B7：reasoning 块（llm types.ts:75-78 {type:'reasoning',text}）→ 气泡前独立 thinking 行；空 / redacted 不出行
+      const reasoning = contentText(content, 'reasoning', '\n\n')
       const id = `t${String(data.turn)}-s${String(data.step)}`
-      const items = text === '' ? view.items : [...view.items, { kind: 'assistant' as const, id, text }]
+      const items: TimelineItem[] = [
+        ...view.items,
+        ...(reasoning === '' ? [] : [{ kind: 'thinking' as const, id: `${id}-r`, text: reasoning, ...at }]),
+        ...(text === '' ? [] : [{ kind: 'assistant' as const, id, text, ...at }]),
+      ]
       return { ...view, items, streaming: null } // 定稿替换流式气泡（D1）
     }
     case 'tool/call': {
@@ -116,7 +127,7 @@ function reduceEvent(view: SessionView, event: AnyRecord): SessionView {
       if (view.items.some((i) => i.kind === 'tool' && i.callId === callId)) return view
       const tool: TimelineItem = {
         kind: 'tool', id: `tool-${callId}`, callId, name: str(data.name) ?? 'tool', args: typeof data.arguments === 'string' ? data.arguments : '',
-        status: 'running', result: null, awaiting: false, decision: null,
+        status: 'running', result: null, awaiting: false, decision: null, ...at,
       }
       return { ...view, items: [...view.items, tool] }
     }
@@ -141,7 +152,8 @@ function reduceEvent(view: SessionView, event: AnyRecord): SessionView {
       return { ...view, running: true, turnEnded: false }
     case 'turn/end': {
       const reason = rec(data.reason)
-      const notice = endNotice(data.turn, reason)
+      const ended = endNotice(data.turn, reason)
+      const notice = ended === null ? null : { ...ended, ...at }
       return {
         ...view, running: false, turnEnded: true, endReason: str(reason.kind) ?? 'unknown', streaming: null,
         items: notice === null ? view.items : [...view.items, notice],
@@ -153,9 +165,12 @@ function reduceEvent(view: SessionView, event: AnyRecord): SessionView {
 }
 
 function applyChunk(view: SessionView, chunk: AnyRecord): SessionView {
-  if (chunk.type !== 'text-delta') return view
   const current = view.streaming ?? { text: '' }
-  return { ...view, streaming: { text: current.text + (typeof chunk.text === 'string' ? chunk.text : '') }, chunkCount: view.chunkCount + 1 }
+  const piece = typeof chunk.text === 'string' ? chunk.text : ''
+  // B7：reasoning-delta 不计 chunkCount（chunkCount 是正文 text chunk 的 E2E 口径）
+  if (chunk.type === 'reasoning-delta') return { ...view, streaming: { ...current, reasoning: (current.reasoning ?? '') + piece } }
+  if (chunk.type !== 'text-delta') return view
+  return { ...view, streaming: { ...current, text: current.text + piece }, chunkCount: view.chunkCount + 1 }
 }
 
 function modelOf(projection: unknown): string | null {
@@ -198,6 +213,62 @@ export function reduceFollow(view: SessionView, value: unknown): SessionView {
     return view // end：等 assistant/message 定稿替换
   }
   return view
+}
+
+// ---- P5-12 B14：时间分隔 / 未读线（渲染期派生，不进 store） ----
+
+/** 0.78.1 时间分隔阈值（work/p1-re/evidence/chunks/index.eager-app-iGTgHP_Q.js @1734517 `emt=9e5`）。 */
+export const SEP_GAP_MS = 900_000
+
+export type Row = TimelineItem | { kind: 'time-sep'; id: string; label: string } | { kind: 'unread'; id: string }
+
+const sameDay = (x: number, y: number): boolean => new Date(x).toDateString() === new Date(y).toDateString()
+const pad = (n: number): string => String(n).padStart(2, '0')
+
+/** E78 `UR` zh-CN 形：今天 / 昨天 / 同年 `11月3日周二` / 跨年 `2025年11月3日`，后接 HH:mm。手写，不走 Intl（避开 ICU 差异）。 */
+export function timeLabel(at: number, now: number): string {
+  const d = new Date(at)
+  const hm = `${pad(d.getHours())}:${pad(d.getMinutes())}`
+  if (sameDay(at, now)) return `今天 ${hm}`
+  const y = new Date(now)
+  y.setDate(y.getDate() - 1)
+  if (sameDay(at, y.getTime())) return `昨天 ${hm}`
+  const md = `${d.getMonth() + 1}月${d.getDate()}日`
+  if (d.getFullYear() === new Date(now).getFullYear()) return `${md}周${'日一二三四五六'[d.getDay()]} ${hm}`
+  return `${d.getFullYear()}年${md} ${hm}`
+}
+
+/**
+ * 时间线 + 分隔 / 未读线（0.78.1 E78@1739705 `vmt`）：上一条带时间的行不存在、|Δ| >= 15 分钟、或跨本地自然日 → 该行前插分隔；
+ * 无 at 的行跳过且不更新 prev。未读线（至多一条）在 unreadBefore 那行前，顺序 未读线 → 分隔 → 行（E78 `Emt`）。
+ */
+export function withMarkers(items: readonly TimelineItem[], now: number, unreadBefore: string | null): Row[] {
+  const out: Row[] = []
+  let prev: number | null = null
+  for (const item of items) {
+    if (item.id === unreadBefore) out.push({ kind: 'unread', id: 'unread-line' })
+    if (item.at !== undefined) {
+      if (prev === null || Math.abs(item.at - prev) >= SEP_GAP_MS || !sameDay(item.at, prev)) {
+        out.push({ kind: 'time-sep', id: `sep-${item.id}`, label: timeLabel(item.at, now) })
+      }
+      prev = item.at
+    }
+    out.push(item)
+  }
+  return out
+}
+
+/** 时间线里最新的 at（离开 bot 时记为已读边界）；无带时间的行 → null。 */
+export function latestAt(items: readonly TimelineItem[]): number | null {
+  let max: number | null = null
+  for (const item of items) if (item.at !== undefined && (max === null || item.at > max)) max = item.at
+  return max
+}
+
+/** 未读起点：第一个 at > readMark 且不是用户本人消息的行；无基线 → null。 */
+export function firstUnreadId(items: readonly TimelineItem[], readMark: number | undefined): string | null {
+  if (readMark === undefined) return null
+  return items.find((i) => i.at !== undefined && i.at > readMark && i.kind !== 'user')?.id ?? null
 }
 
 /** 工具名 → Title Case（原版 tool-call 行：name→Title Case + summary，RE-ui-shell §3.2）。 */

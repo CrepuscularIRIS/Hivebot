@@ -17,7 +17,8 @@ button.boot-action:hover { background: var(--dsw-alias-interactive-bg-hover); }
 .boot-action .icon { font-size: 14px; }
 
 /* ---- 网格壳 ---- */
-.shell { display: grid; height: 100vh; }
+/* P5-12：显式行 minmax(0,1fr)——隐式 auto 行会被 .main 内容撑高（长对话 transcript 不滚、整页溢出） */
+.shell { display: grid; height: 100vh; grid-template-rows: minmax(0, 1fr); }
 .main { display: flex; flex-direction: column; min-width: 0; background: var(--dsw-alias-bg-layer-2); }
 .titlebar { height: var(--sand-titlebar-block); flex: none; display: flex; align-items: baseline; gap: 8px; padding: 0 16px; min-width: 0;
   padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 16px); line-height: 38px; }

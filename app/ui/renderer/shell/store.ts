@@ -8,7 +8,7 @@
 import { useSyncExternalStore } from 'react'
 import { CarrierSocket, pageEnv } from '../carrier'
 import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../carrier/mux'
-import { firstSeqOf, initView, olderItemsOf, reduceFollow, type SessionView } from '../plugins/session/reduce'
+import { firstSeqOf, initView, latestAt, olderItemsOf, reduceFollow, type SessionView } from '../plugins/session/reduce'
 
 export interface Summary { sessionId: string; title: string | null; preset: string | null; running: boolean; updatedAt: number }
 export interface Approval {
@@ -39,6 +39,8 @@ export interface State {
   dialog: DialogInit | null
   /** #5 成功后的模型（`provider/model`），优先于 follow 快照投影。 */
   models: Record<string, string>
+  /** P5-12 未读线边界：离开该 bot 视图时看到的最新 event.time（前端派生，不持久化）。 */
+  readMark: Record<string, number>
 }
 
 /** 冷启动等待上限（R15：超时换「引擎没有响应  重试 →」）。 */
@@ -49,7 +51,7 @@ export const HISTORY_PAGE = 40
 let state: State = {
   boot: 'starting', bootError: null, online: false, order: [], summaries: {}, meta: { mainBotId: null, recipes: {} },
   views: {}, approvals: [], unread: {}, selected: null, drafts: {}, flash: null, notice: null,
-  page: 'chat', dialog: null, models: {},
+  page: 'chat', dialog: null, models: {}, readMark: {},
 }
 const listeners = new Set<() => void>()
 const set = (patch: Partial<State>): void => { state = { ...state, ...patch }; for (const l of [...listeners]) l() }
@@ -272,6 +274,13 @@ export function select(sessionId: string): void {
   if (!followed.has(sessionId)) { followed.add(sessionId); openFollow(sessionId) }
   const { [sessionId]: _cleared, ...unread } = state.unread
   set({ selected: sessionId, unread, notice: null, page: 'chat' })
+}
+
+/** P5-12：会话视图卸载（换 bot / 去市场）时记已读边界；快照未到不记，已加载但无带时间的行记 0（回来后全算新）。 */
+export function markRead(sessionId: string): void {
+  const view = state.views[sessionId]
+  if (view?.loaded !== true) return
+  set({ readMark: { ...state.readMark, [sessionId]: latestAt(view.items) ?? 0 } })
 }
 
 export function openMarket(): void { set({ page: 'market' }) }

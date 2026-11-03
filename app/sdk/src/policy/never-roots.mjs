@@ -70,12 +70,20 @@ const HANDOFF_SIBLING_CAP = 32
 function handoffSiblings() {
   let names
   try { names = readdirSync(tmpdir()) } catch { return [] }
-  const dirs = names.filter((n) => n.startsWith('p2sdk-handoff-')).map((n) => join(tmpdir(), n)).filter((p) => isDir(p))
-  return dirs
-    .map((p) => ({ p, m: statSync(p).mtimeMs }))
-    .sort((a, b) => b.m - a.m)
-    .slice(0, HANDOFF_SIBLING_CAP)
-    .map((x) => x.p)
+  // P5-H2：单次 stat + 容错。旧实现两遍扫描（isDir 一遍、mtime 一遍），第二遍
+  // statSync 无守卫——并发 e2e fork 的 afterAll 在两遍之间 rmSync 掉某个
+  // p2sdk-handoff-* 时整个 computeRoots 抛 ENOENT（全量并发下 never-roots 用例
+  // 偶发红、单文件恒绿的根因）。目录在 stat 后才消失的由下游 existsSync 过滤兜底。
+  const out = []
+  for (const n of names) {
+    if (!n.startsWith('p2sdk-handoff-')) continue
+    const p = join(tmpdir(), n)
+    try {
+      const st = statSync(p)
+      if (st.isDirectory()) out.push({ p, m: st.mtimeMs })
+    } catch { /* 刚被并发 teardown 删除：跳过 */ }
+  }
+  return out.sort((a, b) => b.m - a.m).slice(0, HANDOFF_SIBLING_CAP).map((x) => x.p)
 }
 
 /** .git 策略根：普通仓是目录；worktree 下是指针文件，解析 gitdir 指向的真实仓库对象库。 */

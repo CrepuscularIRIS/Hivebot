@@ -263,6 +263,28 @@ describe('§2.2 $events/result 校验（ledger）', () => {
     expect(expectFail(res).code).toBe('pbots/forbidden')
     expect(dsh.apiCount).toBe(0)
   })
+
+  // P5-07 ②：提问事件不接受审批字符串 outcome（作答分支 = P5-28）。
+  it.each(['allowed-once', 'rejected'])(
+    'P5-07：提问 eventId 传审批字符串 %s → pbots/invalid-args，dsh 计数 === 0',
+    async (value) => {
+      const ledger = readyLedger()
+      ledger.record({
+        type: 'waterfall', event: 'user-questions/request', eventId: 'ev-q', agentId: 's-1',
+        request: { questions: [{ id: 'q1', question: 'Q?', header: 'H', options: [] }] },
+      })
+      const { api, dsh } = makeApi(undefined, ledger)
+      const res = await api({ method: '$events/result', args: { clientId: 'cli-1', eventId: 'ev-q', outcome: { kind: 'result', value } } })
+      expect(expectFail(res).code).toBe('pbots/invalid-args')
+      expect(dsh.apiCount).toBe(0)
+      // 提问条目不下账（未作答成功）
+      expect(ledger.pendingEvents().some((e) => e.eventId === 'ev-q')).toBe(true)
+      // 同 ledger 的审批 eventId 原行为不变（U-11 D9 全集照跑通过）
+      const ok = await api({ method: '$events/result', args: { clientId: 'cli-1', eventId: 'ev-1', outcome: { kind: 'result', value: 'allowed-once' } } })
+      expect(ok).toEqual({ ok: true, value: null })
+      expect(dsh.apiCount).toBe(1)
+    },
+  )
 })
 
 describe('§2.2 #3/#4 参数约束（L2；typert 壳内字段）', () => {

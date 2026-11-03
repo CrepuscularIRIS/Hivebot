@@ -861,3 +861,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 13:08 P5-28 回归全绿（271 单测 + 62 e2e，load 13 下）闭环 | p5 done 23/33
 13:08 P5-50 builder 完成（d7f2369：332 文件 diff=0 入仓、React19/tiptop 钉版、Electron 桩挂载亮暗双过、主 ui 245+61 零回归；发现 S0 审批卡证据矛盾→P5-51 查）→ verifier 派发
 13:09 P6-01 验收 PASS → 合并（33 例纯函数，零接线），ui 回归后台 | P5-50 verifier 已派 | p6 done 1/12
+13:12 P5-25 builder 完成（0ee7976：cwd 强制+mintWorkspace，41 单测+254 全量+63 e2e 绿）＋**stash 互踩事故已恢复**（LEARNINGS 立规：多 worktree 禁 stash）→ verifier 派发；截图已抢救入主仓

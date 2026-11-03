@@ -22,13 +22,18 @@
 // .resolve({session}) 读取，与 tool-bash resolveSandboxPolicy 同一暴露面
 // （必须按方法调用保留 this，拆成裸函数会丢服务实例）。
 //
-// T-12.f1（增量 L 复审 R2）：显式 approval=never 时整个策略放行。死锁链
-// （修复前）：本策略默认挂载后，用户切 danger-full-access preset
-// （approval=never），普通 bash 在这里返回 ask，而 user-approval 对 never
-// 在派发任何 answerer 之前就确定性 rejected（user-approval index.ts:301
-// decide），于是 bash 全灭且永远没人被询问。never 的语义是「该 session
-// 明确不走审批」，此时再问不是安全是死锁；精确匹配 'never' 才放行，
-// 默认 preset（workspace-write + ask）与一切中间值行为不变。
+// P5-05（G1-r2 #1，PLAN p5-parity 决策 10）：T-12.f1 的「never 放行」被有意
+// 反转——不再是死锁，而是立即拒绝。可达 never 的两类会话都没有应答者：
+// ① 被委派子代理（上游 child-agent.ts captureDelegatedPolicyOverrides 把
+// 子会话 approval 钉成 'never'，workflow 的 agent() 走同一条
+// subagents.startActivation），T-12.f1 的放行让子代理普通 bash 零交互执行
+// （A-H1 侧门，tests/e2e/subagent-policy.test.ts 的红用例为证）；② 部署侧
+// DSH_PERMISSION_MODE=danger-full-access（childEnv 透传 DSH_*）落到 never，
+// 且该模式下 write / edit 不受 fs-sandbox 约束（P5-04 一并拒绝该模式下的
+// bash / write / edit）。所以本策略原本返回 ask 的情形在 never 会话改为
+// {kind:'deny'}，原因固定字面串；严格更宽的升权仍委托 tool-bash 自己的
+// 审批（user-approval 对 never 确定性 rejected，deny 非放行）。其余策略
+// 值（默认 preset 钉的 'ask' 在内）行为不变。
 export const name = 'p2sdk-shell-ask'
 
 /** 严格更宽表，来源: deepseek-harness@ce7073d packages/sandbox/sandbox/src/escalation.ts WIDER_MODES。 */
@@ -42,11 +47,13 @@ const STRICTLY_WIDER = {
 export function apply(ctx) {
   ctx.on('tools/pre-execute', (exec, next) => {
     if (exec.name !== 'bash') return next()
-    if (approvalNever(ctx, exec)) return next()
+    // P5-05：never 会话没有应答者（见文件头），原本 ask 的情形改为立即 deny。
+    const decision = approvalNever(ctx, exec)
+      ? { kind: 'deny', reason: 'approval unavailable in this session' }
+      : { kind: 'ask', reason: 'p2sdk policy: ordinary shell commands require user approval' }
     const args = exec.arguments
     const requested = args !== null && typeof args === 'object' ? args.sandbox_permissions : undefined
-    const ask = { kind: 'ask', reason: 'p2sdk policy: ordinary shell commands require user approval' }
-    if (requested === undefined) return ask
+    if (requested === undefined) return decision
     // 解析当前有效模式（tool-bash resolveSandboxPolicy 同款调用）；拿不到就问。
     const policy = typeof ctx.get === 'function' ? ctx.get('sandboxPolicy') : undefined
     let effective
@@ -55,7 +62,7 @@ export function apply(ctx) {
       effective = standing !== null && typeof standing === 'object' ? standing.mode : undefined
     }
     if (typeof effective === 'string' && (STRICTLY_WIDER[effective] ?? []).includes(requested)) return next()
-    return ask
+    return decision
   })
 }
 

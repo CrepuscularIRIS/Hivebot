@@ -884,3 +884,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 15:28 P5-51.f2 builder 完成（e50f449：根因=spec canary 放错目录非产品 bug，argv 序实证工作区可见；spec 对齐 launchAligned）→ verifier 派发 | 清 /tmp bot-U-00-* 旧残留（6.4G→…，60min 前口径防误删在途）
 15:29 P5-51.f1 验收 PASS → 合并（盲区封死+canary 移工作区）| 在途：P5-52、f2 verifier
 15:35 P5-51.f2 验收 PASS → 三方合并（launchAligned+canary 并集，spec 亲跑 6.9s 绿），全量回归后台——grok-shim 红线 saga 应就此终结 | 在途：P5-52
+15:42 f2 合并后全量回归：**362 单测 + 66 e2e 全绿**——main 恢复完全绿，grok-shim/旅程红全部收口 | p5 done 30/33

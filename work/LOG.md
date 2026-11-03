@@ -795,3 +795,6 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 02:11 提案进度：P5-11 两席齐（A 自落盘 83 行 / C 代录）→ frontend-dev 已派定稿；P5-12/P5-13 席 C 已代录，等席 A
 02:5x P5-13 席 A 提案落盘（84 行，反二选一：单行 52px + identity 结构，附三方案 GU 对比表）；两处超区域改动（sand-tokens titlebar token、window.ts）待追认——sand-tokens.css 与在途 P5-14 重叠，P5-13 实现排 P5-14 合并后
 03:1x P5-15 完成（feat/P5-15 @83a39ab，70 断言全绿，产品零改动）→ verifier 已派；报告被 hook 拦由主会话代录，.f1-.f4 待回修已立行 | P5-12 两席齐（席 A 实证阈值 900000ms/跨日）→ frontend-dev 已派（PLAN ② 修订 + store.ts 区域追认）| P5-11 e2e 在跑
+02:23 P5-07 builder 完成（b839f6a：ledger.event 判别单点 + 提问 invalid-args + 协议级拒绝；230 单测+54 e2e 绿）→ verifier 已派；新发现 testAnswerEvent 签名二值留 P5-28 处置
+02:23 P5-14 builder 完成（b1b5ad6，token+DPR2 量测法；.f1 接线立行）→ verifier 已派 | /tmp 残留检查中
+03:3x /tmp 卫生：清 2 小时前 bot-* 残留 14764 个（24G→9.8G；保留 1253 个近 2h 的=在途 e2e 正在用）；根因=e2e helper 从不清理测试 HOME，待立任务修 helper teardown | P5-14 verifier 已派

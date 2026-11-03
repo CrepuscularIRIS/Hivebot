@@ -23,6 +23,7 @@ import {
   type Frame,
 } from '../support/fake/harness.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(import.meta.dirname, '..', '..')
 

@@ -820,3 +820,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 03:19 P5-01 builder 完成（fc41a8f：12 文件 +1352/-11，①-⑩ 全 PASS 自验，183 sdk 测试绿，顺手清 /tmp 历史 handoff 残留 5658 个）→ verifier 深验派发
 03:25 P5-11.f1 回归全绿（243+61）闭环——main 持续绿 | done 11/33
 03:26 P5-12.f1 验收 PASS → 合并+回归后台（回归完成后 P5-12 整链闭环）| 在途：P5-01 verifier、R3
+03:33 P5-01 验收 PASS → 合并 5b45892（wrapper/never-roots/start 接线，12 文件）| 回归后台（sdk 全量 + ui 全量）| W1-AP-0 还剩 P5-02（todo→ready）

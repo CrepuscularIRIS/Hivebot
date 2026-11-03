@@ -775,3 +775,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 23:47 tick | U-33 合并后 main e2e 回归在跑（33/54，Xvfb 新脚本下全绿中）| 无事可派：只剩等回归绿→停 cron 收口 + Q-012 待答 | ready 未派 = 0
 23:48 MVP 收口：U-33 合并后 main 回归全绿（build✓ 224/224✓ e2e 54/54✓ 新脚本 Xvfb 静默）| 四阶段全部验收，CronDelete 停巡检，PushNotification 已发 | 待答 Q-012（下一阶段方向）
 00:28 Q-012 落实：新阶段 = UI 对齐原版 level + 审批模型自主化（ceiling 分级 + ALWAYS 卡 + always-allow 管理）→ director 已派写 BRIEF | 巡检已停，BRIEF 回来后跑 G1 panel，审批档位表开 QUESTIONS
+00:38 p5-parity W0 全部派出：G1 panel 两席（fable+sonnet 盲评 BRIEF v1）+ 调研 8 条（R1/R2/R3/R8 RE，R4-R7 scout）| QUESTIONS 新增 Q-013 档位表/Q-014 截图基准/Q-015 C2 契约（PushNotification 待发）| L-AP 实现等 Q-013+Q-015；W1-UI 等 R8/R2

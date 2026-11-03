@@ -117,3 +117,42 @@
   - D：先打包分发 + 日常使用打磨（不含对外发布）
 - 答复：（2026-11-03 00:0x 用户聊天原话：「现在我们打算把UI先打磨到Grok Bot一致的level. 然后主bot部分…我记得Personal Agent是不会比如说权限也好, 这些其实是不会给Grok Bot去做的…一般是bot自己去完成, 只有一些问题会询问. 这种调整, 可能是我们要去做的」→ 新方向 = ①UI 对齐原版 level + ②审批模型改原版自主分级（ceiling NEVER/ASK/ALWAYS + ALWAYS 卡 + always-allow 管理），替代 A-D 选项）
 - 落实（主会话 2026-11-03）：派 director 写新阶段 BRIEF（①视觉对齐深化 ②审批自主化）；审批默认档位表属高风险（执行审批语义），方案出来后开 QUESTIONS 请用户确认再动工。
+
+## Q-013 [open] 审批默认档位表（L-AP 高风险，逐行确认）
+- slug：p5-parity ｜ 类型：高风险（审批语义）｜ 阻塞：L-AP 全部实现（W1-AP/W2-AP）｜ 提出：2026-11-03 00:30
+- 背景：BRIEF §7 草案（方向你已给：bot 自己完成，只有一些问题询问；具体档位需逐行确认）。核心模型：沙箱内自主（ALWAYS）、越界必问（ASK）、凭证绝不（NEVER）+ ASK 卡可「始终允许」。
+- 草案表（# / 类别 / 草案默认）：
+  1. bash 沙箱内（工作目录内读写无升权）→ **ALWAYS**（核心改动，前提 R5 证实沙箱生效）
+  2. bash 升权（写工作目录外 / danger-full-access）→ ASK，不可始终允许
+  3. bash 联网（curl/pip）→ ASK 可始终允许（若 R5 证明沙箱无法单独隔离网络：并入 1=ALWAYS 或并入 2=每次问，**默认按并入 2 执行，无异议不用答复**）
+  4. 文件工具工作目录内 → ALWAYS
+  5. 文件读工作目录外 → ASK 可始终允许
+  6. 凭证路径（~/.ssh、credentials*、~/.grokbot、token/授权文件）→ NEVER
+  7. 连接器读工具（readOnlyHint=true）→ ALWAYS
+  8. 连接器写/未标注 → ASK 可始终允许（bot×工具）
+  9. 连接器 destructiveHint=true → ASK 可始终允许+警示（**是否允许始终允许请你定**）
+  10. 权限 preset 切换 / permission 命令 → NEVER（不变）
+- 另请定两件：
+  - (b) 「始终允许」作用域：草案**每 bot × 工具**（bot 间不共享）；备选所有 bot 共享
+  - (c) bot 设置里要不要按连接器调读/写档位：草案**不做**（档位在 profile 文件，UI 只读+撤销）
+- 选项：
+  - A（推荐）：整表按草案确认（含 b=每bot×工具、c=不做）
+  - B：部分行改（请指明行号和新档位）
+- 答复：
+
+## Q-014 [open] UI 基准：能否由你登录 0.78.1 截约 10 张参照图
+- slug：p5-parity ｜ 类型：方向 ｜ 阻塞：仅 U5 并排对照的基准选择（U1-U4 不阻塞）｜ 提出：2026-11-03 00:30
+- 背景：L-UI 的「与原版一致」目前缺登录后运行态截图（现有只有未登录页）。最准的基准 = 你本人登录后按清单截图（侧栏、会话流含工具行+审批卡、市场、设置 pane、权限页；亮暗各一套），个人信息自行打码后放 work/p5-parity/ref/。截图不经模型，凭证不进模型。不方便就降级：R3 桩数据渲染 → 0.18 重建仓渲染。
+- 选项：
+  - A（推荐，最准）：你来截（放 work/p5-parity/ref/ 后告诉一声）
+  - B：不截，按 R3 → 0.18 降级基准
+- 答复：
+
+## Q-015 [open] 契约变更 C2：审批自主化的接口与不变式修订
+- slug：p5-parity ｜ 类型：契约 ｜ 阻塞：W1-AP/W2-AP 实现（调研不受影响）｜ 提出：2026-11-03 00:30
+- 背景：BRIEF §10.9，与 Q-013 配套，Q-013 答复前不合入。
+- 内容四件：① M1 新增 3 方法 `pbots/approvals.alwaysAllow {eventId}`（main 反查工具+bot、写授权文件、代答 allowed-once）/ `approvals.list {sessionId}` / `approvals.revoke {sessionId, toolName}`；② session/create 的 cwd 改由 main 强制为 `workspaces/<botId>`，renderer 传入即拒；③ P4B D3「无始终允许入口」修订为「仅 ASK 档可始终允许」，D9 其余不变，「renderer 只发 allowed-once/rejected」不变式保持（always 不走 $events/result）；④ SDK shell-ask 由必问泛化为按档位查表。
+- 选项：
+  - A（推荐）：四件全准
+  - B：有修改（请指明）
+- 答复：

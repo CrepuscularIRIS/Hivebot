@@ -32,10 +32,13 @@ function configRoots(over: Record<string, string[]> = {}) {
   }
 }
 
-/** apply() 注册的 pre-execute listener。 */
-function listener(config?: object): (exec: { name: string; agent?: unknown; arguments?: unknown }, next: () => unknown) => unknown {
+/** apply() 注册的 pre-execute listener。services 提供可选服务（如 sandboxPolicy）。 */
+function listener(config?: object, services?: Record<string, unknown>): (exec: { name: string; agent?: unknown; arguments?: unknown }, next: () => unknown) => unknown {
   const listeners: Array<{ event: string; listener: (exec: never, next: () => unknown) => unknown }> = []
-  const ctx = { on: (event: string, listener: (exec: never, next: () => unknown) => unknown) => { listeners.push({ event, listener }) } }
+  const ctx = {
+    on: (event: string, listener: (exec: never, next: () => unknown) => unknown) => { listeners.push({ event, listener }) },
+    get: (name: string) => (services ?? {})[name],
+  }
   plugin.apply(ctx as never, (config ?? { roots: configRoots() }) as never)
   expect(listeners, '挂一个 tools/pre-execute').toHaveLength(1)
   expect(listeners[0].event).toBe('tools/pre-execute')
@@ -189,5 +192,28 @@ describe('apply 的 listener 行为', () => {
     const nextResult = Symbol('next')
     await expect(l({ name: 'bash', arguments: { command: 'cat /etc/ppp/chap-secrets' } }, () => nextResult)).resolves.toBe(nextResult)
     await expect(l({ name: 'web_fetch', arguments: {} }, () => nextResult)).resolves.toBe(nextResult)
+  })
+
+  // P5-04.f1（PLAN P5-04 ④）：会话有效模式 = danger-full-access → bash /
+  // write / edit deny（v2.1 定死字面串，先于路径判定）。
+  it('会话模式 dfa → bash / write / edit deny（会话级字面串）', async () => {
+    const l = listener(undefined, { sandboxPolicy: { resolve: () => ({ mode: 'danger-full-access' }) } })
+    for (const name of ['bash', 'write', 'edit']) {
+      const args = name === 'bash' ? { command: 'x' } : { file_path: '/w/f.txt' }
+      await expect(l({ name, arguments: args }, () => 'should-not-run'), `${name} deny`).resolves.toMatchObject({
+        kind: 'deny',
+        reason: expect.stringContaining('danger-full-access session mode is not supported'),
+      })
+    }
+  })
+
+  it('会话模式非 dfa / resolve 抛错 / 无 sandboxPolicy 服务 → 不拦（next）', async () => {
+    const nextResult = Symbol('next')
+    const l = listener(undefined, { sandboxPolicy: { resolve: () => ({ mode: 'workspace-write' }) } })
+    await expect(l({ name: 'bash', arguments: { command: 'x' } }, () => nextResult), 'workspace-write 不拦').resolves.toBe(nextResult)
+    const throwing = listener(undefined, { sandboxPolicy: { resolve: () => { throw new Error('projection unreadable') } } })
+    await expect(throwing({ name: 'bash', arguments: { command: 'x' } }, () => nextResult), 'resolve 抛错不拦').resolves.toBe(nextResult)
+    const bare = listener()
+    await expect(bare({ name: 'bash', arguments: { command: 'x' } }, () => nextResult), '无服务不拦').resolves.toBe(nextResult)
   })
 })

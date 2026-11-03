@@ -1,8 +1,9 @@
 // P5-02（PLAN p5-parity 0b，决策 2/3/7/13）：文件工具凭证 NEVER（默认拒）。
 // 挂 dsh tools/pre-execute 扩展点（来源: deepseek-harness@ce7073d
-// packages/core/tools/src/contracts.ts:358-361），在 approval.yml 的 insert 里排在
-// p2sdk-shell-ask 之前 —— pre-execute 是 waterfall，shell-ask 返回 ask 不调
-// next() 时后面的插件不执行，NEVER 必须排最前（顺序证明格在 P5-04 ⑤）。
+// packages/core/tools/src/contracts.ts:358-361）。pre-execute 是 waterfall，
+// shell-ask 返回 ask 不调 next() 时后面的插件不执行，NEVER 必须排最前——
+// P5-04.f1 实测 insert 行加载顺序不可靠，本插件用 ctx.on 的 prepend 选项
+// （第三参 true）钉在最外层（顺序证明格在 P5-04 ⑤）。
 //
 // 判定（决策 13，全部根来自 never-roots.mjs 单源，经 runtime patch 的 guard 行
 // 传入；guard 行缺失 → 本插件加载失败，fail loud）：
@@ -49,6 +50,36 @@ const NEVER_TOOLS = new Set(['plugin_manager'])
  */
 const DFA = 'danger-full-access'
 const DFA_DENY = `p2sdk-fs-guard: escalation path not available (sandbox_permissions "${DFA}" is denied until the controlled escalation path lands; the call does not run)`
+
+/**
+ * P5-04.f1（PLAN P5-04 行 ④，决策 10 补）：会话级拒绝。部署侧
+ * DSH_PERMISSION_MODE=danger-full-access（childEnv 透传 DSH_*）把整条链切到
+ * dfa：sandbox-policy mode、approval policy=never、permission-presets 的 dfa
+ * preset。bash 侧 shell-ask 已因 never 拒（P5-05），但 write / edit 不经
+ * shell-ask，且该模式下 fs 工具不受 fs-sandbox 约束（来源:
+ * deepseek-harness@ce7073d packages/fs/tool-fs/src/sandbox.ts:22,90）——按
+ * 会话有效模式（ctx.get('sandboxPolicy').resolve，与 shell-ask 读
+ * effectiveMode 同一暴露面）deny bash / write / edit，原因 v2.1 定死
+ * （P5-05 ② 枚举集成员）。排在路径判定之前：dfa 会话里 write 的原因必须是
+ * 本字面串而非 masked-area（P5-04 ② 的区分）。读不到服务 / resolve 抛错 →
+ * 不 deny（证不出 dfa 就不拦；基础层恒组合 sandbox-policy，残缺组合才会
+ * 走到这里，bash 仍有 shell-ask 兜底）。guard 内依旧没有 approvalPolicy
+ * 分支——判的是沙箱模式，不是审批策略。
+ */
+const DFA_SESSION_TOOLS = new Set(['bash', 'write', 'edit'])
+const DFA_SESSION_DENY = `p2sdk-fs-guard: danger-full-access session mode is not supported (deployments must not run sessions in "${DFA}"; bash / write / edit are denied and the call does not run)`
+
+/** 本次调用所属会话的有效沙箱模式（sandboxPolicy.resolve 同一暴露面）；读不到 → undefined。 */
+function sessionMode(ctx, exec) {
+  const policy = typeof ctx.get === 'function' ? ctx.get('sandboxPolicy') : null
+  if (policy === null || typeof policy !== 'object' || typeof policy.resolve !== 'function') return undefined
+  try {
+    const standing = policy.resolve(exec.agent === undefined ? {} : { session: exec.agent.session })
+    return standing !== null && typeof standing === 'object' && typeof standing.mode === 'string' ? standing.mode : undefined
+  } catch {
+    return undefined
+  }
+}
 
 /** resolveRoots 的产物：决策 13 判定序直接消费的三张表。 */
 /** @returns {{hardRoots: string[], softRoots: string[], toolchainDirs: string[], policyRoots: string[]}} */
@@ -203,6 +234,10 @@ export function apply(ctx, config) {
   const roots = requireRoots(config)
   const resolved = resolveRoots(roots)
 
+  // P5-04.f1 ⑤ 实测：insert 行的加载顺序不可靠（探针证据：guard 列首位时仍
+  // 收不到 bash exec，shell-ask 先注册先拦截）。用 cordis ctx.on 的 prepend
+  // 选项（events.ts register：prepend → unshift 到 listeners 数组最前）把
+  // guard 钉在最外层——deny 先于任何出卡，顺序证明在 P5-04 ⑤ 的 e2e。
   ctx.on('tools/pre-execute', async (exec, next) => {
     if (NEVER_TOOLS.has(exec.name)) {
       return { kind: 'deny', reason: `p2sdk-fs-guard: tool "${exec.name}" is not available (plugin management is disabled by policy; overrides cannot re-enable it)` }
@@ -212,6 +247,12 @@ export function apply(ctx, config) {
     const escalationArgs = exec.arguments
     if (escalationArgs !== null && typeof escalationArgs === 'object' && escalationArgs.sandbox_permissions === DFA) {
       return { kind: 'deny', reason: DFA_DENY }
+    }
+    // P5-04.f1 ④⑤：会话有效模式 = dfa → bash / write / edit 一律拒（先于路径
+    // 判定）。⑤ 的顺序证明靠它：guard 排 shell-ask 前，组合会话的普通 bash
+    // 在 shell-ask 出卡前被这里拦下。
+    if (DFA_SESSION_TOOLS.has(exec.name) && sessionMode(ctx, exec) === DFA) {
+      return { kind: 'deny', reason: DFA_SESSION_DENY }
     }
     const known = new Set(['read', 'read_image', 'write', 'edit', 'grep', 'glob', 'present'])
     if (!known.has(exec.name)) return next()
@@ -267,5 +308,5 @@ export function apply(ctx, config) {
       }
     }
     return next()
-  })
+  }, true)
 }

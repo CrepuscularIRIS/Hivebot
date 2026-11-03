@@ -868,3 +868,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 13:25 P5-50 回归全绿（304 单测+62 e2e+renderer-grok check diff=0）闭环
 13:50 P6-04 验收 PASS → 合并（D3 数据+计分器，30/30 全过）| p6 done 3/12；1a 波全部收口（01/02/04 done，03 等 P5-51）
 13:51 P5-25 回归绿闭环（317+64）；P5-21 合并 c8d41f7（never-roots 保 H2 版、mock-demo/start.test 三方合并 43 绿），sdk 全量后台 | p5 done 26/33 | P5-22 解锁待回归绿后派
+13:53 P5-21 回归全绿（35 files/289）闭环 → P5-22 受控联网升权已派（D-1⑤：request_network+一次性许可+slirp supervisor）| p5 done 26/33，在途：P5-22/51/53

@@ -209,8 +209,9 @@ function sandboxRow(cfg: StartConfig): string {
 
 /**
  * P5-02 决策 6/13: the guard row feeding src/policy/guard.mjs (mounted by
- * approval.yml BEFORE p2sdk-shell-ask — pre-execute is a waterfall and NEVER
- * must run first). The whole roots list comes from computeRoots (one source,
+ * approval.yml; guard pins itself OUTERMOST in the pre-execute waterfall via
+ * ctx.on(…, true) — P5-04.f1 proved insert order unreliable, see guard.mjs).
+ * The whole roots list comes from computeRoots (one source,
  * two consumers: wrapper argv here via sandboxRow, guard config here); the
  * row only overrides config, so a missing guard row leaves the approval.yml
  * insert row without roots → guard.mjs fails loud at load (决策 6).

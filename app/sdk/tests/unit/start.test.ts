@@ -11,10 +11,20 @@ import {
   main,
   mockReplayOverride,
   normalizeApiBase,
-  resolveConfig,
+  resolveConfig as resolveConfigRaw,
   validateStart,
   writeRuntimePatch,
 } from '../../src/start.ts'
+import { tmkdir, trackTmpDir } from '../support/tmp-sweep.ts'
+
+// P5-H1：resolveConfig 不带 P2SDK_HANDOFF 时兜底会急切 mkdtemp 一个 handoff
+// （本文件单测故意覆盖该兜底，每次调用漏一个）；在 import 边界登记，文件末清扫。
+type StartConfig = ReturnType<typeof resolveConfigRaw>
+const resolveConfig = (env: NodeJS.ProcessEnv): StartConfig => {
+  const cfg = resolveConfigRaw(env)
+  if (!env.P2SDK_HANDOFF) trackTmpDir(cfg.handoff)
+  return cfg
+}
 
 describe('resolveConfig', () => {
   it('applies the documented defaults for an empty env', () => {
@@ -271,9 +281,15 @@ describe('main', () => {
       }
       delete process.env.P2SDK_LLM_API_KEY
       delete process.env.P2SDK_PROVIDER
+      // P5-H1：main() 无参时内部 resolveConfig() 触发 handoff 兜底 mkdtemp（登记簿
+      // 不可见）；显式给一个登记过的 handoff，被测的仍是 API key 校验失败路径
+      const prevHandoff = process.env.P2SDK_HANDOFF
+      process.env.P2SDK_HANDOFF = tmkdir('p2sdk-handoff-')
       const code = await main()
       expect(code).toBe(1)
       expect(errors.join('')).toContain('P2SDK_LLM_API_KEY')
+      if (prevHandoff === undefined) delete process.env.P2SDK_HANDOFF
+      else process.env.P2SDK_HANDOFF = prevHandoff
       for (const [key, value] of Object.entries(previous)) {
         if (value === undefined) delete process.env[key]
         else process.env[key] = value

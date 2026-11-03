@@ -1,0 +1,42 @@
+// P5-51 · shim 入口：在 0.18 renderer bundle 之前定义 window.desktop（扁平桥）与
+// window.coordinatorPort（协议 v1），数据层下接现有 M1/M2 carrier（window.pbots，preload 注入）。
+// 由 build 后注入 index.html 的经典 <script> 加载（shim/vite.config.ts 产 IIFE，
+// scripts/inject-shim.mjs 插桩），上游 frontend/ 树零改动。
+import { createDesktopBridge } from './desktop'
+import { createCoordinatorServer } from './coordinator'
+import { createShimData, type ShimData } from './data'
+
+interface PbotsPreload {
+  api(method: string, args?: unknown): Promise<{ ok: boolean; value?: unknown; error?: { code: string; message: string } }>
+  botsMeta(op: 'get' | { op: 'patch'; mainBotId: string }): Promise<{ ok: boolean; value?: unknown; error?: { code: string; message: string } }>
+}
+
+export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unknown; coordinatorPort?: unknown }): void {
+  if (win.desktop !== undefined || win.coordinatorPort !== undefined) return // 双装保护
+  const pbots = win.pbots
+  if (pbots === undefined) throw new Error('pbots preload bridge missing: shim requires window.pbots (M1/M2/M3)')
+
+  win.desktop = createDesktopBridge(win, { authId: 'pbots-local', platform: 'linux' })
+
+  const data = createShimData({
+    authId: 'pbots-local',
+    api: (method, args) => pbots.api(method, args).catch((error: unknown) => ({ ok: false, error: { code: 'pbots/unavailable', message: String(error) } })),
+    metaApi: (op) => pbots.botsMeta(op).catch((error: unknown) => ({ ok: false, error: { code: 'pbots/unavailable', message: String(error) } })),
+  })
+  const server = createCoordinatorServer(data.deps)
+  data.wire({
+    agents: () => server.emit('agents', data.agentsPayload()),
+    transcript: (agentId) => server.emit('transcript', data.transcriptPayload(agentId)),
+  })
+  win.coordinatorPort = {
+    claim(consumer: { onPort(port: unknown): void }) { return server.claim(consumer as Parameters<typeof server.claim>[0]) },
+  }
+  // E2E 观测面（只读）：审批作答值域断言（D9）+ 诊断 dump
+  ;(win as unknown as { __pbotsShim?: { answers: ShimData['answers']; debugItems(a: string): unknown[] } }).__pbotsShim = {
+    answers: data.answers,
+    debugItems: data.debugItems,
+  }
+  data.start()
+}
+
+installShim(window)

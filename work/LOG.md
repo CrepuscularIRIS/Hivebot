@@ -842,3 +842,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 12:12 用户答复全部落实 → L-AP 主体第一波 4 builder 已派（P5-21/25/27/28，P5-22/23/24 按依赖排后面）；L-UI 任务 HOLD 待路线 v3；2 director 已派（L-UI 修订 + p6-orchestration BRIEF）| 在途 8：H1/H2/4 builder/2 director
 12:15 P5-H2 完成（1f134d5：根因=两遍扫描间并发 rm，单遍 stat+容错修复，5 连跑全绿）→ verifier 抽验派发
 12:18 p6-orchestration BRIEF v1 完成（核心发现：三段式+主 bot 派活=0.18 原版设计；推荐 R2 自建编排）→ G1 双席 + RE-1 派发；Q-018/019/020 已写
+12:20 L-UI v3 重组落地：superseded 7、改范围 5、新增 P5-50~56；P5-12 链已闭环不回退；P5-13 未派即废 | LEARNINGS 补观感根因

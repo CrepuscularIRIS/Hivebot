@@ -350,3 +350,37 @@ R8 局限 4：A13、B7 的「静息态可见」按「正常使用必然出现的
 22. 「阻塞」字段：W1-AP-0 的内容扩为「全入口纯收紧」（wrapper、文件工具凭证常量、移除 `plugin_manager`、拒绝裸升权、子代理同表），仍然**不等 Q-013**；注明在 Q-013 答复前，子代理里的 bash 会被拒绝。
 23. 选项 A 的文字同步为「整表按 v2.1 草案确认（含第 11 行 = ALWAYS）」。
 24. **Q-015 增量**：① 写盘成功后才代答 allowed-once；revoke 的键改为 `{serverName, rawName}`（稳定身份），不用归一化后的 toolName。
+
+## 附：PLAN 重组指令（v3，L-UI；主会话执行，director 不改 PLAN）
+**A. 立即**
+1. 冻结旧 renderer 的视觉任务：不再派新的 ux-proposer / frontend-dev / GU。P5-12、P5-13 正在跑：P5-13 立即停（`chat-header.tsx` 随移植到位），代码不合；P5-12 若已到 verifier 阶段且全绿就合（行为可作为 U6 的对照），否则停；P5-12.f1、P5-11.f1 不再派。
+2. 派 **S0 + R9**（§12.8，可合成一个 reverse-engineer 任务）；S0 失败 → 回 director，出 D-3。
+3. LEARNINGS 末条补上 §12.3 的「规则」一句和根因 3（头像内容从未审计 / 盒模型审计的盲区）。
+
+**B. 作废（status 改 `superseded:v3`，行保留以便追溯）**
+- **P5-14.f1、P5-15.f2、P5-15.f3**：都在修旧 renderer。
+- **P5-16（U3）、P5-17（U4）**：并入新任务 P5-55；R2 的值作为 P5-55 的检查清单，不再按「落地到我们的组件」执行。
+- **P5-13**：0.18 有 `chat-header.tsx`，B13 的品味项随之消解（原版有独立会话头）。
+- **P5-15.f4**：并入 P5-31。
+
+**C. 保留，但改范围**
+- **P5-11、P5-12、P5-14、P5-15（done）**：代码随 P5-54 切换退役；**行为与数值保留**：`bots-search.spec`、折叠 ≤130px、thinking 行、时间分隔（≥900000ms 或跨自然日，0.78.1 bundle 实证）、未读线这几条 e2e，以及 `evidence/P5-15/u2-table.md` 的数值，在 P5-54 中改指向新 renderer（U6、U2′）。未读边界若依赖 `shell/store.ts` 的字段，P5-51 在 shim 里用 `setAgentUnread` / transcript acknowledgement 实现同样的语义。
+- **P5-31 审批卡**：改为「把移植树里的 `permissions/local-tool` 卡适配到 L-AP 语义」。0.18 卡片本身有 always / allow-once / never / deny 四种作答，并带 ceiling 闸（`local-tool/view.tsx:10-11,57-62`）：bash / 文件 / 升权卡的「始终允许」由 shim 下发 `ceiling = ask` 隐藏（**不改上游文件**）；作答仍只发 `allowed-once` / `rejected`，always 走 M1 `alwaysAllow`。去掉旧 ⑥ 中我们手写的卡壳数值项，0.78.1 卡壳差异（r24 等）由 P5-55 统一处理。deps 加 P5-51；其余 blocked 条件不变。
+- **P5-32 设置 pane**：改在移植树的 `agent-info/settings` 与 `permissions/local-tool/view` 上做（授权列表 / 撤销 / 迁移 / 暂停），区域改为覆盖文件 + shim。deps 加 P5-51。
+- **P5-33 提问卡**：0.18 没有提问卡（grep 无结果），仍按 R7 改造上游 dsh 组件，但用移植树的 sand-kit 原语与 token 做外观，挂进移植树的 composer 区。deps 加 P5-51。
+- **P5-41 U5**：基准改为 §12.7 对照台（同 fixture 驱动的原版 0.78.1），deps 改为 P5-53、P5-55、P5-56；不再依赖 Q-014。
+- **P5-43**：① 中「R8 83 行终态」改为「U1′ 差异表终态」；R8 中的 in 项按 v3 处理：A2 / A13 / B7 / B14 若原版自带，记 `等价@移植`；B13 记 `等价@移植`；E5 交 P5-55 核对。
+
+**D. 新增任务（粗估 7 条，owner 与 review 按 PROTOCOL §7.1）**
+| id | 任务 | owner | deps | review | 验收要点 |
+|---|---|---|---|---|---|
+| P5-50 | 移植树入仓：`frontend/src/**` 与被引用的 4 个 `source/` 模块复制到 `app/ui/renderer-grok/`（每个文件头写来源，**不改文件内容**）；renderer 升 React 19 与 tiptap；R9 资产入仓；新 renderer 能 vite build，并在 Electron 里用桩挂载 | frontend-dev | S0、R9 | – | U0 的旅程在我们的 Electron 中复现；与上游逐文件 diff 为 0（覆盖文件除外） |
+| P5-51 | **coordinator shim + desktop 桥**（renderer 侧，下接现有 carrier M1/M2）：§12.2 的约 12 个 RPC + 3 个事件族；dsh 事件 → transcript entry 序列化；其余方法返回空 / 能力关；提供 persona 的 `currentActivity`；审批作答只发 `allowed-once` / `rejected` | builder | P5-50 | M（碰审批作答路径；C2 不变） | 真实 fake-LLM 事件流下每类 entry 渲染，boundary 计数 = 0；shim 发出的审批作答值集合 ⊆ {allowed-once, rejected}；P4 D9 拒绝测试照跑全绿 |
+| P5-52 | 死入口隐藏：能力开关优先，其次覆盖文件 | frontend-dev | P5-51 | – | U4′ |
+| P5-53 | 对照台（§12.7）：fixture、v1 / v3 双协议、截图对、computed-style diff 表、头像抽帧 | builder | S0（可与 P5-50 并行） | – | 同一 fixture 两侧都完成渲染，boundary = 0；输出 U1′ 差异表初版 |
+| P5-54 | **切换**：Electron 加载新 renderer，删除旧 `renderer/{plugins,shell}`；P4 D1–D12 与 P5-11 / P5-12 行为 e2e 改指新 renderer；U2′ 断言迁移 | frontend-dev | P5-51、P5-52 | GU（1 轮） | U6、U2′；对照台第三列（真实 Electron）上线 |
+| P5-55 | 0.18 → 0.78.1 收口：色板数据换成 0.78.1（来源 `gen-tokens.py`）；按 U1′ 差异表逐行处理（R2 清单全部覆盖：侧栏头、条目 54、Connect apps、tool 裸行、titlebar、市场、审批卡壳）；只写覆盖文件 | frontend-dev | P5-53、P5-54 | GU（并入 P5-41） | U1′ |
+| P5-56 | bot 动画验收：persona 状态映射接到 dsh 活动，以及 reduced-motion | frontend-dev | P5-51 | – | U3′ |
+
+派发顺序：S0 / R9 → P5-50 ∥ P5-53 → P5-51 → P5-52 ∥ P5-56 → P5-54 → P5-55 → P5-41。L-AP 的 W1-AP 主体不受影响；P5-31 / P5-32 / P5-33 统一等 P5-51。
+**计数变更**：作废 7 条（P5-13、P5-16、P5-17、P5-14.f1、P5-15.f2、P5-15.f3、P5-15.f4），新增 7 条（P5-50 至 P5-56），改范围 7 条（P5-31、P5-32、P5-33、P5-41、P5-43，以及 P5-11 / P5-12 的行为迁移）。

@@ -5,9 +5,9 @@
 //   重启 → 孤儿 recipe 不产生行、其他 bot 可用（§8-1 失败配方隔离）；
 //   failNext 变体：真实 UI 创建时注入 #4 失败 → 报错可见、不卡「创建中」。
 import { expect, test, type Page } from 'playwright/test'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { launchShell } from '../../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../../support/sdk-runtime.ts'
 import { DEMO_BUNDLE, MARKET_PATCH, tempBundle } from '../../support/connectors.ts'
@@ -30,7 +30,7 @@ async function startConnectorCreate(page: Page): Promise<void> {
 
 test('D10b：#4 屏障（PBOTS_TEST_GATE_4）中重载 renderer → 同一 session 恢复、连接器完整、放行后可用', async () => {
   test.setTimeout(240_000)
-  const rt = await launchSdkRuntime({ patch: PATCH, cwd: mkdtempSync(join(tmpdir(), 'bot-u31-ws-')) })
+  const rt = await launchSdkRuntime({ patch: PATCH, cwd: tmkdir('bot-u31-ws-') })
   await rt.client.call('pluginManager/installBundle', { spec: tempBundle(), options: { enabled: false } })
   const gate = join(rt.home, 'gate4-u31')
   const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff, PBOTS_TEST_GATE_4: gate } })
@@ -72,7 +72,7 @@ test('D10b：#4 屏障（PBOTS_TEST_GATE_4）中重载 renderer → 同一 sessi
 
 test('D7：直调 #4 未装连接器 → !ok 且列表无此 bot；重启孤儿不出行、其他 bot 可用；failNext 真实 UI 报错', async () => {
   test.setTimeout(240_000)
-  const cwd = mkdtempSync(join(tmpdir(), 'bot-u31-ws-'))
+  const cwd = tmkdir('bot-u31-ws-')
   const rt1 = await launchSdkRuntime({ patch: PATCH, cwd })
   const shell1 = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt1.handoff } })
   let orderBefore: string[] = []

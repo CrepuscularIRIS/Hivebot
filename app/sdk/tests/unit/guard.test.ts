@@ -2,9 +2,9 @@
 // 差分在 tests/e2e/guard-fs.test.ts；本文件只测纯函数：config 校验（fail loud）、
 // 决策 13 ①–③ 判定序、决策 7 祖先判定、例外（workspaceRoot 子树 / 工具链只读）、
 // 工具参数提取与 glob pattern 候选。
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { describe, expect, it } from 'vitest'
 import * as plugin from '../../src/policy/guard.mjs'
 
@@ -124,7 +124,7 @@ describe('judgePath（决策 13 ①–④ + 决策 7）', () => {
 
 describe('expandTopEntries + resolveRoots（① 的数据 mask 根顶层条目，除 workspaces）', () => {
   it('展开顶层直接子条目，跳过名为 workspaces 的目录，缺失根跳过', async () => {
-    const base = mkdtempSync(join(tmpdir(), 'bot-p5-02-top-'))
+    const base = tmkdir('bot-p5-02-top-')
     mkdirSync(join(base, 'workspaces'), { recursive: true })
     mkdirSync(join(base, 'sub'), { recursive: true })
     writeFileSync(join(base, 'grants.json'), '{}')
@@ -137,7 +137,7 @@ describe('expandTopEntries + resolveRoots（① 的数据 mask 根顶层条目�
   })
 
   it('resolveRoots：hardRoots ∪ 顶层条目，softRoots = homes ∪ dataMaskRoots', async () => {
-    const base = mkdtempSync(join(tmpdir(), 'bot-p5-02-resolve-'))
+    const base = tmkdir('bot-p5-02-resolve-')
     writeFileSync(join(base, 'topfile'), 'x')
     try {
       const r = plugin.resolveRoots(configRoots({ dataMaskRoots: [base] }))

@@ -3,10 +3,10 @@
 // examples/lib client, and exposes release(gateId): the cross-process
 // barrier channel touches $P2SDK_HOME/gates/<gateId> and opens no port.
 import { spawn, type ChildProcess } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { tmkdir } from './tmp-sweep.ts'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -58,10 +58,10 @@ export function launcherSpawnEnv(): NodeJS.ProcessEnv {
 export async function launchRuntime(opts: LaunchOptions = {}): Promise<Runtime> {
   // P5-01: opts.env 可覆盖 P2SDK_HOME（沙箱用例把 DSH_HOME 放进测试树）；返回值与
   // 子进程 env 必须同源，fake 脚本目录（$DSH_HOME/fake）才找得到。
-  const home = opts.env?.P2SDK_HOME ?? mkdtempSync(join(tmpdir(), 'p2sdk-runtime-'))
+  const home = opts.env?.P2SDK_HOME ?? tmkdir('p2sdk-runtime-')
   // T-01.f3 R1: credentials hand off through a separate random dir that never
   // enters the dsh child environment (start.ts drops P2SDK_HANDOFF there).
-  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
+  const handoff = tmkdir('p2sdk-handoff-')
   const child = spawn(process.execPath, [join(PKG_ROOT, 'scripts', 'start.mjs')], {
     env: {
       ...launcherSpawnEnv(),

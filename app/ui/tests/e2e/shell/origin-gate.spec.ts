@@ -1,8 +1,8 @@
 // ⑦ 来源门控（HIGH-1）(a)-(f) + ⑧ CSP —— 每条对应一个可独立去门控的突变（红绿记录见 work/p4-ui/evidence/U-00/red-green/）。
 import { expect, test } from 'playwright/test'
-import { writeFileSync, mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { launchShell, UI_ROOT } from '../../support/launch.ts'
 
 const PRELOAD = join(UI_ROOT, 'out', 'preload', 'index.cjs')
@@ -93,7 +93,7 @@ test('(d) 同一 preload 载入 data:/file: 页面拿不到 window.pbots', async
   const shell = await launchShell()
   try {
     const mainId = await shell.app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]!.id)
-    const filePage = join(mkdtempSync(join(tmpdir(), 'bot-U-00-page-')), 'x.html')
+    const filePage = join(tmkdir('bot-U-00-page-'), 'x.html')
     writeFileSync(filePage, '<!doctype html><html><body>file page</body></html>')
     for (const target of ['data:text/html,<html><body>d</body></html>', `file://${filePage}`]) {
       const created = shell.app.waitForEvent('window', { timeout: 10_000 })
@@ -189,7 +189,7 @@ test('(f2) dsh 侧 /api 调用计数恒 0（无 spike 桥时通道未接线，�
 })
 
 test('⑧ CSP：响应头带最小 CSP，且内联脚本被拦', async () => {
-  const fixture = join(mkdtempSync(join(tmpdir(), 'bot-U-00-csp-')), '')
+  const fixture = join(tmkdir('bot-U-00-csp-'), '')
   const { writeFileSync: wf, mkdirSync } = await import('node:fs')
   mkdirSync(fixture, { recursive: true })
   wf(join(fixture, 'index.html'), '<!doctype html><html><head></head><body><script>window.__pwned = 1</script><div id=ok>csp-fixture</div></body></html>')

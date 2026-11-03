@@ -5,10 +5,10 @@
 // launcher 逻辑（spawn 参数、ready 行轮询、stop 升级）保持与上游一致，改动只有：去 coverage
 // 分支（playwright 下无 NODE_V8_COVERAGE）、writeScriptCalls 内联（原在 fake/harness.ts）。
 import { spawn, type ChildProcess } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { tmkdir } from './tmp-sweep.ts'
 import { sdkChildEnv, sdkDataDirEnv } from './sdk-env'
 
 export interface SdkRuntime {
@@ -42,7 +42,7 @@ async function dshClient(): Promise<ClientModule> {
 
 /** fake LLM overlay（来源：app/sdk/tests/support/fake/harness.ts overlayEnv 同款）。 */
 export function fakeOverlayPath(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'bot-ui-fake-patch-'))
+  const dir = tmkdir('bot-ui-fake-patch-')
   const pluginUrl = pathToFileURL(join(SDK_ROOT, 'tests', 'support', 'fake', 'plugin.mjs')).href
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
@@ -70,8 +70,8 @@ export function fakeOverlayPath(): string {
 export async function launchSdkRuntime(opts: { patch: string; readyTimeoutMs?: number; cwd?: string; home?: string; dataDir?: string; env?: Record<string, string> } ): Promise<SdkRuntime> {
   // R9（REVIEW-P4终审）：凭证 key 在子进程 env 副本上剔除（sdkChildEnv），不再 delete worker 的
   // process.env —— workers:1 下那是全 spec 共享的，删了会饿死后跑的真模型旅程（顺序依赖失败）。
-  const home = opts.home ?? mkdtempSync(join(tmpdir(), 'p2sdk-runtime-'))
-  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
+  const home = opts.home ?? tmkdir('p2sdk-runtime-')
+  const handoff = tmkdir('p2sdk-handoff-')
   const child = spawn(process.execPath, [join(SDK_ROOT, 'scripts', 'start.mjs')], {
     ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
     env: sdkChildEnv({

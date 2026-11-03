@@ -1,13 +1,13 @@
 // 恢复编排（U-14 语义先内建）：逐个 preset.ensure、30s 超时按失败、allSettled、
 // 失败标 live=false 不写盘、不删被共用的 recipe（CONTRACT §8-1 / D7 / D10c 语义）。
 import { describe, expect, it, vi } from 'vitest'
-import { mkdtempSync, readFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { BOTS_JSON, BotsMetaStore } from '../../../main/m3-meta/store'
 import { RESTORE_ENSURE_TIMEOUT_MS, restoreRecipes, type DshLike } from '../../../main/m3-meta/restore'
 
-const tmpHome = (): string => mkdtempSync(join(tmpdir(), 'bot-p4-U-13-restore-'))
+const tmpHome = (): string => tmkdir('bot-p4-U-13-restore-')
 
 function mockDsh(handlers: Record<string, (args: unknown) => unknown>): DshLike & { calls: { method: string; args: unknown }[] } {
   const calls: { method: string; args: unknown }[] = []

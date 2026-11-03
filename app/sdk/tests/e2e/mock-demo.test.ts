@@ -23,6 +23,7 @@ import {
   type Frame,
 } from '../support/fake/harness.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(import.meta.dirname, '..', '..')
 
@@ -91,9 +92,13 @@ it('startRuntime boots in-process (coverage for src/start.ts runtime path)', asy
 
 it('main returns non-zero when no ready line arrives within the timeout', async () => {
   const home = mkdtempSync(join(tmpdir(), 'p2sdk-slow-'))
+  // P5-H1: 显式传 handoff——省略会触发 src/start.ts:71 生产兜底在测试进程里建
+  // p2sdk-handoff-*（登记簿看不到，成为唯一漏网的 handoff）
+  const handoff = tmkdir('p2sdk-handoff-')
   const code = await main(resolveConfig({
     P2SDK_PROVIDER: 'mock',
     P2SDK_HOME: home,
+    P2SDK_HANDOFF: handoff,
     P2SDK_READY_TIMEOUT_MS: '1',
   }))
   expect(code).toBeGreaterThanOrEqual(1)

@@ -2,9 +2,8 @@
 // U-32 O4（REVIEW-P4终审复审）：Electron env 经 shellChildEnv 副本剥凭证键（原先
 // ...process.env 直 spread，真实 key 进被测 Electron 主/Chromium 子进程）。
 import { _electron, type ElectronApplication, type Page } from 'playwright'
-import { mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import { tmkdir } from './tmp-sweep.ts'
 import { shellChildEnv } from './sdk-env'
 
 export const UI_ROOT = resolve(__dirname, '..', '..')
@@ -24,7 +23,7 @@ export interface ShellOptions {
 }
 
 export function sandboxHome(label: string): string {
-  return mkdtempSync(join(tmpdir(), `bot-${label}-`))
+  return tmkdir(`bot-${label}-`)
 }
 
 export async function launchShell(opts: ShellOptions = {}): Promise<ShellLaunch> {

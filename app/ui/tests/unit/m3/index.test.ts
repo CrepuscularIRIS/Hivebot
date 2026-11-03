@@ -1,13 +1,13 @@
 // registerM3Meta handler：get（live 计算 = 未过滤 #1 含该 id，C:92，不写盘）与
 // patch（只接受 mainBotId 且须在 #9 列表，其余 invalid-args；D10e 队列复用 store）。
 import { describe, expect, it } from 'vitest'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { BOTS_JSON, BotsMetaStore, type Recipe } from '../../../main/m3-meta/store'
 import { registerM3Meta } from '../../../main/m3-meta'
 
-const tmpHome = (): string => mkdtempSync(join(tmpdir(), 'bot-p4-U-13-m3-'))
+const tmpHome = (): string => tmkdir('bot-p4-U-13-m3-')
 
 async function seededStore(dir: string, recipes: Record<string, Recipe> = {}): Promise<BotsMetaStore> {
   const store = new BotsMetaStore(dir)

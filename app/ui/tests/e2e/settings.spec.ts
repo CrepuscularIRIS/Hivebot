@@ -4,9 +4,9 @@
 // ③ D10c1：连接器 bot 有历史 → 删掉临时 HOME 里该 bundle（PLAN U-23 ③ 触发方式）→ 同 home close→launch（runtime + 壳）→
 //   四处失效显示、历史可读、composer 禁发；其他 bot 正常收发；横幅「用此配置新建」预填标出未装连接器。
 import { expect, test, type Page } from 'playwright/test'
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { readFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { DEMO_BUNDLE, MARKET_PATCH, tempBundle } from '../support/connectors.ts'
@@ -31,7 +31,7 @@ const pane = (page: Page) => page.locator('[data-info-pane]')
 
 test('P-D ①：连接器栏走 #4 → info-pane 只读配置 → 改模型回滚/生效 → 用此配置新建预填 → 设主 Bot 置顶', async () => {
   test.setTimeout(180_000)
-  const rt = await launchSdkRuntime({ patch: PATCH(), cwd: mkdtempSync(join(tmpdir(), 'bot-u23-ws-')) })
+  const rt = await launchSdkRuntime({ patch: PATCH(), cwd: tmkdir('bot-u23-ws-') })
   await rt.client.call('pluginManager/installBundle', { spec: tempBundle(), options: { enabled: false } })
   const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })
   try {
@@ -124,7 +124,7 @@ test('P-D ①：连接器栏走 #4 → info-pane 只读配置 → 改模型回�
 
 test('D10c1：删 bundle → close→launch → 四处失效、历史可读、composer 禁发；其他 bot 正常', async () => {
   test.setTimeout(240_000)
-  const cwd = mkdtempSync(join(tmpdir(), 'bot-u23-ws-'))
+  const cwd = tmkdir('bot-u23-ws-')
   const rt1 = await launchSdkRuntime({ patch: PATCH(), cwd })
   await rt1.client.call('pluginManager/installBundle', { spec: tempBundle(), options: { enabled: false } })
   const shell1 = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt1.handoff } })

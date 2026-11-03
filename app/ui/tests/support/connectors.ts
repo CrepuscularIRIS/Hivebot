@@ -7,10 +7,10 @@
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { createServer, type Server } from 'node:http'
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { tmkdir } from './tmp-sweep.ts'
 
 export const SDK_ROOT = join(__dirname, '..', '..', '..', 'sdk')
 export const MARKET_PATCH = join(SDK_ROOT, 'profile', 'patches', 'market.yml')
@@ -66,13 +66,13 @@ export function writeBundle(dir: string, name: string = DEMO_BUNDLE, version = '
 }
 
 export const tempBundle = (name: string = DEMO_BUNDLE): string =>
-  writeBundle(join(mkdtempSync(join(tmpdir(), 'bot-u23-bundle-')), 'pkg'), name)
+  writeBundle(join(tmkdir('bot-u23-bundle-'), 'pkg'), name)
 
 export interface MarketServer { realUrl: string; localUrl: string; registry: string; close(): Promise<void> }
 
 /** loopback：/real/index.json、/local/index.json、/npm/<name>（packument）、/npm/-/<file>.tgz。 */
 export async function serveMarket(): Promise<MarketServer> {
-  const work = mkdtempSync(join(tmpdir(), 'bot-u23-market-'))
+  const work = tmkdir('bot-u23-market-')
   const pkgRoot = join(work, 'tar')
   writeBundle(join(pkgRoot, 'package'), LOCAL_PLUGIN)
   const tgzPath = join(work, 'demo-connector-1.0.0.tgz')

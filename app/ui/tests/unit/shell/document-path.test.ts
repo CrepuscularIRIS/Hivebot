@@ -9,11 +9,10 @@ vi.mock('electron', () => ({
 }))
 
 import { resolveAppPath } from '../../../main/index'
-import { mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
 
-const root = mkdtempSync(join(tmpdir(), 'bot-U-00-doc-'))
+const root = tmkdir('bot-U-00-doc-')
 
 describe('resolveAppPath', () => {
   it('/ 根路径 → index.html', () => {

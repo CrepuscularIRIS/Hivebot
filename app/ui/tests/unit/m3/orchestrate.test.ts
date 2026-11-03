@@ -297,3 +297,36 @@ describe('deriveBots（D10d runtime 恒 dsh；孤儿不产生行）', () => {
     expect(rows[0]).toEqual({ id: 's-1', preset: null, connectors: [], readOnly: false, mainBot: false, runtime: 'dsh', running: false, updatedAt: 0 })
   })
 })
+
+// U-28 R5：failed 集合可清除 —— 启动恢复失败的 presetId，用户修复连接器后以同配置
+// 重新创建（#4 成功）必须清掉失败标记，否则 M3 get 恒 live=false、bot 恒只读（终审 R5）。
+describe('createBotWithConnectors · failed 清除（U-28 R5）', () => {
+  it('#4 成功注册同 presetId → 从 opts.failed 删除；#4 失败 → 不清', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const presetId = presetIdOf('p2-alpha', ['a'])
+    const failed = new Set([presetId])
+
+    // #4 失败：保留失败标记（recipe 落盘为孤儿，§8-1）
+    const failDsh = mockDsh({ 'p2temp/session.createWithConnectors': () => ({ ok: false, error: { code: 'p2temp/connector-unavailable', message: 'not installed', details: {} } }) })
+    const bad = await createBotWithConnectors(failDsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { failed })
+    expect(bad.ok).toBe(false)
+    expect([...failed]).toEqual([presetId])
+
+    // #4 成功：清除
+    const okDsh = mockDsh({ 'p2temp/session.createWithConnectors': () => create4Ok('s-1') })
+    const good = await createBotWithConnectors(okDsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { failed })
+    expect(good).toEqual(create4Ok('s-1'))
+    expect([...failed]).toEqual([])
+  })
+
+  it('未传 failed → 行为不变（成功路径不炸）', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({ 'p2temp/session.createWithConnectors': () => create4Ok('s-1') })
+    const result = await createBotWithConnectors(dsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] })
+    expect(result).toEqual(create4Ok('s-1'))
+  })
+})

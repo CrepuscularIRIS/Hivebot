@@ -118,6 +118,75 @@ describe('patch · 形状（renderer 只写 mainBotId）', () => {
   })
 })
 
+// U-28 R2：rpcRaw 的 fetch/JSON 网络层异常（rpc reject）不得逸出 handler —— renderer 的
+// botsMeta 是裸 await（store.ts loadRoster/refreshMeta/setMainBot），rejection 会卡死 boot
+// （U-22 GU-1 同款根因，M1 路径已有兜底，M3 补齐）。
+describe('get/patch · rpc 抛错（U-28 R2）', () => {
+  it('get 的 agentPresets/list reject → 结构化 pbots/unavailable，handler 不 reject', async () => {
+    const store = await seededStore(tmpHome(), { 'p2temp-live1234': { agentPreset: 'p2-alpha', connectors: ['a'] } })
+    const dsh = mockDsh({
+      'agentPresets/list': () => { throw new TypeError('fetch failed') },
+    })
+    const m3 = registerM3Meta({ dsh: dsh as never, store })
+    await expect(m3.handler({ op: 'get' })).resolves.toEqual({
+      ok: false,
+      error: { code: 'pbots/unavailable', message: 'agentPresets/list threw: TypeError: fetch failed', details: {} },
+    })
+  })
+
+  it('patch 的 session/list reject → 同样结构化 pbots/unavailable，不落盘', async () => {
+    const dir = tmpHome()
+    const store = await seededStore(dir)
+    const dsh = mockDsh({
+      'session/list': () => { throw new Error('socket hang up') },
+      'agentPresets/list': () => roster(['p2-alpha']),
+    })
+    const m3 = registerM3Meta({ dsh: dsh as never, store })
+    await expect(m3.handler({ op: 'patch', mainBotId: 's-1' })).resolves.toEqual({
+      ok: false,
+      error: { code: 'pbots/unavailable', message: 'session/list threw: Error: socket hang up', details: {} },
+    })
+    // 未落盘：空 store 从未 putRecipe，文件不存在
+    expect(() => readFileSync(join(dir, BOTS_JSON), 'utf8')).toThrow()
+  })
+})
+
+// U-28 R6：restore 未 settle 时 get 不得给出误导性 live=false（boot 竞态：renderer
+// loadRoster 会缓存首个 meta，restore 成功后也不刷新）。返回结构化 pending 错误让
+// renderer 的 500ms 重试循环消化，settle 后自然拿到正确视图；不挂起（不卡 renderer）。
+describe('get · restore 未 settle（U-28 R6）', () => {
+  it('restoreSettled()=false → pbots/restore-pending，不查 #1（dsh 计数 === 0）', async () => {
+    const store = await seededStore(tmpHome(), { 'p2temp-live1234': { agentPreset: 'p2-alpha', connectors: ['a'] } })
+    const dsh = mockDsh({ 'agentPresets/list': () => roster(['p2temp-live1234']) })
+    const m3 = registerM3Meta({ dsh: dsh as never, store, restoreSettled: () => false })
+    await expect(m3.handler({ op: 'get' })).resolves.toEqual({
+      ok: false,
+      error: { code: 'pbots/restore-pending', message: 'preset restore in progress', details: {} },
+    })
+    expect(dsh.calls.length).toBe(0)
+  })
+
+  it('settle 后同句柄返回正常视图（重试链路终点）；未注入回调时行为不变', async () => {
+    const store = await seededStore(tmpHome(), { 'p2temp-live1234': { agentPreset: 'p2-alpha', connectors: ['a'] } })
+    const dsh = mockDsh({ 'agentPresets/list': () => roster(['p2-alpha', 'p2temp-live1234']) })
+    let settled = false
+    const m3 = registerM3Meta({ dsh: dsh as never, store, restoreSettled: () => settled })
+    expect((await m3.handler({ op: 'get' })).ok).toBe(false)
+    settled = true
+    await expect(m3.handler({ op: 'get' })).resolves.toEqual({
+      ok: true,
+      value: {
+        version: 1,
+        mainBotId: null,
+        recipes: { 'p2temp-live1234': { agentPreset: 'p2-alpha', connectors: ['a'], live: true } },
+      },
+    })
+    // 缺省（未注入）→ 不 pending（向后兼容：dsh 未配置等场景）
+    const bare = registerM3Meta({ dsh: dsh as never, store: await seededStore(tmpHome()) })
+    expect((await bare.handler({ op: 'get' })).ok).toBe(true)
+  })
+})
+
 describe('patch · wire 壳（W1 R4：session/list 参数名是 _request）', () => {
   it('用 {_request:{}} 壳：fake gateway 只认 _request 形状，不再 arguments-invalid', async () => {
     const dir = tmpHome()

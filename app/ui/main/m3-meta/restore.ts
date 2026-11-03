@@ -49,7 +49,9 @@ export async function restoreRecipes(
   return settled.map((outcome, index) => {
     const presetId = entries[index][0]
     const ok = outcome.status === 'fulfilled'
-    if (!ok) opts.failed?.add(presetId)
+    // U-28 R5：failed 是可清除的 —— 补跑（重连恢复，R3/R4）成功时删旧标记，live 翻回。
+    if (ok) opts.failed?.delete(presetId)
+    else opts.failed?.add(presetId)
     return { presetId, ok }
   })
 }

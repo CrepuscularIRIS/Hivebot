@@ -170,7 +170,11 @@ describe('T-01.f3 credential isolation + snapshot barrier', () => {
       void drained
 
       const all = JSON.stringify(frames)
-      expect(all, 'both reads fail at the tool layer (FS_NOT_FOUND appears twice)').toMatch(/not found(.|\n)*not found/)
+      // P5-02：$DSH_HOME 下的 env-derive 读现在先被文件工具 guard 拒（比
+      // 「文件不存在」更强的主动防御）；工作区外的 ../launch-token 仍由上游
+      // 报 FS_NOT_FOUND。两次 read 都失败，token 与 handoff 路径不进 transcript。
+      expect(all, 'relative read fails at the tool layer (FS_NOT_FOUND)').toMatch(/not found/)
+      expect(all, 'env-derive read is denied by the P5-02 guard').toMatch(/p2sdk-fs-guard/)
       expect(all).not.toContain(token)
       expect(all).not.toContain(rt2.handoff)
     } finally {

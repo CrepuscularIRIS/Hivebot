@@ -5,7 +5,7 @@
 // 决策 4：解释器 /usr/bin/python3 -I；PLAN P5-01 ⑤ 的两格在 sandbox-hardened.test.ts
 // 里再经真实 launcher + fake bash 各证一遍。
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -92,11 +92,13 @@ describe('挂载序（dry-run，PLAN P5-01 挂载顺序逐段）', () => {
     expect(toolAt).toBeLessThan(argv.indexOf(ws))
     // 策略根在工作区之后
     expect(argv.indexOf(policy)).toBeGreaterThan(argv.indexOf(ws))
-    // 再遮垫底：never(工具链内文件)用 /dev/null 覆盖
+    // 再遮垫底：never(工具链内文件)用空普通文件覆盖（f2：--ro-bind-data）
     const remaskAt = argv.indexOf(neverUnderTool)
     expect(remaskAt).toBeGreaterThan(argv.indexOf(policy))
-    expect(argv[remaskAt - 1]).toBe('/dev/null')
-    expect(argv[remaskAt - 2]).toBe('--ro-bind')
+    expect(argv[remaskAt - 4]).toBe('--perms')
+    expect(argv[remaskAt - 3]).toBe('0644')
+    expect(argv[remaskAt - 2]).toBe('--ro-bind-data')
+    expect(argv[remaskAt - 1]).toMatch(/^\d+$/)
     // 末尾 -- 与命令
     expect(argv.at(-1)).toBe('true')
     expect(argv.includes('--')).toBe(true)
@@ -141,6 +143,26 @@ describe('⑧④ 前置：HOME 祖先拒绝（决策 13 ④）与再遮闭合', 
 })
 
 describe('真实 exec 冒烟（不经 dry-run）', () => {
+  it('f2：文件根遮蔽 = 空普通文件——cat rc=0 且空、类型普通文件、宿主内容不变', () => {
+    // 秘密放 /var/tmp（ro-bind 自宿主、不被 --tmpfs /tmp 吸收）——/tmp 下的文件根由
+    // 既有 tmpfs 遮蔽（hardened ④），测不到 f2 原语本身
+    const secDir = mkdtempSync('/var/tmp/bot-p5-01f2-sec-')
+    const secret = join(secDir, 'token')
+    writeFileSync(secret, 'TOPSECRET')
+    const ws = mkdtempSync(join(tmpdir(), 'bot-p5-01f2-ws-'))
+    const res = runWrapper(['--home', '/tmp/p5-01f2-h', '--mask', secret, ...profileArgs(ws), '--',
+      '/bin/sh', '-c', `o=$(cat '${secret}' 2>/dev/null); echo "rc=$? bytes=\${#o}"; test -f '${secret}'; echo "type_f=$?"; test -s '${secret}'; echo "size_s=$?"`])
+    expect(res.status, `stderr: ${res.stderr}`).toBe(0)
+    // 钉死不变量（P5-01.f2）：rc 与内容双断言 + 类型断言。
+    // 旧原语 --ro-bind /dev/null 在 bwrap 0.9.0 用户 bind 强制 MS_NODEV 下
+    // cat 必 EACCES rc=1（跨版本漂移），空普通文件的 open 只走 DAC，rc 恒 0。
+    expect(res.stdout).toContain('rc=0 bytes=0')
+    expect(res.stdout).toContain('type_f=0')
+    expect(res.stdout).toContain('size_s=1')
+    expect(readFileSync(secret, 'utf8')).toBe('TOPSECRET')
+    for (const d of [secDir, ws]) rmSync(d, { recursive: true, force: true })
+  })
+
   it('遮蔽目录内哨兵不可见、命令退出码透传', () => {
     const secret = mkdtempSync(join(tmpdir(), 'p5-01-secret-'))
     writeFileSync(join(secret, 'sentinel'), 'x')

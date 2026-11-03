@@ -381,7 +381,7 @@ interface Category {
   png: string
   dir: string
   grep?: { pattern: string; path: string }
-  /** bash cat 探针期望（加固）：目录根遮蔽 → '1:empty'；文件根 /dev/null 覆盖 → '0:empty'；socket → null（只测存在性） */
+  /** bash cat 探针期望（加固）：目录根遮蔽 → '1:empty'；文件根空普通文件覆盖（f2）→ '0:empty'；socket → null（只测存在性） */
   bashCat: string | null
   probe: 'e' | 's' | 'S'
   /** stock 差分读类：'content' 读到标记 / 'absent' 只断言无 guard 前缀（真实系统态） */
@@ -522,7 +522,7 @@ it('① 根会话：11 类凭证 × 7 文件入口逐格 deny（isError + guard 
 const probeId = (name: string): string => name.replaceAll('-', '_')
 
 /** cat 探针：rc + 内容标志（绝不回显内容本身）。目录根遮蔽 → 1:empty；ppp 被
- *  /dev/null 覆盖 → 0:empty（内容为空即不可见，P5-01 ② 的 test -s 同理）。 */
+ *  空普通文件覆盖（f2 --ro-bind-data）→ 0:empty（内容为空即不可见，P5-01 ② 的 test -s 同理）。 */
 function bashCatScript(cats: Category[]): string {
   const catLines = cats.filter((c) => c.bashCat !== null).map((c) => `probe_cat ${probeId(c.name)} '${c.textFile}'`)
   const existLines = cats.map((c) => `probe_exist ${probeId(c.name)}_${c.probe} test -${c.probe} '${c.textFile}'`)
@@ -549,9 +549,9 @@ it('① 根会话 bash：cat 逐目标 rc 写死、存在性探针全 1、find 0
   for (const cat of cats) {
     if (cat.bashCat !== null) {
       if (cat.name === 'ppp') {
-        // P5-01.f2：文件根 --ro-bind /dev/null 的 cat rc 跨启动漂移（0=覆盖生效 /
-        // 1=未生效+宿主 root:0600 → EACCES），两种都无内容；不变量断言 + 记 .f
-        expect(r[`cat_ppp`], `ppp cat 无内容（rc 漂移见 P5-01.f2）：${r.cat_ppp ?? '<缺失>'}`).toMatch(/^[01]:empty$/)
+        // P5-01.f2 已钉死：文件根遮蔽 = --ro-bind-data 空普通文件 0644，cat 恒 rc=0 且空
+        // （旧原语 --ro-bind /dev/null 在 bwrap 用户 bind 强制 MS_NODEV 下 rc=1，跨版本漂移）
+        expect(r[`cat_ppp`], `ppp cat rc=0 且空（f2 已钉死）：${r.cat_ppp ?? '<缺失>'}`).toMatch(/^0:empty$/)
       } else {
         expectProbe(r, `cat_${probeId(cat.name)}`, cat.bashCat)
       }

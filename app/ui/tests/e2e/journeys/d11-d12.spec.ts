@@ -1,24 +1,17 @@
 // U-31 全旅程收尾（PLAN U-31 ②③）：D12① 生产 build 下 renderer 网络日志里 pbots-app:// 以外请求数
 // === 0（含 127.0.0.1，任何 http(s)/ws(s) 即 FAIL）；window + DOM 全文搜 launch token 命中 0；
 // D12② DOM 无 Sign in/account/computer/SSH/billing；D11/D9 DOM 复扫（无改 preset/连接器入口、无 never 类）；
-// D12③ 截图存证：4 页（会话/市场/设置/新建对话框）× 亮/暗共 8 张 → work/p4-ui/evidence/U-31/。
+// D12③ 截图存证：4 页（会话/市场/设置/新建对话框）× 亮/暗共 8 张 → gitignored app/ui/test-output/U-31/（U-33）。
 import { expect, test } from 'playwright/test'
-import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync } from 'node:fs'
+import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
 import { launchShell } from '../../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../../support/sdk-runtime.ts'
 import { MARKET_SOURCE_PATCH, serveMarket } from '../../support/connectors.ts'
-import { PRESETS_PATCH, createViaDialog, devState, send, textCall } from '../../support/ui.ts'
+import { PRESETS_PATCH, createViaDialog, devState, evidenceOut, send, textCall } from '../../support/ui.ts'
 
-/** 截图与证据一律写主仓 work/（LEARNINGS 2026-11-02：worktree 内的 work/ 随 remove 丢失）。 */
-const EVIDENCE = ((): string => {
-  const common = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: __dirname, encoding: 'utf8' }).trim()
-  const dir = join(dirname(common), 'work', 'p4-ui', 'evidence', 'U-31')
-  mkdirSync(dir, { recursive: true })
-  return dir
-})()
+const EVIDENCE = evidenceOut('U-31')
 
 test('D12①/② + D11/D9 DOM + 8 张截图：零外网请求、token 零泄漏、禁区词零命中、4 页亮暗存证', async () => {
   test.setTimeout(240_000)

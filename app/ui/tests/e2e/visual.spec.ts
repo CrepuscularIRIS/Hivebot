@@ -1,22 +1,15 @@
 // U-27 视觉打磨 E2E（work/p4-ui/RE-visual-audit.md 差异清单）：组件规格抽查 = 审计后的 0.18 值；
-// 条件显示（Working 小标 / 已决审批 outcome 单行 / roster 断线态）；四页亮/暗截图存主仓 work/p4-ui/evidence/U-27/。
+// 条件显示（Working 小标 / 已决审批 outcome 单行 / roster 断线态）；四页亮/暗截图存 gitignored app/ui/test-output/U-27/（U-33）。
 import { expect, test, type Locator, type Page } from 'playwright/test'
-import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync } from 'node:fs'
+import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
 import { launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { MARKET_SOURCE_PATCH, serveMarket } from '../support/connectors.ts'
-import { PRESETS_PATCH, bashCall, createViaDialog, devState, launchProduct, send, textCall } from '../support/ui.ts'
+import { PRESETS_PATCH, bashCall, createViaDialog, devState, evidenceOut, launchProduct, send, textCall } from '../support/ui.ts'
 
-/** 证据写主仓（LEARNINGS 2026-11-02：worktree 内 work/ 随 remove 丢失）。 */
-const OUT = ((): string => {
-  const common = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: __dirname, encoding: 'utf8' }).trim()
-  const dir = join(dirname(common), 'work', 'p4-ui', 'evidence', 'U-27')
-  mkdirSync(dir, { recursive: true })
-  return dir
-})()
+const OUT = evidenceOut('U-27')
 
 const css = (loc: Locator, props: string[]): Promise<Record<string, string>> =>
   loc.evaluate((el, ps) => Object.fromEntries(ps.map((p) => [p, getComputedStyle(el).getPropertyValue(p)])), props)

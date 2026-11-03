@@ -45,3 +45,7 @@
 2026-11-02 verifier 把 VERIFY-U-21.md 写在 worktree 的 work/ 下，worktree remove 时随树丢失（GU 席无法独立核对）→ 派发提示词必须写明「报告一律写主仓 /home/lingxufeng/bot/work/...，绝不写 worktree 内的 work/」；主会话合并前应确认 VERIFY 文件已在主仓出现，再 worktree remove。
 
 2026-11-02 U-23 与 U-25 各自验证绿，合并后名字接缝断（wrapper 名 ≠ entry.name，market.spec main 上 2 红）——GU 前没人跑过合并后全量 → 两分支改动有交叠域（哪怕文件级零交集）时，合并后立即 main 全量回归是派 GU 前的硬闸门，不靠评审席读代码代跑。
+
+2026-11-02 主会话自查发现 PLAN status 列失修（U-00~U-26 全部 done 但显示 todo）+ 3 个 stale worktree + 2 个问题标题未更新 → 根因：builder 自行合并（如 U-15）或 merge 后只记 LOG 没同步 PLAN → 每次合并 commit 后立即 sed 更新 PLAN status 列并 git add work/ 一起提交；worktree remove 是合并的第五步，不能省。
+
+2026-11-02 用户指令「每完成一个 change 都回测一下」→ 每次合并进 main 后，立即在主仓跑该变更所在包的全量测试（app/ui → build+单测+e2e；app/sdk → pnpm test），绿了才算合并完成。跳过这步的合并是不完整的——U-23×U-25 接缝就是这么漏掉的（两分支各自绿，合并后红）。

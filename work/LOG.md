@@ -566,3 +566,16 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-02 18.5x 主仓 U-26 合并后回归全绿（196 单测 + e2e 18 文件 45 用例 14.3m）✓ | W2 修复链合并一致性确认
 2026-11-02 18.5x tick | W2 全收口（主仓 196+45 绿）| Q-010 open | 视觉打磨等用户答复（登录与否）| **派 U-31**（全旅程 E2E + D10b/D7 补写 + D12 三件套 + 真模型冒烟）——独立于视觉问题 | ready 未派 = 0 | 在途：U-31
 2026-11-02 19.0x 用户指示：视觉打磨用 REA + 0.18 重构仓（含条件显示规则）| **派 RE visual-audit**（0.18 源码逐组件提取四页视觉规格 + 条件显示规则 + 对照当前实现出修复粒度差异清单；0.78.1 已改项以 RE-ui-shell 为准）| 差异清单回来后派 frontend-dev 打磨循环 | 在途：U-31、RE-visual-audit
+2026-11-02 19.10 自查修正 | ①PLAN status：p4-ui U-00~U-24 补记 done、U-31 标 running、U-25/U-26 记账注 | ②stale 清理：T-15（内容已被 T-16 覆盖）、U-15 worktree+分支删除 | ③Q-008/Q-009 标题改 answered | LEARNINGS 记根因与规则 | 未发现其他遗漏：review-coverage 链完整（L1-L4）、QUESTIONS 仅 Q-010 正常 open、U-31/RE-visual-audit 在途、cron 正常
+2026-11-02 19.07 tick | U-31 活跃（journeys/ 测试目录在产出——全旅程 spec 编写中）；RE-visual-audit 在途（0.18 源码逐组件读，重活正常）| 无 stale | ready 未派 = 0
+2026-11-02 19.2x 回报 | **RE-visual-audit 完成**：62 条修复粒度差异（5 组）+ 24 条条件显示规则，每条带 0.18 锚点、[78]/[78=] 标注 12 项 0.78.1 覆盖（不按 0.18 修）| 重点：B1 行距 8→22、B6 tool 行边框壳、B8 审批卡 560/r10、A4/A6 条目 58/34、B10 composer 9px/r16 | 条件显示：缺 roster 四态/Working 小标/composer mic；已决审批卡应收成单行 | 方向确认：0.78.1 反转气泡正确（当前已实现）| **派 frontend-dev 打磨轮**（U-27：62 条中按优先级修）
+2026-11-02 19.17 tick | U-31 报告骨架已落主仓（verdict 待填——全量跑完再定）；U-27 起步 | 无 stale | 在途 2
+2026-11-02 19.18 tick | 同上
+2026-11-02 19.18 tick | U-27 活跃（1 文件在改）；U-31 全量跑中
+2026-11-02 19.19 tick | U-31 evidence 目录未建（报告骨架已写——可能在跑 e2e 采集证据）；U-27 实现中
+2026-11-02 19.19 tick | U-31 在写 journeys spec（d10b-d7 / d11-d12 / d1-real-model 三个文件）——按修订版补写 D10b/D7/真模型 | U-27 实现中 | 无 stale
+2026-11-02 19.20 tick | U-27 活跃（4 文件）；U-31 spec 编写/跑测中 | 无 stale
+2026-11-02 19.20 tick | U-27 推进（9 文件在改——P0/P1 批次落地中）
+2026-11-02 19.20 tick | 同上
+2026-11-02 19.21 tick | U-27 推进（11 文件）；U-31 跑测中
+2026-11-02 19.3x 回报 | **verifier U-31 = PASS**（D1-D12 全过：真模型流式→定稿、审批→市场→工具→重启恢复、D10b gate-4 重载屏障 E2E 新补、D7 直调孤儿隔离、D12 零外网+token 零命中+8 亮暗截图；主仓 196 单测 ✓）| 1 MEDIUM flaky 记档（NewBotDialog 竞态——可派修复）| **合并 U-31 journeys → 82f6a8e**（仅 450 行测试，产品零改动）| PLAN U-31 → done | **P4 BRIEF 全部 DONE 条款有 VERIFY 证据** | 剩：U-27 视觉打磨在途 → 整分支 L（P4-BASE..HEAD）→ P4 收官 | Q-010 open

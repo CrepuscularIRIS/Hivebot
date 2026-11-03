@@ -1,0 +1,36 @@
+# P5-28 独立验收命令记录（verifier GLM 5.3，2026-11-03）
+
+分支 feat/P5-28 @ /tmp/bot-wt/P5-28，HEAD=eb6e73a0db58f7fd5173fc655cb4ff506a0b1d96（基 c6aba1b）。
+全部命令 HOME=/tmp/bot-P5-28-vfy（临时根，不写真实 ~）。worktree 验收后 git diff HEAD --name-only 为空（现场未污染）。
+
+## 1. build
+$ cd /tmp/bot-wt/P5-28/app/ui && pnpm build
+→ ✓ built in 1.18s（renderer index-CpGYXOZK.js 1,247.56 kB）
+
+## 2. vitest 全量
+$ pnpm test
+→ Test Files 28 passed (28) / Tests 271 passed (271)，Duration 3.87s   ← 与申报 271 一致
+
+## 3. 全量 e2e（run-e2e.sh 内部即 xvfb-run -a；两遍）
+$ pnpm test:e2e   # 第一遍，完整日志见 P5-28-e2e-full-run1.log
+→ 61 passed + 1 failed（6.9m）；failed = visual.spec.ts:55，Error: ENOENT stat '/tmp/p2sdk-handoff-wpk6PS'
+  （app/sdk/src/policy/never-roots.mjs:75 TOCTOU，P5-02 既有代码，P5-28 未触 app/sdk；
+   同 spec 隔离复跑 ✓ 8.1s；另 visual-hairline.spec:58 P5-14.f1 为 test.fail 期望红占位，计入 passed）
+$ pnpm test:e2e   # 第二遍，见 P5-28-e2e-full-run2.log
+→ 62 passed (7.1m)   ← 与申报 62 一致
+
+## 4. 本任务 spec 单跑（evidence ①②③）
+$ xvfb-run -a --server-args="-screen 0 1600x1000x24" pnpm exec playwright test tests/e2e/questions-answer.spec.ts
+→ ✓ 1 passed (3.9s)（renderer 生产路径两批 + reload 重连场景一条用例覆盖 ①②③）
+
+## 5. 红基线（摘 m1 提问分支 → 恢复 P5-07 占位拒绝）
+- python3 把 m1-api/index.ts 中 questionIds 分支整段替换回 P5-07 的
+  `invalid('user-questions events cannot be answered ... (structured answers arrive in P5-28)')`
+- pnpm build 后单跑 questions-answer.spec.ts：
+  → ✘ 1 failed，Error: expect(received).toBe(expected)（① 合法作答 good.ok===true 断言红）
+- cp 备份还原 m1-api/index.ts，git diff HEAD --name-only 空，rebuild 后单跑：
+  → ✓ 1 passed (3.7s)
+
+## 6. 旧调用点兼容（string 形态）
+grep testAnswerEvent：m2-deadline.spec.ts:175、m2-port.spec.ts:305/354 仍传 'allowed-once'（联合类型扩展向后兼容）；
+两遍全量中 m2-deadline ②③/②宽限、m2-port ①/④ 各用例均 ✓（run2 log 第 18-23 条）。

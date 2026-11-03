@@ -854,3 +854,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 12:43 p6 D-2：②③④ 一致（a/a/b）；⑤ 分歧→Q-021（暂定 A 收窄版）；3 条 HIGH 并入契约（#3+#6 顺序、删选项b、安全语义集）| 补派 S-1/S-2 scout
 12:46 S-1 回报：superagent 上游维护判定=边缘（6 个月 1 commit、无 release、issues 关、README 自述研究原型、devDeps 锁 0.2.1-alpha.2 与当前不匹配、R1 可维护性 2/5）——R2 自建推荐进一步坐实，Q-018 答复时可参考
 12:52 S0+R9 完成（0.18 前端本机可建可跑 U0 全过；R9 18 资产同 sha 平替+persona=代码内绘 SVG；P5-51 实底 35+13 已录）→ P5-50/P5-53 解锁并派 | 在途 10
+13:01 sdk 三跑定位=H3 负载 flake（第三跑 252 全绿）；P5-28 验收 PASS → 合并 5f316c0（verifier 报的 TOCTOU 系其旧基点，main 已由 H2 修掉），ui 回归后台 | P6-01 完成（c43dcaa 33 例）报告代录
+13:01 P5-27 done；S-2 补证写进 Q-021（(h) 全链实证，A 前提满足）；P6-01 verifier 已派 | done 22/33（p5）

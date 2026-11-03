@@ -201,4 +201,5 @@
 - slug：p6-orchestration ｜ 类型：取舍（D 投票分歧）｜ 阻塞：P6-10/11 的通道实现（契约文本可先行）｜ 提出：2026-11-03
 - 背景（panels/D2-p6-r1.md）：Opus 席投 a 收窄版——SDK 新增自有端点、main 常驻订阅、rpc 回应答；仅 main 可用、绑 Peer、无订阅者立即失败。理由：设计可逆、B 的安全语义全部并入。Sol 席投 d 暂缓——现有 M1（renderer→main→SDK）/M2（受限 mux 流）都不能证明 SDK 能调 main，先让 S-2(h) 实证一条请求完整往返再冻结契约。两席一致的安全语义（无论选谁都生效）：仅 main+绑 Peer+不进白名单、落盘成功才返回、请求作废≠回滚、禁自动重试、四错误码。
 - 选项：A（推荐，暂定执行中）：按收窄版定契约，S-2(h) 实证后回核（否定则回 D 重议）｜ B：等 S-2(h) 回报再定
+- 补证（主会话 2026-11-03）：S-2(h) 已实证——SDK 工具→自定义 stream→main 角色客户端→真实 session/create→respond RPC→工具返回 sessionId 全链跑通（reuse/s2-dsh-cross-session.md，11 断言过）；(f) 旧会话动态获工具=条件成立。A 的证据前提已满足，仍留你最终确认。
 - 答复：

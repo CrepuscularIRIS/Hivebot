@@ -1,0 +1,24 @@
+{
+  "agentNames": [
+    "Main Bot",
+    "Research Bot",
+    "Ops Bot"
+  ],
+  "personaStates": [
+    "idle",
+    "thinking",
+    "working",
+    "idle"
+  ],
+  "boundaryCount": 0,
+  "hasUserMsg": true,
+  "hasThinking": true,
+  "hasToolBash": true,
+  "hasToolRead": true,
+  "hasAssistant": true,
+  "hasCodeBlock": true,
+  "composer": true,
+  "bodyLuma": 252,
+  "missing": [],
+  "errors": []
+}

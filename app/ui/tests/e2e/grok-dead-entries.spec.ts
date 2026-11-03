@@ -5,10 +5,10 @@
 //    （persona 动画子树除外），要么 shim 收到 RPC；且不得触发 shim 无 handler 的 RPC。死入口清单必须为空。
 // 前置：pnpm build（main）+ cd renderer-grok && pnpm build（shim 与 overrides 注入）。
 import { expect, test, type Page } from 'playwright/test'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { launchShell } from '../support/launch.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { bashCall, textCall } from '../support/ui.ts'
 
@@ -103,7 +103,7 @@ async function reset(page: Page): Promise<void> {
 test('U4′：死入口隐藏清单逐条生效 + 主视图遍历零死入口', async () => {
   test.setTimeout(900_000)
   mkdirSync(EVIDENCE, { recursive: true })
-  const ws = mkdtempSync(join(tmpdir(), 'bot-p552-ws-'))
+  const ws = tmkdir('bot-p552-ws-') // P5-H1：登记，进程退出清扫
   const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}`, cwd: ws })
   const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff, PBOTS_APP_ROOT: GROK_ROOT } })
   const page = shell.page

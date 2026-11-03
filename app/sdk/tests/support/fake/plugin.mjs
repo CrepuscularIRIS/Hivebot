@@ -102,8 +102,25 @@ class FakeAdapter {
     const home = fakeHome()
     const key = options.sessionId === undefined ? 'anon' : String(options.sessionId)
     const callsPath = join(home, 'fake', 'scripts', `${key}.json`)
-    const calls = JSON.parse(readFileSync(callsPath, 'utf8')).calls
+    // P5-05: delegated children (subagent/subagent_fork/workflow) get runtime-
+    // assigned session ids the test cannot know upfront; a per-session script
+    // miss falls back to scripts/default.json when it exists (sessions whose
+    // ids ARE known always script themselves, so the fallback only ever serves
+    // children). Without a default the original error is preserved.
+    const readCalls = (p) => JSON.parse(readFileSync(p, 'utf8')).calls
     const cursor = this.cursors.get(key) ?? 0
+    let calls
+    try {
+      calls = readCalls(callsPath)
+    } catch (e) {
+      if (e?.code !== 'ENOENT') throw e
+      try {
+        calls = readCalls(join(home, 'fake', 'scripts', 'default.json'))
+      } catch (e2) {
+        if (e2?.code !== 'ENOENT') throw e2
+        throw new Error(`p2sdk-fake-llm: no scripted call #${cursor} for session ${key}`)
+      }
+    }
     this.cursors.set(key, cursor + 1)
     const call = calls[cursor]
     if (call === undefined) throw new Error(`p2sdk-fake-llm: no scripted call #${cursor} for session ${key}`)

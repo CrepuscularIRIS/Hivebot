@@ -131,37 +131,62 @@ it('treats absent/null arguments as ordinary (asks)', () => {
   expect(listener({ name: 'bash', arguments: null }, next)).toMatchObject({ kind: 'ask' })
 })
 
-// T-12.f1 (增量 L 复审 R2): the session's effective approval policy folds as
-// overrideOf(session) ?? config.policy ?? 'ask' — the same fold as upstream
-// user-approval effectivePolicy (packages/interaction/user-approval/src/
-// index.ts:270-272) and permission-presets derive (permission-presets/src/
-// index.ts:348-361). An explicit 'never' (danger-full-access preset switch, or
-// the base bundle's DSH_PERMISSION_MODE=danger-full-access config) must let
-// bash through: user-approval rejects every ask deterministically under never
-// (index.ts:301), so an ask here is a guaranteed deny with nobody prompted —
-// the R2 deadlock. Every other value (the pinned 'ask' of the default preset
-// included) keeps asking, so the default preset's behavior is unchanged.
-describe('T-12.f1: explicit approval=never releases the ask', () => {
+// P5-05 (G1-r2 #1, PLAN 决策 10): the T-12.f1 never-release is INTENTIONALLY
+// INVERTED. The session's effective approval policy still folds as
+// overrideOf(session) ?? config.policy ?? 'ask' (upstream effectivePolicy,
+// user-approval index.ts:270-272), but a 'never' verdict no longer releases
+// bash: user-approval rejects every ask deterministically under never
+// (index.ts:301), and the two reachable never populations have no answerer —
+// delegated children are pinned approval 'never' by upstream child-agent.ts
+// captureDelegatedPolicyOverrides (so the T-12.f1 release let subagent bash
+// run with zero interaction: the A-H1 side door), and a deployment-side
+// DSH_PERMISSION_MODE=danger-full-access never is exactly the mode where
+// write/edit escape fs-sandbox too. Every case this plugin would have asked
+// now denies immediately with a fixed reason; strictly-wider escalation still
+// delegates (tool-bash's own gate asks, and never rejects that deterministically
+// — a deny, never a release). Every other policy value keeps asking.
+describe('P5-05 (G1-r2 #1): explicit approval=never denies instead of asking or releasing', () => {
   const agent = { session: {} }
+  const neverDeny = { kind: 'deny', reason: 'approval unavailable in this session' }
 
-  it('delegates an ordinary bash call when the session override is never', () => {
+  it('denies an ordinary bash call when the session override is never (T-12.f1 release inverted, G1-r2 #1)', () => {
     const listener = registeredListener('danger-full-access', approvalSvc('never'))
     expect(listener({ name: 'bash', agent, arguments: { command: 'ls', description: 'x' } }, next))
-      .toBe(nextResult)
+      .toEqual(neverDeny)
   })
 
-  it('delegates even with sandbox_permissions set (an ask under never is a guaranteed deny)', () => {
+  it('denies with sandbox_permissions set to a repeated/narrower mode under never (G1-r2 #1)', () => {
     const listener = registeredListener('danger-full-access', approvalSvc('never'))
     expect(listener({
       name: 'bash', agent,
       arguments: { command: 'ls', description: 'x', sandbox_permissions: 'danger-full-access', justification: 'repeat probe' },
-    }, next)).toBe(nextResult)
+    }, next)).toEqual(neverDeny)
+    expect(listener({
+      name: 'bash', agent,
+      arguments: { command: 'ls', description: 'x', sandbox_permissions: 'read-only', justification: 'narrower probe' },
+    }, next)).toEqual(neverDeny)
   })
 
-  it('delegates when only the deployment config policy is never (no session override yet)', () => {
+  it('denies when only the deployment config policy is never (no session override yet; G1-r2 #1)', () => {
     const listener = registeredListener('danger-full-access', approvalSvc(undefined, 'never'))
     expect(listener({ name: 'bash', agent, arguments: { command: 'ls', description: 'x' } }, next))
-      .toBe(nextResult)
+      .toEqual(neverDeny)
+  })
+
+  it('denies under never even when the effective mode cannot be resolved (an ask has no answerer)', () => {
+    const listener = registeredListener(undefined, approvalSvc('never'))
+    expect(listener({
+      name: 'bash', agent,
+      arguments: { command: 'ls', description: 'x', sandbox_permissions: 'danger-full-access', justification: 'unresolved mode probe' },
+    }, next)).toEqual(neverDeny)
+  })
+
+  it('still delegates strictly-wider escalation under never (tool-bash own gate asks; never rejects it)', () => {
+    const listener = registeredListener('workspace-write', approvalSvc('never'))
+    expect(listener({
+      name: 'bash', agent,
+      arguments: { command: 'ls', description: 'x', sandbox_permissions: 'danger-full-access', justification: 'wider probe' },
+    }, next)).toBe(nextResult)
   })
 
   it('still asks when the override is the default preset pinned ask', () => {

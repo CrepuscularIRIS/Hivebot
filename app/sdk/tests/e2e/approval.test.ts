@@ -392,25 +392,24 @@ it('D8: a bash call whose sandbox_permissions repeats the effective mode still a
   }
 })
 
-// T-12.f1 (增量 L 复审 R2): a session running under an EXPLICIT
-// danger-full-access preset (approval=never) must not deadlock on ordinary
-// bash. The base bundle switches the whole composition with one env
-// (dsh-base cordis.patch.yml: sandbox-policy mode ← DSH_PERMISSION_MODE, and
-// the approval row policy=never when it is 'danger-full-access');
-// permission-presets then pins every fresh session to that preset
-// (approval/policy: never session override). Before the fix the default
-// shell-ask row returned {kind:'ask'} for every ordinary bash call and
-// user-approval resolved it 'rejected' BEFORE dispatching any prompt
-// (user-approval index.ts:301), so bash failed deterministically with nobody
-// asked — the R2 deadlock. The fix reads the session's effective approval
-// policy (override ?? config, same fold as upstream effectivePolicy) and
-// releases only on exact 'never'.
-it('R2: an explicit danger-full-access preset (approval=never) runs ordinary bash without asking', async () => {
+// P5-05（G2-r1 A-M 反转，PLAN 决策 10）: T-12.f1 的「never 放行」被有意反
+// 转——不再是死锁，而是立即拒绝。base bundle 用一个 env 切换整个组合
+//（dsh-base cordis.patch.yml: sandbox-policy mode ← DSH_PERMISSION_MODE，
+// approval 行在该值为 'danger-full-access' 时 policy=never）；permission-presets
+// 把每个新 session 钉到该 preset（approval/policy: never session override）。
+// never 会话没有应答者（user-approval 在派发任何 answerer 之前就确定性
+// rejected，index.ts:301），且该模式下 write / edit 不受 fs-sandbox 约束，
+// 所以普通 bash 必须立即拒绝：canary 不存在、0 条 approval/request、
+// tool/result 的原因落在枚举集内——shell-ask 的 'approval unavailable in
+// this session'（本分支），或 P5-04 guard 的 'danger-full-access session
+// mode is not supported'（guard 插在 shell-ask 之前，合入后先拦；两分支
+// 区域互斥，先合谁此用例都绿）。
+it('R2 inverted (G2-r1 A-M, P5-05): danger-full-access (approval=never) denies ordinary bash immediately, no deadlock', async () => {
   const rt = await launchApprovalRuntime({ DSH_PERMISSION_MODE: 'danger-full-access' })
   const feed = await openEvents(rt)
   try {
     // Prove the composition really is danger-full-access + never before
-    // asserting the release: default preset catalog and the session's pinned
+    // asserting the denial: default preset catalog and the session's pinned
     // durable events must both show it (else the green would be vacuous).
     const catalog = (await rt.client.call('permissionPresets/catalog', {})) as { defaultPreset: string }
     expect(catalog.defaultPreset, 'the deployment default preset switched').toBe('danger-full-access')
@@ -427,11 +426,20 @@ it('R2: an explicit danger-full-access preset (approval=never) runs ordinary bas
 
     await sendPrompt(rt.client, s1, 'dfa 摸 canary')
     await waitForTurnEnds(stream.frames, 1)
-    expect(existsSync(canary), 'ordinary bash ran under the explicit never preset').toBe(true)
+    expect(existsSync(canary), 'ordinary bash was denied under never (T-12.f1 release inverted)').toBe(false)
     expect(
       feed.frames.some((f) => f.type === 'waterfall' && f.event === 'approval/request' && f.agentId === s1),
-      'no approval request was dispatched: the release came from the policy reading never',
+      'no approval request was dispatched: never has no answerer, the denial is local',
     ).toBe(false)
+    // The deny reason must name who refused (v2.1 enum set: shell-ask here, or
+    // the P5-04 guard that sits before shell-ask once that branch merges).
+    const results = stream.frames.filter((f) => f.type === 'event' && f.event?.type === 'tool/result')
+    expect(results.length, 'the denied call produced a tool/result event').toBeGreaterThanOrEqual(1)
+    const reasons = ['approval unavailable in this session', 'danger-full-access session mode is not supported']
+    expect(
+      results.some((f) => reasons.some((r) => JSON.stringify(f).includes(r))),
+      `tool/result reason is one of: ${reasons.join(' | ')}`,
+    ).toBe(true)
     stream.stop()
   } finally {
     feed.close()

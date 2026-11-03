@@ -204,3 +204,4 @@ status：ready = 现在可派；todo = 只差本 PLAN 内的前序任务；block
 | P5-15.f3 | B6 tool 行裸行化（高 28、r8、hover 7%、chevron right/down、preview 13px 非等宽） | frontend-dev | shell/app.css + session/Conversation.tsx | P5-16 | todo | GU | R2 值（推翻 0.18 描边卡） | visual-session 断言亮暗 | |
 | P5-15.f4 | B8 审批卡 r24 药丸按钮 | frontend-dev | shell/app.css（审批卡样式） | P5-31 | todo | GU | R2 值 | 视觉断言并入 P5-31 GU | |
 | P5-14.f1 | E5 接线：app.css 41/55/338/361 的 1px 换 width token（134 归 P5-16）；删 test.fail 标记 | frontend-dev | shell/app.css | P5-11, P5-12 | todo | GU | 同 P5-14 | DPR2 下四处 0.5px 亮暗断言 + 全量绿 | |
+| P5-11.f1 | GU 修复：折叠态市场钮 aria-label+title + e2e 定位；visual-sidebar 断言改不变量（collapse 钮中心 y 相等、折叠条目 54 居中） | frontend-dev | renderer/plugins/bots/{Sidebar.tsx,sidebar.css} + tests/e2e/visual-sidebar.spec.ts | P5-11 | ready | –（GU 已裁，修完 verifier 抽验即可） | – | 78 宽 getByRole('button',{name:'市场'}) 命中；不变量断言绿；全量不回归 | |

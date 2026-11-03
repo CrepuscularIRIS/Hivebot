@@ -808,3 +808,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 02:41 P5-12 builder 完成（97d8cb9：阈值实证落地/思考行/未读线/markRead；app.css 越区 1 行已追认=滚动 bug 修复）→ verifier 待派
 05:3x P5-15 回归全绿闭环（230+54）；P5-14 验收 PASS → 合并 965ab00（token+DPR2 spec，worktree 已清），回归后台跑中
 05:5x P5-05 验收 PASS（侧门退基线 3 红实证）→ 合并 8d473f0 + sdk 153 全绿；P5-11 验收 PASS → 合并 0c556fa，回归后台跑 | P5-11 GU 双席已派（只 1 轮）| done 8/33
+02:54 GU-P5-11 = REVISE（1 HIGH 无障碍名，两席同点）→ P5-11.f1 已立行待派 | A 席不变量断言建议一并纳入

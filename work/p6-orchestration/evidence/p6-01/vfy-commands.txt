@@ -16,3 +16,22 @@ app/ui: Done in 345ms / app/sdk: Done in 350ms (pnpm install --frozen-lockfile, 
    Duration  127ms (tests 40%, import 33%, transform 17%, worker 10%, environment 1%)
 
 == [4] pnpm -C app/ui exec vitest run (全量) ==
+ Test Files  29 passed (29)
+      Tests  278 passed (278)
+   Duration  3.95s (tests 80%, transform 11%, import 8%, worker 1%)
+
+== [5] pnpm build ==
+../out/renderer/assets/index-CpGYXOZK.js               1,247.56 kB
+✓ built in 1.57s
+
+== [6] tsc -p . 输出与基点 5b4b16e 逐字节一致（detached worktree 对照，TS2688 @types/node 为存量） ==
+TSC-IDENTICAL
+
+== [7] 红基线：探针副本 sed 把 (d) 条件改为 false（sha256 37e74d96 副本）跑 builder 同字节测试 ==
+× (d) 全程无文本 completed → 恰 1 条 fold「没有文字结果」notice
+× (f) reasoning→工具→completed 无尾正文（无中间正文走 (d)）
+Test Files 1 failed (1) · Tests 2 failed | 31 passed (33)
+恢复后（sha256 复核 37e74d961127998e7046662c28bfc44fd4330d14eaaa27bb73e83bbd99feefb2）：Tests 33 passed (33)
+
+== [8] 验收员独立探针（probe 副本 sha256 与 worktree 相同） ==
+vfy-invariant: 6 passed (6) · vfy-badpath: 3 passed (3)

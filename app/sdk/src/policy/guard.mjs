@@ -36,6 +36,20 @@ const REQUIRED_ROOT_KEYS = ['hardRoots', 'dataMaskRoots', 'homes', 'toolchainDir
  */
 const NEVER_TOOLS = new Set(['plugin_manager'])
 
+/**
+ * P5-04（0d，G#5 前半，PLAN 决策 10）：拒绝裸升权。受控升权路径落地前，
+ * 任何工具带 `sandbox_permissions === 'danger-full-access'` 的调用批准后都是
+ * 无沙箱执行：bash 侧 mode===dfa 直接 super.execute 不进 wrapper（来源:
+ * deepseek-harness@ce7073d packages/shell/bash-sandbox/src/index.ts:92-100），
+ * dfa 是 WIDER_MODES 一切模式的升权终点（packages/sandbox/sandbox/src/
+ * escalation.ts:30-31）；write/edit 同参数名（packages/fs/tool-fs/src/
+ * sandbox.ts:22,90），该模式下不受 fs-sandbox 约束。受控路径出题在 §5 D-1 /
+ * P5-22，落地前在这里 fail closed。原因字面串 v2.1 定死（P5-05 ② / P5-06 按
+ * 此断言）。
+ */
+const DFA = 'danger-full-access'
+const DFA_DENY = `p2sdk-fs-guard: escalation path not available (sandbox_permissions "${DFA}" is denied until the controlled escalation path lands; the call does not run)`
+
 /** resolveRoots 的产物：决策 13 判定序直接消费的三张表。 */
 /** @returns {{hardRoots: string[], softRoots: string[], toolchainDirs: string[], policyRoots: string[]}} */
 
@@ -192,6 +206,12 @@ export function apply(ctx, config) {
   ctx.on('tools/pre-execute', async (exec, next) => {
     if (NEVER_TOOLS.has(exec.name)) {
       return { kind: 'deny', reason: `p2sdk-fs-guard: tool "${exec.name}" is not available (plugin management is disabled by policy; overrides cannot re-enable it)` }
+    }
+    // P5-04：裸升权一律拒（NEVER_TOOLS 之后、路径判定之前；对任何工具，含
+    // 不在 known 表里的 bash）。不带该参数的调用行为不变（④ 一致性格）。
+    const escalationArgs = exec.arguments
+    if (escalationArgs !== null && typeof escalationArgs === 'object' && escalationArgs.sandbox_permissions === DFA) {
+      return { kind: 'deny', reason: DFA_DENY }
     }
     const known = new Set(['read', 'read_image', 'write', 'edit', 'grep', 'glob', 'present'])
     if (!known.has(exec.name)) return next()

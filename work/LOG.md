@@ -779,3 +779,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 00:44 W0 回报：R7 ask-user=第二档（事件在链路要补，最小闭环 1-2 天）；附带发现 ledger 把 waterfall 全当审批、deadline 会误答问题事件——记入 PLAN 输入
 00:44 G1-r1 = REVISE（两席一致，7 HIGH 进必须回应清单，panels/G1-r1.md）→ 交 director 改 BRIEF v2
 00:45 W0 回报：R8 残余表完成（闭集 83 行：19 fixed + 24 等价 + 6 open-in + 10 waived，U1 闭集就绪）| G1-r1 REVISE → director 已派改 BRIEF v2（7 HIGH 逐条回应，含 runnerCommand 加固前置、档位表 3/5 行改逐次 ASK）
+00:51 R5 回报：bwrap 写隔离好/读+网放行（原语可行，runnerCommand 可接网络隔离+路径遮蔽）、Landlock 回退共享 /tmp 不等价、DSH_HOME 泄漏向量 | 安全事故处置：探针 token 被 git add work/ 带入 → d9f8659+6e2bdc6 清除 27 文件 + gitignore + LEARNINGS（均死 token/mock，无真实 key，仓未 push）| R4 回报：32 工具表、MCP 过 pre-execute 但不问且 hint 不暴露、cwd 省略回退 runtime 启动 cwd

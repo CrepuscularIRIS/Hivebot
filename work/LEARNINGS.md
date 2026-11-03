@@ -51,3 +51,5 @@
 2026-11-02 用户指令「每完成一个 change 都回测一下」→ 每次合并进 main 后，立即在主仓跑该变更所在包的全量测试（app/ui → build+单测+e2e；app/sdk → pnpm test），绿了才算合并完成。跳过这步的合并是不完整的——U-23×U-25 接缝就是这么漏掉的（两分支各自绿，合并后红）。
 
 2026-11-02 R9 修凭证清理时只改了直接目标（sdk-env.ts 给 SDK 子进程的 env 副本），没查同链路其他注入点——launch.ts:33 仍 `...process.env` 把真实凭证 spread 进被测 Electron，L-6 定为 O4（踩 §4「凭证不进容器」字面）→ 修「环境注入」类问题先 grep 所有 env 构造点（`...process.env` / `env:`）统一口径，再动其中一处；单点修复对 env 这种横向铺开的面天然不完整。
+
+2026-11-03 R5 探针跑着的时候主会话 `git add work/` 把 evidence 里的 handoff/launch-token 与 runtime/.credentials.yaml 带进了 commit（均为死 token/mock grant、纯本地仓未 push，已 d9f8659 清除+gitignore）→ agent 在写 evidence 的窗口期，主会话整目录 add 会捞进运行时产物 → ①`git add work/` 前必看 `git status --short` 有无 evidence 下的 handoff/runtime/lock；②.gitignore 已加 work/*/evidence/**/handoff、runtime、*.lock，新探针任务派发提示词写明「evidence 只放报告+脚本+frames，运行时目录用后即删」；③若未来加 remote，先历史清理（LEARNINGS 顶部记录此事故）。

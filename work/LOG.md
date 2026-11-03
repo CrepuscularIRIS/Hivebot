@@ -792,3 +792,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 05:2x G2-r2 两席均 REVISE → 有条件通过；5 条去重清单（P5-04/05 双原因、工具链再遮、loopback 网关探针、MASK 缺省布局、wrapper 缺失格前缀）转 PLAN v2.1
 05:4x R4b 回报：打断实测 4.5-6.3ms 全树退出（TERM→KILL 宽限 3000ms）、session/cancel 可续会话、无单轮工具数硬上限——P5-27 解除 R4b 依赖（5000ms 阈值）；REUSE.md R4b 行已补
 02:1x PLAN v2.1 定稿（G1/G2 全闭环）→ 首批 12 agent 派出：builder P5-01/05/07、ux-proposer 席 A/C ×3 任务（P5-11/12/13）、frontend-dev P5-14/15、D-1 前置 scout（slirp/pasta 免 sudo）；R4b 已回（P5-27 解锁）；ready 未派 = 0（其余 blocked 等 Q/D/R3）
+02:11 提案进度：P5-11 两席齐（A 自落盘 83 行 / C 代录）→ frontend-dev 已派定稿；P5-12/P5-13 席 C 已代录，等席 A
+02:5x P5-13 席 A 提案落盘（84 行，反二选一：单行 52px + identity 结构，附三方案 GU 对比表）；两处超区域改动（sand-tokens titlebar token、window.ts）待追认——sand-tokens.css 与在途 P5-14 重叠，P5-13 实现排 P5-14 合并后

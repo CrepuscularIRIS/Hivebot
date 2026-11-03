@@ -10,5 +10,11 @@ Third-rung copy (CLAUDE.md §3) of `github.com/b-nnett/grok-bot-0.18-reconstruct
 - Overlay files (ours, replacing upstream behaviour) go outside `frontend/` and `source/` and are never listed in `SOURCES.tsv`. There are none yet.
 - `assets/runtime/` holds the 18 `rendererRuntimeAssetUrl` assets (R9, byte-identical to the 0.18 manifest). `pnpm build` copies them next to the emitted chunks.
 - `harness/` is the S0 stub mounted in our Electron: `pnpm build && pnpm mount [outDir]` (Xvfb, light and dark, asserting).
+- `shim/` (P5-51, ours) is the real data layer replacing the S0 stub: `window.desktop` flat bridge + coordinator protocol v1 server
+  backed by the M1/M2 carrier (`window.pbots`). `pnpm build` also emits `shim.iife.js` and injects it into the built
+  `index.html` as a classic script (runs before the deferred module bundle); `pnpm build:upstream` skips that step.
+  Transcript entries are serialized via P6-01 `renderer/fold/turn-fold` (imported across packages, unchanged).
+  Approval answers only ever send `allowed-once` / `rejected`; `localToolPermission.ceiling()` reports `"ask"` so the
+  upstream store disables "Always allow".
 
 Dependencies are separate from the old renderer (React 19, every @tiptap/* package pinned exactly at 3.14.0, no wildcard override).

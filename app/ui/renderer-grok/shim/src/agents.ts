@@ -43,22 +43,24 @@ export function toAgentRecord(input: AgentInput): Record<string, unknown> {
   }
 }
 
-/** web 类工具名 → {tool:'WebFetch'}（persona searching）；其余非 bash → {tool:name}（working）。 */
-const activityOfRunningTool = (name: string): { verb: string } | { tool: string } => {
-  if (name === 'bash' || name === 'shell') return { verb: 'running-commands' }
-  if (name === 'web_fetch' || name === 'webFetch' || name === 'web_search' || name === 'webSearch' || name.startsWith('browser_')) return { tool: 'WebFetch' }
-  return { tool: name }
+/** P5-56 · dsh 工具名（R4 名单）→ 0.78.1 原版工具名（source/host/sand-activity.ts deriveToolCallActivity）。
+ * 上游 activityState 只对 WebFetch/WebSearch/browser_*→searching、Task→orbit、SendToAgent→sending 特判，
+ * 其余（Shell/Read/write/edit/glob/grep/…）一律 working——与原版 Read→working 一致，表外名原样透传即可。 */
+const ORIGINAL_TOOL: Record<string, string> = {
+  bash: 'Shell', shell: 'Shell', read: 'Read', read_image: 'Read',
+  web_fetch: 'WebFetch', web_search: 'WebSearch',
+  subagent: 'Task', subagent_fork: 'Task', workflow: 'Task',
+  send_message: 'SendToAgent',
 }
 
-/** 回合进行中的活动推导：最后一个 running 工具 → 工具态；否则 thinking（正文/推理中）。 */
+/** 回合进行中的活动推导：最近一个仍 running 的工具 → 原版 {kind:'tool',tool}；否则 thinking（正文/推理中）。
+ * 待决审批不在这里表达：toAgentRecord.awaitingUserResponse 非空时上游 persona 直接 idle（原版 mct 闸门）。 */
 export function activityOf(view: SessionView): unknown {
   if (!view.running) return null
   for (let i = view.items.length - 1; i >= 0; i -= 1) {
     const item = view.items[i]!
-    if (item.kind === 'tool') {
-      if (item.status === 'running') return activityOfRunningTool(item.name)
-      return { kind: 'thinking' } // 工具都已收尾：正文/推理阶段
-    }
+    if (item.kind === 'user') break // 只看本回合：前回合被打断而未收尾的 running 工具不串进来
+    if (item.kind === 'tool' && item.status === 'running') return { kind: 'tool', tool: ORIGINAL_TOOL[item.name] ?? item.name }
   }
   return { kind: 'thinking' }
 }

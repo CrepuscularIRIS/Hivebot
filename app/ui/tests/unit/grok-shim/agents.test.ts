@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest'
 import { initView } from '../../../renderer/plugins/session/reduce'
 import { activityOf, toAgentRecord } from '../../../renderer-grok/shim/src/agents'
+import { personaStateFromAgent } from '../../../renderer-grok/frontend/src/recovered/features/conversation/workspace/agent-avatar'
 
 const rec = (v: unknown): Record<string, unknown> => (typeof v === 'object' && v !== null ? v as Record<string, unknown> : {})
 
@@ -39,13 +40,41 @@ describe('activityOf · view → currentActivity（persona 状态映射）', () 
     expect(activityOf(thinking)).toEqual({ kind: 'thinking' })
   })
 
-  it('bash 运行中 → running-commands（persona working）；web_fetch → WebFetch（searching）', () => {
+  // P5-56：dsh 工具名 → 0.78.1 原版 activity（sand-activity.ts deriveToolCallActivity 的 {kind:'tool',tool}）
+  // → 上游 agent-avatar personaStateFromAgent 的 persona 态。全表对照 R4 dsh 工具名单。
+  const running = (name: string): ReturnType<typeof initView> => {
     const v = initView('s')
     v.running = true
-    v.items = [{ kind: 'tool', id: 'tool-c1', callId: 'c1', name: 'bash', args: '{}', status: 'running', result: null, awaiting: false, decision: null }]
-    expect(activityOf(v)).toEqual({ verb: 'running-commands' })
-    v.items = [{ kind: 'tool', id: 'tool-c2', callId: 'c2', name: 'web_fetch', args: '{}', status: 'running', result: null, awaiting: false, decision: null }]
-    expect(activityOf(v)).toEqual({ tool: 'WebFetch' })
+    v.items = [{ kind: 'tool', id: `tool-${name}`, callId: name, name, args: '{}', status: 'running', result: null, awaiting: false, decision: null }]
+    return v
+  }
+  it.each([
+    ['bash', 'Shell', 'working'], ['read', 'Read', 'working'], ['read_image', 'Read', 'working'],
+    ['write', 'write', 'working'], ['edit', 'edit', 'working'], ['glob', 'glob', 'working'], ['grep', 'grep', 'working'],
+    ['web_fetch', 'WebFetch', 'searching'], ['web_search', 'WebSearch', 'searching'],
+    ['subagent', 'Task', 'orbit'], ['subagent_fork', 'Task', 'orbit'], ['workflow', 'Task', 'orbit'],
+    ['send_message', 'SendToAgent', 'sending'], ['todo_write', 'todo_write', 'working'],
+  ])('%s 运行中 → tool=%s（persona %s）', (name, tool, state) => {
+    const activity = activityOf(running(name))
+    expect(activity).toEqual({ kind: 'tool', tool })
+    expect(personaStateFromAgent({ currentActivity: activity, isRunning: true, awaitingUserResponse: null })).toBe(state)
+  })
+
+  it('并行工具：最后一个已 done、前一个仍 running → 取仍在跑的那个', () => {
+    const v = running('web_fetch')
+    v.items = [...v.items, { kind: 'tool', id: 'tool-b', callId: 'b', name: 'bash', args: '{}', status: 'done', result: 'x', awaiting: false, decision: null }]
+    expect(activityOf(v)).toEqual({ kind: 'tool', tool: 'WebFetch' })
+  })
+
+  it('前回合遗留的 running 工具（被打断未收尾）不串进本回合 → thinking', () => {
+    const v = running('bash')
+    v.items = [...v.items, { kind: 'user', id: 'u2', text: '下一句' }]
+    expect(activityOf(v)).toEqual({ kind: 'thinking' })
+  })
+
+  it('待决审批：awaitingUserResponse 压过活动 → idle；回合结束 → idle', () => {
+    expect(personaStateFromAgent({ currentActivity: activityOf(running('bash')), isRunning: true, awaitingUserResponse: { reason: 'local-tool-permission' } })).toBe('idle')
+    expect(personaStateFromAgent({ currentActivity: activityOf(initView('s')), isRunning: false, awaitingUserResponse: null })).toBe('idle')
   })
 
   it('工具都已 done → 回到 thinking（仍有正文要写）', () => {

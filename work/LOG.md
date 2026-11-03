@@ -832,3 +832,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 06:38 P5-03 验收 PASS（防线独立性实证）→ 合并 d6a2859；回归首跑 2 红复跑 227 全绿（第 2 次首跑红，flaky 观察中）| P5-04 已派 + P5-H1 清理任务立行 | done 15/33
 07:02 P5-04 builder 完成（e5291aa：dfa 判定 +20 行，①-④ 全 PASS 红基线扎实，231 绿）→ verifier 派发；④⑤ 两格转 P5-04.f1
 07:21 P5-04 验收 PASS → 合并 d436ba1；全量确认 231 绿（policyRoots flaky 身份已抓=并发态，立 P5-H2）| P5-04.f1 已派 | done 16/33
+08:29 P5-04.f1 完成（a21cc2c：④⑤ 补格 + 发现 insert 顺序不可靠→prepend 修复；236 绿）→ verifier 派发；P5-06 依赖本分支先合 | LEARNINGS：prepend 不赌行序

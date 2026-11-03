@@ -32,3 +32,9 @@ export function shellChildEnv(home: string, extra: Record<string, string> = {}):
     PBOTS_DATA_DIR: join(home, 'data'),
   }, extra)
 }
+
+/** P5-01 决策 15：launchSdkRuntime 的可选 dataDir 参数 → SDK 子进程 env 的
+ * PBOTS_DATA_DIR（SDK launcher 读同名变量派生沙箱 mask 根；缺省不传，两侧同落缺省布局）。 */
+export function sdkDataDirEnv(dataDir: string | undefined): Record<string, string> {
+  return dataDir === undefined ? {} : { PBOTS_DATA_DIR: dataDir }
+}

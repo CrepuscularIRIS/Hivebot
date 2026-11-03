@@ -23,9 +23,10 @@
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { closeSync, fstatSync, linkSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync, writeSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { tmpdir, userInfo } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { computeRoots } from './policy/never-roots.mjs'
 
 export const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -43,6 +44,14 @@ export interface StartConfig {
   port: number
   extraPatches: string[]
   readyTimeoutMs: number
+  /** Launcher $HOME — the mask list source for the sandbox wrapper (P5-01 决策 4). */
+  envHome: string | undefined
+  /** Mask roots derived from PBOTS_DATA_DIR, or the default userData layout when unset (P5-01 决策 15). */
+  dataDirs: string[]
+  /** True when PBOTS_DATA_DIR was set (main() emits the 1-line WARN otherwise). */
+  dataDirExplicit: boolean
+  /** Extra mask roots from P2SDK_SANDBOX_MASK (launcher-only, decision 15). */
+  extraMaskRoots: string[]
 }
 
 export function resolveConfig(env: NodeJS.ProcessEnv = process.env): StartConfig {
@@ -63,6 +72,17 @@ export function resolveConfig(env: NodeJS.ProcessEnv = process.env): StartConfig
     port: Number(env.P2SDK_PORT ?? 0),
     extraPatches: (env.P2SDK_PATCH ?? '').split(':').filter(Boolean),
     readyTimeoutMs: Number(env.P2SDK_READY_TIMEOUT_MS ?? 60_000),
+    envHome: env.HOME || undefined,
+    // P5-01 决策 15: the SDK launcher reads the SAME PBOTS_DATA_DIR the UI main
+    // uses (main/index.ts), so both sides converge on one data root without any
+    // env handoff. Unset → the default userData layout ($HOME/.config/pbots-ui
+    // and <passwd home>/.config/pbots-ui — app/ui package name `pbots-ui`, no
+    // setPath/productName) plus exactly one WARN line, not a failure.
+    dataDirs: env.PBOTS_DATA_DIR
+      ? [env.PBOTS_DATA_DIR]
+      : [...new Set([env.HOME, userInfo().homedir].filter(Boolean).map((h) => join(h, '.config', 'pbots-ui')))],
+    dataDirExplicit: Boolean(env.PBOTS_DATA_DIR),
+    extraMaskRoots: (env.P2SDK_SANDBOX_MASK ?? '').split(':').filter(Boolean),
   }
 }
 
@@ -73,6 +93,13 @@ export function validateStart(cfg: StartConfig): string | null {
   }
   for (const p of cfg.extraPatches) {
     if (!isAbsolute(p)) return `extra patch path must be absolute (got "${p}"); set P2SDK_PATCH to absolute paths`
+  }
+  // P5-01 决策 15: same absolute-path rule as P2SDK_PATCH (start.ts:75).
+  for (const d of cfg.dataDirs) {
+    if (!isAbsolute(d)) return `PBOTS_DATA_DIR must be an absolute path (got "${d}")`
+  }
+  for (const m of cfg.extraMaskRoots) {
+    if (!isAbsolute(m)) return `P2SDK_SANDBOX_MASK must be absolute colon-separated paths (got "${m}")`
   }
   return null
 }
@@ -118,8 +145,14 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
     const keep = name === 'PATH' || name === 'HOME' || name.startsWith('P2SDK_') || name.startsWith('DSH_')
     // P2SDK_HANDOFF and P2SDK_TEST_V8_COVERAGE are consumed by the launcher
     // (credential dir / T-11 coverage dir) and never passed on to the sandbox;
-    // P2SDK_HOME is dropped too (T-12 R1 — see above).
-    if (keep && name !== 'P2SDK_HANDOFF' && name !== 'P2SDK_TEST_V8_COVERAGE' && name !== 'P2SDK_HOME') child[name] = value
+    // P2SDK_HOME is dropped too (T-12 R1 — see above); PBOTS_DATA_DIR and
+    // P2SDK_SANDBOX_MASK are launcher-only (P5-01 决策 15: mask roots never
+    // enter the model-side env — bash must not learn the data layout).
+    if (
+      keep &&
+      name !== 'P2SDK_HANDOFF' && name !== 'P2SDK_TEST_V8_COVERAGE' && name !== 'P2SDK_HOME' &&
+      name !== 'PBOTS_DATA_DIR' && name !== 'P2SDK_SANDBOX_MASK'
+    ) child[name] = value
   }
   child.DSH_HOME = cfg.home
   child.P2SDK_PROVIDER = cfg.provider
@@ -138,6 +171,41 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
 }
 
 const fileUrl = (p: string): string => `file://${p}`
+
+/** One single-quoted YAML scalar (' doubled — paths from the local fs). */
+const yamlScalar = (s: string): string => `'${s.replaceAll("'", "''")}'`
+
+/**
+ * P5-01 决策 4: the `id: sandbox` row pointing the dsh sandbox provider at
+ * app/sdk/sandbox/bwrap-wrap.py. The wrapper receives the mask/mount-back lists
+ * as argv (all runtime values from computeRoots — one list, two consumers: the
+ * wrapper here and the guard rows P5-02 adds). runnerFailureSignatures makes
+ * every `bwrap: `-prefixed wrapper error a classified runner failure.
+ */
+function sandboxRow(cfg: StartConfig): string {
+  const roots = computeRoots({
+    envHome: cfg.envHome,
+    home: cfg.home,
+    handoff: cfg.handoff,
+    dataDirs: cfg.dataDirs,
+    extraMaskRoots: cfg.extraMaskRoots,
+    pkgRoot: PKG_ROOT,
+  })
+  const argv = [
+    '/usr/bin/python3', '-I', join(PKG_ROOT, 'sandbox', 'bwrap-wrap.py'),
+    ...roots.homes.flatMap((p) => ['--home', p]),
+    ...roots.maskRoots.flatMap((p) => ['--mask', p]),
+    ...roots.neverRoots.flatMap((p) => ['--never', p]),
+    ...roots.toolchainDirs.flatMap((p) => ['--tool', p]),
+    ...roots.policyRoots.flatMap((p) => ['--policy', p]),
+  ]
+  return `\
+- id: sandbox
+  config:
+    runnerCommand: [${argv.map(yamlScalar).join(', ')}]
+    runnerFailureSignatures: ['bwrap: ']
+`
+}
 
 /**
  * Generated overlay applied after profile/patches/p2sdk.yml: inserted rows need
@@ -171,6 +239,7 @@ export function writeRuntimePatch(cfg: StartConfig): string {
       config:
         dir: '${cfg.handoff}'
 `)
+  rows.push(sandboxRow(cfg))
   writeFileSync(path, rows.join(''))
   return path
 }
@@ -577,6 +646,11 @@ export async function main(cfg: StartConfig = resolveConfig()): Promise<number> 
   if (err) {
     process.stderr.write(`p2sdk: ${err}\n`)
     return 1
+  }
+  // P5-01 决策 15: exactly one WARN line when PBOTS_DATA_DIR is unset — the
+  // default userData layout is assumed, boot continues (NOT fail-closed).
+  if (!cfg.dataDirExplicit) {
+    process.stderr.write(`WARN p2sdk: PBOTS_DATA_DIR unset, assuming ${cfg.dataDirs.join(':')}\n`)
   }
   mkdirSync(cfg.home, { recursive: true })
   const hold = acquireHomeLockDetailed(cfg.home)

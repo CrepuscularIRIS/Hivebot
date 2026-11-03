@@ -1,5 +1,5 @@
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync } from 'node:fs'
+import { tmpdir, userInfo } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
@@ -250,5 +250,72 @@ describe('main', () => {
     } finally {
       process.stderr.write = original
     }
+  })
+})
+
+// --- P5-01（决策 15）：数据根与追加遮蔽根的启动器侧派生 ---
+
+describe('resolveConfig · PBOTS_DATA_DIR / P2SDK_SANDBOX_MASK (P5-01)', () => {
+  it('未设 PBOTS_DATA_DIR：缺省 $HOME/.config/pbots-ui + passwd home 同路径（去重）', () => {
+    const home = '/tmp/p5-01-fake-home'
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', HOME: home })
+    expect(cfg.dataDirs).toEqual([join(home, '.config', 'pbots-ui'), join(userInfo().homedir, '.config', 'pbots-ui')].filter((v, i, a) => a.indexOf(v) === i))
+    expect(cfg.dataDirExplicit).toBe(false)
+  })
+
+  it('设了 PBOTS_DATA_DIR：单一数据根，标记 explicit', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', HOME: '/tmp/h', PBOTS_DATA_DIR: '/var/data/bots' })
+    expect(cfg.dataDirs).toEqual(['/var/data/bots'])
+    expect(cfg.dataDirExplicit).toBe(true)
+  })
+
+  it('P2SDK_SANDBOX_MASK 冒号分隔解析为追加根', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_SANDBOX_MASK: '/a:/b' })
+    expect(cfg.extraMaskRoots).toEqual(['/a', '/b'])
+  })
+
+  it('envHome 进 cfg（wrapper 遮蔽 $HOME 的来源）', () => {
+    expect(resolveConfig({ P2SDK_PROVIDER: 'mock', HOME: '/tmp/h5' }).envHome).toBe('/tmp/h5')
+  })
+})
+
+describe('validateStart · 相对路径拒绝 (P5-01)', () => {
+  it('PBOTS_DATA_DIR 相对路径报错并点名变量', () => {
+    const err = validateStart(resolveConfig({ P2SDK_PROVIDER: 'mock', PBOTS_DATA_DIR: 'rel/data' }))
+    expect(err).toContain('PBOTS_DATA_DIR')
+    expect(err).toContain('absolute')
+  })
+
+  it('P2SDK_SANDBOX_MASK 相对路径报错并点名变量', () => {
+    const err = validateStart(resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_SANDBOX_MASK: '/ok:rel/bad' }))
+    expect(err).toContain('P2SDK_SANDBOX_MASK')
+    expect(err).toContain('absolute')
+  })
+})
+
+describe('childEnv · launcher-only 丢弃 (P5-01 决策 15)', () => {
+  it('PBOTS_DATA_DIR / P2SDK_SANDBOX_MASK 不进 dsh 子进程 env', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h', PBOTS_DATA_DIR: '/d', P2SDK_SANDBOX_MASK: '/m' })
+    const env = childEnv(cfg, { PATH: '/bin', PBOTS_DATA_DIR: '/d', P2SDK_SANDBOX_MASK: '/m' })
+    expect(env.PBOTS_DATA_DIR).toBeUndefined()
+    expect(env.P2SDK_SANDBOX_MASK).toBeUndefined()
+  })
+})
+
+describe('writeRuntimePatch · sandbox 行 (P5-01 决策 4)', () => {
+  it('生成 id: sandbox 行：python3 -I wrapper、遮蔽/挂回清单、bwrap: 失败签名', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p5-patch-'))
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, PBOTS_DATA_DIR: join(dir, 'data') })
+    mkdirSync(join(dir, 'data'), { recursive: true })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yaml).toContain('id: sandbox')
+    expect(yaml).toContain("runnerFailureSignatures: ['bwrap: ']")
+    expect(yaml).toMatch(/runnerCommand: \['\/usr\/bin\/python3', '-I', '\S+bwrap-wrap\.py'/)
+    expect(yaml).toContain('--mask')
+    expect(yaml).toContain('--never')
+    expect(yaml).toContain('--tool')
+    expect(yaml).toContain('--policy')
+    // 数据根与 policy-state（决策 15/16）都由 computeRoots 派生进清单
+    expect(yaml).toContain(join(dir, 'data'))
   })
 })

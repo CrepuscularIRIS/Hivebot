@@ -66,6 +66,7 @@ const ASK = {
   writeGate: 'p2sdk policy: writing in the workspace requires user approval (autonomy suspended)',
   mcp: 'p2sdk policy: connector tools require user approval (metadata bridge pending)',
   fallback: 'p2sdk policy: tier table unavailable; failing closed to per-call approval',
+  net: 'p2sdk policy: network access requested',
 }
 const NEVER_DENY = { kind: 'deny', reason: 'approval unavailable in this session' }
 
@@ -172,6 +173,19 @@ export function apply(ctx, config = {}) {
 
   ctx.on('tools/pre-execute', async (exec, next) => {
     const ask = (reason) => (approvalNever(ctx, exec) ? NEVER_DENY : { kind: 'ask', reason })
+
+    // P5-22（D-1 定稿 ⑤）：request_network 恒 ASK、无始终允许——硬分支在档位
+    // 表判定之前，不经 tiers（后置 overlay 改表改不掉）；审批本身只有
+    // allowed-once / rejected 语义，无 always 通路。卡上可见完整命令 + 会话
+    // 范围 + 期限（D1-r1 出卡要求；A3 的 reason 含 command 由 P5-31 的卡渲染
+    // 与本 reason 字符串共同满足）。参数畸形时 reason 退化为基础文案（execute
+    // 侧 validateRequest 再拒，不在此重复校验）。
+    if (exec.name === 'request_network') {
+      const args = exec.arguments !== null && typeof exec.arguments === 'object' ? exec.arguments : {}
+      const reason = typeof args.reason === 'string' && args.reason.length > 0 ? args.reason.slice(0, 500) : '(no reason given)'
+      const command = typeof args.command === 'string' ? args.command : '(invalid command)'
+      return ask(`${ASK.net} — reason: ${reason} | command: ${command} | scope: this session, one exact command, single use, expires in ~60s; host loopback stays blocked`)
+    }
 
     // bash：T-12 的升权去重结构逻辑先行（不走档位表），其后按第 1 行判定。
     if (exec.name === 'bash') {

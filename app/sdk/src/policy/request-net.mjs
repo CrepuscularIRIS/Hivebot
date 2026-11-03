@@ -23,6 +23,7 @@
 // SDK，「签发」无需 main 参与业务逻辑；许可通道复用决策 16 的文件模式（方向相
 // 反：受信的 SDK 侧签发、宿主侧 wrapper 读取校验），两侧路径同源于数据根推导。
 export const name = 'p2sdk-request-net'
+export const inject = ['tools']
 
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdirSync, writeFileSync } from 'node:fs'

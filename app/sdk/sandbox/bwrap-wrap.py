@@ -34,6 +34,11 @@ import time
 
 BWRAP = '/usr/bin/bwrap'
 
+# hide_args 为 --ro-bind-data 打开的宿主 fd：execv 路径天然继承；supervisor
+# 路径 Popen 默认 close_fds，必须显式 pass_fds 保留（否则 bwrap 收到 Bad file
+# descriptor，e2e 差分格实测）。
+DATA_FDS = []
+
 
 def die(msg):
     sys.stderr.write('bwrap: ' + msg + '\n')
@@ -72,6 +77,7 @@ def hide_args(path):
         except OSError as e:
             die('open /dev/null for mask %s failed: %s' % (path, e))
         os.set_inheritable(fd, True)
+        DATA_FDS.append(fd)
         return ['--perms', '0644', '--ro-bind-data', str(fd), path]
     return []
 
@@ -186,7 +192,7 @@ def run_networked(net_argv, slirp_path, resolv_path):
         argv[i + 1] = str(info_w)
         j = argv.index('--block-fd')
         argv[j + 1] = str(block_r)
-        bwrap = subprocess.Popen(argv, pass_fds=(info_w, block_r))
+        bwrap = subprocess.Popen(argv, pass_fds=(info_w, block_r, *DATA_FDS))
         os.close(info_w)
         os.close(block_r)
         info, ok = _read_fd(info_r, want_json=True)
@@ -196,7 +202,10 @@ def run_networked(net_argv, slirp_path, resolv_path):
         child_pid = json.loads(info)['child-pid']
         slirp_argv += ['--userns-path=/proc/%d/ns/user' % child_pid, str(child_pid), 'tap0']
         try:
-            slirp = subprocess.Popen(slirp_argv, pass_fds=(ready_w, exit_r), stderr=subprocess.PIPE)
+            # stdout 收掉：slirp 的 banner（Starting slirp…）默认写 stdout，
+            # 不收会混进被包裹命令的输出（spike 实测）；诊断走 stderr。
+            slirp = subprocess.Popen(slirp_argv, pass_fds=(ready_w, exit_r),
+                                     stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         except OSError as e:
             die('spawn slirp4netns %s failed: %s' % (slirp_path, e))
         os.close(ready_w)
@@ -363,13 +372,15 @@ def main():
     permit_root = singles.get('--permit-root')
     dry = bool(os.environ.get('BWRAP_WRAP_DRY_RUN'))
     permit = claim_permit(permit_root, command, not dry) if permit_root else None
-    slirp = singles.get('--slirp') or os.environ.get('P2SDK_TEST_SLIRP_BIN')
+    # 测试钩子优先（P2SDK_TEST_SLIRP_BIN 覆盖 argv 路径，验 fail-closed）；
+    # env 只能来自 launcher（模型 bash 改不了父进程环境）。
+    slirp = os.environ.get('P2SDK_TEST_SLIRP_BIN') or singles.get('--slirp')
     if permit is not None and slirp:
         # 专用只读 resolv.conf：公网 DNS，绝不回退宿主 stub（内建 DNS 别名
         # 10.0.2.3 已由 slirp --disable-dns 关闭，d1-netns §4 安全校正）。挂在
         # 一切之后，覆盖 base 的 --ro-bind / /。
         resolv = '<RESOLV-CONF>' if dry else write_resolv_conf()
-        net = out[:-1] + [
+        net = out[:out.index('--')] + [
             '--ro-bind', resolv, '/etc/resolv.conf',
             '--info-fd', '<FD_INFO>' if dry else 'PENDING',
             '--block-fd', '<FD_BLOCK>' if dry else 'PENDING',

@@ -9,7 +9,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { sdkChildEnv } from './sdk-env'
+import { sdkChildEnv, sdkDataDirEnv } from './sdk-env'
 
 export interface SdkRuntime {
   home: string
@@ -67,7 +67,7 @@ export function fakeOverlayPath(): string {
 /** Boot the p2sdk runtime in mock mode and return a connected client（runtime.ts 同款流程）。 */
 /** cwd：runtime 进程工作目录 = 未带 cwd 建的 session 的默认 cwd（产品 UI 建 bot 不带 cwd，U-21 起由临时目录承接，副作用不落仓内）。 */
 /** home：复用上一运行期的 P2SDK_HOME（U-23 D10c1：删 bundle 后同 home 重启）；env：额外环境（市场目录源 URL 等）。 */
-export async function launchSdkRuntime(opts: { patch: string; readyTimeoutMs?: number; cwd?: string; home?: string; env?: Record<string, string> } ): Promise<SdkRuntime> {
+export async function launchSdkRuntime(opts: { patch: string; readyTimeoutMs?: number; cwd?: string; home?: string; dataDir?: string; env?: Record<string, string> } ): Promise<SdkRuntime> {
   // R9（REVIEW-P4终审）：凭证 key 在子进程 env 副本上剔除（sdkChildEnv），不再 delete worker 的
   // process.env —— workers:1 下那是全 spec 共享的，删了会饿死后跑的真模型旅程（顺序依赖失败）。
   const home = opts.home ?? mkdtempSync(join(tmpdir(), 'p2sdk-runtime-'))
@@ -81,6 +81,7 @@ export async function launchSdkRuntime(opts: { patch: string; readyTimeoutMs?: n
       P2SDK_PORT: '0',
       P2SDK_PATCH: opts.patch,
       P2SDK_READY_TIMEOUT_MS: String(opts.readyTimeoutMs ?? 60_000),
+      ...sdkDataDirEnv(opts.dataDir),
       ...opts.env,
     }),
     stdio: ['ignore', 'pipe', 'pipe'],

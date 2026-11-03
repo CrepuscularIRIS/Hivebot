@@ -4,7 +4,7 @@
 // 修复后：只在子进程 env 副本上剔除，worker 的 process.env 不动。
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { sdkChildEnv, shellChildEnv } from '../../support/sdk-env'
+import { sdkChildEnv, sdkDataDirEnv, shellChildEnv } from '../../support/sdk-env'
 
 const KEYS = ['P2SDK_LLM_API_KEY', 'DEEPSEEK_API_KEY', 'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'LITELLM_MASTER_KEY'] as const
 const saved: Partial<Record<(typeof KEYS)[number], string | undefined>> = {}
@@ -48,5 +48,19 @@ describe('U-32 O4：shellChildEnv —— 被 Electron 的 env 副本同口径剥
     for (const k of KEYS) {
       expect(process.env[k], k).toBe(`real-${k}`) // worker env 未被动（credentials 仍可经 creds 路径取）
     }
+  })
+})
+
+// P5-01 决策 15：sdk-runtime 的可选 dataDir 参数经 sdkChildEnv 变成 PBOTS_DATA_DIR
+// 传给 SDK 子进程；纯函数放 sdk-env（无顶层副作用）以便本单测直接 import。
+describe('P5-01：sdkDataDirEnv —— dataDir → PBOTS_DATA_DIR', () => {
+  it('未传 dataDir 时不设变量（缺省不传）', () => {
+    expect(sdkDataDirEnv(undefined)).toEqual({})
+  })
+
+  it('传了 dataDir 则映射为 PBOTS_DATA_DIR', () => {
+    expect(sdkDataDirEnv('/home/lingxufeng/bot/.test-homes/p5-ui/data')).toEqual({
+      PBOTS_DATA_DIR: '/home/lingxufeng/bot/.test-homes/p5-ui/data',
+    })
   })
 })

@@ -1,0 +1,39 @@
+== A. 独立复跑（HOME=/tmp/bot-vfy-p505, worktree /tmp/bot-wt/P5-05 @158f0b0） ==
+$ HOME=/tmp/bot-vfy-p505 pnpm -C /tmp/bot-wt/P5-05/app/sdk test
+Test Files  21 passed (21)
+Tests  153 passed (153)  (Duration 27.84s, 02:39:32)
+
+== B. 红基线⑤（独立 worktree /tmp/vfy-p505-red @158f0b0, never 分支改回 next()） ==
+$ pnpm exec vitest run tests/unit/policy.test.ts
+Tests  4 failed | 14 passed (18)
+失败用例（全部注明 G1-r2 #1，fail-closed 各格仍绿）：
+  1. denies an ordinary bash call when the session override is never (T-12.f1 release inverted, G1-r2 #1)
+  2. denies with sandbox_permissions set to a repeated/narrower mode under never (G1-r2 #1)
+  3. denies when only the deployment config policy is never (no session override yet; G1-r2 #1)
+  4. denies under never even when the effective mode cannot be resolved (an ask has no answerer)
+AssertionError: expected Symbol(next) to deeply equal { kind: 'deny', reason: 'approval unavailable in this session' }
+
+== C. 红基线⑤恢复（git checkout -- shell-ask.mjs 后） ==
+Tests  18 passed (18)
+
+== D. 正对照③（/tmp/vfy-p505-red：仅 shell-ask.mjs 退回基线 9c89e64，测试保持 158f0b0） ==
+$ pnpm exec vitest run tests/e2e/subagent-policy.test.ts
+Test Files  1 failed (1) / Tests  3 failed (3)：
+  subagent_fork: AssertionError: delegated child's bash was denied: /tmp/p2sdk-p505-work-BgW73i/m-fork must not exist (G1-r2 #1): expected true to be false
+  workflow:     AssertionError: delegated child's bash was denied: /tmp/p2sdk-p505-work-BgW73i/m-workflow must not exist (G1-r2 #1): expected true to be false
+  （subagent 同型，屏幕截断，总计 3 failed (3)）
+  → 未打补丁的基线上 m 文件真实存在＝A-H1 侧门实证（builder 声明的红跑结论复现）
+
+== E. 正对照恢复 + 坏路径（重复执行，无状态泄漏） ==
+$ pnpm exec vitest run tests/e2e/subagent-policy.test.ts  (shell-ask.mjs 恢复 158f0b0 后)
+Tests  3 passed (3)
+
+== F. 区域（git diff --stat 9c89e64..158f0b0） ==
+ app/sdk/src/policy/shell-ask.mjs          |  29 ++-
+ app/sdk/tests/e2e/approval.test.ts        |  42 ++--
+ app/sdk/tests/e2e/subagent-policy.test.ts | 333 ++++++++++++++++++++++++++++++
+ app/sdk/tests/support/fake/plugin.mjs     |  19 +-
+ app/sdk/tests/unit/policy.test.ts         |  59 ++++--
+ 5 files changed, 436 insertions(+), 46 deletions(-)
+
+验收人 GLM 5.3 verifier，2026-11-03 02:39-02:45（实测时间）

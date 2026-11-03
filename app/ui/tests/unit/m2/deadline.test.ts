@@ -180,4 +180,46 @@ describe('U-16 审批无人应答 deadline（假时钟）', () => {
   it('默认 deadline = 2×10s（BRIEF D4③：观察窗口 2×已知超时）', () => {
     expect(APPROVAL_DEADLINE_DEFAULT_MS).toBe(20_000)
   })
+
+  it('R8：rpc 抛网络 rejection → 不逃出为 unhandled，pending 保留、下一轮重试', async () => {
+    const unhandled: unknown[] = []
+    const onUnhandled = (reason: unknown): void => { unhandled.push(reason) }
+    process.on('unhandledRejection', onUnhandled)
+    const ledger = new EventsLedger()
+    const calls: RpcCall[] = []
+    let throwRpc = true
+    let nowMs = 0
+    const dl = createApprovalDeadline({
+      dsh: {
+        rpc: async (method: string, args: unknown): Promise<ConnectionRpcResult> => {
+          calls.push({ method, args })
+          if (throwRpc) throw new TypeError('fetch failed') // rpcRaw 的 fetch/res.json 网络层异常（REVIEW R8）
+          return { ok: true, value: undefined }
+        },
+      },
+      ledger,
+      isPortMounted: () => false,
+      mainClientId: () => 'main-c1',
+      deadlineMs: 1_000,
+      now: () => nowMs,
+      log: () => { /* 静默 */ },
+    })
+    try {
+      ledger.record(waterfall('ev-r8'))
+      dl.review()        // t=0：起算
+      nowMs = 1_000
+      dl.review()        // 到期 → void answer() → rpc throws
+      await flush()
+      await flush()      // 两个宏任务跳：让 unhandledRejection 有机会暴露（修复前在此收集到 rejection）
+      expect(unhandled).toEqual([])                        // 修复前：TypeError('fetch failed') 逃出
+      expect(dl.stats.answers).toBe(0)                     // 失败不计成功
+      expect(ledger.pendingEvents().map((e) => e.eventId)).toEqual(['ev-r8']) // pending 保留（fail-closed）
+      throwRpc = false
+      dl.review()
+      await flush()
+      expect(dl.stats.answers).toBe(1)                     // 下一轮重试成功（观察窗口语义不变）
+    } finally {
+      process.off('unhandledRejection', onUnhandled)
+    }
+  })
 })

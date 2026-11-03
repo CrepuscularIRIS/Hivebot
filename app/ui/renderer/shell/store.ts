@@ -59,14 +59,33 @@ export const useStore = (): State => useSyncExternalStore(subscribe, getState)
 
 /** E2E 故障注入（__pbotsDev.failNext，与 closeEvents 同类测试钩子）：方法 → 下一次调用返回的错误，一次性。 */
 const injected = new Map<string, { code: string; message: string }>()
+/** E2E 时序注入（__pbotsDev.slowNext，O2 竞态复现）：方法 → 下一次调用延迟的 ms，一次性。 */
+const delayed = new Map<string, number>()
 
 export function api(method: string, args?: unknown): Promise<ApiResult> {
   const fault = injected.get(method)
   if (fault !== undefined) { injected.delete(method); return Promise.resolve({ ok: false, error: fault }) }
+  const slowMs = delayed.get(method)
+  if (slowMs !== undefined) {
+    // O2 E2E 注入：下一次调用延迟 ms 后放行（复现「关闭后重开、旧轮次响应迟到」竞态），一次性。
+    delayed.delete(method)
+    return sleep(slowMs).then(() => api(method, args))
+  }
   if (window.pbots === undefined) return Promise.resolve({ ok: false, error: { code: 'pbots/unavailable', message: 'preload bridge missing' } })
   // U-22 [GU-1] renderer 层兜底：main 侧 handler 抛错时 ipcRenderer.invoke 会 reject
   // （main 层 try/catch 之外的最后一道），断线期间 sendPrompt/cancelTurn/对话框提交不得裸抛。
   return window.pbots.api(method, args).catch((error: unknown): ApiResult => ({
+    ok: false,
+    error: { code: 'pbots/unavailable', message: `bridge call failed: ${error instanceof Error ? error.message : String(error)}` },
+  }))
+}
+
+/** M3 调用统一入口。R7（REVIEW-P4终审）：botsMeta 也是裸 ipcRenderer.invoke，main 侧 m3.handler
+ * 抛错时同样 reject —— loadRoster/start/setMainBot/refreshMeta 不得裸抛（boot 卡 starting、
+ * busy 永不复位），与 U-22 [GU-1] 的 api() 同模式兜成结构化 !ok。 */
+export function metaApi(op: 'get' | { op: 'patch'; mainBotId: string }): Promise<ApiResult> {
+  if (window.pbots === undefined) return Promise.resolve(NO_BRIDGE)
+  return window.pbots.botsMeta(op).catch((error: unknown): ApiResult => ({
     ok: false,
     error: { code: 'pbots/unavailable', message: `bridge call failed: ${error instanceof Error ? error.message : String(error)}` },
   }))
@@ -205,7 +224,7 @@ const metaOf = (value: unknown): Meta => {
 async function loadRoster(): Promise<{ items: Summary[]; meta: Meta } | string> {
   const [list, meta] = await Promise.all([
     api('session/list', { _request: {} }),
-    window.pbots?.botsMeta('get') ?? Promise.resolve(NO_BRIDGE),
+    metaApi('get'),
   ])
   if (!list.ok) return `session/list: ${list.error?.message ?? ''}`
   if (!meta.ok) return `bots-meta: ${meta.error?.message ?? ''}`
@@ -217,7 +236,7 @@ async function loadRoster(): Promise<{ items: Summary[]; meta: Meta } | string> 
 
 /** #19 重拉：#4 建出的连接器 bot 的 recipe 由 main 写入，renderer 须重拉才认得（否则误判只读）。 */
 export async function refreshMeta(): Promise<void> {
-  const res = await (window.pbots?.botsMeta('get') ?? Promise.resolve(NO_BRIDGE))
+  const res = await metaApi('get')
   if (res.ok) set({ meta: metaOf(res.value) })
 }
 
@@ -237,7 +256,7 @@ async function start(): Promise<void> {
     const created = await api('session/create', { request: {} })
     const sid = rec(created.value).sessionId
     if (!created.ok || typeof sid !== 'string') { set({ boot: 'failed', bootError: `创建主 Bot 失败：${created.error?.message ?? ''}` }); return }
-    const patched = await (window.pbots?.botsMeta({ op: 'patch', mainBotId: sid }) ?? Promise.resolve(NO_BRIDGE))
+    const patched = await metaApi({ op: 'patch', mainBotId: sid })
     if (!patched.ok) { set({ boot: 'failed', bootError: `设置主 Bot 失败：${patched.error?.message ?? ''}` }); return }
     mainBotId = sid
     summaries[sid] = { sessionId: sid, title: null, preset: null, running: false, updatedAt: Date.now() }
@@ -269,7 +288,7 @@ export async function changeModel(sessionId: string, provider: string, model: st
 
 /** #20（D9）：成功才更新 mainBotId 并置顶——R9 冻结顺序的唯一例外。 */
 export async function setMainBot(sessionId: string): Promise<ApiResult> {
-  const res = await (window.pbots?.botsMeta({ op: 'patch', mainBotId: sessionId }) ?? Promise.resolve(NO_BRIDGE))
+  const res = await metaApi({ op: 'patch', mainBotId: sessionId })
   if (res.ok) {
     set({
       meta: { ...state.meta, mainBotId: sessionId },
@@ -303,6 +322,7 @@ export function setDraft(sessionId: string, text: string): void {
 export async function loadOlder(sessionId: string): Promise<void> {
   const view = state.views[sessionId]
   if (view === undefined || !view.hasMore || view.older.phase === 'loading') return
+  const gen = view.gen // O1：本页发起时的快照代号（beforeSeq 对准的是这个窗口）
   set({ views: { ...state.views, [sessionId]: { ...view, older: { phase: 'loading' } } } })
   const res = await api('session/events', {
     request: {
@@ -312,7 +332,9 @@ export async function loadOlder(sessionId: string): Promise<void> {
     },
   })
   const cur = state.views[sessionId]
-  if (cur === undefined) return // 视图已卸（理论不可达：follow 不随切走卸载）
+  if (cur === undefined || cur.gen !== gen) return
+  // O1（REVIEW-P4终审）：响应迟到期间快照已换代（断链重连重建窗口）——旧页对着旧窗口的
+  // firstSeq，拼进新窗口会跳段 + 游标回退（缺口不可补），直接丢弃（新快照已把 older 重置 idle）。
   if (!res.ok) {
     set({ views: { ...state.views, [sessionId]: { ...cur, older: { phase: 'error' } } } })
     return
@@ -389,6 +411,8 @@ export function startStore(): void {
      * 无人应答窗口开始累计）。与 m2 的 testDropSocket 同模式的测试钩子。 */
     /** U-23 E2E 注入：让 renderer 下一次调用 method 直接返回该错误（验证回滚 / 失败分类 UI）。 */
     failNext(method: string, code = 'pbots/test-fault', message = 'injected by E2E'): void { injected.set(method, { code, message }) },
+    /** U-29 O2 E2E 注入：让 renderer 下一次调用 method 延迟 ms 后放行（复现旧轮次响应迟到竞态）。 */
+    slowNext(method: string, ms: number): void { delayed.set(method, ms) },
     closeEvents(): void {
       if (dev.eventsStream !== undefined && mux !== undefined) { mux.cancel(dev.eventsStream); dev.eventsStream = undefined }
     },

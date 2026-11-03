@@ -79,4 +79,19 @@ describe('session reduce（时间线）', () => {
     expect(run([snap({ modelSelection: { lastUsed: { provider: 'p', model: 'old' }, pending: null } })]).model).toBe('p/old')
     expect(run([snap({})]).model).toBeNull()
   })
+
+  it('O1：follow snapshot 重建使 gen +1（#11 分页绑定的快照代号）；event / stream 帧不变', () => {
+    let v = initView('s')
+    expect(v.gen).toBe(0)
+    v = reduceFollow(v, { type: 'event', event: { type: 'turn/start' } })
+    expect(v.gen).toBe(0)
+    v = reduceFollow(v, { type: 'assistant-stream', frame: { type: 'start' } })
+    expect(v.gen).toBe(0)
+    v = reduceFollow(v, { type: 'snapshot', header: {}, records: [], projections: {} })
+    expect(v.gen).toBe(1)
+    v = reduceFollow(v, { type: 'event', event: { type: 'turn/end', data: { reason: { kind: 'completed' } } } })
+    expect(v.gen).toBe(1)
+    v = reduceFollow(v, { type: 'snapshot', header: {}, records: [], projections: {} })
+    expect(v.gen).toBe(2) // 断链重连重挂 follow：新快照再 +1（旧窗口的分页响应据此作废）
+  })
 })

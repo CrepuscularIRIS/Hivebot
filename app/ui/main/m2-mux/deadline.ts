@@ -65,11 +65,21 @@ export function createApprovalDeadline(deps: ApprovalDeadlineDeps, stats?: Appro
     if (clientId === undefined) return // main 订阅未 ready：留待下一轮（窗口继续累计）
     inFlight.add(eventId)
     try {
-      const result: ConnectionRpcResult = await deps.dsh.rpc('$events/result', {
-        clientId,
-        eventId,
-        outcome: { kind: 'result', value: 'rejected' },
-      })
+      let result: ConnectionRpcResult
+      try {
+        result = await deps.dsh.rpc('$events/result', {
+          clientId,
+          eventId,
+          outcome: { kind: 'result', value: 'rejected' },
+        })
+      } catch (error) {
+        // R8（REVIEW-P4终审）：rpcRaw 的 fetch / res.json 网络层异常以 rejection 逃出 DshLike 契约。
+        // answer() 由 `void answer(eventId)` 启动、无接收方，rejection 逃出 = 主进程 unhandled
+        // （Electron 默认 throw 模式可杀进程）。兜住：结构化日志 + pending 保留（finally 清 inFlight，
+        // since 不动），下一轮按窗口语义重试 —— 与 result.ok === false 的瞬断分支同语义。
+        log(`answer rpc for ${eventId} threw: ${error instanceof Error ? error.message : String(error)}; will retry`)
+        return
+      }
       if (result.ok) {
         answered.add(eventId)
         since.delete(eventId)

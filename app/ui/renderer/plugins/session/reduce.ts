@@ -32,6 +32,9 @@ export interface SessionView {
   asked: Record<string, string>
   /** 快照已到（区分「加载中」与「空」）。 */
   loaded: boolean
+  /** 快照代号：每次 follow snapshot 重建 +1（O1：#11 分页响应绑定发起时的代号，换代即作废——
+   * 断链重连的新快照重建窗口后，迟到的旧分页不得拼进新窗口 / 回退游标）。 */
+  gen: number
   /** 窗口外还有更早历史（follow snapshot hasMore / #11 session/events 分页，U-26 ③）。 */
   hasMore: boolean
   /** 窗口内最早 event 的 seq（#11 beforeSeq 游标；null = 无 seq 可翻）。 */
@@ -46,7 +49,7 @@ export function initView(sessionId: string): SessionView {
   return {
     sessionId, preset: null, cwd: null, title: null, model: null, running: false, turnEnded: false, endReason: null,
     items: [], streaming: null, chunkCount: 0, asked: {}, loaded: false,
-    hasMore: false, firstSeq: null, older: { phase: 'idle' },
+    hasMore: false, firstSeq: null, older: { phase: 'idle' }, gen: 0,
   }
 }
 
@@ -172,6 +175,8 @@ export function reduceFollow(view: SessionView, value: unknown): SessionView {
       title: str(rec(rec(frame.projections).values).title), model: modelOf(rec(rec(frame.projections).values).modelSelection), loaded: true,
       // U-26 ③：snapshot 自带 hasMore（follow wire，dsh client/transport.ts:200 同源）；首条 seq = #11 游标
       hasMore: frame.hasMore === true, firstSeq: firstSeqOf(records),
+      // O1：重建即换代（gen +1）——窗口外的在途 #11 分页据此作废
+      gen: view.gen + 1,
     }
     for (const record of records) {
       const wrapped = rec(record)

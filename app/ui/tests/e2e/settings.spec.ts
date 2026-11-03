@@ -10,7 +10,7 @@ import { join } from 'node:path'
 import { launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { DEMO_BUNDLE, MARKET_PATCH, tempBundle } from '../support/connectors.ts'
-import { PDC_EVIDENCE, PRESETS_PATCH, devState, send, textCall } from '../support/ui.ts'
+import { PDC_EVIDENCE, PRESETS_PATCH, createViaDialog, devState, launchProduct, send, textCall } from '../support/ui.ts'
 
 const PATCH = (): string => `${MARKET_PATCH}:${PRESETS_PATCH}:${fakeOverlayPath()}`
 
@@ -193,5 +193,42 @@ test('D10c1：删 bundle → close→launch → 四处失效、历史可读、co
   } finally {
     await shell2.stop()
     await rt2.stop()
+  }
+})
+
+// U-29 O2（REVIEW-P4终审）：NewBotDialog 异步初始化无失效保护 —— 打开 A 的克隆对话框、候选加载
+// 完成前关闭，再打开 B 的：A 轮次的迟到响应会覆盖 B 轮次的 preset 选择（混配、非用户所选）。
+// 修复 = effect cleanup 失效 token；E2E 经 __pbotsDev.slowNext 把第一轮 agentPresets/list 延迟，
+// 真实复现「旧轮次响应迟到」竞态。
+test('P-D ④(O2)：关闭后重开，迟到的旧轮次候选不覆盖新预填（失效 token）', async () => {
+  test.setTimeout(120_000)
+  const env = await launchProduct()
+  try {
+    const { page } = env
+    const mainId = (await devState(page)).meta.mainBotId! // 默认 preset（p2-alpha）
+    const beta = await createViaDialog(page, 'p2-beta')
+    await expect.poll(async () => (await devState(page)).views[beta]?.preset, { timeout: 15_000 }).toBe('p2-beta')
+
+    // round1（将作废）：主 bot 的「用此配置新建」，agentPresets/list 注入 2.5s 延迟
+    await page.locator(`[data-session="${mainId}"]`).click()
+    await page.evaluate(() => (window as unknown as { __pbotsDev: { slowNext(m: string, ms: number): void } }).__pbotsDev.slowNext('agentPresets/list', 2_500))
+    await page.click('[data-action="clone-config-head"]')
+    const dlg = page.locator('dialog[data-dialog="new-bot"]')
+    await expect(dlg).toBeVisible()
+    await dlg.locator('.btn.secondary').click() // 候选在途时立即关闭（修复点的前置条件）
+    await expect(dlg).toBeHidden()
+
+    // round2：beta 的「用此配置新建」→ 预填 p2-beta（本轮 agentPresets/list 不延迟）
+    await page.locator(`[data-session="${beta}"]`).click()
+    await page.click('[data-action="clone-config-head"]')
+    await expect(dlg.locator('[data-preset-option="p2-beta"] input')).toBeChecked({ timeout: 15_000 })
+
+    // 等 round1 的迟到响应到达（2.5s 延迟）——修复前它 setPresetId(p2-alpha) 覆盖新选择
+    await page.waitForTimeout(3_000)
+    await expect(dlg.locator('[data-preset-option="p2-beta"] input')).toBeChecked() // 仍是新预填
+    await dlg.locator('.btn.secondary').click()
+    await expect(dlg).toBeHidden()
+  } finally {
+    await env.stop()
   }
 })

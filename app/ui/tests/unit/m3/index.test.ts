@@ -121,7 +121,8 @@ describe('patch · 形状（renderer 只写 mainBotId）', () => {
 // U-28 R2：rpcRaw 的 fetch/JSON 网络层异常（rpc reject）不得逸出 handler —— renderer 的
 // botsMeta 是裸 await（store.ts loadRoster/refreshMeta/setMainBot），rejection 会卡死 boot
 // （U-22 GU-1 同款根因，M1 路径已有兜底，M3 补齐）。
-describe('get/patch · rpc 抛错（U-28 R2）', () => {
+// U-29 R7 rebase：内联 try/catch 统一为 safeRpc（同一覆盖），消息格式 `<method> rpc failed: <error.message>`。
+describe('get/patch · rpc 抛错（U-28 R2 / U-29 R7）', () => {
   it('get 的 agentPresets/list reject → 结构化 pbots/unavailable，handler 不 reject', async () => {
     const store = await seededStore(tmpHome(), { 'p2temp-live1234': { agentPreset: 'p2-alpha', connectors: ['a'] } })
     const dsh = mockDsh({
@@ -130,7 +131,7 @@ describe('get/patch · rpc 抛错（U-28 R2）', () => {
     const m3 = registerM3Meta({ dsh: dsh as never, store })
     await expect(m3.handler({ op: 'get' })).resolves.toEqual({
       ok: false,
-      error: { code: 'pbots/unavailable', message: 'agentPresets/list threw: TypeError: fetch failed', details: {} },
+      error: { code: 'pbots/unavailable', message: 'agentPresets/list failed: pbots/unavailable rpc failed: fetch failed', details: {} },
     })
   })
 
@@ -144,7 +145,7 @@ describe('get/patch · rpc 抛错（U-28 R2）', () => {
     const m3 = registerM3Meta({ dsh: dsh as never, store })
     await expect(m3.handler({ op: 'patch', mainBotId: 's-1' })).resolves.toEqual({
       ok: false,
-      error: { code: 'pbots/unavailable', message: 'session/list threw: Error: socket hang up', details: {} },
+      error: { code: 'pbots/unavailable', message: 'session/list failed: pbots/unavailable rpc failed: socket hang up', details: {} },
     })
     // 未落盘：空 store 从未 putRecipe，文件不存在
     expect(() => readFileSync(join(dir, BOTS_JSON), 'utf8')).toThrow()

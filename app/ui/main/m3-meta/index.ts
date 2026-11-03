@@ -1,6 +1,7 @@
 // M3 `pbots:bots-meta`（U-13）：get 返回 BotsMetaView（live = 未过滤 #1 含该 id，
 // C:92，不写盘）；patch 只接受 mainBotId 且须在 #9 列表（其余 invalid-args）。
 // 存储与队列见 store.ts；#4 编排/恢复编排见 orchestrate.ts / restore.ts（U-11/U-14 消费）。
+import type { ConnectionRpcResult } from '../dsh/connect'
 import type { DshLike } from './orchestrate'
 import { BotsMetaStore, type BotsMeta, type Recipe } from './store'
 
@@ -44,6 +45,24 @@ const stepFailed = (step: string, error: { code: string; message: string }): M3R
   error: { code: 'pbots/unavailable', message: `${step} failed: ${error.code} ${error.message}`, details: {} },
 })
 
+/**
+ * R7（REVIEW-P4终审；U-28 R2 同覆盖）：DshLike 只承诺「不 ok 时返回 {ok:false}」，但 rpcRaw 的
+ * fetch / res.json 网络层异常会以 rejection 逃出该契约（socket 活着而 HTTP 瞬断/截断）。
+ * ipcMain.handle 直接 return handler()，rejection 会变成 renderer 的 ipcRenderer.invoke
+ * reject —— 在此兜成普通 {ok:false}，由调用点现成的 stepFailed 链统一包装（单层语义；
+ * renderer 侧 metaApi 的 .catch 是最后一道，双保险）。
+ */
+async function safeRpc(dsh: DshLike, method: string, args: unknown): Promise<ConnectionRpcResult> {
+  try {
+    return await dsh.rpc(method, args)
+  } catch (error) {
+    return {
+      ok: false,
+      error: { code: 'pbots/unavailable', message: `rpc failed: ${error instanceof Error ? error.message : String(error)}`, details: {} },
+    }
+  }
+}
+
 export function registerM3Meta(deps: M3Deps): M3Handle {
   if (deps.store === undefined && deps.dataDir === undefined) {
     throw new Error('registerM3Meta: dataDir or store is required')
@@ -66,14 +85,7 @@ export function registerM3Meta(deps: M3Deps): M3Handle {
     if (deps.dsh === undefined) {
       return { ok: false, error: { code: 'pbots/unavailable', message: 'dsh connection not ready', details: {} } }
     }
-    // U-28 R2：rpc 可能 reject（rpcRaw 网络层 fetch/JSON 异常）——转结构化错误，handler
-    // 不得 reject（renderer 的 botsMeta 是裸 await，rejection 卡死 boot；U-22 GU-1 同根因）。
-    let roster: Awaited<ReturnType<DshLike['rpc']>>
-    try {
-      roster = await deps.dsh.rpc('agentPresets/list', {})
-    } catch (error) {
-      return { ok: false, error: { code: 'pbots/unavailable', message: `agentPresets/list threw: ${String(error)}`, details: {} } }
-    }
+    const roster = await safeRpc(deps.dsh, 'agentPresets/list', {})
     if (!roster.ok) return stepFailed('agentPresets/list', roster.error)
     const ids = new Set(roster.value.presets.map((p: { id: string }) => p.id))
     const recipes: BotsMetaView['recipes'] = {}
@@ -98,13 +110,7 @@ export function registerM3Meta(deps: M3Deps): M3Handle {
       return { ok: false, error: { code: 'pbots/unavailable', message: 'dsh connection not ready', details: {} } }
     }
     // W1 R4：上游 list(_request, signal) 的参数名是 _request——壳形态 {_request:{}}（VERIFY-U-15 终裁）
-    // U-28 R2：同 get —— rpc reject 转结构化 pbots/unavailable，不落盘。
-    let list: Awaited<ReturnType<DshLike['rpc']>>
-    try {
-      list = await deps.dsh.rpc('session/list', { _request: {} })
-    } catch (error) {
-      return { ok: false, error: { code: 'pbots/unavailable', message: `session/list threw: ${String(error)}`, details: {} } }
-    }
+    const list = await safeRpc(deps.dsh, 'session/list', { _request: {} })
     if (!list.ok) return stepFailed('session/list', list.error)
     const items = (list.value as { items?: Array<{ sessionId: string }> }).items ?? []
     if (!items.some((item) => item.sessionId === mainBotId)) {

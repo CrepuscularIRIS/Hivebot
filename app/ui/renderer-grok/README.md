@@ -7,7 +7,14 @@ Third-rung copy (CLAUDE.md §3) of `github.com/b-nnett/grok-bot-0.18-reconstruct
   4 referenced modules (20 files).
 - Every upstream file is listed in `SOURCES.tsv` and keeps its upstream bytes after line 1, which is the `来源:` header.
   JSON and woff2 files have no header. `pnpm check` verifies upstream diff=0 and the asset sha256 values.
-- Overlay files (ours, replacing upstream behaviour) go outside `frontend/` and `source/` and are never listed in `SOURCES.tsv`. There are none yet.
+- Overlay files (ours, replacing upstream behaviour) go outside `frontend/` and `source/` and are never listed in `SOURCES.tsv`.
+  They live in `overrides/` (P5-52):
+  - `overrides/vite.config.ts` is the build config: the upstream `frontend/vite.config.ts` merged unchanged, plus a plugin that
+    swaps whole upstream modules for `overrides/modules/*` (map `MODULE_OVERRIDES`). An override module re-exports its upstream
+    module and wraps one export (strip a callback prop / filter a list) so the upstream's own `== null` gate hides the entry.
+  - `overrides/*.css` are linked after the bundle styles by `scripts/inject-shim.mjs` (CSS hides use `!important`: the upstream
+    stylex atoms carry `:not(#\#)` triple-id specificity).
+  - Order of preference for hiding an entry the carrier cannot back: shim capability switch → module override → CSS.
 - `assets/runtime/` holds the 18 `rendererRuntimeAssetUrl` assets (R9, byte-identical to the 0.18 manifest). `pnpm build` copies them next to the emitted chunks.
 - `harness/` is the S0 stub mounted in our Electron: `pnpm build && pnpm mount [outDir]` (Xvfb, light and dark, asserting).
 - `shim/` (P5-51, ours) is the real data layer replacing the S0 stub: `window.desktop` flat bridge + coordinator protocol v1 server

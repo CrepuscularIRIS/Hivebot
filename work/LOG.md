@@ -784,3 +784,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 01:5x W0 回报：R1 审批模型（11 action→4 类、默认 ask、一次性批 1h TTL、standing-grants 仅 iMessage/use-app、autoReview=云端 LLM 复核、MCP 权限 settings.json 三档 tools/reads/writes、按钮 Allow→Always→Don't 顺序与分类语义）——待 R 条款交 director 出 v2.x 增补
 02:0x G1-r2 两席均 REVISE → 有条件通过（不再开 r3）；6 条 HIGH 去重清单落 panels/G1-r2.md，转 PLAN 首批任务 + BRIEF v2.1 修订账
 02:4x BRIEF v2.1 增补完成（16 行修订账；§7 扩到 12 行含 web 行与 32 工具补全；W1-AP-0 扩为全入口纯收紧不等 Q）| Q-013 升 v2.1（真实后果 7 条 + 第 10 行 web 请用户定）、Q-015 增补两条语义 | director 已派写 PLAN（G1-r2 六条 HIGH = 首批任务；D-1/D-2 出题给 /panel D）
+03:2x W0 回报：R2 视觉数值完成（AUD 全部 [78] 项有值 + 145 keyframes 16 类分组 + 3 处修正旧结论 + 2 处推翻 AUD 修复建议：B6 裸行不加描边卡、B8 radius 24 非 10）——U3/U4 规格就绪，等 PLAN 吸收

@@ -1,0 +1,46 @@
+== verifier independent rerun 2026-11-03 15:07 @ 4e3329a ==
+-- build renderer-grok + app/ui --
+renderer-grok pnpm build: ok (.build/shim/shim.iife.js 27.91 kB)
+app/ui pnpm build: ok (electron-vite)
+
+-- unit grok-shim --
+ Test Files  4 passed (4)
+      Tests  45 passed (45)
+
+-- full unit --
+ Test Files  34 passed (34)
+      Tests  362 passed (362)
+
+-- e2e grok-persona --
+
+  ✓  1 tests/e2e/grok-persona.spec.ts:75:5 › U3′ persona：真实事件流逐态切换（侧栏+会话头）、两次启动形色不变、reduced-motion 停帧 (33.3s)
+
+  1 passed (33.7s)
+
+-- red baseline: remove subagent->Task (output below) --
+0
+      Tests  45 passed (45)
+
+-- cmp.py vs compare stand (my run, identity pebble-orange) --
+searching pebble-orange   ours ink=468 rgb=(254, 123, 33)  harness ink=466 rgb=(254, 122, 32)  dRGB=1  area%=0
+searching squircle-blue     ours ink=610 rgb=(44, 140, 240)  harness ink=614 rgb=(45, 140, 240)  dRGB=1  area%=1
+searching tablet-magenta  ours ink=370 rgb=(240, 85, 165)  harness ink=373 rgb=(240, 85, 165)  dRGB=0  area%=1
+searching tablet-red      ours ink=367 rgb=(240, 66, 84)  harness ink=372 rgb=(240, 67, 84)  dRGB=1  area%=1
+searching teardrop-red      ours ink=364 rgb=(239, 65, 83)  harness ink=370 rgb=(239, 67, 84)  dRGB=2  area%=2
+searching wedge-brown    ours ink=393 rgb=(156, 119, 84)  harness ink=400 rgb=(156, 119, 85)  dRGB=1  area%=2
+thinking  pebble-orange   ours ink=470 rgb=(254, 123, 34)  harness ink=472 rgb=(254, 123, 34)  dRGB=0  area%=0
+thinking  squircle-blue     ours ink=613 rgb=(45, 140, 240)  harness ink=612 rgb=(44, 139, 240)  dRGB=1  area%=0
+thinking  tablet-magenta  ours ink=365 rgb=(240, 83, 164)  harness ink=369 rgb=(240, 83, 164)  dRGB=0  area%=1
+thinking  tablet-red      ours ink=367 rgb=(240, 65, 83)  harness ink=371 rgb=(240, 66, 83)  dRGB=1  area%=1
+thinking  teardrop-red      ours ink=367 rgb=(239, 65, 83)  harness ink=372 rgb=(239, 67, 84)  dRGB=2  area%=1
+thinking  wedge-brown    ours ink=398 rgb=(156, 119, 85)  harness ink=398 rgb=(155, 118, 83)  dRGB=2  area%=0
+working   pebble-orange   ours ink=471 rgb=(254, 124, 35)  harness ink=465 rgb=(254, 122, 32)  dRGB=3  area%=1
+working   squircle-blue     ours ink=614 rgb=(46, 140, 240)  harness ink=610 rgb=(44, 139, 240)  dRGB=2  area%=1
+working   tablet-magenta  ours ink=365 rgb=(240, 84, 165)  harness ink=372 rgb=(240, 85, 165)  dRGB=1  area%=2
+working   tablet-red      ours ink=366 rgb=(240, 66, 84)  harness ink=370 rgb=(240, 66, 84)  dRGB=0  area%=1
+working   teardrop-red      ours ink=364 rgb=(239, 65, 83)  harness ink=371 rgb=(240, 67, 84)  dRGB=2  area%=2
+working   wedge-brown    ours ink=395 rgb=(156, 120, 85)  harness ink=401 rgb=(157, 120, 85)  dRGB=1  area%=1
+     × subagent 运行中 → tool=Task（persona orbit） 6ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { kind: 'tool', tool: 'subagent' } to deeply equal { kind: 'tool', tool: 'Task' }
+      Tests  1 failed | 21 passed (22)

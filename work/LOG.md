@@ -877,3 +877,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 14:47 P5-51 回归：vitest 346 绿；e2e 3 红定位——grok-shim 单跑绿（flake），d4d5d6+market 真红=**P5-21 连接器 ASK 化未适配旅程测试**（X 调 read_file 等卡超时）→ P5-21.f1 适配任务已派
 14:56 P5-R10 回报：0.78.1 无内联 tool-call 渲染（架构差异，outline 面板走独立 RPC getConversationOutline）；桩补丁 1 行实证可渲染——P5-55 差异表该部位记架构性差异，视觉取证用 outline 锚点
 15:02 P5-22 回归复跑 304 全绿闭环；P5-56 完成（orbit/sending 补齐+reduced-motion 帧差0+对照台 9/9）→ verifier 派发 | grok-shim 稳定红立 P5-51.f2（/tmp 工作区不可见）
+15:07 P5-21.f1 builder 完成（8a47a64：3 处答卡插入，64/65 绿唯一红=f2 认领）→ verifier 抽验派发
+15:08 P5-56 验收 PASS → 合并（persona 映射补齐），p5 done 29/33

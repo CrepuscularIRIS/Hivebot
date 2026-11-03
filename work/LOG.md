@@ -774,3 +774,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 23:43 U-33 验收 PASS → 合并 db3f9b0（6 文件，run-e2e.sh/evidence test-output，worktree 已清）| main 回归：build✓ 单测 224/224✓ e2e 新脚本后台跑 | PLAN U-33 done；QUESTIONS 加 Q-012 下一阶段方向
 23:47 tick | U-33 合并后 main e2e 回归在跑（33/54，Xvfb 新脚本下全绿中）| 无事可派：只剩等回归绿→停 cron 收口 + Q-012 待答 | ready 未派 = 0
 23:48 MVP 收口：U-33 合并后 main 回归全绿（build✓ 224/224✓ e2e 54/54✓ 新脚本 Xvfb 静默）| 四阶段全部验收，CronDelete 停巡检，PushNotification 已发 | 待答 Q-012（下一阶段方向）
+00:28 Q-012 落实：新阶段 = UI 对齐原版 level + 审批模型自主化（ceiling 分级 + ALWAYS 卡 + always-allow 管理）→ director 已派写 BRIEF | 巡检已停，BRIEF 回来后跑 G1 panel，审批档位表开 QUESTIONS

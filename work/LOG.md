@@ -846,3 +846,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 12:21 p6 G1-r1 = REVISE（两席一致，7 HIGH：create_bot 回 main、send_to_bot 限权、位置折叠为基线、ack 兜底、委派侧门、回合≠终态、依赖补全）→ director 改 BRIEF v2
 12:23 P5-H2 验收 PASS → 合并 d1a7ed1，sdk 250 绿 | done 20/33（p5 计）
 12:27 p6 BRIEF v2 完成（14 行修订账；0.18 自带折叠行可复用；1a 两条立即开工/一条等 P5-51）→ G1-r2 终轮派发 | P5-51 描述已同步折叠函数映射 | p6 PLAN 同步点 2-5 记档待 PLAN 期执行
+12:27 P5-27 builder 完成（91a4988：上游达标 4.7-6.25ms 零产品改动，251 sdk 绿）→ verifier 抽验派发
+12:30 p6 G1-r2 两席 REVISE → 有条件通过；2 HIGH（折叠语义三件套、并发闭环）进 v2.1+PLAN 首批

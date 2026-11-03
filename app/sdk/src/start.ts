@@ -225,7 +225,7 @@ function guardRow(cfg: StartConfig): string {
     pkgRoot: PKG_ROOT,
   })
   const g = roots.guardRoots
-  const list = (xs: readonly string[]): string => (xs.length === 0 ? ' []' : `\n${xs.flatMap((p) => [`    - '${yamlScalar(p)}'`]).join('\n')}`)
+  const list = (xs: readonly string[]): string => (xs.length === 0 ? ' []' : `\n${xs.flatMap((p) => [`        - ${yamlScalar(p)}`]).join('\n')}`)
   return `\
 - id: p2sdk-fs-guard
   config:
@@ -600,14 +600,17 @@ function dshEntry(): string {
  * process group, so a terminal Ctrl-C cannot reach it straight from the
  * foreground group — it arrives exactly once, through the launcher's forward
  * in main(), letting the pinned dsh shutdown dispose to completion instead of
- * force-exiting on a duplicate signal.
+ * force-exiting on a duplicate signal. P5-02: stderr is piped (not inherited)
+ * so the launcher can watch the guard activation-failure signature dsh prints
+ * there (`dsh: warning: N entry did not activate` + plugin Error) — every
+ * byte is still forwarded to the launcher's own stderr.
  */
 export function dshSpawnOptions(cfg: StartConfig): {
   env: NodeJS.ProcessEnv
-  stdio: ['ignore', 'pipe', 'inherit']
+  stdio: ['ignore', 'pipe', 'pipe']
   detached: boolean
 } {
-  return { env: childEnv(cfg, process.env), stdio: ['ignore', 'pipe', 'inherit'], detached: true }
+  return { env: childEnv(cfg, process.env), stdio: ['ignore', 'pipe', 'pipe'], detached: true }
 }
 
 export interface RuntimeHandle {
@@ -616,6 +619,8 @@ export interface RuntimeHandle {
   ready: Promise<boolean>
   /** Resolves with the child's exit code. */
   exited: Promise<number>
+  /** P5-02 决策 6: guard 激活失败签名（stdout 逐块匹配），未见为 null。 */
+  guardFailed(): string | null
 }
 
 /** Prepare the home dir, overlays, and dsh child process for one runtime. */
@@ -649,6 +654,16 @@ export function startRuntime(cfg: StartConfig): RuntimeHandle {
     }
   }
   let pending = ''
+  let guardFailure: string | null = null
+  const watchGuardFailure = (chunk: string): void => {
+    if (guardFailure !== null) return
+    // P5-02 决策 6: cordis 把插件激活失败记成 `dsh: warning: N entry did not
+    // activate` 后继续跑 —— guard 行缺失/不合法（后置 overlay 覆盖 config）会
+    // 静默退回无文件工具 NEVER 的 stock 行为。launcher 监测 dsh stderr 上的
+    // 激活失败签名（插件名 + Error 行），main() 在 ready 后的短窗口内查到即终止。
+    const m = /^(p2sdk-fs-guard \([^)]*\): Error: .+)$/m.exec(chunk)
+    if (m) guardFailure = m[1]
+  }
   child.stdout!.setEncoding('utf8')
   child.stdout!.on('data', (chunk: string) => {
     process.stdout.write(chunk)
@@ -661,6 +676,11 @@ export function startRuntime(cfg: StartConfig): RuntimeHandle {
     }
     note(pending)
   })
+  child.stderr!.setEncoding('utf8')
+  child.stderr!.on('data', (chunk: string) => {
+    process.stderr.write(chunk)
+    watchGuardFailure(chunk)
+  })
   const timer = setTimeout(() => {
     if (!announced) readyResolve(false)
   }, cfg.readyTimeoutMs)
@@ -669,7 +689,13 @@ export function startRuntime(cfg: StartConfig): RuntimeHandle {
     clearTimeout(timer)
     if (!announced) readyResolve(false)
   })
-  return { child, ready, exited }
+  return {
+    child,
+    ready,
+    exited,
+    /** P5-02 决策 6: the guard activation-failure line seen on stdout, or null. */
+    guardFailed(): string | null { return guardFailure },
+  }
 }
 
 /** Entry point: returns the process exit code. */
@@ -722,6 +748,19 @@ export async function main(cfg: StartConfig = resolveConfig()): Promise<number> 
   process.on('SIGTERM', () => forward('SIGTERM'))
   if (!(await handle.ready)) {
     process.stderr.write(`p2sdk: no ready line within ${cfg.readyTimeoutMs}ms\n`)
+    forward('SIGTERM')
+    return (await handle.exited) || 1
+  }
+  // P5-02 决策 6（验收 ⑨）：dsh 把插件激活失败记成 warning 继续跑，guard 行
+  // 缺失/不合法时会静默退回无 NEVER 的 stock 行为 —— launcher 在 ready 后的短
+  // 窗口内监测激活失败签名（实测紧跟 ready 行到达），见到即终止并报原因。
+  const guardDeadline = Date.now() + 3000
+  while (Date.now() < guardDeadline && handle.guardFailed() === null && handle.child.exitCode === null) {
+    await new Promise((r) => setTimeout(r, 100))
+  }
+  const guardFail = handle.guardFailed()
+  if (guardFail !== null) {
+    process.stderr.write(`p2sdk: guard plugin failed to activate; not serving: ${guardFail}\n`)
     forward('SIGTERM')
     return (await handle.exited) || 1
   }

@@ -501,7 +501,8 @@ it('⑧ cwd=PKG_ROOT/仓根：策略代码只读 EROFS、sha 不变、PKG_ROOT/.
   expectProbe(rB, 'gitdirhead_append', 'errno30')
 
   expect([wrapPath, skillMd, gitdirHead].map(sha256)).toEqual(before)
-  expect(existsSync(join(PKG_ROOT, 'src', 'policy', 'guard.mjs')), 'guard.mjs 未被创建').toBe(false)
+  // P5-02 起 src/policy/guard.mjs 真实存在（bash 侧 append 探针 errno30 与
+  // 上行 sha 断言共同证明没被写入；guard 侧写保护另由 guard-fs.test.ts ⑦ 覆盖）
 
   const frameC = await bashTurn(rt, TEST_HOME, 'echo ran > marker-home8')
   expect(frameC).toContain('bwrap: ')

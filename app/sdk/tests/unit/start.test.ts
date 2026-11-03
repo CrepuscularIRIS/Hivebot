@@ -309,7 +309,7 @@ describe('writeRuntimePatch · guard 行 (P5-02 决策 6/13)', () => {
     mkdirSync(join(dir, 'data'), { recursive: true })
     const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
     expect(yaml).toContain('id: p2sdk-fs-guard')
-    expect(yaml).toMatch(/hardRoots:\n(    - '\S+'\n)+/)
+    expect(yaml).toMatch(/hardRoots:\n(        - '\S+'\n)+/)
     expect(yaml).toContain('hardRoots:')
     expect(yaml).toContain('dataMaskRoots:')
     expect(yaml).toContain('homes:')

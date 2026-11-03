@@ -5,11 +5,12 @@
 // 决策 4：解释器 /usr/bin/python3 -I；PLAN P5-01 ⑤ 的两格在 sandbox-hardened.test.ts
 // 里再经真实 launcher + fake bash 各证一遍。
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { tmkdir } from '../support/tmp-sweep.ts'
+import { issuePermit } from '../../src/policy/request-net.mjs'
 import { describe, expect, it } from 'vitest'
 
 const WRAPPER = join(fileURLToPath(import.meta.url), '..', '..', '..', 'sandbox', 'bwrap-wrap.py')
@@ -175,5 +176,72 @@ describe('真实 exec 冒烟（不经 dry-run）', () => {
     const ok = runWrapper(['--home', '/tmp/p5-01-nohome', ...profileArgs(ws), '--', '/bin/sh', '-c', 'exit 7'])
     expect(ok.status).toBe(7)
     for (const d of [secret, ws]) rmSync(d, { recursive: true, force: true })
+  })
+})
+
+// ── P5-22：受控升权 ⑤ 的 wrapper 侧（许可命中 → 宿主侧 supervisor 联网 argv）──
+// dry-run 证明：命中的 argv 形状（--unshare-net 保留 + info/block fd + 专用
+// resolv.conf ro-bind）；不命中（session/argv/TTL 不符）→ 断网 argv 原样；
+// 跨语言对拍：本测试用 mjs issuePermit 签发（JSON.stringify 规范），wrapper
+// python json.dumps 规范命中即两侧一致。真跑一例证过期清理（fail-closed 方向：
+// 过期许可删掉且命令照常断网执行）。
+describe('P5-22 许可命中 → 联网 argv（dry-run）', () => {
+  const CMD = 'python3 -I /tmp/p5-22-probe.py --lan 192.0.2.1:1'
+
+  function grantFile(dir: string, session: string, over: Record<string, unknown> = {}): string {
+    const p = issuePermit({ dir, session, command: CMD, ttlMs: 60_000, ...over })
+    return p.file
+  }
+
+  it('命中：--unshare-net 保留 + info/block fd + resolv.conf ro-bind，stderr 有标记，许可不删（dry-run）', () => {
+    const dir = tmkdir('bot-p5-22-permits-')
+    const file = grantFile(dir, 'sess-hit')
+    const res = runWrapper(
+      ['--permit-root', dir, '--slirp', '/nonexistent-slirp', ...profileArgs('/tmp'), '--', 'bash', '-c', CMD],
+      { DSH_SESSION_ID: 'sess-hit', BWRAP_WRAP_DRY_RUN: '1' })
+    expect(res.status, `stderr: ${res.stderr}`).toBe(0)
+    const argv = res.stdout.trim().split('\n')
+    expect(argv).toContain('--unshare-net') // D1-r1：绝不去掉 --unshare-net
+    expect(argv).toContain('--info-fd')
+    expect(argv).toContain('--block-fd')
+    const ri = argv.indexOf('<RESOLV-CONF>')
+    expect(ri, 'resolv ro-bind present').toBeGreaterThan(-1)
+    expect(argv[ri + 1]).toBe("/etc/resolv.conf") // 专用只读 resolv.conf 覆盖 base
+    expect(res.stderr).toContain('network permit matched')
+    expect(existsSync(file)).toBe(true) // dry-run 不消耗
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('不命中三态：session 不符 / argv 不符 / 过期 → 断网 argv（无 info-fd）', () => {
+    const dir = tmkdir('bot-p5-22-permits-')
+    grantFile(dir, 'sess-a')
+    // session 不符（bash 收到 sess-b）
+    for (const [env, cmd, label] of [
+      [{ DSH_SESSION_ID: 'sess-b' }, CMD, 'session mismatch'],
+      [{ DSH_SESSION_ID: 'sess-a' }, 'echo other', 'argv mismatch'],
+    ] as Array<[Record<string, string>, string, string]>) {
+      const res = runWrapper(
+        ['--permit-root', dir, '--slirp', '/nonexistent-slirp', ...profileArgs('/tmp'), '--', 'bash', '-c', cmd],
+        { BWRAP_WRAP_DRY_RUN: '1', ...env })
+      expect(res.status, label).toBe(0)
+      expect(res.stdout).not.toContain('--info-fd')
+    }
+    // 过期：wrapper 真跑（断网路径执行 true）→ 许可被清理
+    const ws = tmkdir('bot-p5-22-ws-')
+    const stale = issuePermit({ dir, session: 'sess-a', command: CMD, ttlMs: -1000 })
+    const run = runWrapper(
+      ['--permit-root', dir, '--slirp', '/nonexistent-slirp', ...profileArgs(ws), '--', '/bin/true'],
+      { DSH_SESSION_ID: 'sess-a' })
+    expect(run.status, `stderr: ${run.stderr}`).toBe(0)
+    expect(existsSync(stale.file)).toBe(false)
+    rmSync(dir, { recursive: true, force: true })
+    rmSync(ws, { recursive: true, force: true })
+  })
+
+  it('无 --permit-root：行为与断网现状完全一致（无 info-fd）', () => {
+    const res = runWrapper([...profileArgs('/tmp'), '--', 'bash', '-c', CMD], { BWRAP_WRAP_DRY_RUN: '1', DSH_SESSION_ID: 'x' })
+    expect(res.status).toBe(0)
+    expect(res.stdout).not.toContain('--info-fd')
+    expect(res.stdout).not.toContain('/etc/resolv.conf')
   })
 })

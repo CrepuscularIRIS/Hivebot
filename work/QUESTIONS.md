@@ -70,7 +70,7 @@
 - 答复：可行, 直接重写即可. B
 - 落实（主会话 2026-11-02 05:00）：B/B′ 定稿——CONTRACT.md 转正，v1.1 改版吸收 scout 与 T-15 结论后过 panel G1。
 
-## Q-008 [open] 契约变更：p2temp 增第 2 方法 preset.ensure（连接器 bot 重启恢复）
+## Q-008 [answered] 契约变更：p2temp 增第 2 方法 preset.ensure（连接器 bot 重启恢复）
 - slug：p3-contract ｜ 类型：契约 ｜ 阻塞：preset.ensure 实现、CONTRACT v1.1 定稿（起草并行标暂定）｜ 提出：2026-11-02 01:30
 - 背景：T-15 探明①红（work/p3-contract/VERIFY-T-15.md）：带连接器的 bot 重启后对旧 session 发 prompt 报 `Unknown agent preset: p2temp-*`——临时 preset 只在内存 registry，不落盘。方案：p2temp 增幂等 `preset.ensure({agentPreset, connectors})`，preset id 由内容确定，main 启动按 bots.json 逐个调用；探明已证同内容重注册路径可跑通。注意：客户端错误 code 是 gateway/internal（判错只能看 message）。附带：T-03③ 的「p2temp 恰 1 方法」验收数字随之改为 2。
 - 选项：
@@ -79,7 +79,7 @@
 - 答复：（2026-11-02 06:30 用户聊天原话：「可以跑A即可, 黑尔问题你不用来询问我, 我只需要使用什么开源的套件, 以及效率快速复现, 全线的问题」→ **A**）
 - 落实（主会话 2026-11-02 06:30）：A 定稿——p2temp 增 preset.ensure（T-16）；T-03③ 验收数字改 2。
 
-## Q-009 [open] danger-full-access preset 下 shell-ask 的行为（增量 L 复审 R2）
+## Q-009 [answered] danger-full-access preset 下 shell-ask 的行为（增量 L 复审 R2）
 - slug：p2-sdk ｜ 类型：高风险（审批语义）｜ 阻塞：T-12.f1 ｜ 提出：2026-11-02 02:30
 - 背景：T-12 把 approval.yml（shell-ask：普通 bash 必问）挂进默认启动链。但用户显式选 danger-full-access preset（其 approval 配置为 never）时，user-approval 对一切 ask 一律拒绝 → **bash 完全不可用**（死锁，非放行）。REVIEW R2 判 major。修复涉及「何时可以不问」——权限系统要求用户明示。
 - 选项：

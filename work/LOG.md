@@ -776,3 +776,6 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 23:48 MVP 收口：U-33 合并后 main 回归全绿（build✓ 224/224✓ e2e 54/54✓ 新脚本 Xvfb 静默）| 四阶段全部验收，CronDelete 停巡检，PushNotification 已发 | 待答 Q-012（下一阶段方向）
 00:28 Q-012 落实：新阶段 = UI 对齐原版 level + 审批模型自主化（ceiling 分级 + ALWAYS 卡 + always-allow 管理）→ director 已派写 BRIEF | 巡检已停，BRIEF 回来后跑 G1 panel，审批档位表开 QUESTIONS
 00:38 p5-parity W0 全部派出：G1 panel 两席（fable+sonnet 盲评 BRIEF v1）+ 调研 8 条（R1/R2/R3/R8 RE，R4-R7 scout）| QUESTIONS 新增 Q-013 档位表/Q-014 截图基准/Q-015 C2 契约（PushNotification 待发）| L-AP 实现等 Q-013+Q-015；W1-UI 等 R8/R2
+00:44 W0 回报：R7 ask-user=第二档（事件在链路要补，最小闭环 1-2 天）；附带发现 ledger 把 waterfall 全当审批、deadline 会误答问题事件——记入 PLAN 输入
+00:44 G1-r1 = REVISE（两席一致，7 HIGH 进必须回应清单，panels/G1-r1.md）→ 交 director 改 BRIEF v2
+00:45 W0 回报：R8 残余表完成（闭集 83 行：19 fixed + 24 等价 + 6 open-in + 10 waived，U1 闭集就绪）| G1-r1 REVISE → director 已派改 BRIEF v2（7 HIGH 逐条回应，含 runnerCommand 加固前置、档位表 3/5 行改逐次 ASK）

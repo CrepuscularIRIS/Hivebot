@@ -1,0 +1,178 @@
+[
+  {
+    "mode": "default-mock",
+    "approvals": 1,
+    "hostWorkspaceExists": true,
+    "hostOutsideExists": false,
+    "hostTmpExists": false,
+    "toolResults": [
+      {
+        "type": "event",
+        "event": {
+          "type": "tool/result",
+          "seq": 21,
+          "time": 1793684527145,
+          "data": {
+            "turn": 1,
+            "step": 1,
+            "message": {
+              "role": "tool",
+              "source": {
+                "kind": "tool",
+                "callId": "r5-53bb152066ba6"
+              },
+              "toolCallId": "r5-53bb152066ba6",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "R5_RESULT={\"env_keys\": [\"DSH_HOME\", \"DSH_PROFILE\", \"DSH_PROFILE_DIR\", \"DSH_SESSION_ID\", \"DSH_SHELL\", \"DSH_WEB_URL\", \"GIT_PAGER\", \"HOME\", \"LC_CTYPE\", \"NO_COLOR\", \"P2SDK_LLM_API_BASE\", \"P2SDK_LLM_MODEL\", \"P2SDK_PATCH\", \"P2SDK_PORT\", \"P2SDK_PROBE\", \"P2SDK_PROVIDER\", \"PAGER\", \"PATH\", \"PWD\", \"SHLVL\", \"TERM\", \"_\"], \"external\": 200, \"home\": {\"errno\": 2, \"error\": \"No such file or directory\"}, \"loopback\": 200, \"outside\": {\"errno\": 30, \"error\": \"Read-only file system\"}, \"outside_read\": \"readable\", \"tmp\": \"written\", \"workspace\": \"written\"}\n"
+                }
+              ],
+              "isError": false,
+              "id": "61e2405a-d03b-4cd0-8e51-4996896e5b1c"
+            },
+            "meta": {
+              "cwd": "/home/lingxufeng/bot/work/p5-parity/evidence/r5-run-rFPpjE/default-mock/workspace"
+            }
+          },
+          "sourceEventSeqs": [
+            16
+          ],
+          "surfaceOp": "append"
+        }
+      }
+    ]
+  },
+  {
+    "mode": "default-real-fake",
+    "approvals": 1,
+    "hostWorkspaceExists": true,
+    "hostOutsideExists": false,
+    "hostTmpExists": false,
+    "toolResults": [
+      {
+        "type": "event",
+        "event": {
+          "type": "tool/result",
+          "seq": 21,
+          "time": 1793684530766,
+          "data": {
+            "turn": 1,
+            "step": 1,
+            "message": {
+              "role": "tool",
+              "source": {
+                "kind": "tool",
+                "callId": "r5-550de142dad968"
+              },
+              "toolCallId": "r5-550de142dad968",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "R5_RESULT={\"env_keys\": [\"DSH_HOME\", \"DSH_PROFILE\", \"DSH_PROFILE_DIR\", \"DSH_SESSION_ID\", \"DSH_SHELL\", \"DSH_WEB_URL\", \"GIT_PAGER\", \"HOME\", \"LC_CTYPE\", \"NO_COLOR\", \"P2SDK_LLM_API_BASE\", \"P2SDK_LLM_MODEL\", \"P2SDK_PATCH\", \"P2SDK_PORT\", \"P2SDK_PROBE\", \"P2SDK_PROVIDER\", \"PAGER\", \"PATH\", \"PWD\", \"SHLVL\", \"TERM\", \"_\"], \"external\": 200, \"home\": {\"errno\": 2, \"error\": \"No such file or directory\"}, \"loopback\": 200, \"outside\": {\"errno\": 30, \"error\": \"Read-only file system\"}, \"outside_read\": \"readable\", \"tmp\": \"written\", \"workspace\": \"written\"}\n"
+                }
+              ],
+              "isError": false,
+              "id": "b74fc114-9a9e-4787-90f3-d9b5ef815597"
+            },
+            "meta": {
+              "cwd": "/home/lingxufeng/bot/work/p5-parity/evidence/r5-run-rFPpjE/default-real-fake/workspace"
+            }
+          },
+          "sourceEventSeqs": [
+            16
+          ],
+          "surfaceOp": "append"
+        }
+      }
+    ]
+  },
+  {
+    "mode": "network-off",
+    "approvals": 1,
+    "hostWorkspaceExists": true,
+    "hostOutsideExists": false,
+    "hostTmpExists": false,
+    "toolResults": [
+      {
+        "type": "event",
+        "event": {
+          "type": "tool/result",
+          "seq": 21,
+          "time": 1793684534218,
+          "data": {
+            "turn": 1,
+            "step": 1,
+            "message": {
+              "role": "tool",
+              "source": {
+                "kind": "tool",
+                "callId": "r5-d7a9f1a23e0d18"
+              },
+              "toolCallId": "r5-d7a9f1a23e0d18",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "R5_RESULT={\"env_keys\": [\"DSH_HOME\", \"DSH_PROFILE\", \"DSH_PROFILE_DIR\", \"DSH_SESSION_ID\", \"DSH_SHELL\", \"DSH_WEB_URL\", \"GIT_PAGER\", \"HOME\", \"LC_CTYPE\", \"NO_COLOR\", \"P2SDK_LLM_API_BASE\", \"P2SDK_LLM_MODEL\", \"P2SDK_PATCH\", \"P2SDK_PORT\", \"P2SDK_PROBE\", \"P2SDK_PROVIDER\", \"PAGER\", \"PATH\", \"PWD\", \"SHLVL\", \"TERM\", \"_\"], \"external\": 200, \"home\": {\"errno\": 2, \"error\": \"No such file or directory\"}, \"loopback\": 200, \"outside\": {\"errno\": 30, \"error\": \"Read-only file system\"}, \"outside_read\": \"readable\", \"tmp\": \"written\", \"workspace\": \"written\"}\n"
+                }
+              ],
+              "isError": false,
+              "id": "9788e76c-68de-4f09-b593-7f9fc4c31b69"
+            },
+            "meta": {
+              "cwd": "/home/lingxufeng/bot/work/p5-parity/evidence/r5-run-rFPpjE/network-off/workspace"
+            }
+          },
+          "sourceEventSeqs": [
+            16
+          ],
+          "surfaceOp": "append"
+        }
+      }
+    ]
+  },
+  {
+    "mode": "hide-read",
+    "approvals": 1,
+    "hostWorkspaceExists": true,
+    "hostOutsideExists": false,
+    "hostTmpExists": false,
+    "toolResults": [
+      {
+        "type": "event",
+        "event": {
+          "type": "tool/result",
+          "seq": 21,
+          "time": 1793684537756,
+          "data": {
+            "turn": 1,
+            "step": 1,
+            "message": {
+              "role": "tool",
+              "source": {
+                "kind": "tool",
+                "callId": "r5-a2766441a46b88"
+              },
+              "toolCallId": "r5-a2766441a46b88",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "R5_RESULT={\"env_keys\": [\"DSH_HOME\", \"DSH_PROFILE\", \"DSH_PROFILE_DIR\", \"DSH_SESSION_ID\", \"DSH_SHELL\", \"DSH_WEB_URL\", \"GIT_PAGER\", \"HOME\", \"LC_CTYPE\", \"NO_COLOR\", \"P2SDK_LLM_API_BASE\", \"P2SDK_LLM_MODEL\", \"P2SDK_PATCH\", \"P2SDK_PORT\", \"P2SDK_PROBE\", \"P2SDK_PROVIDER\", \"PAGER\", \"PATH\", \"PWD\", \"SHLVL\", \"TERM\", \"_\"], \"external\": 200, \"home\": {\"errno\": 2, \"error\": \"No such file or directory\"}, \"loopback\": 200, \"outside\": {\"errno\": 30, \"error\": \"Read-only file system\"}, \"outside_read\": \"readable\", \"tmp\": \"written\", \"workspace\": \"written\"}\n"
+                }
+              ],
+              "isError": false,
+              "id": "e73c03a2-b72c-48dd-837f-4414eba06e34"
+            },
+            "meta": {
+              "cwd": "/home/lingxufeng/bot/work/p5-parity/evidence/r5-run-rFPpjE/hide-read/workspace"
+            }
+          },
+          "sourceEventSeqs": [
+            16
+          ],
+          "surfaceOp": "append"
+        }
+      }
+    ]
+  }
+]

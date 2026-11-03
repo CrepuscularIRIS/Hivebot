@@ -1,0 +1,279 @@
+{
+  "version": 7,
+  "record": {
+    "identity": {
+      "formatVersion": 4,
+      "createdAt": 1793684636484,
+      "cwd": "/home/lingxufeng/bot/work/p5-parity/evidence/r5-run-5lSrb9/hide-read/workspace",
+      "isSeeded": false,
+      "inheritedEventCount": 0
+    },
+    "rows": {
+      "turnBoundary": {
+        "ver": 2,
+        "seq": 27,
+        "val": {
+          "openTurnStartSeq": null,
+          "lastStepStartSeq": 23,
+          "lastStepBoundary": {
+            "kind": "end",
+            "seq": 25
+          },
+          "lastTurn": 1
+        }
+      },
+      "sandboxMode": {
+        "ver": 1,
+        "seq": 27,
+        "val": "workspace-write"
+      },
+      "approvalState": {
+        "ver": 1,
+        "seq": 27,
+        "val": {
+          "policy": "ask",
+          "turnOpen": false
+        }
+      },
+      "tokenMeasurement": {
+        "ver": 2,
+        "seq": 27,
+        "val": {
+          "headerSeq": 12,
+          "stepStart": null,
+          "anchor": {
+            "headerSeq": 12,
+            "assistantTokens": 10,
+            "usage": null
+          },
+          "invalidSeq": null
+        }
+      },
+      "subagentModelSelectionPolicy": {
+        "ver": 1,
+        "seq": 27,
+        "val": null
+      },
+      "sessionStats": {
+        "ver": 1,
+        "seq": 27,
+        "val": {
+          "turns": 1,
+          "steps": 2,
+          "llmMs": 27,
+          "toolMs": 1726,
+          "ttftMs": 27,
+          "ttftSteps": 2,
+          "decodeMs": 0,
+          "decodeTokens": 0,
+          "lastTurn": 1,
+          "openStep": null,
+          "pendingCalls": {}
+        }
+      },
+      "turnOutline": {
+        "ver": 2,
+        "seq": 27,
+        "val": {
+          "turns": [
+            {
+              "turn": 1,
+              "seq": 4,
+              "prompt": "Run the R5 scripted probe",
+              "response": "R5_DONE"
+            }
+          ],
+          "draft": ""
+        }
+      },
+      "userQuestions": {
+        "ver": 2,
+        "seq": 27,
+        "val": {
+          "inheritedEventCount": 0,
+          "timed": false,
+          "questions": {
+            "active": [],
+            "settled": []
+          }
+        }
+      },
+      "tokenUsage": {
+        "ver": 2,
+        "seq": 27,
+        "val": {
+          "totals": {
+            "uncachedInputTokens": 0,
+            "outputTokens": 0,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "last": null
+        }
+      },
+      "contextPressure": {
+        "ver": 5,
+        "seq": 27,
+        "val": {
+          "surfaceTokens": 3461
+        }
+      },
+      "title": {
+        "ver": 1,
+        "seq": 27,
+        "val": "Run the R5 scripted probe"
+      },
+      "llmRetry": {
+        "ver": 1,
+        "seq": 27,
+        "val": {}
+      },
+      "goal": {
+        "ver": 6,
+        "seq": 27,
+        "val": {
+          "current": null,
+          "seenGoalIds": [],
+          "failure": null
+        }
+      },
+      "agentPreset": {
+        "ver": 1,
+        "seq": 27,
+        "val": "standard"
+      },
+      "modelSelection": {
+        "ver": 3,
+        "seq": 27,
+        "val": {
+          "lastUsed": {
+            "provider": "p2fake",
+            "model": "p2fake"
+          },
+          "pending": null
+        }
+      },
+      "workingDirectory": {
+        "ver": 1,
+        "seq": 27,
+        "val": "/home/lingxufeng/bot/work/p5-parity/evidence/r5-run-5lSrb9/hide-read/workspace"
+      },
+      "contextBreakdown": {
+        "ver": 6,
+        "seq": 27,
+        "val": {
+          "systems": [
+            {
+              "seq": 7,
+              "tokens": 1382
+            }
+          ],
+          "surfaceTokens": 3461,
+          "breakdown": {
+            "systemTokens": 1382,
+            "toolsTokens": 7709,
+            "messageTokens": 2079
+          }
+        }
+      },
+      "titleInput": {
+        "ver": 3,
+        "seq": 27,
+        "val": {
+          "first": {
+            "seq": 8,
+            "text": "Run the R5 scripted probe"
+          },
+          "count": 1,
+          "lastSeq": 8
+        }
+      },
+      "inbox": {
+        "ver": 1,
+        "seq": 27,
+        "val": {
+          "next-turn": [],
+          "next-step": []
+        }
+      },
+      "permissions": {
+        "ver": 2,
+        "seq": 27,
+        "val": {
+          "preset": "workspace-write",
+          "sandbox": "workspace-write",
+          "approval": "ask",
+          "seeded": false
+        }
+      },
+      "subagentCatalog": {
+        "ver": 6,
+        "seq": 27,
+        "val": {
+          "inheritedEventCount": 0
+        }
+      },
+      "subagentTiming": {
+        "ver": 3,
+        "seq": 27,
+        "val": {
+          "descriptorSeen": false,
+          "settledMs": 0
+        }
+      },
+      "subagent": {
+        "ver": 2,
+        "seq": 27,
+        "val": {}
+      },
+      "timeContext": {
+        "ver": 3,
+        "seq": 27,
+        "val": {
+          "lastMessageTime": 1793684638348,
+          "lastInjectionTime": 1793684636588,
+          "lastTurnInjectionTime": null,
+          "browserTurn": 1,
+          "browserTimeZones": []
+        }
+      },
+      "todos": {
+        "ver": 2,
+        "seq": 27,
+        "val": null
+      },
+      "plan": {
+        "ver": 4,
+        "seq": 27,
+        "val": {
+          "active": false,
+          "wanted": null,
+          "running": null,
+          "activeAtLastHeader": false,
+          "entered": false
+        }
+      },
+      "harnessDevLegacyPrompt": {
+        "ver": 1,
+        "seq": 27,
+        "val": {
+          "source": null,
+          "web": null
+        }
+      },
+      "sessionListMetadata": {
+        "ver": 1,
+        "seq": 27,
+        "val": {
+          "blank": false,
+          "lastPromptAt": 1793684636585
+        }
+      },
+      "imageLimits": {
+        "ver": 1,
+        "seq": 27,
+        "val": null
+      }
+    }
+  }
+}

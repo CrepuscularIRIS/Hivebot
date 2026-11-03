@@ -74,8 +74,18 @@ test('侧栏 / 会话 / 审批 / info-pane：U2 fixed 项亮暗数值断言 + �
     await expect(item.locator('time[data-updated]')).toHaveText('刚刚') // A8（文案，无数值）
     await expect(page.locator('.sidebar-head .grok-mark')).toHaveCount(0) // A1：头部无品牌位
     await themed(page, async () => {
-      // A1 待回修 P5-15.f1（→P5-11）：R2 头部 = icon 行 min-height titlebar-block、padding 12 16；main 只有 38 高空拖拽区
-      expect.soft(await css(page.locator('.sidebar-head'), ['height', 'padding']), 'A1').toEqual({ height: '38px', padding: '0px' })
+      // A1（P5-15.f1，P5-11 实现）：R2 icon 行 padding 12 16 / gap 8 / 组内 gap 2 / 钮 24 r6；min-height 断言跟 token 走
+      // （不写死 38：P5-16 改 titlebar 44/52 时不连带红），高 = max(token, 12+24+12)
+      const head = page.locator('.sidebar-head')
+      const block = await page.locator('html').evaluate((el) => getComputedStyle(el).getPropertyValue('--sand-titlebar-block').trim())
+      expect.soft(await css(head, ['min-height', 'padding', 'column-gap', 'justify-content']), 'A1').toEqual({
+        'min-height': block, padding: '12px 16px', 'column-gap': '8px', 'justify-content': 'space-between',
+      })
+      expect.soft((await head.boundingBox())!.height, 'A1 高').toBe(Math.max(parseFloat(block), 48))
+      expect.soft(await css(head.locator('.sidebar-actions'), ['column-gap']), 'A1 组').toEqual({ 'column-gap': '2px' })
+      for (const b of await head.locator('button').all()) {
+        expect.soft(await css(b, ['width', 'height', 'border-top-left-radius']), 'A1 钮').toEqual({ width: '24px', height: '24px', 'border-top-left-radius': '6px' })
+      }
       expect.soft(await css(page.locator('.bot-list'), ['padding']), 'A3').toEqual({ padding: '4px 12px 24px' })
       // A4 待回修 P5-15.f2（→P5-16）：R2 固定高 54、无 min-height 58
       expect.soft(await css(item, ['min-height', 'padding']), 'A4').toEqual({ 'min-height': '58px', padding: '8px' })

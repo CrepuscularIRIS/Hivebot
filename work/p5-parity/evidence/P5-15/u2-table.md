@@ -7,7 +7,7 @@
 
 | # | 项 | 断言名 | 断言值（main 实测） | 状态 |
 |---|---|---|---|---|
-| 1 | A1 侧栏头 | `A1` | `.sidebar-head` height 38px、padding 0px（另：`.grok-mark` 计数 0，非 computed） | **待回修 P5-15.f1**（R2 覆盖 → P5-11） |
+| 1 | A1 侧栏头 | `A1`、`A1 高`、`A1 组`、`A1 钮` | `.sidebar-head` min-height = `--sand-titlebar-block` 当前值（38px）、padding 12px 16px、column-gap 8px、space-between；高 = max(token, 48)；`.sidebar-actions` gap 2px；三钮 24×24 r6（另：`.grok-mark` 计数 0，非 computed） | **fixed@0c556fa**（P5-11 实现，断言由 P5-15.f1 改为 R2 值）。接缝：P5-15 锁 main 旧值 38/0，P5-11 合并后 main 红；min-height 改断言 token（不写死 38），P5-16 改 titlebar 44/52 不连带红 |
 | 2 | A3 列表 padding | `A3` | `.bot-list` padding 4px 12px 24px | 绿 |
 | 3 | A4 条目高 / padding | `A4`、`A4 实高` | min-height 58px、padding 8px；实高 ≥58 | **待回修 P5-15.f2**（R2 覆盖 → P5-16） |
 | 4 | A5 grid / gap | `A5` | display grid、列 `34px …`、column-gap 9px | gap **待回修 P5-15.f2**（R2 §0.1 A4 行 gap 8）；列宽随 A6 |

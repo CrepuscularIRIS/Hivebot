@@ -486,19 +486,31 @@ it('⑧ cwd=PKG_ROOT/仓根：策略代码只读 EROFS、sha 不变、PKG_ROOT/.
   expectProbe(rA, 'guard_append', 'errno30')
   expectProbe(rA, 'dotdsh', '1')
 
+  // 布局分歧（P5-01.f1）：主仓检出的 TEST_HOME（决策 8 的 .test-homes/）在仓根之下
+  // → cwd=仓根即「工作区是 HOME 祖先」→ 决策 13 ④ wrapper fail-closed 拒绝运行，
+  // 探针一律不执行；worktree 布局仓根在 /tmp 下不含任何 HOME，探针照常跑。
+  const repoRootContainsHome = [TEST_HOME, PASSWD_HOME].some(
+    (h) => h === REPO_ROOT || h.startsWith(`${REPO_ROOT}/`),
+  )
   const frameB = await bashTurn(rt, REPO_ROOT, [
     pyWrite('skill_append', skillMd, 'a'),
     pyWrite('hook_append', hooksPy, 'a'),
     pyWrite('githead_append', join(REPO_ROOT, '.git', 'HEAD'), 'a'),
     pyWrite('gitdirhead_append', gitdirHead, 'a'),
   ].join('\n'))
-  const rB = probeResults(frameB)
-  expectProbe(rB, 'skill_append', 'errno30')
-  // hooks 目录是主仓未跟踪内容：主仓在=EROFS(30)，worktree 缺目录=ENOENT(2)（两布局各写死）
-  expectProbe(rB, 'hook_append', existsSync(join(REPO_ROOT, '.claude', 'hooks')) ? 'errno30' : 'errno2')
-  // .git 在主仓是目录（EROFS）；worktree 是指针文件（ENOTDIR=17→errno17）。对象库另由 gitdir 探针覆盖
-  expectProbe(rB, 'githead_append', existsSync(join(REPO_ROOT, '.git', 'HEAD')) ? 'errno30' : 'errno20')
-  expectProbe(rB, 'gitdirhead_append', 'errno30')
+  if (repoRootContainsHome) {
+    expect(frameB).toContain('bwrap: ')
+    expect(frameB).toContain('refusing to run')
+    expect(frameB, '主仓布局：wrapper 拒绝后探针不执行').not.toContain('RESULT')
+  } else {
+    const rB = probeResults(frameB)
+    expectProbe(rB, 'skill_append', 'errno30')
+    // hooks 目录是主仓未跟踪内容：主仓在=EROFS(30)，worktree 缺目录=ENOENT(2)（两布局各写死）
+    expectProbe(rB, 'hook_append', existsSync(join(REPO_ROOT, '.claude', 'hooks')) ? 'errno30' : 'errno2')
+    // .git 在主仓是目录（EROFS）；worktree 是指针文件（ENOTDIR=20）。对象库另由 gitdir 探针覆盖
+    expectProbe(rB, 'githead_append', existsSync(join(REPO_ROOT, '.git', 'HEAD')) ? 'errno30' : 'errno20')
+    expectProbe(rB, 'gitdirhead_append', 'errno30')
+  }
 
   expect([wrapPath, skillMd, gitdirHead].map(sha256)).toEqual(before)
   // P5-02 起 src/policy/guard.mjs 真实存在（bash 侧 append 探针 errno30 与

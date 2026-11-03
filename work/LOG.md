@@ -761,3 +761,8 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 22:47 用户反馈：e2e 测试弹窗刺眼 → U-33 立项（xvfb-run 包 test:e2e，默认虚拟显示），排 U-32 后；前置：用户自己 sudo 装 xvfb（已请求）
 22:47 tick | U-32 在跑（2 commit + 9 文件在改，O1/O3 收尾/测试中，未 stale）| Xvfb 未装（等用户）→ U-33 仍挂起 | 无事可派 | ready 未派 = 0 | load 4.6 高（GPU），e2e 会慢
 22:50 Xvfb 已装并冒烟通过（用户授权 sudo，密码未落盘）；U-33 前置完成，等 U-32 合并即派
+22:51 用户指令「直接发送，不要再闪烁」→ 已 SendMessage 给 U-32 builder：剩余 e2e 一律 xvfb-run 虚拟显示跑，真实桌面不再弹窗（若其已收工则带消息恢复执行）
+22:57 tick | U-32 收到 Xvfb 指令并生效：Xvfb :99 在跑（xvfb-run 1600x1000），e2e 已切虚拟显示，用户桌面停止弹窗 | 全量 e2e 在跑（load 3.6 会慢）| 无事可派 | ready 未派 = 0
+23:00 U-32 builder 回报完成（3 commits，tests/ 6 文件 +140/-17，224 单测+54 e2e 绿，e2e 已全程 Xvfb）→ verifier 已派（独立复跑含 Xvfb 全量，反向自证抽查）| U-33 等 U-32 合并
+23:07 tick | verifier 在验 U-32（REPORT-U-32.md 已落主仓；vitest/playwright 进程 28 个在跑，Xvfb 下）| 无事可派 | ready 未派 = 0 | load 3.7
+23:13 U-32 验收 PASS（head 4af3c9b，三项复跑独立绿，O1-O4 全 PASS）→ 已合并 e1e9a15（6 文件逐清单 checkout，worktree 已清）| main 回归：build✓ 单测 224/224✓ e2e Xvfb 后台跑中 | U-33 已派（xvfb 默认 + evidence 不刷脏，含逃生门 PBOTS_E2E_NO_XVFB）

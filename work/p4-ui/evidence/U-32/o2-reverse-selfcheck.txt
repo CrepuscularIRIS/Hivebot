@@ -1,0 +1,29 @@
+U-32 O2 反向自证实录（verifier 独立复跑，2026-11-02 23:0x）
+================================================================
+步骤：sed 摘 NewBotDialog.tsx:54 守卫（if (stale) return → if (stale && false) return）
+→ pnpm -C app/ui build → 单跑 settings.spec.ts -g "O2"（Xvfb）
+
+--- 摘守卫后（预期红，实测红） ---
+    Expect "toBeChecked" locator('dialog[data-dialog="new-bot"]').locator('[data-preset-option="p2-beta"] input') with timeout 5000ms
+    - waiting for locator('dialog[data-dialog="new-bot"]').locator('[data-preset-option="p2-beta"] input')
+      14 × locator resolved to <input checked type="radio" name="preset" value="p2-beta"/>
+         - unexpected value "unchecked"
+
+    248 |     // 覆盖尾程余量（屏障已消掉 2.5s 不确定区间；自证见 REPORT-U-32：摘 stale 守卫此用例必红）。
+    249 |     await page.waitForTimeout(500)
+  > 250 |     await expect(dlg.locator('[data-preset-option="p2-beta"] input')).toBeChecked() // 仍是新预填（修复前被 round1 覆盖回 p2-alpha）
+        at /tmp/bot-wt/U-32/app/ui/tests/e2e/settings.spec.ts:250:71
+
+  1 failed
+    tests/e2e/settings.spec.ts:206:5 › P-D ④(O2)：关闭后重开，迟到的旧轮次候选不覆盖新预填（失效 token）
+
+--- 恢复守卫（git checkout --）→ rebuild → 同用例复跑（实测绿） ---
+  ✓  1 tests/e2e/settings.spec.ts:206:5 › P-D ④(O2)：关闭后重开，迟到的旧轮次候选不覆盖新预填（失效 token） (6.6s)
+
+  1 passed (7.0s)
+
+--- 终态 ---
+git checkout -- app/ui/renderer/plugins/settings/NewBotDialog.tsx 后：
+git rev-parse HEAD = 4af3c9b605e12787881707508f18551c94275ffa（无漂移）
+git diff 0025559..HEAD --name-only | grep -v "^app/ui/tests/" → 0 行（零产品代码）
+git status --porcelain → 0 行（工作树净）

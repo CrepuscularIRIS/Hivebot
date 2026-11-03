@@ -1,0 +1,20 @@
+PASS | 双引号 | got="vfy-dummy-1" expected="vfy-dummy-1"
+PASS | 单引号 | got="vfy-dummy-1" expected="vfy-dummy-1"
+PASS | 行内注释(空白+#) | got="vfy-dummy-1" expected="vfy-dummy-1"
+PASS | export 前缀 | got="vfy-dummy-1" expected="vfy-dummy-1"
+PASS | 行首空白 | got="vfy-dummy-1" expected="vfy-dummy-1"
+PASS | 引号内 # | got="a # b" expected="a # b"
+PASS | 引号后注释 | got="vfy-dummy-1" expected="vfy-dummy-1"
+PASS | 单引号+尾注释 | got="vfy-dummy-1" expected="vfy-dummy-1"
+PASS | CRLF | got="vfy-dummy-1" expected="vfy-dummy-1"
+PASS | tab 前注释 | got="vfy-dummy-1" expected="vfy-dummy-1"
+PASS | 无空格 # 保留(保守规则) | got="vfy-a#b" expected="vfy-a#b"
+PASS | 空值 | got=undefined expected=undefined
+PASS | 空引号 | got=undefined expected=undefined
+PASS | 值区纯注释 | got=undefined expected=undefined
+PASS | 整行注释跳过 | got=undefined expected=undefined
+PASS | 前缀不误配(KEY2) | got="vfy-right" expected="vfy-right"
+PASS | 不崩溃:未闭合引号 | got="\"unclosed" expected="\"unclosed"
+PASS | env 优先 | got="vfy-from-env"
+
+TOTAL pass=18 fail=0

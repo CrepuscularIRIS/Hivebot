@@ -154,8 +154,18 @@
 ## Q-015 [open] 契约变更 C2：审批自主化的接口与不变式修订（v2 六件）
 - slug：p5-parity ｜ 类型：契约 ｜ 阻塞：W1-AP/W2-AP 实现（调研与 W1-AP-0/q 不受影响）｜ 提出：2026-11-03 00:30，v2 修订 01:40
 - 背景：BRIEF v2 §10.9，与 Q-013 配套，Q-013 答复前不合入。
-- 内容六件（v2.1 增补两条语义）：① M1 新增 `pbots/approvals.alwaysAllow {eventId}`（main 反查工具+bot、**写盘成功后才代答 allowed-once**；仅连接器写工具的 eventId 有效）/ `approvals.list {sessionId}` / `approvals.revoke {sessionId, serverName+rawName}`（**稳定身份键，不用归一化 toolName**）；② session/create 的 cwd 改由 main 强制为 `workspaces/<botId>`，renderer 传入即拒；③ P4B D3「无始终允许入口」修订为「仅连接器写工具可始终允许」，D9 其余不变，「renderer 只发 allowed-once/rejected」不变式保持；④ SDK shell-ask 由必问泛化为按档位查表；⑤ 新增 `pbots/bots.migrateWorkspace`（用户触发的旧 bot 迁移，Q-013 (e) 的落地）；⑥ M1/M2 增加对 dsh `user-questions/request` 提问事件的作答分支（A14/R7 落地）。
+- 内容六件（v2.1 增补两条语义）：① M1 新增 `pbots/approvals.alwaysAllow {eventId}`（main 反查工具+bot、**写盘成功后才代答 allowed-once**；仅连接器写工具的 eventId 有效）/ `approvals.list {sessionId}` / `approvals.revoke {sessionId, serverName+rawName}`（**稳定身份键，不用归一化 toolName**；v2 补充：配置层禁止 serverName 含 `__`，防 publicName 键碰撞串 server——D2-r1 A-HIGH）；② session/create 的 cwd 改由 main 强制为 `workspaces/<botId>`，renderer 传入即拒；③ P4B D3「无始终允许入口」修订为「仅连接器写工具可始终允许」，D9 其余不变，「renderer 只发 allowed-once/rejected」不变式保持；④ SDK shell-ask 由必问泛化为按档位查表；⑤ 新增 `pbots/bots.migrateWorkspace`（用户触发的旧 bot 迁移，Q-013 (e) 的落地）；⑥ M1/M2 增加对 dsh `user-questions/request` 提问事件的作答分支（A14/R7 落地）。
 - 选项：
   - A（推荐）：六件全准（含 v2.1 增补两条语义）
   - B：有修改（请指明）
+- 答复：
+
+## Q-016 [open] D-2 分歧：连接器分档走 ②元数据桥 还是 ③统一ASK（含落行二选一）
+- slug：p5-parity ｜ 类型：取舍（D 投票分歧）｜ 阻塞：P5-23（暂按 ③ 实现口径准备，等本答复定稿）｜ 提出：2026-11-03 04:3x
+- 背景：两席投票分歧（panels/D2-r1.md）：Opus 席投 ③「不做 hint 分档、所有连接器统一按 ASK 处理」——理由：② 按 server 自报 hint 放行，server 报假值就静默放行且测不出（MCP 规范原文也警示不可信 annotations；destructiveHint 规范默认 true，「未标注归读」违反规范）；③ 最坏只是多点几次卡。Sol 席投 ②「自建桥读 hints 分档」——理由：若你把第 8 行（破坏性不可始终允许）答「否」，③ 下就没有任何连接器能「始终允许」，授权功能（P5-24）对所有连接器失效。
+- 连带二选一（必答）：③ 下所有连接器统一落到——**第 7 行语义（ASK + 可「始终允许」，推荐，P5-24 保留）** 还是 第 8 行语义（ASK + 不可始终允许，P5-24 与身份桥一起砍）
+- 选项：
+  - A（推荐，暂定执行中）：③ + 落第 7 行（改动最小；以后想分档再补桥）
+  - B：② 自建元数据桥分档（读类 ALWAYS 自动放行，代价：信任 server 自报）
+  - C：③ + 落第 8 行（连接器全部不可始终允许，P5-24 缩水为纯 bash 外无授权对象）
 - 答复：

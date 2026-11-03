@@ -802,3 +802,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 03:5x D-1 scout 回报（slirp 官方静态包/免sudo ①⑤有条件成立/②不可行/DNS 别名补项）→ D-1+D-2 两道 /panel D 双席投票已派（4 judge）
 02:31 P5-07 验收 PASS（红基线抽查过）→ 合并 4abc513（6 文件清单，worktree 已清）| main 回归后台跑中 | testAnswerEvent 二值签名记入 P5-28 派发提示词
 02:32 D-1 = ⑤ 会话级联网许可（两席一致，含席 A argv 哈希一次性收紧 + supervisor 握手序，D1-r1.md 汇总）| D-2 席 B=②，等席 A
+02:33 D-2 分歧（A=③/B=②）→ Q-016（暂按 ③+第7行执行标暂定）；Q-015 ①补 serverName 禁 __ 防键碰撞；B-HIGH 注册代际绑定进 P5-23/24 验收

@@ -260,6 +260,10 @@ test('P-C ②：安装旅程（串行、可离开页面、重拉 #16 → ✓ →
     rt.writeScriptCalls(x, [mcpCall(CONNECTOR_TOOL, { path: helloPath }), textCall(['D5 读取完成'])])
     await page.fill('[data-composer]', '读一下 hello.txt')
     await page.press('[data-composer]', 'Enter')
+    // P5-21 连接器 ASK 化（Q-016 ③）：mcp__ 调用出审批卡，先批准 allowed-once 再等结果（P5-21.f1，答卡模式同 journey D4 段）
+    const d5Row = page.locator(`[data-pane="${x}"] .tool-row`)
+    await d5Row.locator('[data-approval-card]').waitFor({ timeout: 20_000 })
+    await d5Row.locator('[data-action="approve"]').click()
     await expect(page.locator(`[data-pane="${x}"] .tool-row[data-status="done"]`), 'X 实调连接器工具成功').toBeVisible({ timeout: 60_000 })
     await page.locator(`[data-pane="${x}"] .tool-row .tool-line`).click() // 展开看结果
     await expect(page.locator(`[data-pane="${x}"] .tool-detail`)).toContainText(HELLO_TEXT)

@@ -786,3 +786,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 02:4x BRIEF v2.1 增补完成（16 行修订账；§7 扩到 12 行含 web 行与 32 工具补全；W1-AP-0 扩为全入口纯收紧不等 Q）| Q-013 升 v2.1（真实后果 7 条 + 第 10 行 web 请用户定）、Q-015 增补两条语义 | director 已派写 PLAN（G1-r2 六条 HIGH = 首批任务；D-1/D-2 出题给 /panel D）
 03:2x W0 回报：R2 视觉数值完成（AUD 全部 [78] 项有值 + 145 keyframes 16 类分组 + 3 处修正旧结论 + 2 处推翻 AUD 修复建议：B6 裸行不加描边卡、B8 radius 24 非 10）——U3/U4 规格就绪，等 PLAN 吸收
 03:5x PLAN v1 就位（29 任务：ready 9 / todo 3 / blocked 17；G1-r2 六条 HIGH 对到 P5-01..07；决策 5 新侧门 /run/user/<uid> socket 已进 P5-01 遮蔽清单）| G2-r1 两席已派 + D-2 前置 scout 已派 | R3 仍在跑
+04:1x D-2 scout 回报：(a)接口否/hints Deferred 无排期 (b)否 (c)包入口未导出 publicToolName（可第3级复制）——选项①无路径、②需桥（第二连接未实证）、③也需身份表；上游无 main 分支（master 与本地同 SHA）

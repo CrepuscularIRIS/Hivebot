@@ -62,11 +62,20 @@ function expandEntry(home, entry) {
   return out
 }
 
-/** 宿主 tmp 下既有 p2sdk-handoff-* 目录（其他实例的 token 交接目录）。 */
+/** 宿主 tmp 下既有 p2sdk-handoff-* 目录（其他实例的 token 交接目录）。
+ * ponytail: 只收最近修改的 32 个 —— argv 有界（bwrap 参数上限 9000），测试残留会
+ * 无限增长；其余由 workspace-write 的 --tmpfs /tmp 覆盖，read-only 会话里更旧的
+ * handoff 仍可见（需要时按 liveness 过滤或换成 tmpfs 下统一布局）。 */
+const HANDOFF_SIBLING_CAP = 32
 function handoffSiblings() {
   let names
   try { names = readdirSync(tmpdir()) } catch { return [] }
-  return names.filter((n) => n.startsWith('p2sdk-handoff-')).map((n) => join(tmpdir(), n)).filter((p) => isDir(p))
+  const dirs = names.filter((n) => n.startsWith('p2sdk-handoff-')).map((n) => join(tmpdir(), n)).filter((p) => isDir(p))
+  return dirs
+    .map((p) => ({ p, m: statSync(p).mtimeMs }))
+    .sort((a, b) => b.m - a.m)
+    .slice(0, HANDOFF_SIBLING_CAP)
+    .map((x) => x.p)
 }
 
 /** .git 策略根：普通仓是目录；worktree 下是指针文件，解析 gitdir 指向的真实仓库对象库。 */

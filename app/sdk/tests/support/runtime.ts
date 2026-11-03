@@ -21,6 +21,8 @@ export interface Runtime {
   /** Barrier release: touch $P2SDK_HOME/gates/<gateId> (no port, no signal). */
   release(gateId: string): void
   child: ChildProcess
+  /** Launcher stderr so far (P5-01 ⑨: WARN 行计数). */
+  readStderr(): string
   stop(): Promise<void>
 }
 
@@ -54,27 +56,31 @@ export function launcherSpawnEnv(): NodeJS.ProcessEnv {
 
 /** Boot the p2sdk runtime in mock mode and return a connected client. */
 export async function launchRuntime(opts: LaunchOptions = {}): Promise<Runtime> {
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-runtime-'))
+  // P5-01: opts.env 可覆盖 P2SDK_HOME（沙箱用例把 DSH_HOME 放进测试树）；返回值与
+  // 子进程 env 必须同源，fake 脚本目录（$DSH_HOME/fake）才找得到。
+  const home = opts.env?.P2SDK_HOME ?? mkdtempSync(join(tmpdir(), 'p2sdk-runtime-'))
   // T-01.f3 R1: credentials hand off through a separate random dir that never
   // enters the dsh child environment (start.ts drops P2SDK_HANDOFF there).
   const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
   const child = spawn(process.execPath, [join(PKG_ROOT, 'scripts', 'start.mjs')], {
     env: {
       ...launcherSpawnEnv(),
-      ...opts.env,
       P2SDK_PROVIDER: 'mock',
       P2SDK_HOME: home,
       P2SDK_HANDOFF: handoff,
       P2SDK_PORT: '0',
       P2SDK_READY_TIMEOUT_MS: String(opts.readyTimeoutMs ?? 60_000),
+      // P5-01: opts.env 放最后——沙箱用例要覆盖 P2SDK_HOME（DSH_HOME 落进遮蔽/再遮清单）
+      ...opts.env,
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   })
   let output = ''
+  let stderr = ''
   child.stdout!.setEncoding('utf8')
   child.stderr!.setEncoding('utf8')
   child.stdout!.on('data', (c: string) => { output += c })
-  child.stderr!.on('data', (c: string) => { output += c })
+  child.stderr!.on('data', (c: string) => { output += c; stderr += c })
 
   const deadline = Date.now() + (opts.readyTimeoutMs ?? 60_000)
   while (Date.now() < deadline) {
@@ -94,6 +100,9 @@ export async function launchRuntime(opts: LaunchOptions = {}): Promise<Runtime> 
     token,
     client,
     child,
+    readStderr() {
+      return stderr
+    },
     release(gateId: string) {
       mkdirSync(join(home, 'gates'), { recursive: true })
       writeFileSync(join(home, 'gates', gateId), '')

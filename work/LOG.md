@@ -798,3 +798,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 02:23 P5-07 builder 完成（b839f6a：ledger.event 判别单点 + 提问 invalid-args + 协议级拒绝；230 单测+54 e2e 绿）→ verifier 已派；新发现 testAnswerEvent 签名二值留 P5-28 处置
 02:23 P5-14 builder 完成（b1b5ad6，token+DPR2 量测法；.f1 接线立行）→ verifier 已派 | /tmp 残留检查中
 03:3x /tmp 卫生：清 2 小时前 bot-* 残留 14764 个（24G→9.8G；保留 1253 个近 2h 的=在途 e2e 正在用）；根因=e2e helper 从不清理测试 HOME，待立任务修 helper teardown | P5-14 verifier 已派
+02:27 P5-11 builder 完成（ebd724c：三钮贴左/+钮接 new-bot/CSS 星标/0.18 持久化键；56 e2e 零 flaky；自修折叠横向滚动）→ 待派 verifier
+03:5x D-1 scout 回报（slirp 官方静态包/免sudo ①⑤有条件成立/②不可行/DNS 别名补项）→ D-1+D-2 两道 /panel D 双席投票已派（4 judge）

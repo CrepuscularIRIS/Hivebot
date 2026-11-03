@@ -1,0 +1,17 @@
+== P5-07 verifier 复跑证据 ==
+Tue Nov  3 02:26:00 AM EST 2026
+
+-- HEAD --
+b839f6a fix(p5): W1-AP-q ledger 按事件类别判别（P5-07）
+(clean)
+
+-- pnpm build --
+✓ built in 1.11s (见 VERIFY 报告)
+
+-- vitest run --
+Test Files 27 passed (27) / Tests 230 passed (230)
+
+-- 红基线 ⑤：摘掉 deadline.ts 判别后 --
+Test Files 1 failed (1) / Tests 1 failed | 7 passed (8)
+失败点: deadline.test.ts:255 expect(q.kind).toBe('rejected') — 提问 outcome 变 {kind:'result'}
+恢复 git checkout 后: Tests 8 passed (8)

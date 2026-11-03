@@ -794,3 +794,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 02:1x PLAN v2.1 定稿（G1/G2 全闭环）→ 首批 12 agent 派出：builder P5-01/05/07、ux-proposer 席 A/C ×3 任务（P5-11/12/13）、frontend-dev P5-14/15、D-1 前置 scout（slirp/pasta 免 sudo）；R4b 已回（P5-27 解锁）；ready 未派 = 0（其余 blocked 等 Q/D/R3）
 02:11 提案进度：P5-11 两席齐（A 自落盘 83 行 / C 代录）→ frontend-dev 已派定稿；P5-12/P5-13 席 C 已代录，等席 A
 02:5x P5-13 席 A 提案落盘（84 行，反二选一：单行 52px + identity 结构，附三方案 GU 对比表）；两处超区域改动（sand-tokens titlebar token、window.ts）待追认——sand-tokens.css 与在途 P5-14 重叠，P5-13 实现排 P5-14 合并后
+03:1x P5-15 完成（feat/P5-15 @83a39ab，70 断言全绿，产品零改动）→ verifier 已派；报告被 hook 拦由主会话代录，.f1-.f4 待回修已立行 | P5-12 两席齐（席 A 实证阈值 900000ms/跨日）→ frontend-dev 已派（PLAN ② 修订 + store.ts 区域追认）| P5-11 e2e 在跑

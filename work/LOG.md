@@ -879,3 +879,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 15:02 P5-22 回归复跑 304 全绿闭环；P5-56 完成（orbit/sending 补齐+reduced-motion 帧差0+对照台 9/9）→ verifier 派发 | grok-shim 稳定红立 P5-51.f2（/tmp 工作区不可见）
 15:07 P5-21.f1 builder 完成（8a47a64：3 处答卡插入，64/65 绿唯一红=f2 认领）→ verifier 抽验派发
 15:08 P5-56 验收 PASS → 合并（persona 映射补齐），p5 done 29/33
+15:13 P5-21.f1 验收 PASS → 合并（旅程答卡 3 处）| verifier 报 P5-52 worktree 残留 8 进程归属在跑任务不清

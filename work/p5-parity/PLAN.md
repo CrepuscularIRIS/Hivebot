@@ -227,3 +227,4 @@ status：ready = 现在可派；todo = 只差本 PLAN 内的前序任务；block
 | P5-R10 | RE 跟进：0.78.1 tool-call 行在桩下静默丢行（P5-53 发现3，字段二分无效，R3 原样复现）——定位根因补桩或确认 bundle 侧条件，P5-55/41 差异表保真依赖 | reverse-engineer | /dev/shm 解包树（只读） | – | done | – | – | 桩下 tool 行渲染或给出不可渲染的机制结论 | |
 | P5-51.f1 | e2e 盲区（VERIFY-P5-51 f1）：持久条目侧别不设防（live 流式撑绿）——加 reload 后 assistant 侧+pre≥1 断言 | builder | app/ui/tests/e2e/grok-shim.spec.ts | P5-51 | running | – | – | 摘 :71 role 新段红；全量 e2e 绿 | |
 | P5-21.f1 | e2e 适配：P5-21 连接器 ASK 化后 D5 旅程（market.spec P-C② + d4-d5-d6 journey 的连接器调用段）需先答审批卡再断言 tool-row done（语义合法变化非回归；复用既有审批卡 helper）| builder | app/ui/tests/e2e/{market.spec.ts,journeys/d4-d5-d6-journey.spec.ts} | P5-21 | running | – | – | 两文件绿 + 全量 e2e 绿（grok-shim 36s 超时单跑绿=flake 观察项） | |
+| P5-22.f1 | claim_permit 原子性并发用例（VERIFY-P5-22 M 级缺口：非原子版全量仍绿）——同刻 N 个 wrapper 抢同一许可恰一次联网 | builder | app/sdk/tests/e2e/request-network.test.ts | P5-22 | todo | S | – | 注入非原子实现红；原子版并发恰 1 次；全量绿 | |

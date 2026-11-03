@@ -856,3 +856,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 12:52 S0+R9 完成（0.18 前端本机可建可跑 U0 全过；R9 18 资产同 sha 平替+persona=代码内绘 SVG；P5-51 实底 35+13 已录）→ P5-50/P5-53 解锁并派 | 在途 10
 13:01 sdk 三跑定位=H3 负载 flake（第三跑 252 全绿）；P5-28 验收 PASS → 合并 5f316c0（verifier 报的 TOCTOU 系其旧基点，main 已由 H2 修掉），ui 回归后台 | P6-01 完成（c43dcaa 33 例）报告代录
 13:01 P5-27 done；S-2 补证写进 Q-021（(h) 全链实证，A 前提满足）；P6-01 verifier 已派 | done 22/33（p5）
+13:06 P6-02 builder 完成（真模型冒烟出现真实三段式；250 sdk 绿；偏差 4 条有据）→ verifier 派发
+13:07 P5-H1 builder 完成（tmp-sweep 登记簿机制，sdk/ui 全绿四类残留全 0）→ verifier 派发 | **H3 根因实锤=TEST_HOME 硬编码并行互踩**，行已更新 | 新问题 4 条记档（zoo 前缀 60 处/生产 handoff/…）

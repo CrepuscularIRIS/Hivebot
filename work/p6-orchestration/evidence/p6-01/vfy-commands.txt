@@ -1,0 +1,18 @@
+== P6-01 verify · 2026-11-03 13:07:54 · HEAD c43dcaabed17d0d21d73ecf92a05425e1ef90570 base 5b4b16e ==
+
+== [1] git diff 5b4b16e..c43dcaa --name-status (reduce.ts 不在列, plugins/ 零改动) ==
+A	app/ui/renderer/fold/turn-fold.ts
+A	app/ui/tests/unit/fold/turn-fold.test.ts
+
+== [1b] reduce.ts diff 行数 ==
+0
+
+== [2] setup (HOME=/tmp/bot-vfy-P6-01/home) ==
+app/ui: Done in 345ms / app/sdk: Done in 350ms (pnpm install --frozen-lockfile, Already up to date)
+
+== [3] pnpm -C app/ui exec vitest run tests/unit/fold ==
+ Test Files  1 passed (1)
+      Tests  33 passed (33)
+   Duration  127ms (tests 40%, import 33%, transform 17%, worker 10%, environment 1%)
+
+== [4] pnpm -C app/ui exec vitest run (全量) ==

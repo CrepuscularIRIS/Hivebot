@@ -23,6 +23,9 @@
   --dsw-alias-border-l2: var(--sand-border-tertiary-translucent);
   --dsw-alias-border-l3: var(--sand-border-secondary-translucent);
   --dsw-alias-border-l4: var(--sand-border-primary-translucent);
+  /* P5-14 E5：L1/L2 细边宽度（0.18 production.css:43 `.5px solid var(--sand-border-weak)`）；DPR 1 下浏览器吸附为 1px，hidpi 才显 .5px */
+  --dsw-alias-border-l1-width: .5px;
+  --dsw-alias-border-l2-width: .5px;
   --dsw-alias-interactive-bg-hover: var(--sand-bg-hover);
   --dsw-alias-interactive-bg-active: var(--sand-bg-active);
   --dsw-alias-interactive-bg-hover-accent: var(--sand-bg-accent-secondary);

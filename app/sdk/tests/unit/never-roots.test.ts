@@ -131,6 +131,28 @@ describe('computeRoots', () => {
     expect(roots.policyRoots).toEqual([join(home, 'pkg'), join(repo, '.claude'), join(repo, 'gitdir-real')])
   })
 
+  it('guardRoots（P5-02 决策 13 ①/③ 划分）：hardRoots 含 /proc 与全部硬根、dataMaskRoots 排除 HOME 子树', () => {
+    const { home, dataDir, passwdHome } = fakeTree()
+    const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
+    const roots = computeRoots({
+      envHome: home, passwdHome, home: join(home, '.dsh-x'), handoff,
+      dataDirs: [dataDir], pkgRoot: join(home, 'pkg'),
+    })
+    const g = roots.guardRoots
+    expect(g.hardRoots, '整个 /proc 是硬 NEVER（决策 13 ① v2）').toContain('/proc')
+    expect(g.hardRoots).toContain(join(home, '.ssh'))
+    expect(g.hardRoots).toContain(join(passwdHome, 'miniconda3', '.condarc'))
+    expect(g.hardRoots).toContain(handoff)
+    expect(g.hardRoots).toContain(join(home, '.dsh-x')) // DSH_HOME 本身就是硬根
+    expect(g.hardRoots).toContain(`/run/user/${process.getuid()}`)
+    expect(g.hardRoots).toContain(join(dataDir, 'standing-grants.json'))
+    // dataMaskRoots = maskRoots 排除 HOME（及其子树）：数据根在；HOME 下的 DSH_HOME
+    // 被排除无妨 —— ① 已整根覆盖；HANDOFF 在 /tmp 下（非 HOME 子树）保留
+    expect(g.dataMaskRoots).toContain(dataDir)
+    expect(g.dataMaskRoots).toContain(handoff)
+    expect(g.dataMaskRoots.find((m) => m === home || m.startsWith(home + '/')), 'HOME 本体不进 dataMaskRoots').toBeUndefined()
+  })
+
   it('本机真实布局：passwd home 工具链与 /run/user/<uid> 都在（只探存在性）', () => {
     const real = userInfo().homedir
     const { home } = fakeTree()

@@ -208,6 +208,37 @@ function sandboxRow(cfg: StartConfig): string {
 }
 
 /**
+ * P5-02 决策 6/13: the guard row feeding src/policy/guard.mjs (mounted by
+ * approval.yml BEFORE p2sdk-shell-ask — pre-execute is a waterfall and NEVER
+ * must run first). The whole roots list comes from computeRoots (one source,
+ * two consumers: wrapper argv here via sandboxRow, guard config here); the
+ * row only overrides config, so a missing guard row leaves the approval.yml
+ * insert row without roots → guard.mjs fails loud at load (决策 6).
+ */
+function guardRow(cfg: StartConfig): string {
+  const roots = computeRoots({
+    envHome: cfg.envHome,
+    home: cfg.home,
+    handoff: cfg.handoff,
+    dataDirs: cfg.dataDirs,
+    extraMaskRoots: cfg.extraMaskRoots,
+    pkgRoot: PKG_ROOT,
+  })
+  const g = roots.guardRoots
+  const list = (xs: readonly string[]): string => (xs.length === 0 ? ' []' : `\n${xs.flatMap((p) => [`    - '${yamlScalar(p)}'`]).join('\n')}`)
+  return `\
+- id: p2sdk-fs-guard
+  config:
+    roots:
+      hardRoots:${list(g.hardRoots)}
+      dataMaskRoots:${list(g.dataMaskRoots)}
+      homes:${list(roots.homes)}
+      toolchainDirs:${list(roots.toolchainDirs)}
+      policyRoots:${list(roots.policyRoots)}
+`
+}
+
+/**
  * Generated overlay applied after profile/patches/p2sdk.yml: inserted rows need
  * absolute plugin specifiers because the $DSH_HOME profile workspace has no
  * node_modules to resolve package names against.
@@ -240,6 +271,7 @@ export function writeRuntimePatch(cfg: StartConfig): string {
         dir: '${cfg.handoff}'
 `)
   rows.push(sandboxRow(cfg))
+  rows.push(guardRow(cfg))
   writeFileSync(path, rows.join(''))
   return path
 }

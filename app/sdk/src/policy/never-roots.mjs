@@ -147,5 +147,26 @@ export function computeRoots(cfg) {
   const policyRoots = [cfg.pkgRoot, join(repoRoot, '.claude'), gitPolicyRoot(repoRoot)]
     .filter((p) => typeof p === 'string' && isDir(p))
 
-  return { homes, maskRoots, neverRoots, toolchainDirs, policyRoots }
+  // P5-02 决策 13 ①/③ 的 guard 侧划分（决策 6 单源的第二个消费者）：
+  // hardRoots = 凭证实根 + /proc（整个，v2）+ /run/user + DSH_HOME + handoff（含
+  // 宿主 siblings）——读写都拒、例外不越过。/proc 只进 guard：wrapper 侧遮掉
+  // /proc 会砸掉沙箱自己的 procfs（bwrap --proc），而文件工具读 /proc/self/
+  // environ 正是 decision 13 ① 要堵的洞。dataMaskRoots = maskRoots 排除 HOME
+  // 及其子树：HOME 整棵走 ③ 软遮蔽（例外放行生产工作区），非 HOME 数据根的
+  // 顶层条目（除 workspaces）由 guard 的 expandTopEntries 展开 ①。
+  const guardHardRoots = dedupe([
+    ...credentialConcrete,
+    '/proc',
+    `/run/user/${uid}`,
+    cfg.home,
+    cfg.handoff,
+    ...handoffSiblings(),
+    ...HOME_OUTSIDE_NEVER,
+    // 决策 16/v2.1：数据根的 policy-state/standing-grants 显式列出（顶层条目
+    // 展开只收现存项，这两项无论存在与否都列 —— guard 的 lexical 判定不依赖存在）
+    ...dataDirs.flatMap((d) => [join(d, 'policy-state.json'), join(d, 'standing-grants.json')]),
+  ]).filter((p) => p === '/proc' || existsSync(p) || dataDirs.some((d) => p === join(d, 'policy-state.json') || p === join(d, 'standing-grants.json')))
+  const dataMaskRoots = maskRoots.filter((m) => !homes.some((h) => m === h || m.startsWith(h + '/')))
+
+  return { homes, maskRoots, neverRoots, toolchainDirs, policyRoots, guardRoots: { hardRoots: guardHardRoots, dataMaskRoots } }
 }

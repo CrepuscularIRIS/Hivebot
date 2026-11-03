@@ -302,6 +302,25 @@ describe('childEnv · launcher-only 丢弃 (P5-01 决策 15)', () => {
   })
 })
 
+describe('writeRuntimePatch · guard 行 (P5-02 决策 6/13)', () => {
+  it('生成 id: p2sdk-fs-guard 行：roots 五组清单，全部来自 computeRoots 单源', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p5-patch-'))
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, PBOTS_DATA_DIR: join(dir, 'data') })
+    mkdirSync(join(dir, 'data'), { recursive: true })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yaml).toContain('id: p2sdk-fs-guard')
+    expect(yaml).toMatch(/hardRoots:\n(    - '\S+'\n)+/)
+    expect(yaml).toContain('hardRoots:')
+    expect(yaml).toContain('dataMaskRoots:')
+    expect(yaml).toContain('homes:')
+    expect(yaml).toContain('toolchainDirs:')
+    expect(yaml).toContain('policyRoots:')
+    // /proc 与数据根顶层凭证都在 hardRoots（决策 13 ① + guard 侧 /proc）
+    expect(yaml).toContain("'/proc'")
+    expect(yaml).toContain(join(dir, 'data'))
+  })
+})
+
 describe('writeRuntimePatch · sandbox 行 (P5-01 决策 4)', () => {
   it('生成 id: sandbox 行：python3 -I wrapper、遮蔽/挂回清单、bwrap: 失败签名', () => {
     const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p5-patch-'))

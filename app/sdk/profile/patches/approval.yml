@@ -7,10 +7,19 @@
 # user-approval(policy=ask) + permission-presets（默认
 # preset=workspace-write，收敛沙箱），本文件不重述、不放宽任何一行
 # （keyless-smoke / loader-smoke 的放权配置禁止复用，BRIEF 死因 4）。
-# 唯一新增：src/policy/shell-ask.mjs 的 tools/pre-execute 策略——「普通
-# shell 必问」是 preset 表达不了的（evidence/D8-approval.md 红用例），插件
-# 把每个未升权的 bash 调用交给内置审批服务经 $events 问用户。
+# 唯一新增：两个 tools/pre-execute 策略插件，p2sdk-fs-guard（P5-02 0b：文件
+# 工具凭证 NEVER，默认拒）排在 p2sdk-shell-ask 之前 —— pre-execute 是
+# waterfall，shell-ask 返回 ask 不调 next() 时后面的插件不执行，NEVER 必须排
+# 最前（顺序证明格在 P5-04 ⑤）。guard 的 roots（遮蔽/拒读清单）由
+# src/start.ts#writeRuntimePatch 的 guard 行经同 id 覆盖 config 注入（运行时
+# 值，决策 6 单源 never-roots.mjs）；该行缺失时 guard 加载失败（fail loud）。
+# 「普通 shell 必问」（shell-ask）是 preset 表达不了的
+# （evidence/D8-approval.md 红用例），插件把每个未升权的 bash 调用交给内置
+# 审批服务经 $events 问用户。
 - insert:
+    - id: p2sdk-fs-guard
+      # 相对本 patch 文件目录（profile/patches/）。
+      name: ../../src/policy/guard.mjs
     - id: p2sdk-shell-ask
       # 相对本 patch 文件目录（profile/patches/）。
       name: ../../src/policy/shell-ask.mjs

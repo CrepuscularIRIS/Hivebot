@@ -83,6 +83,12 @@ function ToolRow({ item, approval, online }: { item: ToolItem; approval: Approva
 /** 0.18 thinking-medium 字形（cursor-icons-16 cmap 0xf429 实测）；不进 theme 图标表以免越区，P5-16 统一时可并入。 */
 const THINKING_GLYPH = String.fromCodePoint(0xf429)
 
+/** thinking 行 key：前一条 item 的 id（id = null 表示 live 行，取末条）。live 与随后定稿的行共用它（P5-12.f1）。 */
+function thinkingKey(items: readonly TimelineItem[], id: string | null): string {
+  const at = id === null ? items.length : items.findIndex((i) => i.id === id)
+  return `thinking:${items[at - 1]?.id ?? '^'}`
+}
+
 /** B7 thinking 行（0.18 transcript.tsx:600-614 结构，外壳复用 tool 行）：默认收起，整行 button 开合。 */
 function ThinkingRow({ text, live }: { text: string; live: boolean }): JSX.Element {
   const [open, setOpen] = useState(false)
@@ -239,18 +245,19 @@ export function Conversation({ s, id }: { s: State; id: string }): JSX.Element {
               <div className="empty-hint">发送第一条消息开始</div>
             </div>
           )}
-          {view !== undefined && withMarkers(view.items, Date.now(), unreadBefore).map((item) => {
+          {/* P5-12.f1：live 行与定稿 thinking 行同一数组、同一 key（= 前一条 item 的 id；定稿行恰好插在 live 时的末条之后），
+              节点不换 → 展开态与按钮焦点跨定稿保留。ponytail: 「加载更早」使窗口首条变成 thinking 时其 key 变、会收起一次，按 id 存展开态可消除。 */}
+          {view !== undefined && [...withMarkers(view.items, Date.now(), unreadBefore).map((item) => {
             if (item.kind === 'time-sep') return <div key={item.id} className="time-sep" role="separator" data-time-sep>{item.label}</div>
             if (item.kind === 'unread') {
               return <div key={item.id} ref={unreadRef} className="unread-line" role="separator" aria-label="以下为新消息" data-unread-line>新消息</div>
             }
-            if (item.kind === 'thinking') return <ThinkingRow key={item.id} text={item.text} live={false} />
+            if (item.kind === 'thinking') return <ThinkingRow key={thinkingKey(view.items, item.id)} text={item.text} live={false} />
             if (item.kind === 'user') return <div key={item.id} className="bubble user final" data-message-bubble>{item.text}</div>
             if (item.kind === 'assistant') return <div key={item.id} className="bubble assistant final" data-assistant-bubble><Markdown text={item.text} /></div>
             if (item.kind === 'notice') return <div key={item.id} className={`turn-notice ${item.tone}`}>{item.text}</div>
             return <ToolRow key={item.id} item={item} online={s.online} approval={mine.find((a) => a.callId === item.callId)} />
-          })}
-          {reasoning !== '' && <ThinkingRow key="live-thinking" text={reasoning} live={streaming?.text === ''} />}
+          }), ...(reasoning === '' ? [] : [<ThinkingRow key={thinkingKey(view.items, null)} text={reasoning} live={streaming?.text === ''} />])]}
           {streaming !== null && streaming.text !== '' && <div className="bubble assistant streaming" data-streaming><Markdown text={streaming.text} /></div>}
           {thinking && <div className="bubble assistant thinking" aria-label="正在思考"><span /><span /><span /></div>}
           {orphans.map((a) => <ApprovalCard key={a.eventId} approval={a} args={null} online={s.online} />)}

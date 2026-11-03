@@ -65,3 +65,5 @@
 2026-11-03 P5-03 builder 实测 fake 插件坑：cursors 按会话持内存游标，同会话第二次 writeScriptCalls 覆盖脚本不重置（第二次模型调用按旧游标取新文件条目，拿到纯文本零 tool result）→ e2e 每 turn 用新会话，或一次写全整段脚本；多 turn 工具用例莫名"没调工具"先查这个。
 
 2026-11-03 P5-04.f1 实测：approval.yml insert 行加载顺序不可靠（两种排列 shell-ask 都先注册居 waterfall 外层，guard 收不到 bash exec；此前用例恰好都区分不了顺序）→ 往 pre-execute waterfall 插需要「先于 shell-ask」的插件一律用 cordis prepend（ctx.on(..., true)，vendor/cordis events register unshift），不赌 yaml 行序；凡验收里有「X 在 Y 之前」语义，测试必须能区分顺序（组合差分格），否则是空转。
+
+2026-11-03 P5-06 测试侧五条（builder 实测）：①runtime.ts 硬编码 P2SDK_PROVIDER='mock'，real-provider e2e 必须显式 env 覆盖为 'real'；②委派子会话 id 是裸 uuid 且后台异步，识别须 prompt 标记+日志行边界；③fake 的 toolResults 逐轮累积，断言前按 toolCallId 去重；④ptc worker bootstrap 必须放会话工作区内（/tmp 会被沙箱 --tmpfs 遮掉）；⑤上游 write 有 read-before-write 规则，伪造写用例先满足读前提。

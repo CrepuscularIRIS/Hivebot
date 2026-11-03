@@ -44,6 +44,8 @@ export interface FakeRequest {
   model: string
   purpose: string | null
   userTexts: string[]
+  /** P5-06: prior-turn tool results carried into this model call (child-session observation channel). */
+  toolResults?: Array<{ toolCallId: string | null; isError: boolean; text: string }>
 }
 
 export interface FakeRuntime extends Runtime {

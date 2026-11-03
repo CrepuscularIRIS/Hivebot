@@ -285,6 +285,68 @@ describe('§2.2 $events/result 校验（ledger）', () => {
       expect(dsh.apiCount).toBe(1)
     },
   )
+
+  // P5-28 ①②③：提问作答分支（严格 {answers:[{id,selected,custom?}]}，id 集合 = 该批问题 id 集合）。
+  const questionLedger = (): EventsLedger => {
+    const ledger = readyLedger() // 审批 ev-1（原行为对照）
+    ledger.record({
+      type: 'waterfall', event: 'user-questions/request', eventId: 'ev-q', agentId: 's-1',
+      request: { questions: [{ id: 'q1', question: '路径?' }, { id: 'q2', question: '备注?' }] },
+    })
+    return ledger
+  }
+  const answersArgs = (answers: unknown) => ({
+    clientId: 'cli-1', eventId: 'ev-q', outcome: { kind: 'result', value: { answers } },
+  })
+
+  it('① 合法 answers → 透传 dsh 原样（args 逐字段相等）、下账；同 ledger 审批行为不变', async () => {
+    const { api, dsh, ledger } = makeApi(undefined, questionLedger())
+    const args = answersArgs([{ id: 'q1', selected: ['/a'] }, { id: 'q2', selected: [], custom: 'note' }])
+    const res = await api({ method: '$events/result', args })
+    expect(res).toEqual({ ok: true, value: null })
+    expect(dsh.apiCount).toBe(1)
+    expect(dsh.calls[0]).toEqual({ method: '$events/result', args }) // 原样转 dsh
+    expect(ledger.pendingEvents().some((e) => e.eventId === 'ev-q')).toBe(false) // 下账
+    expect(ledger.pendingEvents().some((e) => e.eventId === 'ev-1')).toBe(true)  // 审批不受影响
+  })
+
+  it.each([
+    ['id 缺（漏答 q2）', [{ id: 'q1', selected: [] }]],
+    ['id 多（未知 q3）', [{ id: 'q1', selected: [] }, { id: 'q2', selected: [] }, { id: 'q3', selected: [] }]],
+    ['id 类型错', [{ id: 42, selected: [] }, { id: 'q2', selected: [] }]],
+    ['selected 非字符串数组', [{ id: 'q1', selected: 'x' }, { id: 'q2', selected: [] }]],
+    ['answers 非数组', 'nope']],
+  )('② %s → pbots/invalid-args，dsh 计数 === 0，不下账', async (_name, answers) => {
+    const { api, dsh, ledger } = makeApi(undefined, questionLedger())
+    const res = await api({ method: '$events/result', args: answersArgs(answers) })
+    expect(expectFail(res).code).toBe('pbots/invalid-args')
+    expect(dsh.apiCount).toBe(0)
+    expect(ledger.pendingEvents().some((e) => e.eventId === 'ev-q')).toBe(true)
+  })
+
+  it('② 对审批事件传 answers → pbots/invalid-args，dsh 计数 === 0（P5-07 口径反向）', async () => {
+    const { api, dsh } = makeApi() // readyLedger：审批 ev-1
+    const res = await api({ method: '$events/result', args: { clientId: 'cli-1', eventId: 'ev-1', outcome: { kind: 'result', value: { answers: [{ id: 'q1', selected: [] }] } } } })
+    expect(expectFail(res).code).toBe('pbots/invalid-args')
+    expect(dsh.apiCount).toBe(0)
+  })
+
+  it('③ 同一提问 eventId 第二次作答 → 拒绝（成功即消费；重连不重复提交）', async () => {
+    const { api, dsh } = makeApi(undefined, questionLedger())
+    const args = answersArgs([{ id: 'q1', selected: ['/a'] }, { id: 'q2', selected: [] }])
+    const first = await api({ method: '$events/result', args })
+    expect(first).toEqual({ ok: true, value: null })
+    const second = await api({ method: '$events/result', args })
+    expect(second.ok).toBe(false)
+    expect(dsh.apiCount).toBe(1) // 第二次没到 dsh
+  })
+
+  it('提问作答的 clientId 资格口径与审批一致：不匹配 → pbots/forbidden，dsh 计数 === 0', async () => {
+    const { api, dsh } = makeApi(undefined, questionLedger())
+    const res = await api({ method: '$events/result', args: { clientId: 'cli-other', eventId: 'ev-q', outcome: { kind: 'result', value: { answers: [{ id: 'q1', selected: [] }, { id: 'q2', selected: [] }] } } } })
+    expect(expectFail(res).code).toBe('pbots/forbidden')
+    expect(dsh.apiCount).toBe(0)
+  })
 })
 
 describe('§2.2 #3/#4 参数约束（L2；typert 壳内字段）', () => {

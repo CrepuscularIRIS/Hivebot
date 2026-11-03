@@ -3,7 +3,7 @@
 // work/p4-ui/PLAN.md U-11、work/p4-ui/SPIKE.md §5-2（typert wire `{request:…}` 壳、参数约束按壳内字段）。
 // 设计参照 spike 桥（feat/U-00@8998435:spike/U-00/bridge.mjs，自写，无整段搬运）；本文件为 W1 重做。
 import type { ConnectionRpcResult, DshConnection } from '../dsh/connect'
-import { EventsLedger } from '../dsh/ledger'
+import { EventsLedger, invalidQuestionAnswersReason } from '../dsh/ledger'
 
 export interface M1Request { method: string; args?: unknown }
 export type M1Result = ConnectionRpcResult
@@ -98,14 +98,21 @@ function checkArgs(method: string, args: unknown, ledger: EventsLedger): M1Resul
     const { clientId, eventId, outcome } = (typeof args === 'object' && args !== null ? args : {}) as {
       clientId?: unknown; eventId?: unknown; outcome?: { kind?: unknown; value?: unknown }
     }
-    // outcome 壳/值非法 = 参数问题（invalid-args）；clientId/eventId 资格问题 = forbidden（U-15 ③ 联调口径）
+    // P5-28：提问事件走结构化作答分支——严格 {answers:[{id,selected,custom?}]}，id 集合恰等于
+    // 该批问题 id 集合（含 P5-07 的「提问事件不接受审批字符串」，二者互斥在分支里自然成立）
+    const questionIds = ledger.questionIds(eventId)
+    if (questionIds !== undefined) {
+      const bad = invalidQuestionAnswersReason(outcome, questionIds)
+      if (bad !== undefined) return invalid(`$events/result invalid answers: ${bad}`)
+      const eligibility = ledger.validateQuestionResult(clientId)
+      if (!eligibility.ok) return forbidden(`$events/result rejected: ${eligibility.reason}`)
+      return undefined
+    }
+    // 审批（及未入账 eventId）：outcome 壳/值非法 = 参数问题（invalid-args）；
+    // clientId/eventId 资格问题 = forbidden（U-15 ③ 联调口径）
     if (typeof outcome !== 'object' || outcome === null || outcome.kind !== 'result'
       || (outcome.value !== 'allowed-once' && outcome.value !== 'rejected')) {
-      return invalid(`outcome must be {kind:'result', value:'allowed-once'|'rejected'}`)
-    }
-    // P5-07：提问事件不接受审批字符串 outcome（对提问事件这是参数错，非资格错；作答分支 = P5-28）
-    if (ledger.pendingEventKind(eventId) === 'user-questions/request') {
-      return invalid('user-questions events cannot be answered with approval outcome values (structured answers arrive in P5-28)')
+      return invalid(`outcome must be {kind:'result', value:'allowed-once'|'rejected'} (structured answers are only valid for user-questions events)`)
     }
     const check = ledger.validateResult(clientId, eventId, outcome.value)
     if (!check.ok) return forbidden(`$events/result rejected: ${check.reason}`)

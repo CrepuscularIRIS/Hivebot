@@ -4,10 +4,9 @@
 // ② persona currentActivity 接 dsh 活动态；③ 审批作答只发 allowed-once/rejected、ceiling=ask 禁用 Always。
 // 前置：cd renderer-grok && pnpm build（shim.iife.js 注入）。
 import { expect, test, type Page } from 'playwright/test'
-import { existsSync, mkdirSync, mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { launchShell, type ShellLaunch } from '../support/launch.ts'
+import { launchShell, sandboxHome, type ShellLaunch } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
 import { bashCall, textCall } from '../support/ui.ts'
 
@@ -56,9 +55,13 @@ interface Env { rt: SdkRuntime; shell: ShellLaunch; page: Page; stop(): Promise<
 test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动态；审批 allow-once/deny 值域 ⊆ {allowed-once,rejected}；Always 禁用', async () => {
   test.setTimeout(240_000)
   mkdirSync(EVIDENCE, { recursive: true })
-  const ws = mkdtempSync(join(tmpdir(), 'bot-p551-ws-'))
-  const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}`, cwd: ws })
-  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff, PBOTS_APP_ROOT: GROK_ROOT } })
+  // P5-25 起 session/create 由 main 强制 cwd=$PBOTS_DATA_DIR/workspaces/<botId>——runtime 进程
+  // cwd 不再是会话 cwd。两侧数据根对齐（workspaces.spec launchAligned 同款），canary 落进
+  // 会话工作区；工作区外的 /tmp 路径会被沙箱 --tmpfs /tmp 遮蔽（P5-51.f2：旧假象 touch ENOENT）。
+  const home = sandboxHome('P5-51')
+  const dataDir = join(home, 'data')
+  const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}`, dataDir })
+  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff, PBOTS_APP_ROOT: GROK_ROOT }, home })
   const page = shell.page
   const env: Env = { rt, shell, page, async stop() { await shell.stop(); await rt.stop() } }
   try {
@@ -69,12 +72,15 @@ test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动�
     await expect(page.locator('.ProseMirror[contenteditable="true"]')).toBeVisible({ timeout: 20_000 })
 
     // 主 bot sessionId（shim boot 自建的默认 standard bot，带 bash+shell-ask）；
-    // fake bash 在会话 cwd（= runtime cwd = ws，沙箱内可写且宿主可见）落地 canary
+    // 其会话工作区 = $PBOTS_DATA_DIR/workspaces/<sid>（P5-25 强制注入，dataDir 在 /tmp 下）
     const list = await rt.client.call('session/list', { _request: {} }) as { items?: Array<{ sessionId: string; origin?: string }> }
     const sid = list.items?.find((i) => i.origin !== 'subagent')?.sessionId
     expect(sid).toBeTruthy()
 
     // ---- 回合 1：reasoning + ack + bash(审批 allow-once) + 尾正文 markdown ----
+    // canary 放会话工作区内：兼作「dataDir 在 /tmp 下时工作区仍可写可见」的断言
+    // （wrapper 工作区 --bind 在 dsh --tmpfs /tmp 之后，P5-51.f2 dry-run 实证）
+    const ws = join(dataDir, 'workspaces', sid!)
     const okCanary = join(ws, 'p551-ok')
     const rejectCanary = join(ws, 'p551-reject')
     // fake 脚本游标逐条消费且不随重写复位（LEARNINGS P5-03）：两个回合的 4 条一次写全

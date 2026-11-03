@@ -403,15 +403,22 @@ it('④b DSH_PERMISSION_MODE=danger-full-access 启动：bash / write 工作区�
   expect(askedFor(DFA_RT, sessionId), 'deny 不出卡（approval=never 本也无应答者）').toBe(0)
   expect(results.size, '三个 tool result').toBe(3)
   const denied = [...results.values()].filter((r) => r.isError)
-  expect(denied.length, 'bash + write 恰两个 deny').toBe(2)
-  for (const r of denied) {
+  // P5-21 语义更新：本运行时没配 policy-state → 门关 → 工作区内 read 从第 3 行
+  // ALWAYS 退 ASK（决策 16），dfa 会话 approval=never → ASK 一律拒（P5-05 判定
+  // 顺序）。bash/write 仍是 guard 的会话级 deny（原因字面串不变）；read 的拒绝
+  // 来自 shell-ask（never 无应答者）。生产里 main 连上后门开，工作区 read 恢复
+  // 自主（A9 ⑦ / tiers-policy.test.ts ⑤）。
+  expect(denied.length, 'bash + write 会话级 deny + read 门关退 ASK 后 never 拒').toBe(3)
+  const sessionDenied = denied.filter((r) => r.text.includes(DFA_SESSION_REASON))
+  expect(sessionDenied.length, 'bash/write 恰两个 guard 会话级 deny').toBe(2)
+  for (const r of sessionDenied) {
     expect(r.text, `原因含 v2.1 定死的会话级字面串 "${DFA_SESSION_REASON}"`).toContain(DFA_SESSION_REASON)
     expect(r.text, '原因带 guard 前缀（不是 shell-ask 的 never 原因）').toContain('p2sdk-fs-guard')
     expect(r.text, '不是 P5-02 的路径原因（会话级判定先于路径判定）').not.toContain('masked area')
   }
-  const ok = [...results.values()].filter((r) => !r.isError)
-  expect(ok.length, 'read 不在 bash/write/edit 清单里，不受会话级判定影响').toBe(1)
-  expect(ok[0]!.text, '工作区文件照常读到').toContain('p504-read-ok')
+  const readDenied = denied.filter((r) => !r.text.includes(DFA_SESSION_REASON))
+  expect(readDenied.length, 'read 恰一个 deny（P5-21：门关 ASK → never 拒）').toBe(1)
+  expect(readDenied[0]!.text, 'read 的拒绝来自 shell-ask 的 never 字面串').toContain('approval unavailable in this session')
   expect(existsSync(canary), 'bash 未执行').toBe(false)
   expect(existsSync(outside), 'write 未执行：宿主无新文件').toBe(false)
 })

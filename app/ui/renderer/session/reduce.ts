@@ -9,7 +9,10 @@ export type ToolStatus = 'running' | 'done' | 'failed'
 
 /** `at` = 事件信封 event.time（session-format types.ts:32）；无 time 的事件不带（P5-12 B14 分隔 / 未读线）。 */
 export type TimelineItem = (
-  | { kind: 'user'; id: string; text: string }
+  // rpcId = user/message 的 source.rpcId（session/prompt.requestId，session-controller index.ts:484
+  // 「Client-minted prompt identity used to reconcile optimistic and durable messages」）：
+  // 发送回执按它绑定（L-7 R4/O2 f2：文本匹配证明不了发送身份）。
+  | { kind: 'user'; id: string; text: string; rpcId?: string }
   | { kind: 'assistant'; id: string; text: string }
   | { kind: 'thinking'; id: string; text: string }
   | { kind: 'tool'; id: string; callId: string; name: string; args: string; status: ToolStatus; result: string | null; awaiting: boolean; decision: string | null }
@@ -107,8 +110,10 @@ function reduceEvent(view: SessionView, event: AnyRecord): SessionView {
   const at = typeof event.time === 'number' ? { at: event.time } : {}
   switch (event.type) {
     case 'user/message': {
-      if (rec(data.source).kind !== 'user') return view // 只显示用户本人消息（runtime-context 等注入不显示）
-      return { ...view, items: [...view.items, { kind: 'user', id: str(data.id) ?? `u-${view.items.length}`, text: contentText(data.content), ...at }] }
+      const source = rec(data.source)
+      if (source.kind !== 'user') return view // 只显示用户本人消息（runtime-context 等注入不显示）
+      const rpcId = str(source.rpcId)
+      return { ...view, items: [...view.items, { kind: 'user', id: str(data.id) ?? `u-${view.items.length}`, text: contentText(data.content), ...(rpcId === null ? {} : { rpcId }), ...at }] }
     }
     case 'assistant/message': {
       const content = rec(data.message).content

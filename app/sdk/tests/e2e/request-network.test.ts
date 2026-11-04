@@ -134,6 +134,8 @@ async function launchNet(env: Record<string, string> = {}): Promise<NetRuntime> 
       P2SDK_HOME: join(TEST_HOME, 'dsh-' + Math.random().toString(16).slice(2, 8)),
       P2SDK_PATCH: fakeOverlay(),
       PBOTS_DATA_DIR: DATA_DIR,
+      // L-7 O1：P2SDK_TEST_SLIRP_* 只在显式测试模式下透传（生产残留不再生效）
+      P2SDK_TEST_SANDBOX: '1',
       ...env,
     },
   })

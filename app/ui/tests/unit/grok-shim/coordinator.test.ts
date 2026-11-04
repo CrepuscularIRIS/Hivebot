@@ -111,6 +111,17 @@ describe('protocol v1 · 握手与帧', () => {
     expect(server.unhandled).toEqual(['duplicateAgent'])
     client.close()
   })
+
+  it('L-7 O6：setAgentUnread 读生产调用方的 isUnread（Mark as Unread 真正置未读）', async () => {
+    const calls: Array<[string, boolean]> = []
+    const deps = baseDeps({ setAgentUnread: (id, value) => { calls.push([id, value]) } })
+    const { client, frames } = handshake(deps)
+    await call(client, frames, 'setAgentUnread', { id: 'bot-1', isUnread: true })
+    await call(client, frames, 'setAgentUnread', { id: 'bot-1', isUnread: false })
+    await call(client, frames, 'setAgentUnread', { id: 'bot-2' }) // 缺省 = 清未读
+    expect(calls).toEqual([['bot-1', true], ['bot-1', false], ['bot-2', false]])
+    client.close()
+  })
 })
 
 describe('13 RPC 实底清单 · 回值形状', () => {

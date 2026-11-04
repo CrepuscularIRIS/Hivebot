@@ -27,6 +27,12 @@ export const MODULE_OVERRIDES: Record<string, string> = {
   'recovered/features/agent-info/settings/view.tsx': 'agent-settings.tsx',
   'recovered/features/conversation/workspace/composer.tsx': 'composer.tsx',
   'production/evidence.ts': 'evidence.ts',
+  // P5-W3.f1（L-7）：工具结果卡投影（R2）/ 分页 scope 恢复（R3）/ 重试复用原
+  // requestId 的登记与出线换 nonce（R5，acknowledgement+coordinator-client 成对）
+  'production/model.ts': 'model.ts',
+  'recovered/features/conversation/workspace/pagination.ts': 'pagination.ts',
+  'recovered/features/conversation/workspace/acknowledgement.ts': 'acknowledgement.ts',
+  'production/coordinator-client.ts': 'coordinator-client.ts',
 }
 
 const byUpstream = new Map(Object.entries(MODULE_OVERRIDES).map(([up, ours]) => [path.join(src, up), path.join(here, 'modules', ours)]))

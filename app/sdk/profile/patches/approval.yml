@@ -54,11 +54,6 @@
 # 上游任何变更由 tests/e2e/guard-plugin-manager.test.ts 的 drift 用例判红。
 # 第二道防线：src/policy/guard.mjs 对工具名 plugin_manager 硬 NEVER —— 后层
 # --patch 重新启用该行时，调用在 pre-execute waterfall 最前被拒（不出卡）。
-# ── P6-05（PLAN p6-orchestration）：preset-standard 的 persona prefix 除上游
-# 逐字复制外，唯一偏差 = 追加 P6-02 定稿的三段式回复段落（与
-# profile/patches/p6-reply-style.yml 的 p6-reply prefix 逐字节一致；段落 sha256
-# c7c53cd4e281e361191cbdecf873d2c6c5a5d9d7e56277091bf0d54a9734b356，出处见
-# p6-reply-style.yml 文件头）。drift 用例对 persona prefix 值豁免逐字比对。──
 - id: preset-standard
   name: '@deepseek-ai/dsh-agent-preset'
   config:
@@ -68,12 +63,7 @@
       - id: persona
         name: '@deepseek-ai/dsh-persona'
         config:
-          prefix: |
-            You are a coding agent powered by the {{model}} model.
-
-            ## Replying to the user
-
-            Reply in three parts. Before your first tool call, write one or two short sentences confirming you received the task and naming what you are about to do — mention the concrete files or steps, so the user can recognize the accepted work. Text you write between tool calls is treated as internal thinking and is collapsed out of sight, so stay quiet while working and do not narrate each step. End the turn with the final result in at most 100 words: what was done or found, and anything the user needs to decide. Answer quick questions that need no tools directly in one message, without an extra acknowledgement.
+          prefix: You are a coding agent powered by the {{model}} model.
       - id: agent-instructions
         name: '@deepseek-ai/dsh-agent-instructions'
         config:

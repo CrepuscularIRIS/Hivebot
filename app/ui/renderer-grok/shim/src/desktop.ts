@@ -39,7 +39,13 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
 
   const themeListeners = new Set<(state: ThemeState) => void>()
   const darkQuery = win.matchMedia('(prefers-color-scheme: dark)')
-  let theme: ThemeState = { preference: 'system', resolved: darkQuery.matches ? 'dark' : 'light' }
+  // L-7 O7：主题偏好落 localStorage（与置顶同存储同取向——reload 静默丢可见偏好是
+  // P5-58 已定性的 bug 类）；system 仍实时跟随 prefers-color-scheme。
+  const savedPreference = persisted('theme-preference')
+  const initialPreference = savedPreference === 'light' || savedPreference === 'dark' || savedPreference === 'system' ? savedPreference : 'system'
+  let theme: ThemeState = initialPreference === 'system'
+    ? { preference: 'system', resolved: darkQuery.matches ? 'dark' : 'light' }
+    : { preference: initialPreference, resolved: initialPreference }
   // 跟随系统（Electron nativeTheme → prefers-color-scheme）：preference=system 时系统切换要推给上游 theme.onChanged，
   // 否则 0.18 只在启动时读一次底色（P5-54 实测：emulateMedia dark 后 data-theme 仍 cursor-light）
   darkQuery.addEventListener('change', () => {
@@ -94,6 +100,7 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
         theme = preference === 'system'
           ? { preference, resolved: win.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light' }
           : { preference, resolved: preference }
+        persist('theme-preference', preference) // L-7 O7：选择要活过刷新/重启
         for (const l of [...themeListeners]) l(theme)
         return Promise.resolve(theme)
       },

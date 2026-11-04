@@ -9,7 +9,7 @@
 import type { TimelineItem, ToolStatus } from '../session/reduce'
 
 export type FoldEntry = (
-  | { kind: 'user'; id: string; text: string }
+  | { kind: 'user'; id: string; text: string; rpcId?: string }
   | { kind: 'message'; id: string; text: string; role: 'ack' | 'result' }
   | { kind: 'thinking'; id: string; text: string; from: 'text' | 'reasoning' }
   | { kind: 'tool-call'; id: string; callId: string; name: string; args: string; status: ToolStatus; result: string | null; awaiting: boolean; decision: string | null }
@@ -60,6 +60,9 @@ function segment(items: readonly TimelineItem[], hasMore: boolean): Segment[] {
 type TurnState = 'completed' | 'error' | 'stopped' | 'running'
 
 const atOf = (item: TimelineItem): { at?: number } => (item.at === undefined ? {} : { at: item.at })
+/** user 条目身份（source.rpcId）透传——shim 回执绑定按它命中（L-7 R4/O2 f2）。 */
+const rpcIdOf = (item: Extract<TimelineItem, { kind: 'user' }>): { rpcId?: string } =>
+  item.rpcId === undefined ? {} : { rpcId: item.rpcId }
 
 export function foldTurns(items: readonly TimelineItem[], input: FoldInput): FoldOutput {
   const segs = segment(items, input.hasMore)
@@ -86,7 +89,7 @@ export function foldTurns(items: readonly TimelineItem[], input: FoldInput): Fol
     seg.items.forEach((item, idx) => {
       switch (item.kind) {
         case 'user':
-          entries.push({ kind: 'user', id: item.id, text: item.text, ...atOf(item) }); break
+          entries.push({ kind: 'user', id: item.id, text: item.text, ...rpcIdOf(item), ...atOf(item) }); break
         case 'tool':
           entries.push({ kind: 'tool-call', id: item.id, callId: item.callId, name: item.name, args: item.args, status: item.status, result: item.result, awaiting: item.awaiting, decision: item.decision, ...atOf(item) }); break
         case 'thinking': // reasoning 块：永不升气泡（三件套 ①）

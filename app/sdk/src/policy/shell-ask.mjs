@@ -17,6 +17,10 @@
 //     内 → 门开时 allow、门关时 ASK；读类任一候选在区外 → ASK（不可始终允许，
 //     Q-013 用户确认）；写类区外 → next()，交上游 workspace-write fence（审批
 //     改变不了 fence，出卡是表演；A3 的越界写由 fence + guard 承担）。
+//     L-7 R6（2026-11-04）：「门关」细化——状态文件在候选路径上存在（无论内容
+//     是否有效）才关门；从未存在（写端 P5-29 未交付的生产默认态）不门控文件
+//     工具（回到 P5-21 之前的工作区内放行，委派子代理的文件能力随之恢复），
+//     bash 第 1 行不随之放宽。文件一旦出现即恢复完整 fail-closed 语义。
 //   第 7 行 连接器（mcp__ 前缀）→ ask：P5-23 元数据桥落地前的回退，一律出卡。
 //   第 10 行 web / 第 11 行 其他进程内工具 → allow（= 现状不拦，Q-013「维持」，
 //     显式入表；不因门关收紧——门只收回 P5 新授的自主：bash 与工作区内文件）。
@@ -43,10 +47,11 @@
 export const name = 'p2sdk-shell-ask'
 
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { isPathUnder } from './containment.mjs'
 import { resolveTargets } from './resolve.mjs'
+import { hasLivePermit, validateRequest } from './request-net.mjs'
 
 /** 严格更宽表，来源: deepseek-harness@ce7073d packages/sandbox/sandbox/src/escalation.ts WIDER_MODES。 */
 const STRICTLY_WIDER = {
@@ -105,6 +110,26 @@ export function policyStateValid(paths, instanceId) {
 }
 
 /**
+ * 状态文件是否在任何候选路径上存在（L-7 R6）。区分「从未 provision」（读写两端只落了
+ * 读端——P5-29 写端未交付，生产默认即此态）与「存在但无效」：前者不门控文件工具
+ * （回到 P5-21 之前的工作区内放行，bash 不放宽），后者保持 fail-closed 全退 ASK。
+ * 只把 ENOENT 当缺失；其他错误（不可读等）视为存在 → 门关（无法证明可放宽）。
+ */
+export function policyStateProvisioned(paths) {
+  if (!Array.isArray(paths)) return false
+  for (const p of paths) {
+    if (typeof p !== 'string') continue
+    try {
+      statSync(p)
+      return true
+    } catch (err) {
+      if (err instanceof Error && err.code !== 'ENOENT') return true
+    }
+  }
+  return false
+}
+
+/**
  * 档位表加载与校验（apply 时一次；表不是运行时状态，mid-session 改文件不生效，
  * 与 policy-state 的逐调用重读相反——决策 16 只要求后者「不重启即生效」）。
  * config.tiers 覆盖文件表（后置 overlay / 测试注入）；任何一处非法 → corrupt，
@@ -156,6 +181,7 @@ export function apply(ctx, config = {}) {
   const cfg = config !== null && typeof config === 'object' ? config : {}
   const policyStatePaths = Array.isArray(cfg.policyStatePaths) ? cfg.policyStatePaths : []
   const handoffDir = typeof cfg.handoff === 'string' && cfg.handoff.length > 0 ? cfg.handoff : undefined
+  const permitDir = typeof cfg.permitDir === 'string' && cfg.permitDir.length > 0 ? cfg.permitDir : undefined
   let cachedInstance
   const instanceId = () => {
     if (cachedInstance !== undefined) return cachedInstance
@@ -170,6 +196,16 @@ export function apply(ctx, config = {}) {
     }
     return cachedInstance
   }
+  // 文件工具的门（L-7 R6）：有效状态放行；「从未 provision」（写端 P5-29 未落地，
+  // 任何候选路径都不存在文件）时不门控——只对文件工具放宽，bash 的 ALWAYS 仍需
+  // 有效状态。config 不带 policyStatePaths（裸挂）时保持门关（文件头既定行为）。
+  const fileGateOpen = () => policyStateValid(policyStatePaths, instanceId())
+    || (policyStatePaths.length > 0 && !policyStateProvisioned(policyStatePaths))
+  // 会话标识与 request-net 签发侧同源（exec.agent.session.header.id = wrapper 侧 DSH_SESSION_ID）。
+  const sessionHeaderId = (exec) => {
+    const id = exec.agent?.session?.header?.id
+    return typeof id === 'string' ? id : undefined
+  }
 
   ctx.on('tools/pre-execute', async (exec, next) => {
     const ask = (reason) => (approvalNever(ctx, exec) ? NEVER_DENY : { kind: 'ask', reason })
@@ -178,10 +214,13 @@ export function apply(ctx, config = {}) {
     // 表判定之前，不经 tiers（后置 overlay 改表改不掉）；审批本身只有
     // allowed-once / rejected 语义，无 always 通路。卡上可见完整命令 + 会话
     // 范围 + 期限（D1-r1 出卡要求；A3 的 reason 含 command 由 P5-31 的卡渲染
-    // 与本 reason 字符串共同满足）。参数畸形时 reason 退化为基础文案（execute
-    // 侧 validateRequest 再拒，不在此重复校验）。
+    // 与本 reason 字符串共同满足）。L-7 O3：两侧校验对称——execute 侧
+    // validateRequest 必拒的参数（超长 command / 空 reason 等）在出卡前直接
+    // deny，不出「批准了也必然失败」的卡（卡面巨量文本 + 批准被浪费）。
     if (exec.name === 'request_network') {
       const args = exec.arguments !== null && typeof exec.arguments === 'object' ? exec.arguments : {}
+      const bad = validateRequest(args)
+      if (bad !== null) return { kind: 'deny', reason: bad }
       const reason = typeof args.reason === 'string' && args.reason.length > 0 ? args.reason.slice(0, 500) : '(no reason given)'
       const command = typeof args.command === 'string' ? args.command : '(invalid command)'
       return ask(`${ASK.net} — reason: ${reason} | command: ${command} | scope: this session, one exact command, single use, expires in ~60s; host loopback stays blocked`)
@@ -203,14 +242,25 @@ export function apply(ctx, config = {}) {
         // 同模式重复/更窄/未知 → 落到下方档位判定（fail closed）
       }
       if (tiers === null) return ask(ASK.fallback)
-      return (tiers.bash ?? tiers.default) === 'sandbox-allow' && policyStateValid(policyStatePaths, instanceId())
-        ? next()
-        : ask(ASK.bash)
+      const bashAlways = (tiers.bash ?? tiers.default) === 'sandbox-allow' && policyStateValid(policyStatePaths, instanceId())
+      if (!bashAlways) {
+        // L-7 O5：request_network 卡刚批下的同会话同命令许可尚在有效期 → 用户已在
+        // 卡上见过完整命令并放行（含联网），这张 bash 卡是重复审批，且等待出卡会
+        // 消耗许可 60s TTL。许可目录在 mask 根内（模型不可伪造/不可读），最终权威
+        // 仍是 wrapper 的 claim_permit（命中/过期/缺失决定联网与否），此处只免去重复出卡。
+        const command = exec.arguments !== null && typeof exec.arguments === 'object' ? exec.arguments.command : undefined
+        if (permitDir !== undefined && typeof command === 'string'
+          && hasLivePermit(permitDir, sessionHeaderId(exec), command)) return next()
+      }
+      return bashAlways ? next() : ask(ASK.bash)
     }
 
     // 表坏 → 一律 ASK（A9 ②；NEVER 已由 guard 在外层处理，不受影响）。
     if (tiers === null) return ask(ASK.fallback)
-    const kind = tiers[exec.name] ?? (typeof exec.name === 'string' && exec.name.startsWith('mcp__') ? tiers.mcp : tiers.default)
+    // L-7 R1：mcp__ 工具在表里缺 mcp 行（稀疏 overlay 只强制 default 键）时回退
+    // default 行——此前 kind=undefined 落 workspace 分支，MCP 工具无路径候选被
+    // next() 静默放行（绕过「连接器一律出卡」与 A9 ② fail-closed）。
+    const kind = tiers[exec.name] ?? (typeof exec.name === 'string' && exec.name.startsWith('mcp__') ? tiers.mcp ?? tiers.default : tiers.default)
     if (kind === 'allow' || kind === 'ask') {
       return kind === 'allow' ? next() : ask(ASK.mcp)
     }
@@ -229,13 +279,13 @@ export function apply(ctx, config = {}) {
       && (await Promise.all(targets.map((t) => isPathUnder(t, workspaceRoot)))).every(Boolean)
     if (kind === 'workspace-read') {
       return allInside
-        ? (policyStateValid(policyStatePaths, instanceId()) ? next() : ask(ASK.readGate))
+        ? (fileGateOpen() ? next() : ask(ASK.readGate))
         : ask(ASK.readOut)
     }
     // workspace-write：区内按门放行/出卡；区外交上游 fence（越界写由 fence 拒，
     // 审批改不了 fence——出卡是表演，A3 的格由 fence + guard 承担）。
     if (!allInside) return next()
-    return policyStateValid(policyStatePaths, instanceId()) ? next() : ask(ASK.writeGate)
+    return fileGateOpen() ? next() : ask(ASK.writeGate)
   })
 }
 

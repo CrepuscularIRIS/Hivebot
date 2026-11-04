@@ -40,7 +40,9 @@ function stepCall(opts: { text?: string[]; reasoning?: string; tool?: { name: st
   return { chunks, paceMs: 60, ...(opts.gateId !== undefined ? { gateAfterChunk: 1, gateId: opts.gateId } : {}) }
 }
 
-/** 本配置下 bash / read 都出审批卡（工具停在 running）：点 Allow once，等卡收起。 */
+/** 本配置下 bash 出审批卡（工具停在 running）：点 Allow once，等卡收起。
+ * L-7 R6（2026-11-04）起工作区内 read 不再出卡（policy-state 写端未交付 = 未 provision
+ * = 文件工具不门控）——read 步骤直接执行，不再需要本 helper；仅 bash 步骤仍走它。 */
 async function allowOnce(page: Page): Promise<void> {
   await expect(permissionDock(page)).toBeVisible({ timeout: 30_000 })
   await permissionDock(page).locator('button', { hasText: 'Allow once' }).click()
@@ -130,8 +132,7 @@ test('D1 主链：进行中气泡 ≤1 + tool running；结束恰 2 气泡、B/C
     await expect(transcript(page).locator('.sand-transcript-row[data-entry-id="live-stream"]')).toHaveCount(0)
     await bothThemes(page, 'd1-running-stream')
     openGate(rt.home, gate)
-    await allowOnce(page) // t2
-    await allowOnce(page) // t3
+    // L-7 R6：t2/t3 是工作区内 read——不再出卡，直接执行完毕
     await expect.poll(async () => (await devState(page)).views[sid]?.endReason, { timeout: 30_000 }).toBe('completed')
     await assertD1Ended(page)
     await bothThemes(page, 'd1-ended-collapsed')
@@ -180,7 +181,7 @@ test('无工具问答恰 1 气泡；D2 (b)(c)(d)(e)(f) 的 DOM 对应；亮暗',
       stepCall({ text: ['尾段写了一半'], finish: { type: 'finish', reason: { kind: 'error', failure: { code: 'PROVIDER_ERROR', message: 'P6-03 boom' } } } }),
     ])
     await send(page, '出错格')
-    await allowOnce(page)
+    // L-7 R6：read 不再出卡，直接执行
     await expect.poll(async () => (await devState(page)).views[b]?.turnEnded, { timeout: 30_000 }).toBe(true)
     await expect(notices(page)).toHaveCount(1)
     await expect(notices(page).first()).toContainText('回复失败：P6-03 boom') // 注入文本直达用户
@@ -197,8 +198,6 @@ test('无工具问答恰 1 气泡；D2 (b)(c)(d)(e)(f) 的 DOM 对应；亮暗',
       { chunks: [{ type: 'usage', usage: { inputTokens: 10, outputTokens: 0 } }, { type: 'finish', reason: { kind: 'stop' } }], paceMs: 10 },
     ])
     await send(page, '兜底 c')
-    await allowOnce(page)
-    await allowOnce(page)
     await ended(c, 'completed')
     expect(await bubbleTexts(page)).toEqual(['收到。', '中间结论 B：两个文件都在。'])
     await expect(thinkingRows(page)).toHaveCount(0)
@@ -213,7 +212,6 @@ test('无工具问答恰 1 气泡；D2 (b)(c)(d)(e)(f) 的 DOM 对应；亮暗',
       { chunks: [{ type: 'usage', usage: { inputTokens: 10, outputTokens: 0 } }, { type: 'finish', reason: { kind: 'stop' } }], paceMs: 10 },
     ])
     await send(page, '兜底 d')
-    await allowOnce(page)
     await ended(d, 'completed')
     await expect(notices(page)).toHaveCount(1)
     await expect(notices(page).first()).toContainText('已完成，没有文字结果 · 展开查看过程')
@@ -229,7 +227,6 @@ test('无工具问答恰 1 气泡；D2 (b)(c)(d)(e)(f) 的 DOM 对应；亮暗',
       textCall(['尾段写到一半', '被打断'], { gateId: gate }),
     ])
     await send(page, '兜底 e')
-    await allowOnce(page)
     await expect(thinkingRows(page).filter({ hasText: '尾段写到一半' })).toHaveCount(1, { timeout: 30_000 })
     expect((await api(page, 'session/cancel', { request: { sessionId: e } })).ok).toBe(true)
     await ended(e, 'aborted')
@@ -245,7 +242,6 @@ test('无工具问答恰 1 气泡；D2 (b)(c)(d)(e)(f) 的 DOM 对应；亮暗',
       { chunks: [{ type: 'usage', usage: { inputTokens: 10, outputTokens: 0 } }, { type: 'finish', reason: { kind: 'stop' } }], paceMs: 10 },
     ])
     await send(page, '兜底 f')
-    await allowOnce(page)
     await ended(f, 'completed')
     await expect(thinkingRows(page)).toHaveCount(1)
     await expect(thinkingRows(page).first()).toContainText('只是推理，不是正文。')

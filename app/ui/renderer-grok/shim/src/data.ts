@@ -91,7 +91,8 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   const views = new Map<string, SessionView>()
   const unread = new Set<string>()
   const asks = new Map<string, Ask>() // eventId → pending 审批
-  const pendingNonce = new Map<string, string>() // agentId → 待补记 clientNonce
+  const pendingNonce = new Map<string, string>() // agentId → 待补记 clientNonce（按消息身份 source.rpcId 绑定，L-7 R4 f2）
+  const createNotices = new Map<string, string>() // agentId → 新建 bot 的非致命失败通知（首条用户消息前展示，L-7 O4）
   let revision = 0
   let eventsClientId: string | undefined
   let booted = false
@@ -158,16 +159,30 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     return out
   }
 
+  /** L-7 O4：新建 bot 的非致命失败（selectModel 失败等）在空会话里以 notice 呈现，
+   * 首条用户消息到达后撤下（对齐旧 renderer addCreated(sid, preset, notice) 的可见性）。 */
+  const createNotice = (agentId: string): RawEntry[] => {
+    const text = createNotices.get(agentId)
+    if (text === undefined) return []
+    const view = views.get(agentId)
+    if (view !== undefined && view.items.some((i) => i.kind === 'user')) {
+      createNotices.delete(agentId)
+      return []
+    }
+    return [{ kind: 'notice', id: `create-notice-${agentId}`, timestampMs: Date.now(), content: text }]
+  }
+
   const entriesOf = (agentId: string): RawEntry[] => {
     const view = views.get(agentId)
-    if (view === undefined || !view.loaded) return askEntries(agentId)
-    const nonce = pendingNonce.get(agentId)
+    if (view === undefined || !view.loaded) return [...createNotice(agentId), ...askEntries(agentId)]
+    const pending = pendingNonce.get(agentId)
     const main = serialize({
       items: view.items, hasMore: view.hasMore, running: view.running, streaming: view.streaming,
-      agentName: agentName(agentId), ...(nonce !== undefined ? { clientNonce: nonce } : {}),
+      agentName: agentName(agentId),
+      ...(pending !== undefined ? { clientNonce: pending } : {}),
     })
-    if (nonce !== undefined && main.some((e) => e.clientNonce === nonce)) pendingNonce.delete(agentId)
-    return [...main, ...askEntries(agentId)]
+    if (pending !== undefined && main.some((e) => e.clientNonce === pending)) pendingNonce.delete(agentId)
+    return [...main, ...createNotice(agentId), ...askEntries(agentId)]
   }
 
   // 首个 openAgentTail 回值之前不推该 bot 的 transcript 快照：上游 openAgent 见 entriesByAgent 已有条目就不再取 tail，
@@ -360,6 +375,9 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       const agentId = typeof args.agentId === 'string' ? args.agentId : ''
       const prompt = typeof args.prompt === 'string' ? args.prompt : ''
       const nonce = typeof args.clientNonce === 'string' ? args.clientNonce : crypto.randomUUID()
+      // L-7 R4（f2 身份匹配）：nonce = wire requestId，SDK 把它写进新消息的 source.rpcId，
+      // 序列化按 rpcId 绑定到对应消息；发送失败不删（歧义场景下回执仍会到达并按 rpcId 命中，
+      // 同文本旧消息不可能误拿 nonce）。
       if (typeof args.clientNonce === 'string') pendingNonce.set(agentId, args.clientNonce)
       const res = await api('session/prompt', { request: { requestId: nonce, sessionId: agentId, mode: 'queue', content: [{ type: 'text', text: prompt }] } })
       if (!res.ok) throw new Error(res.error?.message ?? 'session/prompt failed')
@@ -425,6 +443,9 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         const sel = await ui.selectModel(sid, req.model.provider, req.model.model)
         if (!sel.ok) notice = `Bot created, but the model wasn't changed: ${sel.error?.message ?? ''}`
       }
+      // L-7 O4：非致命失败不能静默吞掉——落进空会话的 transcript notice（旧 renderer
+      // 的 addCreated(sid, presetId, notice) 同一可见性，新架构的呈现位置是会话内）。
+      if (notice !== null) createNotices.set(sid, notice)
       // #4 的 recipe 由 main 写入：重拉 M3，否则新 bot 被误判只读
       if (req.connectors.length > 0) {
         const meta = await metaApi('get')

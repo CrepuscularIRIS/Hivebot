@@ -8,7 +8,8 @@ import { askText, permissionEntry, toRawEntries, type RawEntry } from '../../../
 
 type ToolItem = Extract<TimelineItem, { kind: 'tool' }>
 
-const u = (id: string, text = id): TimelineItem => ({ kind: 'user', id, text })
+const u = (id: string, text = id, rpcId?: string): TimelineItem =>
+  rpcId === undefined ? { kind: 'user', id, text } : { kind: 'user', id, text, rpcId }
 const a = (turn: number, step: number, text: string): TimelineItem => ({ kind: 'assistant', id: `t${turn}-s${step}`, text })
 const r = (turn: number, step: number, text: string): TimelineItem => ({ kind: 'thinking', id: `t${turn}-s${step}-r`, text })
 const t = (callId: string, name = 'bash'): ToolItem => ({
@@ -66,11 +67,44 @@ describe('toRawEntries · 每类 entry 的 0.18 形状', () => {
     expect(toRawEntries(base, 'Bot', null).some((e) => rec(e).isStreaming === true)).toBe(false)
   })
 
-  it('clientNonce 补记：pendingNonce 只补第一条用户消息', () => {
-    const out = foldTurns([u('u1', 'q1'), u('u2', 'q2')], { hasMore: false, running: false })
+  // P5-W3.f2 R4/O2：nonce 按消息身份（user/message 的 source.rpcId = session/prompt.requestId）
+  // 绑定，不再按文本——同文本历史消息证明不了发送身份（f1 验收 FAIL 项）。
+  it('clientNonce 绑定：按身份（rpcId）绑到对应消息（L-7 R4 / f2）', () => {
+    const out = foldTurns([u('u1', 'q1'), u('u2', 'q2', 'nonce-1')], { hasMore: false, running: false })
+    const raw = toRawEntries(out, 'Bot', null, { clientNonce: 'nonce-1' })
+    expect(rec(raw[0]).clientNonce).toBeUndefined()
+    expect(rec(raw[1]).clientNonce).toBe('nonce-1')
+  })
+
+  it('clientNonce 绑定：新消息未落到窗口时不消费（无 rpcId 命中，等下一次快照）', () => {
+    const out = foldTurns([u('u1', 'q1')], { hasMore: false, running: false })
+    const raw = toRawEntries(out, 'Bot', null, { clientNonce: 'nonce-1' })
+    expect(raw.some((e) => rec(e).clientNonce === 'nonce-1')).toBe(false)
+  })
+
+  it('clientNonce 绑定：同文本历史消息（无 rpcId 或 rpcId 是旧 nonce）不误绑（f2 R4/O2）', () => {
+    for (const old of [u('old-u', 'repeat this'), u('old-u', 'repeat this', 'old-N')]) {
+      const out = foldTurns([old], { hasMore: false, running: false })
+      const raw = toRawEntries(out, 'Bot', null, { clientNonce: 'new-N' })
+      expect(raw.some((e) => rec(e).clientNonce === 'new-N'), '文本相同但身份不同 → 不绑').toBe(false)
+    }
+  })
+
+  it('clientNonce 绑定：重试场景——wire 换回原 nonce（R5），rpcId=原 nonce 的消息拿回回执', () => {
+    const out = foldTurns([u('u1', 'again', 'nonce-1'), a(1, 0, '答')], { hasMore: false, running: false })
     const raw = toRawEntries(out, 'Bot', null, { clientNonce: 'nonce-1' })
     expect(rec(raw[0]).clientNonce).toBe('nonce-1')
-    expect(rec(raw[1]).clientNonce).toBeUndefined()
+  })
+
+  it('tool-call 保留完整 args 与 result（L-7 R2：输出/错误详情不再被序列化丢掉）', () => {
+    const items: TimelineItem[] = [u('u1'), { ...t('c1'), result: 'boom: ENOENT' }, t('c2', 'read')]
+    const out = foldTurns(items, { hasMore: false, running: false })
+    const tools = toRawEntries(out, 'Bot', null).filter((e) => e.kind === 'tool-call')
+    expect(rec(tools[0]).result).toBe('boom: ENOENT')
+    expect(rec(tools[0]).args).toBe('{"command":"ls"}')
+    expect(rec(tools[1]).result).toBe('ok')
+    // summary 仍是单行预览（不因带 result 变长）
+    expect(String(rec(tools[0]).summary).length).toBeLessThanOrEqual(120)
   })
 })
 

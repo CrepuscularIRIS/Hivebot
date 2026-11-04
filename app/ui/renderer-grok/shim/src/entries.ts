@@ -48,14 +48,16 @@ export interface SerializeInput {
   running: boolean
   streaming: SessionView['streaming']
   agentName: string
-  /** sendPrompt 的 clientNonce 补记到第一条用户消息（ack 上游乐观条目）。 */
+  /** sendPrompt 的 clientNonce（= session/prompt.requestId，按消息身份绑定，见 toRawEntries）。 */
   clientNonce?: string
 }
 
 /** 完整序列化：折叠 + 映射 + 流式尾条。 */
 export function serialize(input: SerializeInput): RawEntry[] {
   const out: FoldOutput = foldTurns(input.items, { hasMore: input.hasMore, running: input.running })
-  const raw = toRawEntries(out, input.agentName, input.streaming, input.clientNonce === undefined ? undefined : { clientNonce: input.clientNonce })
+  const raw = toRawEntries(out, input.agentName, input.streaming, input.clientNonce === undefined
+    ? undefined
+    : { clientNonce: input.clientNonce })
   if (input.streaming !== null && input.streaming.reasoning !== '' && input.streaming.text === '') {
     raw.push({ id: 'live-reasoning', kind: 'thinking', text: input.streaming.reasoning, timestampMs: Date.now() })
   }
@@ -70,7 +72,13 @@ export function toRawEntries(
   nonce?: { clientNonce: string },
 ): RawEntry[] {
   const raw: RawEntry[] = []
-  let nonceUsed = false
+  // L-7 R4/O2（f2 身份匹配）：nonce 只绑到 source.rpcId 与它一致的用户消息——rpcId 就是
+  // session/prompt.requestId（wire 上 SDK 写进 user/message 的发送身份），文本匹配证明
+  // 不了发送身份（f1 验收：同文本历史消息被补上新 nonce、ack 被提前对账）。窗口里还
+  // 没有该 rpcId 时不消费——下一次快照新消息到达再绑；重试场景（R5 换回原 nonce 后）
+  // 原消息的 rpcId 即原 nonce，同样命中。
+  const nonceEntryId = nonce === undefined ? null
+    : (out.entries.filter((e) => e.kind === 'user' && e.rpcId === nonce.clientNonce).at(-1)?.id ?? null)
   for (const e of out.entries) {
     const at = e.at
     switch (e.kind) {
@@ -78,7 +86,7 @@ export function toRawEntries(
         // P5-55：0.18 model.ts 判侧 `kind==='send-message' || role==='assistant' ? assistant : user`——send-message 是 agent 发来的消息，
         // 用户消息必须 message + role:'user'（原 send-message 让用户输入落 assistant 侧，VERIFY-P5-51 OBS）
         const entry: RawEntry = { kind: 'message', id: e.id, timestampMs: ts(at), role: 'user', author: 'You', content: e.text }
-        if (nonce !== undefined && !nonceUsed) { entry.clientNonce = nonce.clientNonce; nonceUsed = true }
+        if (nonce !== undefined && e.id === nonceEntryId) entry.clientNonce = nonce.clientNonce
         raw.push(entry)
         break
       }
@@ -90,9 +98,12 @@ export function toRawEntries(
         raw.push({ kind: 'thinking', id: e.id, timestampMs: ts(at), text: e.text })
         break
       case 'tool-call':
+        // L-7 R2：完整 args 与 result 原样带出（production/model 覆盖层据此附 ToolResultCard，
+        // 展开工具行可见输出/错误详情）；summary 仍是单行预览。
         raw.push({
           kind: 'tool-call', id: e.id, timestampMs: ts(at), name: e.name, status: e.status,
           summary: toolSummary(e.name, e.args, e.result),
+          args: e.args, result: e.result, decision: e.decision,
         })
         break
       case 'notice':

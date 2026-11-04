@@ -127,7 +127,9 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
           return reply(requestId, null)
         }
         case 'setAgentUnread': {
-          if (typeof args.id === 'string') deps.setAgentUnread(args.id, args.value === true)
+          // L-7 O6：生产调用方（ProductionRenderer setAgentUnread）发的是 isUnread；
+          // 原先读 args.value 恒 undefined → Mark as Unread 反而清未读。
+          if (typeof args.id === 'string') deps.setAgentUnread(args.id, args.isUnread === true)
           return reply(requestId, null)
         }
         case 'createAgent': return reply(requestId, await deps.createAgent(args))

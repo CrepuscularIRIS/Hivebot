@@ -26,7 +26,7 @@ export const name = 'p2sdk-request-net'
 export const inject = ['tools']
 
 import { createHash, randomUUID } from 'node:crypto'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /** 许可文件 schema 版本（与 wrapper 侧一致；不符即无效）。 */
@@ -86,6 +86,43 @@ export function issuePermit(req) {
   const file = join(req.dir, name)
   writeFileSync(file, JSON.stringify(permit) + '\n', { mode: 0o600, flag: 'wx' })
   return { file, name, permit }
+}
+
+/**
+ * 是否存在命中「本会话 + 该命令」且未过期的许可文件（L-7 O5，只读检查）。
+ * shell-ask 用它免去 request_network 批准后的重复 bash 卡；权威判定仍在
+ * wrapper 的 claim_permit（单次使用 / 过期删除在那一侧），此处 TOCTOU 无害——
+ * 最坏情形退化为现状（bash 出卡或 wrapper 断网执行）。
+ * @param {string} dir 许可目录（config.permitDir）
+ * @param {string | undefined} session exec.agent.session.header.id
+ * @param {string} command bash 工具的原始命令
+ */
+export function hasLivePermit(dir, session, command) {
+  if (typeof session !== 'string' || session.length === 0) return false
+  const wanted = hashArgv(bashArgv(command))
+  let names
+  try {
+    names = readdirSync(dir)
+  } catch {
+    return false // 目录缺失 = 无许可（不预创建，见 apply 注释）
+  }
+  const now = Date.now()
+  for (const name of names) {
+    if (!name.startsWith('permit-') || !name.endsWith('.json')) continue
+    let permit
+    try {
+      permit = JSON.parse(readFileSync(join(dir, name), 'utf8'))
+    } catch {
+      continue
+    }
+    if (permit === null || typeof permit !== 'object') continue
+    if (permit.version !== PERMIT_VERSION) continue
+    if (permit.session !== session) continue
+    if (permit.argvHash !== wanted) continue
+    if (typeof permit.expiresAt !== 'number' || permit.expiresAt <= now) continue
+    return true
+  }
+  return false
 }
 
 /**

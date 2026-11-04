@@ -146,6 +146,12 @@ export function buildArgs(cfg: StartConfig, runtimePatch: string): string[] {
  */
 export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const child: NodeJS.ProcessEnv = {}
+  // L-7 O1: the sandbox-behavior test vars (drop --disable-host-loopback, swap the
+  // verified slirp4netns binary) must not leak from a production launcher env
+  // (residue after manual debugging / inherited launch scripts). They are honored
+  // only behind the explicit P2SDK_TEST_SANDBOX=1 opt-in, set by the e2e harness.
+  const testSandbox = env.P2SDK_TEST_SANDBOX === '1'
+  const testOnlySandboxVars = new Set(['P2SDK_TEST_SLIRP_NO_LOOPBACK_GUARD', 'P2SDK_TEST_SLIRP_BIN'])
   for (const [name, value] of Object.entries(env)) {
     if (value === undefined) continue
     const keep = name === 'PATH' || name === 'HOME' || name.startsWith('P2SDK_') || name.startsWith('DSH_')
@@ -157,7 +163,8 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
     if (
       keep &&
       name !== 'P2SDK_HANDOFF' && name !== 'P2SDK_TEST_V8_COVERAGE' && name !== 'P2SDK_HOME' &&
-      name !== 'PBOTS_DATA_DIR' && name !== 'P2SDK_SANDBOX_MASK'
+      name !== 'PBOTS_DATA_DIR' && name !== 'P2SDK_SANDBOX_MASK' &&
+      (testSandbox || !testOnlySandboxVars.has(name))
     ) child[name] = value
   }
   child.DSH_HOME = cfg.home
@@ -259,6 +266,8 @@ function guardRow(cfg: StartConfig): string {
  * 目录的 policy-state.instance，P5-29）与 policyStatePaths（从数据根推导，
  * PBOTS_DATA_DIR 或缺省布局，决策 15 同源——不设独立 env，路径两侧同源可机械
  * 证明）。档位表本身在 profile/tiers.json（静态数据，插件自读），不经此行。
+ * L-7 O5：permitDir 与 requestNetRow 同一推导（shell-ask 用它免去 request_network
+ * 批准后同命令 bash 的重复出卡），两侧可机械对证。
  */
 function shellAskRow(cfg: StartConfig): string {
   const list = (xs: readonly string[]): string => (xs.length === 0 ? ' []' : `\n${xs.flatMap((p) => [`        - ${yamlScalar(p)}`]).join('\n')}`)
@@ -266,6 +275,7 @@ function shellAskRow(cfg: StartConfig): string {
 - id: p2sdk-shell-ask
   config:
     handoff: ${yamlScalar(cfg.handoff)}
+    permitDir: ${yamlScalar(join(cfg.dataDirs[0] ?? cfg.home, 'network-permits'))}
     policyStatePaths:${list(cfg.dataDirs.map((d) => join(d, 'policy-state.json')))}
 `
 }

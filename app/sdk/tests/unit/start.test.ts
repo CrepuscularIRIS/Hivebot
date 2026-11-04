@@ -183,6 +183,28 @@ describe('childEnv', () => {
     expect(test.NODE_V8_COVERAGE).toBe('/tmp/cov')
     expect(test.P2SDK_TEST_V8_COVERAGE).toBeUndefined()
   })
+
+  // L-7 O1: the sandbox-behavior test vars must not leak from a production
+  // launcher env (residue after manual debugging) — they are honored only
+  // behind the explicit P2SDK_TEST_SANDBOX=1 opt-in.
+  it('L-7 O1: P2SDK_TEST_SLIRP_* reach the dsh child only with P2SDK_TEST_SANDBOX=1', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h' })
+    const prod = childEnv(cfg, {
+      PATH: '/bin',
+      P2SDK_TEST_SLIRP_NO_LOOPBACK_GUARD: '1',
+      P2SDK_TEST_SLIRP_BIN: '/tmp/evil-helper',
+    })
+    expect(prod.P2SDK_TEST_SLIRP_NO_LOOPBACK_GUARD).toBeUndefined()
+    expect(prod.P2SDK_TEST_SLIRP_BIN).toBeUndefined()
+    const test = childEnv(cfg, {
+      PATH: '/bin',
+      P2SDK_TEST_SANDBOX: '1',
+      P2SDK_TEST_SLIRP_NO_LOOPBACK_GUARD: '1',
+      P2SDK_TEST_SLIRP_BIN: '/tmp/slirp-stub',
+    })
+    expect(test.P2SDK_TEST_SLIRP_NO_LOOPBACK_GUARD).toBe('1')
+    expect(test.P2SDK_TEST_SLIRP_BIN).toBe('/tmp/slirp-stub')
+  })
 })
 
 describe('writeRuntimePatch', () => {

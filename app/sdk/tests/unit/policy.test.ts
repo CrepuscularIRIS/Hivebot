@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as plugin from '../../src/policy/shell-ask.mjs'
+import { issuePermit } from '../../src/policy/request-net.mjs'
 
 interface RecordedListener {
   event: string
@@ -276,6 +277,10 @@ describe('P5-21 ①: a validated policy-state unlocks the ALWAYS rows (bash + in
 })
 
 describe('P5-21 ②: the five invalid policy-state states demote ALWAYS back to ASK', () => {
+  // L-7 R6（2026-11-04）：「file missing」从文件工具的门控态里移出——状态从未写入
+  // （写端 P5-29 未交付）不再让工作区文件工具出卡/让 never 子代理失能，改由上方
+  // 「unprovisioned」describe 断言放行；bash 的必问不变，仍在此处覆盖。其余四态
+  // （文件存在但无效）保持 fail-closed。
   const states: Array<{ label: string; state: Record<string, unknown> | 'missing' | 'invalid-json' }> = [
     { label: 'file missing', state: 'missing' },
     { label: 'invalid JSON', state: 'invalid-json' },
@@ -290,13 +295,15 @@ describe('P5-21 ②: the five invalid policy-state states demote ALWAYS back to 
       const listener = registeredListener({ mode: 'workspace-write', config: p.config })
       expect(await listener({ name: 'bash', arguments: { command: 'echo hi > a.txt', description: 'x' } }, next)).toEqual(askShape)
     })
-    it(`in-workspace read/write ask when policy-state is ${s.label}`, async () => {
-      const p = provisionedConfig(s.state)
-      cleanups.push(p.cleanup)
-      const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
-      expect(await listener({ name: 'read', arguments: { file_path: 'a.txt' } }, next)).toMatchObject({ kind: 'ask' })
-      expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toMatchObject({ kind: 'ask' })
-    })
+    if (s.state !== 'missing') {
+      it(`in-workspace read/write ask when policy-state is ${s.label}`, async () => {
+        const p = provisionedConfig(s.state)
+        cleanups.push(p.cleanup)
+        const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+        expect(await listener({ name: 'read', arguments: { file_path: 'a.txt' } }, next)).toMatchObject({ kind: 'ask' })
+        expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toMatchObject({ kind: 'ask' })
+      })
+    }
   }
 
   it('an unknown policy-state schema version also demotes (fail closed)', async () => {
@@ -406,6 +413,127 @@ describe('P5-21 ③ (A9 ②): a corrupt tier table fails closed to per-call appr
     } finally {
       err.mockRestore()
     }
+  })
+})
+
+// ── L-7 修复链（P5-W3.f1）：R1 稀疏 overlay 的 mcp 兜底 / R6 未 provision 状态不门控文件工具 ──
+
+describe('L-7 R1: a sparse tier overlay without an "mcp" row falls back to default for mcp__ tools', () => {
+  // 触发面是 runtime patch / 后置 overlay 整表覆盖且省略 mcp 行（validateTiers 只强制 default）。
+  // 修复前 kind=undefined 落 workspace 分支，MCP 工具无路径候选 → total=0 → next() 静默放行。
+  it('asks for an mcp__ tool when the overlay omits the mcp row and default is ask', async () => {
+    const listener = registeredListener({ mode: 'workspace-write', fs: true, config: { tiers: { default: 'ask' } } })
+    expect(await listener({ name: 'mcp__x__search', arguments: { q: 'x' } }, next)).toMatchObject({ kind: 'ask' })
+  })
+
+  it('honors the overlay default row when it says allow (operator explicitly chose the fallback)', async () => {
+    const listener = registeredListener({ mode: 'workspace-write', fs: true, config: { tiers: { default: 'allow' } } })
+    expect(await listener({ name: 'mcp__x__search', arguments: { q: 'x' } }, next)).toBe(nextResult)
+  })
+
+  it('the shipped table still asks for mcp__ tools (row mcp:ask) even with the gate open', async () => {
+    const p = provisionedConfig(VALID)
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+    expect(await listener({ name: 'mcp__x__search', arguments: { q: 'x' } }, next)).toMatchObject({ kind: 'ask' })
+  })
+})
+
+describe('L-7 R6: an unprovisioned policy-state (no file at any path) does not gate workspace file tools', () => {
+  // 生产写端（P5-29 main 侧写入）未落地：状态文件从未写入 ≠ 门被关上。读端先落地时把
+  // 「文件从未存在」与「存在但无效」区分开——前者回到 P5-21 之前的文件工具行为（工作区内
+  // 放行、区外读出卡），bash 不放宽（T-07 不变）；一旦文件存在（任何内容），完整门控恢复。
+  it('lets in-workspace read/write through when no policy-state file exists anywhere', async () => {
+    const p = provisionedConfig('missing')
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+    expect(await listener({ name: 'read', arguments: { file_path: 'a.txt' } }, next)).toBe(nextResult)
+    expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toBe(nextResult)
+    expect(await listener({ name: 'edit', arguments: { file_path: 'a.txt' } }, next)).toBe(nextResult)
+  })
+
+  it('still asks for bash when the state file is missing (T-07 ordinary-shell-ask unchanged)', async () => {
+    const p = provisionedConfig('missing')
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', config: p.config })
+    expect(await listener({ name: 'bash', arguments: { command: 'echo hi > a.txt', description: 'x' } }, next)).toEqual(askShape)
+  })
+
+  it('never sessions run in-workspace file tools when the state file is missing (delegated subagents restored)', async () => {
+    const p = provisionedConfig('missing')
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', approval: approvalSvc('never'), fs: true, config: p.config })
+    expect(await listener({ name: 'read', agent: { session: {} }, arguments: { file_path: 'a.txt' } }, next)).toBe(nextResult)
+    expect(await listener({ name: 'write', agent: { session: {} }, arguments: { file_path: 'a.txt', content: 'x' } }, next)).toBe(nextResult)
+  })
+
+  it('an existing (invalid/paused/mismatched) state file still gates in-workspace file tools', async () => {
+    for (const state of ['invalid-json' as const, { version: 1, paused: true, instance: INSTANCE }, { version: 1, paused: false, instance: 'deadbeef' }]) {
+      const p = provisionedConfig(state)
+      cleanups.push(p.cleanup)
+      const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+      expect(await listener({ name: 'read', arguments: { file_path: 'a.txt' } }, next)).toMatchObject({ kind: 'ask' })
+      expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toMatchObject({ kind: 'ask' })
+    }
+  })
+
+  it('a bare plugin (no policyStatePaths in config) still gates file tools (documented bare behavior unchanged)', async () => {
+    const listener = registeredListener({ mode: 'workspace-write', fs: true, config: {} })
+    expect(await listener({ name: 'read', arguments: { file_path: 'a.txt' } }, next)).toMatchObject({ kind: 'ask' })
+    expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toMatchObject({ kind: 'ask' })
+  })
+})
+
+// ── L-7 修复链：O3 request_network 两侧校验对称 / O5 许可命中的 bash 不出第二张卡 ──
+
+describe('L-7 O3: request_network pre-execute rejects what execute would reject (no doomed approval card)', () => {
+  it('denies a request_network whose command exceeds the execute-side length limit', async () => {
+    const listener = registeredListener({ mode: 'workspace-write' })
+    const decision = await listener({ name: 'request_network', arguments: { reason: 'fetch deps', command: 'x'.repeat(8193) } }, next)
+    expect(decision).toMatchObject({ kind: 'deny', reason: expect.stringContaining('too long') })
+  })
+
+  it('denies malformed request_network arguments before any card (empty reason)', async () => {
+    const listener = registeredListener({ mode: 'workspace-write' })
+    const decision = await listener({ name: 'request_network', arguments: { reason: '  ', command: 'curl example.com' } }, next)
+    expect(decision).toMatchObject({ kind: 'deny', reason: expect.stringContaining('reason') })
+  })
+
+  it('still asks for a well-formed request_network', async () => {
+    const listener = registeredListener({ mode: 'workspace-write' })
+    expect(await listener({ name: 'request_network', arguments: { reason: 'fetch deps', command: 'curl example.com' } }, next))
+      .toMatchObject({ kind: 'ask' })
+  })
+})
+
+describe('L-7 O5: a live network permit for this exact command satisfies the bash tier (one card, not two)', () => {
+  const SESSION = { header: { id: 'sess-net-1' } }
+  const mkPermitDir = (): string => {
+    const dir = mkdtempSync(join(tmpdir(), 'p5w3f1-permit-'))
+    cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
+    return dir
+  }
+
+  it('lets bash through when an unexpired permit matches session + exact command', async () => {
+    const dir = mkPermitDir()
+    issuePermit({ dir, session: 'sess-net-1', command: 'curl example.com' })
+    const listener = registeredListener({ mode: 'workspace-write', config: { permitDir: dir } })
+    expect(await listener({ name: 'bash', agent: { session: SESSION }, arguments: { command: 'curl example.com', description: 'x' } }, next)).toBe(nextResult)
+  })
+
+  it('still asks when the permit is for another session, expired, or absent', async () => {
+    const dir = mkPermitDir()
+    issuePermit({ dir, session: 'sess-other', command: 'curl example.com' })
+    issuePermit({ dir, session: 'sess-net-1', command: 'curl expired.example', ttlMs: -1000 })
+    const listener = registeredListener({ mode: 'workspace-write', config: { permitDir: dir } })
+    for (const command of ['curl example.com', 'curl expired.example', 'curl never-permitted.example']) {
+      expect(await listener({ name: 'bash', agent: { session: SESSION }, arguments: { command, description: 'x' } }, next), command).toEqual(askShape)
+    }
+  })
+
+  it('still asks with no permitDir configured', async () => {
+    const listener = registeredListener({ mode: 'workspace-write' })
+    expect(await listener({ name: 'bash', agent: { session: SESSION }, arguments: { command: 'curl example.com', description: 'x' } }, next)).toEqual(askShape)
   })
 })
 

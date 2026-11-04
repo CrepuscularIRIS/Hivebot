@@ -104,3 +104,22 @@ describe('agent 置顶 · localStorage 落盘（P5-58 去 mock：Pin 菜单项�
     await expect(d.agent.getPinnedAgents()).resolves.toEqual([])
   })
 })
+
+describe('主题偏好 · localStorage 落盘（L-7 O7：手动选择不能在 reload 后静默回到跟随系统）', () => {
+  it('theme.set 落盘；同一 window 上的新桥实例（reload 语义）恢复所选偏好', async () => {
+    const w = mkWindow()
+    const first = b(w)
+    expect(first.theme.initial.preference).toBe('system')
+    await expect(first.theme.set('dark')).resolves.toMatchObject({ preference: 'dark', resolved: 'dark' })
+    const reloaded = b(w) // reload：shim 重建，localStorage 仍在
+    expect(reloaded.theme.initial).toMatchObject({ preference: 'dark', resolved: 'dark' })
+    await expect(reloaded.theme.set('system')).resolves.toMatchObject({ preference: 'system' })
+    expect(b(w).theme.initial.preference).toBe('system')
+  })
+
+  it('损坏的落盘值回 system（跟随系统），不抛', () => {
+    const w = mkWindow()
+    w.localStorage.setItem('pbots.shim.theme-preference', 'neon')
+    expect(b(w).theme.initial.preference).toBe('system')
+  })
+})

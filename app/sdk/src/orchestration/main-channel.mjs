@@ -16,6 +16,7 @@ import { randomUUID } from 'node:crypto'
 import { Delivery } from './delivery.mjs'
 import { sharedSlots } from './slots.mjs'
 import { registerCreateBot } from './create.mjs'
+import { registerSendToBot } from './send.mjs'
 
 // 依赖解析同 src/p2temp/index.mjs：裸包名只能解析 app/sdk 直接依赖，从稳定
 // 直接依赖（dsh-plugin-market）的真实路径 createResolve，pnpm peer store 保证
@@ -148,6 +149,7 @@ export default class OrchestrationPlugin extends TypertRemoteService {
     this.slots = sharedSlots(config.capacity)
     this.delivery = new Delivery(ctx)
     this.createBot = registerCreateBot(ctx, this)
+    this.sendToBot = registerSendToBot(ctx, this) // P6-11：与 create 共用 turns/slotHolds/slots
   }
 
   /** Live agent or resume-by-id (cold session attach, P6-09 (a) pattern). */

@@ -82,16 +82,16 @@ beforeEach(reset)
 // The barrel is the P6-10+ wiring point (PLAN §2: later tasks only append
 // registration lines here); assert it re-exports today's whole surface.
 describe('index barrel', () => {
-  it('re-exports the P6-21 foundation surface (+ P6-10 追加注册行)', () => {
+  it('re-exports the P6-21 foundation surface (+ P6-10 / P6-11 追加注册行)', () => {
     expect(Object.keys(orchestration).sort()).toEqual([
       'ASSIGN_PREFIX', 'ASSIGN_SOURCE_KIND', 'BOTS_JSON', 'CREATE_BOT_DESCRIPTION', 'CREATE_BOT_TOOL',
       'CreateChannel', 'DEFAULT_CAPACITY', 'DEFAULT_CREATE_TIMEOUT_MS', 'Delivery', 'ORCH_REQUESTS_ENDPOINT',
       'ORCH_RESPOND_METHOD', 'OWN_SOURCE_KINDS', 'QUESTION_TOOL', 'REPORT_PREFIX', 'REPORT_SOURCE_KIND',
-      'Slots', 'TAINT_KIND', 'TurnOrigin',
+      'SEND_TO_BOT_DESCRIPTION', 'SEND_TO_BOT_TOOL', 'Slots', 'TAINT_KIND', 'TurnOrigin',
       'assignMessageId', 'buildAssignMessage', 'buildReportMessage', 'classifyTurn',
       'computeDue', 'deliveryIdOf', 'endOutcomeFor', 'foldAssignments', 'foldMainLog',
       'newAssignmentId', 'orchDataDir', 'orchError', 'projectEvent', 'readMainBotId',
-      'relayText', 'reportMessageId', 'sharedSlots',
+      'registerSendToBot', 'relayText', 'reportMessageId', 'sendRelayText', 'sharedSlots',
     ])
   })
 })

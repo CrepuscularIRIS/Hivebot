@@ -187,7 +187,6 @@ const writeBotsJson = (mainBotId: string | null, bots?: Record<string, { created
 describe('P6-10 live (real Loader)', () => {
   let rt: Runtime
   let B = ''
-  let happyWorker = ''
 
   /** 每用例独立 main session（P5-03：fake 游标 per-session 不随覆盖重置）。 */
   const newMain = async (): Promise<string> => {
@@ -233,17 +232,18 @@ describe('P6-10 live (real Loader)', () => {
       const log = await readLog(rt, M)
       const createResult = log.filter((e) => e.type === 'tool/result').map((e) => e.text ?? '').join('')
       expect(createResult).toContain(worker)
-      happyWorker = worker
       // worker 首条 user/message = pbots-assign:*（source.kind = pbots-main），且在回答前
       await until(async () => (await readLog(rt, worker)).some((e) => e.type === 'user/message'), 'assign lands')
       const wlog = await readLog(rt, worker)
       const firstUser = wlog.find((e) => e.type === 'user/message')!
       expect(firstUser.id!.startsWith('pbots-assign:')).toBe(true)
       expect(firstUser.sourceKind).toBe('pbots-main')
-      // D4：非主 bot 工具表无 create_bot；主 bot 有
+      // D4：非主 bot 工具表无 create_bot；主 bot 有。P6-10.f2a 顺序无关：非主
+      // 对照用本例的 worker（其 assign 回合刚跑过，必为 live agent）——beforeAll
+      // 的 B 在 ⑫ 重启后只剩盘上 session，无 live agent，p610/not-found 假红。
       const visible = async (sessionId: string) => ((await rt.client.call('p610/control', { request: { op: 'visible', sessionId, tool: 'create_bot' } })) as { visible: boolean }).visible
       expect(await visible(M)).toBe(true)
-      expect(await visible(B)).toBe(false)
+      expect(await visible(worker)).toBe(false)
     } finally {
       sub.cancel()
     }
@@ -251,6 +251,9 @@ describe('P6-10 live (real Loader)', () => {
 
   it('⑦⑥ D9-6: 3 running workers → 4th create rejects with pbots/capacity; released slots recycle', { timeout: 180_000 }, async () => {
     const M = await newMain()
+    // P6-10.f2a 顺序无关：前序用例的占位在其 worker turn/end 后释放（毫秒级），
+    // 这里显式等清零再开——本例断言精确的 3 满 + 4 拒，任何残留占位都会假红。
+    await until(async () => ((await rt.client.call('p610/control', { request: { op: 'slots' } })) as { used: number }).used === 0, 'slots drained before capacity case', 30_000)
     const created: string[] = []
     const sub = await subscribe(rt, async (item) => {
       const w = (await rt.client.call('session/create', { request: { agentPreset: 'standard' } }) as { sessionId: string }).sessionId
@@ -316,6 +319,24 @@ describe('P6-10 live (real Loader)', () => {
   })
 
   it('⑫ durability: SIGKILL + restart keeps the worker session with its pbots-assign first message', { timeout: 240_000 }, async () => {
+    // P6-10.f2a 顺序无关：自建 worker（原实现复用 ② 的 happyWorker，② 未先跑则
+    // 空路径红）；结束时把重启后的 runtime 留作本 describe 的 rt（原实现杀掉共享
+    // runtime 后不补，后续任何用例 ECONNREFUSED）。
+    const M = await newMain()
+    let worker = ''
+    const sub = await subscribe(rt, async (item) => {
+      const w = (await rt.client.call('session/create', { request: { agentPreset: 'standard' } }) as { sessionId: string }).sessionId
+      worker = w
+      writeScript(w, [text('干完了', 5)])
+      await rt.client.call(ORCH_RESPOND, { request: { requestId: item.requestId, value: { sessionId: w } } })
+    })
+    try {
+      writeScript(M, [createCall('dur', 'w-dur', '帮我看下X'), text('派完了')])
+      const results = await runTurn(rt, M, 'durability-create')
+      expect(results[0].message.isError ?? false).toBe(false)
+    } finally {
+      sub.cancel()
+    }
     // 杀掉自己 spawn 的 dsh（孙进程，字面 PID——锁文件第 2 行；launcher 会转发
     // SIGTERM，故不能杀 launcher 模拟崩溃，CLAUDE.md §5 允许清理自己 spawn 的子进程）
     const dshPid = Number(readFileSync(join(home, 'launcher.lock'), 'utf8').trim().split('\n')[1].split(':')[0])
@@ -323,37 +344,55 @@ describe('P6-10 live (real Loader)', () => {
     await new Promise<void>((resolve) => { rt.child.once('exit', () => resolve()) })
     rt.client.close()
     const rt2 = await launchRuntime({ env: { P2SDK_PATCH: `${ORCH_YML}:${overlay1}`, P2SDK_HOME: home, PBOTS_DATA_DIR: dataDir, P2SDK_ORCH_DATA_DIR: dataDir } })
+    let kept = false
     try {
-      const wlog = await readLog(rt2, happyWorker)
+      const wlog = await readLog(rt2, worker)
       const firstUser = wlog.find((e) => e.type === 'user/message')
       expect(firstUser?.id?.startsWith('pbots-assign:')).toBe(true)
       expect(firstUser?.sourceKind).toBe('pbots-main')
       // D4：重启后 worker 仍可写（非只读）：prompt → 完成 a turn
-      writeScript(happyWorker, [text('重启后继续', 5)])
-      await rt2.client.call('session/prompt', { request: { requestId: `p610-re-${Date.now()}`, sessionId: happyWorker, mode: 'queue', content: [{ type: 'text', text: '继续' }] } })
-      await until(async () => (await readLog(rt2, happyWorker)).filter((e) => e.type === 'turn/end').length >= 2, 'worker writable after restart')
+      writeScript(worker, [text('重启后继续', 5)])
+      await rt2.client.call('session/prompt', { request: { requestId: `p610-re-${Date.now()}`, sessionId: worker, mode: 'queue', content: [{ type: 'text', text: '继续' }] } })
+      await until(async () => (await readLog(rt2, worker)).filter((e) => e.type === 'turn/end').length >= 2, 'worker writable after restart')
+      kept = true
     } finally {
-      await rt2.stop()
+      if (kept) rt = rt2
+      else await rt2.stop()
     }
   })
 })
 
 describe('P6-10 live RT2 (timeout + crash window)', () => {
+  // P6-10.f2a 顺序无关：独立 home/dataDir——与 RT1 共 home 时随机顺序下两个
+  // runtime 会抢 launcher.lock、bots.json 互相踩；隔离后与 f1 describe 同构。
+  const home2 = tmkdir('bot-p610-live-rt2-')
+  const dataDir2 = join(home2, 'data')
   let rt: Runtime
   let M = ''
 
+  const writeScript2 = (sessionId: string, calls: object[]) => {
+    writeFileSync(join(home2, 'fake', 'scripts', `${sessionId}.json`), JSON.stringify({ calls }))
+  }
+  const writeBotsJson2 = (mainBotId: string | null) => {
+    writeFileSync(join(dataDir2, 'bots.json'), JSON.stringify({ version: 1, mainBotId, recipes: {} }))
+  }
+
   beforeAll(async () => {
-    rt = await launchRuntime({ env: { P2SDK_PATCH: overlay2, P2SDK_HOME: home, PBOTS_DATA_DIR: dataDir, P2SDK_ORCH_DATA_DIR: dataDir } })
+    mkdirSync(join(home2, 'fake', 'scripts'), { recursive: true })
+    mkdirSync(dataDir2, { recursive: true })
+    rt = await launchRuntime({ env: { P2SDK_PATCH: overlay2, P2SDK_HOME: home2, PBOTS_DATA_DIR: dataDir2, P2SDK_ORCH_DATA_DIR: dataDir2 } })
     M = (await rt.client.call('session/create', { request: { agentPreset: 'standard' } }) as { sessionId: string }).sessionId
-    writeBotsJson(M)
+    writeBotsJson2(M)
   }, 120_000)
 
   afterAll(async () => { await rt?.stop() })
 
   it("③′ timeout: ≤1.5s main-unavailable + outcome unknown; slots released (no capacity on 3 more); late respond rejected", { timeout: 240_000 }, async () => {
+    // P6-10.f2a 顺序无关：crash 例若先跑已改写 bots.json（其自有 main），此处重申本例的 main。
+    writeBotsJson2(M)
     const requests: Record<string, any>[] = []
     const sub = await subscribe(rt, (item) => { requests.push(item) })
-    writeScript(M, [createCall('t1', 'w', 'p'), createCall('t2', 'w', 'p'), createCall('t3', 'w', 'p'), createCall('t4', 'w', 'p'), text('done')])
+    writeScript2(M, [createCall('t1', 'w', 'p'), createCall('t2', 'w', 'p'), createCall('t3', 'w', 'p'), createCall('t4', 'w', 'p'), text('done')])
     const started = Date.now()
     const results = await runTurn(rt, M, 'timeouts')
     const elapsed = Date.now() - started
@@ -373,14 +412,14 @@ describe('P6-10 live RT2 (timeout + crash window)', () => {
 
   it('⑫ crash window: crashAt after-create exits before delivery; restart is clean and the orphan worker has no assign', { timeout: 240_000 }, async () => {
     const M = (await rt.client.call('session/create', { request: { agentPreset: 'standard' } }) as { sessionId: string }).sessionId
-    writeBotsJson(M)
+    writeBotsJson2(M)
     let worker = ''
     const sub = await subscribe(rt, async (item) => {
       const w = (await rt.client.call('session/create', { request: { agentPreset: 'standard' } }) as { sessionId: string }).sessionId
       worker = w
       await rt.client.call(ORCH_RESPOND, { request: { requestId: item.requestId, value: { sessionId: w } } })
     })
-    writeScript(M, [createCall('z1', 'wz', 'p'), text('done')])
+    writeScript2(M, [createCall('z1', 'wz', 'p'), text('done')])
     // 发起回合；SDK 在 #3 返回后、投递前 process.exit(86)（dsh 进程内）。
     // prompt 调用可能赶上进程退出（socket 先断），失败不算错。
     await rt.client.call('session/prompt', { request: { requestId: `p610-crash-${Date.now()}`, sessionId: M, mode: 'queue', content: [{ type: 'text', text: '派一个' }] } }).catch(() => {})
@@ -388,14 +427,19 @@ describe('P6-10 live RT2 (timeout + crash window)', () => {
     rt.client.close()
     expect(rt.child.exitCode).not.toBe(0)
     // 重启（crashAt 关）：main 与 SDK 都不报错；worker 已 flush（session 在）但无 assign
-    const rt2 = await launchRuntime({ env: { P2SDK_PATCH: overlay3, P2SDK_HOME: home, PBOTS_DATA_DIR: dataDir, P2SDK_ORCH_DATA_DIR: dataDir } })
+    const rt2 = await launchRuntime({ env: { P2SDK_PATCH: overlay3, P2SDK_HOME: home2, PBOTS_DATA_DIR: dataDir2, P2SDK_ORCH_DATA_DIR: dataDir2 } })
+    // P6-10.f2a 顺序无关：断言通过则把重启后的 runtime 留作本 describe 的 rt
+    // （overlay3 同为 500ms 超时、无 crashAt，③′ 在本例之后跑语义不变）。
+    let kept = false
     try {
       const listed = (await rt2.client.call('session/list', { _request: {} }) as { items: Array<{ sessionId: string }> }).items
       expect(listed.some((s) => s.sessionId === worker)).toBe(true)
       const wlog = await readLog(rt2, worker)
       expect(wlog.some((e) => e.type === 'user/message' && (e.id ?? '').startsWith('pbots-assign:'))).toBe(false)
+      kept = true
     } finally {
-      await rt2.stop()
+      if (kept) rt = rt2
+      else await rt2.stop()
     }
   })
 })

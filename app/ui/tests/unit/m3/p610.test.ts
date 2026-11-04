@@ -152,7 +152,7 @@ describe('createWorkerBot', () => {
     const dataDir = tmkdir('bot-p610-wf-')
     const store = await newStore()
     await store.patchMainBotId('session-main')
-    store.putBot = async () => { throw new Error('bots.json write failed') }
+    store.putBotIfMain = async () => { throw new Error('bots.json write failed') }
     const dsh = mockDsh()
     const r = await createWorkerBot(dsh, store, { kind: 'create-bot', name: 'w', prompt: 'p', mainBotId: 'session-main' }, opts(dataDir))
     expect(r.ok).toBe(false)

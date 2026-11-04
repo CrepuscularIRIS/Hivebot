@@ -163,7 +163,13 @@ export class Delivery {
       if (await this.holds(agent, id)) return { skipped: true }
       if (this.ctx.agents.get(agent.id) !== agent) throw new Error('Delivery target was disposed')
       agent.followup(message)
-      await this.ctx.sessionPersistence.flush()
+      try {
+        await this.ctx.sessionPersistence.flush()
+      } catch (error) {
+        // P6-10.f2 B-2：followup 已入列、仅持久化未确认——目标回合可能已启动，
+        // 调用方不得按「未启动」处理（如 create_bot 释放容量）。带标记上抛。
+        throw Object.assign(error instanceof Error ? error : new Error(String(error)), { unconfirmedStart: true })
+      }
       return { skipped: false }
     })()
     this.inflight.set(key, attempt)

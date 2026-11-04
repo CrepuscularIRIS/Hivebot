@@ -49,9 +49,17 @@ export function wireOrchChannel(deps: OrchChannelDeps): { close(): void } {
       log(`[orch] ${ORCH_REQUESTS_ENDPOINT} stream closed: ${String(frame.type === 'error' ? (frame.error?.message ?? 'error') : frame.type)}`)
       return
     }
-    const item = frame.value as { requestId?: unknown; ready?: unknown } | undefined
-    if (item === undefined || item.ready === true || typeof item.requestId !== 'string') return
-    void answer(item as { requestId: string })
+    const item = frame.value
+    if (item === undefined) return
+    // P6-10.f2 A1：wire 数据不可信——null / 非对象 item 记 1 行日志丢弃，
+    // 不让单条坏帧以 TypeError 杀掉常驻订阅回调。
+    if (item === null || typeof item !== 'object') {
+      log(`[orch] dropped invalid ${ORCH_REQUESTS_ENDPOINT} item: value is ${item === null ? 'null' : typeof item}, expected an object`)
+      return
+    }
+    const candidate = item as { requestId?: unknown; ready?: unknown }
+    if (candidate.ready === true || typeof candidate.requestId !== 'string') return
+    void answer(candidate as { requestId: string })
   }
 
   const answer = async (request: { requestId: string }): Promise<void> => {
@@ -62,22 +70,40 @@ export function wireOrchChannel(deps: OrchChannelDeps): { close(): void } {
     } catch (error) {
       outcome = { error: { code: 'pbots/orchestration-failed', message: `create orchestration crashed: ${String(error instanceof Error ? error.message : error)}`, details: {} } }
     }
-    const response = await deps.dsh.rpc(ORCH_RESPOND_METHOD, { request: { requestId: request.requestId, ...outcome } })
-    if (!response.ok) log(`[orch] respond failed for ${request.requestId} (main-side outcome: ${outcome.value !== undefined ? 'created' : 'failed'})`)
-  }
-
-  const subscribe = async (): Promise<void> => {
-    if (closed) return
+    // P6-10.f2 A3：respond 的传输 / 解析失败（如 HTTP 非法 JSON）只记日志——
+    // fire-and-forget 不得把拒绝甩给宿主；SDK 侧请求由 createTimeoutMs 按超时
+    // 语义收敛并释放占位（CONTRACT §2.4），不重试、不重复 create。
     try {
-      const socket = await deps.dsh.ready()
-      if (closed) return
-      current = socket.openStream(ORCH_REQUESTS_ENDPOINT, {}, onFrame)
+      const response = await deps.dsh.rpc(ORCH_RESPOND_METHOD, { request: { requestId: request.requestId, ...outcome } })
+      if (!response.ok) log(`[orch] respond failed for ${request.requestId} (main-side outcome: ${outcome.value !== undefined ? 'created' : 'failed'})`)
     } catch (error) {
-      log(`[orch] subscribe failed: ${String(error instanceof Error ? error.message : error)}`)
+      log(`[orch] respond failed for ${request.requestId}: ${String(error instanceof Error ? error.message : error)}`)
     }
   }
 
-  deps.dsh.onConnected(() => { void subscribe() })
+  let subscribing = false
+  const subscribe = async (): Promise<void> => {
+    // P6-10.f2 D-2：首连竞态（wire 时 subscribe 等 ready 的同时 onConnected 又
+    // 触发一次）下每代只开一条流——in-flight / 已建立都直接返回。
+    if (closed || subscribing || current !== undefined) return
+    subscribing = true
+    try {
+      const socket = await deps.dsh.ready()
+      if (closed || current !== undefined) return
+      current = socket.openStream(ORCH_REQUESTS_ENDPOINT, {}, onFrame)
+    } catch (error) {
+      log(`[orch] subscribe failed: ${String(error instanceof Error ? error.message : error)}`)
+    } finally {
+      subscribing = false
+    }
+  }
+
+  deps.dsh.onConnected(() => {
+    // 新一代连接：旧流作废（socket 已断），重开一条。
+    current?.cancel()
+    current = undefined
+    void subscribe()
+  })
   void subscribe() // 首次接线时已连接的情形
 
   return {

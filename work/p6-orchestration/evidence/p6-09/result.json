@@ -1,0 +1,856 @@
+{
+  "date": "2026-11-04T10:48:49.923Z",
+  "installedVersion": "0.2.2-alpha.2",
+  "sdkLauncher": "/home/lingxufeng/bot/app/sdk/scripts/start.mjs (real Loader, P2SDK_PATCH overlay)",
+  "runtimeHomePolicy": "/tmp/bot-p609-* (mkdtemp), removed in finally",
+  "checks": [
+    {
+      "label": "probe stream ready",
+      "actual": {
+        "ready": true
+      }
+    },
+    {
+      "label": "(b) completed reason observable via subscription",
+      "actual": "completed"
+    },
+    {
+      "label": "(b) turn/end latency (event ts -> arrival)",
+      "actual": 2,
+      "observation": true
+    },
+    {
+      "label": "(b) aborted reason = aborted/user",
+      "actual": "aborted"
+    },
+    {
+      "label": "(b) abort reasonDetail",
+      "observation": true
+    },
+    {
+      "label": "(b) blocked reason observable",
+      "actual": "blocked"
+    },
+    {
+      "label": "(b) blocked: rejected claim never lands as user/message",
+      "actual": 0
+    },
+    {
+      "label": "(b) error reason observable",
+      "actual": "error"
+    },
+    {
+      "label": "(b) error reasonDetail",
+      "observation": true
+    },
+    {
+      "label": "(b) max-tokens reason observable",
+      "actual": "max-tokens"
+    },
+    {
+      "label": "(b) approval/asked latency",
+      "actual": 2,
+      "observation": true
+    },
+    {
+      "label": "(b) approval/asked latency <= 1s",
+      "actual": true
+    },
+    {
+      "label": "(b) approval/decided latency",
+      "actual": 2,
+      "observation": true
+    },
+    {
+      "label": "(b) approval/decided outcome (cancelled via abort)",
+      "actual": {
+        "id": "233b2eda-88ed-4e85-8344-d00d7dabd4fe",
+        "outcome": "cancelled"
+      },
+      "observation": true
+    },
+    {
+      "label": "(c) execute sees own turn claim kinds (user present)",
+      "actual": true
+    },
+    {
+      "label": "(c) full claim kinds seen by execute",
+      "actual": [
+        "user"
+      ],
+      "observation": true
+    },
+    {
+      "label": "(c) execute sees self running",
+      "actual": "running"
+    },
+    {
+      "label": "(c) execute reads target session status synchronously",
+      "actual": "idle"
+    },
+    {
+      "label": "(c') steer variant: turn claim kinds",
+      "actual": {
+        "1": [
+          "user",
+          "user"
+        ],
+        "2": [
+          "pbots-worker"
+        ]
+      },
+      "observation": true
+    },
+    {
+      "label": "(c') steer joins the running turn; report runs alone in the next turn",
+      "actual": [
+        true,
+        false,
+        [
+          "pbots-worker"
+        ]
+      ]
+    },
+    {
+      "label": "(c') queue variant: turn claim kinds",
+      "actual": {
+        "1": [
+          "user"
+        ],
+        "2": [
+          "pbots-worker"
+        ],
+        "3": [
+          "user"
+        ]
+      },
+      "observation": true
+    },
+    {
+      "label": "(c') queue variant: report and user message land in separate turns",
+      "actual": [
+        [
+          "pbots-worker"
+        ],
+        [
+          "user"
+        ]
+      ]
+    },
+    {
+      "label": "(c') mixed-turn claim kinds",
+      "actual": {
+        "1": [
+          "user"
+        ],
+        "2": [
+          "user",
+          "pbots-worker"
+        ]
+      },
+      "observation": true
+    },
+    {
+      "label": "(c') steer stranded by an error turn is claimed together with the report",
+      "actual": true
+    },
+    {
+      "label": "(e) deliver returns while turn running",
+      "actual": {
+        "inject": {
+          "wasLive": true,
+          "skippedPending": false,
+          "skippedHistory": false,
+          "status": "running"
+        },
+        "followup": {
+          "wasLive": true,
+          "skippedPending": false,
+          "skippedHistory": false,
+          "status": "running"
+        }
+      },
+      "observation": true
+    },
+    {
+      "label": "(e) agent.status observable as running from the plugin",
+      "actual": "running"
+    },
+    {
+      "label": "(e) inject joins the running turn (admitted inside turn 1)",
+      "actual": 1
+    },
+    {
+      "label": "(e) followup waits for the next turn (admitted inside turn 2)",
+      "actual": 2
+    },
+    {
+      "label": "(a) plugin followup on a live session starts a turn",
+      "actual": true
+    },
+    {
+      "label": "(a) injected message persists with own source kind and stable id",
+      "actual": [
+        "pbots-assign:a-live",
+        "pbots-main",
+        true
+      ]
+    },
+    {
+      "label": "(f4) fold(spliced+turn/start) recovers assignment->turn with end state",
+      "actual": {
+        "turn": 1,
+        "reason": "completed"
+      }
+    },
+    {
+      "label": "(f4) log order: insert < turn/start < claim splice < user/message < turn/end",
+      "actual": true
+    },
+    {
+      "label": "(f3) app stop (session/cancel) aborts the turn",
+      "actual": "aborted"
+    },
+    {
+      "label": "(f3) session/cancel keeps the inbox (keepInbox), no canceled splice",
+      "actual": [
+        0,
+        0
+      ]
+    },
+    {
+      "label": "(f3) pending message survives the stop, still not user/message",
+      "actual": true
+    },
+    {
+      "label": "(f3) plugin-side cancel() without keepInbox lands outcome:canceled splices",
+      "actual": true
+    },
+    {
+      "label": "(d) sdk alive before create",
+      "actual": {
+        "exitCode": null,
+        "signal": null
+      },
+      "observation": true
+    },
+    {
+      "label": "(d) created D",
+      "actual": {
+        "d": "session-28fb0d8b-ed8a-4bb8-b5d1-451cc88d1fa3"
+      },
+      "observation": true
+    },
+    {
+      "label": "(d) prompting",
+      "actual": {},
+      "observation": true
+    },
+    {
+      "label": "(d) prompt accepted",
+      "actual": {},
+      "observation": true
+    },
+    {
+      "label": "(d) turn open",
+      "actual": {},
+      "observation": true
+    },
+    {
+      "label": "killSdk crash: killing",
+      "actual": {
+        "dshPid": 52322,
+        "childPid": 52287,
+        "exitCode": null
+      },
+      "observation": true
+    },
+    {
+      "label": "killSdk crash: signals sent",
+      "actual": {},
+      "observation": true
+    },
+    {
+      "label": "(d) crash exit",
+      "actual": {
+        "exitCode": null,
+        "signal": "SIGKILL"
+      },
+      "observation": true
+    },
+    {
+      "label": "probe stream ready",
+      "actual": {
+        "ready": true
+      }
+    },
+    {
+      "label": "(d) persisted tail has turn/start with no turn/end before resume",
+      "actual": 1
+    },
+    {
+      "label": "(d) cold session resolves (resume) and idles",
+      "actual": [
+        false,
+        "idle"
+      ]
+    },
+    {
+      "label": "(d) resume appends turn/end {interrupted} for the crashed turn",
+      "actual": [
+        "turn/end",
+        "interrupted"
+      ]
+    },
+    {
+      "label": "(d) log tail after resume",
+      "actual": [
+        {
+          "seq": 14,
+          "type": "session/title"
+        },
+        {
+          "seq": 15,
+          "type": "step/end",
+          "turn": 1,
+          "step": 1
+        },
+        {
+          "seq": 16,
+          "type": "turn/end",
+          "turn": 1,
+          "reason": "interrupted"
+        },
+        {
+          "seq": 17,
+          "type": "session/end-seed"
+        }
+      ],
+      "observation": true
+    },
+    {
+      "label": "killSdk crash: killing",
+      "actual": {
+        "dshPid": 53228,
+        "childPid": 53149,
+        "exitCode": null
+      },
+      "observation": true
+    },
+    {
+      "label": "killSdk crash: signals sent",
+      "actual": {},
+      "observation": true
+    },
+    {
+      "label": "probe stream ready",
+      "actual": {
+        "ready": true
+      }
+    },
+    {
+      "label": "(a) cold session (never loaded this boot) accepts followup and runs a turn",
+      "actual": [
+        false,
+        "pbots-main"
+      ]
+    },
+    {
+      "label": "killSdk crash: killing",
+      "actual": {
+        "dshPid": 53572,
+        "childPid": 53533,
+        "exitCode": null
+      },
+      "observation": true
+    },
+    {
+      "label": "killSdk crash: signals sent",
+      "actual": {},
+      "observation": true
+    },
+    {
+      "label": "probe stream ready",
+      "actual": {
+        "ready": true
+      }
+    },
+    {
+      "label": "(f1) after restart the persisted message keeps id / kind / items",
+      "actual": [
+        "pbots-report:f1:x:end",
+        "pbots-worker",
+        "x:end"
+      ]
+    },
+    {
+      "label": "(f1) same id re-delivery is skipped by history check (SA holds semantics)",
+      "actual": [
+        true,
+        1
+      ]
+    },
+    {
+      "label": "killSdk crash: killing",
+      "actual": {
+        "dshPid": 53962,
+        "childPid": 53936,
+        "exitCode": null
+      },
+      "observation": true
+    },
+    {
+      "label": "killSdk crash: signals sent",
+      "actual": {},
+      "observation": true
+    },
+    {
+      "label": "probe stream ready",
+      "actual": {
+        "ready": true
+      }
+    },
+    {
+      "label": "(f2) pending next-turn message survives the restart in the inbox",
+      "actual": true
+    },
+    {
+      "label": "(f2) resumed agent is idle",
+      "actual": "idle"
+    },
+    {
+      "label": "(f2) restored inbox does NOT wake the agent by itself",
+      "actual": 1
+    },
+    {
+      "label": "(f2) inbox.remove + followup wakes it",
+      "actual": "running"
+    },
+    {
+      "label": "(f2) F2 turn/end events after rewake",
+      "actual": [
+        "agent/inbox/spliced:",
+        "status:",
+        "turn/start:1",
+        "agent/inbox/spliced:",
+        "claimed:",
+        "user/message:",
+        "user/message:",
+        "user/message:",
+        "user/message:",
+        "agent/inbox/spliced:",
+        "agent/inbox/spliced:",
+        "agent/inbox/spliced:",
+        "status:",
+        "turn/start:2",
+        "agent/inbox/spliced:",
+        "claimed:",
+        "user/message:",
+        "user/message:",
+        "turn/end:completed",
+        "status:"
+      ],
+      "observation": true
+    },
+    {
+      "label": "(f2) rewoken turn consumes the message (single user/message)",
+      "actual": 1
+    },
+    {
+      "label": "(g) SDK crashed after claim (exit code)",
+      "actual": 70
+    },
+    {
+      "label": "probe stream ready",
+      "actual": {
+        "ready": true
+      }
+    },
+    {
+      "label": "(g) crash window: claim splice persisted, no user/message, no turn/end",
+      "actual": [
+        true,
+        0,
+        0,
+        "agent/inbox/spliced"
+      ]
+    },
+    {
+      "label": "(g) resume closes the claimed turn as interrupted",
+      "actual": true
+    },
+    {
+      "label": "(g) fold recovers assignmentId->turn from the claim splice alone",
+      "actual": "interrupted"
+    },
+    {
+      "label": "(g) reconcile produces exactly one stopped item for the crashed assignment",
+      "actual": [
+        {
+          "key": "a10:end",
+          "kind": "end",
+          "workerId": "session-133bde84-7a53-4ffc-a953-52d78c010a82",
+          "assignmentId": "a10",
+          "outcome": "stopped",
+          "reason": "interrupted",
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "label": "(g) report lands exactly once in the main log",
+      "actual": 1
+    },
+    {
+      "label": "(g) pre-step reject: assignment recoverable, turn blocked, no user/message",
+      "actual": [
+        "blocked",
+        0
+      ]
+    },
+    {
+      "label": "killSdk crash: killing",
+      "actual": {
+        "dshPid": 54788,
+        "childPid": 54734,
+        "exitCode": null
+      },
+      "observation": true
+    },
+    {
+      "label": "killSdk crash: signals sent",
+      "actual": {},
+      "observation": true
+    },
+    {
+      "label": "probe stream ready",
+      "actual": {
+        "ready": true
+      }
+    },
+    {
+      "label": "(f5-i) worker ended + undelivered -> reconcile finds exactly one due end key",
+      "actual": [
+        {
+          "key": "a9a:end",
+          "kind": "end",
+          "workerId": "session-d832d3db-91ee-4ee9-8f64-95620989371b",
+          "assignmentId": "a9a",
+          "outcome": "completed",
+          "reason": "completed",
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "label": "(f5-i) second reconcile is a no-op and the key landed exactly once",
+      "actual": [
+        0,
+        1
+      ]
+    },
+    {
+      "label": "(f5-ii) crash after splice+flush (exit code)",
+      "actual": 72
+    },
+    {
+      "label": "probe stream ready",
+      "actual": {
+        "ready": true
+      }
+    },
+    {
+      "label": "(f5-ii) post-crash main state",
+      "actual": {
+        "landed": 0,
+        "nextTurn": []
+      },
+      "observation": true
+    },
+    {
+      "label": "(f5-ii) claim-window crash: key visible in neither history nor pending (holds blind spot)",
+      "actual": [
+        0,
+        false
+      ]
+    },
+    {
+      "label": "(f5-ii) decision-27 recompute re-delivers the lost key",
+      "actual": [
+        "a9b:end"
+      ]
+    },
+    {
+      "label": "(f5-ii) key a9b:end landed exactly once overall",
+      "actual": 1
+    },
+    {
+      "label": "(f5-iii) crash before splice (exit code)",
+      "actual": 73
+    },
+    {
+      "label": "probe stream ready",
+      "actual": {
+        "ready": true
+      }
+    },
+    {
+      "label": "(f5-iii) nothing persisted before the crash -> exactly a9c due (a9a/a9b already delivered)",
+      "actual": [
+        "a9c:end"
+      ]
+    },
+    {
+      "label": "(f5-iii) key a9c:end landed exactly once",
+      "actual": 1
+    },
+    {
+      "label": "(f5) final reconcile: every key exactly once, nothing due",
+      "actual": [
+        0,
+        3
+      ]
+    },
+    {
+      "label": "(c') plain user turns claim only 'user' from the inbox (runtime-context is appended by pre-step, never claimed)",
+      "actual": [
+        "user"
+      ]
+    },
+    {
+      "label": "(c') non-user sources on plain user turns by the user/message lens: runtime-context (3 blocks/turn in this profile), unclaimed",
+      "actual": {
+        "runtimeContextLandsAsUserMessage": true,
+        "claimedByInbox": false
+      },
+      "observation": true
+    }
+  ],
+  "claimedTurns": {
+    "session-d5502b33-1c68-40dc-b38d-142dfa8a1957": {
+      "1": [
+        "user"
+      ]
+    },
+    "session-9a6828d2-c477-49ee-bb28-453d1ec462fd": {
+      "1": [
+        "user"
+      ]
+    },
+    "session-417969a7-a8f7-478f-be9c-3a4d83a6f33f": {
+      "1": [
+        "pbots-main"
+      ]
+    },
+    "session-f30e1447-da8b-4d35-9ff8-9d9212354614": {
+      "1": [
+        "user"
+      ]
+    },
+    "session-ecb4de24-b912-4968-be46-d17fddf3477d": {
+      "1": [
+        "user"
+      ]
+    },
+    "session-729c3924-1c33-4957-ab11-90372f2d6151": {
+      "1": [
+        "user"
+      ]
+    },
+    "session-82d8835f-8990-4190-88dd-4e2ba59ec517": {
+      "1": [
+        "user"
+      ]
+    },
+    "session-17e607f3-6dbd-4e27-bf71-7b80eb082339": {
+      "1": [
+        "user",
+        "user"
+      ],
+      "2": [
+        "pbots-worker"
+      ]
+    },
+    "session-780bed1e-3381-4860-a0fd-f6474579ed46": {
+      "1": [
+        "user"
+      ],
+      "2": [
+        "pbots-worker"
+      ],
+      "3": [
+        "user"
+      ]
+    },
+    "session-0360b5d6-4cc9-4473-9894-ab6b76049f4f": {
+      "1": [
+        "user"
+      ],
+      "2": [
+        "user",
+        "pbots-worker"
+      ],
+      "3": [
+        "user"
+      ]
+    },
+    "session-0e7a5e19-2b09-4f81-bb1e-bdbb3e893d23": {
+      "1": [
+        "user",
+        "pbots-main"
+      ],
+      "2": [
+        "pbots-worker"
+      ]
+    },
+    "session-c4edfd13-6c38-41a0-83bb-9a5baeaf3a77": {
+      "1": [
+        "user"
+      ],
+      "2": [
+        "pbots-main"
+      ]
+    },
+    "session-a870488b-5754-4cf7-a639-93d8775874fb": {
+      "1": [
+        "pbots-main"
+      ]
+    },
+    "session-a847e378-e159-41c8-91aa-d0a38cb4ddd2": {
+      "1": [
+        "user"
+      ]
+    },
+    "session-28fb0d8b-ed8a-4bb8-b5d1-451cc88d1fa3": {
+      "1": [
+        "user"
+      ]
+    },
+    "session-ecbf038b-d670-4b30-b336-e04cc8698b21": {
+      "1": [
+        "pbots-main"
+      ]
+    },
+    "session-c7afe9af-41f8-4cf9-bdc5-892257c0abc1": {
+      "1": [
+        "pbots-worker"
+      ]
+    },
+    "session-54536643-76be-4387-adb0-a5586dcf6fc0": {
+      "1": [
+        "user"
+      ],
+      "2": [
+        "pbots-main"
+      ]
+    },
+    "session-133bde84-7a53-4ffc-a953-52d78c010a82": {
+      "1": [
+        "pbots-main"
+      ]
+    },
+    "session-c723c8d1-f282-4219-8a4c-9bd025bd7f2e": {
+      "1": [
+        "pbots-worker"
+      ]
+    },
+    "session-8f9593e8-9bdc-4482-b9d8-9be0caa248fd": {
+      "1": [
+        "pbots-main"
+      ]
+    },
+    "session-d832d3db-91ee-4ee9-8f64-95620989371b": {
+      "1": [
+        "pbots-main"
+      ]
+    },
+    "session-111af342-e0a2-4bc2-a27a-07962a3e1af3": {
+      "1": [
+        "pbots-worker"
+      ],
+      "2": [
+        "pbots-worker"
+      ],
+      "3": [
+        "pbots-worker"
+      ],
+      "4": [
+        "pbots-worker"
+      ]
+    },
+    "session-e53da71b-111f-480c-9669-0e66bbec7c72": {
+      "1": [
+        "pbots-main"
+      ]
+    },
+    "session-3c3afbef-ea7e-44fb-82e4-b174fbc0095c": {
+      "1": [
+        "pbots-main"
+      ]
+    }
+  },
+  "turnEndReasonsObserved": [
+    "completed",
+    "aborted",
+    "blocked",
+    "error",
+    "max-tokens"
+  ],
+  "staticEnum": [
+    {
+      "kind": "user",
+      "where": "dsh-llm message.ts:111 (base map)",
+      "entersInbox": true
+    },
+    {
+      "kind": "model",
+      "where": "dsh-llm message.ts:112 (base map, assistant role)",
+      "entersInbox": false
+    },
+    {
+      "kind": "tool",
+      "where": "dsh-llm message.ts:113 (base map, tool results)",
+      "entersInbox": false
+    },
+    {
+      "kind": "system-prompt",
+      "where": "dsh-llm message.ts:114 (base map, system role)",
+      "entersInbox": false
+    },
+    {
+      "kind": "runtime-context",
+      "where": "agent-loop/runtime-context.ts:14-15",
+      "entersInbox": "claimed per step (appended by pre-step default, replaced at user/message time)"
+    },
+    {
+      "kind": "user-approval",
+      "where": "interaction/user-approval/src/index.ts:215-221 (setPolicy -> agent.inject)",
+      "entersInbox": true
+    },
+    {
+      "kind": "user-question-reply",
+      "where": "interaction/user-questions/src/index.ts:191-215 (late answer -> agent.steer)",
+      "entersInbox": true
+    },
+    {
+      "kind": "working-directory",
+      "where": "session/working-directory/src/index.ts:193-202 (change notice -> agent.inject)",
+      "entersInbox": true
+    },
+    {
+      "kind": "agent-message",
+      "where": "subagent/subagent/src/continuation-messages.ts:41 (subagent -> parent)",
+      "entersInbox": true
+    },
+    {
+      "kind": "subagent-settled",
+      "where": "subagent/subagent/src/continuation-messages.ts:42 (settle notice -> parent steer/followup, manager.ts:688-689)",
+      "entersInbox": true
+    },
+    {
+      "kind": "schedule",
+      "where": "schedule/schedule/src/runtime.ts:6-8 (due reminder -> agent.followup)",
+      "entersInbox": true
+    }
+  ]
+}

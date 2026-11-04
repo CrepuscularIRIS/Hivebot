@@ -909,3 +909,6 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 21:48 R-10 回报：线程=task 合成 id、跨 session 唤醒客户端侧仅 Watch/事件/OS 通知四件（无本地直调）、SendGrokBotAgentMessage 客户端无调用方=边界外维持、P6 第一批 14 项机制对照表+复刻规格 7 条
 21:54 R-02 回报：连接器授权=两层（connector-grant 卡 per-bot 作答集含 always_this_bot / toolPermissions 云权威三值档默认 auto_review）；needs_approval 无本地卡（云端逐次）；Clear=设置 General 一键清；p5 per-bot 方向与原版一致、QUESTIONS-OPEN (b) 注记需修正
 22:03 P6-03 验收 PASS → 合并 0b929f6（365 单测绿，e2e 后台）| p6 done 4/12（1a 全部收口）
+22:04 R-05 回报：outline 面板全规格（360px 浮层/tab/28px 行/虚拟化/DEV 入口）+conversation-outline 增量事件+Async tasks 面板+tasks 页（只列 temporal 云 worker）+P6-16 coworker 证据 5 处+参照图 10 张
+22:06 R-01 回报：提问卡双通道全规格（widget 单问/多步问卷+user-form 表单，transcript in-flow 无 dock；RPC 9 方法+文案 60 条成表）→ P5-33 直接可用 | **⚠ stub 环境回归**：grok-r3 boot 过但 transcript 恒空（疑 Chrome 156 自动更新；R-04 并行同症状风险）——待 R-04 回报确认，影响后续参照图产出
+22:08 用户反馈两条：①UI 双色（白/暗）质量——立 P5-58（含 P6-03 暗色对比度 OBS）②「很多还是 mock」——答疑：生产 dsh 真连，mock 感来自 shim 桩返回+市场 404 空态+测试挂载桩；P5-58 一并审计收口

@@ -13,6 +13,8 @@ export interface AgentInput {
   activity: unknown
   updatedAt: number
   awaitingApproval?: boolean
+  /** P5-57 D10c：侧栏预览行文案（production/model.ts 读 lastMessagePreview）。 */
+  preview?: string
 }
 
 export function toAgentRecord(input: AgentInput): Record<string, unknown> {
@@ -31,6 +33,7 @@ export function toAgentRecord(input: AgentInput): Record<string, unknown> {
     // 0.18 投影只在 true 时带 hasUnread（projectRendererAgent value.hasUnread === true 才展开）
     ...(input.unread ? { hasUnread: true } : {}),
     lastEntry: null,
+    ...(input.preview !== undefined ? { lastMessagePreview: input.preview } : {}),
     lastMessageId: null,
     memberIds: [],
     conversationPartnerIds: [],

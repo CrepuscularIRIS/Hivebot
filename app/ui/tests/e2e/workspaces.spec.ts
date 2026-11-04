@@ -37,9 +37,11 @@ test('① header.cwd 强制 + ② renderer 传 cwd 即拒', async () => {
       .toBe(join(dataDir, 'workspaces', main))
     expect(existsSync(join(dataDir, 'workspaces', main)), '工作区目录建好').toBe(true)
 
-    // ① 侧栏「New」新建 bot（shim createAgent → #3；#4 的注入已在单测/wire 层覆盖，此格补 UI 全链的 #3 变体）
+    // ① 侧栏「New」→ 新建对话框 → Create（shim createAgent → chooser → #3；#4 的注入已在单测/wire 层覆盖，此格补 UI 全链的 #3 变体）
     const before = (await devState(page)).order
     await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
+    // P5-57：New 先开新建对话框（缺省 preset、无连接器 → #3）
+    await page.locator('dialog[data-dialog="new-bot"] [data-action="create-bot"]').click()
     await expect.poll(async () => (await devState(page)).order.find((id) => !before.includes(id)), { timeout: 30_000 }).toBeTruthy()
     const x = (await devState(page)).order.find((id) => !before.includes(id))!
     await expect.poll(async () => (await devState(page)).views[x]?.cwd, { timeout: 30_000 })

@@ -55,12 +55,13 @@ test('冷启动 mainBotId 指向已不存在的 session → 重建主 bot 并 pa
   }
 })
 
-test('侧栏「New」：#3 建 bot → 侧栏插入并选中 → composer 可输入；新 bot 有 follow 视图', async () => {
+test('侧栏「New」→ 新建对话框 Create：#3 建 bot → 侧栏插入并选中 → composer 可输入；新 bot 有 follow 视图', async () => {
   const env = await launchProduct()
   try {
     const { page } = env
     const before = (await devState(page)).order
     await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
+    await page.locator('dialog[data-dialog="new-bot"] [data-action="create-bot"]').click() // P5-57：New 先开新建对话框
     await expect.poll(async () => (await devState(page)).order.length, { timeout: 30_000 }).toBe(before.length + 1)
     const sid = (await devState(page)).order.find((id) => !before.includes(id))!
     await expect(page.locator('.sand-agent-item')).toHaveCount(2)

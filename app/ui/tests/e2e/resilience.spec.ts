@@ -36,9 +36,13 @@ test('[GU-1] 侧栏 New 的 create 抛错：不留半截 bot、入口仍可用�
     const before = (await devState(page)).order
     const newBtn = page.locator('.sand-agents-sidebar__header button[aria-label="New"]')
     await newBtn.click()
-    // 第二次 create（本次 New）→ main 抛错 → shim api 兜底 !ok → createAgent 失败：侧栏不多出 bot
-    await page.waitForTimeout(1500)
+    // 第二次 create（本次 New → 对话框 Create）→ main 抛错 → shim api 兜底 !ok → 对话框内报错、不入列表（D7）
+    const dlg = page.locator('dialog[data-dialog="new-bot"]')
+    await dlg.locator('[data-action="create-bot"]').click()
+    await expect(dlg.locator('[role="alert"]')).toContainText("Couldn't create the bot", { timeout: 15_000 })
     expect((await devState(page)).order).toEqual(before)
+    await dlg.getByRole('button', { name: 'Cancel' }).click()
+    await expect(dlg).toHaveCount(0)
     await expect(page.locator('.sand-agent-item')).toHaveCount(before.length)
     await expect(newBtn).toBeEnabled()
     await expect(botItem(page, MAIN_TITLE)).toBeVisible()

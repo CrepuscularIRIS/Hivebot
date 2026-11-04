@@ -22,7 +22,7 @@ export const PARTS = [
   { part: 'sidebar.item', sel: { ref: "[...document.querySelectorAll('.sand-agent-item')].find(e => (e.getAttribute('aria-label')||'').includes('Research Bot')) || null", ours: "[...document.querySelectorAll('.sand-agent-item')].find(e => (e.getAttribute('aria-label')||'').includes('Research Bot')) || null" } },
   { part: 'sidebar.item-name', sel: { ref: "document.querySelector('.sand-agent-item__name')", ours: "document.querySelector('.sand-agent-item__name')" } },
   { part: 'sidebar.item-time', sel: { ref: "document.querySelector('.sand-agent-item__time')", ours: "document.querySelector('.sand-agent-item__time')" } },
-  { part: 'sidebar.footer-pill', sel: { ref: "[...document.querySelectorAll('button,[role=button]')].find(e => (e.textContent||'').includes('Connect apps')) || null", ours: "[...document.querySelectorAll('button,[role=button]')].find(e => (e.textContent||'').includes('Plugins')) || null" } },
+  { part: 'sidebar.footer-pill', sel: { ref: "[...document.querySelectorAll('button,[role=button]')].find(e => (e.textContent||'').includes('Connect apps')) || null", ours: "document.querySelector('.sand-agents-sidebar__plugins')" } }, // P5-57：文案改 Connect apps，按类取（上游桩构建与 app 同元素）
   { part: 'chat.header', sel: { ref: "document.querySelector('.sand-chat-header')", ours: "document.querySelector('.sand-chat-header')" } },
   // P5-55：以下 4 个部位改为两侧同构锚（原 ref 选择器落在行容器 / 按钮行 / 头像 span 上，与 ours 不是同一构件，差异不可行动）
   { part: 'chat.header-name', sel: { ref: "document.querySelector('.sand-chat-header__name')", ours: "document.querySelector('.sand-chat-header #sand-conversation-heading') ?? document.querySelector('.sand-chat-header__name')" } },

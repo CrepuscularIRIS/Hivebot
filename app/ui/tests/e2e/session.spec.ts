@@ -1,7 +1,7 @@
 // U-21 P-B E2E（PAB 验收 ②；P5-54 起跑在 renderer-grok 上）：
 // ① D3 审批往返：Local tool permissions dock 只在发起 bot 的会话里出现，侧栏 Needs attention 标记；Deny once → 不执行 + 行 failed；
 //    Allow once → 执行 + 行 done；卡上只有 Allow once / Deny once（P5-31：Always allow / Never 不在 DOM）、显示完整命令，作答值域 ⊆ {allowed-once, rejected}。
-// ② composer：Shift+Enter 换行、IME 组字 Enter 不发送、Enter 发送；草稿按 bot 隔离；打断（M1 session/cancel，0.18 无停止钮）→ aborted。
+// ② composer：Shift+Enter 换行、IME 组字 Enter 不发送、Enter 发送；草稿按 bot 隔离；打断（P5-57 会话头 Stop → session/cancel）→ aborted。
 // ③ 亮/暗截图存证；④ #11 分页：首窗有限，滚到顶自动取更早页，注入失败只重试该页。流式 ≥3 增量与定稿替换见 d1.spec.ts。
 import { expect, test } from 'playwright/test'
 import { existsSync } from 'node:fs'
@@ -72,12 +72,13 @@ test('D3 审批往返：dock 仅本 bot、侧栏 Needs attention；Deny → 不�
   }
 })
 
-test('composer：Shift+Enter 换行、IME 组字 Enter 不发送、Enter 发送；草稿按 bot 隔离；打断 → aborted', async () => {
+test('composer：Shift+Enter 换行、IME 组字 Enter 不发送、Enter 发送；草稿按 bot 隔离；会话头 Stop → aborted → 可继续', async () => {
   const env = await launchProduct()
   try {
     const { page, rt } = env
     const [x] = await createBots(page, [{ title: 'CMP-X', preset: 'p2-alpha' }])
-    rt.writeScriptCalls(x!, [textCall(['第一段回复，', '挂起中'], { gateId: `u21-stop-${Date.now()}` })])
+    // 一次写全（fake 游标按会话持内存，二次 writeScriptCalls 不重置，LEARNINGS P5-03）：第 2 条给停止后的续发
+    rt.writeScriptCalls(x!, [textCall(['第一段回复，', '挂起中'], { gateId: `u21-stop-${Date.now()}` }), textCall(['停止后继续'], { paceMs: 10 })])
     await openBot(page, 'CMP-X')
     const editor = composer(page)
 
@@ -105,10 +106,22 @@ test('composer：Shift+Enter 换行、IME 组字 Enter 不发送、Enter 发送�
     await expect(editor).toHaveText('')
     await expect(streamingRow(page)).toContainText('第一段回复', { timeout: 20_000 })
     await page.screenshot({ path: join(EVIDENCE, 'streaming-light.png') })
-    // 打断：0.18 没有停止钮（差异表 → P5-55）；打断判据走 M1 #cancel，同一 renderer 视图收 aborted
-    expect((await api(page, 'session/cancel', { request: { sessionId: x } })).ok).toBe(true)
+    // 打断（P5-57）：会话头 Stop（运行中才出现）→ session/cancel（P5-27 同链路）→ aborted；
+    // 先注入一次 cancel 失败：「Couldn't stop」+ 钮复位可再点（旧 GU-3 口径）
+    const stop = page.locator('.sand-chat-header button[data-action="stop"]')
+    await expect(stop).toBeVisible()
+    await page.screenshot({ path: join(EVIDENCE, 'stop-button-light.png') })
+    await page.evaluate(() => (window as unknown as { __pbotsDev: { failNext(m: string): void } }).__pbotsDev.failNext('session/cancel'))
+    await stop.click()
+    await expect(page.locator('.sand-chat-header .pb-stop__error')).toHaveText("Couldn't stop")
+    await expect(stop).toBeEnabled()
+    await stop.click()
     await expect.poll(async () => (await devState(page)).views[x!]?.endReason, { timeout: 20_000 }).toBe('aborted')
     await expect(streamingRow(page)).toHaveCount(0, { timeout: 20_000 })
+    await expect(stop).toHaveCount(0) // 不再运行 → 钮收起
+    // 停止后会话可继续
+    await send(page, '继续')
+    await expect(finalAssistant(page).last()).toHaveText('停止后继续', { timeout: 30_000 })
   } finally {
     await env.stop()
   }

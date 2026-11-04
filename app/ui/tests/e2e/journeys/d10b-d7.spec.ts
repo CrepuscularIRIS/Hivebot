@@ -93,7 +93,11 @@ test('D7：直调 #4 未装连接器 → !ok 且列表无此 bot；重启孤儿�
     await page.evaluate(() => (window as unknown as { __pbotsDev: { failNext(m: string): void } }).__pbotsDev.failNext('session/create'))
     const newBtn = page.locator('.sand-agents-sidebar__header button[aria-label="New"]')
     await newBtn.click()
-    await page.waitForTimeout(1000)
+    // P5-57：New → 新建对话框 → Create；失败留在对话框内报错（D7 不入列表），Cancel 后入口可用
+    const dlg = page.locator('dialog[data-dialog="new-bot"]')
+    await dlg.locator('[data-action="create-bot"]').click()
+    await expect(dlg.locator('[role="alert"]')).toContainText("Couldn't create the bot", { timeout: 15_000 })
+    await dlg.getByRole('button', { name: 'Cancel' }).click()
     await expect(newBtn).toBeEnabled()
     expect((await devState(page)).order, 'failNext 创建失败也无新 bot').toEqual(orderBefore)
     await expect(page.locator('.sand-agent-item')).toHaveCount(orderBefore.length)

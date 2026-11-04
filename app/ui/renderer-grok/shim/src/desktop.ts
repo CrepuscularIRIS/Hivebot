@@ -17,6 +17,8 @@ export interface DesktopOptions {
    * ready 会 ++世代——由持久化恢复的选中 bot 若在握手前 openAgent，tail 回值必被作废，#11 分页游标永远装不上。
    * 读排到握手之后，恢复出来的 openAgent 就落在新世代里。缺省不排队（单测）。 */
   persistenceGate?: Promise<void>
+  /** P5-57：pbotsUi.focus 的接收端（缺省空转）。 */
+  onFocusAgent?: DesktopBridge['onFocusAgent']
 }
 
 type AnyWindow = Window & {
@@ -170,7 +172,7 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
         migrateFromLocalStorage: () => Promise.resolve(false),
       },
     },
-    onFocusAgent: listener,
+    onFocusAgent: opts.onFocusAgent ?? listener,
     onDeepLink: listener,
     deepLinksReady: () => Promise.resolve(),
     getBoxMigrationStatus: () => Promise.resolve(null),

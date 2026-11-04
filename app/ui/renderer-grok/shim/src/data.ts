@@ -12,13 +12,14 @@ import { initView, olderItemsOf, reduceFollow, type SessionView } from '../../..
 import { askText, serialize, permissionEntry, type RawEntry } from './entries'
 import { activityOf, toAgentRecord } from './agents'
 import type { CoordinatorDeps } from './coordinator'
+import { botConfigOf, type PbotsUi, type Recipe } from './bots'
 
 type AnyRecord = Record<string, unknown>
 const rec = (v: unknown): AnyRecord => (typeof v === 'object' && v !== null ? v as AnyRecord : {})
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
 interface ApiResult { ok: boolean; value?: unknown; error?: { code: string; message: string } }
-interface Summary { sessionId: string; title: string | null; running: boolean; updatedAt: number }
+interface Summary { sessionId: string; title: string | null; preset: string | null; running: boolean; updatedAt: number }
 interface Ask { agentId: string; callId: string | null; toolName: string; reason: string | null; at: number }
 
 const HISTORY_PAGE = 40
@@ -26,12 +27,18 @@ const HISTORY_PAGE = 40
 const TAIL_PROBE = Number.MAX_SAFE_INTEGER
 /** 0.18 sidebar 新建会话按钮的 createAgent 实参名（ProductionRenderer.tsx:2815）。 */
 const NEW_CHAT = 'New chat'
+/** D10c：失效 bot 在侧栏预览行的文案。 */
+export const CONNECTOR_UNAVAILABLE = 'Connector unavailable'
 
 export interface ShimDataOptions {
   authId: string
   api(method: string, args?: unknown): Promise<ApiResult>
   metaApi(op: 'get' | { op: 'patch'; mainBotId: string }): Promise<ApiResult>
   log?: (message: string) => void
+  /** P5-57：pbotsUi.focus → desktop.onFocusAgent 监听者（index.ts 接线）。 */
+  focus?: (agentId: string) => void
+  /** P5-57 启动封面：roster 首次就绪 / 重试耗尽。 */
+  boot?: (phase: 'ready' | 'failed') => void
 }
 
 export interface ShimData {
@@ -47,6 +54,8 @@ export interface ShimData {
   /** E2E 观测面 window.__pbotsDev（P5-54 从旧 renderer store 平移，契约同名同形：m2-port / m2-deadline /
    * d4-deadline / questions-answer 等 carrier 级 spec 依赖）。只读旁路 + 测试注入钩子，不开新 IPC。 */
   dev: DevSurface
+  /** P5-57 覆盖层数据面（window.pbotsUi）。 */
+  ui: PbotsUi
   start(): void
 }
 
@@ -74,6 +83,11 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   let order: string[] = []
   let summaries: Record<string, Summary> = {}
   let mainBotId: string | null = null
+  let recipes: Record<string, Recipe> = {}
+  const models = new Map<string, string>() // #5 成功后的本地值（快照下一轮才投影）
+  const uiListeners = new Set<() => void>()
+  let uiVersion = 0
+  const uiChanged = (): void => { uiVersion += 1; for (const l of [...uiListeners]) l() }
   const views = new Map<string, SessionView>()
   const unread = new Set<string>()
   const asks = new Map<string, Ask>() // eventId → pending 审批
@@ -107,6 +121,14 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     return s !== undefined && s.title !== null && s.title !== '' ? s.title : NEW_CHAT
   }
 
+  const configOf = (id: string) => (summaries[id] === undefined && !views.has(id) ? null : botConfigOf({
+    rawPreset: views.get(id)?.preset ?? summaries[id]?.preset ?? null,
+    recipes,
+    model: models.get(id) ?? views.get(id)?.model ?? null,
+    isMain: id === mainBotId,
+    running: views.get(id)?.running ?? summaries[id]?.running === true,
+  }))
+
   const recordOf = (id: string): AnyRecord =>
     toAgentRecord({
       sessionId: id,
@@ -119,6 +141,8 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         : (summaries[id]?.running === true ? { kind: 'thinking' } : null),
       updatedAt: summaries[id]?.updatedAt ?? Date.now(),
       awaitingApproval: [...asks.values()].some((a) => a.agentId === id),
+      // D10c 侧栏角标：失效 bot 的预览行（0.18 行内 lastMessagePreview 槽）
+      ...(configOf(id)?.readOnly === true ? { preview: CONNECTOR_UNAVAILABLE } : {}),
     })
 
   const askEntries = (agentId: string): RawEntry[] => {
@@ -182,6 +206,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     return {
       sessionId: String(item.sessionId),
       title: typeof values.title === 'string' && values.title !== '' ? values.title : null,
+      preset: typeof values.agentPreset === 'string' ? values.agentPreset : null,
       running: item.running === true,
       updatedAt: typeof item.updatedAt === 'number' ? item.updatedAt : Date.now(),
     }
@@ -203,6 +228,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       .filter((i) => typeof i.sessionId === 'string' && i.origin !== 'subagent' && i.parentSessionId === undefined)
       .map(summaryOf)
     const listed = rec(meta.value).mainBotId
+    recipes = rec(rec(meta.value).recipes) as unknown as Record<string, Recipe>
     const nextSummaries: Record<string, Summary> = Object.fromEntries(items.map((s) => [s.sessionId, s]))
     if (typeof listed !== 'string' || nextSummaries[listed] === undefined) {
       const created = await api('session/create', { request: {} })
@@ -210,7 +236,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       if (!created.ok || typeof sid !== 'string') throw new Error(`创建主 Bot 失败：${created.error?.message ?? ''}`)
       const patched = await metaApi({ op: 'patch', mainBotId: sid })
       if (!patched.ok) throw new Error(`设置主 Bot 失败：${patched.error?.message ?? ''}`)
-      nextSummaries[sid] = { sessionId: sid, title: null, running: false, updatedAt: Date.now() }
+      nextSummaries[sid] = { sessionId: sid, title: null, preset: null, running: false, updatedAt: Date.now() }
       mainBotId = sid
     } else {
       mainBotId = listed
@@ -222,6 +248,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     followed.add(mainBotId!)
     openFollow(mainBotId!)
     push.agents()
+    opts.boot?.('ready')
   }
 
   const onEventsItem = (item: unknown): void => {
@@ -267,6 +294,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     socket.addEventListener('open', () => {
       dev.sessions += 1
       mux = new PageMux(socket)
+      uiChanged()
       const feed = mux.open('$events', {})
       dev.events = { clientId: undefined, items: feed.items }
       dev.eventsStream = feed
@@ -283,6 +311,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       for (const stream of followStreams.values()) stream.done = true
       followStreams.clear()
       mux = undefined
+      uiChanged()
       setTimeout(bootSession, 300) // 断链重开：follow 全部重挂，快照重建（未决审批由 gateway 补发，C §4）
     })
   }
@@ -347,13 +376,18 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     },
     setAgentUnread: (id, value) => { if (value) unread.add(id); else unread.delete(id); push.agents() },
     createAgent: async (args) => {
+      // P5-57：覆盖层注册了新建对话框 → 先选 preset / 连接器 / 模型（D10/D11），取消回 null（上游 projectRendererAgent(null) → 不选中）
+      if (ui.chooser !== undefined) {
+        const chosen = await ui.chooser({})
+        return chosen === null ? null : recordOf(chosen)
+      }
       const res = await api('session/create', { request: {} })
       if (!res.ok || typeof rec(res.value).sessionId !== 'string') throw new Error(res.error?.message ?? 'session/create failed')
       const sid = rec(res.value).sessionId as string
       const name = rec(args).name
       const titled = typeof name === 'string' && name !== '' && name !== NEW_CHAT
       if (titled) await api('session/rename', { request: { sessionId: sid, title: name as string } })
-      summaries = { ...summaries, [sid]: { sessionId: sid, title: titled ? (name as string) : null, running: false, updatedAt: Date.now() } }
+      summaries = { ...summaries, [sid]: { sessionId: sid, title: titled ? (name as string) : null, preset: null, running: false, updatedAt: Date.now() } }
       order = [...order, sid]
       followed.add(sid)
       openFollow(sid)
@@ -372,6 +406,54 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       }
       return recordOf(id)
     },
+  }
+
+  const ui: PbotsUi = {
+    version: () => uiVersion,
+    subscribe(listener) { uiListeners.add(listener); return () => { uiListeners.delete(listener) } },
+    online: () => mux !== undefined,
+    config: configOf,
+    api,
+    async createBot(req) {
+      const res = req.connectors.length > 0
+        ? await api('p2temp/session.createWithConnectors', { request: { connectors: req.connectors, agentPreset: req.preset } })
+        : await api('session/create', { request: { agentPreset: req.preset } })
+      const sid = rec(res.value).sessionId
+      if (!res.ok || typeof sid !== 'string') return { ok: false, message: res.error?.message ?? 'unknown error' } // D7：不入列表
+      let notice: string | null = null
+      if (req.model !== undefined) {
+        const sel = await ui.selectModel(sid, req.model.provider, req.model.model)
+        if (!sel.ok) notice = `Bot created, but the model wasn't changed: ${sel.error?.message ?? ''}`
+      }
+      // #4 的 recipe 由 main 写入：重拉 M3，否则新 bot 被误判只读
+      if (req.connectors.length > 0) {
+        const meta = await metaApi('get')
+        if (meta.ok) recipes = rec(rec(meta.value).recipes) as unknown as Record<string, Recipe>
+      }
+      // 本地 preset 先记 p2temp 前缀未知：#4 的实际 preset id 由 follow header 给，#3 就是所选
+      summaries = { ...summaries, [sid]: { sessionId: sid, title: null, preset: req.connectors.length > 0 ? null : req.preset, running: false, updatedAt: Date.now() } }
+      order = [...order.filter((id) => id !== sid), sid]
+      followed.add(sid)
+      openFollow(sid)
+      push.agents()
+      return { ok: true, sessionId: sid, notice }
+    },
+    async setMain(id) {
+      const res = await metaApi({ op: 'patch', mainBotId: id })
+      if (res.ok) {
+        mainBotId = id
+        order = [id, ...order.filter((x) => x !== id)]
+        push.agents()
+      }
+      return res
+    },
+    async selectModel(id, provider, model) {
+      const res = await api('session/selectModel', { request: { sessionId: id, provider, model } })
+      if (res.ok) { models.set(id, `${provider}/${model}`); push.agents() }
+      return res
+    },
+    cancel: (id) => api('session/cancel', { request: { sessionId: id } }),
+    focus: (id) => opts.focus?.(id),
   }
 
   const devSurface: DevSurface = {
@@ -397,8 +479,9 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     deps,
     answers,
     dev: devSurface,
+    ui,
     debugItems: (agentId) => [...(views.get(agentId)?.items ?? [])],
-    wire(target) { push.agents = target.agents; push.transcript = target.transcript },
+    wire(target) { push.agents = () => { target.agents(); uiChanged() }; push.transcript = target.transcript },
     agentsPayload: () => order.map(recordOf),
     transcriptPayload: (agentId) => ({ type: 'snapshot', activeAgentId: agentId, entries: entriesOf(agentId) }),
     start() {
@@ -412,6 +495,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
           await sleep(500)
           try { await loadRoster(); return } catch { /* 重试 */ }
         }
+        opts.boot?.('failed')
       })
     },
   }

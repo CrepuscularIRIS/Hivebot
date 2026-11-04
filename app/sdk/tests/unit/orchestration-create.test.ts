@@ -11,6 +11,7 @@ import { Slots, sharedSlots, trackWorkerTurns, readWorkerIds } from '../../src/o
 import { orchDataDir, readMainBotId } from '../../src/orchestration/identity.mjs'
 import { CreateChannel, DEFAULT_CREATE_TIMEOUT_MS } from '../../src/orchestration/main-channel.mjs'
 import { relayText, registerCreateBot } from '../../src/orchestration/create.mjs'
+import { Delivery } from '../../src/orchestration/delivery.mjs'
 import * as orchestration from '../../src/orchestration/index.mjs'
 
 process.env.HOME = tmkdir('bot-p610-home-')
@@ -150,11 +151,14 @@ describe('CreateChannel', () => {
     const ch = new CreateChannel({ timeoutMs: 30 })
     const sub = subscriber('peer-main')
     ch.attach(sub)
-    await expect(ch.request({ kind: 'create-bot' })).rejects.toMatchObject({
+    const pending = ch.request({ kind: 'create-bot' })
+    // P6-10.f2 D-3：超时会从背压队列回收载荷——先取 id 再等超时。
+    const { requestId } = sub.queue[0] as { requestId: string }
+    await expect(pending).rejects.toMatchObject({
       code: 'main-unavailable',
       details: { reason: 'timeout', outcome: 'unknown' },
     })
-    const { requestId } = sub.queue[0] as { requestId: string }
+    expect(sub.queue.length).toBe(0)
     expect(() => ch.respond(requestId, { value: { sessionId: 'late' } }, 'peer-main')).toThrowError(/stale|forbidden/)
   })
 
@@ -396,5 +400,158 @@ describe('orchestration barrel exports (P6-10 ⑩)', () => {
     expect(orchestration.DEFAULT_CREATE_TIMEOUT_MS).toBe(DEFAULT_CREATE_TIMEOUT_MS)
     expect(orchestration.relayText).toBe(relayText)
     expect(orchestration.CREATE_BOT_TOOL).toBe('create_bot')
+  })
+})
+
+// ---- P6-10.f2：REVIEW-P6-10 合批修复（A2 无效应答收敛 / C-1 路径脱敏 /
+// D-3 超时载荷回收 / B-1 收养归并 / B-2 未确认启动不放容量） ----
+
+/** f2 rig：真实 registerCreateBot + CreateChannel + Slots + trackWorkerTurns（B 向探针 slots-channel.mjs 的 vitest 化）。 */
+function f2Rig(limit = 3, options: { timeoutMs?: number } = {}) {
+  const dir = tmkdir('bot-p610f2-')
+  writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'main', recipes: {}, bots: { w: { createdBy: 'main' } } }))
+  const handlers: Record<string, Array<(a: unknown, b: unknown) => void>> = {}
+  let definition: any
+  const ctx = {
+    tools: { register: (d: any) => { definition = d } },
+    sessionPersistence: { flush: async () => {} },
+    on: (name: string, fn: any) => { (handlers[name] ??= []).push(fn); return () => { const list = handlers[name] ?? []; const i = list.indexOf(fn); if (i >= 0) list.splice(i, 1) } },
+  }
+  const slots = new Slots(limit)
+  const channel = new CreateChannel({ timeoutMs: options.timeoutMs ?? 10_000 })
+  const sub = subscriber('peer-main')
+  channel.attach(sub)
+  const orch: any = { config: { dataDir: dir }, slots, channel, agentOf: async () => ({ id: 'w' }), delivery: { send: async () => {} } }
+  registerCreateBot(ctx as never, orch)
+  const fire = (id: string, type: string) => { for (const fn of [...(handlers['session/event'] ?? [])]) fn({ id }, { type }) }
+  const start = () => definition.execute({ name: 'worker', prompt: 'task' }, { agent: { id: 'main' } })
+  const respondAt = (i: number, outcome: Record<string, unknown>) => channel.respond((sub.queue[i] as { requestId: string }).requestId, outcome, 'peer-main')
+  const settled = () => new Promise((res) => setImmediate(res))
+  return { ctx, orch, slots, channel, sub, fire, start, respondAt, settled }
+}
+
+describe('CreateChannel respond shape validation (P6-10.f2 A2)', () => {
+  it('invalid outcomes ({error:null}, {value:null}, {}, error without string code) reject as invalid-response and never hang', async () => {
+    for (const outcome of [{ error: null }, { value: null }, {}, { error: 'boom' }, { error: { code: 7, message: 'x' } }]) {
+      const ch = new CreateChannel({ timeoutMs: 60_000 })
+      const sub = subscriber('peer-main')
+      ch.attach(sub)
+      const pending = ch.request({ kind: 'create-bot' })
+      const { requestId } = sub.queue[0] as { requestId: string }
+      ch.respond(requestId, outcome as never, 'peer-main')
+      await expect(pending).rejects.toMatchObject({ code: 'main-unavailable', details: { reason: 'invalid-response', outcome: 'unknown' } })
+      expect(ch.pending.size).toBe(0)
+    }
+  })
+
+  it('respond {error:null} three times does not exhaust create capacity (A2 容量)', async () => {
+    const r = f2Rig(3, { timeoutMs: 5_000 })
+    const codes: string[] = []
+    for (let i = 0; i < 3; i++) {
+      const p = r.start().then(() => 'resolved', (e: any) => e.code)
+      while (r.sub.queue.length <= i) await r.settled()
+      r.respondAt(i, { error: null })
+      codes.push(await p)
+    }
+    expect(codes).toEqual(['main-unavailable', 'main-unavailable', 'main-unavailable'])
+    expect(r.slots.used).toBe(0)
+    expect(r.orch.slotHolds.size).toBe(0)
+    // 第 4 个 create 不被 capacity 卡住（仍能进通道排队）
+    const queued = r.sub.queue.length
+    const p4 = r.start().then(() => 'resolved', (e: any) => e.code)
+    while (r.sub.queue.length === queued) await r.settled()
+    expect(r.sub.queue.length).toBe(queued + 1)
+    r.channel.detach()
+    expect(await p4).toBe('main-unavailable')
+  })
+
+  it('invalid-response rejects carry outcome unknown details (契约 §2.4 收敛语义)', async () => {
+    const ch = new CreateChannel({ timeoutMs: 60_000 })
+    const sub = subscriber('peer-main')
+    ch.attach(sub)
+    const pending = ch.request({ kind: 'create-bot' })
+    const { requestId } = sub.queue[0] as { requestId: string }
+    ch.respond(requestId, { error: null }, 'peer-main')
+    const err = await pending.then(() => undefined, (e: any) => e)
+    expect(err.details).toMatchObject({ reason: 'invalid-response', outcome: 'unknown' })
+    expect(err.message).toContain('main-unavailable')
+  })
+})
+
+describe('error text redaction at the wire boundary (P6-10.f2 C-1)', () => {
+  it('internal absolute paths in main error text become a relative hint before reaching the tool', async () => {
+    const r = f2Rig(1)
+    const p = r.start().then(() => undefined, (e: any) => e)
+    while (r.sub.queue.length === 0) await r.settled()
+    const abs = '/tmp/bot-p610f2-internal/data/workspaces/session-x1'
+    r.respondAt(0, { error: { code: 'pbots/storage', message: `workspace mkdir failed for "${abs}": Error: ENOTDIR: not a directory, mkdir '${abs}'` } })
+    const err = await p
+    expect(err.code).toBe('pbots/storage')
+    expect(err.message).toContain('ENOTDIR')
+    expect(err.message).not.toContain('/tmp/bot-p610f2-internal')
+    expect(err.message).toContain('<path>/workspaces/session-x1')
+    expect(r.slots.used).toBe(0)
+  })
+})
+
+describe('timeout reclaims the queued payload (P6-10.f2 D-3)', () => {
+  it('a timed-out request removes its payload from a backpressured subscriber queue', async () => {
+    const ch = new CreateChannel({ timeoutMs: 5 })
+    const sub = subscriber('peer-main')
+    ch.attach(sub)
+    await ch.request({ kind: 'create-bot', name: 'w', prompt: 'x'.repeat(1000) }).catch(() => {})
+    expect(ch.pending.size).toBe(0)
+    expect(sub.queue.length).toBe(0) // 修复前：完整 prompt 滞留在无人消费的队列里
+    ch.detach()
+  })
+})
+
+describe('create hold merges with manual-turn adoption (P6-10.f2 B-1)', () => {
+  it('manual start between reserve and respond: all turns ended → slots back to 0, no phantom hold', async () => {
+    const r = f2Rig(3)
+    const p = r.start()
+    while (r.sub.queue.length === 0) await r.settled()
+    r.fire('w', 'turn/start') // 用户从另一客户端启动同一 worker → trackWorkerTurns 收养另占一格
+    expect(r.slots.used).toBe(2)
+    r.respondAt(0, { value: { sessionId: 'w' } })
+    await p
+    expect(r.slots.used).toBe(1) // create 接管所有权：归并掉收养多占的一格
+    expect(r.orch.slotHolds.get('w')).toBe('create')
+    r.fire('w', 'turn/end') // 人工回合结束（create 的一shot监听释放）
+    r.fire('w', 'turn/start') // assign 回合（tracker 重新收养）
+    r.fire('w', 'turn/end')
+    expect(r.slots.used).toBe(0) // 修复前：holds 空但 used=1，永久虚占
+    expect(r.orch.slotHolds.size).toBe(0)
+  })
+})
+
+describe('unconfirmed start keeps the slot held (P6-10.f2 B-2)', () => {
+  it('flush failure after followup: worker still running → slot stays held, next create rejected, released at turn/end', async () => {
+    const r = f2Rig(1)
+    let flushes = 0
+    const gate = Promise.withResolvers<void>()
+    // 共享计数：ctx 的 flush#1（冷 session）+ Delivery readLog 的 flush#2 + followup 后的 flush#3（失败注入点）
+    const persistence = {
+      flush: async () => { flushes += 1; if (flushes === 3) await gate.promise },
+      open: async () => ({ read: async () => ({ events: [] as unknown[] }), close: async () => {} }),
+    }
+    ;(r.ctx as any).sessionPersistence = persistence
+    let followup = false
+    const agent: any = { id: 'w', inbox: { nextTurn: [], nextStep: [] }, followup (_m: unknown) { followup = true; queueMicrotask(() => r.fire('w', 'turn/start')) } }
+    r.orch.agentOf = async () => agent
+    r.orch.delivery = new Delivery({ agents: { get: () => agent }, sessionPersistence: persistence } as never)
+    const p = r.start().then(() => undefined, (e: any) => e)
+    while (r.sub.queue.length === 0) await r.settled()
+    r.respondAt(0, { value: { sessionId: 'w' } })
+    for (let i = 0; !(followup && flushes === 3); i++) { if (i > 500) throw new Error('barrier timeout'); await r.settled() }
+    expect(r.slots.used).toBe(1)
+    gate.reject(new Error('injected durability failure'))
+    const err = await p
+    expect(err.code).toBe('pbots/orchestration-failed')
+    expect(r.slots.used).toBe(1) // 修复前 0：worker 仍 running 却按未启动释放
+    expect(r.orch.slotHolds.get('w')).toBe('turn')
+    expect(r.slots.reserve()).toBe(false) // 同容量下不允许超额启动
+    r.fire('w', 'turn/end') // worker 回合真正结束才归还
+    expect(r.slots.used).toBe(0)
   })
 })

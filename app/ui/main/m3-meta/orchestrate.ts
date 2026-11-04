@@ -349,11 +349,17 @@ export async function createWorkerBot(
   const ws = await mintWorkspace(dataDir)
   if (!ws.ok) return { ok: false, error: { ...ws.error, details: {} } }
 
-  // 3 createdBy 先于会话落盘（CONTRACT §3.1；验收 ①：写失败 → 0 次 dsh 调用）
+  // 3 createdBy 先于会话落盘（CONTRACT §3.1；验收 ①：写失败 → 0 次 dsh 调用）。
+  // P6-10.f2 B-3：第 1 步的 read() 可能落在换主 patch 的未提交窗口（写队列不
+  // 隔离读者）；putBotIfMain 在写队列位重验 mainBotId，回滚后不再写入失权主。
+  let committed: boolean
   try {
-    await store.putBot(ws.botId, mainBotId)
+    committed = await store.putBotIfMain(ws.botId, mainBotId)
   } catch (error) {
     return { ok: false, error: { code: 'pbots/storage', message: `bots.json write failed: ${String(error)}`, details: {} } }
+  }
+  if (!committed) {
+    return invalid(`mainBotId changed during creation: the authoritative main bot is no longer ${JSON.stringify(mainBotId)}`)
   }
 
   // 4 #3：默认 preset、无连接器、cwd 强制（typert {request:…} 壳，同 createSessionForcedWorkspace）

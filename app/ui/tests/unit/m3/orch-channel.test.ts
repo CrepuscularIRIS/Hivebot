@@ -134,3 +134,53 @@ describe('wireOrchChannel', () => {
     expect(dsh.rpcs.length).toBe(2)
   })
 })
+
+// ---- P6-10.f2：wire 数据健壮性（REVIEW-P6-10 A1/A3 + D 向 D-2） ----
+
+describe('wireOrchChannel · P6-10.f2 wire robustness', () => {
+  it('a null / non-object item frame is logged and dropped, never crashes the subscription (A1)', async () => {
+    const dsh = fakeDsh()
+    const logs: string[] = []
+    const seen: unknown[] = []
+    wireOrchChannel({ dsh, create: async (req) => { seen.push(req); return { ok: true, value: { sessionId: 'x' } } }, log: (m) => logs.push(m) })
+    dsh.connect()
+    await settled()
+    dsh.emit({ type: 'item', value: null })
+    dsh.emit({ type: 'item', value: 42 })
+    dsh.emit({ type: 'item', value: { requestId: 'after-bad' } }) // 坏帧之后合法请求仍被处理
+    await new Promise((r) => setTimeout(r, 10))
+    expect(seen).toEqual([{ requestId: 'after-bad' }])
+    expect(logs.filter((m) => m.includes('dropped invalid'))).toHaveLength(2)
+  })
+
+  it('a rejecting respond rpc (invalid JSON etc.) is logged once, no unhandled rejection (A3)', async () => {
+    const dsh = fakeDsh()
+    const logs: string[] = []
+    dsh.setRpc(async () => { throw new SyntaxError("Expected property name or '}' in JSON at position 1") })
+    wireOrchChannel({ dsh, create: async () => ({ ok: true, value: { sessionId: 'session-w' } }), log: (m) => logs.push(m) })
+    dsh.connect()
+    await settled()
+    dsh.emit({ type: 'item', value: { ...REQUEST, requestId: 'r-ae' } })
+    await new Promise((r) => setTimeout(r, 10))
+    expect(logs.filter((m) => m.includes('respond failed') && m.includes('r-ae'))).toHaveLength(1)
+  })
+
+  it('first-connect race (wire-time subscribe + onConnected same tick) opens exactly one stream; close cancels it (D-2)', async () => {
+    const listeners: Array<(gen: number) => void> = []
+    let readyResolve: ((socket: unknown) => void) | undefined
+    const ready = new Promise<unknown>((res) => { readyResolve = res })
+    const streams: Array<{ cancelled: boolean }> = []
+    const socket = { openStream: () => { const s = { cancelled: false }; streams.push(s); return { cancel: () => { s.cancelled = true } } } }
+    const handle = wireOrchChannel({
+      dsh: { onConnected: (fn) => { listeners.push(fn) }, ready: () => ready, rpc: async () => ({ ok: true }) } as unknown as OrchDshLike,
+      create: async () => ({ ok: true, value: { sessionId: 'w' } }),
+    })
+    // DshConnection.connectOnce 同 tick 内既唤醒 ready 等待者又发 onConnected
+    readyResolve?.(socket)
+    for (const fn of listeners) fn(1)
+    await settled()
+    expect(streams.length).toBe(1) // 修复前 2：重复订阅，close 只回收第二条
+    handle.close()
+    expect(streams.filter((s) => !s.cancelled).length).toBe(0)
+  })
+})

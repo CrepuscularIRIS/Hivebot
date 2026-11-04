@@ -161,4 +161,25 @@ export class BotsMetaStore {
       }
     })
   }
+
+  /**
+   * P6-10.f2 B-3（REVIEW-P6-10）：⑤ 建 bot 的条件写——mainBotId 校验与写入在
+   * 同一队列位执行。写队列只串行写者、不隔离读者：read() 能看到换主 patch 的
+   * 未提交内存态，若在回滚窗口里据此放行，putBot 会在回滚后仍写入失权主。
+   * 队列位重验：不匹配 → 不写、返回 false（0 次 dsh 调用由调用方保证）。
+   */
+  putBotIfMain(sessionId: string, createdBy: string): Promise<boolean> {
+    return this.enqueue(async () => {
+      if (this.meta.mainBotId !== createdBy) return false
+      const prev = this.meta.bots
+      this.meta.bots = { ...(prev ?? {}), [sessionId]: { createdBy } }
+      try {
+        await this.flush()
+      } catch (error) {
+        this.meta.bots = prev
+        throw error
+      }
+      return true
+    })
+  }
 }

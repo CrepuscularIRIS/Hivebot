@@ -9,7 +9,7 @@
 // P6-10.f1 ②：registerCreateBot 一并挂 trackWorkerTurns，人工启动的 worker
 // 回合收养进共享容量；holds 里 'create' 标记本工具的占位，防双重计数。
 import { orchDataDir, readMainBotId } from './identity.mjs'
-import { orchError } from './main-channel.mjs'
+import { orchError, redactInternalPaths } from './main-channel.mjs'
 import { newAssignmentId, buildAssignMessage } from './assignment.mjs'
 import { TurnOrigin, TAINT_KIND } from './turn-origin.mjs'
 import { trackWorkerTurns } from './slots.mjs'
@@ -129,6 +129,9 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
     // worker 的 turn/start 不再被 trackWorkerTurns 重复收养，释放走本函数的
     // 一shot turn/end 监听（off + release）。
     heldSession = created.sessionId
+    // P6-10.f2 B-1：respond 前人工启动的同一 worker 已被 trackWorkerTurns 收养
+    // 另占一格（'turn'）——create 接管所有权，归并多占的一格（同步，仍无 await）。
+    if (orch.slotHolds.get(heldSession) === 'turn') orch.slots.release()
     orch.slotHolds.set(heldSession, 'create')
 
     // 5 v4.1 冷 session 窗口（P6-09 附 1）：#3 刚返回的 session 尚零事件，
@@ -151,8 +154,17 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
       await orch.delivery.send(agent, buildAssignMessage({ assignmentId, mainBotId: mainId, text: relayText(prompt) }))
     } catch (error) {
       off()
-      release()
-      throw orchError('pbots/orchestration-failed', `assignment delivery failed: ${String(error instanceof Error ? error.message : error)}`, { sessionId: created.sessionId })
+      if (error?.unconfirmedStart === true) {
+        // P6-10.f2 B-2：followup 已执行、仅持久化未确认——worker 回合可能已在
+        // 运行，不能按「未启动」释放。released=true 让外层 catch 的 release()
+        // 变 no-op，占位转 'turn' 交给 trackWorkerTurns 的 turn/end 归还
+        // （fail-closed：worker 未真启动时容量保守少一格，优于超额）。
+        released = true
+        orch.slotHolds.set(heldSession, 'turn')
+      } else {
+        release()
+      }
+      throw orchError('pbots/orchestration-failed', `assignment delivery failed: ${redactInternalPaths(String(error instanceof Error ? error.message : error))}`, { sessionId: created.sessionId })
     }
 
     // 7 决策 32：rename 失败时 main 仍回成功 + warn——这里原样透传，不重试。

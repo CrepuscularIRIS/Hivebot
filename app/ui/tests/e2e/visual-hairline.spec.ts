@@ -1,7 +1,7 @@
 // P5-14 E5 细边（0.18 production.css:43 `border-right: .5px solid var(--sand-border-weak)`）迁到 renderer-grok：
 // 必须在 DPR 2 下量——CSS border-width 计算值按设备像素吸附，DPR 1 时 .5px 计算为 1px（Electron 44 实测）。
-// ① 侧栏右缘 .5px（0.18 自带）；② 会话设置 pane 左缘：P5-52 的临时右浮覆盖写的是 1px（overrides/dead-entries.css），
-//    值锁在 visual-baseline（U2′ C1 行），.5px 归 P5-55 定稿版式时一并替换——这里只锁侧栏这一处原生细边。
+// P5-55：0.78.1 实测侧栏右缘 = 1px solid border-tertiary-translucent（对照台 ref computed，DPR 2 下同为 1px），
+// 0.18 的 .5px 由 overrides/p5-55-layout.css 换成 0.78.1 值；本用例改锁 1px（DPR 2 仍是区分 .5 与 1 的量法）。
 import { expect, test, type Page } from 'playwright/test'
 import { join } from 'node:path'
 import { createBots, evidenceOut, launchProduct, openBot, type Env } from '../support/ui.ts'
@@ -14,7 +14,7 @@ async function theme(page: Page, mode: 'light' | 'dark'): Promise<void> {
   await expect(page.locator('html')).toHaveAttribute('data-theme', `cursor-${mode}`)
 }
 
-test('E5：侧栏右缘 .5px 细边（DPR 2，亮暗）', async () => {
+test('E5：侧栏右缘细边 = 0.78.1 的 1px（DPR 2，亮暗）', async () => {
   test.setTimeout(120_000)
   const env: Env = await launchProduct({ extraArgs: HIDPI })
   try {
@@ -32,7 +32,7 @@ test('E5：侧栏右缘 .5px 细边（DPR 2，亮暗）', async () => {
     })
     for (const mode of ['light', 'dark'] as const) {
       await theme(page, mode)
-      expect(await edge(), `${mode} sidebar`).toBe('0.5px')
+      expect(await edge(), `${mode} sidebar`).toBe('1px')
       await page.screenshot({ path: join(OUT, `hairline-${mode}.png`) })
     }
   } finally {

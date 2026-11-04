@@ -51,7 +51,8 @@ const COLLECT = `(parts, props) => {
   for (const [part, expr] of Object.entries(parts)) {
     let el = null;
     try { el = eval(expr); } catch { el = null; }
-    if (!el) { out[part] = null; continue; }
+    // P5-55：不渲染（display:none 祖先 → 无 client rect）与不存在同记 null，否则隐藏的构件会被当成「存在」比值
+    if (!el || el.getClientRects().length === 0) { out[part] = null; continue; }
     const cs = getComputedStyle(el);
     const style = {};
     for (const p of props) style[p] = cs.getPropertyValue(p);
@@ -80,6 +81,13 @@ async function capture(page: Page, view: string, theme: 'light' | 'dark', styles
   const parts = Object.fromEntries(PARTS.map((p: { part: string; sel: { ours: string } }) => [p.part, p.sel.ours]))
   styles[`${view}.${theme}`] = await page.evaluate(`(${COLLECT})(${JSON.stringify(parts)}, ${JSON.stringify(STYLE_PROPS)})`)
   summary[`${view}.${theme}`] = await page.evaluate(STATE)
+  // P5-55：DOM 快照（写覆盖 CSS 时对选择器用；PBOTS_COMPARE_DOM=1 才写）
+  if (process.env.PBOTS_COMPARE_DOM === '1') {
+    mkdirSync(join(EVID_DIR, 'dom'), { recursive: true })
+    writeFileSync(join(EVID_DIR, 'dom', `${view}.${theme}.app.html`), (await page.evaluate('document.getElementById("root").outerHTML') as string).replace(/></g, '>\n<'))
+    const vars = await page.evaluate(`(() => { const cs = getComputedStyle(document.documentElement); const o = {}; for (const s of document.styleSheets) { try { for (const r of s.cssRules) { if (r.style) for (const p of r.style) if (p.startsWith('--')) o[p] = cs.getPropertyValue(p).trim(); } } catch {} } return o; })()`)
+    writeFileSync(join(EVID_DIR, 'dom', `${view}.${theme}.app.vars.json`), JSON.stringify(vars, null, 1))
+  }
 }
 
 test('对照台第三列：真实 Electron（fake LLM 等价会话）× 4 视图 × 亮暗', async () => {

@@ -72,3 +72,9 @@ app 与 ours 的差异只可能来自 shim 或真实数据：差异表里记为 
 6. **0.78.1 tool-call 行在桩下静默不渲染**：R3 已提交 harness（grok-r3 原样）今日复跑同样不渲染
    行（entry 不进 row 队列，非 boundary）——R3 归档截图与已提交桩不一致（更早迭代产物），
    非本对照台回归；待 RE 跟进。
+
+## app-vs-ref 处置（P5-55）
+
+`run.mjs` 在有 `styles/app.json` 时额外写 `u1-appref.tsv`：app 列（真实 Electron + 覆盖文件）对 ref 列（0.78.1）逐部位逐属性的差异，
+每行按 `disposition.mjs` 的规则判 `waived:<理由>` 或 `open`；**open = 可行动差异，验收要求 0**（run-summary 的 issues 会列出 open 数）。
+单独重算：`node appref.mjs <EVID_DIR>`。采集口径：不渲染（无 client rect）与不存在同记缺失。

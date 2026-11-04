@@ -2,7 +2,7 @@
 // 一份语义数据 + v1（0.18 移植树）/ v3（原版 0.78.1）两个序列化器。
 // 形状差异依据：S0 实测（work/p5-parity/RE-s0-portability.md §entry 形状）与 R3 实测（RE-stub-boot.md §3）。
 // 已知字段级差异由序列化层吸收：
-//   - 用户消息：v1 = kind:'send-message' + message.type:'text'；v3 = kind:'message' + role:'user'
+//   - 用户消息：两侧都是 kind:'message' + role:'user'（P5-55 更正：v1 原写 send-message = assistant 侧，见 toV1）
 //   - assistant：v1 = kind:'message' + author；v3 = kind:'message' + role:'assistant'
 //   - thinking：v1 = kind:'thinking'；v3 未知（R3 未逆出）→ 默认不注入（v3Thinking=false，实测后可开）
 //   - 时间分隔：两侧都由渲染器自管——0.78.1 自动生成 timestamp 行；0.18 renderer 支持
@@ -93,7 +93,9 @@ export function toV1(fx) {
     const seq = i + 10;
     switch (e.type) {
       case 'user':
-        return { kind: 'send-message', id, seq, timestampMs: e.at, message: { type: 'text', content: e.text } };
+        // P5-55：0.18 投影 model.ts「role = kind==='send-message' || role==='assistant' ? 'assistant' : 'user'」——send-message 是
+        // agent 发给用户的消息，用户消息必须是 kind:'message' + role:'user'（原写法让用户消息落 assistant 侧）
+        return { kind: 'message', id, seq, timestampMs: e.at, role: 'user', author: 'You', content: e.text };
       case 'thinking':
         return { kind: 'thinking', id, seq, timestampMs: e.at, text: e.text, durationMs: 4200 };
       case 'tool':

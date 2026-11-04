@@ -1,6 +1,6 @@
 // P5-51 · foldTurns 输出 → 0.18 transcript raw entry 序列化（纯函数）。
 // 消费端：frontend/src/production/model.ts projectTranscriptEntry（不 import 它，字段按其实读）：
-// - user → send-message + message{type:'text',content}（messageText 读 message.content）
+// - user → message + role:'user' + content（P5-55；send-message 在 0.18 恒判 assistant 侧）
 // - assistant 正文 → message + content 字符串（author=bot 名）
 // - thinking → thinking + text
 // - tool → tool-call + name/status/summary（status 词表 pending|running|done|failed|error|aborted）
@@ -34,7 +34,7 @@ export interface SerializeInput {
   running: boolean
   streaming: SessionView['streaming']
   agentName: string
-  /** sendPrompt 的 clientNonce 补记到第一个 send-message（ack 上游乐观条目）。 */
+  /** sendPrompt 的 clientNonce 补记到第一条用户消息（ack 上游乐观条目）。 */
   clientNonce?: string
 }
 
@@ -61,7 +61,9 @@ export function toRawEntries(
     const at = e.at
     switch (e.kind) {
       case 'user': {
-        const entry: RawEntry = { kind: 'send-message', id: e.id, timestampMs: ts(at), message: { type: 'text', content: e.text } }
+        // P5-55：0.18 model.ts 判侧 `kind==='send-message' || role==='assistant' ? assistant : user`——send-message 是 agent 发来的消息，
+        // 用户消息必须 message + role:'user'（原 send-message 让用户输入落 assistant 侧，VERIFY-P5-51 OBS）
+        const entry: RawEntry = { kind: 'message', id: e.id, timestampMs: ts(at), role: 'user', author: 'You', content: e.text }
         if (nonce !== undefined && !nonceUsed) { entry.clientNonce = nonce.clientNonce; nonceUsed = true }
         raw.push(entry)
         break

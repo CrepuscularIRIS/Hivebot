@@ -1,4 +1,12 @@
-/* 来源: work/p1-re/evidence/theme-tokens.css（Grok Bot 0.78.1 静态推导，gen-tokens.py）原样复制，不改值；选择器 [data-theme="cursor-light|cursor-dark"] 由 theme/theme.ts 设在 <html>。 */
+/* P5-55 · 0.78.1 色板与字体（覆盖文件，ours）。
+ * 色板来源: work/p1-re/evidence/theme-tokens.css（Grok Bot 0.78.1 静态推导，work/p1-re/evidence/gen-tokens.py）原样复制，不改值；
+ * 只把选择器从 [data-theme=…] / :root 提到 html[data-theme=…] / html:root（特异性 0,1,1）：0.18 运行时主题
+ * （runtime-theme-token-installer.ts）在 boot 时把 :root{…} <style> 追加到 head 尾，同特异性下后者赢，必须压过它。
+ * 字体: @font-face 与 0.78.1 index-Dh7EWA8t.css 规则 8843/8844 同文；woff2 与 0.78.1 dist sha256 一致（overrides/fonts/）。
+ * 0.78.1 只在 feature gate sand_xvf_typeface 开时把 sans/mono 栈换成 'XVF'/'XVF Mono'（APP uLt/lLt；nd() 缺省 false，
+ * 本地无 gate 服务 = 关），所以正文仍是系统栈（与对照台 0.78.1 实测 computed font-family 一致），字体按需加载。 */
+@font-face{font-family:XVF;font-weight:200 800;font-display:fallback;src:url(./fonts/X-VF.woff2)format("woff2")}
+@font-face{font-family:XVF Mono;font-weight:200 800;font-display:fallback;src:url(./fonts/XMono-VF.woff2)format("woff2")}
 /* Grok Bot 0.78.1 (sand) theme tokens — statically derived from
    app.asar dist/renderer/assets/index.eager-app-iGTgHP_Q.js (RRn/FRn/ERn/R8),
    index.eager-common-DbK3Oi_r.js (pa/y_/h_/g_/X_), index.eager-platform-C2su3Zzb.js (MF/jF).
@@ -6,7 +14,7 @@
 
 /* ===== appearance: light  (sand-light · Sand Light) ===== */
 /* dataset.theme = "cursor-light"; color-scheme: light */
-[data-theme="cursor-light"] {
+html[data-theme="cursor-light"] {
   color-scheme: light;
   /* --- core slots (--cursor-<slot>) : resolved hex --- */
   --cursor-accent: #1680f3;
@@ -369,7 +377,7 @@
 
 /* ===== appearance: dark  (sand-dark · Sand Dark) ===== */
 /* dataset.theme = "cursor-dark"; color-scheme: dark */
-[data-theme="cursor-dark"] {
+html[data-theme="cursor-dark"] {
   color-scheme: dark;
   /* --- core slots (--cursor-<slot>) : resolved hex --- */
   --cursor-accent: #116dd2;
@@ -731,7 +739,7 @@
 }
 
 /* ========== 共享层（appearance 无关；jF/kRn/R8/z6/ARn 字面量） ========== */
-:root {
+html:root {
   --cursor-duration-instant: 50ms;
   --cursor-duration-fast: 100ms;
   --cursor-duration-normal: 150ms;
@@ -951,7 +959,7 @@
 }
 
 /* ========== dataviz（Tjn 静态表，--sand-dataviz-*） ========== */
-[data-theme="cursor-light"] {
+html[data-theme="cursor-light"] {
   --sand-dataviz-0: #1084FE;
   --sand-dataviz-1: #C24E00;
   --sand-dataviz-2: #9159FE;
@@ -976,7 +984,7 @@
   --sand-dataviz-diverging-3: #80BEFE;
   --sand-dataviz-diverging-4: #0C64C1;
 }
-[data-theme="cursor-dark"] {
+html[data-theme="cursor-dark"] {
   --sand-dataviz-0: #1084FE;
   --sand-dataviz-1: #FF6700;
   --sand-dataviz-2: #9159FE;
@@ -1003,7 +1011,7 @@
 }
 
 /* ========== xRn/SRn 别名层（CRn 注入 :root；值全为 var(--sand-*) 引用） ========== */
-:root {
+html:root {
   --cursor-bg-editor: var(--sand-bg-pane);
   --cursor-bg-chrome: var(--sand-bg-chrome);
   --cursor-bg-elevated: var(--sand-bg-elevated);
@@ -1104,7 +1112,7 @@
 
 /* ========== syntax 高亮（jF syntax 类） ========== */
 /* light = Ge(PF)：PF 源板值经 NF() 键映射为 --cursor-syntax-*；dark = He.syntax 原值 */
-[data-theme="cursor-light"] {
+html[data-theme="cursor-light"] {
   --cursor-syntax-foreground: oklch(0.191 0 0 / 0.922);
   --cursor-syntax-background: oklch(0.991 0 0);
   --cursor-syntax-keyword: oklch(0.488 0.195 13.082);
@@ -1126,7 +1134,7 @@
   --cursor-syntax-language-variable: oklch(0.488 0.195 13.082);
   --cursor-syntax-constant-variable: oklch(0.488 0.102 243.616);
 }
-[data-theme="cursor-dark"] {
+html[data-theme="cursor-dark"] {
   --cursor-syntax-foreground: oklch(0.878 0.01 286.202);
   --cursor-syntax-background: oklch(0.209 0 0);
   --cursor-syntax-keyword: oklch(0.811 0.079 191.639);
@@ -1150,7 +1158,7 @@
 }
 
 /* ========== 布局常量（index-Dh7EWA8t.css 静态声明 + eager-app JS 字面量） ========== */
-:root {
+html:root {
   --sand-shell-grid: 280px minmax(0, 1fr) auto;       /* .sand-1g5hyr8 */
   --sand-shell-grid-collapsed: 0 minmax(0, 1fr) auto; /* .sand-14fal1x */
   --sand-sidebar-anim-duration: 0.2s;                 /* .sand-1r800kn (data-sidebar-animating) */

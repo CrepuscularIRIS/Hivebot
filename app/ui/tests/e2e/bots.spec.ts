@@ -104,8 +104,8 @@ test('侧栏 280 默认；拖拽调宽夹紧 240–400；重载后保持', async
   }
 })
 
-// D12③ 的「body 字体含 XVF」「--dsw-* == 0.78.1 token 表」在 0.18 移植树上不成立（0.18 用系统字体栈 + 0.18 色板），
-// 记 REPORT-P5-54 差异表交 P5-55（换 0.78.1 色板与字体的覆盖文件）；这里锁运行时主题机制本身。
+// D12③：P5-55 起色板 = 0.78.1（overrides/p5-55-palette.css，gen-tokens.py 产物，压过 0.18 运行时主题），XVF / XVF Mono 以 0.78.1
+// 同文 @font-face 注册；正文字体栈按 0.78.1 gate sand_xvf_typeface 缺省关 = 系统栈（与对照台 0.78.1 实测一致）。
 test('主题落地：0.18 运行时主题装 --cursor-* 亮暗两套且随系统切换', async () => {
   const env = await launchProduct()
   try {
@@ -125,6 +125,18 @@ test('主题落地：0.18 运行时主题装 --cursor-* 亮暗两套且随系统
     // 亮暗两套确实不同（运行时主题按 resolved 换整张表，不是只换 data-theme）
     expect(seen.light!['--cursor-bg-editor']).not.toBe(seen.dark!['--cursor-bg-editor'])
     expect(seen.light!['--cursor-text-primary']).not.toBe(seen.dark!['--cursor-text-primary'])
+    // P5-55：0.78.1 色板落地（几项 0.78.1 独有值，0.18 是 #f7f7f7 / #141414 / #fcfcfc）
+    expect(seen.light!['--cursor-text-primary']).toBe('#1c1c1c')
+    const sand = (n: string): Promise<string> => page.evaluate((v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim(), n)
+    await page.emulateMedia({ colorScheme: 'light' })
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'cursor-light')
+    expect(await sand('--sand-bg-sidebar')).toBe('#f5f5f5')
+    expect(await sand('--sand-fill-bubble-user')).toBe('#1c1c1cff')
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'cursor-dark')
+    expect(await sand('--sand-bg-sidebar')).toBe('#0e0e0e')
+    // XVF / XVF Mono 已注册（0.78.1 同文 @font-face）
+    expect(await page.evaluate(() => [...document.fonts].map((f) => f.family.replace(/"/g, '')))).toEqual(expect.arrayContaining(['XVF', 'XVF Mono']))
     // 图标字体（cursor-icons，R9 资产）已加载
     await expect.poll(() => page.evaluate(() => [...document.fonts].some((f) => f.family.includes('cursor-icons') && f.status === 'loaded'))).toBe(true)
   } finally {

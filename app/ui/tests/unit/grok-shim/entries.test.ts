@@ -20,18 +20,18 @@ const n = (id: string, tone: 'muted' | 'danger', text: string): TimelineItem => 
 const rec = (v: unknown): Record<string, unknown> => (typeof v === 'object' && v !== null ? v as Record<string, unknown> : {})
 
 describe('toRawEntries · 每类 entry 的 0.18 形状', () => {
-  it('user → send-message/text（messageText 读 message.content）', () => {
+  it('user → message + role:user（0.18 model.ts 判侧：send-message 恒为 assistant 侧，P5-55）', () => {
     const out = foldTurns([u('u1', '你好')], { hasMore: false, running: false })
     const raw = toRawEntries(out, 'Bot', null)
     expect(raw).toHaveLength(1)
-    expect(rec(raw[0]).kind).toBe('send-message')
-    expect(rec(rec(raw[0]).message).type).toBe('text')
-    expect(rec(rec(raw[0]).message).content).toBe('你好')
+    expect(rec(raw[0]).kind).toBe('message')
+    expect(rec(raw[0]).role).toBe('user')
+    expect(rec(raw[0]).content).toBe('你好')
   })
 
   it('ack/result 正文 → message + author=bot 名（content 字符串）', () => {
     const out = foldTurns([u('u1'), a(1, 0, '先看一下'), t('c1'), a(1, 1, '结果是 42')], { hasMore: false, running: false })
-    const msgs = toRawEntries(out, 'Research', null).filter((e) => e.kind === 'message')
+    const msgs = toRawEntries(out, 'Research', null).filter((e) => e.kind === 'message' && e.role === 'assistant')
     expect(msgs.map((m) => [rec(m).content, rec(m).author])).toEqual([['先看一下', 'Research'], ['结果是 42', 'Research']])
   })
 
@@ -66,7 +66,7 @@ describe('toRawEntries · 每类 entry 的 0.18 形状', () => {
     expect(toRawEntries(base, 'Bot', null).some((e) => rec(e).isStreaming === true)).toBe(false)
   })
 
-  it('clientNonce 补记：pendingNonce 只补第一个 send-message', () => {
+  it('clientNonce 补记：pendingNonce 只补第一条用户消息', () => {
     const out = foldTurns([u('u1', 'q1'), u('u2', 'q2')], { hasMore: false, running: false })
     const raw = toRawEntries(out, 'Bot', null, { clientNonce: 'nonce-1' })
     expect(rec(raw[0]).clientNonce).toBe('nonce-1')

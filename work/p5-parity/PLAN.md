@@ -220,7 +220,7 @@ status：ready = 现在可派；todo = 只差本 PLAN 内的前序任务；block
 | P5-52 | 死入口隐藏（能力开关优先，其次覆盖文件） | frontend-dev | app/ui/renderer-grok/ | P5-51 | blocked | – | – | U4′ | |
 | P5-53 | 对照台：fixture、v1/v3 双协议、截图对、computed-style diff 表、头像抽帧（R3 harness 泛化） | builder | work/p5-parity/harness/compare/ + 脚本 | S0 | done | – | 复用 R3 harness（grok-r3） | 同 fixture 两侧完成渲染 boundary=0；输出 U1′ 差异表初版 | |
 | P5-54 | 切换：Electron 加载新 renderer、删旧 renderer/{plugins,shell}；P4 D1-D12 与 P5-11/12 行为 e2e 改指新 renderer；U2′ 断言迁移 | frontend-dev | app/ui/{main,renderer,renderer-grok}/ | P5-51, P5-52 | blocked | GU(1轮) | – | U6、U2′；对照台第三列（真实 Electron）上线 | |
-| P5-55 | 0.18→0.78.1 收口：色板换 0.78.1（gen-tokens.py）；按 U1′ 差异表逐行处理（R2 清单全覆盖）；只写覆盖文件 | frontend-dev | app/ui/renderer-grok/overrides/ | P5-53, P5-54 | blocked | GU(并入P5-41) | R2 值作检查清单 | U1′ | |
+| P5-55 | 0.18→0.78.1 收口：色板换 0.78.1（gen-tokens.py）；按 U1′ 差异表逐行处理（R2 清单全覆盖）；只写覆盖文件 | frontend-dev | app/ui/renderer-grok/overrides/ | P5-53, P5-54 | done | GU(并入P5-41) | R2 值作检查清单 | U1′ | |
 | P5-56 | bot 动画：persona 状态映射接 dsh 活动 + reduced-motion | frontend-dev | app/ui/renderer-grok/ | P5-51 | blocked | – | – | U3′ | |
 | P5-H3 | 【M·根因已实锤（REPORT-P5-H1 发现3）】沙箱系 6 测试文件 TEST_HOME 硬编码 .test-homes/p5-0X → 并行全量互踩哨兵即红——修法=TEST_HOME 每次运行唯一化（mkdtemp 后缀）+ 顺带排查 no ready line 线索 | builder | app/sdk/tests/e2e/sandbox-*.test.ts 的 TEST_HOME 定义 | – | todo | S | – | 两个并行全量（不同 worktree）同时跑全绿 ×3 | |
 | P5-H4 | 【L】fakeOverlay mkdtemp 不清理（/tmp 积 2411）——teardown 补 rm；与 H1 同族 | builder | app/sdk/tests/support/fake/ | P5-H1 | todo | S | – | 全量后 /tmp/p2sdk-* 零新增 | |

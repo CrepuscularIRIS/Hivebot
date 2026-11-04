@@ -1,0 +1,429 @@
+{
+ "startedAt": "2026-11-04T00:38:28.561Z",
+ "rightDist": "/tmp/bot-wt/P5-55f1m/app/ui/renderer-grok/.build/frontend-shell",
+ "leftRoot": "/dev/shm/grok-re/0.78.1/app/dist/renderer",
+ "views": {
+  "conv-rest.light": {
+   "ref": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": false,
+    "hasThinking": false,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [],
+    "bodyLen": 562,
+    "clicked": "clicked"
+   },
+   "ours": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": true,
+    "hasThinking": true,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [
+     "idle",
+     "thinking",
+     "working"
+    ],
+    "bodyLen": 780,
+    "clicked": null
+   }
+  },
+  "market.light": {
+   "ref": {
+    "pill": "clicked",
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": false,
+    "hasThinking": false,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [],
+    "bodyLen": 562
+   },
+   "ours": {
+    "pill": "clicked",
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": true,
+    "hasThinking": true,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [
+     "idle",
+     "thinking",
+     "working"
+    ],
+    "bodyLen": 878
+   }
+  },
+  "conv-running.light": {
+   "ref": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": false,
+    "hasThinking": false,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [],
+    "bodyLen": 562,
+    "clicked": "clicked"
+   },
+   "ours": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": true,
+    "hasThinking": true,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [
+     "thinking",
+     "working"
+    ],
+    "bodyLen": 788,
+    "clicked": null
+   }
+  },
+  "sidebar-collapsed.light": {
+   "ref": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 88,
+    "sidebarCollapsed": null,
+    "hasUserMsg": false,
+    "hasToolBash": false,
+    "hasThinking": false,
+    "hasAssistant": false,
+    "hasPermCard": false,
+    "hasUser2": false,
+    "personaStates": [],
+    "bodyLen": 21,
+    "clicked": null
+   },
+   "ours": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 88,
+    "sidebarCollapsed": "true",
+    "hasUserMsg": true,
+    "hasToolBash": true,
+    "hasThinking": true,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [
+     "idle",
+     "thinking",
+     "working"
+    ],
+    "bodyLen": 725,
+    "clicked": null
+   }
+  },
+  "info-pane.light": {
+   "ref": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": false,
+    "hasThinking": false,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [],
+    "bodyLen": 643,
+    "clicked": "clicked"
+   },
+   "ours": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": true,
+    "hasThinking": true,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [
+     "idle",
+     "thinking",
+     "working"
+    ],
+    "bodyLen": 780,
+    "clicked": null
+   }
+  },
+  "conv-rest.dark": {
+   "ref": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": false,
+    "hasThinking": false,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [],
+    "bodyLen": 562,
+    "clicked": "clicked"
+   },
+   "ours": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": true,
+    "hasThinking": true,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [
+     "idle",
+     "thinking",
+     "working"
+    ],
+    "bodyLen": 780,
+    "clicked": null
+   }
+  },
+  "market.dark": {
+   "ref": {
+    "pill": "clicked",
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": false,
+    "hasThinking": false,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [],
+    "bodyLen": 562
+   },
+   "ours": {
+    "pill": "clicked",
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": true,
+    "hasThinking": true,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [
+     "idle",
+     "thinking",
+     "working"
+    ],
+    "bodyLen": 878
+   }
+  },
+  "conv-running.dark": {
+   "ref": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": false,
+    "hasThinking": false,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [],
+    "bodyLen": 562,
+    "clicked": "clicked"
+   },
+   "ours": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": true,
+    "hasThinking": true,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [
+     "thinking",
+     "working"
+    ],
+    "bodyLen": 788,
+    "clicked": null
+   }
+  },
+  "sidebar-collapsed.dark": {
+   "ref": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 88,
+    "sidebarCollapsed": null,
+    "hasUserMsg": false,
+    "hasToolBash": false,
+    "hasThinking": false,
+    "hasAssistant": false,
+    "hasPermCard": false,
+    "hasUser2": false,
+    "personaStates": [],
+    "bodyLen": 21,
+    "clicked": null
+   },
+   "ours": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 88,
+    "sidebarCollapsed": "true",
+    "hasUserMsg": true,
+    "hasToolBash": true,
+    "hasThinking": true,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [
+     "idle",
+     "thinking",
+     "working"
+    ],
+    "bodyLen": 725,
+    "clicked": null
+   }
+  },
+  "info-pane.dark": {
+   "ref": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": false,
+    "hasThinking": false,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [],
+    "bodyLen": 643,
+    "clicked": "clicked"
+   },
+   "ours": {
+    "boundary": 0,
+    "boundaryReports": 0,
+    "agentItems": 3,
+    "sidebarWidth": 280,
+    "sidebarCollapsed": null,
+    "hasUserMsg": true,
+    "hasToolBash": true,
+    "hasThinking": true,
+    "hasAssistant": true,
+    "hasPermCard": true,
+    "hasUser2": true,
+    "personaStates": [
+     "idle",
+     "thinking",
+     "working"
+    ],
+    "bodyLen": 780,
+    "clicked": null
+   }
+  }
+ },
+ "persona": {
+  "frames": 264,
+  "states": {
+   "thinking": {
+    "collapsed": "true",
+    "marks": 88,
+    "statesSeen": [
+     "thinking"
+    ],
+    "frames": 88
+   },
+   "searching": {
+    "collapsed": "true",
+    "marks": 88,
+    "statesSeen": [
+     "searching"
+    ],
+    "frames": 88
+   },
+   "working": {
+    "collapsed": "true",
+    "marks": 88,
+    "statesSeen": [
+     "working"
+    ],
+    "frames": 88
+   }
+  }
+ },
+ "issues": [
+  "conv-rest.ref: tool 行在桩下不渲染（R3 已提交 harness 同样复现，非对照台回归；v3 是静默丢行不是渲染报错）"
+ ],
+ "pairs": 10,
+ "appColumn": true,
+ "u1DiffRows": 2558,
+ "appRef": {
+  "waived:computed-equiv": 10,
+  "waived:data": 16,
+  "waived:subpixel": 12,
+  "waived:arch": 40,
+  "waived:fixture": 12
+ },
+ "pass": true,
+ "durationSec": 238
+}

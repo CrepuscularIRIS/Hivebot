@@ -18,3 +18,13 @@ p5-55-palette.css（gen-tokens.py 色板+XVF 注册 sha256 同原版；**正文�
 
 ## 范围外发现
 侧栏悬停预览卡被滚动容器裁半张（low）；图标字体缺失已修（方块→cursor-icons）。
+
+## P5-55.f1（2026-11-03 19:57，frontend-dev Opus 5.5）· 合并态审批卡主钮回位
+- commit：`d7379b7`（feat/P5-55，基 32aef12）。修法：`p5-55-layout.css` B9 段末追加两条，排在旧 nth 规则之后——`button:first-child:nth-last-child(2)` = 主钮（order 3，text-primary 底反白）、`button:nth-child(2):last-child` = tertiary（order 1，透明底 text-secondary）。四钮组不命中（nth-last-child(2) 要求恰两钮），原序不变。
+- 合并态验证 worktree：`/tmp/bot-wt/P5-55f1m`（detach main 7bb7414 + merge d7379b7 = a13a858，零冲突）。
+  - build ✓ → vitest **363/363** → e2e **62 passed (6.7m)** → `PBOTS_UPDATE_VISUAL_BASELINE=1` visual.spec 重写：visual-baseline.json **无 diff**（B8 钮只量 padding/radius/height，主次换色不在采样里）→ 再跑 visual.spec 绿。
+  - 对照台：`test:compare-app` ✓ + `build:upstream` + `node run.mjs` → app-vs-ref **open=0**（computed-equiv 10 / data 16 / subpixel 12 / arch 40 / fixture 12 = 90 豁，与分支态同），修前合并态 open=8。primary-btn 计算样式：亮 `rgb(28,28,28)`/`rgb(252,252,252)`，暗 `rgb(245,245,245)`/`rgb(18,18,18)`，与 ref 一致。
+  - 截图：`evidence/P5-55f1/merged-conv-rest-{light,dark}-bottom.png`（Deny once 灰字居左 · Allow once 黑药丸居右）。
+- 分支态回归：vitest 359/359、e2e 62 passed (6.8m)。
+- 证据：`evidence/P5-55f1/{run-summary.json,run-summary.md,u1-appref.tsv,app-merged.json,*.log}`。
+- 未做：visual.spec.ts:79 标题文案（VERIFY 新问题第 2 条，low）不在本 .f 范围。

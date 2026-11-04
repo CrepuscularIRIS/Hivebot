@@ -899,3 +899,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 20:06 P5-55(+f1) 回归全绿（363+62 exit 0）闭环——**app 与 0.78.1 对照可行动差异=0** | p5 主链剩 P5-57/P5-41
 20:07 P5-51 回归绿；p5-22 已派
 21:10 用户指令：RE 覆盖不足需全量盘点 → director 派出（RE-COVERAGE.md 矩阵+波次清单）；P6-03（DOM 折叠接线，依赖已解）派出 | 在途 3：P5-57、RE 审计、P6-03
+21:15 用户答复 Q-018/019/020：R2+superagent 架构思路=多 bot 路由；worker 默认隐藏+coworker 式可展示；第一批=主 bot 编排+跨 session | 新指令：scout 查 Claude Coworker；设计交 Opus5.5+K3.1Pro → 三路派出

@@ -183,19 +183,21 @@
 - slug：p6-orchestration ｜ 类型：方向（决定路线 R1/R2）｜ 阻塞：D-1 路线投票 ｜ 提出：2026-11-03
 - 背景：BRIEF v1 §9①。你说「从个人使用体验上肯定 superagent 会好很多」——三段式（收到→打算怎么做→结果）已定；剩下这个判断决定编排路线：R2 自建编排层（安静、后台并行、事件驱动通知）vs R1 直接集成 superagent 包（主动性：盯 GitHub/飞书等事件源、主动开工单）。BRIEF 推荐 R2（superagent 包面向团队工单+worker 免审批撞安全反例+上游 1 commit 无维护）。
 - 选项：A（推荐）：R2 自建编排（安静+并行）｜ B：R1 superagent 包（主动性/事件源）
-- 答复：
+- 答复：（2026-11-03 用户原话：「就是superagent的整个架构思路, 是可以当作main grok bot的. 整个harness的流程, 例如可以让人无缝去做. 你可以理解为多bot的路由机制」→ **A（R2 自建）+ superagent 架构思路为设计蓝本**：多 bot 路由机制、harness 流程、人可无缝介入）
+- 落实（主会话）：设计探索派 Opus 5.5 + K3.1 Pro（用户点名）；scout 调研 Claude Coworker 产品思路（用户点名参照）。
 
 ## Q-019 [open] worker bot 默认在侧栏可见吗
 - slug：p6-orchestration ｜ 类型：产品 ｜ 阻塞：UI 任务 ｜ 提出：2026-11-03
 - 背景：BRIEF §9②。主 bot 建的 worker bot 是否默认显示在侧栏（可见=可点进去看过程；不可见=纯后台，需要单独入口管理）。0.18 原版行为待 RE 核实。
 - 选项：A（推荐）：可见（与现有 bot 列表一致，透明）｜ B：默认隐藏（安静，设置里开）
-- 答复：
+- 答复：（同上消息：「主bot的创建的worker bot默认不可见, 但是可以和claude coworker一样去展示侧栏去工作」→ **默认隐藏 + 可像 Claude Coworker 那样展示到侧栏去工作**（B+展示机制））
+- 落实（主会话）：注意 RE-1 实证：原版 hidden_from_sidebar 是通用 client state，天然支持。
 
 ## Q-020 [open] 第一批只有主 bot 能编排？
 - slug：p6-orchestration ｜ 类型：范围 ｜ 阻塞：PLAN ｜ 提出：2026-11-03
 - 背景：BRIEF §9③。第一批：仅主 bot 有 CreateAgent/SendToAgent 等编排工具；普通 bot 之间互发消息是第二批。少一层递归复杂度。
 - 选项：A（推荐）：是，第一批仅主 bot 编排｜ B：所有 bot 平等编排
-- 答复：
+- 答复：（同上消息：「然后第一批就主bot编排+跨session去处理. 剩下的不是问题」→ **A + 第一批含跨 session 处理**；具体设计交 Opus 5.5+K3.1 Pro）
 
 ## Q-021 [open] p6 D-2⑤ 分歧：SDK→main 通道现在定（A 收窄版）还是等 S-2(h) 实证（B）
 - slug：p6-orchestration ｜ 类型：取舍（D 投票分歧）｜ 阻塞：P6-10/11 的通道实现（契约文本可先行）｜ 提出：2026-11-03

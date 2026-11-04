@@ -115,11 +115,23 @@ else consoleLines.push('[driver] screenshot failed');
 await fs.writeFile(`${outPrefix}.console.txt`, consoleLines.join('\n'));
 
 // Optional click: CLICK_SEL env, clicked after first settle, then wait CLICK_WAIT ms more.
+const realClick = async (sel, wantJson, idx) => {
+  const loc = await send('Runtime.evaluate', { expression: `(() => { try { const els=[...document.querySelectorAll('${sel}')]; const want=${wantJson}; const el=want?els.find(e=>(e.textContent||'').includes(want)):els[${Number(idx || 0)}]; if(!el) return JSON.stringify({els:els.length, body:(document.body.innerText||'').slice(0,300)}); const r=el.getBoundingClientRect(); return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2,text:(el.textContent||'').slice(0,40)}); } catch(e) { return 'ERR:'+e.message; } })()`, returnByValue: true });
+  const info = loc?.result?.result?.value;
+  let extra = '';
+  if (info && !info.startsWith('ERR') && info.startsWith('{"x"')) {
+    try { const p = JSON.parse(info);
+      for (const t of ['mousePressed','mouseReleased']) await send('Input.dispatchMouseEvent', { type: t, x: p.x, y: p.y, button: 'left', clickCount: 1 });
+      extra = ` clicked@${Math.round(p.x)},${Math.round(p.y)}`;
+    } catch (e) { extra = ' parse-err'; }
+  }
+  return String(info) + extra;
+};
 const clickSel = process.env.CLICK_SEL;
 await send('Runtime.evaluate', { expression: `window.__CLICK_TEXT__=${JSON.stringify(process.env.CLICK_TEXT || '')}`, returnByValue: true }).catch(() => {});
 if (clickSel) {
   await new Promise((r) => setTimeout(r, Number(process.env.PRE_WAIT || 6000)));
-  const clk = await send('Runtime.evaluate', { expression: `(() => { try { const els=[...document.querySelectorAll('${clickSel}')]; const want=(window.__CLICK_TEXT__||''); const el=want?els.find(e=>(e.textContent||'').includes(want)):els[${Number(process.env.CLICK_IDX || 0)}]; if(!el) return JSON.stringify({els:els.length, body:(document.body.innerText||'').slice(0,300)}); const r=el.getBoundingClientRect(); for (const t of ['pointerdown','mousedown','pointerup','mouseup','click']) el.dispatchEvent(new MouseEvent(t,{bubbles:true,cancelable:true,view:window,clientX:r.x+r.width/2,clientY:r.y+r.height/2})); return JSON.stringify({els:els.length,x:r.x,y:r.y,text:(el.textContent||'').slice(0,40)}); } catch(e) { return 'ERR:'+e.message; } })()`, returnByValue: true });
+  const clk = { result: { result: { value: await realClick(clickSel, JSON.stringify(process.env.CLICK_TEXT || ''), process.env.CLICK_IDX) } } };
   consoleLines.push('[driver] click ' + clickSel + ' -> ' + clk?.result?.result?.value);
   await new Promise((r) => setTimeout(r, Number(process.env.CLICK_WAIT || 6000)));
 }

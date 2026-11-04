@@ -6,9 +6,11 @@
 // （retryFailed 观察到的 fresh→prior）。其余方法与帧原样透传。
 import {
   createCoordinatorClient as upstreamCreate,
-  type CoordinatorPortBridge,
   type ProductionCoordinatorClient,
 } from '../../frontend/src/production/coordinator-client'
+// L-8 O2：CoordinatorPortBridge 的真正导出位置是 recovered/contracts/desktop-bridge
+// （上游 production/coordinator-client 只 import 不 re-export，从那里引是 TS2459）。
+import type { CoordinatorPortBridge } from '../../frontend/src/recovered/contracts/desktop-bridge'
 import { retryWireNonces } from './acknowledgement'
 
 export * from '../../frontend/src/production/coordinator-client'

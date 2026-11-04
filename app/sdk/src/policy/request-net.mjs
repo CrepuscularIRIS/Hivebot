@@ -26,7 +26,7 @@ export const name = 'p2sdk-request-net'
 export const inject = ['tools']
 
 import { createHash, randomUUID } from 'node:crypto'
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /** 许可文件 schema 版本（与 wrapper 侧一致；不符即无效）。 */
@@ -89,15 +89,20 @@ export function issuePermit(req) {
 }
 
 /**
- * 是否存在命中「本会话 + 该命令」且未过期的许可文件（L-7 O5，只读检查）。
- * shell-ask 用它免去 request_network 批准后的重复 bash 卡；权威判定仍在
- * wrapper 的 claim_permit（单次使用 / 过期删除在那一侧），此处 TOCTOU 无害——
- * 最坏情形退化为现状（bash 出卡或 wrapper 断网执行）。
+ * 原子抢占一张命中「本会话 + 该命令」且未过期的许可（L-8 R4，替代 L-7 O5 的只读
+ * hasLivePermit——只读检查让多个后台 bash 共享一次联网许可重复执行本地副作用）。
+ * shell-ask 用它把许可同时当作 bash 的**执行授权**：命中即 rename permit-*.json →
+ * claim-*.json。rename 同一源文件只有一个赢家（并发 pre-execute / wrapper 争抢不
+ * 破，输家继续找下一张）；改名后本侧 permit-* 扫描不再命中（第二次同命令 bash 回
+ * 到出卡，卡面「单次使用」语义成立）；产物仍是 .json 且 session/argvHash 不变，
+ * wrapper 的 claim_permit 按 *.json + 字段匹配 unlink 认领联网（联网授权不失），
+ * 过期 claim 文件同样被 wrapper 的 TTL 清理收走。
  * @param {string} dir 许可目录（config.permitDir）
  * @param {string | undefined} session exec.agent.session.header.id
  * @param {string} command bash 工具的原始命令
+ * @returns {boolean} 是否抢占到许可（本次 bash 的执行授权）
  */
-export function hasLivePermit(dir, session, command) {
+export function claimLivePermit(dir, session, command) {
   if (typeof session !== 'string' || session.length === 0) return false
   const wanted = hashArgv(bashArgv(command))
   let names
@@ -109,9 +114,10 @@ export function hasLivePermit(dir, session, command) {
   const now = Date.now()
   for (const name of names) {
     if (!name.startsWith('permit-') || !name.endsWith('.json')) continue
+    const file = join(dir, name)
     let permit
     try {
-      permit = JSON.parse(readFileSync(join(dir, name), 'utf8'))
+      permit = JSON.parse(readFileSync(file, 'utf8'))
     } catch {
       continue
     }
@@ -120,7 +126,12 @@ export function hasLivePermit(dir, session, command) {
     if (permit.session !== session) continue
     if (permit.argvHash !== wanted) continue
     if (typeof permit.expiresAt !== 'number' || permit.expiresAt <= now) continue
-    return true
+    try {
+      renameSync(file, join(dir, `claim-${randomUUID()}.json`))
+      return true
+    } catch {
+      continue // 被并发抢占（另一 pre-execute 已 rename / wrapper 已 unlink）→ 找下一张
+    }
   }
   return false
 }

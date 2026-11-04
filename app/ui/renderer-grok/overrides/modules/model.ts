@@ -34,7 +34,12 @@ function toolResultOf(value: Record<string, unknown>, entry: { kind: 'tool-call'
   if ((result === null || result === '') && decision === null) return null
   let args: Record<string, unknown> = {}
   if (typeof value.args === 'string' && value.args !== '') {
-    try { args = JSON.parse(value.args) as Record<string, unknown> } catch { /* 原样（非 JSON 实参） */ }
+    try {
+      const parsed: unknown = JSON.parse(value.args)
+      // L-8 R2：合法 JSON 但非对象（'null' / '[1]' / '"s"' / '123'）不是实参表——
+      // 空表回落（JSON.parse('null') 得 null，断言转换不起运行时作用，解引用必炸）。
+      if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) args = parsed as Record<string, unknown>
+    } catch { /* 原样（非 JSON 实参） */ }
   }
   const kind = resultCardKind(typeof value.name === 'string' ? value.name : '')
   const argString = (key: string): string | null => (typeof args[key] === 'string' && args[key] !== '' ? args[key] as string : null)
@@ -45,7 +50,10 @@ function toolResultOf(value: Record<string, unknown>, entry: { kind: 'tool-call'
     path: kind === 'shell' ? null : argString('path') ?? argString('file_path'),
     command: kind === 'shell' ? argString('command') : null,
     workingDirectory: null,
-    summary: decision ?? '', // 卡片 detail 按 summary || diff || output 取，置空让 output 全文呈现
+    // L-8 R3：有输出时置空让 output 全文呈现（view 的 detail = summary || diff || output，
+    // decision 写进 summary 会把完整 stdout/错误详情遮成 'allowed-once'）；无输出才
+    // 回落决定（拒绝原因仍可见）。
+    summary: (result === null || result === '') ? (decision ?? '') : '',
     output: result ?? '',
     diff: '',
     isStreaming: false,
@@ -57,8 +65,21 @@ function toolResultOf(value: Record<string, unknown>, entry: { kind: 'tool-call'
 export function projectTranscriptEntry(value: unknown, index: number, agentName: string, agentId?: string | null): ProductionTranscriptEntry | null {
   const entry = upstream(value, index, agentName, agentId)
   if (entry === null || entry.kind !== 'tool-call') return entry
-  const toolResult = toolResultOf(value as Record<string, unknown>, entry)
-  return toolResult === null ? entry : { ...entry, toolResult }
+  try {
+    const toolResult = toolResultOf(value as Record<string, unknown>, entry)
+    return toolResult === null ? entry : { ...entry, toolResult }
+  } catch {
+    return entry // L-8 R2 隔离：单条附卡失败退回无卡投影（行仍可见），不杀整页
+  }
+}
+
+/** 聚合的单条入口（L-8 R2）：连上游投影自身都抛错的条目也隔离掉（跳过）。 */
+function projectOne(value: unknown, index: number, agentName: string, agentId?: string | null): ProductionTranscriptEntry | null {
+  try {
+    return projectTranscriptEntry(value, index, agentName, agentId)
+  } catch {
+    return null
+  }
 }
 
 // P5-W3.f2 R2：聚合投影也走附卡投影。上游 projectTranscriptFeedEntries /
@@ -87,7 +108,7 @@ function threadSummariesOf(value: Record<string, unknown>): TranscriptThreadSumm
 
 export function projectTranscriptFeedEntries(values: readonly unknown[], agentName: string, agentId: string): ProductionTranscriptEntry[] {
   return values.flatMap((value, index) => {
-    const projected = projectTranscriptEntry(value, index, agentName, agentId)
+    const projected = projectOne(value, index, agentName, agentId)
     return projected == null ? [] : [projected]
   })
 }
@@ -95,7 +116,7 @@ export function projectTranscriptFeedEntries(values: readonly unknown[], agentNa
 export function projectTranscriptPageResult(value: unknown, agentName: string, agentId?: string | null): ProjectedTranscriptPage {
   if (!isRecord(value) || !Array.isArray(value.entries)) return { entries: [] }
   const entries = (value.entries as unknown[])
-    .map((entry, index) => projectTranscriptEntry(entry, index, agentName, agentId))
+    .map((entry, index) => projectOne(entry, index, agentName, agentId))
     .filter((entry): entry is ProductionTranscriptEntry => entry != null)
     .map((entry) => {
       if (entry.kind !== 'message' || entry.composedAtMs != null) return entry

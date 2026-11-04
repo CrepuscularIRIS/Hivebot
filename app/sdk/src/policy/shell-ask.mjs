@@ -21,6 +21,9 @@
 //     是否有效）才关门；从未存在（写端 P5-29 未交付的生产默认态）不门控文件
 //     工具（回到 P5-21 之前的工作区内放行，委派子代理的文件能力随之恢复），
 //     bash 第 1 行不随之放宽。文件一旦出现即恢复完整 fail-closed 语义。
+//     L-8 R1（2026-11-04）：「从未存在」只认从未存在——曾 provision 后被删除
+//     由进程内 latch + 伴生标记（.p2sdk-policy-state-seen）记为曾存在，门保持
+//     关（fail closed），见 fileGateOpen。
 //   第 7 行 连接器（mcp__ 前缀）→ ask：P5-23 元数据桥落地前的回退，一律出卡。
 //   第 10 行 web / 第 11 行 其他进程内工具 → allow（= 现状不拦，Q-013「维持」，
 //     显式入表；不因门关收紧——门只收回 P5 新授的自主：bash 与工作区内文件）。
@@ -47,11 +50,11 @@
 export const name = 'p2sdk-shell-ask'
 
 import { createHash } from 'node:crypto'
-import { readFileSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { readFileSync, statSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { isPathUnder } from './containment.mjs'
 import { resolveTargets } from './resolve.mjs'
-import { hasLivePermit, validateRequest } from './request-net.mjs'
+import { claimLivePermit, validateRequest } from './request-net.mjs'
 
 /** 严格更宽表，来源: deepseek-harness@ce7073d packages/sandbox/sandbox/src/escalation.ts WIDER_MODES。 */
 const STRICTLY_WIDER = {
@@ -196,11 +199,46 @@ export function apply(ctx, config = {}) {
     }
     return cachedInstance
   }
-  // 文件工具的门（L-7 R6）：有效状态放行；「从未 provision」（写端 P5-29 未落地，
-  // 任何候选路径都不存在文件）时不门控——只对文件工具放宽，bash 的 ALWAYS 仍需
-  // 有效状态。config 不带 policyStatePaths（裸挂）时保持门关（文件头既定行为）。
-  const fileGateOpen = () => policyStateValid(policyStatePaths, instanceId())
-    || (policyStatePaths.length > 0 && !policyStateProvisioned(policyStatePaths))
+  // 文件工具的门（L-7 R6 + L-8 R1）：有效状态放行；「从未 provision」（写端
+  // P5-29 未落地，任何候选路径都从未出现过文件）时不门控——只对文件工具放宽，
+  // bash 的 ALWAYS 仍需有效状态。config 不带 policyStatePaths（裸挂）时保持门关
+  // （文件头既定行为）。L-8 R1：曾 provision 后被删除（数据目录清理/轮换、写端
+  // 中途崩溃留空缺、手工 rm）不得当成「从未存在」放行——否则暂停/故障门被静默
+  // 撤销。记忆两级：进程内 latch（本会话）+ 状态文件同目录的伴生标记（跨重启；
+  // 标记在 mask 根内，模型不可伪造/不可读；数据目录整棵轮换清空时标记随状态文件
+  // 一起消失 = 回到「从未存在」，由 P5-29 写端重连重写自愈）。
+  let everProvisioned = false
+  const seenMarker = (p) => join(dirname(p), '.p2sdk-policy-state-seen')
+  const fileGateOpen = () => {
+    const valid = policyStateValid(policyStatePaths, instanceId())
+    const provisioned = valid || policyStateProvisioned(policyStatePaths)
+    if (provisioned) {
+      if (!everProvisioned) {
+        everProvisioned = true
+        for (const p of policyStatePaths) {
+          if (typeof p !== 'string') continue
+          try {
+            statSync(p) // 只给当前真有状态文件的候选留标记（缺文件/目录不存在都跳过）
+            writeFileSync(seenMarker(p), '', { flag: 'a' })
+          } catch {
+            /* 数据根暂不可写等：内存 latch 已覆盖本会话，跨重启退回「从未存在」（数据目录整棵重建的同款终态） */
+          }
+        }
+      }
+      return valid
+    }
+    if (everProvisioned) return false
+    for (const p of policyStatePaths) {
+      if (typeof p !== 'string') continue
+      try {
+        statSync(seenMarker(p))
+        return false
+      } catch {
+        /* 无标记 → 继续 */
+      }
+    }
+    return policyStatePaths.length > 0
+  }
   // 会话标识与 request-net 签发侧同源（exec.agent.session.header.id = wrapper 侧 DSH_SESSION_ID）。
   const sessionHeaderId = (exec) => {
     const id = exec.agent?.session?.header?.id
@@ -244,13 +282,16 @@ export function apply(ctx, config = {}) {
       if (tiers === null) return ask(ASK.fallback)
       const bashAlways = (tiers.bash ?? tiers.default) === 'sandbox-allow' && policyStateValid(policyStatePaths, instanceId())
       if (!bashAlways) {
-        // L-7 O5：request_network 卡刚批下的同会话同命令许可尚在有效期 → 用户已在
-        // 卡上见过完整命令并放行（含联网），这张 bash 卡是重复审批，且等待出卡会
-        // 消耗许可 60s TTL。许可目录在 mask 根内（模型不可伪造/不可读），最终权威
-        // 仍是 wrapper 的 claim_permit（命中/过期/缺失决定联网与否），此处只免去重复出卡。
+        // L-7 O5 + L-8 R4：request_network 卡刚批下的同会话同命令许可 → 用户已在
+        // 卡上见过完整命令并放行（含联网），这张 bash 卡是重复审批。许可同时是
+        // bash 的执行授权，必须**原子抢占**（claimLivePermit：rename permit-* →
+        // claim-*，同一许可只授权一次）——多个后台 bash 并发重复同命令时，输家在
+        // 此落回出卡，而不是借同一许可静默重复执行本地副作用。许可目录在 mask 根
+        // 内（模型不可伪造/不可读），联网与否的最终权威仍是 wrapper 的 claim_permit
+        // （认领改名后的 claim-*.json；命中/过期/缺失决定联网与否）。
         const command = exec.arguments !== null && typeof exec.arguments === 'object' ? exec.arguments.command : undefined
         if (permitDir !== undefined && typeof command === 'string'
-          && hasLivePermit(permitDir, sessionHeaderId(exec), command)) return next()
+          && claimLivePermit(permitDir, sessionHeaderId(exec), command)) return next()
       }
       return bashAlways ? next() : ask(ASK.bash)
     }

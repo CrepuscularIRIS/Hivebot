@@ -5,12 +5,12 @@
 // 联网执行面（wrapper supervisor、slirp、探针差分）在 e2e
 // tests/e2e/request-network.test.ts。
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { hashArgv, issuePermit, validateRequest, PERMIT_VERSION } from '../../src/policy/request-net.mjs'
+import { claimLivePermit, hashArgv, issuePermit, validateRequest, PERMIT_VERSION } from '../../src/policy/request-net.mjs'
 
 const tmkdir = () => mkdtempSync(join(tmpdir(), 'p5-22-unit-'))
 
@@ -75,5 +75,50 @@ describe('apply fail loud（缺 permitDir 不加载，fail closed）', () => {
   it('config 无 permitDir → apply 抛错', async () => {
     const mod = await import('../../src/policy/request-net.mjs')
     expect(() => mod.apply({}, {})).toThrow(/permitDir/)
+  })
+})
+
+// ── L-8 R4（P5-W3.f3）：一次性联网许可的原子抢占（原 hasLivePermit 只读 → 多个
+// 后台 bash 共享一次许可重复执行本地副作用）。抢占 = rename permit-*.json →
+// claim-*.json：本侧与后续 pre-execute 不再命中；wrapper 侧按 *.json + session/
+// argvHash 认领（联网授权不失）。
+describe('claimLivePermit（L-8 R4：原子抢占，单次授权语义）', () => {
+  it('命中即抢占（permit-* 改名消失）；同一许可只赢一次；非本会话/非本命令不消耗', () => {
+    const dir = tmkdir()
+    try {
+      issuePermit({ dir, session: 's1', command: 'curl a.example' })
+      issuePermit({ dir, session: 's2', command: 'curl b.example' })
+      expect(claimLivePermit(dir, 's1', 'curl other.example'), '命令不匹配：不抢占').toBe(false)
+      expect(readdirSync(dir).filter((n) => n.startsWith('permit-'))).toHaveLength(2)
+      expect(claimLivePermit(dir, 's1', 'curl a.example'), '命中并抢占').toBe(true)
+      expect(claimLivePermit(dir, 's1', 'curl a.example'), '同一许可只授权一次').toBe(false)
+      expect(claimLivePermit(dir, 's2', 'curl b.example'), '另一会话的许可不受影响').toBe(true)
+      expect(readdirSync(dir).filter((n) => n.startsWith('permit-')), '原许可全部移走').toHaveLength(0)
+      expect(readdirSync(dir).filter((n) => n.endsWith('.json')), '抢占产物以 claim-*.json 存活').toHaveLength(2)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('抢占产物可被 wrapper 的 claim_permit 认领联网（真 python3 dry-run 对拍）', () => {
+    const dir = tmkdir()
+    try {
+      issuePermit({ dir, session: 'sw', command: 'curl w.example' })
+      expect(claimLivePermit(dir, 'sw', 'curl w.example')).toBe(true)
+      const py = spawnSync('/usr/bin/python3', ['-I', '-B', '-c', `
+import importlib.util, json, os, sys
+spec = importlib.util.spec_from_file_location('bw', sys.argv[1])
+bw = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(bw)
+os.environ['DSH_SESSION_ID'] = 'sw'
+got = bw.claim_permit(sys.argv[2], ['bash', '-c', 'curl w.example'], False)
+print(json.dumps({'matched': got is not None, 'session': (got or {}).get('session')}))
+`,
+        join(dirname(fileURLToPath(import.meta.url)), '../../sandbox/bwrap-wrap.py'), dir], { encoding: 'utf8' })
+      expect(py.status, py.stderr).toBe(0)
+      expect(JSON.parse(py.stdout), 'wrapper dry-run 仍认领改名后的许可（联网授权不失）').toEqual({ matched: true, session: 'sw' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })

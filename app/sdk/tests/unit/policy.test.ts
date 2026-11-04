@@ -6,9 +6,9 @@
 // 的 bash 语义（必问/严格更宽委托/never 拒绝）逐条保留。
 // The plugin's in-runtime wiring (loader row, approval round-trip over $events)
 // is covered end-to-end by tests/e2e/approval.test.ts + tiers-policy.test.ts.
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as plugin from '../../src/policy/shell-ask.mjs'
 import { issuePermit } from '../../src/policy/request-net.mjs'
@@ -534,6 +534,101 @@ describe('L-7 O5: a live network permit for this exact command satisfies the bas
   it('still asks with no permitDir configured', async () => {
     const listener = registeredListener({ mode: 'workspace-write' })
     expect(await listener({ name: 'bash', agent: { session: SESSION }, arguments: { command: 'curl example.com', description: 'x' } }, next)).toEqual(askShape)
+  })
+})
+
+// ── L-8 修复链（P5-W3.f3）：R1 provision 后删除不放松文件门 / R4 联网许可一次性原子抢占 ──
+
+describe('L-8 R1: a policy-state deleted after provisioning keeps the workspace file gate closed', () => {
+  // L-8 R1：L-7 R6 的「从未存在 → 不门控」只对从未存在成立。曾 provision（状态文件
+  // 出现过——paused/fault/instance 不符等关门态）后被删除（清理/轮换/手工 rm/写端
+  // 中途崩溃留空缺）必须 fail closed，否则暂停/故障门被静默撤销。记忆两级：进程内
+  // latch + 状态文件同目录的伴生标记（跨重启）。
+  it('in-workspace read/write keep asking after the provisioned state file is deleted (was: silently open)', async () => {
+    const p = provisionedConfig({ version: 1, paused: true, instance: INSTANCE })
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+    expect(await listener({ name: 'read', arguments: { file_path: 'a.txt' } }, next)).toMatchObject({ kind: 'ask' })
+    rmSync(p.statePath)
+    expect(await listener({ name: 'read', arguments: { file_path: 'a.txt' } }, next), '删除后仍关门，不回到「从未存在」放行').toMatchObject({ kind: 'ask' })
+    expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toMatchObject({ kind: 'ask' })
+  })
+
+  it('never sessions keep denying file tools after deletion (delegated subagents do not come back)', async () => {
+    const p = provisionedConfig({ version: 1, paused: true, instance: INSTANCE })
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', approval: approvalSvc('never'), fs: true, config: p.config })
+    expect(await listener({ name: 'read', agent: { session: {} }, arguments: { file_path: 'a.txt' } }, next)).toEqual(neverDeny)
+    rmSync(p.statePath)
+    expect(await listener({ name: 'read', agent: { session: {} }, arguments: { file_path: 'a.txt' } }, next), '删除转移不放松 never 门').toEqual(neverDeny)
+  })
+
+  it('the provisioned memory survives an SDK restart (companion marker in the state dir)', async () => {
+    const p = provisionedConfig({ version: 1, paused: true, instance: INSTANCE })
+    cleanups.push(p.cleanup)
+    const first = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+    expect(await first({ name: 'read', arguments: { file_path: 'a.txt' } }, next)).toMatchObject({ kind: 'ask' })
+    rmSync(p.statePath)
+    // 新 apply = 新进程记忆（cachedInstance / latch 全新）：只能凭磁盘上的伴生标记
+    const restarted = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+    expect(await restarted({ name: 'read', arguments: { file_path: 'a.txt' } }, next), '重启后凭伴生标记仍关门').toMatchObject({ kind: 'ask' })
+  })
+
+  it('a never-provisioned dir still opens the file gate and leaves no trace files (L-7 R6 missing semantics unchanged)', async () => {
+    const p = provisionedConfig('missing')
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+    expect(await listener({ name: 'read', arguments: { file_path: 'a.txt' } }, next)).toBe(nextResult)
+    expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toBe(nextResult)
+    expect(readdirSync(dirname(p.statePath)), '从未 provision 不产生任何伴生文件').toEqual([])
+  })
+})
+
+describe('L-8 R4: a network permit authorizes exactly one bash pre-execute (atomic claim, not a shared read)', () => {
+  // L-8 R4：hasLivePermit 只读 → 同一许可可被多个（后台）bash 重复借用执行本地
+  // 副作用。抢占语义：pre-execute 命中即原子 rename（permit-*.json → claim-*.json，
+  // 同一源文件只有一个赢家，输家出卡）；改名产物仍是 .json 且 session/argvHash 不变，
+  // wrapper 的 claim_permit（按 *.json + 字段匹配 unlink）仍能认领联网。
+  const SESSION = { header: { id: 'sess-r4' } }
+  const COMMAND = 'printf x >> log.txt; curl https://example.com'
+  const mkPermitDir = (): string => {
+    const dir = mkdtempSync(join(tmpdir(), 'p5w3f3-permit-'))
+    cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
+    return dir
+  }
+  type Listener = ReturnType<typeof registeredListener>
+  const bash = (listener: Listener, command: string = COMMAND) =>
+    listener({ name: 'bash', agent: { session: SESSION }, arguments: { command, description: 'x' } }, next)
+
+  it('first matching bash consumes the permit; an identical second bash asks again (was: both silently through)', async () => {
+    const dir = mkPermitDir()
+    issuePermit({ dir, session: 'sess-r4', command: COMMAND })
+    const listener = registeredListener({ mode: 'workspace-write', config: { permitDir: dir } })
+    expect(await bash(listener)).toBe(nextResult)
+    expect(await bash(listener), '同一许可不授权第二次 bash（卡面单次使用语义）').toEqual(askShape)
+  })
+
+  it('the claim renames the permit away for pre-execute but keeps it wrapper-claimable for network', async () => {
+    const dir = mkPermitDir()
+    const { permit } = issuePermit({ dir, session: 'sess-r4', command: COMMAND })
+    const listener = registeredListener({ mode: 'workspace-write', config: { permitDir: dir } })
+    expect(await bash(listener)).toBe(nextResult)
+    const names = readdirSync(dir)
+    expect(names.some((n) => n.startsWith('permit-')), '原许可已原子移走（后续 pre-execute 扫描不再命中）').toBe(false)
+    const claimed = names.find((n) => n.endsWith('.json'))
+    expect(claimed, '抢占产物仍是 .json（wrapper claim_permit 按 *.json 认领）').toBeTruthy()
+    expect(JSON.parse(readFileSync(join(dir, claimed!), 'utf8')))
+      .toMatchObject({ session: 'sess-r4', argvHash: permit.argvHash })
+  })
+
+  it('two approvals authorize two executions; a third asks', async () => {
+    const dir = mkPermitDir()
+    issuePermit({ dir, session: 'sess-r4', command: COMMAND })
+    issuePermit({ dir, session: 'sess-r4', command: COMMAND })
+    const listener = registeredListener({ mode: 'workspace-write', config: { permitDir: dir } })
+    expect(await bash(listener)).toBe(nextResult)
+    expect(await bash(listener)).toBe(nextResult)
+    expect(await bash(listener)).toEqual(askShape)
   })
 })
 

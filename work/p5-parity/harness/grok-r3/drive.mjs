@@ -135,6 +135,11 @@ if (clickSel) {
   consoleLines.push('[driver] click ' + clickSel + ' -> ' + clk?.result?.result?.value);
   await new Promise((r) => setTimeout(r, Number(process.env.CLICK_WAIT || 6000)));
 }
+// R-04 DOM probe
+{
+  const pr = await send('Runtime.evaluate', { expression: `JSON.stringify({dialogs:document.querySelectorAll('[role=dialog]').length, openBtns:document.querySelectorAll('button[aria-label^="Open"]').length, headings:[...document.querySelectorAll('h1,h2,h3')].map(h=>h.textContent).slice(0,12), chunks:performance.getEntriesByType('resource').map(r=>r.name.split('/').pop()).filter(n=>n.includes('chunk-view')||n.includes('kcheXZ')).slice(0,10), dlgHtml:(document.querySelector('[role=dialog]')?.innerText||'(none)').slice(0,200), dlgState:document.querySelector('[role=dialog]')?.querySelector('[data-status]')?.getAttribute('data-status'), text:document.body.innerText.slice(0,200)})`, returnByValue: true });
+  consoleLines.push('[driver] probe ' + pr?.result?.result?.value);
+}
 // Optional second click (R-04): CLICK2_SEL/CLICK2_TEXT after CLICK_WAIT.
 if (process.env.CLICK2_SEL) {
   await send('Runtime.evaluate', { expression: `window.__CLICK_TEXT__=${JSON.stringify(process.env.CLICK2_TEXT || '')}`, returnByValue: true }).catch(() => {});
@@ -146,6 +151,10 @@ if (process.env.CLICK2_SEL) {
 {
   const shot2 = await send('Page.captureScreenshot', { format: 'png', fromSurface: true });
   if (shot2?.result?.data) await fs.writeFile(`${outPrefix}-after.png`, Buffer.from(shot2.result.data, 'base64'));
+}
+if (process.env.CLICK2_SEL) {
+  const shot3 = await send('Page.captureScreenshot', { format: 'png', fromSurface: true });
+  if (shot3?.result?.data) await fs.writeFile(`${outPrefix}-after2.png`, Buffer.from(shot3.result.data, 'base64'));
 }
 // Optional event push: PUSH_EVENT='name:json'
 if (process.env.PUSH_EVENT) {

@@ -56,3 +56,17 @@
 | 4.1 | 形态 | 自定：**最简品牌封面**——全窗 `--sand-bg-chrome` 底、居中 app 图标（`assets/runtime/app-icon`，原版资产）48px + `Grok Bot`、下方细 spinner；整面可拖拽 | 0.18 无封面；R2 头部无品牌位，品牌只在封面出现 |
 | 4.2 | 谁挂 / 何时收 | 自定：shim（defer 经典脚本，先于 bundle）挂 DOM；首个 roster 成功即 160ms 淡出（立即 pointer-events:none）；reduced-motion 直接移除 | 不等 React；不挡 e2e 点击 |
 | 4.3 | 长等 / 失败 | 自定：8s 未就绪 → 「Still connecting to the engine…」；shim 放弃重试（≈60s）→「Couldn't connect to the engine.」+ `Reload` | 状态全集；无死封面 |
+
+## R-04 修订（2026-11-03，主会话转 RE-market-detail.md，采用 R-04 规格覆盖上表 ① 的冲突项）
+
+| # | 项 | 采纳 | 理由 |
+|---|---|---|---|
+| R4.1 | 动作文案 | R-04：**Connect → Connecting… → ✓Connected**（iSLIjg / JrFTcr / QHcLEN，check 12）；替代 Install / Installing… / Installed | R-04 §0-1 多语言 catalog 实证 |
+| R4.2 | Remove / Removing… | **不做** | M1 白名单无卸载方法（#12–#16 只读 + 安装）；D 条款无卸载 |
+| R4.3 | 行 | R-04 §1.2 单组件 `sand-plugins-row`：`<li>` + `Open {name}` 按钮（图标 40 + 名称 + 副题）+ trailing 态机；进度条去掉（按钮文案态代替）；browse-only → 「Not available」status 徽标（0BvlbM）；本会话 not-bundle → 「Not supported」 | R-04 §1.2 |
+| R4.4 | 已装入口 | **已装预览条**「Your plugins」（≤4 图标 18 堆叠 + 计数（E6HC8r 解码 = "{0}"）+ chevron-right 12）→ 已装列表视图；删 All/Installed tab | R-04 §1.2 / §1.4；D3 的 plugins|bots tab 我们没有 bots 侧 |
+| R4.5 | 分类 chips（11 类）/ Team picks 推荐 / From Grok 节 | **不做** | 目录只有 name/title/description/version（无 category / team 信号 / 内建 server），见 REPORT |
+| R4.6 | 详情 | R-04 §2.1 单列：头（图标 56 + h3 标题 + 副行 + 右侧动作态机）→ 描述 → 「New bot with this app」卡（ours）→ **Information** 卡（Package / Version / Catalog / Availability）→ About（readme） | Developer / Category / Website / Team adoption 无数据；Copy link 无链接 |
+| R4.7 | Tool permissions（Reads/Writes × 4 档）、Apps/Skills 卡 | **不做** | L-AP 档位由 SDK 档位表 + NEVER 常量 + policy-state 决定，renderer 不写（P5-31 同口径）；归 P5-23/24/32 |
+| R4.8 | 自定义 MCP 表单（Form↔JSON） | **不做** | M1 无 addServer；不在 P5-57 范围 |
+| R4.9 | 其他文案 | 搜索 placeholder「Search plugins」（S4qZX0）、Back「Back to Marketplace」（R7wvKw）、搜索态节标题「Results」、无果「No plugins match "{q}"」（mLyVIn）、加载失败「Couldn't load the marketplace」、已装空态「Nothing installed yet. Find plugins in the marketplace.」（ZyWE2h） | r4-i18n-decode.json |

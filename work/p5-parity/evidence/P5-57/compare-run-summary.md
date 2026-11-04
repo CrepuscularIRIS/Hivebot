@@ -1,6 +1,6 @@
 # P5-53 对照台 run summary
 
-- 时间：2026-11-04T01:55:33.582Z（238s）
+- 时间：2026-11-04T03:43:30.548Z（238s）
 - 左（REF）：/dev/shm/grok-re/0.78.1/app/dist/renderer
 - 右（OURS）：/tmp/bot-wt/P5-57/app/ui/renderer-grok/.build/frontend-shell
 - 拼图：10 张（pairs/）

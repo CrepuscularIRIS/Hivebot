@@ -925,3 +925,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 00:59 用户指令：建 public 工作流模板仓（context.md/规则文件/目录结构/Projects 看板/空 PR 五件）→ Opus 5.5 agent 已派（角色中性化、不推业务码）| L-7 整分支 review 同时在跑
 01:07 公开模板仓建成：https://github.com/CrepuscularIRIS/agent-orchestration-template（五件交付齐：context.md/规则文件/29 文件目录结构/Projects 看板 https://github.com/users/CrepuscularIRIS/projects/2/空 PR #1 等确认合并）；红线扫描过（模型名/内网路径零残留）| L-7 仍在跑
 01:20 L-7 整分支 review 完成（38 分钟实跑/21 agent）：FAIL——6 major（shell-ask×2、shim entries×2、ProductionRenderer×2）+7 minor | 修复链 P5-W3.f1 立行
+01:58 p6 1b 设计输入全齐 → director 派出写 PLAN v3（1b 任务图：spike 前行+P6-10~16+双版设计仲裁）| 在途 2：P5-W3.f1、p6 PLAN v3

@@ -15,3 +15,4 @@ L-review-5 范围 d0a8008..70c5925（P4 终审：U-00~U-27 全部合并任务 = 
 L-review-5 结果 FAIL→U-28（R1-R6 恢复链）、U-29（R7-R9 代答/M3罩/env）——修复链第 1 轮
 L-review-6 范围 86b4c2c..1e18112（P4 终审复审：U-28/U-29 对应 L-5 的 9 发现——验证修复闭环）
 L-review-6 结果 PASS（0 critical/major，unfixed 0；4 CONFIRMED minor → U-32）报告 REVIEW-P4终审复审.md
+L-review-7 范围 5bd36e0..4624670（p5-parity W3 整分支终审：L-AP 主体 P5-21/22/25/27/28/31 + L-UI v3 P5-50~58/41.f1 全部合并）

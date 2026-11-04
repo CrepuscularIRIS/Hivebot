@@ -258,3 +258,16 @@ describe('patch · 语义', () => {
     expect(onDisk === null || JSON.parse(onDisk).mainBotId === null).toBe(true)
   })
 })
+
+// P6-15：get 把可选 bots（createdBy）原样带给 renderer（worker 分组推导）；没有时不带键（上面 get 用例 toEqual 即证）
+describe('get · v1.5 bots 透传', () => {
+  it('bots.json 带 bots → BotsMetaView 带同样的 bots', async () => {
+    const dir = tmpHome()
+    writeFileSync(join(dir, BOTS_JSON), JSON.stringify({ version: 1, mainBotId: 'm', recipes: {}, bots: { w1: { createdBy: 'm' } } }))
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const m3 = registerM3Meta({ dsh: mockDsh({ 'agentPresets/list': () => roster([]) }) as never, store })
+    expect(await m3.handler({ op: 'get' })).toEqual({ ok: true, value: { version: 1, mainBotId: 'm', recipes: {}, bots: { w1: { createdBy: 'm' } } } })
+    store.close()
+  })
+})

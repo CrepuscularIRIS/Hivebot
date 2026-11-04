@@ -29,7 +29,9 @@ export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unkn
   const focusListeners = new Set<(value: unknown) => void>()
   let openGate: () => void = () => {}
   const persistenceGate = new Promise<void>((resolve) => { openGate = resolve })
+  let sections: () => unknown[] | null = () => null // data 建好后接上（desktop 先于 data 创建）
   win.desktop = createDesktopBridge(win, {
+    sidebarSections: () => sections(),
     persistenceGate,
     onFocusAgent: (l) => { focusListeners.add(l); return () => { focusListeners.delete(l) } },
     authId: 'pbots-local',
@@ -44,12 +46,14 @@ export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unkn
     focus: (id) => { for (const l of [...focusListeners]) l({ id }) },
     boot: (phase) => (phase === 'ready' ? cover.ready() : cover.failed()),
   })
+  sections = data.sections
   ;(win as unknown as { pbotsUi?: ShimData['ui'] }).pbotsUi = data.ui
   const server = createCoordinatorServer(data.deps)
   void server.ready.then(openGate)
   data.wire({
     agents: () => server.emit('agents', data.agentsPayload()),
     transcript: (agentId) => server.emit('transcript', data.transcriptPayload(agentId)),
+    sections: () => server.emit('host-settings', { fields: ['sidebarSections'] }),
   })
   win.coordinatorPort = {
     claim(consumer: { onPort(port: unknown): void }) { return server.claim(consumer as Parameters<typeof server.claim>[0]) },

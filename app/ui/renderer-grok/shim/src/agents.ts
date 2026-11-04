@@ -13,6 +13,8 @@ export interface AgentInput {
   activity: unknown
   updatedAt: number
   awaitingApproval?: boolean
+  /** P6-15：可读的等待原因（worker 的 askText / 主 bot 汇总）；给了就优先于 awaitingApproval 的枚举值。 */
+  waitingReason?: string
   /** P5-57 D10c：侧栏预览行文案（production/model.ts 读 lastMessagePreview）。 */
   preview?: string
 }
@@ -40,7 +42,8 @@ export function toAgentRecord(input: AgentInput): Record<string, unknown> {
     color: null,
     shape: null,
     dataUrl: null,
-    awaitingUserResponse: input.awaitingApproval === true ? { reason: 'local-tool-permission' } : null,
+    awaitingUserResponse: input.waitingReason !== undefined ? { reason: input.waitingReason }
+      : input.awaitingApproval === true ? { reason: 'local-tool-permission' } : null,
     isHiddenFromSidebar: false,
     notificationsEnabled: true,
   }

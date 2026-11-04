@@ -2,6 +2,7 @@
 // 帧形状 = CONTRACT §3.3 + U-21 wire 实测（work/p4-ui/ui/PAB-final.md R19：取消后 turn/end.reason.kind
 // === 'aborted'）。纯函数、不可变；renderer-grok shim（data.ts / entries.ts / agents.ts）与单测共用。
 // P5-54：旧 renderer 退役后从 plugins/session/ 移到这里；时间分隔 / 未读线随 UI 迁到 renderer-grok/overrides/modules/markers.ts。
+// P6-16：user/message 的 pbots-worker / pbots-main 来源各出一种 item（report / task），其余非 user 来源仍丢弃。
 // 审批卡不在这里：活跃卡只来自 $events waterfall（席 C：approval/asked 历史不生成可点按钮），
 // 这里只记审计态（asked → tool.awaiting，decided → tool.decision）。
 
@@ -17,7 +18,39 @@ export type TimelineItem = (
   | { kind: 'thinking'; id: string; text: string }
   | { kind: 'tool'; id: string; callId: string; name: string; args: string; status: ToolStatus; result: string | null; awaiting: boolean; decision: string | null }
   | { kind: 'notice'; id: string; tone: 'muted' | 'danger'; text: string }
+  // P6-16 决策 25：两种编排来源各一种 item（其余非 user 来源仍丢弃）。字段全部按不可信数据清洗成字符串。
+  | { kind: 'report'; id: string; items: ReportItem[] }
+  | { kind: 'task'; id: string; text: string; fromId: string | null; assignmentId: string | null }
 ) & { at?: number }
+
+/** 决策 28 回报项（source.items[] 原样转交，只留字符串字段）。 */
+export interface ReportItem {
+  key: string
+  kind: 'end' | 'ask'
+  workerId: string | null
+  name: string | null
+  assignmentId: string | null
+  outcome: 'completed' | 'error' | 'stopped' | null
+  awaiting: 'approval' | 'question' | null
+  eventId: string | null
+  result: string | null
+}
+
+/** 决策 17：result ≤4000 字（SDK 侧已截断，这里只做兜底上限）。 */
+const RESULT_MAX = 4000
+
+function reportItemOf(value: unknown): ReportItem | null {
+  const v = rec(value)
+  const kind = v.kind === 'end' || v.kind === 'ask' ? v.kind : null
+  if (kind === null) return null
+  const outcome = v.outcome === 'completed' || v.outcome === 'error' || v.outcome === 'stopped' ? v.outcome : null
+  const awaiting = v.awaiting === 'approval' || v.awaiting === 'question' ? v.awaiting : null
+  const result = str(v.result)
+  return {
+    key: str(v.key) ?? '', kind, workerId: str(v.workerId), name: str(v.name), assignmentId: str(v.assignmentId),
+    outcome, awaiting, eventId: str(v.eventId), result: result === null ? null : result.slice(0, RESULT_MAX),
+  }
+}
 
 export interface SessionView {
   sessionId: string
@@ -111,9 +144,17 @@ function reduceEvent(view: SessionView, event: AnyRecord): SessionView {
   switch (event.type) {
     case 'user/message': {
       const source = rec(data.source)
+      const id = str(data.id) ?? `u-${view.items.length}`
+      if (source.kind === 'pbots-worker') { // 主 bot 侧：worker 回报（决策 27 / 28）
+        const items = (Array.isArray(source.items) ? source.items : []).map(reportItemOf).filter((i): i is ReportItem => i !== null)
+        return { ...view, items: [...view.items, { kind: 'report', id, items, ...at }] }
+      }
+      if (source.kind === 'pbots-main') { // worker 侧：来自主 bot 的任务（D7）
+        return { ...view, items: [...view.items, { kind: 'task', id, text: contentText(data.content, 'text', '\n'), fromId: str(source.mainBotId), assignmentId: str(source.assignmentId), ...at }] }
+      }
       if (source.kind !== 'user') return view // 只显示用户本人消息（runtime-context 等注入不显示）
       const rpcId = str(source.rpcId)
-      return { ...view, items: [...view.items, { kind: 'user', id: str(data.id) ?? `u-${view.items.length}`, text: contentText(data.content), ...(rpcId === null ? {} : { rpcId }), ...at }] }
+      return { ...view, items: [...view.items, { kind: 'user', id, text: contentText(data.content), ...(rpcId === null ? {} : { rpcId }), ...at }] }
     }
     case 'assistant/message': {
       const content = rec(data.message).content

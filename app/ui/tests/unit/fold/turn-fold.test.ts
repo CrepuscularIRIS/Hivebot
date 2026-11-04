@@ -189,3 +189,35 @@ describe('foldTurns · 不变量（全部用例）', () => {
     })
   }
 })
+
+// ---- P6-16 决策 25：回报 / 任务条目是确定的回合起点（决策 6 上限闭合）----
+describe('foldTurns · P6-16 编排来源切段', () => {
+  const rep = (id: string): TimelineItem => ({ kind: 'report', id, items: [] })
+  const task = (id: string, text = 'do it'): TimelineItem => ({ kind: 'task', id, text, fromId: 'm', assignmentId: 'as1' })
+
+  it('回报唤醒且首条目为工具的回合，前一回合 result 不降级（P6-01 新增格，PLAN P6-16 ⑤）', () => {
+    // 无前缀的工具 t('c9') 原先会归进上一段，使 E 落在 lastTool 之前 → 降为 thinking
+    const out = foldTurns([u('u1'), a(1, 0, 'A'), t('c1'), a(1, 1, 'E'), rep('pbots-report:k'), t('c9'), a(2, 1, 'R')], { hasMore: false, running: false })
+    expect(entryOf(out, 't1-s1')).toMatchObject({ kind: 'message', role: 'result', text: 'E' })
+    expect(entryOf(out, 't2-s1')).toMatchObject({ kind: 'message', role: 'result', text: 'R' })
+    expect(entryOf(out, 'pbots-report:k')).toMatchObject({ kind: 'peer', peer: { kind: 'report' } })
+  })
+
+  it('回报后无工具的转述 = 恰 1 个气泡；回报条目本身不是 message（不是用户气泡）', () => {
+    const out = foldTurns([u('u1'), a(1, 0, '好的'), rep('r1'), a(2, 0, '测试修复跑完了')], { hasMore: false, running: false })
+    expect(msgs(out).map((m) => m.text)).toEqual(['好的', '测试修复跑完了'])
+    expect(out.entries.filter((e) => e.kind === 'user').map((e) => e.id)).toEqual(['u1']) // 回报不变成用户条目
+  })
+
+  it('worker 侧任务条目开启回合：任务在 worker 回答之前，答复按 ack / result 正常折叠', () => {
+    const out = foldTurns([task('pbots-assign:as1'), a(1, 0, '收到'), t('c1'), a(1, 1, '完成')], { hasMore: false, running: false })
+    expect(out.entries.map((e) => e.kind)).toEqual(['peer', 'message', 'tool-call', 'message'])
+    expect(entryOf(out, 'pbots-assign:as1')).toMatchObject({ peer: { kind: 'task', text: 'do it', fromId: 'm' } })
+    expect(entryOf(out, 't1-s1')).toMatchObject({ role: 'result' })
+  })
+
+  it('窗口外还有历史时，以回报开头的首段不是片段（有回合起点）', () => {
+    const out = foldTurns([rep('r1'), a(2, 0, 'ack'), t('c1'), a(2, 1, 'res')], { hasMore: true, running: false })
+    expect(entryOf(out, 't2-s1')).toMatchObject({ kind: 'message', role: 'result' })
+  })
+})

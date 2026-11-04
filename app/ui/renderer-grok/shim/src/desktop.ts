@@ -19,6 +19,8 @@ export interface DesktopOptions {
   persistenceGate?: Promise<void>
   /** P5-57：pbotsUi.focus 的接收端（缺省空转）。 */
   onFocusAgent?: DesktopBridge['onFocusAgent']
+  /** P6-15：worker 合成 section（data.sections；无 worker → null = 今天的扁平列表）。 */
+  sidebarSections?: () => unknown[] | null
 }
 
 type AnyWindow = Window & {
@@ -176,8 +178,10 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
         try { store.setItem(pinnedKey, JSON.stringify([...ids])) } catch { /* 私有模式等：静默 */ }
         return Promise.resolve([...ids])
       },
-      getSidebarSections: () => Promise.resolve(null),
-      setSidebarSections: (s: readonly unknown[]) => Promise.resolve(s as never),
+      getSidebarSections: () => Promise.resolve((opts.sidebarSections?.() ?? null) as never),
+      // P6-15：有 worker 时 sections 只由 createdBy 推导，写入一律回推导值（fail closed，用户不能把 bot 拖进 worker 组）；
+      // 无 worker 时与此前一致（原样回）
+      setSidebarSections: (s: readonly unknown[]) => Promise.resolve((opts.sidebarSections?.() ?? s) as never),
       getDefaultModel: () => Promise.resolve(null),
       setDefaultModel: (m) => Promise.resolve(m),
       getComputerUseModel: () => Promise.resolve(null),

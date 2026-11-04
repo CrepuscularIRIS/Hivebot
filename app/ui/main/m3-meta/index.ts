@@ -92,7 +92,8 @@ export function registerM3Meta(deps: M3Deps): M3Handle {
     for (const [id, recipe] of Object.entries(meta.recipes)) {
       recipes[id] = { ...recipe, live: ids.has(id) && !failed.has(id) }
     }
-    return { ok: true, value: { version: 1, mainBotId: meta.mainBotId, recipes } }
+    // P6-15：可选 bots（createdBy）原样带给 renderer（worker 分组推导；无 worker 不带键）
+    return { ok: true, value: { version: 1, mainBotId: meta.mainBotId, recipes, ...(meta.bots === undefined ? {} : { bots: meta.bots }) } }
   }
 
   const handler = async (req: unknown): Promise<M3Result> => {

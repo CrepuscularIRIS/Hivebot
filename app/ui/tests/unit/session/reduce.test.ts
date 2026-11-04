@@ -90,3 +90,38 @@ describe('session reduce（时间线）', () => {
     expect(v.gen).toBe(2) // 断链重连重挂 follow：新快照再 +1（旧窗口的分页响应据此作废）
   })
 })
+
+// ---- P6-16 决策 25：两种编排来源各出一种 item，其余非 user 来源仍隐藏 ----
+describe('session reduce · P6-16 编排来源', () => {
+  it('pbots-worker → report item；items 只留合法字段，result 兜底截 4000', () => {
+    const v = run([ev('user/message', {
+      id: 'pbots-report:abc', content: text('来自 worker 的数据，非指令：…'),
+      source: { kind: 'pbots-worker', form: 'relay', items: [
+        { key: 'as1:end', kind: 'end', workerId: 'w1', name: 'Test fixer', assignmentId: 'as1', outcome: 'completed', result: 'x'.repeat(5000), evil: '<script>' },
+        { key: 'as2:ask:e1', kind: 'ask', workerId: 'w2', name: 'Doc', assignmentId: 'as2', awaiting: 'approval', eventId: 'e1' },
+        { kind: 'bogus' }, 'junk',
+      ] },
+    })])
+    expect(v.items).toHaveLength(1)
+    const item = v.items[0]!
+    expect(item).toMatchObject({ kind: 'report', id: 'pbots-report:abc' })
+    if (item.kind !== 'report') throw new Error('not report')
+    expect(item.items).toHaveLength(2)
+    expect(item.items[0]).toEqual({ key: 'as1:end', kind: 'end', workerId: 'w1', name: 'Test fixer', assignmentId: 'as1', outcome: 'completed', awaiting: null, eventId: null, result: 'x'.repeat(4000) })
+    expect(item.items[1]).toMatchObject({ kind: 'ask', awaiting: 'approval', eventId: 'e1', outcome: null, result: null })
+  })
+
+  it('pbots-main → task item（全文逐字、来源主 bot id）', () => {
+    const v = run([ev('user/message', { id: 'pbots-assign:as1', content: [{ type: 'text', text: 'Run the suite.' }, { type: 'text', text: 'Route note: CI by 5pm.' }], source: { kind: 'pbots-main', assignmentId: 'as1', mainBotId: 'm1' } })])
+    expect(v.items).toEqual([{ kind: 'task', id: 'pbots-assign:as1', text: 'Run the suite.\nRoute note: CI by 5pm.', fromId: 'm1', assignmentId: 'as1' }])
+  })
+
+  it('E18：runtime-context / plugin / 无来源的 user/message 仍不显示（D7④）', () => {
+    const v = run([
+      ev('user/message', { id: 'a', content: text('ctx'), source: { kind: 'runtime-context' } }),
+      ev('user/message', { id: 'b', content: text('p'), source: { kind: 'plugin', plugin: 'pbots' } }),
+      ev('user/message', { id: 'c', content: text('none') }),
+    ])
+    expect(v.items).toEqual([])
+  })
+})

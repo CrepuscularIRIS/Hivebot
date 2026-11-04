@@ -1,5 +1,6 @@
 // M3 bots.json 存储（U-13）：原子写（tmp + rename）+ 单一 Promise 写队列（D10e）。
-// v1 盘上形状 {version:1, mainBotId, recipes}——不含 bots 字段（D10d）。
+// v1 盘上形状 {version:1, mainBotId, recipes, bots?}——bots 为可选键（CONTRACT v1.5 §3.1，p6 决策 31）：
+// 没有 worker 不写该键（字节与此前一致）；P6-15 只做读写透传（renderer 推导 worker 分组），写入方是 P6-10 的 ⑤ 编排。
 // W1 R8：进程内单实例锁（双写者全量快照互覆）；W1 R9：flush 失败回滚内存态。
 import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
@@ -15,6 +16,18 @@ export interface BotsMeta {
   version: 1
   mainBotId: string | null
   recipes: Record<string, Recipe>
+  bots?: Record<string, { createdBy: string }>
+}
+
+/** bots 可选键的校验：只留 {createdBy: 非空串}；空 → undefined（不写键）。 */
+function botsOf(value: unknown): BotsMeta['bots'] {
+  if (typeof value !== 'object' || value === null) return undefined
+  const out: Record<string, { createdBy: string }> = {}
+  for (const [id, v] of Object.entries(value)) {
+    const by = (v as { createdBy?: unknown } | null)?.createdBy
+    if (typeof by === 'string' && by !== '') out[id] = { createdBy: by }
+  }
+  return Object.keys(out).length === 0 ? undefined : out
 }
 
 /** 落盘文件名（$PBOTS_DATA_DIR/bots.json，CONTRACT M3 行）。 */
@@ -64,7 +77,8 @@ export class BotsMetaStore {
       if (parsed.version !== 1 || typeof parsed.recipes !== 'object' || parsed.recipes === null) {
         throw new Error(`bots.json: unsupported payload (version=${JSON.stringify(parsed.version)})`)
       }
-      this.meta = { version: 1, mainBotId: parsed.mainBotId ?? null, recipes: parsed.recipes }
+      const bots = botsOf(parsed.bots)
+      this.meta = { version: 1, mainBotId: parsed.mainBotId ?? null, recipes: parsed.recipes, ...(bots === undefined ? {} : { bots }) }
     } catch (error) {
       this.loadError = error as Error
     }
@@ -73,7 +87,8 @@ export class BotsMetaStore {
   /** 当前内存态深拷贝；init 时发现的坏文件在此抛出。 */
   read(): BotsMeta {
     if (this.loadError !== undefined) throw this.loadError
-    return { version: 1, mainBotId: this.meta.mainBotId, recipes: structuredClone(this.meta.recipes) }
+    const { bots } = this.meta
+    return { version: 1, mainBotId: this.meta.mainBotId, recipes: structuredClone(this.meta.recipes), ...(bots === undefined ? {} : { bots: structuredClone(bots) }) }
   }
 
   /** 变更加入单一队列：改内存 → 串行原子落盘。后入队的看到先入队的内存态。 */

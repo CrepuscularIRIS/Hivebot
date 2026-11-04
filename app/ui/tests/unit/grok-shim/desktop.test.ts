@@ -123,3 +123,20 @@ describe('主题偏好 · localStorage 落盘（L-7 O7：手动选择不能在 r
     expect(b(w).theme.initial.preference).toBe('system')
   })
 })
+
+describe('P6-15 sidebar sections 实底（E2 / E10 / E11）', () => {
+  it('无 worker（sidebarSections 回 null / 未接）→ get 回 null，set 原样回（与此前一致）', async () => {
+    const plain = b(mkWindow())
+    expect(await plain.agent.getSidebarSections()).toBeNull()
+    const user = [{ id: 's1', name: 'Mine', agentIds: ['a'], isCollapsed: false }]
+    expect(await plain.agent.setSidebarSections(user)).toEqual(user)
+    const none = createDesktopBridge(mkWindow() as unknown as Window, { authId: 'x', sidebarSections: () => null })
+    expect(await none.agent.setSidebarSections(user)).toEqual(user)
+  })
+  it('有 worker → get 回推导值；用户写入一律回推导值（不能把 bot 拖进 / 拖出 worker 组）', async () => {
+    const derived = [{ id: 'pbots:main:m', name: '', agentIds: ['m'], isCollapsed: false }, { id: 'pbots:workers:m', name: 'Workers', agentIds: ['w'], isCollapsed: false }]
+    const d = createDesktopBridge(mkWindow() as unknown as Window, { authId: 'x', sidebarSections: () => derived })
+    expect(await d.agent.getSidebarSections()).toEqual(derived)
+    expect(await d.agent.setSidebarSections([{ id: 'pbots:workers:m', name: 'Workers', agentIds: ['w', 'other'], isCollapsed: false }])).toEqual(derived)
+  })
+})

@@ -106,3 +106,27 @@ describe('BotsMetaStore · 坏文件', () => {
     expect(() => store.read()).toThrow()
   })
 })
+
+// P6-15（CONTRACT v1.5 §3.1，p6 决策 31）：可选 bots 键读写透传；没有 worker 不写键（上面 D10d 用例即字节不变）。
+describe('BotsMetaStore · v1.5 可选 bots（createdBy）透传', () => {
+  it('带 bots 的 v1 文件：读回 createdBy；patchMainBotId 写盘不抹掉它；坏项丢弃', async () => {
+    const dir = tmpHome()
+    writeFileSync(join(dir, BOTS_JSON), JSON.stringify({ version: 1, mainBotId: 'm', recipes: {}, bots: { w1: { createdBy: 'm' }, w2: { createdBy: '' }, w3: 7 } }))
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    expect(store.read().bots).toEqual({ w1: { createdBy: 'm' } })
+    await store.patchMainBotId('m')
+    expect(JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8')).bots).toEqual({ w1: { createdBy: 'm' } })
+    store.close()
+  })
+  it('bots 全是坏项 → 视同没有（不写键）', async () => {
+    const dir = tmpHome()
+    writeFileSync(join(dir, BOTS_JSON), JSON.stringify({ version: 1, mainBotId: null, recipes: {}, bots: { w: { createdBy: 1 } } }))
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    expect('bots' in store.read()).toBe(false)
+    await store.patchMainBotId('x')
+    expect(Object.keys(JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8'))).sort()).toEqual(['mainBotId', 'recipes', 'version'])
+    store.close()
+  })
+})

@@ -6,7 +6,7 @@
 // ③终止原因 aborted|interrupted|cancelled 都归兜底 (e)——(b)(e) 的 notice 直接用 reduce endNotice
 // 已产出的条目（source:'reduce'），折叠只新增 (d) 一种 notice（source:'fold'），不重复显示。
 
-import type { TimelineItem, ToolStatus } from '../session/reduce'
+import type { ReportItem, TimelineItem, ToolStatus } from '../session/reduce'
 
 export type FoldEntry = (
   | { kind: 'user'; id: string; text: string; rpcId?: string }
@@ -14,6 +14,8 @@ export type FoldEntry = (
   | { kind: 'thinking'; id: string; text: string; from: 'text' | 'reasoning' }
   | { kind: 'tool-call'; id: string; callId: string; name: string; args: string; status: ToolStatus; result: string | null; awaiting: boolean; decision: string | null }
   | { kind: 'notice'; id: string; tone: 'muted' | 'danger'; text: string; source: 'reduce' | 'fold' }
+  // P6-16 决策 25：编排来源条目（回报 / 任务）原样透传，由 shim entries 渲染
+  | { kind: 'peer'; id: string; peer: { kind: 'report'; items: ReportItem[] } | { kind: 'task'; text: string; fromId: string | null } }
 ) & { at?: number }
 
 export interface FoldInput { hasMore: boolean; running: boolean }
@@ -22,10 +24,9 @@ export interface FoldOutput { entries: FoldEntry[]; streamingAs: 'message' | 'th
 /** (d) 的 notice 文案（B §2.2）；(b)(e) 用 reduce 已产出的那条，不另加。 */
 export const EMPTY_RESULT_NOTICE = '已完成，没有文字结果 · 展开查看过程'
 
-// ponytail: 回合切分 = 以 user 条目为界 + assistant/thinking 的 `t<turn>-` 前缀变化（PLAN 决策 6）。
-// 上限：无用户消息触发、且首条目是工具的回合（1b 通知唤醒），首个工具会归入上一段，污染上一段的
-// lastTool 与兜底判定（尾正文可能因此不升气泡）。P6-12 验收负责闭合：届时 reduce.ts 已随 P5-51
-// 移植，可给 tool 条目加 turn 字段后收紧切分，本函数签名不变。
+// 回合切分 = 以 user 条目为界 + assistant/thinking 的 `t<turn>-` 前缀变化（PLAN 决策 6）。
+// P6-16 决策 25 闭合：回报（report）与任务（task）条目是确定的回合起点，与 user 同级切段——
+// 回报唤醒、首条目是工具的回合不再把工具并进上一段。
 
 interface Segment { items: TimelineItem[]; turn: number | null; byUser: boolean; fragment: boolean }
 
@@ -43,7 +44,7 @@ function segment(items: readonly TimelineItem[], hasMore: boolean): Segment[] {
     return cur
   }
   for (const item of items) {
-    if (item.kind === 'user') { open(true).items.push(item); continue }
+    if (item.kind === 'user' || item.kind === 'report' || item.kind === 'task') { open(true).items.push(item); continue }
     if (cur === null) open(false)
     if (item.kind === 'assistant' || item.kind === 'thinking') {
       const t = turnOf(item.id)
@@ -94,6 +95,10 @@ export function foldTurns(items: readonly TimelineItem[], input: FoldInput): Fol
           entries.push({ kind: 'tool-call', id: item.id, callId: item.callId, name: item.name, args: item.args, status: item.status, result: item.result, awaiting: item.awaiting, decision: item.decision, ...atOf(item) }); break
         case 'thinking': // reasoning 块：永不升气泡（三件套 ①）
           entries.push({ kind: 'thinking', id: item.id, text: item.text, from: 'reasoning', ...atOf(item) }); break
+        case 'report':
+          entries.push({ kind: 'peer', id: item.id, peer: { kind: 'report', items: item.items }, ...atOf(item) }); break
+        case 'task':
+          entries.push({ kind: 'peer', id: item.id, peer: { kind: 'task', text: item.text, fromId: item.fromId }, ...atOf(item) }); break
         case 'notice': // (b)(e)：reduce endNotice 原样透传
           entries.push({ kind: 'notice', id: item.id, tone: item.tone, text: item.text, source: 'reduce', ...atOf(item) }); break
         case 'assistant': {

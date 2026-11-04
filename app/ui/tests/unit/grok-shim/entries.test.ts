@@ -162,3 +162,35 @@ describe('toRawEntries · 流式落点（streamingAs）', () => {
     expect(raw.filter((e) => e.kind === 'message' && e.role === 'assistant')).toHaveLength(1)
   })
 })
+
+// ---- P6-16：编排条目走 notice 载体 + pbotsPeer（覆盖层 notice-view 渲染；E12 / E19）----
+describe('toRawEntries · P6-16 编排条目', () => {
+  const tool = (name: string, args: object, status: ToolStatus, result: string | null): TimelineItem =>
+    ({ kind: 'tool', id: `tool-${name}`, callId: name, name, args: JSON.stringify(args), status, result, awaiting: false, decision: null })
+
+  it('create_bot / send_to_bot 工具行 → notice（回落文本可读）+ assign 元数据；其他工具照旧 tool-call', () => {
+    const items: TimelineItem[] = [
+      { kind: 'user', id: 'u1', text: '跑测试' },
+      { kind: 'assistant', id: 't1-s0', text: '好的，派给 Test fixer。' },
+      tool('create_bot', { name: 'Test fixer', prompt: 'Run tests' }, 'done', '{"sessionId":"w1"}'),
+      tool('send_to_bot', { botId: 'w1', prompt: 'again' }, 'failed', 'pbots/busy'),
+      tool('bash', { command: 'ls' }, 'done', 'ok'),
+    ]
+    const raw = toRawEntries(foldTurns(items, { hasMore: false, running: false }), 'Main', null)
+    expect(raw.map((e) => e.kind)).toEqual(['message', 'message', 'notice', 'notice', 'tool-call'])
+    expect(raw[2]).toMatchObject({ content: 'Messaging Test fixer', pbotsPeer: { kind: 'assign', tool: 'create_bot', workerId: 'w1', status: 'done' } })
+    expect(raw[3]).toMatchObject({ content: "Couldn't message another assistant: This worker is busy", pbotsPeer: { kind: 'assign', status: 'failed', workerId: 'w1' } })
+  })
+
+  it('回报 / 任务 → notice + report / task 元数据（不是 message，不进用户泳道）', () => {
+    const items: TimelineItem[] = [
+      { kind: 'report', id: 'pbots-report:k', items: [{ key: 'a:end', kind: 'end', workerId: 'w1', name: 'Test fixer', assignmentId: 'a', outcome: 'error', awaiting: null, eventId: null, result: 'boom' }] },
+      { kind: 'task', id: 'pbots-assign:a', text: 'Run tests', fromId: 'm', assignmentId: 'a' },
+    ]
+    const raw = toRawEntries(foldTurns(items, { hasMore: false, running: false }), 'Main', null)
+    expect(raw).toHaveLength(2)
+    expect(raw.every((e) => e.kind === 'notice' && e.role === undefined)).toBe(true)
+    expect(raw[0]).toMatchObject({ id: 'pbots-report:k', content: 'Test fixer · Failed', pbotsPeer: { kind: 'report' } })
+    expect(raw[1]).toMatchObject({ id: 'pbots-assign:a', content: 'From main bot: Run tests', pbotsPeer: { kind: 'task', fromId: 'm', text: 'Run tests' } })
+  })
+})

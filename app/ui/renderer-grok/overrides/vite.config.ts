@@ -33,6 +33,8 @@ export const MODULE_OVERRIDES: Record<string, string> = {
   'recovered/features/conversation/workspace/pagination.ts': 'pagination.ts',
   'recovered/features/conversation/workspace/acknowledgement.ts': 'acknowledgement.ts',
   'production/coordinator-client.ts': 'coordinator-client.ts',
+  // P6-16：notice 载体上的编排条目（Messaging 行 / 回报卡 / 任务卡）
+  'recovered/features/conversation/cards/notice/view.tsx': 'notice-view.tsx',
 }
 
 const byUpstream = new Map(Object.entries(MODULE_OVERRIDES).map(([up, ours]) => [path.join(src, up), path.join(here, 'modules', ours)]))

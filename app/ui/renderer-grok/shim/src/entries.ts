@@ -5,10 +5,13 @@
 // - thinking → thinking + text
 // - tool → tool-call + name/status/summary（status 词表 pending|running|done|failed|error|aborted）
 // - notice → notice + content（messageText 读 content/text）
+// - P6-16：create_bot / send_to_bot 工具行、回报（report）、任务（task）→ notice + content（回落文本）+ pbotsPeer
+//   元数据（data.ts 收进 pbotsUi.peer，覆盖层 notice-view.tsx 按它渲染 Messaging 行 / 回报卡 / 任务卡）
 // - 审批卡 → send-message + local-tool-permission + ask + permissionScope/Revision（dock 渲染硬条件，
 //   P5-50 坑2 根因：S0 桩没带这两个字段 → pendingLocalToolPermission 恒 null → 卡不渲染）
 import { foldTurns, type FoldOutput } from '../../../renderer/fold/turn-fold'
 import type { SessionView, TimelineItem } from '../../../renderer/session/reduce'
+import { ASSIGN_TOOLS, assignPeer, peerFallback, type PeerMeta } from './workers'
 
 /** 0.18 transcript raw entry（id+kind 起码，其余按 kind 开放）。 */
 export type RawEntry = Record<string, unknown> & { id: string; kind: string }
@@ -98,6 +101,7 @@ export function toRawEntries(
         raw.push({ kind: 'thinking', id: e.id, timestampMs: ts(at), text: e.text })
         break
       case 'tool-call':
+        if (ASSIGN_TOOLS.has(e.name)) { raw.push(peerEntry(e.id, at, assignPeer(e))); break }
         // L-7 R2：完整 args 与 result 原样带出（production/model 覆盖层据此附 ToolResultCard，
         // 展开工具行可见输出/错误详情）；summary 仍是单行预览。
         raw.push({
@@ -109,6 +113,9 @@ export function toRawEntries(
       case 'notice':
         raw.push({ kind: 'notice', id: e.id, timestampMs: ts(at), content: e.text })
         break
+      case 'peer':
+        raw.push(peerEntry(e.id, at, e.peer.kind === 'report' ? { kind: 'report', items: e.peer.items } : { kind: 'task', fromId: e.peer.fromId, text: e.peer.text }))
+        break
     }
   }
   if (streaming !== null && streaming.text !== '') {
@@ -118,6 +125,11 @@ export function toRawEntries(
       : { kind: 'message', id: 'live-stream', timestampMs: Date.now(), role: 'assistant', author: agentName, content: streaming.text, isStreaming: true })
   }
   return raw
+}
+
+/** P6-16 编排条目：上游当 notice 渲染（content = 回落文本），覆盖层按 pbotsPeer 渲染。 */
+function peerEntry(id: string, at: number | undefined, meta: PeerMeta): RawEntry {
+  return { kind: 'notice', id, timestampMs: ts(at), content: peerFallback(meta), pbotsPeer: meta }
 }
 
 /** 审批卡 entry（pending 态）。status 词表：pending|always|never|denied|expired|allow-once。 */

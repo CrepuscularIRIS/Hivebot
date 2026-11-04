@@ -2,6 +2,10 @@
 // 投影口径 = 旧 renderer Sidebar.botInfo（4500cd2^，CONTRACT §3.1）：header/summary 的 agentPreset 是 p2temp-* 时
 // 查 M3 recipes 得基础 preset + 连接器；recipe 缺失或 live === false → 只读（D10c）。
 
+import type { PeerMeta } from './workers'
+
+export type { PeerMeta } from './workers'
+
 export interface Recipe { agentPreset: string; connectors: string[]; live?: boolean }
 
 export interface BotConfig {
@@ -64,6 +68,17 @@ export interface PbotsUi {
   cancel(agentId: string): Promise<ApiResult>
   /** 让 0.18 renderer 打开该 bot（desktop.onFocusAgent → openAgent）。 */
   focus(agentId: string): void
+  // ---- P6-15 / P6-16（worker 分组与两侧 transcript）----
+  /** worker 的状态档（0 blocked … 4 done，决策 21）；不是 worker → null。侧栏覆盖层按它给组内行排序。 */
+  workerRank(agentId: string): number | null
+  /** 编排条目元数据（Messaging 行 / 回报 / 任务）；不是编排条目 → null（覆盖层回落上游 notice）。 */
+  peer(entryId: string): PeerMeta | null
+  /** roster 里的显示名；不认识的 id → null。 */
+  agentName(agentId: string): string | null
+  /** 回报 ask 项的活状态：eventId 仍待决（无法对上时退回「worker 现在是否 blocked」）。 */
+  askPending(workerId: string, eventId: string | null): boolean
+  /** chat-header 覆盖层上报当前打开的 bot（worker 打开即已读）。 */
+  setActive(agentId: string): void
   /** 覆盖层注册的新建对话框：resolve 新 bot 的 sessionId，取消 = null。未注册时 createAgent 直建（单测 / 无覆盖构建）。 */
   chooser?: (init: NewBotInit) => Promise<string | null>
 }

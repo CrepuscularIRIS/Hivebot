@@ -5,7 +5,11 @@
 // - 审批：$events waterfall approval/request → local-tool-permission 卡 entry（含 permissionScope/
 //   Revision，P5-50 坑2 的渲染硬条件）；作答走 api $events/result，值域 ⊆ {allowed-once, rejected}
 // - 推送：roster 变化 → agents 事件；view 变化 → transcript snapshot 事件（S0 坑1 口径）
+// - P6-15 worker 分组：createdBy = M3 bots[id]（CONTRACT v1.5 §3.1）；worker 全部常驻 follow（状态 / 结果预览）；
+//   合成 section 推导（workers.ts）+ 成员变化时推 host-settings{fields:['sidebarSections']}（上游只认这个事件重拉）；
+//   $events 出现未知 sid 的 status → 重拉 roster（main 建出的新 worker，D11①不重载即出现）
 // ponytail: snapshot 全量推（每事件一次 JSON 序列化），流式高频场景的增量 diff 留 P5-54 优化。
+// ponytail: worker 全部常驻 follow（每个一条 mux 流），worker 上限由容量控制（≤ 数十）；多了改成只 follow 未读 / 运行中的。
 import { CarrierSocket, pageEnv } from '../../../renderer/carrier'
 import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../../../renderer/carrier/mux'
 import { initView, olderItemsOf, reduceFollow, type SessionView } from '../../../renderer/session/reduce'
@@ -13,9 +17,16 @@ import { askText, serialize, permissionEntry, type RawEntry } from './entries'
 import { activityOf, toAgentRecord } from './agents'
 import type { CoordinatorDeps } from './coordinator'
 import { botConfigOf, type PbotsUi, type Recipe } from './bots'
+import { aggregateOf, previewOf, rankOf, sectionsOf, viewFacts, type PeerMeta, type SectionRecord, type WorkerFacts } from './workers'
 
 type AnyRecord = Record<string, unknown>
 const rec = (v: unknown): AnyRecord => (typeof v === 'object' && v !== null ? v as AnyRecord : {})
+/** M3 bots[id].createdBy（CONTRACT v1.5 §3.1，可选键；坏值丢弃）。 */
+export const createdByOf = (meta: unknown): Record<string, string> =>
+  Object.fromEntries(Object.entries(rec(rec(meta).bots)).flatMap(([id, v]) => {
+    const by = rec(v).createdBy
+    return typeof by === 'string' && by !== '' && by !== id ? [[id, by]] : []
+  }))
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
 interface ApiResult { ok: boolean; value?: unknown; error?: { code: string; message: string } }
@@ -44,7 +55,9 @@ export interface ShimDataOptions {
 export interface ShimData {
   deps: CoordinatorDeps
   /** coordinator server 的 emit 接线（agents / transcript 事件推送）。 */
-  wire(push: { agents(): void; transcript(agentId: string): void }): void
+  wire(push: { agents(): void; transcript(agentId: string): void; sections?(): void }): void
+  /** P6-15：desktop.agent.getSidebarSections 的实底（无 worker → null）。 */
+  sections(): SectionRecord[] | null
   agentsPayload(): unknown[]
   transcriptPayload(agentId: string): { type: 'snapshot'; activeAgentId: string; entries: RawEntry[] }
   /** E2E 观测面：已发出的审批作答（eventId → dsh 值），断言值域 ⊆ {allowed-once, rejected}。 */
@@ -66,7 +79,7 @@ export interface DevSurface {
   readonly sockets: DevSocketHandle[]
   /** 已 follow 的会话视图（D1/D2：preset / chunkCount / turnEnded / cwd …）。 */
   readonly bots: SessionView[]
-  readonly state: { order: string[]; meta: { mainBotId: string | null }; views: Record<string, SessionView> }
+  readonly state: { order: string[]; meta: { mainBotId: string | null; createdBy: Record<string, string> }; views: Record<string, SessionView> }
   newSocket(): DevSocketHandle
   openStream(endpoint: string, args?: unknown): MuxStream
   muxStreams(): Array<{ streamId: string; endpoint: string }>
@@ -84,6 +97,10 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   let summaries: Record<string, Summary> = {}
   let mainBotId: string | null = null
   let recipes: Record<string, Recipe> = {}
+  let createdBy: Record<string, string> = {} // workerId → creatorId（M3 bots[id].createdBy）
+  let active: string | null = null // chat-header 当前打开的 bot（worker 打开即已读）
+  const peers = new Map<string, PeerMeta>() // 编排条目 entryId → 元数据（pbotsUi.peer）
+  const unknownTried = new Set<string>() // 触发过一次 roster 重拉的未知 sid（subagent 等永远不在 list 里的不反复拉）
   const models = new Map<string, string>() // #5 成功后的本地值（快照下一轮才投影）
   const uiListeners = new Set<() => void>()
   let uiVersion = 0
@@ -130,21 +147,67 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     running: views.get(id)?.running ?? summaries[id]?.running === true,
   }))
 
-  const recordOf = (id: string): AnyRecord =>
-    toAgentRecord({
+  // ---- P6-15 worker 投影 ----
+  const isWorker = (id: string): boolean => createdBy[id] !== undefined && summaries[id] !== undefined
+  const workersOf = (creatorId: string): string[] => order.filter((id) => createdBy[id] === creatorId && summaries[id] !== undefined)
+  const askReason = (ask: Ask): string => {
+    const tool = views.get(ask.agentId)?.items.find((i) => i.kind === 'tool' && i.callId === ask.callId)
+    return askText(ask, tool?.kind === 'tool' ? tool.args : undefined)
+  }
+  const factsOf = (id: string): WorkerFacts => {
+    const ask = [...asks.values()].find((a) => a.agentId === id)
+    return {
+      id,
+      blockedReason: ask === undefined ? null : askReason(ask),
+      running: views.get(id)?.running ?? summaries[id]?.running === true,
+      unread: unread.has(id),
+      ...viewFacts(views.get(id)),
+      updatedAt: summaries[id]?.updatedAt ?? 0,
+    }
+  }
+  /** 创建者次序：当前主 bot 在前，其余（换主之前的旧主）按 roster 顺序。 */
+  const creators = (): string[] => {
+    const all = [...new Set(order.filter(isWorker).map((id) => createdBy[id]!))]
+    return mainBotId !== null && all.includes(mainBotId) ? [mainBotId, ...all.filter((c) => c !== mainBotId)] : all
+  }
+  const sections = (): SectionRecord[] | null => sectionsOf(creators().map((creatorId) => ({ creatorId, workers: workersOf(creatorId).map(factsOf) })), active)
+  let sectionsSig = 'null'
+
+  const workerOverlay = (id: string): { waitingReason?: string; preview?: string; unread?: boolean } => {
+    if (isWorker(id)) {
+      const f = factsOf(id)
+      return { ...(f.blockedReason !== null ? { waitingReason: f.blockedReason } : {}), preview: previewOf(f) }
+    }
+    const mine = workersOf(id)
+    if (mine.length === 0) return {}
+    const agg = aggregateOf(mine.map(factsOf), agentName)
+    return { ...(agg.reason !== null ? { waitingReason: agg.reason } : {}), ...(agg.unread ? { unread: true } : {}) }
+  }
+
+  const recordOf = (id: string): AnyRecord => {
+    const overlay = workerOverlay(id)
+    return toAgentRecord({
       sessionId: id,
       title: summaries[id]?.title ?? null,
       isMain: id === mainBotId,
       running: views.get(id)?.running ?? summaries[id]?.running === true,
-      unread: unread.has(id),
+      unread: unread.has(id) || overlay.unread === true,
       activity: views.has(id)
         ? activityOf(views.get(id)!)
         : (summaries[id]?.running === true ? { kind: 'thinking' } : null),
       updatedAt: summaries[id]?.updatedAt ?? Date.now(),
       awaitingApproval: [...asks.values()].some((a) => a.agentId === id),
-      // D10c 侧栏角标：失效 bot 的预览行（0.18 行内 lastMessagePreview 槽）
-      ...(configOf(id)?.readOnly === true ? { preview: CONNECTOR_UNAVAILABLE } : {}),
+      ...(overlay.waitingReason !== undefined ? { waitingReason: overlay.waitingReason } : {}),
+      // D10c 侧栏角标：失效 bot 的预览行（0.18 行内 lastMessagePreview 槽）；P6-15 worker 行的状态预览
+      ...(configOf(id)?.readOnly === true ? { preview: CONNECTOR_UNAVAILABLE } : overlay.preview !== undefined ? { preview: overlay.preview } : {}),
     })
+  }
+
+  /** 序列化结果里的编排条目元数据收进 peers（notice-view 覆盖层按 entryId 取）。 */
+  const collectPeers = (raw: RawEntry[]): RawEntry[] => {
+    for (const e of raw) if (e.pbotsPeer !== undefined) peers.set(e.id, e.pbotsPeer as PeerMeta)
+    return raw
+  }
 
   const askEntries = (agentId: string): RawEntry[] => {
     const out: RawEntry[] = []
@@ -176,11 +239,11 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     const view = views.get(agentId)
     if (view === undefined || !view.loaded) return [...createNotice(agentId), ...askEntries(agentId)]
     const pending = pendingNonce.get(agentId)
-    const main = serialize({
+    const main = collectPeers(serialize({
       items: view.items, hasMore: view.hasMore, running: view.running, streaming: view.streaming,
       agentName: agentName(agentId),
       ...(pending !== undefined ? { clientNonce: pending } : {}),
-    })
+    }))
     if (pending !== undefined && main.some((e) => e.clientNonce === pending)) pendingNonce.delete(agentId)
     return [...main, ...createNotice(agentId), ...askEntries(agentId)]
   }
@@ -244,6 +307,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       .map(summaryOf)
     const listed = rec(meta.value).mainBotId
     recipes = rec(rec(meta.value).recipes) as unknown as Record<string, Recipe>
+    createdBy = createdByOf(meta.value)
     const nextSummaries: Record<string, Summary> = Object.fromEntries(items.map((s) => [s.sessionId, s]))
     if (typeof listed !== 'string' || nextSummaries[listed] === undefined) {
       const created = await api('session/create', { request: {} })
@@ -262,6 +326,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     order = order.length === 0 ? [mainBotId!, ...rest.map((s) => s.sessionId)] : [...new Set([mainBotId!, ...order, ...rest.map((s) => s.sessionId)])]
     followed.add(mainBotId!)
     openFollow(mainBotId!)
+    for (const id of order) if (isWorker(id)) { followed.add(id); openFollow(id) } // 状态 / 结果预览要视图
     push.agents()
     opts.boot?.('ready')
   }
@@ -296,10 +361,19 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     if (it.type === 'emit' && Array.isArray(it.args)) {
       const [sid, value] = it.args as [unknown, unknown]
       const prev = typeof sid === 'string' ? summaries[sid] : undefined
-      if (prev === undefined || typeof value !== 'boolean' || it.event !== 'api-session/status') return
+      if (it.event !== 'api-session/status' || typeof value !== 'boolean') return
+      if (prev === undefined) {
+        // P6-15：main 建出的新 worker（createdBy 先落盘、再建会话、再投 Assignment → 开跑）→ 重拉 roster + meta
+        if (typeof sid === 'string' && !unknownTried.has(sid)) {
+          unknownTried.add(sid)
+          void loadRoster().catch((e) => log(`[shim] roster refresh failed: ${String(e)}`))
+        }
+        return
+      }
       const finished = prev.running && !value
       summaries = { ...summaries, [prev.sessionId]: { ...prev, running: value } }
-      if (finished && sid !== mainBotId) unread.add(prev.sessionId) // 当前打开的 bot 由 setAgentUnread 清
+      // 当前打开的 bot 由 setAgentUnread 清；P6-15：正打开着的 worker 结束不算未读
+      if (finished && sid !== mainBotId && !(sid === active && isWorker(prev.sessionId))) unread.add(prev.sessionId)
       push.agents()
     }
   }
@@ -366,7 +440,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       const firstEvent = rec(rec(records[0]).event).seq
       const firstSeq = typeof firstEvent === 'number' ? firstEvent : undefined
       return {
-        entries: serialize({ items: olderItemsOf(records), hasMore: page.hasMore === true, running: false, streaming: null, agentName: agentName(id) }),
+        entries: collectPeers(serialize({ items: olderItemsOf(records), hasMore: page.hasMore === true, running: false, streaming: null, agentName: agentName(id) })),
         ...(page.hasMore === true && records.length > 0 && firstSeq !== undefined ? { nextBeforeSeq: firstSeq } : {}),
         threadCounts: {},
       }
@@ -449,7 +523,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       // #4 的 recipe 由 main 写入：重拉 M3，否则新 bot 被误判只读
       if (req.connectors.length > 0) {
         const meta = await metaApi('get')
-        if (meta.ok) recipes = rec(rec(meta.value).recipes) as unknown as Record<string, Recipe>
+        if (meta.ok) { recipes = rec(rec(meta.value).recipes) as unknown as Record<string, Recipe>; createdBy = createdByOf(meta.value) }
       }
       // 本地 preset 先记 p2temp 前缀未知：#4 的实际 preset id 由 follow header 给，#3 就是所选
       summaries = { ...summaries, [sid]: { sessionId: sid, title: null, preset: req.connectors.length > 0 ? null : req.preset, running: false, updatedAt: Date.now() } }
@@ -475,6 +549,26 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     },
     cancel: (id) => api('session/cancel', { request: { sessionId: id } }),
     focus: (id) => opts.focus?.(id),
+    workerRank: (id) => (isWorker(id) ? rankOf(factsOf(id)) : null),
+    peer: (id) => peers.get(id) ?? null,
+    agentName: (id) => (summaries[id] === undefined ? null : agentName(id)),
+    askPending(workerId, eventId) {
+      const mine = [...asks.entries()].filter(([, a]) => a.agentId === workerId)
+      if (eventId !== null) {
+        // FINAL §2-5：$events eventId（gateway 生成）与 approval/asked.id（user-approval 生成）不同源，两种都认
+        if (asks.has(eventId)) return asks.get(eventId)!.agentId === workerId
+        const view = views.get(workerId)
+        const callId = view?.asked[eventId]
+        if (callId !== undefined) return view!.items.some((i) => i.kind === 'tool' && i.callId === callId && i.awaiting && i.decision === null)
+      }
+      return mine.length > 0
+    },
+    setActive(id) {
+      const left = active
+      active = id
+      // 打开 worker = 已读；离开一个已读 worker → 它此刻才归档进 Done（sections 签名变化即推 host-settings）
+      if ((isWorker(id) && unread.delete(id)) || (left !== null && left !== id && isWorker(left))) push.agents()
+    },
   }
 
   const devSurface: DevSurface = {
@@ -483,7 +577,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     get sessions() { return dev.sessions },
     get sockets() { return dev.sockets },
     get bots() { return [...views.values()] },
-    get state() { return { order: [...order], meta: { mainBotId }, views: Object.fromEntries(views) } },
+    get state() { return { order: [...order], meta: { mainBotId, createdBy: { ...createdBy } }, views: Object.fromEntries(views) } },
     newSocket: () => newDevSocket((h) => { dev.sockets.push(h) }),
     openStream(endpoint, args) {
       if (mux === undefined) throw new Error('boot mux not open yet')
@@ -502,7 +596,17 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     dev: devSurface,
     ui,
     debugItems: (agentId) => [...(views.get(agentId)?.items ?? [])],
-    wire(target) { push.agents = () => { target.agents(); uiChanged() }; push.transcript = target.transcript },
+    wire(target) {
+      push.agents = () => {
+        target.agents()
+        uiChanged()
+        // FINAL §2-3：上游只在收到 host-settings{fields:['sidebarSections']} 时重拉 sections——成员 / 档位变了才推
+        const sig = JSON.stringify(sections())
+        if (sig !== sectionsSig) { sectionsSig = sig; target.sections?.() }
+      }
+      push.transcript = target.transcript
+    },
+    sections,
     agentsPayload: () => order.map(recordOf),
     transcriptPayload: (agentId) => ({ type: 'snapshot', activeAgentId: agentId, entries: entriesOf(agentId) }),
     start() {

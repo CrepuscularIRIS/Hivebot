@@ -46,3 +46,5 @@ export { SEND_TO_BOT_TOOL, SEND_TO_BOT_DESCRIPTION, sendRelayText, registerSendT
 // P6-12 注册行（PLAN §2 v4 接线归属：只追加本任务导出，不重构）。
 export { BATCH_WINDOW_MS, RESULT_LIMIT, Reporter, resultTextFor, truncateResult } from './report.mjs'
 export { registerTaintGuard } from './taint-guard.mjs'
+// P6-13 注册行（PLAN §2 v4 接线归属：只追加本任务导出，不重构）。
+export { STOP_BOT_TOOL, STOP_BOT_DESCRIPTION, registerStopBot } from './stop.mjs'

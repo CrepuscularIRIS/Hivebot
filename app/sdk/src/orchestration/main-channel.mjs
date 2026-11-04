@@ -17,6 +17,7 @@ import { Delivery } from './delivery.mjs'
 import { sharedSlots } from './slots.mjs'
 import { registerCreateBot } from './create.mjs'
 import { registerSendToBot } from './send.mjs'
+import { registerStopBot } from './stop.mjs'
 import { Reporter } from './report.mjs'
 import { registerTaintGuard } from './taint-guard.mjs'
 
@@ -209,6 +210,7 @@ export default class OrchestrationPlugin extends TypertRemoteService {
     this.delivery = new Delivery(ctx)
     this.createBot = registerCreateBot(ctx, this)
     this.sendToBot = registerSendToBot(ctx, this) // P6-11：与 create 共用 turns/slotHolds/slots
+    this.stopBot = registerStopBot(ctx, this) // P6-13：与 create/send 共用 turns 账本；两阶段，不占容量
     // P6-12：worker 回报 → 主 bot（合批投递 + 启动对账）与污染回合全工具拒。
     // taint-guard 复用上面 create 建的 orch.turns 账本；Reporter 挂事件即返回。
     this.taintGuard = registerTaintGuard(ctx, this)

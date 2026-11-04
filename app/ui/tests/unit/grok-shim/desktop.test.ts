@@ -84,3 +84,23 @@ describe('agent.clientPersistence · localStorage 落盘', () => {
     await expect(d.agent.clientPersistence.read('sand.test')).resolves.toBeNull()
   })
 })
+
+describe('agent 置顶 · localStorage 落盘（P5-58 去 mock：Pin 菜单项真实可见，恒 [] 会在 reload 后静默丢置顶）', () => {
+  it('setPinnedAgents 落盘；同一 window 上的新桥实例（reload 语义）读回同一列表', async () => {
+    const w = mkWindow()
+    const first = b(w)
+    await expect(first.agent.getPinnedAgents()).resolves.toEqual([])
+    await expect(first.agent.setPinnedAgents(['b2', 'a1'])).resolves.toEqual(['b2', 'a1'])
+    const reloaded = b(w) // reload：shim 重建，localStorage 仍在
+    await expect(reloaded.agent.getPinnedAgents()).resolves.toEqual(['b2', 'a1'])
+    await expect(reloaded.agent.setPinnedAgents([])).resolves.toEqual([])
+    await expect(b(w).agent.getPinnedAgents()).resolves.toEqual([])
+  })
+
+  it('损坏的落盘值（手改 localStorage）回 []，不抛', async () => {
+    const w = mkWindow()
+    w.localStorage.setItem('pbots.shim.pinned-agents', '{not json')
+    const d = b(w)
+    await expect(d.agent.getPinnedAgents()).resolves.toEqual([])
+  })
+})

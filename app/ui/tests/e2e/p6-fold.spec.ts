@@ -174,13 +174,17 @@ test('无工具问答恰 1 气泡；D2 (b)(c)(d)(e)(f) 的 DOM 对应；亮暗',
     readTool = await workspace(page, b)
     rt.writeScriptCalls(b, [
       stepCall({ text: ['收到，先读文件。'], tool: readTool('p603-b1') }),
-      stepCall({ text: ['尾段写了一半'], finish: { type: 'finish', reason: { kind: 'error', message: 'P6-03 boom' } } }),
+      // P5-41.f1 ③：dsh FinishReason 契约 error = { kind, failure: LlmFailure{code,message} }（dsh-llm types.d.ts FinishReasonMap）。
+      // 旧脚本写成 { kind, message } 缺 failure → dsh-llm-retry / agent-loop 读 failure.code 抛 TypeError，
+      // 用户看到「Cannot read properties of undefined (reading 'code')」而不是注入文本——丢失层 = fake 脚本违约，不是 fold / shim / 0.18
+      stepCall({ text: ['尾段写了一半'], finish: { type: 'finish', reason: { kind: 'error', failure: { code: 'PROVIDER_ERROR', message: 'P6-03 boom' } } } }),
     ])
     await send(page, '出错格')
     await allowOnce(page)
     await expect.poll(async () => (await devState(page)).views[b]?.turnEnded, { timeout: 30_000 }).toBe(true)
     await expect(notices(page)).toHaveCount(1)
-    await expect(notices(page).first()).toContainText('回复失败')
+    await expect(notices(page).first()).toContainText('回复失败：P6-03 boom') // 注入文本直达用户
+    await expect(notices(page).first()).not.toContainText('Cannot read') // 不露 JS 异常
     expect(await bubbleTexts(page)).toEqual(['收到，先读文件。'])
     await bothThemes(page, 'd2-b-error')
 

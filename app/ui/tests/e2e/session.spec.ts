@@ -37,7 +37,7 @@ test('D3 审批往返：dock 仅本 bot、侧栏 Needs attention；Deny → 不�
     // P5-31（L-AP A9④）：bash 卡无始终允许、无 Never——DOM 中按钮数 === 0；只剩 Allow once / Deny once；完整命令（绝对路径全文）可见
     await expect(dock.locator('button', { hasText: 'Always allow' })).toHaveCount(0)
     await expect(dock.locator('button', { hasText: /^Never$/ })).toHaveCount(0)
-    await expect(dock.locator('button')).toHaveText(['Allow once', 'Deny once'])
+    await expect(dock.locator('[role="group"] button')).toHaveText(['Allow once', 'Deny once']) // 动作段；标题条另有关闭钮（P5-41.f1，= Deny once）
     await expect(dock.locator('[data-pbots="ask-command"]')).toHaveText(`touch ${rejectCanary}`)
     await page.screenshot({ path: join(EVIDENCE, 'approval-light.png') })
     await page.emulateMedia({ colorScheme: 'dark' })

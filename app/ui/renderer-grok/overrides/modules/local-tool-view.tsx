@@ -8,6 +8,7 @@
 // - 竖排：上游卡只有 display:flex 原子类、缺 column（重构树遗漏），三段挤成一行；带命令块后更不可读。
 // - 卡上显示完整动作：ask.action.command（shim askText：bash 命令全文 / request_network 的 reason 全文）。
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { SandIcon, SandIconButton } from '../../frontend/src/recovered/ui/sand-kit-primitives'
 import {
   resolveLocalToolPermissionAction,
   type LocalToolPermissionPromptProps, type LocalToolPermissionRequest, type LocalToolPermissionResolution,
@@ -79,18 +80,30 @@ export function LocalToolPermissionPrompt({ entryId, ask, agentId, store, resolv
   }
   const command = actionText(ask.action)
   const disabled = !canAct
+  // P5-41.f1：0.78.1 分段结构（RE-visual-078-values B9）——标题条「Computer」+ 关闭钮 / 标题 + 说明 + target 代码块 / 按钮段；
+  // 段间距、内边距、代码块填充样式在 p5-55-layout.css（.pb-ask__*）。关闭 = Deny once（0.78.1 关闭钮 aria-label 即「Deny once」，ref 实测）。
   return (
     <div aria-label="Local tool permission" className="sand-78zum5 sand-167g77z sand-h8yej3 sand-euugli" data-state={actionState} ref={promptRef} style={{ flexDirection: 'column', maxWidth: 560, gap: 8, padding: '14px 16px', color: 'var(--cursor-text-primary, #ececec)', background: 'var(--cursor-bg-elevated, #202020)', border: '1px solid var(--cursor-border-secondary, #414141)', borderRadius: 10, boxShadow: '0 12px 28px rgba(0, 0, 0, .25)', font: '13px/1.4 Inter, ui-sans-serif, system-ui, sans-serif' }}>
-      <strong>Allow Grok Bot to run this on your computer?</strong>
-      {command !== null
-        ? <pre data-pbots="ask-command" style={{ margin: 0, maxHeight: 160, overflow: 'auto', padding: '8px 10px', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', userSelect: 'text', background: 'var(--cursor-bg-editor, #181818)', border: '1px solid var(--cursor-border-secondary, #414141)', borderRadius: 6, font: '12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace' }}>{command}</pre>
-        : null}
-      <span>Only this time. Grok Bot will ask again next time.</span>
-      {actionState === 'failed' ? <span style={{ color: '#f87171' }}>Your answer didn&apos;t go through. Check your connection and try again.</span> : null}
-      <div role="group" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
+      <section className="pb-ask__titlebar" data-pbots="ask-titlebar">
+        <span className="pb-ask__badge"><SandIcon name="laptop" size="sm" /></span>
+        <span className="pb-ask__label">Computer</span>
+        <SandIconButton aria-label="Deny once" className="pb-ask__close" disabled={disabled} icon="close" onClick={() => submit('deny')} shape="circle" size="sm" title="Deny once (Esc)" variant="ghost" />
+      </section>
+      <section className="pb-ask__body">
+        <strong>Allow Grok Bot to run this on your computer?</strong>
+        <span data-pbots="ask-scope">Only this time. Grok Bot will ask again next time.</span>
+        {command !== null
+          ? <div className="pb-ask__code">
+            <pre data-pbots="ask-command" style={{ margin: 0, maxHeight: 160, overflow: 'auto', padding: '8px 10px', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', userSelect: 'text', background: 'var(--cursor-bg-editor, #181818)', border: '1px solid var(--cursor-border-secondary, #414141)', borderRadius: 6, font: '12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace' }}>{command}</pre>
+            <SandIconButton aria-label="Copy code" className="pb-ask__copy" icon="copy" onClick={() => void navigator.clipboard?.writeText(command).catch(() => {})} size="sm" variant="ghost" />
+          </div>
+          : null}
+        {actionState === 'failed' ? <span style={{ color: '#f87171' }}>Your answer didn&apos;t go through. Check your connection and try again.</span> : null}
+      </section>
+      <section role="group" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
         <button disabled={disabled} onClick={() => submit('allow-once')} style={button(true, disabled)} type="button">Allow once</button>
         <button aria-label="Deny once (Esc)" disabled={disabled} onClick={() => submit('deny')} style={button(false, disabled)} title="Deny once (Esc)" type="button">Deny once</button>
-      </div>
+      </section>
     </div>
   )
 }

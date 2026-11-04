@@ -172,6 +172,10 @@ export function PluginsDesktopSurface({ isOpen, onClose }: PluginsDesktopSurface
   const source = m.sources?.find((x) => x.url === m.url)
   const view = detail !== undefined ? 'detail' : mine ? 'installed' : 'list'
 
+  // P5-41.f1 ④：可连接的排在前面（仅浏览的 Not available 不再埋掉首屏）。稳定分区，组内保持目录顺序。
+  // ponytail: 只在已加载页内分区；Load more 新到的可连接条目会插到顶部分组，目录大到要按需加载可连接项时改服务端排序。
+  const rows = m.entries.map((entry) => ({ entry, kind: classify(entry, installed, m.outcomes[entry.name]) }))
+    .sort((a, b) => Number(a.kind === 'browse') - Number(b.kind === 'browse'))
   let body: ReactNode
   if (detail !== undefined) body = <Detail m={m} entry={detail} online={online} onNewWith={newWith} />
   else if (mine) {
@@ -200,9 +204,11 @@ export function PluginsDesktopSurface({ isOpen, onClose }: PluginsDesktopSurface
       <>
         {m.query === '' && m.bundles !== null && m.bundles.length > 0 && <InstalledPreview bundles={m.bundles} onOpen={openMine} />}
         {m.query !== '' && <h3 className="pb-section-title">Results</h3>}
+        {rows.every((r) => r.kind === 'browse') && (
+          <p className="pb-note pb-market__hint" data-market-hint>Listings marked Not available have no install package — they're here for reference. Search by name to find one you can connect.</p>
+        )}
         <ul className="pb-list" data-market-list>
-          {m.entries.map((e) => {
-            const kind = classify(e, installed, m.outcomes[e.name])
+          {rows.map(({ entry: e, kind }) => {
             return <Row key={e.name} name={text(e.title) || e.name} subtitle={text(e.description) || e.name} iconKey={e.name} onOpen={() => openDetail(e.name)}
               attrs={{ 'data-entry': e.name, 'data-kind': kind }} trailing={<Action m={m} entry={e} kind={kind} online={online} size="sm" />} />
           })}

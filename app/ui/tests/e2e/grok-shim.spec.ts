@@ -107,7 +107,7 @@ test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动�
     // P5-31（L-AP A9④）：Always allow / Never 不在 DOM，只剩两钮；bash 卡显示完整命令
     await expect(dock.locator('button', { hasText: 'Always allow' })).toHaveCount(0)
     await expect(dock.locator('button', { hasText: /^Never$/ })).toHaveCount(0)
-    await expect(dock.locator('button')).toHaveText(['Allow once', 'Deny once'])
+    await expect(dock.locator('[role="group"] button')).toHaveText(['Allow once', 'Deny once']) // 动作段；标题条另有关闭钮（P5-41.f1，= Deny once）
     await expect(dock.locator('[data-pbots="ask-command"]')).toHaveText('touch p551-ok')
     await dock.locator('button', { hasText: 'Allow once' }).click()
     await expect(dock).toHaveCount(0, { timeout: 20_000 })
@@ -130,7 +130,9 @@ test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动�
     // ---- 回合 2：deny 路径（rejected）----
     await grokSend(page, '再试一次')
     await expect(dock).toBeVisible({ timeout: 30_000 })
-    await dock.locator('button', { hasText: 'Deny once' }).click()
+    // P5-41.f1：0.78.1 分段卡——标题条「Computer」+ 关闭钮；关闭 = Deny once（走 rejected，见下方 D9 计数）
+    await expect(dock.locator('[data-pbots="ask-titlebar"]')).toContainText('Computer')
+    await dock.locator('[data-pbots="ask-titlebar"] button[aria-label="Deny once"]').click()
     await expect(dock).toHaveCount(0, { timeout: 20_000 })
     await expect(page.locator('.sand-virtual-transcript')).toContainText('不执行，已拒绝。', { timeout: 30_000 })
     await expect.poll(() => existsSync(rejectCanary), { timeout: 5_000 }).toBe(false)
@@ -143,13 +145,13 @@ test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动�
     await expect(netText).toContainText(`reason: ${NET_REASON}`)
     await expect(netText).toContainText(`command: ${NET_COMMAND}`)
     await expect(netText).toContainText('scope: this session, one exact command, single use, expires in ~60s')
-    await expect(dock.locator('button')).toHaveText(['Allow once', 'Deny once'])
+    await expect(dock.locator('[role="group"] button')).toHaveText(['Allow once', 'Deny once']) // 动作段；标题条另有关闭钮（P5-41.f1，= Deny once）
     await page.screenshot({ path: join(EVIDENCE, 'net-card-light.png') })
     await page.keyboard.press('Escape') // Esc = Deny once（覆盖卡保留上游键位）
     await expect(dock).toHaveCount(0, { timeout: 20_000 })
     await expect(page.locator('.sand-virtual-transcript')).toContainText('网络未获批准。', { timeout: 30_000 })
 
-    // ---- D9：全部作答值 ⊆ {allowed-once, rejected}（allow-once 1 次 + 拒绝 2 次：bash Deny、网络 Esc）----
+    // ---- D9：全部作答值 ⊆ {allowed-once, rejected}（allow-once 1 次 + 拒绝 2 次：bash 关闭钮、网络 Esc）----
     const answers = await page.evaluate(() => (window as unknown as { __pbotsShim?: { answers: Array<{ eventId: string; value: string }> } }).__pbotsShim?.answers ?? [])
     expect(answers.map((a) => a.value).sort()).toEqual(['allowed-once', 'rejected', 'rejected'])
     await page.screenshot({ path: join(EVIDENCE, 'turn2-light.png') })

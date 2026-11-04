@@ -1,32 +1,48 @@
 // P5-58 ① 双主题质量收口：全 UI 部件亮暗逐面对照（真实 Electron + Xvfb）。
 // - 路径 A `page.emulateMedia` / 路径 B Electron `nativeTheme.themeSource` 双路翻转 `html[data-theme]`
 //   （P6-03 OBS：暗色 composer / Plugins 按钮浅底字不清，疑 emulateMedia 过渡或真缺陷——两路都审，双路一致红 = 真缺陷）；
-// - 机械对比度审计：固定部件清单的「文字色 vs 合成底色」WCAG 比率（祖先链 alpha 合成），
+// - 机械对比度审计：固定部件清单的「文字色 vs 合成底色」WCAG 比率，
 //   普通文本 ≥4.5，图标钮 / ≥18px / ≥14px 粗体 ≥3.0；
+//   P5-41.f1：合成算法移到 tests/support/contrast.ts（前景 alpha 与有效底合成、背景从祖先向子级合成，单测含半透明反例）；
+//   页内只采原始色串与祖先链。照原版即低于阈值的项登记在 REF_FAITHFUL（钉现值防回归，进签收单），不算「过」。
 // - 逐部件亮暗成对截图 evidence（cmp-<部件>.{light,dark}.png + compare.html 并排索引）。
-// 市场面（market overlay）归 P5-57，不在本表——其主题问题记 REPORT-P5-58 待合并后补。
 import { expect, test, type Page } from 'playwright/test'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { AUDIT, type AuditRow, type Target } from '../support/contrast.ts'
 import { bashCall, createBots, evidenceOut, finalAssistant, launchProduct, openBot, permissionDock, reasoningTextCall, send, textCall } from '../support/ui.ts'
 
 const OUT = evidenceOut('P5-58')
 type Mode = 'light' | 'dark'
 
+/** 低于阈值、交用户签收（work/p5-parity/evidence/P5-41f1/ACCEPTED-DEVIATIONS.md §1）：钉住现值（±0.05）而不是放过——
+ * 值变了就红，要么回到登记值、要么改签收单。键 = `${mode} ${id}`；ref = 0.78.1 对照台实测（ref-colors 探针，2026-11-04）。 */
+const REF_FAITHFUL: Record<string, { ratio: number; why: string }> = {
+  'light 工具行预览': { ratio: 3.93, why: '照原版(ref 3.93，同 text-tertiary)' },
+  'light 审批卡命令': { ratio: 4.36, why: '照原版(ref 4.36，green-primary on bg-quaternary)' },
+  'light 搜索面板占位': { ratio: 3.96, why: '照原版(ref 3.96，text-tertiary)' },
+  'light composer 占位': { ratio: 3.96, why: '高于原版(ref .40=2.49；我们 text-tertiary)' },
+  'light 侧栏副题': { ratio: 3.67, why: '0.18 上游 text-tertiary(0.78.1 值未取到)' },
+}
+
 /** 对比度审计目标：sel 元素的直接文字色 vs 合成底色；icon=true → 阈值 3.0。 */
-const TARGETS: Array<{ id: string; sel: string; icon?: boolean }> = [
+const TARGETS: Target[] = [
   { id: '侧栏头图标钮', sel: '.sand-agents-sidebar__header button' },
   { id: '侧栏条目名', sel: '.sand-agent-item__name' },
+  { id: '侧栏副题', sel: '.sand-agent-item__preview' },
+  { id: 'Stop 钮', sel: 'button[data-action="stop"]' },
   { id: 'Plugins 药丸', sel: '.sand-agents-sidebar__plugins-entry button', icon: true },
   { id: '正文', sel: '.sand-transcript-row[data-role="assistant"] .sand-message-prose p' },
   { id: '正文链接', sel: '.sand-message-prose a' },
   { id: '代码块', sel: '.sand-message-prose pre' },
   { id: 'thinking 行', sel: '.sand-outline-item[data-kind="thinking"] .sand-outline-item__row' },
   { id: '工具行预览', sel: '.sand-outline-item[data-kind="tool-call"] .sand-outline-item__preview' },
+  { id: '审批卡标题条', sel: '[aria-label="Local tool permissions"] [data-pbots="ask-titlebar"] .pb-ask__label' },
   { id: '审批卡标题', sel: '[aria-label="Local tool permissions"] strong' },
+  { id: '审批卡说明', sel: '[aria-label="Local tool permissions"] [data-pbots="ask-scope"]' },
   { id: '审批卡命令', sel: '[aria-label="Local tool permissions"] pre[data-pbots="ask-command"]' },
-  { id: '审批 Allow once', sel: '[aria-label="Local tool permissions"] button:not([aria-label^="Deny"])' },
-  { id: '审批 Deny once', sel: '[aria-label="Local tool permissions"] button[aria-label^="Deny"]' },
+  { id: '审批 Allow once', sel: '[aria-label="Local tool permissions"] [role="group"] button:not([aria-label^="Deny"])' },
+  { id: '审批 Deny once', sel: '[aria-label="Local tool permissions"] [role="group"] button[aria-label^="Deny"]' },
   { id: 'composer 输入区', sel: '.sand-prompt-shell' },
   { id: 'composer 编辑器', sel: '.sand-prompt-shell .ProseMirror' },
   { id: '发送钮', sel: 'button[aria-label="Send message"]', icon: true },
@@ -36,7 +52,14 @@ const TARGETS: Array<{ id: string; sel: string; icon?: boolean }> = [
   { id: '设置面板标题', sel: '.sand-settings-panel > h2' },
   { id: '设置导航项', sel: '.sand-settings-nav__item[data-active]' },
   { id: '搜索面板输入', sel: '.sand-command-palette > input' },
+  { id: '搜索面板占位', sel: '.sand-command-palette > input', pseudo: '::placeholder' },
+  // 默认 profile 无目录源 → 市场是空态；列表态（Not available / 副题 / 计数）在 market.spec 里审（那边起本地目录源）
+  { id: '市场空态标题', sel: '[data-market-empty] .pb-empty__title' },
+  { id: '市场空态说明', sel: '[data-market-empty] .pb-note' },
 ]
+const OVERLAY_IDS = ['设置面板标题', '设置导航项', '搜索面板输入', '搜索面板占位', '市场空态标题', '市场空态说明']
+/** composer 占位（空 composer 才有 ::before；打草稿前单独审）。 */
+const PLACEHOLDER: Target = { id: 'composer 占位', sel: '.sand-prompt-field p.is-editor-empty:first-child', pseudo: '::before' }
 
 /** 截图部件清单（亮暗成对）。 */
 const SHOTS: Array<{ id: string; sel: string }> = [
@@ -53,47 +76,19 @@ const SHOTS: Array<{ id: string; sel: string }> = [
   { id: 'info-pane', sel: 'aside.sand-info-pane[data-open]' },
 ]
 
-/** 页内审计：sel 元素文字色 vs 合成底色（沿祖先链把 rgba 压到 html 底色上）的 WCAG 比率。 */
-const AUDIT = (targets: typeof TARGETS): Array<{ id: string; ratio: number; fg: string; bg: string; size: string; weight: string }> => {
-  const blend = (over: [number, number, number, number], under: [number, number, number]): [number, number, number] =>
-    [0, 1, 2].map((i) => Math.round(over[i] * over[3] + under[i] * (1 - over[3]))) as [number, number, number]
-  const parse = (c: string): [number, number, number, number] | null => {
-    const m = /rgba?\(([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?\)/.exec(c)
-    if (!m) return null
-    return [Number(m[1]), Number(m[2]), Number(m[3]), m[4] === undefined ? 1 : Number(m[4])]
+const isBig = (t: Target, r: AuditRow): boolean =>
+  t.icon === true || parseFloat(r.size) >= 24 || (parseFloat(r.size) >= 18.66 && (r.weight === 'bold' || Number(r.weight) >= 700))
+/** 阈值断言：REF_FAITHFUL 项钉现值，其余 ≥4.5（大字 / 图标 3.0）。返回处置列。 */
+function judge(mode: Mode, t: Target, r: AuditRow): string {
+  const key = `${mode} ${t.id}`
+  const pinned = REF_FAITHFUL[key]
+  if (pinned !== undefined) {
+    expect.soft(Math.abs(r.ratio - pinned.ratio), `${key} 签收钉值 ${pinned.ratio}，现 ${r.ratio}`).toBeLessThanOrEqual(0.05)
+    return `签收:${pinned.why}`
   }
-  const effectiveBg = (el: Element): [number, number, number] => {
-    let acc: [number, number, number] = [255, 255, 255] // html 之下若有透明：压到白底（浏览器画布底）
-    for (let n: Element | null = el; n; n = n.parentElement) {
-      const cs = getComputedStyle(n)
-      let c = parse(cs.backgroundColor)
-      if (c === null && cs.backgroundImage !== 'none') {
-        const g = /rgba?\(([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?\)/.exec(cs.backgroundImage)
-        c = g ? [Number(g[1]), Number(g[2]), Number(g[3]), g[4] === undefined ? 1 : Number(g[4])] : null
-      }
-      if (c !== null && c[3] > 0.999) return blend(c, acc)
-      if (c !== null && c[3] > 0) acc = blend(c, acc)
-    }
-    return acc
-  }
-  const lum = ([r, g, b]: [number, number, number]): number => {
-    const f = (v: number) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4 }
-    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
-  }
-  const out: Array<{ id: string; ratio: number; fg: string; bg: string; size: string; weight: string }> = []
-  for (const t of targets) {
-    const el = document.querySelector(t.sel)
-    if (el === null || !(el instanceof HTMLElement)) continue
-    const cs = getComputedStyle(el)
-    const fg = parse(cs.color)
-    if (fg === null) continue
-    const bg = effectiveBg(el)
-    const l1 = lum([fg[0], fg[1], fg[2]])
-    const l2 = lum(bg)
-    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)
-    out.push({ id: t.id, ratio: Math.round(ratio * 100) / 100, fg: cs.color, bg: `rgb(${bg.join(',')})`, size: cs.fontSize, weight: cs.fontWeight })
-  }
-  return out
+  const min = isBig(t, r) ? 3 : 4.5
+  expect.soft(r.ratio, `${key} 对比度 ${r.fg} on ${r.bg} @${r.size}/${r.weight}`).toBeGreaterThanOrEqual(min)
+  return r.ratio >= min ? 'pass' : 'FAIL'
 }
 
 /** 根变量诊断行：两模式下关键底色 token（mixed-cascade 排查用）。 */
@@ -115,10 +110,13 @@ async function settle(page: Page, mode: Mode): Promise<void> {
     return getComputedStyle(document.documentElement).getPropertyValue('--sand-bg-base').trim() === exp
   }, expected, { timeout: 5_000 })
   await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
+  // P5-41.f1：computed 颜色在 CSS transition 期间是插值（composer 背景 .15s，旧审计据此量到暗色 bg=177 的中间帧）——等过渡跑完再采样。
+  // 只等 CSSTransition：persona / skeleton 是无限 animation，等不完。
+  await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a instanceof CSSTransition).map((a) => a.finished.catch(() => undefined))))
 }
 
 /** 一个模式下：截图成对 + 审计。返回 [{id,ratio,…}]。 */
-async function capture(page: Page, mode: Mode): Promise<{ audit: ReturnType<typeof AUDIT>; vars: string }> {
+async function capture(page: Page, mode: Mode): Promise<{ audit: AuditRow[]; vars: string }> {
   await expect(page.locator('html')).toHaveAttribute('data-theme', `cursor-${mode}`)
   await settle(page, mode)
   for (const s of SHOTS) {
@@ -126,7 +124,7 @@ async function capture(page: Page, mode: Mode): Promise<{ audit: ReturnType<type
     if (await el.count() > 0 && await el.isVisible().catch(() => false)) await el.screenshot({ path: join(OUT, `cmp-${s.id}.${mode}.png`) })
   }
   await page.screenshot({ path: join(OUT, `cmp-window.${mode}.png`) })
-  const audit = await page.evaluate(AUDIT, TARGETS)
+  const audit = await AUDIT(page, TARGETS.filter((t) => !OVERLAY_IDS.includes(t.id)))
   const vars = await rootVarsLine(page, mode)
   return { audit, vars }
 }
@@ -149,6 +147,13 @@ test('P5-58① 双主题：emulateMedia / nativeTheme 双路翻转 + 逐部件�
     await expect(permissionDock(page)).toBeVisible({ timeout: 20_000 })
     await page.click('button[aria-label="View agent settings"]')
     await expect(page.locator('aside.sand-info-pane[data-open]')).toBeVisible()
+    // composer 占位：空 composer 才有 ::before，打草稿前亮暗各审一次
+    const audits: Record<Mode, AuditRow[]> = { light: [], dark: [] }
+    for (const mode of ['light', 'dark'] as const) {
+      await page.emulateMedia({ colorScheme: mode })
+      await settle(page, mode)
+      audits[mode].push(...await AUDIT(page, [PLACEHOLDER]))
+    }
     // composer 留草稿：发送钮存在（空 composer 只有 mic 钮）+ 截图带真实文字
     const editor = page.locator('.sand-prompt-shell .ProseMirror[contenteditable="true"]')
     await editor.click()
@@ -159,13 +164,13 @@ test('P5-58① 双主题：emulateMedia / nativeTheme 双路翻转 + 逐部件�
     const capLight = await capture(page, 'light')
     await page.emulateMedia({ colorScheme: 'dark' })
     const capDark = await capture(page, 'dark')
+    audits.light.push(...capLight.audit)
+    audits.dark.push(...capDark.audit)
     await page.emulateMedia({ colorScheme: 'light' })
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'cursor-light')
 
-    // overlay 面（设置 / 搜索面板）：开着截亮暗两份 + 审计，再关掉——主题翻转对 overlay 同样生效
-    const OVERLAY_IDS = ['设置面板标题', '设置导航项', '搜索面板输入']
-    const overlayTargets = TARGETS.filter((t) => OVERLAY_IDS.includes(t.id))
-    const overlayAudit: Record<Mode, ReturnType<typeof AUDIT>> = { light: [], dark: [] }
+    // overlay 面（设置 / 搜索面板 / 市场）：开着截亮暗两份 + 审计，再关掉——主题翻转对 overlay 同样生效
+    const pick = (...ids: string[]): Target[] => TARGETS.filter((t) => ids.includes(t.id))
     for (const mode of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme: mode })
       await settle(page, mode)
@@ -173,19 +178,21 @@ test('P5-58① 双主题：emulateMedia / nativeTheme 双路翻转 + 逐部件�
       await page.locator('[role="menuitem"]', { hasText: 'Settings' }).click()
       await expect(page.locator('.sand-settings-panel')).toBeVisible()
       await page.screenshot({ path: join(OUT, `cmp-settings-window.${mode}.png`) })
-      overlayAudit[mode].push(...await page.evaluate(AUDIT, overlayTargets.filter((t) => t.id !== '搜索面板输入')))
+      audits[mode].push(...await AUDIT(page, pick('设置面板标题', '设置导航项')))
       await page.locator('.sand-settings-panel__close').click()
       await page.click('button[aria-label="Search"]')
       await expect(page.locator('.sand-command-palette')).toBeVisible()
       await page.locator('.sand-command-palette').screenshot({ path: join(OUT, `cmp-search-palette.${mode}.png`) })
-      overlayAudit[mode].push(...await page.evaluate(AUDIT, overlayTargets.filter((t) => t.id === '搜索面板输入')))
+      audits[mode].push(...await AUDIT(page, pick('搜索面板输入', '搜索面板占位')))
       await page.keyboard.press('Escape')
+      await page.locator('.sand-agents-sidebar__plugins').click()
+      await expect(page.locator('[data-market-empty]')).toBeVisible({ timeout: 30_000 })
+      await page.screenshot({ path: join(OUT, `cmp-market-window.${mode}.png`) })
+      audits[mode].push(...await AUDIT(page, pick('市场空态标题', '市场空态说明')))
+      await page.keyboard.press('Escape')
+      await expect(page.locator('[data-market]')).toHaveCount(0)
     }
     await page.emulateMedia({ colorScheme: 'light' })
-    for (const mode of ['light', 'dark'] as const) {
-      for (const r of overlayAudit[mode]) expect.soft(r.ratio, `${mode} ${r.id} 对比度 ${r.fg} on ${r.bg}`).toBeGreaterThanOrEqual(4.5)
-      expect.soft(overlayAudit[mode].length, `${mode} overlay 审计 3 项目标齐`).toBe(overlayTargets.length)
-    }
 
     // 路径 B：Electron nativeTheme（系统主题路径；emulateMedia 先复位为跟随原生）
     await page.emulateMedia({ colorScheme: null })
@@ -194,33 +201,28 @@ test('P5-58① 双主题：emulateMedia / nativeTheme 双路翻转 + 逐部件�
     await settle(page, 'dark')
     await page.locator('.sand-prompt-shell').first().screenshot({ path: join(OUT, 'cmp-composer.native-dark.png') })
     await page.locator('.sand-agents-sidebar__plugins-entry button').first().screenshot({ path: join(OUT, 'cmp-plugins-entry.native-dark.png') })
-    const nativeDark = await page.evaluate(AUDIT, [TARGETS.find((t) => t.id === 'Plugins 药丸')!, TARGETS.find((t) => t.id === 'composer 输入区')!])
+    const nativeDark = await AUDIT(page, pick('Plugins 药丸', 'composer 输入区'))
     // 复位用显式 light（宿主 GTK 可能偏好暗：themeSource='system' 在本机会解析为 dark）
     await env.shell.app.evaluate(({ nativeTheme }) => { nativeTheme.themeSource = 'light' })
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'cursor-light')
 
-    // 审计断言：目标必须存在，且比率达标（普通文本 4.5；icon/大字 3.0）
-    const rows = ['id\tratio(light)\tratio(dark)\tfg(light)\tbg(light)\tfg(dark)\tbg(dark)\tsize\tweight']
-    for (const t of TARGETS.filter((x) => !OVERLAY_IDS.includes(x.id))) {
-      const l = capLight.audit.find((r) => r.id === t.id)
-      const d = capDark.audit.find((r) => r.id === t.id)
+    // 审计断言：目标必须存在；比率达标（普通 4.5；icon/大字 3.0）或登记照原版钉值
+    const rows = ['id\tratio(light)\tratio(dark)\tdisposition(light)\tdisposition(dark)\tfg(light)\tbg(light)\tfg(dark)\tbg(dark)\tsize\tweight']
+    for (const t of [...TARGETS, PLACEHOLDER]) {
+      const l = audits.light.find((r) => r.id === t.id)
+      const d = audits.dark.find((r) => r.id === t.id)
       expect.soft(l, `light ${t.id} 审计目标存在（sel=${t.sel}）`).toBeDefined()
       expect.soft(d, `dark ${t.id} 审计目标存在（sel=${t.sel}）`).toBeDefined()
-      if (l !== undefined && d !== undefined) {
-        rows.push([t.id, String(l.ratio), String(d.ratio), l.fg, l.bg, d.fg, d.bg, l.size, l.weight].join('\t'))
-        for (const [mode, r] of [['light', l], ['dark', d]] as const) {
-          const big = t.icon === true || parseFloat(r.size) >= 24 || (parseFloat(r.size) >= 18.66 && (r.weight === 'bold' || Number(r.weight) >= 700))
-          expect.soft(r.ratio, `${mode} ${t.id} 对比度 ${r.fg} on ${r.bg} @${r.size}/${r.weight}`).toBeGreaterThanOrEqual(big ? 3 : 4.5)
-        }
-      }
+      if (l === undefined || d === undefined) continue
+      rows.push([t.id, String(l.ratio), String(d.ratio), judge('light', t, l), judge('dark', t, d), l.fg, l.bg, d.fg, d.bg, l.size, l.weight].join('\t'))
     }
     for (const r of nativeDark) {
       expect.soft(r.ratio, `native-dark ${r.id} 对比度 ${r.fg} on ${r.bg}`).toBeGreaterThanOrEqual(r.id.includes('composer') ? 4.5 : 3)
     }
-    writeFileSync(join(OUT, 'contrast.tsv'), `${rows.join('\n')}\n${capLight.vars}\n${capDark.vars}\n${overlayAudit.light.map((r) => `overlay\tlight\t${r.id}\t${r.ratio}\t${r.fg}\t${r.bg}`).join('\n')}\n${overlayAudit.dark.map((r) => `overlay\tdark\t${r.id}\t${r.ratio}\t${r.fg}\t${r.bg}`).join('\n')}\n`)
+    writeFileSync(join(OUT, 'contrast.tsv'), `${rows.join('\n')}\n${capLight.vars}\n${capDark.vars}\n`)
 
     // 并排索引（file:// 打开即亮暗对照）
-    const compareIds = [...SHOTS.map((s) => s.id), 'settings-window', 'search-palette', 'window']
+    const compareIds = [...SHOTS.map((s) => s.id), 'settings-window', 'search-palette', 'market-window', 'window']
     const cells = compareIds.flatMap((id) => {
       const cell = (m: string): string => `<figure><figcaption>${id} · ${m}</figcaption><img src="cmp-${id}.${m}.png"></figure>`
       return `<section><h2>${id}</h2>${cell('light')}${cell('dark')}</section>`

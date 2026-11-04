@@ -101,7 +101,10 @@ export function toRawEntries(
     }
   }
   if (streaming !== null && streaming.text !== '') {
-    raw.push({ kind: 'message', id: 'live-stream', timestampMs: Date.now(), role: 'assistant', author: agentName, content: streaming.text, isStreaming: true })
+    // P6-03：首工具后的流式正文是中间 / 尾段（turn/end 才升 result），落 thinking 行——进行中气泡 ≤1（BRIEF D1）
+    raw.push(out.streamingAs === 'thinking'
+      ? { kind: 'thinking', id: 'live-stream', timestampMs: Date.now(), text: streaming.text }
+      : { kind: 'message', id: 'live-stream', timestampMs: Date.now(), role: 'assistant', author: agentName, content: streaming.text, isStreaming: true })
   }
   return raw
 }

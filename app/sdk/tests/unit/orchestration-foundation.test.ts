@@ -82,16 +82,17 @@ beforeEach(reset)
 // The barrel is the P6-10+ wiring point (PLAN §2: later tasks only append
 // registration lines here); assert it re-exports today's whole surface.
 describe('index barrel', () => {
-  it('re-exports the P6-21 foundation surface (+ P6-10 / P6-11 追加注册行)', () => {
+  it('re-exports the P6-21 foundation surface (+ P6-10 / P6-11 / P6-12 追加注册行)', () => {
     expect(Object.keys(orchestration).sort()).toEqual([
-      'ASSIGN_PREFIX', 'ASSIGN_SOURCE_KIND', 'BOTS_JSON', 'CREATE_BOT_DESCRIPTION', 'CREATE_BOT_TOOL',
+      'ASSIGN_PREFIX', 'ASSIGN_SOURCE_KIND', 'BATCH_WINDOW_MS', 'BOTS_JSON', 'CREATE_BOT_DESCRIPTION', 'CREATE_BOT_TOOL',
       'CreateChannel', 'DEFAULT_CAPACITY', 'DEFAULT_CREATE_TIMEOUT_MS', 'Delivery', 'ORCH_REQUESTS_ENDPOINT',
       'ORCH_RESPOND_METHOD', 'OWN_SOURCE_KINDS', 'QUESTION_TOOL', 'REPORT_PREFIX', 'REPORT_SOURCE_KIND',
-      'SEND_TO_BOT_DESCRIPTION', 'SEND_TO_BOT_TOOL', 'Slots', 'TAINT_KIND', 'TurnOrigin',
+      'RESULT_LIMIT', 'Reporter', 'SEND_TO_BOT_DESCRIPTION', 'SEND_TO_BOT_TOOL', 'Slots', 'TAINT_KIND', 'TurnOrigin',
       'assignMessageId', 'buildAssignMessage', 'buildReportMessage', 'classifyTurn',
       'computeDue', 'deliveryIdOf', 'endOutcomeFor', 'foldAssignments', 'foldMainLog',
       'newAssignmentId', 'orchDataDir', 'orchError', 'projectEvent', 'readMainBotId',
-      'registerSendToBot', 'relayText', 'reportMessageId', 'sendRelayText', 'sharedSlots',
+      'registerSendToBot', 'registerTaintGuard', 'relayText', 'reportMessageId',
+      'resultTextFor', 'sendRelayText', 'sharedSlots', 'truncateResult',
     ])
   })
 })
@@ -469,7 +470,8 @@ describe('delivery projection', () => {
       .toEqual({ seq: 6, type: 'tool/call', turn: 5, callId: 'c1', name: 'ask_user_question' })
     expect(projectEvent({ seq: 7, type: 'tool/result', data: { turn: 5, message: { toolCallId: 'c1', isError: false, content: [{ type: 'text', text: 'ans' }] } } }))
       .toEqual({ seq: 7, type: 'tool/result', turn: 5, callId: 'c1', isError: false, text: 'ans' })
-    expect(projectEvent({ seq: 8, type: 'assistant/message', data: {} })).toEqual({ seq: 8, type: 'assistant/message' })
+    expect(projectEvent({ seq: 8, type: 'assistant/message', data: { turn: 5, message: { content: [{ type: 'text', text: '结论' }, { type: 'tool-call', id: 'x' }] } } }))
+      .toEqual({ seq: 8, type: 'assistant/message', turn: 5, text: '结论' })
   })
 
   it('deliveryIdOf owns only pbots kinds; user (even with rpcId) and others are never "delivered"', () => {
@@ -528,7 +530,7 @@ interface FollowupAgent {
 }
 
 /** Mocked host with a genuinely-async holds (flush yields) so both sends are inside holds() before either followup. */
-function sendFixture(opts: { duplicateRejects?: boolean; failFirstFollowup?: boolean } = {}) {
+function sendFixture(opts: { duplicateRejects?: boolean; failFirstFollowup?: boolean; midHolds?: () => void } = {}) {
   const calls: string[] = []
   const pending: Array<{ id: string }> = []
   const agent: FollowupAgent = {
@@ -545,7 +547,12 @@ function sendFixture(opts: { duplicateRejects?: boolean; failFirstFollowup?: boo
   const registry = new Map<string, FollowupAgent>([['w1', agent]])
   const ctx = {
     sessionPersistence: {
-      flush: async () => { await new Promise((r) => setTimeout(r, 5)) },
+      flush: async () => {
+        await new Promise((r) => setTimeout(r, 5))
+        // P6-12 顺手（REVIEW-P6-21f1 minor）：holds 的 await 落在这里——此刻
+        // registry 可被外部换掉（agent dispose / 换代），disposed 防护的窗口。
+        opts.midHolds?.()
+      },
       open: async () => ({ read: async () => ({ events: [] }), close: async () => {} }),
     },
     agents: { get: (id: string) => registry.get(id) },
@@ -590,5 +597,25 @@ describe('delivery · concurrent send single-flight (L-9)', () => {
       a.delivery.send(a.agent, { id: 'pbots-assign:c2', role: 'user', content: [], source: { kind: 'pbots-main' } }),
     ])
     expect([r1.skipped, r2.skipped, r3.skipped]).toEqual([false, false, false])
+  })
+
+  // P6-12 顺手补（REVIEW-P6-21f1 minor，变异探针曾证明旧断言抓不住删除）：
+  // ① disposed 防护——holds 窗口里目标换代 → 抛错且绝不 followup 死 agent；
+  // ② 成功 / 并发 skipped 后 in-flight Map 清理，不留泄漏条目。
+  it('a target replaced during the holds window fails loud and is never followed up', async () => {
+    const { delivery, agent, message, calls, registry } = sendFixture({
+      midHolds: () => registry.set('w1', { ...agent, followup() { throw new Error('dead agent must not be called') } }),
+    })
+    await expect(delivery.send(agent, message)).rejects.toThrow(/disposed/i)
+    expect(calls).toEqual([]) // 副作用 0
+  })
+
+  it('clears the in-flight reservation after success and after concurrent skips', async () => {
+    const a = sendFixture()
+    await a.delivery.send(a.agent, a.message)
+    expect(a.delivery.inflight.size).toBe(0)
+    const b = sendFixture({ duplicateRejects: true })
+    await Promise.allSettled([b.delivery.send(b.agent, b.message), b.delivery.send(b.agent, b.message)])
+    expect(b.delivery.inflight.size).toBe(0)
   })
 })

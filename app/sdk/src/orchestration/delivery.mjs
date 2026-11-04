@@ -70,6 +70,13 @@ export function projectEvent(event) {
         isError: d.message?.isError === true,
         text: (d.message?.content ?? []).filter((b) => b.type === 'text').map((b) => b.text).join('').slice(0, 4000),
       }
+    // P6-12（决策 17）：result 取 Assignment 回合末工具后正文——report.mjs
+    // resultTextFor 需要每条 assistant 正文；截断在那一侧做（多块拼接后再截）。
+    case 'assistant/message':
+      return {
+        seq: event.seq, type: event.type, turn: d.turn,
+        text: (d.message?.content ?? []).filter((b) => b.type === 'text').map((b) => b.text).join(''),
+      }
     default:
       return { seq: event.seq, type: event.type }
   }

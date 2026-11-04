@@ -920,3 +920,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 23:29 P5-57/58 双验收 PASS → 合并 9676926+cf6162a（desktop.ts 三方并集 onFocusAgent+pins 均在；sdk 305+ui 380），e2e 后台 | p5 任务图全部 done，剩 P5-41 GU 终评+W3 收口
 23:37 P5-57/58 回归全绿（68 e2e exit 0）闭环 | 派 P5-41 GU 终评
 23:44 GU-P5-41 = REVISE（两席 WCAG 半透明同点+审批卡豁免无主+错误文案露异常）→ P5-41.f1 立行待派
+00:20 P5-41.f1 完成（25ae3fc：WCAG 三错修正+8 项处置（改3签5）；审批卡分段补齐 224px；D2(b)=测试格式错非产品；签收单就绪）→ verifier 派发

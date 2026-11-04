@@ -22,6 +22,11 @@ export const MODULE_OVERRIDES: Record<string, string> = {
   'recovered/features/settings/overlay/view.tsx': 'settings-view.tsx',
   'recovered/features/settings/overlay/panels.tsx': 'settings-panels.tsx',
   'recovered/features/permissions/local-tool/view.tsx': 'local-tool-view.tsx',
+  // P5-57：市场 / 配置面板 / 失效禁发 / 入口文案
+  'recovered/features/plugins/overlay/desktop-surface.tsx': 'market-surface.tsx',
+  'recovered/features/agent-info/settings/view.tsx': 'agent-settings.tsx',
+  'recovered/features/conversation/workspace/composer.tsx': 'composer.tsx',
+  'production/evidence.ts': 'evidence.ts',
 }
 
 const byUpstream = new Map(Object.entries(MODULE_OVERRIDES).map(([up, ours]) => [path.join(src, up), path.join(here, 'modules', ours)]))

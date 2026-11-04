@@ -5,6 +5,7 @@
 import { createDesktopBridge } from './desktop'
 import { createCoordinatorServer } from './coordinator'
 import { createShimData, type ShimData } from './data'
+import { mountBootCover } from './boot-cover'
 
 interface PbotsPreload {
   api(method: string, args?: unknown): Promise<{ ok: boolean; value?: unknown; error?: { code: string; message: string } }>
@@ -22,10 +23,15 @@ export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unkn
   // 上游 WindowChrome 走 win32 分支：只留拖拽层、不渲染自绘 Minimize/Maximize/Close。
   // P5-54：platform / zoom 由 preload 给实底（pbots.window）；platform 恒为 win32 外观语义，绝不取 process.platform。
   const host = pbots.window
+  // P5-57 启动封面：bundle 之前挂（本脚本 defer、先于 module bundle），roster 就绪即收
+  const cover = mountBootCover(win.document)
+  // P5-57 pbotsUi.focus → 上游 desktop.onFocusAgent（parseDesktopIntent focus = {id}）→ openAgent
+  const focusListeners = new Set<(value: unknown) => void>()
   let openGate: () => void = () => {}
   const persistenceGate = new Promise<void>((resolve) => { openGate = resolve })
   win.desktop = createDesktopBridge(win, {
     persistenceGate,
+    onFocusAgent: (l) => { focusListeners.add(l); return () => { focusListeners.delete(l) } },
     authId: 'pbots-local',
     platform: host?.platform ?? 'win32',
     ...(host !== undefined ? { getZoomFactor: () => host.getZoomFactor() } : {}),
@@ -35,7 +41,10 @@ export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unkn
     authId: 'pbots-local',
     api: (method, args) => pbots.api(method, args).catch((error: unknown) => ({ ok: false, error: { code: 'pbots/unavailable', message: String(error) } })),
     metaApi: (op) => pbots.botsMeta(op).catch((error: unknown) => ({ ok: false, error: { code: 'pbots/unavailable', message: String(error) } })),
+    focus: (id) => { for (const l of [...focusListeners]) l({ id }) },
+    boot: (phase) => (phase === 'ready' ? cover.ready() : cover.failed()),
   })
+  ;(win as unknown as { pbotsUi?: ShimData['ui'] }).pbotsUi = data.ui
   const server = createCoordinatorServer(data.deps)
   void server.ready.then(openGate)
   data.wire({

@@ -1,5 +1,5 @@
 // P5-54 · 对照台第三列（BRIEF §12.7 第 5 条）：我们真实的 Electron 应用，fake LLM 驱动出与 fixture 等价的会话，
-// 截与左右两列同名的视图、按同一份 PARTS（ours 侧选择器，同一套 0.18 DOM）采 computed-style。
+// 截与左右两列同名的视图（P5-57 起另截 market 视图）、按同一份 PARTS（ours 侧选择器，同一套 0.18 DOM）采 computed-style。
 // 它与右列（移植树 + 桩）的差异只可能来自 shim 或真实数据——把「移植保真」和「数据接入」两类问题分开。
 // 产物：<EVID_DIR>/singles/<view>.<theme>.app.png、<EVID_DIR>/styles/app.json、<EVID_DIR>/app-summary.json；
 // 之后跑 `node run.mjs` 会把它并成三联拼图（REF | OURS | APP）并给 u1-diff 加 app 列。
@@ -146,6 +146,15 @@ test('对照台第三列：真实 Electron（fake LLM 等价会话）× 4 视图
           }
         }
         await capture(page, view.id, theme, styles, summary)
+        // P5-57：市场 overlay（footer Connect apps）截图，与 run.mjs 的 market.<theme>.{ref,ours} 拼三联（只截图，不进 PARTS）
+        if (view.id === 'conv-rest') {
+          await page.locator('.sand-agents-sidebar__plugins').click()
+          await expect(page.locator('[data-market]')).toBeVisible()
+          await page.waitForTimeout(800)
+          await page.screenshot({ path: join(EVID_DIR, 'singles', `market.${theme}.app.png`) })
+          await page.locator('.pb-market .sand-plugins-dialog__close').click()
+          await expect(page.locator('[data-market]')).toHaveCount(0)
+        }
       }
     }
     writeFileSync(join(EVID_DIR, 'styles', 'app.json'), JSON.stringify(styles, null, 1))

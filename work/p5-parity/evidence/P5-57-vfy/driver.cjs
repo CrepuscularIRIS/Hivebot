@@ -7,7 +7,7 @@ const { spawn } = require('node:child_process')
 const { mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync, appendFileSync } = require('node:fs')
 const { join } = require('node:path')
 
-const S = require('/tmp/bot-P5-57/a/b/vfy-support.cjs')
+const S = require('/tmp/bot-P5-57/s/w1/w2/vfy-support.cjs')
 const UI = '/tmp/bot-wt/P5-57/app/ui'
 const RUN = '/tmp/bot-P5-57/run'
 const LOG = join(RUN, 'driver.log')

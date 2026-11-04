@@ -81,9 +81,8 @@ const VIEWS: Record<string, (page: Page) => Promise<void>> = {
   'agent row menu': async (page) => { await page.locator('.sand-agent-item', { hasText: AGENT_NAME }).click({ button: 'right' }) },
   'account menu': async (page) => { await page.click('button[aria-label="Account"]') },
   'search palette': async (page) => { await page.click('button[aria-label="Search"]') },
-  'market overlay': async (page) => { await page.locator('button', { hasText: 'Plugins' }).first().click() },
-  'market Yours tab': async (page) => { await VIEWS['market overlay'](page); await page.locator('[role=tab]', { hasText: 'Yours' }).click() },
-  'market filter menu': async (page) => { await VIEWS['market overlay'](page); await page.click('button[aria-label="Filter plugins"]') },
+  // P5-57：footer 入口文案 Connect apps，overlay 换成 P-C 市场（本 env 无目录源 → 空态 + Close；Yours / Filter 是 0.18 Cursor 目录的构件，已不存在）
+  'market overlay': async (page) => { await page.locator('.sand-agents-sidebar__plugins').click() },
   'settings General': async (page) => { await page.click('button[aria-label="Account"]'); await page.locator('[role=menuitem]', { hasText: 'Settings' }).click() },
   'settings General (scrolled)': async (page) => {
     await VIEWS['settings General'](page)

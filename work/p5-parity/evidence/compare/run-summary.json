@@ -1,6 +1,6 @@
 {
- "startedAt": "2026-11-03T19:06:18.603Z",
- "rightDist": "/tmp/bot-s0-build/.build/frontend-shell",
+ "startedAt": "2026-11-04T03:43:30.548Z",
+ "rightDist": "/tmp/bot-wt/P5-57/app/ui/renderer-grok/.build/frontend-shell",
  "leftRoot": "/dev/shm/grok-re/0.78.1/app/dist/renderer",
  "views": {
   "conv-rest.light": {
@@ -17,7 +17,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562,
+    "bodyLen": 568,
     "clicked": "clicked"
    },
    "ours": {
@@ -37,7 +37,7 @@
      "thinking",
      "working"
     ],
-    "bodyLen": 776,
+    "bodyLen": 780,
     "clicked": null
    }
   },
@@ -56,7 +56,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562
+    "bodyLen": 568
    },
    "ours": {
     "pill": "clicked",
@@ -76,7 +76,7 @@
      "thinking",
      "working"
     ],
-    "bodyLen": 874
+    "bodyLen": 878
    }
   },
   "conv-running.light": {
@@ -93,7 +93,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562,
+    "bodyLen": 568,
     "clicked": "clicked"
    },
    "ours": {
@@ -112,7 +112,7 @@
      "thinking",
      "working"
     ],
-    "bodyLen": 784,
+    "bodyLen": 788,
     "clicked": null
    }
   },
@@ -150,7 +150,7 @@
      "thinking",
      "working"
     ],
-    "bodyLen": 721,
+    "bodyLen": 725,
     "clicked": null
    }
   },
@@ -168,7 +168,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 643,
+    "bodyLen": 649,
     "clicked": "clicked"
    },
    "ours": {
@@ -188,7 +188,7 @@
      "thinking",
      "working"
     ],
-    "bodyLen": 776,
+    "bodyLen": 780,
     "clicked": null
    }
   },
@@ -206,7 +206,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562,
+    "bodyLen": 568,
     "clicked": "clicked"
    },
    "ours": {
@@ -226,7 +226,7 @@
      "thinking",
      "working"
     ],
-    "bodyLen": 776,
+    "bodyLen": 780,
     "clicked": null
    }
   },
@@ -245,7 +245,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562
+    "bodyLen": 568
    },
    "ours": {
     "pill": "clicked",
@@ -265,7 +265,7 @@
      "thinking",
      "working"
     ],
-    "bodyLen": 874
+    "bodyLen": 878
    }
   },
   "conv-running.dark": {
@@ -282,7 +282,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562,
+    "bodyLen": 568,
     "clicked": "clicked"
    },
    "ours": {
@@ -301,7 +301,7 @@
      "thinking",
      "working"
     ],
-    "bodyLen": 784,
+    "bodyLen": 788,
     "clicked": null
    }
   },
@@ -339,7 +339,7 @@
      "thinking",
      "working"
     ],
-    "bodyLen": 721,
+    "bodyLen": 725,
     "clicked": null
    }
   },
@@ -357,7 +357,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 643,
+    "bodyLen": 649,
     "clicked": "clicked"
    },
    "ours": {
@@ -377,7 +377,7 @@
      "thinking",
      "working"
     ],
-    "bodyLen": 776,
+    "bodyLen": 780,
     "clicked": null
    }
   }
@@ -415,7 +415,15 @@
   "conv-rest.ref: tool 行在桩下不渲染（R3 已提交 harness 同样复现，非对照台回归；v3 是静默丢行不是渲染报错）"
  ],
  "pairs": 10,
- "u1DiffRows": 1142,
+ "appColumn": true,
+ "u1DiffRows": 2558,
+ "appRef": {
+  "waived:computed-equiv": 10,
+  "waived:data": 16,
+  "waived:subpixel": 12,
+  "waived:arch": 40,
+  "waived:fixture": 12
+ },
  "pass": true,
  "durationSec": 238
 }

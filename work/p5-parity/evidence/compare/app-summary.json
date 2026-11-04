@@ -1,0 +1,112 @@
+{
+ "conv-rest.light": {
+  "boundary": 0,
+  "agentItems": 3,
+  "hasUserMsg": true,
+  "hasToolBash": true,
+  "hasThinking": true,
+  "hasAssistant": true,
+  "hasPermCard": true,
+  "hasUser2": true,
+  "personaStates": [
+   "idle"
+  ]
+ },
+ "conv-rest.dark": {
+  "boundary": 0,
+  "agentItems": 3,
+  "hasUserMsg": true,
+  "hasToolBash": true,
+  "hasThinking": true,
+  "hasAssistant": true,
+  "hasPermCard": true,
+  "hasUser2": true,
+  "personaStates": [
+   "idle"
+  ]
+ },
+ "conv-running.light": {
+  "boundary": 0,
+  "agentItems": 3,
+  "hasUserMsg": false,
+  "hasToolBash": false,
+  "hasThinking": false,
+  "hasAssistant": false,
+  "hasPermCard": false,
+  "hasUser2": false,
+  "personaStates": [
+   "thinking",
+   "idle"
+  ]
+ },
+ "conv-running.dark": {
+  "boundary": 0,
+  "agentItems": 3,
+  "hasUserMsg": false,
+  "hasToolBash": false,
+  "hasThinking": false,
+  "hasAssistant": false,
+  "hasPermCard": false,
+  "hasUser2": false,
+  "personaStates": [
+   "thinking",
+   "idle"
+  ]
+ },
+ "sidebar-collapsed.light": {
+  "boundary": 0,
+  "agentItems": 3,
+  "hasUserMsg": true,
+  "hasToolBash": true,
+  "hasThinking": true,
+  "hasAssistant": true,
+  "hasPermCard": true,
+  "hasUser2": true,
+  "personaStates": [
+   "thinking",
+   "idle"
+  ]
+ },
+ "sidebar-collapsed.dark": {
+  "boundary": 0,
+  "agentItems": 3,
+  "hasUserMsg": true,
+  "hasToolBash": true,
+  "hasThinking": true,
+  "hasAssistant": true,
+  "hasPermCard": true,
+  "hasUser2": true,
+  "personaStates": [
+   "thinking",
+   "idle"
+  ]
+ },
+ "info-pane.light": {
+  "boundary": 0,
+  "agentItems": 3,
+  "hasUserMsg": true,
+  "hasToolBash": true,
+  "hasThinking": true,
+  "hasAssistant": true,
+  "hasPermCard": true,
+  "hasUser2": true,
+  "personaStates": [
+   "thinking",
+   "idle"
+  ]
+ },
+ "info-pane.dark": {
+  "boundary": 0,
+  "agentItems": 3,
+  "hasUserMsg": true,
+  "hasToolBash": true,
+  "hasThinking": true,
+  "hasAssistant": true,
+  "hasPermCard": true,
+  "hasUser2": true,
+  "personaStates": [
+   "thinking",
+   "idle"
+  ]
+ }
+}

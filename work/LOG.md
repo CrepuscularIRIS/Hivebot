@@ -916,3 +916,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 22:27 R-04 回报：市场全规格+i18n 390 条+列表参照图；关键更正 Connect/Connected 语系→已 SendMessage 给在途 P5-57（它恢复执行按新规格对齐）| R-04 列表图能出=R-01 报的 stub 环境疑云部分缓解（overlay 时序竞态另论）
 22:49 P5-57 builder 完成（984cce8 R-04 对齐版：Connect 语系+预览条+单列详情，376+65，open=0）→ verifier 派发 | 注意 R-04 参照图实为空白帧的披露
 23:06 P5-58 builder 完成（d6809bf：OBS=取证时机缺陷+settle 规矩；市场默认挂载去 404；置顶落盘；WCAG 23 目标全过）→ verifier 派发 | P5-06 残留已清
+23:23 P5-57 验收 PASS（市场全链+视觉模型确认；desktop.ts 与 P5-58 交叠记录在案）→ 待 P5-58 验收后协调合并

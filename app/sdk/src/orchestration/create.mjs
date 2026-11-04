@@ -9,7 +9,7 @@
 // P6-10.f1 ②：registerCreateBot 一并挂 trackWorkerTurns，人工启动的 worker
 // 回合收养进共享容量；holds 里 'create' 标记本工具的占位，防双重计数。
 import { orchDataDir, readMainBotId } from './identity.mjs'
-import { orchError, redactInternalPaths } from './main-channel.mjs'
+import { orchError, redactInternalPaths, redactInternalDeep } from './main-channel.mjs'
 import { newAssignmentId, buildAssignMessage } from './assignment.mjs'
 import { TurnOrigin, TAINT_KIND } from './turn-origin.mjs'
 import { trackWorkerTurns } from './slots.mjs'
@@ -167,8 +167,9 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
       throw orchError('pbots/orchestration-failed', `assignment delivery failed: ${redactInternalPaths(String(error instanceof Error ? error.message : error))}`, { sessionId: created.sessionId })
     }
 
-    // 7 决策 32：rename 失败时 main 仍回成功 + warn——这里原样透传，不重试。
-    return { sessionId: created.sessionId, name, assignmentId, ...(created.warn !== undefined ? { warn: created.warn } : {}) }
+    // 7 决策 32：rename 失败时 main 仍回成功 + warn——原样透传（不重试），但
+    // 文本按 C-1 同规则脱敏（warn 直达 tool/result，模型可见）。
+    return { sessionId: created.sessionId, name, assignmentId, ...(created.warn !== undefined ? { warn: redactInternalDeep(created.warn) } : {}) }
   } catch (error) {
     release()
     throw error

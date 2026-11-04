@@ -492,6 +492,31 @@ describe('error text redaction at the wire boundary (P6-10.f2 C-1)', () => {
     expect(err.message).toContain('<path>/workspaces/session-x1')
     expect(r.slots.used).toBe(0)
   })
+
+  // P6-10.f2a C-1：verifier vfy-extra.mjs 确认的两处漏点——error.details 嵌套
+  // 字符串与成功 value 的 warn 文本均直达模型可见面，必须同样脱敏。
+  it('nested details string values are redacted recursively (P6-10.f2a C-1)', async () => {
+    const r = f2Rig(1)
+    const p = r.start().then(() => undefined, (e: any) => e)
+    while (r.sub.queue.length === 0) await r.settled()
+    const abs = '/tmp/bot-p610f2-internal/private-data/sessions/w.json'
+    r.respondAt(0, { error: { code: 'pbots/storage', message: `read failed ${abs}`, details: { path: abs, nested: { cause: `ENOTDIR ${abs}` }, peers: [abs] } } })
+    const err = await p
+    const blob = JSON.stringify(err.details)
+    expect(blob).not.toContain('/tmp/bot-p610f2-internal')
+    expect(blob).toContain('<path>/sessions/w.json')
+  })
+
+  it('warn text in the success value is redacted before reaching the tool result (P6-10.f2a C-1)', async () => {
+    const r = f2Rig(1)
+    const p = r.start()
+    while (r.sub.queue.length === 0) await r.settled()
+    const abs = '/tmp/bot-p610f2-internal/private-data/sessions/w.json'
+    r.respondAt(0, { value: { sessionId: 'w', warn: `rename failed: ENOTDIR: rename '${abs}'` } })
+    const out = await p
+    expect(out.warn).not.toContain('/tmp/bot-p610f2-internal')
+    expect(out.warn).toContain('<path>/sessions/w.json')
+  })
 })
 
 describe('timeout reclaims the queued payload (P6-10.f2 D-3)', () => {

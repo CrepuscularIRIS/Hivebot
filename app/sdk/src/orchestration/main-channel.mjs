@@ -56,6 +56,29 @@ export function redactInternalPaths(text) {
 }
 
 /**
+ * P6-10.f2a C-1：main 回传的 error.details（对象树里的字符串值）与成功 value
+ * 的 warn 同样直达模型可见面——用同一 message 规则递归脱敏。只动 plain
+ * object / array / string，其余类型（number、Error、Date 等）原样保留。
+ * ponytail: 不做通用 AST，遇环保留原引用截断。
+ * @param {unknown} value
+ * @returns {unknown}
+ */
+export function redactInternalDeep(value, seen = new Set()) {
+  if (typeof value === 'string') return redactInternalPaths(value)
+  if (Array.isArray(value)) return value.map((item) => redactInternalDeep(item, seen))
+  if (value !== null && typeof value === 'object') {
+    const proto = Object.getPrototypeOf(value)
+    if (proto !== Object.prototype && proto !== null) return value
+    if (seen.has(value)) return value
+    seen.add(value)
+    const out = {}
+    for (const [key, item] of Object.entries(value)) out[key] = redactInternalDeep(item, seen)
+    return out
+  }
+  return value
+}
+
+/**
  * Request bookkeeping for the ⑤ channel, independent of the wire plugin so
  * the security semantics unit-test without a runtime (S2 §4.4 constraints):
  * no subscriber → immediate main-unavailable; respond binds the peer holding
@@ -152,7 +175,7 @@ export class CreateChannel {
         invalidResponse('error payload is not {code, message}')
         return
       }
-      entry.reject(orchError(error.code, redactInternalPaths(error.message), error.details ?? {}))
+      entry.reject(orchError(error.code, redactInternalPaths(error.message), redactInternalDeep(error.details ?? {})))
       return
     }
     if (typeof outcome?.value !== 'object' || outcome.value === null) {

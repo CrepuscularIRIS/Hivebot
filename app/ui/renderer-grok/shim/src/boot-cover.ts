@@ -1,7 +1,8 @@
 // P5-57 · 启动封面（定稿 work/p5-parity/ui/P5-57-final.md ④）：0.18 没有 boot 封面，React 先画空壳、roster 晚到。
 // shim 是 defer 经典脚本（先于 module bundle），这里直接挂 DOM：原版 app 图标 + 名称 + spinner；
 // roster 首次就绪 → 立刻让出命中、160ms 淡出后移除；8s 未就绪提示「仍在连接」；shim 放弃重试 → 失败态 + Reload。
-// 颜色不用 token（data-theme 由 React 晚设）：bg-chrome 亮 #fcfcfc / 暗 #121212（P5-55 实测值），跟系统配色。
+// 颜色不用 token（data-theme 由 React 晚设）：bg-chrome 亮 #fcfcfc / 暗 #121212（P5-55 实测值）。
+// P5-61.f1 ①：色调跟 desktop 桥 theme.resolved（= 正文同一读链），不再跟系统 media——两者相反时出反色封面。
 export const BOOT_ICON = './assets/app-icon-C7NKj2u7.png'
 const SLOW_MS = 8000
 
@@ -19,13 +20,14 @@ const CSS = `
   background:#1c1c1c;color:#fcfcfc;cursor:pointer}
 #pbots-boot button:focus-visible{outline:2px solid #3b82f6;outline-offset:2px}
 @keyframes pb-spin{to{transform:rotate(360deg)}}
-@media (prefers-color-scheme:dark){#pbots-boot{background:#121212;color:#f5f5f5}#pbots-boot .pb-status{color:#a3a3a3}#pbots-boot button{background:#f5f5f5;color:#121212}}
+#pbots-boot[data-tone="dark"]{background:#121212;color:#f5f5f5}#pbots-boot[data-tone="dark"] .pb-status{color:#a3a3a3}#pbots-boot[data-tone="dark"] button{background:#f5f5f5;color:#121212}
 @media (prefers-reduced-motion:reduce){#pbots-boot{transition:none}#pbots-boot .pb-spin{animation:none}}
 `
 
-export interface BootCover { ready(): void; failed(): void }
+export type BootTone = 'light' | 'dark'
+export interface BootCover { ready(): void; failed(): void; tone(tone: BootTone): void }
 
-export function mountBootCover(doc: Document): BootCover {
+export function mountBootCover(doc: Document, tone: BootTone): BootCover {
   const style = doc.createElement('style')
   style.textContent = CSS
   const root = doc.createElement('div')
@@ -33,6 +35,7 @@ export function mountBootCover(doc: Document): BootCover {
   root.setAttribute('role', 'status')
   root.setAttribute('aria-live', 'polite')
   root.dataset.phase = 'starting'
+  root.dataset.tone = tone
   const icon = doc.createElement('img')
   icon.src = BOOT_ICON
   icon.alt = ''
@@ -54,6 +57,7 @@ export function mountBootCover(doc: Document): BootCover {
   let done = false
   const slow = setTimeout(() => { if (!done) text.textContent = 'Still connecting to the engine…' }, SLOW_MS)
   return {
+    tone(next) { root.dataset.tone = next },
     ready() {
       if (done) return
       done = true

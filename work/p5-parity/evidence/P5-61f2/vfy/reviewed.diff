@@ -1,0 +1,121 @@
+diff --git a/app/ui/renderer-grok/shim/src/desktop.ts b/app/ui/renderer-grok/shim/src/desktop.ts
+index 26a3af0..e0d729a 100644
+--- a/app/ui/renderer-grok/shim/src/desktop.ts
++++ b/app/ui/renderer-grok/shim/src/desktop.ts
+@@ -76,6 +76,14 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
+   }
+   // ③：宿主跟同一偏好（与系统相反时原生控件也不留白块）；建桥即推一次（覆盖宿主镜像过期），之后每次推送随 emitTheme
+   opts.setHostTheme?.(theme)
++  // P5-61.f2：上游 data-theme 在 ProductionRenderer 的 useEffect 里才设（applyRootShellTheme），侧栏圆钮 / Connect apps
++  // 早于它挂载、按 index.css :root 亮默认算底色，data-theme 一到位就沿 .12s/.3s 背景过渡亮→暗滑过（composer 晚挂不受影响）。
++  // shim 先于 bundle 落同值（与 window-chrome/model.ts applyRootShellTheme 一致），控件首帧即按 palette 解析，上游再设为空操作。
++  const root = (win as Partial<Window>).document?.documentElement
++  if (root !== undefined) {
++    root.dataset.theme = theme.resolved === 'dark' ? 'cursor-dark' : 'cursor-light'
++    root.style.colorScheme = theme.resolved
++  }
+   darkQuery.addEventListener('change', () => {
+     if (theme.preference !== 'system') return
+     theme = { preference: 'system', resolved: darkQuery.matches ? 'dark' : 'light' }
+diff --git a/app/ui/tests/e2e/theme-flash.spec.ts b/app/ui/tests/e2e/theme-flash.spec.ts
+index da94ffa..fd009ee 100644
+--- a/app/ui/tests/e2e/theme-flash.spec.ts
++++ b/app/ui/tests/e2e/theme-flash.spec.ts
+@@ -54,20 +54,22 @@ function frameMeans(file: string, vf: string, w: number, h: number): Array<[numb
+ const WHOLE = 'null'
+ const OVERLAY_STRIP = 'crop=150:6:iw-150:0' // 原生控件区顶边 6px：只有 overlay 底色，没有符号
+ 
+-/** 诊断 trace-init 同款：每 rAF 记 data-theme 与封面底色/不透明度。 */
+-function traceInit(): void {
++/** 采样控件：composer 药丸、侧栏 Connect apps、顶部搜索 / 加号圆钮（VERIFY-P5-61f1 [FIX] 的 4 个部件）。 */
++const CONTROLS = ['.sand-prompt-shell', '.sand-agents-sidebar__plugins-entry button', '.sand-agents-sidebar > .sand-agents-sidebar__search', '.sand-agents-sidebar__header .sand-kit-icon-button']
++/** 诊断 trace-init 同款：每 rAF 记 data-theme 与封面底色/不透明度；P5-61.f2 加记 CONTROLS 底色（未挂 = null）。 */
++function traceInit(sel: string[]): void {
+   const w = window as unknown as { __p561f1?: unknown[] }
+   const rows: unknown[] = []; w.__p561f1 = rows
+   let n = 0
+   const tick = (): void => {
+     const cover = document.getElementById('pbots-boot')
+     const cs = cover === null ? null : getComputedStyle(cover)
+-    rows.push({ t: performance.now(), theme: document.documentElement.dataset.theme ?? null, cover: cs === null ? null : { bg: cs.backgroundColor, opacity: Number(cs.opacity) } })
++    rows.push({ t: performance.now(), theme: document.documentElement.dataset.theme ?? null, cover: cs === null ? null : { bg: cs.backgroundColor, opacity: Number(cs.opacity) }, ctl: sel.map((q) => { const e = document.querySelector(q); return e === null ? null : getComputedStyle(e).backgroundColor }) })
+     if (++n < 600) requestAnimationFrame(tick)
+   }
+   requestAnimationFrame(tick)
+ }
+-type Row = { t: number; theme: string | null; cover: { bg: string; opacity: number } | null }
++type Row = { t: number; theme: string | null; cover: { bg: string; opacity: number } | null; ctl: Array<string | null> }
+ 
+ /** 冷启映射窗口那一刻 Chromium 尚未 present 时，Xvfb（无合成 WM）里整窗是 GTK 窗口底 #fafafa、连原生控件都没画。
+  * 这帧不是我们的渲染（与偏好无关、backgroundColor 也管不到），冷启只豁免**开头至多 1 帧**整窗 + 控件区同为 (250,250,250) 的，
+@@ -85,7 +87,15 @@ function assertFrames(file: string, mode: Mode, label: string, allowUnpresented
+   expect(bad, `${label}: ${mode} 全程无${mode === 'dark' ? '白' : '黑'}帧（整窗亮度）`).toEqual([])
+   const badStrip = strip.map(([r, g, b], i) => ({ i, l: luma(r, g, b) })).filter(({ i, l }) => i >= unpresented && (mode === 'dark' ? l > 60 : l < 200))
+   expect(badStrip, `${label}: 原生控件区全程随 ${mode}`).toEqual([])
++  // P5-61.f2：整窗均值盖不住局部亮钮（VERIFY-P5-61f1 [FIX]）——按钮区逐帧单像素，暗色无 >100 亮像素、亮色无 <150 暗像素
++  for (const [name, [x, y]] of Object.entries(CONTROL_PX)) {
++    const px = frameMeans(file, `crop=1:1:${x}:${y}`, 1, 1)
++    const badPx = px.map((c, i) => ({ i, c })).filter(({ i, c }) => i >= unpresented && (mode === 'dark' ? Math.min(...c) > 100 : Math.max(...c) < 150))
++    expect(badPx, `${label}: ${name} 按钮区全程随 ${mode}`).toEqual([])
++  }
+ }
++/** 按钮区采样点（窗口坐标；VERIFY-P5-61f1 initial-mixed-probe.py 同点）：Connect apps 底、顶部搜索 / 加号圆钮底（避开图标笔画）。 */
++const CONTROL_PX: Record<string, [number, number]> = { connect: [80, 780], search: [190, 20], plus: [235, 20] }
+ 
+ async function overlayColor(win: string): Promise<number[]> {
+   const raw = execFileSync('ffmpeg', ['-v', 'error', '-f', 'x11grab', '-window_id', win, '-i', process.env.DISPLAY!, '-frames:v', '1', '-vf', `${OVERLAY_STRIP},scale=1:1`, '-pix_fmt', 'rgb24', '-f', 'rawvideo', '-'])
+@@ -105,7 +115,7 @@ async function reloadRun(mode: Mode, emulate: boolean): Promise<{ rows: Row[]; f
+     if (emulate) await page.emulateMedia({ colorScheme: other(mode) })
+     await setTheme(page, mode)
+     await expect(page.locator('html')).toHaveAttribute('data-theme', `cursor-${mode}`)
+-    await page.addInitScript(traceInit)
++    await page.addInitScript(traceInit, CONTROLS)
+     const win = await xid(shell.app)
+     await expect.poll(() => overlayColor(win).then((c) => near(c, OVERLAY[mode])), { timeout: 5_000, message: `原生控件 ${mode}` }).toBe(true)
+     await page.waitForTimeout(400)
+@@ -131,6 +141,10 @@ function assertTrace(rows: Row[], mode: Mode): void {
+   expect(coverRows.length, '封面被采到（trace 生效）').toBeGreaterThan(0)
+   expect(coverRows.filter((r) => r.cover!.bg !== COVER[mode]), `封面全程 ${mode}`).toEqual([])
+   expect(rows.filter((r) => r.theme !== null && r.theme !== `cursor-${mode}`), `正文全程 ${mode}`).toEqual([])
++  // P5-61.f2：控件挂上那一帧起即终值（早于上游 useEffect 挂载的侧栏钮曾按亮默认算底色再过渡）
++  const stable = rows.at(-1)!.ctl
++  expect(stable.every((v) => v !== null), '4 控件都采到').toBe(true)
++  expect(rows.filter((r) => r.ctl.some((v, i) => v !== null && v !== stable[i])), `控件挂上后全程 ${mode} 终值（无中间色帧）`).toEqual([])
+ }
+ 
+ for (const mode of ['dark', 'light'] as const) {
+@@ -178,7 +192,7 @@ test('②③ 亮暗切换：data-theme 到位那一帧起 composer / Connect app
+   try {
+     const { page, shell } = env
+     const win = await xid(shell.app)
+-    const SEL = ['.sand-prompt-shell', '.sand-agents-sidebar__plugins-entry button', '.sand-agents-sidebar > .sand-agents-sidebar__search', '.sand-agents-sidebar__header .sand-kit-icon-button']
++    const SEL = CONTROLS
+     await setTheme(page, 'light')
+     await page.waitForTimeout(600)
+     const report: Record<string, unknown> = {}
+diff --git a/app/ui/tests/unit/grok-shim/desktop.test.ts b/app/ui/tests/unit/grok-shim/desktop.test.ts
+index da693a2..359bf02 100644
+--- a/app/ui/tests/unit/grok-shim/desktop.test.ts
++++ b/app/ui/tests/unit/grok-shim/desktop.test.ts
+@@ -157,6 +157,21 @@ describe('P5-61.f1 主题下沉宿主 + 切换帧禁过渡', () => {
+   })
+ })
+ 
++describe('P5-61.f2 建桥即落 html[data-theme]（先于 bundle 首次挂载）', () => {
++  // 根因：侧栏控件在上游 useEffect 设 data-theme 之前就挂上，按 index.css :root 亮默认算底色，
++  // data-theme 到位后 .12s/.3s 背景过渡从亮滑到暗。shim 先于 bundle 落同值，上游再设是空操作。
++  for (const [saved, cls] of [['dark', 'cursor-dark'], ['light', 'cursor-light']] as const) {
++    it(`保存 ${saved} → 建桥后 html data-theme=${cls}、color-scheme=${saved}（与上游 applyRootShellTheme 同值）`, () => {
++      const root = { dataset: {} as Record<string, string>, style: { colorScheme: '' } }
++      const w = { ...mkWindow(saved === 'light'), document: { documentElement: root } }
++      w.localStorage.setItem('pbots.shim.theme-preference', saved)
++      createDesktopBridge(w as unknown as Window, { authId: 'x' })
++      expect(root.dataset.theme).toBe(cls)
++      expect(root.style.colorScheme).toBe(saved)
++    })
++  }
++})
++
+ describe('P6-15 sidebar sections 实底（E2 / E10 / E11）', () => {
+   it('无 worker（sidebarSections 回 null / 未接）→ get 回 null，set 原样回（与此前一致）', async () => {
+     const plain = b(mkWindow())

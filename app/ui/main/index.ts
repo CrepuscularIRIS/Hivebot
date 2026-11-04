@@ -6,7 +6,7 @@ import { readFile } from 'node:fs/promises'
 import { extname, resolve, sep } from 'node:path'
 import { app, BrowserWindow, ipcMain, MessageChannelMain, protocol } from 'electron'
 import { SCHEME, assertPbotsSender } from './sender'
-import { createMainWindow } from './window'
+import { applyThemeSource, createMainWindow, restoreThemeSource } from './window'
 import { createReadyGate, type ReadyGate } from './ready'
 import { DshConnection } from './dsh/connect'
 import { EventsLedger } from './dsh/ledger'
@@ -196,6 +196,8 @@ async function main(): Promise<void> {
   protocol.handle(SCHEME, (request) => serveAppDocument(request, resolve(appRoot)))
 
   const preload = resolve(__dirname, '..', 'preload', 'index.cjs')
+  const themeFile = resolve(process.env.PBOTS_DATA_DIR ?? app.getPath('userData'), 'theme-source')
+  restoreThemeSource(themeFile) // P5-61.f1 ③：建窗前，overlay / 窗口底色首帧即跟偏好
   const mainWindow = createMainWindow(preload)
   mainWindow.once('ready-to-show', () => { mainWindow.show(); ready.setWindowReady() })
 
@@ -218,6 +220,12 @@ async function main(): Promise<void> {
 
   const assertSender = (event: Parameters<typeof assertPbotsSender>[0]): void =>
     assertPbotsSender(event, mainWindow)
+
+  // P5-61.f1 ③：renderer {preference, resolved} → themeSource + 原生 overlay 着色（单向、只收主窗口主 frame、枚举校验）
+  ipcMain.on('pbots:theme', (event, theme) => {
+    try { assertSender(event) } catch (error) { console.warn(error); return }
+    applyThemeSource(themeFile, theme, mainWindow)
+  })
 
   // IPC 通道先注册、后加载页面：ipcRenderer.send 是即发即弃，晚注册会丢消息。
   const spikeBridge = process.env.PBOTS_SPIKE_BRIDGE

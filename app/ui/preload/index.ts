@@ -29,6 +29,10 @@ if (isAppMainFrame) {
     window: {
       platform: 'win32' as const,
       getZoomFactor: (): number => webFrame.getZoomFactor(),
+      /** P5-61.f1 ③：主题偏好 + 页面实际色调下沉宿主（main 校验枚举；原生标题栏控件随之变色）。只转发两个字段。 */
+      setTheme: (theme: { preference: string; resolved: string }): void => {
+        ipcRenderer.send('pbots:theme', { preference: theme.preference, resolved: theme.resolved })
+      },
     },
   })
   installMuxPortRelay()

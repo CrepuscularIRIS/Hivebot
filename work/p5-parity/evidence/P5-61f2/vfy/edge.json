@@ -1,0 +1,138 @@
+{
+  "fresh": {
+    "theme": {
+      "preference": "system",
+      "resolved": "light"
+    },
+    "attr": "cursor-light",
+    "scheme": "light",
+    "media": false,
+    "saved": null
+  },
+  "systemMirror": {
+    "content": "system",
+    "mtime": "1793814770983414590"
+  },
+  "flips": [
+    {
+      "state": {
+        "theme": {
+          "preference": "system",
+          "resolved": "dark"
+        },
+        "attr": "cursor-dark",
+        "scheme": "dark",
+        "media": true,
+        "saved": null
+      },
+      "mirror": {
+        "content": "system",
+        "mtime": "1793814770983414590"
+      }
+    },
+    {
+      "state": {
+        "theme": {
+          "preference": "system",
+          "resolved": "light"
+        },
+        "attr": "cursor-light",
+        "scheme": "light",
+        "media": false,
+        "saved": null
+      },
+      "mirror": {
+        "content": "system",
+        "mtime": "1793814770983414590"
+      }
+    },
+    {
+      "state": {
+        "theme": {
+          "preference": "system",
+          "resolved": "dark"
+        },
+        "attr": "cursor-dark",
+        "scheme": "dark",
+        "media": true,
+        "saved": null
+      },
+      "mirror": {
+        "content": "system",
+        "mtime": "1793814770983414590"
+      }
+    }
+  ],
+  "afterClearEmulation": {
+    "theme": {
+      "preference": "system",
+      "resolved": "dark"
+    },
+    "attr": "cursor-dark",
+    "scheme": "dark",
+    "media": true,
+    "saved": null
+  },
+  "reload": {
+    "theme": {
+      "preference": "system",
+      "resolved": "dark"
+    },
+    "attr": "cursor-dark",
+    "scheme": "dark",
+    "media": true,
+    "saved": null
+  },
+  "corrupt": {
+    "theme": {
+      "preference": "system",
+      "resolved": "dark"
+    },
+    "attr": "cursor-dark",
+    "scheme": "dark",
+    "media": true,
+    "saved": "neon"
+  },
+  "fixedMirror": {
+    "content": "dark",
+    "mtime": "1793814773492519834"
+  },
+  "same": [
+    {
+      "content": "dark",
+      "mtime": "1793814773492519834"
+    },
+    {
+      "content": "dark",
+      "mtime": "1793814773492519834"
+    },
+    {
+      "content": "dark",
+      "mtime": "1793814773492519834"
+    }
+  ],
+  "restart": {
+    "theme": {
+      "preference": "system",
+      "resolved": "light"
+    },
+    "attr": "cursor-light",
+    "scheme": "light",
+    "media": false,
+    "saved": null
+  },
+  "restartHost": {
+    "source": "system",
+    "dark": true
+  },
+  "restartWithoutAutomationOverride": {
+    "theme": {
+      "preference": "system",
+      "resolved": "dark"
+    },
+    "attr": "cursor-dark",
+    "scheme": "dark",
+    "media": true,
+    "saved": null
+  }
+}

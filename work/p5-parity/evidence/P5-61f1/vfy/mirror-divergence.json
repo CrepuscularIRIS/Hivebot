@@ -1,0 +1,52 @@
+{
+  "before": {
+    "content": "dark",
+    "mtime": "1793812858769480176"
+  },
+  "reloads": [
+    {
+      "content": "dark",
+      "mtime": "1793812858769480176"
+    },
+    {
+      "content": "dark",
+      "mtime": "1793812858769480176"
+    },
+    {
+      "content": "dark",
+      "mtime": "1793812858769480176"
+    },
+    {
+      "content": "dark",
+      "mtime": "1793812858769480176"
+    }
+  ],
+  "invalid": {
+    "content": "dark",
+    "mtime": "1793812858769480176"
+  },
+  "initialDivergence": {
+    "host": {
+      "source": "system",
+      "dark": true
+    },
+    "page": {
+      "dark": false,
+      "theme": "cursor-light"
+    }
+  },
+  "divergence": {
+    "host": {
+      "source": "system",
+      "dark": true
+    },
+    "page": {
+      "dark": true,
+      "theme": "cursor-dark"
+    }
+  },
+  "systemMirror": {
+    "content": "system",
+    "mtime": "1793812861136556012"
+  }
+}

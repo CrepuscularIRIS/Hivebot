@@ -1,0 +1,11 @@
+Listing tests:
+  initial.spec.ts:31:7 › reload dark
+  initial.spec.ts:31:7 › reload light
+  theme-dual.spec.ts:132:5 › P5-58① 双主题：emulateMedia / nativeTheme 双路翻转 + 逐部件亮暗对照 + 对比度审计 ≥4.5（图标 3.0）
+  theme-flash.spec.ts:151:7 › ① 保存 dark、media 被模拟成相反：封面与正文逐帧都跟偏好（DIAG assert-traces 同法，DOM trace）
+  theme-flash.spec.ts:156:7 › ①③ 保存 dark reload：DOM trace + 窗口录像逐帧（整窗与原生控件全程同为 dark）
+  theme-flash.spec.ts:151:7 › ① 保存 light、media 被模拟成相反：封面与正文逐帧都跟偏好（DIAG assert-traces 同法，DOM trace）
+  theme-flash.spec.ts:156:7 › ①③ 保存 light reload：DOM trace + 窗口录像逐帧（整窗与原生控件全程同为 light）
+  theme-flash.spec.ts:164:5 › ① 冷启动：保存的偏好与宿主镜像在 shim 之前生效——Chromium 首次 present 起整窗与原生控件同色（亮暗各一次）
+  theme-flash.spec.ts:189:5 › ②③ 亮暗切换：data-theme 到位那一帧起 composer / Connect apps / 顶部按钮即稳定色（无混色帧）；原生控件色随之
+Total: 9 tests in 3 files

@@ -1,0 +1,33 @@
+{
+  "selectors": [
+    ".sand-prompt-shell",
+    ".sand-agents-sidebar__plugins-entry button",
+    ".sand-agents-sidebar > .sand-agents-sidebar__search",
+    ".sand-agents-sidebar__header .sand-kit-icon-button"
+  ],
+  "times": [
+    129,
+    130.2000000178814,
+    146.40000000596046,
+    163.40000000596046,
+    180.5,
+    197.30000001192093,
+    213.5,
+    230.40000000596046,
+    247.30000001192093,
+    263.5,
+    279.90000000596046,
+    296.40000000596046,
+    313.90000000596046,
+    329.80000001192093,
+    347.40000000596046,
+    363.90000000596046,
+    380.2000000178814
+  ],
+  "originalBadPerControl": [
+    0,
+    17,
+    7,
+    7
+  ]
+}

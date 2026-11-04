@@ -1,0 +1,17 @@
+{
+  "fresh": {
+    "theme": {
+      "preference": "system",
+      "resolved": "light"
+    },
+    "attr": "cursor-light",
+    "scheme": "light",
+    "media": false,
+    "saved": null
+  },
+  "systemMirror": {
+    "content": "system",
+    "mtime": "1793814549601051618"
+  },
+  "flips": []
+}

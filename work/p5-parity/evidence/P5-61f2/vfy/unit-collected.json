@@ -1,0 +1,2994 @@
+[
+  {
+    "name": "foldTurns · D1 规则表 > A→t1→B→t2→C→t3→E completed → 恰 2 气泡（A ack / E result），B、C 降级 thinking，3 个 tool，E 只出现一次",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 23,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · D1 规则表 > 无工具问答 → 恰 1 气泡（整条回答）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 31,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · D1 规则表 > 回合进行中：气泡 ≤1，首工具后 streamingAs=thinking，首工具前= message",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 37,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · D2 七格 > (a) ack→工具→最终文本：最终文本成气泡且不重复",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 50,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · D2 七格 > (b) ack→工具→error：恰 1 条 reduce 出错 notice，尾段不升气泡",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 56,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · D2 七格 > (c) ack→工具→B→工具→completed 无尾文本：B 移为气泡且从 thinking 行消失",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 63,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · D2 七格 > (d) 全程无文本 completed → 恰 1 条 fold「没有文字结果」notice",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 70,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · D2 七格 > (e) ${kind} → 恰 1 条「已停止」notice（reduce 产出，三枚举同归 (e)），尾段不升气泡",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 78,
+      "column": 5
+    }
+  },
+  {
+    "name": "foldTurns · D2 七格 > (f) reasoning→工具→completed 无尾正文：reasoning 仍是 thinking、不升气泡；无中间正文走 (d)",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 87,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · D2 七格 > (f) 有中间正文走 (c)：升的是正文不是 reasoning",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 95,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · D2 七格 > (g) 页首片段 hasMore：0 ack 气泡、正文全进 thinking、无 (d)；拼合更早一页后按完整回合重算",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 101,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · D2 七格 > (g) running 片段：streamingAs=thinking（无回合起点，流式正文按中间文本）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 112,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · D2 七格 > 边界：ack→工具→completed（无中间/尾正文）→ 不触发兜底，ack 气泡即唯一可见正文",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 117,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · 多回合 > ④ 两回合相邻：前一回合 result 不因后一回合工具降级",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 127,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · 多回合 > ④ 变体：前一回合 error → 其尾段保持 thinking，不受后一回合影响",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 133,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · 多回合 > t<turn> 前缀变化也切段（无新 user 的续回合）；工具开头无前缀的回合归上一段（决策 6 上限，P6-12 兜底）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 139,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · 不变量（全部用例） > ${c.name}：正文恰出现 1 次 / reasoning 永不成气泡 / 已结束回合可见 entry ≥1",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 167,
+      "column": 5
+    }
+  },
+  {
+    "name": "foldTurns · P6-16 编排来源切段 > 回报唤醒且首条目为工具的回合，前一回合 result 不降级（P6-01 新增格，PLAN P6-16 ⑤）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 198,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · P6-16 编排来源切段 > 回报后无工具的转述 = 恰 1 个气泡；回报条目本身不是 message（不是用户气泡）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 206,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · P6-16 编排来源切段 > worker 侧任务条目开启回合：任务在 worker 回答之前，答复按 ack / result 正常折叠",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 212,
+      "column": 3
+    }
+  },
+  {
+    "name": "foldTurns · P6-16 编排来源切段 > 窗口外还有历史时，以回报开头的首段不是片段（有回合起点）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/fold/turn-fold.test.ts",
+    "location": {
+      "line": 219,
+      "column": 3
+    }
+  },
+  {
+    "name": "toAgentRecord · roster → 0.18 agent > 主 bot：id/name/isMain/currentActivity/hasUnread/isRunning 全字段",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/agents.test.ts",
+    "location": {
+      "line": 11,
+      "column": 3
+    }
+  },
+  {
+    "name": "toAgentRecord · roster → 0.18 agent > 无 title → New chat；unread=true 才带 hasUnread",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/agents.test.ts",
+    "location": {
+      "line": 24,
+      "column": 3
+    }
+  },
+  {
+    "name": "toAgentRecord · roster → 0.18 agent > 待决审批 → awaitingUserResponse 非空（persona 转 idle 等待）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/agents.test.ts",
+    "location": {
+      "line": 29,
+      "column": 3
+    }
+  },
+  {
+    "name": "activityOf · view → currentActivity（persona 状态映射） > 空闲 → null；回合中无工具 → thinking",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/agents.test.ts",
+    "location": {
+      "line": 36,
+      "column": 3
+    }
+  },
+  {
+    "name": "activityOf · view → currentActivity（persona 状态映射） > %s 运行中 → tool=%s（persona %s）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/agents.test.ts",
+    "location": {
+      "line": 57,
+      "column": 4
+    }
+  },
+  {
+    "name": "activityOf · view → currentActivity（persona 状态映射） > 并行工具：最后一个已 done、前一个仍 running → 取仍在跑的那个",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/agents.test.ts",
+    "location": {
+      "line": 63,
+      "column": 3
+    }
+  },
+  {
+    "name": "activityOf · view → currentActivity（persona 状态映射） > 前回合遗留的 running 工具（被打断未收尾）不串进本回合 → thinking",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/agents.test.ts",
+    "location": {
+      "line": 69,
+      "column": 3
+    }
+  },
+  {
+    "name": "activityOf · view → currentActivity（persona 状态映射） > 待决审批：awaitingUserResponse 压过活动 → idle；回合结束 → idle",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/agents.test.ts",
+    "location": {
+      "line": 75,
+      "column": 3
+    }
+  },
+  {
+    "name": "activityOf · view → currentActivity（persona 状态映射） > 工具都已 done → 回到 thinking（仍有正文要写）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/agents.test.ts",
+    "location": {
+      "line": 80,
+      "column": 3
+    }
+  },
+  {
+    "name": "protocol v1 · 握手与帧 > hello v1 → ready v1；错误版本号触发断链（client 侧行为，这里只验 ready 只回一次）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/coordinator.test.ts",
+    "location": {
+      "line": 86,
+      "column": 3
+    }
+  },
+  {
+    "name": "protocol v1 · 握手与帧 > request → reply ok；事件帧经同一端口下发（emit）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/coordinator.test.ts",
+    "location": {
+      "line": 92,
+      "column": 3
+    }
+  },
+  {
+    "name": "protocol v1 · 握手与帧 > 未知方法 → failed unknown-method（COORDINATOR_UNKNOWN_METHOD）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/coordinator.test.ts",
+    "location": {
+      "line": 100,
+      "column": 3
+    }
+  },
+  {
+    "name": "protocol v1 · 握手与帧 > U4′ 观测面（P5-52）：requests 记全部到达方法，unhandled 只记无 handler 的",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/coordinator.test.ts",
+    "location": {
+      "line": 106,
+      "column": 3
+    }
+  },
+  {
+    "name": "protocol v1 · 握手与帧 > L-7 O6：setAgentUnread 读生产调用方的 isUnread（Mark as Unread 真正置未读）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/coordinator.test.ts",
+    "location": {
+      "line": 115,
+      "column": 3
+    }
+  },
+  {
+    "name": "13 RPC 实底清单 · 回值形状 > getTeachRecordingStatus 四字段形状（回错值 transcript 整个不挂，RE-s0 坑）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/coordinator.test.ts",
+    "location": {
+      "line": 128,
+      "column": 3
+    }
+  },
+  {
+    "name": "13 RPC 实底清单 · 回值形状 > 能力关：getTrays/getSubagents/getAsyncTasks/getAgentWorkflows/listAllAutomations → []；isAgentNetworkEnabled/isGlobalSearchEnabled → false；getForeverBoxStatus → null；getListenerIntegrations → {}",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/coordinator.test.ts",
+    "location": {
+      "line": 135,
+      "column": 3
+    }
+  },
+  {
+    "name": "13 RPC 实底清单 · 回值形状 > openAgentTail：回 {entries,nextBeforeSeq} 且同端口同推 transcript snapshot（S0 坑1 解法）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/coordinator.test.ts",
+    "location": {
+      "line": 147,
+      "column": 3
+    }
+  },
+  {
+    "name": "13 RPC 实底清单 · 回值形状 > sendPrompt 透传给 deps（含 clientNonce）；createAgent/updateAgent 透传",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/coordinator.test.ts",
+    "location": {
+      "line": 158,
+      "column": 3
+    }
+  },
+  {
+    "name": "resolveLocalToolPermission · D9 值域 > allow-once → allowed-once；deny/never → rejected；always 落到 allow-once（由 desktop.set 拒存 always 促成的上游回退，shim 不发 always）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/coordinator.test.ts",
+    "location": {
+      "line": 168,
+      "column": 3
+    }
+  },
+  {
+    "name": "启动必需（0.18 启动校验 hasDesktopBridge 五键 + S0 清单） > hasDesktopBridge 五键：openExternal/getWindowState/mcp/cursorAccount/update",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 21,
+      "column": 3
+    }
+  },
+  {
+    "name": "启动必需（0.18 启动校验 hasDesktopBridge 五键 + S0 清单） > cursorAccount.getStatus → logged-in（authId=account slot，审批卡 permissionScope 与之同值）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 30,
+      "column": 3
+    }
+  },
+  {
+    "name": "启动必需（0.18 启动校验 hasDesktopBridge 五键 + S0 清单） > onboarding.getSeen=true；update.getStatus 完整形状；mcp.list 空；getZoomFactor 同步数值；platform/isDev 同步",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 36,
+      "column": 3
+    }
+  },
+  {
+    "name": "启动必需（0.18 启动校验 hasDesktopBridge 五键 + S0 清单） > on* 订阅返回 unsubscribe；theme initial 亮/暗",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 49,
+      "column": 3
+    }
+  },
+  {
+    "name": "localToolPermission · ceiling=ask（P5-31 v3：shim 下发，不改上游） > ceiling() → \"ask\" 字符串（store normalizeCeiling → alwaysBlocked → Always allow 禁用）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 61,
+      "column": 3
+    }
+  },
+  {
+    "name": "localToolPermission · ceiling=ask（P5-31 v3：shim 下发，不改上游） > get → \"ask\"；set 一律拒存回 \"ask\"（L-AP：档位由 sdk 档位表 + NEVER 常量定，renderer 无写入口；P5-31 起卡与设置都不再发 always/never）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 66,
+      "column": 3
+    }
+  },
+  {
+    "name": "agent.clientPersistence · localStorage 落盘 > read 缺省 null；write→read 回值；remove 后 null",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 77,
+      "column": 3
+    }
+  },
+  {
+    "name": "agent 置顶 · localStorage 落盘（P5-58 去 mock：Pin 菜单项真实可见，恒 [] 会在 reload 后静默丢置顶） > setPinnedAgents 落盘；同一 window 上的新桥实例（reload 语义）读回同一列表",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 89,
+      "column": 3
+    }
+  },
+  {
+    "name": "agent 置顶 · localStorage 落盘（P5-58 去 mock：Pin 菜单项真实可见，恒 [] 会在 reload 后静默丢置顶） > 损坏的落盘值（手改 localStorage）回 []，不抛",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 100,
+      "column": 3
+    }
+  },
+  {
+    "name": "主题偏好 · localStorage 落盘（L-7 O7：手动选择不能在 reload 后静默回到跟随系统） > theme.set 落盘；同一 window 上的新桥实例（reload 语义）恢复所选偏好",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 109,
+      "column": 3
+    }
+  },
+  {
+    "name": "主题偏好 · localStorage 落盘（L-7 O7：手动选择不能在 reload 后静默回到跟随系统） > 损坏的落盘值回 system（跟随系统），不抛",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 120,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-61.f1 主题下沉宿主 + 切换帧禁过渡 > ③ 建桥即把落盘偏好 + 实际所画色调推给宿主（与系统相反也照推），set 与 system 下的 media 变化再推",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 128,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-61.f1 主题下沉宿主 + 切换帧禁过渡 > ② 推送监听期间挂全局禁过渡样式（权重压过 .class !important），监听返回且强制样式计算后移除",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 143,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-61.f2 建桥即落 html[data-theme]（先于 bundle 首次挂载） > 保存 ${saved} → 建桥后 html data-theme=${cls}、color-scheme=${saved}（与上游 applyRootShellTheme 同值）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 164,
+      "column": 5
+    }
+  },
+  {
+    "name": "P6-15 sidebar sections 实底（E2 / E10 / E11） > 无 worker（sidebarSections 回 null / 未接）→ get 回 null，set 原样回（与此前一致）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 176,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 sidebar sections 实底（E2 / E10 / E11） > 有 worker → get 回推导值；用户写入一律回推导值（不能把 bot 拖进 / 拖出 worker 组）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/desktop.test.ts",
+    "location": {
+      "line": 184,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 每类 entry 的 0.18 形状 > user → message + role:user（0.18 model.ts 判侧：send-message 恒为 assistant 侧，P5-55）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 24,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 每类 entry 的 0.18 形状 > ack/result 正文 → message + author=bot 名（content 字符串）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 33,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 每类 entry 的 0.18 形状 > thinking（reasoning 与 text 降级）→ thinking 行 text（running 中间正文不升气泡）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 39,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 每类 entry 的 0.18 形状 > tool → tool-call：name/status/summary（done 映射 done，running/failed 原样）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 45,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 每类 entry 的 0.18 形状 > notice → notice 行（content 字符串）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 54,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 每类 entry 的 0.18 形状 > 流式正文 → 追加 isStreaming message 尾条；无流式不追加",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 61,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 每类 entry 的 0.18 形状 > clientNonce 绑定：按身份（rpcId）绑到对应消息（L-7 R4 / f2）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 72,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 每类 entry 的 0.18 形状 > clientNonce 绑定：新消息未落到窗口时不消费（无 rpcId 命中，等下一次快照）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 79,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 每类 entry 的 0.18 形状 > clientNonce 绑定：同文本历史消息（无 rpcId 或 rpcId 是旧 nonce）不误绑（f2 R4/O2）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 85,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 每类 entry 的 0.18 形状 > clientNonce 绑定：重试场景——wire 换回原 nonce（R5），rpcId=原 nonce 的消息拿回回执",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 93,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 每类 entry 的 0.18 形状 > tool-call 保留完整 args 与 result（L-7 R2：输出/错误详情不再被序列化丢掉）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 99,
+      "column": 3
+    }
+  },
+  {
+    "name": "permissionEntry · 审批卡（P5-50 坑2 答案：dock 渲染条件） > 携带 permissionScope=account slot 与 permissionScopeRevision（0.18 dock 的硬条件），ask.status=pending",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 112,
+      "column": 3
+    }
+  },
+  {
+    "name": "askText · 审批卡显示的完整动作（P5-31 ③） > bash：取工具实参 command 全文（不截断，>120 字也完整）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 128,
+      "column": 3
+    }
+  },
+  {
+    "name": "askText · 审批卡显示的完整动作（P5-31 ③） > 文件类：取 path 全文",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 133,
+      "column": 3
+    }
+  },
+  {
+    "name": "askText · 审批卡显示的完整动作（P5-31 ③） > request_network：一律显示 reason 全文（含命令 + 范围 + 期限，shell-ask.mjs:187），不取实参 command",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 137,
+      "column": 3
+    }
+  },
+  {
+    "name": "askText · 审批卡显示的完整动作（P5-31 ③） > 实参未到 / 非 JSON / 无可读键：退 reason，再退工具名",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 142,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 流式落点（streamingAs） > 首工具前：live-stream message",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 152,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · 流式落点（streamingAs） > 首工具后：live-stream 落 thinking 行，气泡仍 ≤1",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 158,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · P6-16 编排条目 > create_bot / send_to_bot 工具行 → notice（回落文本可读）+ assign 元数据；其他工具照旧 tool-call",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 171,
+      "column": 3
+    }
+  },
+  {
+    "name": "toRawEntries · P6-16 编排条目 > 回报 / 任务 → notice + report / task 元数据（不是 message，不进用户泳道）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/entries.test.ts",
+    "location": {
+      "line": 185,
+      "column": 3
+    }
+  },
+  {
+    "name": "时间分隔（0.78.1 vmt） > 阈值 = 900000ms",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 17,
+      "column": 3
+    }
+  },
+  {
+    "name": "时间分隔（0.78.1 vmt） > 首条上方恒有 1 条；Δ=899999 两条之间 0 条；Δ=900000 出 1 条（含等号）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 19,
+      "column": 3
+    }
+  },
+  {
+    "name": "时间分隔（0.78.1 vmt） > 跨本地自然日：Δ=60s 跨 0 点也出",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 24,
+      "column": 3
+    }
+  },
+  {
+    "name": "时间分隔（0.78.1 vmt） > 无时间的条目、审批卡（dock 渲染）不触发分隔也不更新 prev",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 29,
+      "column": 3
+    }
+  },
+  {
+    "name": "时间分隔（0.78.1 vmt） > thinking 与其消息同一时间：分隔只落在 thinking 前；分隔 id 稳定",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 35,
+      "column": 3
+    }
+  },
+  {
+    "name": "时间分隔（0.78.1 vmt） > 文案（en-US，原版 UR）：Today / Yesterday / 同年 / 跨年",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 41,
+      "column": 3
+    }
+  },
+  {
+    "name": "未读线 > 起点 = 首条晚于 readMark 且非用户消息；无 readMark / 无新内容 → null",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 52,
+      "column": 3
+    }
+  },
+  {
+    "name": "未读线 > 恰 1 条，顺序 未读线 → 时间分隔 → 条目；计数 = 其后的 bot 消息；指向不存在的 id → 0 条",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 58,
+      "column": 3
+    }
+  },
+  {
+    "name": "未读线 > send-message + text 是 agent 发来的消息（0.18 判 assistant 侧，P5-55）：可作未读起点；用户消息 = message + role user",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 66,
+      "column": 3
+    }
+  },
+  {
+    "name": "未读线 > latestAt：取最大时间；无带时间的条目 → null",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 71,
+      "column": 3
+    }
+  },
+  {
+    "name": "未读线 > tracker：首访无线；离开记已读边界；回来冻结起点（停留期新到不移动）；再进 0 条",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 76,
+      "column": 3
+    }
+  },
+  {
+    "name": "未读线 > tracker：切过去的瞬间 tail 未到（空快照）不冻结，首个非空快照再定",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 88,
+      "column": 3
+    }
+  },
+  {
+    "name": "unreadScrollTop · 未读线进入滚动 > 线以下超一屏：scrollTop = 线 offsetTop − 28",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 99,
+      "column": 3
+    }
+  },
+  {
+    "name": "unreadScrollTop · 未读线进入滚动 > 线以下不超一屏：null（保持上游跟底）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 103,
+      "column": 3
+    }
+  },
+  {
+    "name": "unreadScrollTop · 未读线进入滚动 > 线在顶部附近：不滚成负数",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/markers.test.ts",
+    "location": {
+      "line": 107,
+      "column": 3
+    }
+  },
+  {
+    "name": "renderer-grok overrides > 模块覆盖：上游目标在 SOURCES.tsv、覆盖文件存在且不在 SOURCES.tsv",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/overrides.test.ts",
+    "location": {
+      "line": 16,
+      "column": 3
+    }
+  },
+  {
+    "name": "renderer-grok overrides > 覆盖模块都 re-export 上游原模块（只包一层，不复制上游实现）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/overrides.test.ts",
+    "location": {
+      "line": 25,
+      "column": 3
+    }
+  },
+  {
+    "name": "renderer-grok overrides > 整面替换：只借上游类型，不 import 上游实现",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/overrides.test.ts",
+    "location": {
+      "line": 33,
+      "column": 3
+    }
+  },
+  {
+    "name": "botConfigOf · header/summary preset + M3 recipes → 配置投影 > 普通 preset：原样、无连接器、不只读",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 14,
+      "column": 3
+    }
+  },
+  {
+    "name": "botConfigOf · header/summary preset + M3 recipes → 配置投影 > p2temp + live recipe：基础 preset + 连接器",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 17,
+      "column": 3
+    }
+  },
+  {
+    "name": "botConfigOf · header/summary preset + M3 recipes → 配置投影 > p2temp + live=false → 只读（D10c）；recipe 缺失 → 只读 + unknownRecipe",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 21,
+      "column": 3
+    }
+  },
+  {
+    "name": "botConfigOf · header/summary preset + M3 recipes → 配置投影 > preset 未知（快照 / roster 未到）→ null，不判只读",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 25,
+      "column": 3
+    }
+  },
+  {
+    "name": "失效 bot 侧栏预览（D10c 角标） > preview → lastMessagePreview → 0.18 lastMessage",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 31,
+      "column": 3
+    }
+  },
+  {
+    "name": "市场三分类（P4） > 源名或 wrapper 名已装 → installed（U-26 ①），installedNameOf 给实际 bundle 名",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 41,
+      "column": 3
+    }
+  },
+  {
+    "name": "市场三分类（P4） > not-installable / 无 install.spec → browse；本会话 not-bundle → unsupported；其余 installable",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 49,
+      "column": 3
+    }
+  },
+  {
+    "name": "市场三分类（P4） > targetVersion：defaultVersion 指向的那条，否则首条",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 56,
+      "column": 3
+    }
+  },
+  {
+    "name": "市场三分类（P4） > 失败文案：not-bundle 专门说明；unconfirmed；其余 code: message",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 61,
+      "column": 3
+    }
+  },
+  {
+    "name": "pbots-ui 投影小工具 > installedBundles：只要 installed 且未 missing",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 69,
+      "column": 3
+    }
+  },
+  {
+    "name": "pbots-ui 投影小工具 > modelOptions：groups 拍平成 provider/model",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 73,
+      "column": 3
+    }
+  },
+  {
+    "name": "pbots-ui 投影小工具 > text：en 优先；monogram：去 scope 首字",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-57.test.ts",
+    "location": {
+      "line": 77,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R2: projectTranscriptEntry 附带 toolResult（展开工具行可见完整输出） > bash done → shell 卡：command + output + success",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 24,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R2: projectTranscriptEntry 附带 toolResult（展开工具行可见完整输出） > bash failed → error 卡带错误输出；read → file-read 卡带 path 与内容",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 37,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R2: projectTranscriptEntry 附带 toolResult（展开工具行可见完整输出） > write/edit → file-write/file-edit；连接器与其他工具 → connector；审批拒绝（decision）进 summary",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 54,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R2: projectTranscriptEntry 附带 toolResult（展开工具行可见完整输出） > 无 result 且无 decision（进行中）→ 不附卡；非 tool-call 投影不受影响",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 65,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R2: projectTranscriptEntry 附带 toolResult（展开工具行可见完整输出） > 聚合投影（feed / page）同样附卡——刷新/回基线后展开仍可见输出（f2 R2）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 74,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R2: projectTranscriptEntry 附带 toolResult（展开工具行可见完整输出） > page 投影保持上游语义：composedAtMs / threadSummaries / 非法输入空页",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 82,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R3: pagination 覆盖层在 scope 回切时恢复已装页与游标 > B→A：A 的更早页与 more 游标恢复，loadOlder 继续取数",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 113,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R3: pagination 覆盖层在 scope 回切时恢复已装页与游标 > 全新 scope 仍清空；同 scope 重入无副作用",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 144,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R5: retryFailed 登记 fresh→prior nonce，sendPrompt 出线前换回原 nonce > ack 覆盖层记录重试链且控制器行为不变",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 159,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R5: retryFailed 登记 fresh→prior nonce，sendPrompt 出线前换回原 nonce > withWireSendPromptNonce 只对 sendPrompt 且已登记的 nonce 生效",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 176,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R5: retryFailed 登记 fresh→prior nonce，sendPrompt 出线前换回原 nonce > 连续重试 N1→N2→N3：wire requestId 恒为 N1（f2 R5）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 188,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R4/O2: serialize 按身份绑定，历史同文本快照不误 ack > f1 验收探针场景：历史 old-u（同文本、rpcId=旧 nonce）+ 新 nonce → 旧消息不带 nonce，记录不丢",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 212,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 R4/O2: serialize 按身份绑定，历史同文本快照不误 ack > 新消息以 rpcId 到达 → 绑定成功，echo 正常对账",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 228,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-7 O4: createBot notice surfaces as a transcript notice entry > selectModel 失败 → 返回 notice 且空会话快照带 notice 条目；首条用户消息后撤下",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f1.test.ts",
+    "location": {
+      "line": 247,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-8 R2: args that are legal JSON null must not crash the tool-result card > args='null' + failed result → card attached with the error output, no throw",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f3.test.ts",
+    "location": {
+      "line": 16,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-8 R2: args that are legal JSON null must not crash the tool-result card > other non-object JSON ('[1,2]', '\"str\"', '123') stays safe",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f3.test.ts",
+    "location": {
+      "line": 29,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-8 R2: args that are legal JSON null must not crash the tool-result card > one poisoned entry does not kill the feed/page aggregate (per-entry isolation)",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f3.test.ts",
+    "location": {
+      "line": 39,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-8 R3: an approval decision must not shadow the tool output > decision='allowed-once' with a result → summary empty so view renders output (detail = summary || diff || output)",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f3.test.ts",
+    "location": {
+      "line": 62,
+      "column": 3
+    }
+  },
+  {
+    "name": "L-8 R3: an approval decision must not shadow the tool output > decision='rejected' with no result keeps the decision as summary (denial reason stays visible)",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/p5-w3f3.test.ts",
+    "location": {
+      "line": 73,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 档位（决策 21：审批/提问 > 回合中 > 出错/已停止 > 新结果 > 空闲） > 5 档各一例；running + 待决 ask = blocked（C②）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 23,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 档位（决策 21：审批/提问 > 回合中 > 出错/已停止 > 新结果 > 空闲） > stopped 未读与 failed 同档；读过的 failed/stopped 进 done（FINAL §1-7）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 26,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 档位（决策 21：审批/提问 > 回合中 > 出错/已停止 > 新结果 > 空闲） > 组内次序：rank → updatedAt 降序 → sessionId 稳定平局（C）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 31,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 档位（决策 21：审批/提问 > 回合中 > 出错/已停止 > 新结果 > 空闲） > 终止原因分类：completed=ok；aborted/interrupted/cancelled=stopped；其余=failed",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 35,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 侧栏预览（不露 JSON / 包装句，首行 ≤80） > failed → Failed: 首行；stopped → Stopped；有结果 → 结果首行；从未跑过 → Not started yet",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 43,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 侧栏预览（不露 JSON / 包装句，首行 ≤80） > 超长首行截断到 80 字（含省略号）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 50,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 侧栏预览（不露 JSON / 包装句，首行 ≤80） > viewFacts：从 follow 视图取终态 / 失败原因 / 最近正文",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 55,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 主 bot 汇总（决策 21；E6 / E7 / C③） > 1 个 blocked → 「名: 原因」；2 个 → 「2 workers need you」",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 68,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 主 bot 汇总（决策 21；E6 / E7 / C③） > 未读只来自 rank 2/3 的 worker；处理完最后一个 ask 后 blocked 消失、其他未读保留",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 72,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 合成 section（E1 / E2 / E11） > 无 worker → null（侧栏走扁平列表，D11⑤ 字节不变）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 82,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 合成 section（E1 / E2 / E11） > 每个创建者 main → Workers（rank 0–3，按档位排）→ Done（rank 4）；worker 不进 main 组",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 86,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 合成 section（E1 / E2 / E11） > 正打开着的 worker 读完（rank 4）留在 Workers 末尾，离开后才进 Done",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 94,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 合成 section（E1 / E2 / E11） > 换主后旧主的 worker 仍挂在旧主名下（按创建者分组）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 99,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-15 合成 section（E1 / E2 / E11） > createdByOf：只取 {createdBy:非空串}，自指与坏值丢弃；无 bots 键 → {}",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 103,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-16 Messaging 行元数据（E12；C⑦） > create_bot 成功：workerId 取结果 sessionId，名字取实参；预览取 prompt 首行",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 110,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-16 Messaging 行元数据（E12；C⑦） > create_bot 进行中：workerId 未知（不画假链接）；结果是纯文本时按 uuid 认",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 115,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-16 Messaging 行元数据（E12；C⑦） > send_to_bot：目标取实参（botId / bot / sessionId 都认）；名字由覆盖层现查",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 120,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-16 Messaging 行元数据（E12；C⑦） > 无名 → Messaging another assistant；failed → 不可点、文案按错误码（不露原码）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 124,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-16 Messaging 行元数据（E12；C⑦） > 超长名不截断数据（截断交给 CSS 省略）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 135,
+      "column": 3
+    }
+  },
+  {
+    "name": "P6-16 回报 / 任务回落文本（E19：覆盖层失效仍可读） > 合批回报逐项列出；ask 项写 Needs you",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 142,
+      "column": 3
+    }
+  },
+  {
+    "name": "GU-P6-15-r1 ②：ask 身份两路都对不上 → 中性，不借用该 worker 当前未决 > 旧 ask 已答、第二个 ask 待答：旧 eventId → false（Answered），新 eventId → true（Needs you）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 164,
+      "column": 3
+    }
+  },
+  {
+    "name": "GU-P6-15-r1 ②：ask 身份两路都对不上 → 中性，不借用该 worker 当前未决 > eventId 两路都对不上 → false（中性），即使该 worker 名下另有未决 ask",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 169,
+      "column": 3
+    }
+  },
+  {
+    "name": "GU-P6-15-r1 ②：ask 身份两路都对不上 → 中性，不借用该 worker 当前未决 > $events 一路按 agentId 归属；eventId=null 仍看该 worker 是否有未决",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/grok-shim/workers.test.ts",
+    "location": {
+      "line": 174,
+      "column": 3
+    }
+  },
+  {
+    "name": "M1 白名单（C §2 业务表） > 白名单恰为 C §2 表的 16 个 M1 方法（Q-spike：无增行）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 49,
+      "column": 3
+    }
+  },
+  {
+    "name": "M1 白名单（C §2 业务表） > 表外方法 → pbots/forbidden，记日志（含 endpoint），dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 70,
+      "column": 3
+    }
+  },
+  {
+    "name": "M1 白名单（C §2 业务表） > method 非字符串 → forbidden，dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 81,
+      "column": 3
+    }
+  },
+  {
+    "name": "D9 硬拒层（永久判据，独立于白名单） > %s → forbidden，dsh 计数 === 0，日志 reason 为 d9（先于白名单表外拒绝）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 96,
+      "column": 4
+    }
+  },
+  {
+    "name": "D9 硬拒层（永久判据，独立于白名单） > commands/execute 的命令行以 /permission 开头 → forbidden（args.command 与 args.request.command 两种位置）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 104,
+      "column": 3
+    }
+  },
+  {
+    "name": "D9 硬拒层（永久判据，独立于白名单） > d9DeniedReason 是独立硬编码层：对凭证/account//permission/configForms 恒拒，与白名单无关",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 113,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 installBundle 强制 enabled:false（invalid-args） > %s → pbots/invalid-args，dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 130,
+      "column": 4
+    }
+  },
+  {
+    "name": "§2.2 installBundle 强制 enabled:false（invalid-args） > enabled === false → 透传 dsh（计数 1）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 138,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 installBundle 强制 enabled:false（invalid-args） > 对象形态 {spec, options:{enabled:false}} → 透传 dsh（真链路形状）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 147,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 installBundle 强制 enabled:false（invalid-args） > U-26 ②（D5）：__pbotsM1 观测面只记透传成功的调用（拒绝不进）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 156,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 installBundle 强制 enabled:false（invalid-args） > 对象形态省略 options → pbots/invalid-args，dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 167,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > value 'allowed-always' → invalid-args，dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 176,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > outcome 壳不是 {kind:\"result\"} → invalid-args",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 183,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > clientId 不匹配 → pbots/forbidden（U-15 ③ 联调口径），dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 190,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > eventId 未下发 / 已 cancel → forbidden，dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 197,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > 合法作答 → 透传；同 eventId 二次作答 → forbidden（成功即消费）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 212,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > R10：rpc 失败（ok:false）→ 错误透传且 pending 保留；重发成功才下账，之后同 eventId 再答 forbidden",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 222,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > R10：rpc 抛异常（fetch 裸抛）→ unavailable + pending 保留，重试仍可作答（U-22 GU-1 后不再裸抛）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 243,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > 无 ready clientId → forbidden",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 258,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > P5-07：提问 eventId 传审批字符串 %s → pbots/invalid-args，dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 268,
+      "column": 39
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > ① 合法 answers → 透传 dsh 原样（args 逐字段相等）、下账；同 ledger 审批行为不变",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 302,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > ② %s → pbots/invalid-args，dsh 计数 === 0，不下账",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 319,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > ② 对审批事件传 answers → pbots/invalid-args，dsh 计数 === 0（P5-07 口径反向）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 327,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > ③ 同一提问 eventId 第二次作答 → 拒绝（成功即消费；重连不重复提交）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 334,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 $events/result 校验（ledger） > 提问作答的 clientId 资格口径与审批一致：不匹配 → pbots/forbidden，dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 344,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 #3/#4 参数约束（L2；typert 壳内字段） > session/create 传 agentPreset 'p2temp-xxx' → invalid-args，dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 353,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 #3/#4 参数约束（L2；typert 壳内字段） > session/create 合法 agentPreset → 透传",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 360,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 #3/#4 参数约束（L2；typert 壳内字段） > #4 %s → invalid-args，dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 376,
+      "column": 4
+    }
+  },
+  {
+    "name": "§2.2 #3/#4 参数约束（L2；typert 壳内字段） > R1 #4 合法 scoped bundle 名（@p2sdk-fixture/demo）→ 透传",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 383,
+      "column": 3
+    }
+  },
+  {
+    "name": "§2.2 #3/#4 参数约束（L2；typert 壳内字段） > #4 合法 → 透传（args 原样）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 391,
+      "column": 3
+    }
+  },
+  {
+    "name": "raw-result 透传与 #1 过滤 > dsh 失败结果原样返回（含 details，不经压平）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 401,
+      "column": 3
+    }
+  },
+  {
+    "name": "raw-result 透传与 #1 过滤 > agentPresets/list：滤掉 p2temp-* 行，其余字段不动，不改写上游对象",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 408,
+      "column": 3
+    }
+  },
+  {
+    "name": "raw-result 透传与 #1 过滤 > agentPresets/list 非 ok 或 presets 非数组 → 原样返回",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 418,
+      "column": 3
+    }
+  },
+  {
+    "name": "raw-result 透传与 #1 过滤 > 其他方法的 ok value 原样（不过滤）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 426,
+      "column": 3
+    }
+  },
+  {
+    "name": "装配（U-15 消费面） > dsh 未配置 → forbidden",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 435,
+      "column": 3
+    }
+  },
+  {
+    "name": "装配（U-15 消费面） > 默认共享 m1Ledger：未注入 ledger 时用它校验（U-12 的 tap 喂它）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 441,
+      "column": 3
+    }
+  },
+  {
+    "name": "rpc 抛错兜底（GU-1） > rpc reject → pbots/unavailable（含 message），不向上抛",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 469,
+      "column": 3
+    }
+  },
+  {
+    "name": "rpc 抛错兜底（GU-1） > rpc 抛非 Error 值 → unavailable，message 落 String 化",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 476,
+      "column": 3
+    }
+  },
+  {
+    "name": "rpc 抛错兜底（GU-1） > $events/result 抛错 → unavailable 且 ledger pending 保留（R10：可重试）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m1/api.test.ts",
+    "location": {
+      "line": 482,
+      "column": 3
+    }
+  },
+  {
+    "name": "M2 端口转交（C §2.3 时序） > ① 成功转交：postMessage {ok:true} 带 port2；上下行原帧直通",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 61,
+      "column": 3
+    }
+  },
+  {
+    "name": "M2 端口转交（C §2.3 时序） > ① 两个并发 requestId 各回不同帧，不串线",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 89,
+      "column": 3
+    }
+  },
+  {
+    "name": "M2 端口转交（C §2.3 时序） > ① 失败不带端口：dsh 未配置 → 立即 {ok:false,error}",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 118,
+      "column": 3
+    }
+  },
+  {
+    "name": "M2 端口转交（C §2.3 时序） > ① 10s 超时（注入 80ms）：socket 一直不就绪 → {ok:false,error 含 timed out}，无端口",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 131,
+      "column": 3
+    }
+  },
+  {
+    "name": "M2 端口转交（C §2.3 时序） > ① 等待期间 sender 销毁 → 不转交也不 postMessage",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 145,
+      "column": 3
+    }
+  },
+  {
+    "name": "M2 端口转交（C §2.3 时序） > ④ ipc 来源校验：senderFrame 为 null / 非 pbots-app origin → 不转交、无 postMessage、dsh 不被触碰",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 160,
+      "column": 3
+    }
+  },
+  {
+    "name": "M2 endpoint 白名单（③，恰三个：session/follow、$events、session/control） > 表外 endpoint %s → error 帧回 port，ws 不收到 open，记 rejectedEndpoints",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 185,
+      "column": 66
+    }
+  },
+  {
+    "name": "M2 endpoint 白名单（③，恰三个：session/follow、$events、session/control） > 表内 endpoint %s 放行",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 200,
+      "column": 59
+    }
+  },
+  {
+    "name": "streamId 归属（②） > (a) open 的 streamId 与另一 port 现有流冲突即拒：B 收 error，ws 只见一次 open",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 213,
+      "column": 3
+    }
+  },
+  {
+    "name": "streamId 归属（②） > (a) open 的 streamId 与 main 自己的流冲突即拒（tap 观察到的 main 归属流）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 236,
+      "column": 3
+    }
+  },
+  {
+    "name": "streamId 归属（②） > (b) 上行 item/end/cancel 只放行经本 port open 过的 streamId：越权与未知一律不上 ws",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 259,
+      "column": 3
+    }
+  },
+  {
+    "name": "streamId 归属（②） > (c) 下行帧只转给拥有该 streamId 的 port",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 289,
+      "column": 3
+    }
+  },
+  {
+    "name": "streamId 归属（②） > port 关闭 → 对本 port 的每个 streamId 发 cancel，归属清空（重用同 id 可再 open）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 314,
+      "column": 3
+    }
+  },
+  {
+    "name": "streamId 归属（②） > socket 断开 → 关闭全部 port（页面侧收到 close）；重连就绪前不转交新 port，就绪后可转交",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 339,
+      "column": 3
+    }
+  },
+  {
+    "name": "tap 计数与 ledger（④） > $events 帧（ready/waterfall/cancel）写进 ledger；下行计数与 orphan 可读",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 372,
+      "column": 3
+    }
+  },
+  {
+    "name": "tap 计数与 ledger（④） > testDropSocket 关掉当前 socket（E2E 断链注入用）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/bridge.test.ts",
+    "location": {
+      "line": 393,
+      "column": 3
+    }
+  },
+  {
+    "name": "CarrierSocket（W 包装对象） > 创建即 CONNECTING(0) 且发出端口申请；收到端口后 start→readyState=1→open；send 走 port.postMessage；port message 派发 message",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/carrier-socket.test.ts",
+    "location": {
+      "line": 66,
+      "column": 3
+    }
+  },
+  {
+    "name": "CarrierSocket（W 包装对象） > 失败（ok:false）不带端口 → readyState=3，error 先于 close，错误信息透传",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/carrier-socket.test.ts",
+    "location": {
+      "line": 84,
+      "column": 3
+    }
+  },
+  {
+    "name": "CarrierSocket（W 包装对象） > 10s 超时（注入 50ms）→ readyState=3，error 含 timed out，再 close",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/carrier-socket.test.ts",
+    "location": {
+      "line": 94,
+      "column": 3
+    }
+  },
+  {
+    "name": "CarrierSocket（W 包装对象） > 失败后的迟到端口立即 close，不复活、不重复派发",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/carrier-socket.test.ts",
+    "location": {
+      "line": 105,
+      "column": 3
+    }
+  },
+  {
+    "name": "CarrierSocket（W 包装对象） > 拒收错误 source 与未知 requestId（ES:86）：不绑定、readyState 保持 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/carrier-socket.test.ts",
+    "location": {
+      "line": 118,
+      "column": 3
+    }
+  },
+  {
+    "name": "CarrierSocket（W 包装对象） > 多出的端口立即 close，只绑定第一个",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/carrier-socket.test.ts",
+    "location": {
+      "line": 133,
+      "column": 3
+    }
+  },
+  {
+    "name": "CarrierSocket（W 包装对象） > main 关闭 port（socket 断开传导）→ readyState=3 派发 close",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/carrier-socket.test.ts",
+    "location": {
+      "line": 144,
+      "column": 3
+    }
+  },
+  {
+    "name": "CarrierSocket（W 包装对象） > close()：CONNECTING 期可取消（readyState=3 派发 close，不派发 error），迟到的端口立即 close",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/carrier-socket.test.ts",
+    "location": {
+      "line": 155,
+      "column": 3
+    }
+  },
+  {
+    "name": "CarrierSocket（W 包装对象） > close()：OPEN 期关闭 port 并派发 close；再次 close 幂等",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/carrier-socket.test.ts",
+    "location": {
+      "line": 167,
+      "column": 3
+    }
+  },
+  {
+    "name": "CarrierSocket（W 包装对象） > 上游接口兼容：send 在非 OPEN 抛错；removeEventListener 停止派发；open 用 once 只派发一次",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/carrier-socket.test.ts",
+    "location": {
+      "line": 181,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-16 main 常驻 $events 订阅 + deadline 代答（集成） > ① 无任何 renderer 端口时也常驻订阅；waterfall 进 ledger、ready 不进；断挂满 deadline → 以 main 自己的 clientId 代答 rejected 恰好 1 次；gateway cancel 下账",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/deadline-wire.test.ts",
+    "location": {
+      "line": 40,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-16 main 常驻 $events 订阅 + deadline 代答（集成） > ① socket 断开重连后新一代上重开 $events 并用新 clientId 代答（常驻跨代）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/deadline-wire.test.ts",
+    "location": {
+      "line": 77,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-16 main 常驻 $events 订阅 + deadline 代答（集成） > ② renderer $events 端口挂载期间不代答（用户在场）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/deadline-wire.test.ts",
+    "location": {
+      "line": 104,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-16 审批无人应答 deadline（假时钟） > ① 未决且未挂载满 deadline → 以 main 常驻订阅 clientId 代答 rejected 恰好 1 次；gateway cancel 到达后下账",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/deadline.test.ts",
+    "location": {
+      "line": 76,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-16 审批无人应答 deadline（假时钟） > ① deadline 前重新挂端口 → 计数 === 0；窗口按重新失联的时点重新起算",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/deadline.test.ts",
+    "location": {
+      "line": 106,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-16 审批无人应答 deadline（假时钟） > ② 挂载期间（用户在场）永不代答，即使远超 deadline",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/deadline.test.ts",
+    "location": {
+      "line": 127,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-16 审批无人应答 deadline（假时钟） > main 常驻订阅未 ready（clientId undefined）→ 不发；ready 后下一轮补发",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/deadline.test.ts",
+    "location": {
+      "line": 136,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-16 审批无人应答 deadline（假时钟） > rpc 失败不计成功并允许后续轮重试；成功后停止",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/deadline.test.ts",
+    "location": {
+      "line": 148,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-16 审批无人应答 deadline（假时钟） > 默认 deadline = 2×10s（BRIEF D4③：观察窗口 2×已知超时）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/deadline.test.ts",
+    "location": {
+      "line": 189,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-16 审批无人应答 deadline（假时钟） > R8：rpc 抛网络 rejection → 不逃出为 unhandled，pending 保留、下一轮重试",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/deadline.test.ts",
+    "location": {
+      "line": 193,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-07 deadline 按事件类别分支（假时钟） > ③ 审批与提问各一条未决、无端口挂载满 deadline → 审批 {kind:\"result\",value:\"rejected\"} 恰 1 次；提问 {kind:\"rejected\"} 恰 1 次、{kind:\"result\"} 0 次",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m2/deadline.test.ts",
+    "location": {
+      "line": 239,
+      "column": 3
+    }
+  },
+  {
+    "name": "ensureThenReady（U-14 启动恢复屏障） > ③ 真 presetEnsure 永不返回：超时按失败，gate 超时前不开（M1/M2 挂起）、超时后开；其余 bot 可用",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/ensure.test.ts",
+    "location": {
+      "line": 96,
+      "column": 3
+    }
+  },
+  {
+    "name": "ensureThenReady（U-14 启动恢复屏障） > 坏 bots.json（读盘失败）：ensureThenReady 不抛、outcomes 为空、gate 照常开（§8-1 不毒化启动）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/ensure.test.ts",
+    "location": {
+      "line": 129,
+      "column": 3
+    }
+  },
+  {
+    "name": "restoreGated（M1/M2 入口包装） > restore settle 前挂起、settle 后按序执行；多参透传",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/ensure.test.ts",
+    "location": {
+      "line": 145,
+      "column": 3
+    }
+  },
+  {
+    "name": "restoreGated（M1/M2 入口包装） > 只挂 restore 不挂 dsh：dsh 起不来但 restore 已 settle → 放行（M2 自带 10s 端口超时，U-12 语义不破）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/ensure.test.ts",
+    "location": {
+      "line": 156,
+      "column": 3
+    }
+  },
+  {
+    "name": "restoreGated（M1/M2 入口包装） > 未配置 dsh：restore 为 null，立即放行（U-00 行为）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/ensure.test.ts",
+    "location": {
+      "line": 165,
+      "column": 3
+    }
+  },
+  {
+    "name": "get > live = 未过滤 #1 是否含该 presetId；registry 无此 id → live===false；get 不写盘",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 39,
+      "column": 3
+    }
+  },
+  {
+    "name": "get > #1 失败 → pbots/unavailable（不静默全 false）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 63,
+      "column": 3
+    }
+  },
+  {
+    "name": "get > dsh 未配置 → pbots/unavailable",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 74,
+      "column": 3
+    }
+  },
+  {
+    "name": "get > restore 标记失败的 recipe：即使 #1 含该 id 也 live===false",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 82,
+      "column": 3
+    }
+  },
+  {
+    "name": "get > 坏 bots.json → pbots/storage",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 92,
+      "column": 3
+    }
+  },
+  {
+    "name": "patch · 形状（renderer 只写 mainBotId） > %s → invalid-args，dsh 计数 === 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 110,
+      "column": 4
+    }
+  },
+  {
+    "name": "get/patch · rpc 抛错（U-28 R2 / U-29 R7） > get 的 agentPresets/list reject → 结构化 pbots/unavailable，handler 不 reject",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 126,
+      "column": 3
+    }
+  },
+  {
+    "name": "get/patch · rpc 抛错（U-28 R2 / U-29 R7） > patch 的 session/list reject → 同样结构化 pbots/unavailable，不落盘",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 138,
+      "column": 3
+    }
+  },
+  {
+    "name": "get · restore 未 settle（U-28 R6） > restoreSettled()=false → pbots/restore-pending，不查 #1（dsh 计数 === 0）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 159,
+      "column": 3
+    }
+  },
+  {
+    "name": "get · restore 未 settle（U-28 R6） > settle 后同句柄返回正常视图（重试链路终点）；未注入回调时行为不变",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 170,
+      "column": 3
+    }
+  },
+  {
+    "name": "patch · wire 壳（W1 R4：session/list 参数名是 _request） > 用 {_request:{}} 壳：fake gateway 只认 _request 形状，不再 arguments-invalid",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 192,
+      "column": 3
+    }
+  },
+  {
+    "name": "patch · 语义 > mainBotId 不在 #9 列表 → invalid-args；在列表 → 落盘并返回带 live 的 view",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 216,
+      "column": 3
+    }
+  },
+  {
+    "name": "patch · 语义 > #9 失败 → pbots/unavailable，不落盘",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 241,
+      "column": 3
+    }
+  },
+  {
+    "name": "get · v1.5 bots 透传 > bots.json 带 bots → BotsMetaView 带同样的 bots",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/index.test.ts",
+    "location": {
+      "line": 264,
+      "column": 3
+    }
+  },
+  {
+    "name": "presetIdOf 共用模块（D8 后半：缺省输入抛错） > agentPreset 缺省/空白 → throw；换序 connectors 同 id",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 65,
+      "column": 3
+    }
+  },
+  {
+    "name": "createBotWithConnectors · 校验（拒绝时 dsh 计数 === 0） > %s → invalid-args",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 85,
+      "column": 4
+    }
+  },
+  {
+    "name": "createBotWithConnectors · D8 agentPreset 单点解析 > 省略与显式 defaultId 两次得同一 id，同一值贯穿 recipe 与 dsh 请求",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 99,
+      "column": 3
+    }
+  },
+  {
+    "name": "createBotWithConnectors · D8 agentPreset 单点解析 > 缺省解析时 #1 失败 → pbots/unavailable，不写 recipe",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 130,
+      "column": 3
+    }
+  },
+  {
+    "name": "createBotWithConnectors · D10b 编排顺序（recipe 先于 #4） > #4 被调时 recipe 已在盘上（mock #4 内同步读文件断言）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 144,
+      "column": 3
+    }
+  },
+  {
+    "name": "createBotWithConnectors · D10b 编排顺序（recipe 先于 #4） > #4 挂起不返回时 recipe 已落盘（直接读盘断言）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 160,
+      "column": 3
+    }
+  },
+  {
+    "name": "createBotWithConnectors · D10b 编排顺序（recipe 先于 #4） > #4 返回 !ok → 原样透传（含 details），孤儿 recipe 留在盘上不删",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 174,
+      "column": 3
+    }
+  },
+  {
+    "name": "createBotWithConnectors · D10a 并发同 id > 并发两次同 id 的 #4 都成功、recipe 恰一条（register 单飞在 SDK 侧 in-flight 表）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 195,
+      "column": 3
+    }
+  },
+  {
+    "name": "⑦ env 门控的 #4 编排屏障 > 未设 env：屏障路径不触发（waitGate 未被调用）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 215,
+      "column": 3
+    }
+  },
+  {
+    "name": "⑦ env 门控的 #4 编排屏障 > 设 env：停在 recipe 已落盘、#4 已返回（session 已建）、调用方未收到返回；touch 后放行",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 226,
+      "column": 3
+    }
+  },
+  {
+    "name": "⑦ env 门控的 #4 编排屏障 > 默认 waitGate：轮询 env 指定的 gate 文件出现后放行（真实 fs）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 255,
+      "column": 3
+    }
+  },
+  {
+    "name": "deriveBots（D10d runtime 恒 dsh；孤儿不产生行） > 按 session 产生行；孤儿 recipe（无 session）不出现",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 283,
+      "column": 3
+    }
+  },
+  {
+    "name": "deriveBots（D10d runtime 恒 dsh；孤儿不产生行） > connectors/readOnly/mainBot/preset 按 C §3.1 推导",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 290,
+      "column": 3
+    }
+  },
+  {
+    "name": "deriveBots（D10d runtime 恒 dsh；孤儿不产生行） > recipe.live=false → 该 bot 只读；普通 preset 的 bot 不因此只读",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 298,
+      "column": 3
+    }
+  },
+  {
+    "name": "deriveBots（D10d runtime 恒 dsh；孤儿不产生行） > header.agentPreset 缺失（SessionSummary 无 header 时）→ preset null",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 304,
+      "column": 3
+    }
+  },
+  {
+    "name": "createBotWithConnectors · failed 清除（U-28 R5） > #4 成功注册同 presetId → 从 opts.failed 删除；#4 失败 → 不清",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 313,
+      "column": 3
+    }
+  },
+  {
+    "name": "createBotWithConnectors · failed 清除（U-28 R5） > 未传 failed → 行为不变（成功路径不炸）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 333,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-25 工作目录强制 · #4 > ② renderer 传 cwd（任意字符串）→ pbots/invalid-args，dsh 计数 0，不建目录不写 recipe",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 348,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-25 工作目录强制 · #4 > ② renderer 传非字符串 cwd → 同样 invalid-args（不再有「cwd must be a string」放行路径）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 363,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-25 工作目录强制 · #4 > ① 无 dataDir 且 env 未设 → pbots/unavailable（fail loud，不落不确定 cwd）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 374,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-25 工作目录强制 · #4 > ① env 回退：opts 未传 dataDir 时读 PBOTS_DATA_DIR，cwd 落其下 workspaces/",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 391,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-25 工作目录强制 · #4 > ① 工作区目录建好先于 #4（mock #4 内同步断言目录存在），mkdir 失败 → pbots/storage 且不调 #4",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 407,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-25 工作目录强制 · #3 session/create > ② renderer 传 cwd → pbots/invalid-args，dsh 计数 0；workspaceId 同拒（与注入 cwd 冲突）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 439,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-25 工作目录强制 · #3 session/create > ① 空 request → 注入 sessionId + cwd（$dataDir/workspaces/<sessionId>），目录建好；agentPreset 原样透传",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 450,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-25 工作目录强制 · #3 session/create > 保留 base 行为：agentPreset p2temp-* → invalid-args（CONTRACT §2 表 1 过滤），dsh 计数 0",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/orchestrate.test.ts",
+    "location": {
+      "line": 470,
+      "column": 3
+    }
+  },
+  {
+    "name": "restoreRecipes > 常量：默认 ensure 超时 30s（U-14 接 ready 闸门用同一常量）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/restore.test.ts",
+    "location": {
+      "line": 36,
+      "column": 3
+    }
+  },
+  {
+    "name": "restoreRecipes > 逐个 ensure（参数 = recipe 的显式 agentPreset + connectors）；allSettled：一个挂起按超时失败，不抛、不写盘",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/restore.test.ts",
+    "location": {
+      "line": 40,
+      "column": 3
+    }
+  },
+  {
+    "name": "restoreRecipes > 失败创建留下的孤儿 recipe（#4 曾失败）：ensure !ok → live=false；其他 bot 仍可用（§8-1）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/restore.test.ts",
+    "location": {
+      "line": 70,
+      "column": 3
+    }
+  },
+  {
+    "name": "restoreRecipes > ensure 失败不删被两个 session 共用的 recipe（D7）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/restore.test.ts",
+    "location": {
+      "line": 92,
+      "column": 3
+    }
+  },
+  {
+    "name": "restoreRecipes > 默认超时 = RESTORE_ENSURE_TIMEOUT_MS：不传 timeoutMs 时按常量起 race",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/restore.test.ts",
+    "location": {
+      "line": 106,
+      "column": 3
+    }
+  },
+  {
+    "name": "restoreRecipes > 补跑成功 → failed 集合清除（U-28 R5）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/restore.test.ts",
+    "location": {
+      "line": 126,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · 单实例锁（W1 R8） > 同 dataDir 第二个实例构造即抛结构化错（code=PBOTS_STORE_LOCKED）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store-lock-flush.test.ts",
+    "location": {
+      "line": 27,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · 单实例锁（W1 R8） > close() 释放锁后可重建；不同 dataDir 互不干扰",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store-lock-flush.test.ts",
+    "location": {
+      "line": 39,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · flush 失败回滚（W1 R9） > putRecipe 的 rename 失败：内存回滚、磁盘保留先前好状态、无半写 tmp，后续成功提交不带失败操作",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store-lock-flush.test.ts",
+    "location": {
+      "line": 53,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · flush 失败回滚（W1 R9） > patchMainBotId 的 rename 失败：mainBotId 回滚到旧值，磁盘不变",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store-lock-flush.test.ts",
+    "location": {
+      "line": 78,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · D10d 盘上形状 > v1 不含 bots 字段；recipes 按 presetId 存 {agentPreset, connectors}",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store.test.ts",
+    "location": {
+      "line": 11,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · D10d 盘上形状 > 重启（新实例 init）读回同样的 recipes 与 mainBotId",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store.test.ts",
+    "location": {
+      "line": 26,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · D10e 单一 Promise 队列 > 50 个并发 recipe 写与 patch 全部落盘、无丢更新",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store.test.ts",
+    "location": {
+      "line": 43,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · D10e 单一 Promise 队列 > 原子写：写入完成后无残留 tmp 文件",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store.test.ts",
+    "location": {
+      "line": 63,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · D10e 单一 Promise 队列 > 同 key 同值重复写幂等；不同值覆盖为最后一次（队列序）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store.test.ts",
+    "location": {
+      "line": 79,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · 坏文件 > 坏 JSON：init 不抛，read() 抛错（不静默重置丢数据）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store.test.ts",
+    "location": {
+      "line": 93,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · 坏文件 > version 2 的文件同样被拒",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store.test.ts",
+    "location": {
+      "line": 101,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · v1.5 可选 bots（createdBy）透传 > 带 bots 的 v1 文件：读回 createdBy；patchMainBotId 写盘不抹掉它；坏项丢弃",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store.test.ts",
+    "location": {
+      "line": 112,
+      "column": 3
+    }
+  },
+  {
+    "name": "BotsMetaStore · v1.5 可选 bots（createdBy）透传 > bots 全是坏项 → 视同没有（不写键）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/m3/store.test.ts",
+    "location": {
+      "line": 122,
+      "column": 3
+    }
+  },
+  {
+    "name": "B7 thinking 归约 > reasoning + text → [thinking, assistant]，id 稳定、同一 at",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/markers.test.ts",
+    "location": {
+      "line": 13,
+      "column": 3
+    }
+  },
+  {
+    "name": "B7 thinking 归约 > 只有 reasoning（推理后直接调工具）→ 仅 thinking；空 reasoning → 不出行",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/markers.test.ts",
+    "location": {
+      "line": 20,
+      "column": 3
+    }
+  },
+  {
+    "name": "B7 thinking 归约 > reasoning-delta 只进 streaming.reasoning，不计 chunkCount；text-delta 照旧",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/markers.test.ts",
+    "location": {
+      "line": 25,
+      "column": 3
+    }
+  },
+  {
+    "name": "B7 thinking 归约 > 所有行带 event.time；无 time 的事件不带 at（既有 toEqual 口径不变）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/markers.test.ts",
+    "location": {
+      "line": 39,
+      "column": 3
+    }
+  },
+  {
+    "name": "session reduce（时间线） > tool 行：call → asked（awaiting）→ decided rejected → result isError → failed",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/reduce.test.ts",
+    "location": {
+      "line": 11,
+      "column": 3
+    }
+  },
+  {
+    "name": "session reduce（时间线） > 流式：chunk 原位累加，assistant/message 定稿替换；只显示 source.kind=user 的用户消息",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/reduce.test.ts",
+    "location": {
+      "line": 24,
+      "column": 3
+    }
+  },
+  {
+    "name": "session reduce（时间线） > 打断：turn/end aborted → 「已停止」；其它失败 → danger 回复失败",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/reduce.test.ts",
+    "location": {
+      "line": 42,
+      "column": 3
+    }
+  },
+  {
+    "name": "session reduce（时间线） > snapshot：重建视图（header preset/cwd、title 投影、records、进行中 attempt 基线）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/reduce.test.ts",
+    "location": {
+      "line": 49,
+      "column": 3
+    }
+  },
+  {
+    "name": "session reduce（时间线） > U-26 ③（#11 分页）：snapshot 带 hasMore / 首条 seq；缺省 hasMore=false",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/reduce.test.ts",
+    "location": {
+      "line": 59,
+      "column": 3
+    }
+  },
+  {
+    "name": "session reduce（时间线） > 快照 modelSelection 投影：pending 优先于 lastUsed；缺省为 null（U-23 P-D）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/reduce.test.ts",
+    "location": {
+      "line": 71,
+      "column": 3
+    }
+  },
+  {
+    "name": "session reduce（时间线） > O1：follow snapshot 重建使 gen +1（#11 分页绑定的快照代号）；event / stream 帧不变",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/reduce.test.ts",
+    "location": {
+      "line": 78,
+      "column": 3
+    }
+  },
+  {
+    "name": "session reduce · P6-16 编排来源 > pbots-worker → report item；items 只留合法字段，result 兜底截 4000",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/reduce.test.ts",
+    "location": {
+      "line": 96,
+      "column": 3
+    }
+  },
+  {
+    "name": "session reduce · P6-16 编排来源 > pbots-main → task item（全文逐字、来源主 bot id）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/reduce.test.ts",
+    "location": {
+      "line": 114,
+      "column": 3
+    }
+  },
+  {
+    "name": "session reduce · P6-16 编排来源 > E18：runtime-context / plugin / 无来源的 user/message 仍不显示（D7④）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/session/reduce.test.ts",
+    "location": {
+      "line": 119,
+      "column": 3
+    }
+  },
+  {
+    "name": "exchangeLaunchToken > 302 + set-cookie → cookie 串",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/connect.test.ts",
+    "location": {
+      "line": 70,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshConnection > start 后 generation===1；断线后自动重连 generation===2",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/connect.test.ts",
+    "location": {
+      "line": 77,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshConnection > rpc 原样透传 ok 与 !ok（details 不压平），apiCount 计数",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/connect.test.ts",
+    "location": {
+      "line": 89,
+      "column": 3
+    }
+  },
+  {
+    "name": "rpcRaw 非 2xx > HTTP 404 → pbots/upstream，不抛",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/connect.test.ts",
+    "location": {
+      "line": 104,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshConnection U-17（R2/R3/R13） > ① 首连失败按指数退避重试到成功；重试期间 rpc 排队，连接后放行（不永久挂）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/connect.test.ts",
+    "location": {
+      "line": 117,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshConnection U-17（R2/R3/R13） > ①② 首连持续失败：start() 按 startTimeoutMs 有界 reject；rpc 按.rpcTimeoutMs 返回结构化错误且不发请求",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/connect.test.ts",
+    "location": {
+      "line": 133,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshConnection U-17（R2/R3/R13） > ③ socket 死亡即从可用集合清除：ready() 挂起等新代，不返回死柄；rpc 结构化报错且不发请求",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/connect.test.ts",
+    "location": {
+      "line": 149,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshConnection U-17（R2/R3/R13） > ① 退避形状：间隔按 2^n 指数增长，且受 backoffMaxMs 封顶",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/connect.test.ts",
+    "location": {
+      "line": 174,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshConnection U-28（R3/R4）：onConnected > start() 超时 reject 后服务恢复 → 后台重连成功仍触发 onConnected（generation 1）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/connect.test.ts",
+    "location": {
+      "line": 215,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshConnection U-28（R3/R4）：onConnected > 断线重连 → 再次触发（generation 2）；listener 抛错不破坏后续 waiter",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/connect.test.ts",
+    "location": {
+      "line": 232,
+      "column": 3
+    }
+  },
+  {
+    "name": "resolveAppPath > / 根路径 → index.html",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/document-path.test.ts",
+    "location": {
+      "line": 18,
+      "column": 3
+    }
+  },
+  {
+    "name": "resolveAppPath > 普通资源路径保留",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/document-path.test.ts",
+    "location": {
+      "line": 23,
+      "column": 3
+    }
+  },
+  {
+    "name": "resolveAppPath > 解码后 ../ 穿越 → 403",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/document-path.test.ts",
+    "location": {
+      "line": 26,
+      "column": 3
+    }
+  },
+  {
+    "name": "resolveAppPath > 坏编码 → 400",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/document-path.test.ts",
+    "location": {
+      "line": 29,
+      "column": 3
+    }
+  },
+  {
+    "name": "EventsLedger > 无 ready 时校验一律拒",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 12,
+      "column": 3
+    }
+  },
+  {
+    "name": "EventsLedger > R10：ready + 未决 eventId + 合法 outcome → ok（validate 只判资格不消费；consumeResult 才下账）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 18,
+      "column": 3
+    }
+  },
+  {
+    "name": "EventsLedger > clientId 不匹配 → 拒",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 32,
+      "column": 3
+    }
+  },
+  {
+    "name": "EventsLedger > value 为 'allowed-always'（或任意非法值）→ 拒",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 39,
+      "column": 3
+    }
+  },
+  {
+    "name": "EventsLedger > eventId 未下发 → 拒；pendingEvents 列出未决项",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 46,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-07 按事件类别判别 > 提问 waterfall → 入账 event === \"user-questions/request\"，无 toolName 字段；审批条目 event 标注不变",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 65,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-07 按事件类别判别 > 未知 event 名的 waterfall → 不入账，warn 恰 1 次（含事件名）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 81,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-07 按事件类别判别 > 提问 eventId 用审批字符串作答（allowed-once / rejected）→ validateResult 拒",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 95,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-28 提问作答（questionIds / validateQuestionResult / invalidQuestionAnswersReason） > questionIds：未决提问 → 该批 id 集；审批 eventId / 未知 eventId / 已消费 → undefined",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 120,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-28 提问作答（questionIds / validateQuestionResult / invalidQuestionAnswersReason） > 提问 request 的 questions 缺失/非数组/空/id 非字符串/空串 → 不入账 + warn 恰 1 次（fail-closed，交 deadline 协议级拒绝）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 133,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-28 提问作答（questionIds / validateQuestionResult / invalidQuestionAnswersReason） > validateQuestionResult：clientId 匹配 ok；不匹配 / 未 ready → 拒（与审批同口径的资格判定）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 153,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-28 提问作答（questionIds / validateQuestionResult / invalidQuestionAnswersReason） > invalidQuestionAnswersReason（纯函数矩阵） > 合法（含 custom、selected 空数组、answers 顺序与问题顺序无关）→ undefined",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 170,
+      "column": 5
+    }
+  },
+  {
+    "name": "P5-28 提问作答（questionIds / validateQuestionResult / invalidQuestionAnswersReason） > invalidQuestionAnswersReason（纯函数矩阵） > %s → 返回原因",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ledger.test.ts",
+    "location": {
+      "line": 190,
+      "column": 6
+    }
+  },
+  {
+    "name": "isTolerableLoadError > ERR_ABORTED（导航取消）容忍",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/load-abort.test.ts",
+    "location": {
+      "line": 8,
+      "column": 3
+    }
+  },
+  {
+    "name": "isTolerableLoadError > 其他 net 错误不容忍（保持退出现行为）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/load-abort.test.ts",
+    "location": {
+      "line": 13,
+      "column": 3
+    }
+  },
+  {
+    "name": "isTolerableLoadError > 非 Error / 无 code 的抛出物不容忍",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/load-abort.test.ts",
+    "location": {
+      "line": 19,
+      "column": 3
+    }
+  },
+  {
+    "name": "createReadyGate（U-14 restore 屏障） > 未配置 dsh：restore 为 null，只等 window（U-00 行为不破）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ready.test.ts",
+    "location": {
+      "line": 10,
+      "column": 3
+    }
+  },
+  {
+    "name": "createReadyGate（U-14 restore 屏障） > 配置了 dsh：window + dsh 就绪但 restore 未 settle → wait 挂起；settle（含失败）后 resolve，failed 进载荷",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ready.test.ts",
+    "location": {
+      "line": 18,
+      "column": 3
+    }
+  },
+  {
+    "name": "createReadyGate（U-14 restore 屏障） > restore + dsh 都 settle 但 window 未就绪 → 仍挂起（三条件缺一不可）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/ready.test.ts",
+    "location": {
+      "line": 29,
+      "column": 3
+    }
+  },
+  {
+    "name": "wireRestoreOnReconnect（U-28 R3/R4/R5） > 首连 ensure 失败 → failed/live=false；重连成功补跑 restore → failed 清空、live=true",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/restore-wiring.test.ts",
+    "location": {
+      "line": 56,
+      "column": 3
+    }
+  },
+  {
+    "name": "wireRestoreOnReconnect（U-28 R3/R4/R5） > 两次连接事件不叠跑：restore 串行（第二次等第一次 settle 后才发下一批 ensure）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/restore-wiring.test.ts",
+    "location": {
+      "line": 98,
+      "column": 3
+    }
+  },
+  {
+    "name": "assertPbotsSender > 主窗口 mainFrame + pbots-app://app/ 放行",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/sender.test.ts",
+    "location": {
+      "line": 17,
+      "column": 3
+    }
+  },
+  {
+    "name": "assertPbotsSender > senderFrame 为 null → 拒",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/sender.test.ts",
+    "location": {
+      "line": 21,
+      "column": 3
+    }
+  },
+  {
+    "name": "assertPbotsSender > url 非 pbots-app: 协议 → 拒（http/file/data 均算 unowned）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/sender.test.ts",
+    "location": {
+      "line": 24,
+      "column": 3
+    }
+  },
+  {
+    "name": "assertPbotsSender > pbots-app:// 但 hostname 非 app → 拒",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/sender.test.ts",
+    "location": {
+      "line": 29,
+      "column": 3
+    }
+  },
+  {
+    "name": "assertPbotsSender > sender 非主窗口 webContents → 拒（non-main window）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/sender.test.ts",
+    "location": {
+      "line": 32,
+      "column": 3
+    }
+  },
+  {
+    "name": "assertPbotsSender > sender 是主窗口但非 mainFrame（iframe）→ 拒",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/sender.test.ts",
+    "location": {
+      "line": 36,
+      "column": 3
+    }
+  },
+  {
+    "name": "guardSingleInstance（U-28 R1） > 拿到锁 → true，注册 second-instance 聚焦回调（已有实例聚焦自身窗口）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/single-instance.test.ts",
+    "location": {
+      "line": 35,
+      "column": 3
+    }
+  },
+  {
+    "name": "guardSingleInstance（U-28 R1） > 拿不到锁（已有实例）→ false + 提示一次，不注册 second-instance（main 应 quit）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/single-instance.test.ts",
+    "location": {
+      "line": 48,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshMuxSocket > open 流收 item/end，全部帧过 tap（known=true）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/socket.test.ts",
+    "location": {
+      "line": 27,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshMuxSocket > 未知 streamId 下行帧进 tap（known=false）且不丢不误派",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/socket.test.ts",
+    "location": {
+      "line": 55,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshMuxSocket > 服务端断开 → 流收到 error 帧、onDead 触发一次",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/socket.test.ts",
+    "location": {
+      "line": 72,
+      "column": 3
+    }
+  },
+  {
+    "name": "DshMuxSocket > 非 OPEN 状态 send 抛错；stream send 拒绝 open 帧与 streamId 不匹配",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/socket.test.ts",
+    "location": {
+      "line": 87,
+      "column": 3
+    }
+  },
+  {
+    "name": "wrapM1WithOrchestration（#4 路由，CONTRACT §3.1） > #4 → M3 编排：recipe 落盘、dsh 收到 #4，base 不被调用",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/wire.test.ts",
+    "location": {
+      "line": 47,
+      "column": 3
+    }
+  },
+  {
+    "name": "wrapM1WithOrchestration（#4 路由，CONTRACT §3.1） > #4 编排校验拒绝时 dsh #4 不被调用（connectors 空）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/wire.test.ts",
+    "location": {
+      "line": 73,
+      "column": 3
+    }
+  },
+  {
+    "name": "wrapM1WithOrchestration（#4 路由，CONTRACT §3.1） > 非 #4 方法原样走 base",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/wire.test.ts",
+    "location": {
+      "line": 86,
+      "column": 3
+    }
+  },
+  {
+    "name": "wrapM1WithOrchestration（#4 路由，CONTRACT §3.1） > dsh 未配置时 #4 也走 base（forbidden not configured 由基座承担）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/wire.test.ts",
+    "location": {
+      "line": 97,
+      "column": 3
+    }
+  },
+  {
+    "name": "wrapM1WithOrchestration（#4 路由，CONTRACT §3.1） > P5-25 #3 session/create → 强制 cwd 编排：注入 sessionId+cwd，不透传基座；传 cwd 即拒",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/wire.test.ts",
+    "location": {
+      "line": 108,
+      "column": 3
+    }
+  },
+  {
+    "name": "共享 ledger 单例（HANDOFF-MED 落实） > registerM2Mux({ledger: m1Ledger}) 的台账与 m1 默认实例是同一对象",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/wire.test.ts",
+    "location": {
+      "line": 132,
+      "column": 3
+    }
+  },
+  {
+    "name": "共享 ledger 单例（HANDOFF-MED 落实） > 错 clientId 的 $events/result 被 m1 拒且 dsh 不被调用（U-15 ③ 口径）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/shell/wire.test.ts",
+    "location": {
+      "line": 140,
+      "column": 3
+    }
+  },
+  {
+    "name": "contrast：WCAG 比率（alpha 合成） > 反例：半透明前景先与底色合成（工具行预览 3.93，旧算法 16.61）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/contrast.test.ts",
+    "location": {
+      "line": 7,
+      "column": 3
+    }
+  },
+  {
+    "name": "contrast：WCAG 比率（alpha 合成） > 背景由祖先向子级合成：叶子半透明叠在父不透明之上，而不是反过来压白底",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/contrast.test.ts",
+    "location": {
+      "line": 16,
+      "column": 3
+    }
+  },
+  {
+    "name": "contrast：WCAG 比率（alpha 合成） > color(srgb …) 与 color-mix 产物可解析（不解析会被当透明，结论失真）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/contrast.test.ts",
+    "location": {
+      "line": 29,
+      "column": 3
+    }
+  },
+  {
+    "name": "contrast：WCAG 比率（alpha 合成） > auditRatio：链上 opacity 乘进前景 alpha；最近不透明底以下才算",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/contrast.test.ts",
+    "location": {
+      "line": 35,
+      "column": 3
+    }
+  },
+  {
+    "name": "R9：envOrDotenv —— process.env 优先，缺省读 .env 文件，两处都无 → undefined > 三级取值顺序",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/creds.test.ts",
+    "location": {
+      "line": 10,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-32 O1/O3：.env 值解析 —— dotenv 标准形态 > 无引号形态不回归",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/creds.test.ts",
+    "location": {
+      "line": 34,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-32 O1/O3：.env 值解析 —— dotenv 标准形态 > 双引号 / 单引号剥掉（引号不进凭证链）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/creds.test.ts",
+    "location": {
+      "line": 38,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-32 O1/O3：.env 值解析 —— dotenv 标准形态 > 行内注释剥掉（空白+# 起；无空白 # 不算注释）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/creds.test.ts",
+    "location": {
+      "line": 43,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-32 O1/O3：.env 值解析 —— dotenv 标准形态 > export 前缀与行首空白容忍",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/creds.test.ts",
+    "location": {
+      "line": 48,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-32 O1/O3：.env 值解析 —— dotenv 标准形态 > 引号内的 # 不当注释；引号后注释剥掉；引号内值原样保留",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/creds.test.ts",
+    "location": {
+      "line": 53,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-32 O1/O3：.env 值解析 —— dotenv 标准形态 > 空值（含空引号）仍 → undefined（no-silent-skip 语义不变）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/creds.test.ts",
+    "location": {
+      "line": 58,
+      "column": 3
+    }
+  },
+  {
+    "name": "R9：sdkChildEnv 剔除凭证只作用于子进程 env 副本 > 凭证 key 不进 SDK 子进程 env，worker 的 process.env 保持原值",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/sdk-env.test.ts",
+    "location": {
+      "line": 20,
+      "column": 3
+    }
+  },
+  {
+    "name": "U-32 O4：shellChildEnv —— 被 Electron 的 env 副本同口径剥凭证键 > 凭证 key 不进 Electron env；沙箱路径与显式 extra 照常；worker process.env 不动",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/sdk-env.test.ts",
+    "location": {
+      "line": 38,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-01：sdkDataDirEnv —— dataDir → PBOTS_DATA_DIR > 未传 dataDir 时不设变量（缺省不传）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/sdk-env.test.ts",
+    "location": {
+      "line": 57,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-01：sdkDataDirEnv —— dataDir → PBOTS_DATA_DIR > 传了 dataDir 则映射为 PBOTS_DATA_DIR",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/sdk-env.test.ts",
+    "location": {
+      "line": 61,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-H1 tmp-sweep（ui） > tmkdir：在 tmpdir 下按前缀建目录并登记，sweep 后消失",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/tmp-sweep.test.ts",
+    "location": {
+      "line": 15,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-H1 tmp-sweep（ui） > 只删登记的：同前缀未登记的兄弟目录幸存（按创建记录，不按前缀扫删）",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/tmp-sweep.test.ts",
+    "location": {
+      "line": 22,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-H1 tmp-sweep（ui） > 清理失败只 warn 不抛，其余登记目录照常清",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/tmp-sweep.test.ts",
+    "location": {
+      "line": 31,
+      "column": 3
+    }
+  },
+  {
+    "name": "P5-H1 tmp-sweep（ui） > 幂等：重复 sweep 不抛",
+    "file": "/tmp/bot-wt/P5-61f1/app/ui/tests/unit/support/tmp-sweep.test.ts",
+    "location": {
+      "line": 50,
+      "column": 3
+    }
+  }
+]

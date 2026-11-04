@@ -1,0 +1,16 @@
+验收工作目录 /tmp/bot-wt/P5-61f1/app/ui；HEAD 000efb657a2ca9da77cd0460a9aeb3d1076d7f03
+1. pnpm build > vfy/build.log
+2. git archive 99c3d19 app/ui | tar -x -C vfy/old-src （不使用共享 stash，不 checkout 活动 worktree）
+   旧树 node_modules / renderer-grok/node_modules 链接申报 worktree 的相同依赖；app/sdk 也只读链接。
+   旧树顺序执行 electron-vite build；vite build --config overrides/vite.config.ts；cp assets/runtime/* .build/frontend-shell/assets/；vite build --config shim/vite.config.ts；node scripts/inject-shim.mjs；node scripts/stage-renderer.mjs。
+   old-build-provenance.json：全部 524 个归档文件与 git show 99c3d19:path 字节相等。
+3. P561F2_OUT=<E>/vfy/red-reproduced pnpm exec sh scripts/run-e2e.sh -c <E>/vfy/red.config.ts --repeat-each=2
+4. for i in 0 1 2 3 4; do P561_VFY_OUT=<E>/vfy/run-$i P561F2_OUT=<E>/vfy/run-$i pnpm exec sh scripts/run-e2e.sh -c <E>/vfy/vfy.config.ts; done
+   复制的 theme-flash/theme-dual：只重写 import 绝对路径与 OUT；测试语义、阈值不改。
+5. P561F2_OUT=<E>/vfy pnpm exec sh scripts/run-e2e.sh -c <E>/vfy/edge.config.ts
+   原生主题探针必须先 emulateMedia({colorScheme:null}) 清 Playwright 默认 light；前一次未清而失败保留在 pre-emulation-reset-*。
+6. node renderer-grok/scripts/check-upstream.mjs
+7. pnpm exec vitest run tests/unit/grok-shim/desktop.test.ts tests/unit/window.test.ts
+   window.test.ts 无匹配文件；实际执行的是 desktop.test.ts 的 17 个测试。
+8. pnpm exec vitest list --no-staticParse --json （仅收集 451 条，不运行全量；默认静态收集只列 374 个模板，不能据此报减测）
+<E> = /home/lingxufeng/bot/work/p5-parity/evidence/P5-61f2

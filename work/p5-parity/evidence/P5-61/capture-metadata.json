@@ -1,0 +1,16 @@
+{
+  "task": "P5-61 diagnosis, not product acceptance",
+  "buildSourceHead": "593066014eb6b273bcdadee78a2692529df59ab1",
+  "endHead": "2746c311baeed86b6acb62dbdbb2f35112c9765a",
+  "headChangedDuringDiagnosis": true,
+  "scope": "Built Electron production app, temporary HOME, independent Xvfb; launchShell uses --disable-gpu. No claim for hardware GPU path or acceptance of endHead.",
+  "primaryDisplay": ":99",
+  "windowCapture": "ffmpeg x11grab -window_id only; page screenshots omit native titlebar controls, videos include them",
+  "frameIndex": "frame-index.json",
+  "traceCheck": "python -I /home/lingxufeng/bot/work/p5-parity/evidence/P5-61/assert-traces.py",
+  "frameInspection": "Read opened flash-evidence.png, saved-dark-white-flash.png and saved-light-black-flash.png: actual Grok Bot Starting cover is white over saved dark and black over saved light. Worker running/completed screenshots show Doc writer blocked and Test fixer working then unread, with unchanged dark outer shell.",
+  "cleanupCommand": "/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p561",
+  "cleanupExit": 0,
+  "cleanupMatches": 0,
+  "productFilesEdited": false
+}

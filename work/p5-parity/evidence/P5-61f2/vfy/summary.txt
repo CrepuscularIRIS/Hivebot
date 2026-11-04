@@ -1,0 +1,8 @@
+RED [{'file': 'reload-dark-0.json', 'bad': 20, 'range': [53.099999994039536, 351.7999999821186], 'stable': ['rgb(31, 31, 31)', 'rgb(31, 31, 31)', 'rgb(31, 31, 31)', 'rgb(31, 31, 31)'], 'badPerControl': [0, 20, 10, 10]}, {'file': 'reload-dark-1.json', 'bad': 19, 'range': [62, 347.19999998807907], 'stable': ['rgb(31, 31, 31)', 'rgb(31, 31, 31)', 'rgb(31, 31, 31)', 'rgb(31, 31, 31)'], 'badPerControl': [0, 19, 10, 10]}, {'file': 'reload-light-0.json', 'bad': 11, 'range': [62, 210.5], 'stable': ['rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)'], 'badPerControl': [0, 11, 8, 8]}, {'file': 'reload-light-1.json', 'bad': 11, 'range': [55.900000005960464, 210.59999999403954], 'stable': ['rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)'], 'badPerControl': [0, 11, 8, 8]}]
+NEW rounds 5
+run-0 trace bad 0 movies 4 whole/strip bad 0
+run-1 trace bad 0 movies 4 whole/strip bad 0
+run-2 trace bad 0 movies 4 whole/strip bad 0
+run-3 trace bad 0 movies 4 whole/strip bad 0
+run-4 trace bad 0 movies 4 whole/strip bad 0
+POINTS17 [{'file': 'points17-light.json', 'n': 17, 'nullPerControl': [0, 0, 0, 0], 'bad': 0, 'timeRange': [140.09999999403954, 379.7999999821186]}, {'file': 'points17-dark.json', 'n': 17, 'nullPerControl': [0, 0, 0, 0], 'bad': 0, 'timeRange': [136.60000002384186, 383]}]

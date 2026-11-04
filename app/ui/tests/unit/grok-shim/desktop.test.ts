@@ -124,6 +124,54 @@ describe('主题偏好 · localStorage 落盘（L-7 O7：手动选择不能在 r
   })
 })
 
+describe('P5-61.f1 主题下沉宿主 + 切换帧禁过渡', () => {
+  it('③ 建桥即把落盘偏好 + 实际所画色调推给宿主（与系统相反也照推），set 与 system 下的 media 变化再推', async () => {
+    let dark = false
+    let onMedia = (): void => {}
+    const w = { ...mkWindow(), matchMedia: () => ({ get matches() { return dark }, addEventListener: (_: string, l: () => void) => { onMedia = l } }) }
+    w.localStorage.setItem('pbots.shim.theme-preference', 'dark')
+    const pushed: string[] = []
+    const d = createDesktopBridge(w as unknown as Window, { authId: 'x', setHostTheme: (t) => pushed.push(`${t.preference}/${t.resolved}`) })
+    expect(d.theme.initial).toEqual({ preference: 'dark', resolved: 'dark' })
+    expect(pushed).toEqual(['dark/dark'])
+    await d.theme.set('light')
+    await d.theme.set('system')
+    dark = true; onMedia()
+    expect(pushed).toEqual(['dark/dark', 'light/light', 'system/light', 'system/dark'])
+  })
+
+  it('② 推送监听期间挂全局禁过渡样式（权重压过 .class !important），监听返回且强制样式计算后移除', async () => {
+    const head: unknown[] = []
+    let flushed = 0
+    const style = { textContent: '', remove() { head.splice(head.indexOf(this), 1) } }
+    const doc = { createElement: () => style, head: { append: (s: unknown) => head.push(s) }, body: {} }
+    const w = { ...mkWindow(), document: doc, getComputedStyle: () => { flushed++; return { opacity: '1' } } }
+    const d = createDesktopBridge(w as unknown as Window, { authId: 'x' })
+    const seen: Array<{ attached: boolean; resolved: string }> = []
+    d.theme.onChanged((t) => seen.push({ attached: head.includes(style), resolved: t.resolved }))
+    await d.theme.set('dark')
+    expect(seen).toEqual([{ attached: true, resolved: 'dark' }])
+    expect(style.textContent).toMatch(/:not\(#\\#\)[^{]*\{[^}]*transition:\s*none\s*!important/)
+    expect(flushed).toBe(1)
+    expect(head).toEqual([])
+  })
+})
+
+describe('P5-61.f2 建桥即落 html[data-theme]（先于 bundle 首次挂载）', () => {
+  // 根因：侧栏控件在上游 useEffect 设 data-theme 之前就挂上，按 index.css :root 亮默认算底色，
+  // data-theme 到位后 .12s/.3s 背景过渡从亮滑到暗。shim 先于 bundle 落同值，上游再设是空操作。
+  for (const [saved, cls] of [['dark', 'cursor-dark'], ['light', 'cursor-light']] as const) {
+    it(`保存 ${saved} → 建桥后 html data-theme=${cls}、color-scheme=${saved}（与上游 applyRootShellTheme 同值）`, () => {
+      const root = { dataset: {} as Record<string, string>, style: { colorScheme: '' } }
+      const w = { ...mkWindow(saved === 'light'), document: { documentElement: root } }
+      w.localStorage.setItem('pbots.shim.theme-preference', saved)
+      createDesktopBridge(w as unknown as Window, { authId: 'x' })
+      expect(root.dataset.theme).toBe(cls)
+      expect(root.style.colorScheme).toBe(saved)
+    })
+  }
+})
+
 describe('P6-15 sidebar sections 实底（E2 / E10 / E11）', () => {
   it('无 worker（sidebarSections 回 null / 未接）→ get 回 null，set 原样回（与此前一致）', async () => {
     const plain = b(mkWindow())

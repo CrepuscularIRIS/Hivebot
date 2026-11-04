@@ -21,9 +21,13 @@ export interface DesktopOptions {
   onFocusAgent?: DesktopBridge['onFocusAgent']
   /** P6-15：worker 合成 section（data.sections；无 worker → null = 今天的扁平列表）。 */
   sidebarSections?: () => unknown[] | null
+  /** P5-61.f1 ③：偏好下沉宿主 nativeTheme.themeSource（prefers-color-scheme 随之），resolved = 页面实际所画色调，
+   * 原生标题栏控件 / 窗口底色按它着色（system 下宿主 nativeTheme 与 Chromium media 可能不一致，以页面为准）。缺省空转。 */
+  setHostTheme?: (theme: ThemeState) => void
 }
 
 type AnyWindow = Window & {
+  getComputedStyle?(el: Element): { opacity: string }
   matchMedia(q: string): { matches: boolean; addEventListener(type: string, l: () => void): void }
   addEventListener(type: 'resize', l: () => void): void
   removeEventListener(type: 'resize', l: () => void): void
@@ -50,10 +54,40 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
     : { preference: initialPreference, resolved: initialPreference }
   // 跟随系统（Electron nativeTheme → prefers-color-scheme）：preference=system 时系统切换要推给上游 theme.onChanged，
   // 否则 0.18 只在启动时读一次底色（P5-54 实测：emulateMedia dark 后 data-theme 仍 cursor-light）
+  // P5-61.f1 ②：上游监听里同步换 data-theme + token 样式；overrides 的 120–300ms 背景过渡会让 composer / 按钮
+  // 滞后正文、拍到混色帧。切换那一帧全局禁过渡（next-themes disableTransitionOnChange 同法），强制算一次样式再撤，
+  // 颜色与 data-theme 同帧到位，悬停动效不受影响。`:not(#\#)` 抬权重压过 overrides 的 `.class !important`。
+  const emitTheme = (): void => {
+    opts.setHostTheme?.(theme)
+    const doc = (win as Partial<Window>).document
+    const freeze = doc?.createElement('style')
+    if (doc !== undefined && freeze !== undefined) {
+      freeze.textContent = '*:not(#\\#),*:not(#\\#)::before,*:not(#\\#)::after{transition:none!important}'
+      doc.head.append(freeze)
+    }
+    try {
+      for (const l of [...themeListeners]) l(theme)
+    } finally {
+      if (doc !== undefined && freeze !== undefined) {
+        void win.getComputedStyle?.(doc.body).opacity // 强制样式计算：新颜色在禁过渡下落定
+        freeze.remove()
+      }
+    }
+  }
+  // ③：宿主跟同一偏好（与系统相反时原生控件也不留白块）；建桥即推一次（覆盖宿主镜像过期），之后每次推送随 emitTheme
+  opts.setHostTheme?.(theme)
+  // P5-61.f2：上游 data-theme 在 ProductionRenderer 的 useEffect 里才设（applyRootShellTheme），侧栏圆钮 / Connect apps
+  // 早于它挂载、按 index.css :root 亮默认算底色，data-theme 一到位就沿 .12s/.3s 背景过渡亮→暗滑过（composer 晚挂不受影响）。
+  // shim 先于 bundle 落同值（与 window-chrome/model.ts applyRootShellTheme 一致），控件首帧即按 palette 解析，上游再设为空操作。
+  const root = (win as Partial<Window>).document?.documentElement
+  if (root !== undefined) {
+    root.dataset.theme = theme.resolved === 'dark' ? 'cursor-dark' : 'cursor-light'
+    root.style.colorScheme = theme.resolved
+  }
   darkQuery.addEventListener('change', () => {
     if (theme.preference !== 'system') return
     theme = { preference: 'system', resolved: darkQuery.matches ? 'dark' : 'light' }
-    for (const l of [...themeListeners]) l(theme)
+    emitTheme()
   })
 
   const auth: DesktopBridge['cursorAccount']['getStatus'] extends () => Promise<infer T> ? T : never = {
@@ -103,7 +137,7 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
           ? { preference, resolved: win.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light' }
           : { preference, resolved: preference }
         persist('theme-preference', preference) // L-7 O7：选择要活过刷新/重启
-        for (const l of [...themeListeners]) l(theme)
+        emitTheme()
         return Promise.resolve(theme)
       },
       onChanged: (l) => { themeListeners.add(l); return () => { themeListeners.delete(l) } },

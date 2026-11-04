@@ -1,0 +1,9 @@
+{"waived:computed-equiv":10,"waived:data":16,"waived:subpixel":12,"waived:arch":40,"open":8,"waived:fixture":12}
+conv-rest.light | permission.card-primary-btn | background-color | rgb(28, 28, 28) | rgba(28, 28, 28, 0.06)
+conv-rest.light | permission.card-primary-btn | color | rgb(252, 252, 252) | rgb(28, 28, 28)
+info-pane.light | permission.card-primary-btn | background-color | rgb(28, 28, 28) | rgba(28, 28, 28, 0.06)
+info-pane.light | permission.card-primary-btn | color | rgb(252, 252, 252) | rgb(28, 28, 28)
+conv-rest.dark | permission.card-primary-btn | background-color | rgb(245, 245, 245) | rgba(245, 245, 245, 0.04)
+conv-rest.dark | permission.card-primary-btn | color | rgb(18, 18, 18) | rgb(245, 245, 245)
+info-pane.dark | permission.card-primary-btn | background-color | rgb(245, 245, 245) | rgba(245, 245, 245, 0.04)
+info-pane.dark | permission.card-primary-btn | color | rgb(18, 18, 18) | rgb(245, 245, 245)

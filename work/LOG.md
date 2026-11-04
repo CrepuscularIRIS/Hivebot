@@ -895,3 +895,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 18:27 P5-31 验收 PASS → 合并 a26aaab（vitest 360 绿），e2e 后台 | 在途：P5-55
 18:34 P5-31 回归闭环（61 e2e exit 0）
 19:08 P5-55 builder 完成（32aef12：open=0，996 修/90 豁，实测翻案 88+XVF 默认关，shim 用户消息根因修，359+62）→ verifier 派发（含 P5-31 合并后 B8/B9 复核）
+19:36 P5-55 验收 PASS+合并闸门 FIX（两钮卡主钮错位 open=8）→ 微修派在 feat/P5-55 上（合并态验证 open 回 0 后整体合并）

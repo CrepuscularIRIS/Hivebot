@@ -405,6 +405,23 @@ it('drift：approval.yml 三个覆盖块 = 已装 preset 文件 dedent 后仅翻
     const exp = expected.filter((l, i) => !(l === '' && (i === 0 || expected[i - 1] === '')))
     while (ours.length > 0 && ours[ours.length - 1] === '') ours.pop()
     while (exp.length > 0 && exp[exp.length - 1] === '') exp.pop()
-    expect(ours.join('\n'), `approval.yml 的 preset-${preset} 覆盖块与上游一致（仅 disabled 翻转）`).toBe(exp.join('\n'))
+    // P6-05：standard 的 persona prefix 在上游基础句之后追加了三段式回复段落
+    // （P6-02 定稿，approval.yml 该处注释记 sha256；段落内容与默认链系统提示由
+    // work/p6-orchestration/evidence/P6-05/probe.mjs 独立校验）。对 prefix 值
+    // 本身豁免逐字比对（两侧同替换为一行占位）；persona 行 id/name 与块内其余
+    // 全部行仍逐字比对。
+    const cutPersonaPrefix = (lines: string[]): string[] => {
+      const i = lines.indexOf('      - id: persona')
+      const cfg = i >= 0 ? lines.indexOf('        config:', i) : -1
+      if (cfg < 0) throw new Error(`preset-${preset}: persona 行 / config 缺失`)
+      let end = lines.length
+      for (let k = cfg + 1; k < lines.length; k++) {
+        if (/^ {6}- id: /.test(lines[k])) { end = k; break }
+      }
+      return [...lines.slice(0, cfg + 1), '          prefix: <P6-05 追加段落，值豁免逐字比对>', ...lines.slice(end)]
+    }
+    const oursCmp = preset === 'standard' ? cutPersonaPrefix(ours) : ours
+    const expCmp = preset === 'standard' ? cutPersonaPrefix(exp) : exp
+    expect(oursCmp.join('\n'), `approval.yml 的 preset-${preset} 覆盖块与上游一致（仅 disabled 翻转；standard persona prefix 为 P6-05 偏差）`).toBe(expCmp.join('\n'))
   }
 })

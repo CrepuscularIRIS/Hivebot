@@ -4,6 +4,7 @@
 // support/connectors.ts patchRealIndex）、local（假 npm registry：demo-connector 真 dsh bundle + bare-package 裸包）。
 // 预装：以 real 目录里的 pretrip-mcp 同名包装一个 fixture bundle（operator 直连 #15）→「Installed」类有 1 条实例。
 // ① 浏览 / 搜索 / 分页 / 切源重置 / 三分类 109-1-1 / 无启用与源写入口 / 亮暗截图
+// P5-57 按 R-04（RE-market-detail.md）：安装动词 Connect → Connecting… → ✓Connected；已装入口 = 预览条「Your plugins」（无 tab）；详情单列 + Information 卡
 // ② UI 安装旅程（串行、可离开、重拉 #16、New bot with this app 预勾走 #4）
 // ③ D5 全条款：real 源 filesystem 搜索 → 详情 → UI 安装（__pbotsM1 断言 main 收到 enabled === false）→ 认 wrapper 名 →
 //    用它新建（预勾 wrapper）→ X 实调 mcp__…__read_file 出结果；未勾选的 bot Y 工具表无 mcp__*
@@ -104,19 +105,21 @@ test('P-C ①：入口 Connect apps → 浏览 / 搜索 / 分页 / 切源重置 
 
     // 三分类（109 仅浏览 / 1 可装 filesystem / 1 已装 pretrip）
     expect(await kinds(page)).toEqual({ browse: 109, installable: 1, installed: 1 })
-    await expect(page.locator(`[data-entry="${PRE_INSTALLED}"] .pb-ok`)).toContainText('Installed')
+    await expect(page.locator(`[data-entry="${PRE_INSTALLED}"] .pb-added`)).toContainText('Connected')
+    await expect(page.locator(`[data-entry="${FS_PLUGIN}"] [data-action="connect"]`)).toHaveText('Connect') // R-04 iSLIjg
     const browseRow = page.locator('[data-market-list] [data-kind="browse"]').first()
     await expect(browseRow.locator('button[data-action]')).toHaveCount(0)
-    await expect(browseRow.locator('.pb-tag')).toHaveText('Browse only')
+    await expect(browseRow.locator('.pb-status')).toHaveText('Not available')
 
     // P3/P11：无 Enable / 「安装并启用」、无目录源写入口
     expect((await market(page).innerText()).toLowerCase()).not.toContain('enable')
     expect(await market(page).locator('input:not([data-market-search])').count()).toBe(0)
 
     // 仅浏览详情：原因常驻、按钮 disabled；Back 回列表保留已加载结果（P12）
-    await browseRow.locator('.pb-row__main').click()
-    await expect(page.locator('[data-market-detail] [data-detail-action] button')).toBeDisabled()
-    await expect(page.locator('[data-market-detail]')).toContainText('Browse only')
+    await browseRow.locator('.pb-row__open').click()
+    await expect(page.locator('[data-market-detail] [data-detail-action] button')).toHaveCount(0)
+    await expect(page.locator('[data-market-detail] [data-detail-action]')).toHaveText('Not available')
+    await expect(page.locator('[data-market-detail] [aria-label="Information"]')).toContainText('Availability')
     await page.screenshot({ path: join(EVIDENCE, 'market-detail-browse.png') })
     await page.click('[data-action="market-back"]')
     await expect(page.locator('[data-market-list]')).toBeVisible()
@@ -127,7 +130,7 @@ test('P-C ①：入口 Connect apps → 浏览 / 搜索 / 分页 / 切源重置 
     await expect.poll(async () => Number((await count(page))?.match(/of (\d+)$/)?.[1] ?? -1)).toBeLessThan(111)
     await expect(page.locator(`[data-entry="${FS_PLUGIN}"]`)).toHaveAttribute('data-kind', 'installable')
     await page.fill('[data-market-search]', 'zzqqxxnomatch')
-    await expect(page.locator('[data-market-empty]')).toContainText('No apps match “zzqqxxnomatch”')
+    await expect(page.locator('[data-market-empty]')).toContainText('No plugins match "zzqqxxnomatch"')
     await page.getByRole('button', { name: 'Clear search' }).click()
     await expect.poll(() => count(page)).toBe('Showing 50 of 111')
 
@@ -140,10 +143,12 @@ test('P-C ①：入口 Connect apps → 浏览 / 搜索 / 分页 / 切源重置 
     await page.selectOption('[data-market-source]', env.server.realUrl)
     await expect.poll(() => count(page)).toBe('Showing 50 of 111')
 
-    // Installed 页签 = #16
-    await page.click('[data-tab="installed"]')
-    await expect(page.locator(`[data-installed-list] [data-bundle="${PRE_INSTALLED}"]`)).toBeVisible()
-    await expect(page.locator('[data-tab="installed"]')).toHaveText('Installed 1')
+    // 已装预览条（Your plugins，计数 = #16）→ 已装列表 → Back 回列表
+    await expect(page.locator('[data-installed-count]')).toHaveText('1')
+    await page.click('[data-action="your-plugins"]')
+    await expect(page.locator(`[data-installed-list] [data-bundle="${PRE_INSTALLED}"] .pb-added`)).toContainText('Connected')
+    await page.click('[data-action="market-back"]')
+    await expect(page.locator('[data-market-list]')).toBeVisible()
 
     // Esc：空搜索框 → 关市场；侧栏仍在
     await page.keyboard.press('Escape')
@@ -154,7 +159,7 @@ test('P-C ①：入口 Connect apps → 浏览 / 搜索 / 分页 / 切源重置 
   }
 })
 
-test('P-C ②③④：安装旅程（串行 / 可离开 / 重拉 #16）→ New bot with this app 预勾走 #4 + D5 UI 全条款 + not-bundle', async () => {
+test('P-C ②③④：Connect 旅程（串行 / 可离开 / 重拉 #16）→ New bot with this app 预勾走 #4 + D5 UI 全条款 + not-bundle', async () => {
   test.setTimeout(480_000)
   const env = await launchMarket()
   try {
@@ -163,23 +168,24 @@ test('P-C ②③④：安装旅程（串行 / 可离开 / 重拉 #16）→ New b
     await expect.poll(() => count(page), { timeout: 20_000 }).toBe('Showing 50 of 111')
     await page.selectOption('[data-market-source]', env.server.localUrl)
     const row = page.locator(`[data-entry="${LOCAL_PLUGIN}"]`)
-    await row.locator('[data-action="install"]').click()
-    await expect(row.locator('.pb-busy')).toBeVisible()
+    await row.locator('[data-action="connect"]').click()
+    await expect(row.locator('[data-action="connect"]')).toHaveText('Connecting…') // R-04 JrFTcr
     await page.screenshot({ path: join(EVIDENCE, 'market-installing.png') })
     // 全局串行：安装进行中，另一条可装条目的 Install disabled
-    await expect(page.locator(`[data-entry="${BARE_PLUGIN}"] [data-action="install"]`)).toBeDisabled()
+    await expect(page.locator(`[data-entry="${BARE_PLUGIN}"] [data-action="connect"]`)).toBeDisabled()
     // 可离开：关市场，安装在模块级 store 里继续；再开回到同源
     await page.click('.pb-market .sand-plugins-dialog__close')
     await expect(market(page)).toHaveCount(0)
     await openMarket(page)
     await expect(row).toHaveAttribute('data-kind', 'installed', { timeout: 120_000 })
-    await expect(page.locator('[data-tab="installed"]')).toHaveText('Installed 2') // #16 已重拉
+    await expect(row.locator('.pb-added')).toContainText('Connected')
+    await expect(page.locator('[data-installed-count]')).toHaveText('2') // #16 已重拉
 
     // 详情 → New bot with this app：对话框预勾该连接器、不自动提交
-    await row.locator('.pb-row__main').click()
-    await expect(page.locator('[data-market-detail]')).toContainText("isn't turned on for every bot")
+    await row.locator('.pb-row__open').click()
+    await expect(page.locator('[data-market-detail]')).toContainText("aren't turned on for every bot")
     const before = (await devState(page)).order
-    await page.click('[data-detail-action] [data-action="new-with"]')
+    await page.click('[data-market-detail] [data-action="new-with"]')
     await expect(dlg(page)).toBeVisible()
     await expect(dlg(page).locator('#pb-new-bot-title')).toHaveText('New bot with this app')
     await expect(dlg(page).locator(`[data-connector-option="${LOCAL_PLUGIN}"] input`)).toBeChecked({ timeout: 15_000 })
@@ -203,11 +209,12 @@ test('P-C ②③④：安装旅程（串行 / 可离开 / 重拉 #16）→ New b
     await page.fill('[data-market-search]', 'filesystem')
     const fs = page.locator(`[data-entry="${FS_PLUGIN}"]`)
     await expect(fs).toHaveAttribute('data-kind', 'installable')
-    await fs.locator('.pb-row__main').click() // 浏览 → 搜索 → 详情
+    await fs.locator('.pb-row__open').click() // 浏览 → 搜索 → 详情
     await expect(page.locator(`[data-market-detail="${FS_PLUGIN}"]`)).toContainText('supported connector bundle')
     await page.screenshot({ path: join(EVIDENCE, 'market-detail-installable.png') })
-    await page.click(`[data-market-detail="${FS_PLUGIN}"] [data-action="install"]`)
-    await expect(page.locator(`[data-market-detail="${FS_PLUGIN}"]`), 'U-26 ①：#16 返回 wrapper 名 → Installed').toHaveAttribute('data-kind', 'installed', { timeout: 120_000 })
+    await page.click(`[data-market-detail="${FS_PLUGIN}"] [data-action="connect"]`)
+    await expect(page.locator(`[data-market-detail="${FS_PLUGIN}"] [data-action="connect"]`)).toHaveText('Connecting…')
+    await expect(page.locator(`[data-market-detail="${FS_PLUGIN}"]`), 'U-26 ①：#16 返回 wrapper 名 → Connected').toHaveAttribute('data-kind', 'installed', { timeout: 120_000 })
     const m1Installs = await shell.app.evaluate(
       () => (globalThis as unknown as { __pbotsM1?: { installs: Array<{ spec: unknown; enabled: unknown }> } }).__pbotsM1?.installs ?? [],
     )
@@ -247,11 +254,11 @@ test('P-C ②③④：安装旅程（串行 / 可离开 / 重拉 #16）→ New b
     await page.fill('[data-market-search]', '')
     await expect.poll(() => count(page)).toBe('Showing 2 of 2')
     const bare = page.locator(`[data-entry="${BARE_PLUGIN}"]`)
-    await bare.locator('[data-action="install"]').click()
+    await bare.locator('[data-action="connect"]').click()
     await expect(bare).toHaveAttribute('data-kind', 'unsupported', { timeout: 180_000 })
-    await expect(bare.locator('.pb-fail')).toHaveText("Can't install")
+    await expect(bare.locator('.pb-status')).toHaveText('Not supported')
     await expect(bare.locator('button[data-action]')).toHaveCount(0)
-    await bare.locator('.pb-row__main').click()
+    await bare.locator('.pb-row__open').click()
     await expect(page.locator('[data-market-detail] [data-install-error="not-bundle"]')).toContainText("isn't a supported connector bundle")
     await page.screenshot({ path: join(EVIDENCE, 'market-not-bundle.png') })
   } finally {

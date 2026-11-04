@@ -1,11 +1,14 @@
 // P5-57 覆盖：0.18 的 PluginsDesktopSurface（Cursor MCP / 技能目录，desktop.mcp.* 我们没有实底）整面换成 P-C 市场
 // （定稿 work/p5-parity/ui/P5-57-final.md ①；交互语义复制改造自旧 renderer plugins/market/Market.tsx @4500cd2^）。
-// 外壳按 0.78.1：模态 900×700、r14、1px 描边无阴影、48 高头部 + Back / Close 圆钮、「Connect Apps」标题、药丸 tablist（R2 D1–D3）。
-// 入口 / overlay 帧 / 命令面板项都是 ProductionRenderer 原样的（footer 药丸 → setOverlay("plugins")）。
+// 外壳按 0.78.1：模态 900×700、r14、1px 描边无阴影、48 高头部 + Back / Close 圆钮、「Connect Apps」标题（R2 D1–D2）。
+// 列表 / 详情按 R-04（work/p5-parity/RE-market-detail.md）：安装动词一律 Connect → Connecting… → ✓Connected（iSLIjg/JrFTcr/QHcLEN）；
+// 行 = sand-plugins-row 单组件（图标 40 + 名称 + 副题 + trailing 态机）；已装预览条（≤4 图标 + 计数 + chevron，「Your plugins」）
+// 代替 tab；详情 = 单列页（头：图标 56 + 标题 + 动作 → 描述 → Information 卡）。目录数据只有 name/title/description/version，
+// 分类 chips / 推荐 / Apps·Skills 卡 / Copy link / Tool permissions（L-AP 档位不归 renderer）不做，见 REPORT-P5-57。
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { SandButton, SandIcon, SandIconButton } from '../../frontend/src/recovered/ui/sand-kit-primitives'
 import type { PluginsDesktopSurfaceProps } from '../../frontend/src/recovered/features/plugins/overlay/desktop-surface'
-import { api, monogram, text, ui, useOnline } from './pbots-ui'
+import { api, monogram, text, ui, useOnline, type Bundle } from './pbots-ui'
 import { openNewBot } from './new-bot-dialog'
 import {
   classify, enterMarket, install, installedNameOf, installedNames, loadMore, openDetail, outcomeText, refreshBundles, retrySearch, setQuery, setSource,
@@ -14,42 +17,66 @@ import {
 
 export type { PluginsDesktopSurfaceProps } from '../../frontend/src/recovered/features/plugins/overlay/desktop-surface'
 
+const PREVIEW_MAX = 4 // R-04 §1.2 已装预览条 wo=4
+
 function Mono({ name, size }: { name: string; size: number }) {
   return <span className="pb-mono" style={{ width: size, height: size, fontSize: Math.round(size * 0.42) }} aria-hidden="true">{monogram(name)}</span>
 }
 
-function Busy() {
-  return <span className="pb-busy" role="status">Installing…<span className="pb-progress" /></span>
+/** ✓Connected 徽标（HAt：check 12 + QHcLEN）。 */
+function Connected() {
+  return <span className="pb-added"><SandIcon name="check" size={12} />Connected</span>
 }
 
-function Status({ m, entry, kind, online }: { m: MarketState; entry: Entry; kind: Kind; online: boolean }) {
+/** trailing / 详情动作态机（R-04 §1.2 / §2.2）：Connected 徽标 > Not available > 本会话不受支持 > Connecting… > Connect。 */
+function Action({ m, entry, kind, online, size }: { m: MarketState; entry: Entry; kind: Kind; online: boolean; size: 'sm' | 'md' }) {
   const outcome = m.outcomes[entry.name]
-  if (kind === 'installed') return <span className="pb-ok"><SandIcon name="check" size="xs" />Installed</span>
-  if (kind === 'browse') return <span className="pb-tag" title="This listing has no install coordinates">Browse only</span>
-  if (kind === 'unsupported') return <span className="pb-fail" title={outcomeText(outcome!)}>Can't install</span>
-  if (m.installing === entry.name) return <Busy />
-  const other = m.installing !== null
+  const name = text(entry.title) || entry.name
+  if (kind === 'installed') return <Connected />
+  if (kind === 'browse') return <span className="pb-status" role="status" title="This listing has no install coordinates">Not available</span>
+  if (kind === 'unsupported') return <span className="pb-status pb-status--danger" role="status" title={outcomeText(outcome!)}>Not supported</span>
+  const connecting = m.installing === entry.name
+  const other = m.installing !== null && !connecting
   return (
-    <span className="pb-row__side">
-      {outcome !== undefined && <span className="pb-fail" data-install-error={outcome.code}>{outcomeText(outcome)}</span>}
-      <SandButton data-action="install" disabled={other || !online} onClick={() => void install(entry)} shape="pill" size="sm" variant="secondary"
-        title={other ? 'Another install is in progress' : !online ? 'Disconnected' : undefined}>
-        {outcome !== undefined ? 'Retry' : 'Install'}
+    <span className="pb-row__action">
+      {outcome !== undefined && !connecting && <span className="pb-fail" data-install-error={outcome.code}>{outcomeText(outcome)}</span>}
+      <SandButton aria-busy={connecting || undefined} aria-label={`Connect ${name}`} data-action="connect" disabled={connecting || other || !online}
+        onClick={() => void install(entry)} shape="pill" size={size} variant="secondary"
+        title={other ? 'Another app is connecting' : !online ? 'Disconnected' : undefined}>
+        {connecting ? 'Connecting…' : 'Connect'}
       </SandButton>
     </span>
   )
 }
 
-function Row({ m, entry, installed, online }: { m: MarketState; entry: Entry; installed: Set<string>; online: boolean }) {
-  const kind = classify(entry, installed, m.outcomes[entry.name])
+function Row({ name, subtitle, iconKey, onOpen, trailing, attrs }: { name: string; subtitle: string; iconKey: string; onOpen?: () => void; trailing: ReactNode; attrs: Record<string, string> }) {
+  const main = <><Mono name={iconKey} size={40} /><span className="pb-row__main"><span className="pb-row__title">{name}</span><span className="pb-row__desc">{subtitle}</span></span></>
   return (
-    <div className="pb-row" data-entry={entry.name} data-kind={kind}>
-      <button type="button" className="pb-row__main" onClick={() => openDetail(entry.name)}>
-        <Mono name={entry.name} size={36} />
-        <span className="pb-row__text"><span className="pb-row__title">{text(entry.title) || entry.name}</span><span className="pb-row__desc">{text(entry.description) || entry.name}</span></span>
-      </button>
-      <Status m={m} entry={entry} kind={kind} online={online} />
-    </div>
+    <li className="pb-row sand-plugins-row" {...attrs}>
+      {onOpen !== undefined
+        ? <button type="button" className="pb-row__open" aria-label={`Open ${name}`} onClick={onOpen}>{main}</button>
+        : <span className="pb-row__open pb-row__open--static">{main}</span>}
+      <span className="pb-row__trailing">{trailing}</span>
+    </li>
+  )
+}
+
+function InstalledPreview({ bundles, onOpen }: { bundles: Bundle[]; onOpen(): void }) {
+  return (
+    <button type="button" className="pb-installed-preview" aria-label="Your plugins" data-action="your-plugins" onClick={onOpen}>
+      <span className="pb-installed-preview__stack">{bundles.slice(0, PREVIEW_MAX).map((b) => <Mono key={b.name} name={b.name} size={18} />)}</span>
+      <span className="pb-installed-preview__count" data-installed-count>{bundles.length}</span>
+      <SandIcon name="chevron-right" size={12} />
+    </button>
+  )
+}
+
+function Info({ rows }: { rows: Array<[string, string]> }) {
+  return (
+    <section className="pb-card" aria-label="Information">
+      <h4>Information</h4>
+      <dl className="pb-info">{rows.map(([k, v]) => <div key={k} className="pb-info__row"><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+    </section>
   )
 }
 
@@ -69,43 +96,35 @@ function Detail({ m, entry, online, onNewWith }: { m: MarketState; entry: Entry;
     return () => { live = false }
   }, [m.url, entry.name, version])
   const outcome = m.outcomes[entry.name]
+  const source = m.sources?.find((x) => x.url === m.url)
+  const title = text(entry.title) || entry.name
   return (
     <article className="pb-detail" data-market-detail={entry.name} data-kind={kind}>
-      <div className="pb-detail__head">
-        <Mono name={entry.name} size={48} />
-        <div className="pb-row__text">
-          <h3 className="pb-detail__title">{text(entry.title) || entry.name}</h3>
+      <header className="pb-detail__head">
+        <Mono name={entry.name} size={56} />
+        <div className="pb-detail__titles">
+          <h3 className="pb-detail__title" data-detail-hero-title>{title}</h3>
           <span className="pb-row__desc">{entry.name}{version !== undefined ? ` · v${version}` : ''}</span>
         </div>
-      </div>
+        <span className="pb-detail__action" data-detail-action><Action m={m} entry={entry} kind={kind} online={online} size="md" /></span>
+      </header>
       {text(entry.description) !== '' && <p className="pb-detail__desc">{text(entry.description)}</p>}
-      <div className="pb-detail__action" data-detail-action>
-        {kind === 'installed' && (
-          <>
-            <p className="pb-note pb-note--ok"><SandIcon name="check" size="xs" />Installed. It isn't turned on for every bot: pick it when you create a bot.</p>
-            <SandButton data-action="new-with" onClick={() => onNewWith(bundle ?? entry.name)} shape="pill" trailingIcon="arrow-right" variant="primary">New bot with this app</SandButton>
-          </>
-        )}
-        {kind === 'browse' && (
-          <>
-            <SandButton disabled shape="pill" variant="primary">Not installable</SandButton>
-            <p className="pb-note">This listing has no npm install coordinates, so the app can't install it yet. Browse only.</p>
-          </>
-        )}
-        {kind === 'unsupported' && <p className="pb-note pb-note--danger" data-install-error="not-bundle">Can't install · {outcomeText(outcome!)}</p>}
-        {kind === 'installable' && (
-          <>
-            {m.installing === entry.name
-              ? <Busy />
-              : <SandButton data-action="install" disabled={m.installing !== null || !online} onClick={() => void install(entry)} shape="pill" variant="primary">
-                {outcome !== undefined ? 'Retry install' : 'Install'}
-              </SandButton>}
-            {outcome !== undefined && <p className="pb-note pb-note--danger" data-install-error={outcome.code}>{outcomeText(outcome)}</p>}
-            <p className="pb-note">Installing checks that this is a supported connector bundle. It won't be turned on for any bot until you pick it when creating one.</p>
-          </>
-        )}
-      </div>
-      <section className="pb-doc" aria-label="About">
+      {kind === 'installed' && (
+        <section className="pb-card pb-card--action">
+          <p className="pb-note">Connected apps aren't turned on for every bot. Pick this one when you create a bot.</p>
+          <SandButton data-action="new-with" onClick={() => onNewWith(bundle ?? entry.name)} shape="pill" trailingIcon="arrow-right" variant="primary">New bot with this app</SandButton>
+        </section>
+      )}
+      {kind === 'browse' && <p className="pb-note">This listing has no npm install coordinates, so the app can't connect it yet.</p>}
+      {kind === 'unsupported' && <p className="pb-note pb-note--danger" data-install-error="not-bundle">Can't connect · {outcomeText(outcome!)}</p>}
+      {kind === 'installable' && <p className="pb-note">Connecting checks that this is a supported connector bundle. It won't be turned on for any bot until you pick it when creating one.</p>}
+      <Info rows={[
+        ['Package', entry.name],
+        ...(version !== undefined ? [['Version', version] as [string, string]] : []),
+        ['Catalog', text(source?.title) || source?.url || '—'],
+        ['Availability', kind === 'installed' ? 'Connected' : kind === 'installable' ? 'Public' : 'Not available'],
+      ]} />
+      <section className="pb-card" aria-label="About">
         <h4>About</h4>
         {doc === null ? <p className="pb-note" role="status">Loading…</p>
           : doc === 'none' ? <p className="pb-note">No details available.</p>
@@ -116,7 +135,7 @@ function Detail({ m, entry, online, onNewWith }: { m: MarketState; entry: Entry;
 }
 
 function Skeleton() {
-  return <div className="pb-skeleton" role="status" aria-label="Loading">{Array.from({ length: 6 }, (_, i) => <div key={i} className="pb-skeleton__row" />)}</div>
+  return <div className="pb-skeleton" role="status" aria-label="Loading…">{Array.from({ length: 6 }, (_, i) => <div key={i} className="pb-skeleton__row" />)}</div>
 }
 
 function Empty({ title, hint, action }: { title: string; hint?: string; action?: ReactNode }) {
@@ -126,7 +145,7 @@ function Empty({ title, hint, action }: { title: string; hint?: string; action?:
 export function PluginsDesktopSurface({ isOpen, onClose }: PluginsDesktopSurfaceProps) {
   const m = useMarket()
   const online = useOnline()
-  const [tab, setTab] = useState<'all' | 'installed'>('all')
+  const [mine, setMine] = useState(false) // 「Your plugins」已装列表视图
   const [draft, setDraft] = useState(m.query)
   const searchRef = useRef<HTMLInputElement>(null)
   useEffect(() => { if (isOpen) void enterMarket() }, [isOpen])
@@ -135,7 +154,8 @@ export function PluginsDesktopSurface({ isOpen, onClose }: PluginsDesktopSurface
     const t = setTimeout(() => setQuery(draft), 200) // P10 防抖
     return () => clearTimeout(t)
   }, [draft]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { searchRef.current?.focus() }, [])
+  // 回到列表（首开 / Back）把焦点交给搜索框：Esc 链（清空 → 关）始终可达
+  useEffect(() => { if (!mine && m.detail === null) searchRef.current?.focus() }, [mine, m.detail, m.sources])
   if (!isOpen) return null
 
   const newWith = (bundle: string): void => {
@@ -145,44 +165,48 @@ export function PluginsDesktopSurface({ isOpen, onClose }: PluginsDesktopSurface
       ui()?.focus(sid)
     })
   }
+  const openMine = (): void => { setMine(true); void refreshBundles() }
 
   const installed = installedNames(m)
   const detail = m.detail === null ? undefined : m.entries.find((e) => e.name === m.detail)
   const source = m.sources?.find((x) => x.url === m.url)
+  const view = detail !== undefined ? 'detail' : mine ? 'installed' : 'list'
 
   let body: ReactNode
   if (detail !== undefined) body = <Detail m={m} entry={detail} online={online} onNewWith={newWith} />
-  else if (m.sourcesError !== null) {
-    body = <Empty title="Couldn't load apps" hint={m.sourcesError} action={<SandButton onClick={() => void enterMarket(true)} shape="pill" variant="secondary">Retry</SandButton>} />
+  else if (mine) {
+    body = m.bundlesError !== null ? <Empty title="Couldn't read your plugins" hint={m.bundlesError} action={<SandButton onClick={() => void refreshBundles()} shape="pill" variant="secondary">Retry</SandButton>} />
+      : m.bundles === null ? <Skeleton />
+        : m.bundles.length === 0 ? <Empty title="Nothing installed yet. Find plugins in the marketplace." />
+          : <ul className="pb-list" data-installed-list aria-label="Your plugins">
+            {m.bundles.map((b) => (
+              <Row key={b.name} name={b.name} subtitle={b.description ?? 'Pick it when you create a bot'} iconKey={b.name} attrs={{ 'data-bundle': b.name }}
+                trailing={<><Connected /><SandButton data-action="new-with" onClick={() => newWith(b.name)} shape="pill" size="sm" trailingIcon="arrow-right" variant="secondary">New bot</SandButton></>} />
+            ))}
+          </ul>
+  } else if (m.sourcesError !== null) {
+    body = <Empty title="Couldn't load the marketplace" hint={m.sourcesError} action={<SandButton onClick={() => void enterMarket(true)} shape="pill" variant="secondary">Retry</SandButton>} />
   } else if (m.sources === null) body = <Skeleton />
   else if (m.sources.length === 0) body = <Empty title="No catalog configured" hint="Catalogs come from the profile's market.yml and can't be changed in the app." />
-  else if (tab === 'installed') {
-    body = m.bundlesError !== null ? <Empty title="Couldn't read installed apps" hint={m.bundlesError} action={<SandButton onClick={() => void refreshBundles()} shape="pill" variant="secondary">Retry</SandButton>} />
-      : m.bundles === null ? <Skeleton />
-        : m.bundles.length === 0 ? <Empty title="No apps installed yet" action={<SandButton onClick={() => setTab('all')} shape="pill" variant="secondary">Browse all</SandButton>} />
-          : <div className="pb-list" data-installed-list>
-            {m.bundles.map((b) => (
-              <div key={b.name} className="pb-row" data-bundle={b.name}>
-                <span className="pb-row__main pb-row__main--static"><Mono name={b.name} size={36} />
-                  <span className="pb-row__text"><span className="pb-row__title">{b.name}</span><span className="pb-row__desc">{b.description ?? 'Installed · pick it when you create a bot'}</span></span>
-                </span>
-                <SandButton data-action="new-with" onClick={() => newWith(b.name)} shape="pill" size="sm" trailingIcon="arrow-right" variant="secondary">New bot</SandButton>
-              </div>
-            ))}
-          </div>
-  } else if (m.error !== null) {
-    body = <Empty title="Couldn't load apps" hint={m.error} action={<SandButton data-action="retry-search" onClick={retrySearch} shape="pill" variant="secondary">Retry</SandButton>} />
+  else if (m.error !== null) {
+    body = <Empty title="Couldn't load the marketplace" hint={m.error} action={<SandButton data-action="retry-search" onClick={retrySearch} shape="pill" variant="secondary">Retry</SandButton>} />
   } else if (m.loading && m.entries.length === 0) body = <Skeleton />
   else if (m.entries.length === 0) {
     body = m.query !== ''
-      ? <Empty title={`No apps match “${m.query}”`} action={<SandButton onClick={() => { setDraft(''); setQuery('') }} shape="pill" variant="secondary">Clear search</SandButton>} />
-      : <Empty title="This catalog has no apps yet" />
+      ? <Empty title={`No plugins match "${m.query.trim()}"`} action={<SandButton onClick={() => { setDraft(''); setQuery('') }} shape="pill" variant="secondary">Clear search</SandButton>} />
+      : <Empty title="This catalog has no plugins yet" />
   } else {
     body = (
       <>
-        <div className="pb-list" data-market-list>
-          {m.entries.map((e) => <Row key={e.name} m={m} entry={e} installed={installed} online={online} />)}
-        </div>
+        {m.query === '' && m.bundles !== null && m.bundles.length > 0 && <InstalledPreview bundles={m.bundles} onOpen={openMine} />}
+        {m.query !== '' && <h3 className="pb-section-title">Results</h3>}
+        <ul className="pb-list" data-market-list>
+          {m.entries.map((e) => {
+            const kind = classify(e, installed, m.outcomes[e.name])
+            return <Row key={e.name} name={text(e.title) || e.name} subtitle={text(e.description) || e.name} iconKey={e.name} onOpen={() => openDetail(e.name)}
+              attrs={{ 'data-entry': e.name, 'data-kind': kind }} trailing={<Action m={m} entry={e} kind={kind} online={online} size="sm" />} />
+          })}
+        </ul>
         <div className="pb-foot">
           <span className="pb-note" data-market-count>Showing {m.entries.length} of {m.total}</span>
           {m.nextOffset !== null && (
@@ -193,9 +217,9 @@ export function PluginsDesktopSurface({ isOpen, onClose }: PluginsDesktopSurface
     )
   }
 
-  const back = (): void => { if (detail !== undefined) openDetail(null); else onClose() }
+  const back = (): void => { if (detail !== undefined) openDetail(null); else if (mine) setMine(false); else onClose() }
   return (
-    <div aria-labelledby="sand-plugins-modal-heading" aria-modal="true" className="sand-plugins-dialog pb-market" data-market data-view={detail !== undefined ? 'detail' : 'list'} role="dialog"
+    <div aria-labelledby="sand-plugins-modal-heading" aria-modal="true" className="sand-plugins-dialog pb-market" data-market data-view={view} role="dialog"
       onKeyDown={(e) => {
         if (e.key !== 'Escape' || e.defaultPrevented) return
         e.preventDefault()
@@ -203,16 +227,16 @@ export function PluginsDesktopSurface({ isOpen, onClose }: PluginsDesktopSurface
         back()
       }}>
       <header className="pb-market__head">
-        {detail !== undefined && <SandIconButton aria-label="Back" data-action="market-back" icon="chevron-left" onClick={back} shape="circle" size="md" variant="ghost" />}
-        <h2 id="sand-plugins-modal-heading">Connect Apps</h2>
+        {view !== 'list' && <SandIconButton aria-label="Back to Marketplace" data-action="market-back" icon="chevron-left" onClick={back} shape="circle" size="md" variant="ghost" />}
+        <h2 id="sand-plugins-modal-heading">{view === 'installed' ? 'Your plugins' : 'Connect Apps'}</h2>
         <SandIconButton aria-label="Close" className="sand-plugins-dialog__close" icon="close" onClick={onClose} shape="circle" size="md" variant="ghost" />
       </header>
-      {!online && <div className="pb-offline" role="status">Disconnected. Installing and creating bots are paused.</div>}
-      {detail === undefined && m.sources !== null && m.sources.length > 0 && (
+      {!online && <div className="pb-offline" role="status">Disconnected. Connecting apps and creating bots are paused.</div>}
+      {view === 'list' && m.sources !== null && m.sources.length > 0 && (
         <div className="pb-market__tools">
           <label className="pb-search">
             <SandIcon name="search" size="sm" />
-            <input ref={searchRef} data-market-search type="search" placeholder="Search apps" aria-label="Search apps" value={draft}
+            <input ref={searchRef} data-market-search type="search" placeholder="Search plugins" aria-label="Search plugins" value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key !== 'Escape' || draft === '') return
@@ -226,12 +250,6 @@ export function PluginsDesktopSurface({ isOpen, onClose }: PluginsDesktopSurface
               {m.sources.map((x) => <option key={x.url} value={x.url}>{text(x.title) || x.url}</option>)}
             </select>
             : <span className="pb-note" data-market-source-caption>From {text(source?.title) || source?.url}</span>}
-          <div className="pb-tabs" role="tablist" aria-label="Apps">
-            <button type="button" role="tab" aria-selected={tab === 'all'} data-tab="all" onClick={() => setTab('all')}>All</button>
-            <button type="button" role="tab" aria-selected={tab === 'installed'} data-tab="installed" onClick={() => { setTab('installed'); void refreshBundles() }}>
-              Installed{m.bundles !== null ? ` ${m.bundles.length}` : ''}
-            </button>
-          </div>
         </div>
       )}
       <div className="pb-market__scroll">{body}</div>

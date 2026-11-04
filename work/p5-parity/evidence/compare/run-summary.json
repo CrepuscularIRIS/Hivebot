@@ -1,5 +1,5 @@
 {
- "startedAt": "2026-11-04T01:55:33.582Z",
+ "startedAt": "2026-11-04T03:43:30.548Z",
  "rightDist": "/tmp/bot-wt/P5-57/app/ui/renderer-grok/.build/frontend-shell",
  "leftRoot": "/dev/shm/grok-re/0.78.1/app/dist/renderer",
  "views": {
@@ -17,7 +17,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562,
+    "bodyLen": 568,
     "clicked": "clicked"
    },
    "ours": {
@@ -56,7 +56,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562
+    "bodyLen": 568
    },
    "ours": {
     "pill": "clicked",
@@ -93,7 +93,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562,
+    "bodyLen": 568,
     "clicked": "clicked"
    },
    "ours": {
@@ -168,7 +168,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 643,
+    "bodyLen": 649,
     "clicked": "clicked"
    },
    "ours": {
@@ -206,7 +206,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562,
+    "bodyLen": 568,
     "clicked": "clicked"
    },
    "ours": {
@@ -245,7 +245,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562
+    "bodyLen": 568
    },
    "ours": {
     "pill": "clicked",
@@ -282,7 +282,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 562,
+    "bodyLen": 568,
     "clicked": "clicked"
    },
    "ours": {
@@ -357,7 +357,7 @@
     "hasPermCard": true,
     "hasUser2": true,
     "personaStates": [],
-    "bodyLen": 643,
+    "bodyLen": 649,
     "clicked": "clicked"
    },
    "ours": {

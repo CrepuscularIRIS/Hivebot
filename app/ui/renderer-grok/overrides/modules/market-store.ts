@@ -71,7 +71,7 @@ export function classify(entry: Entry, installed: ReadonlySet<string>, outcome: 
 
 /** 失败分类文案（P5）：not-bundle 走专门说明；其它给 code + 原因。 */
 export function outcomeText(o: Outcome): string {
-  if (o.kind === 'unconfirmed') return "Couldn't confirm the install. Rechecked the installed list."
+  if (o.kind === 'unconfirmed') return "Couldn't confirm the connection. Rechecked your plugins."
   if (o.code === 'not-bundle') return "This package isn't a supported connector bundle."
   if (o.code === 'incompatible-version') return "Not compatible with this engine version."
   return `${o.code}${o.message !== '' ? `: ${o.message}` : ''}`

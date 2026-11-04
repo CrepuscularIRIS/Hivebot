@@ -1,0 +1,39 @@
+{
+  "titlebar.laptop-icon": {
+    "name": "laptop",
+    "glyph": 1
+  },
+  "codeblock.computed": {
+    "bg": "rgba(28, 28, 28, 0.04)",
+    "color": "rgb(0, 133, 74)",
+    "font": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+    "border": "0px"
+  },
+  "card.height": 244,
+  "copy.clipboard": "touch /tmp/bot-p554-SKirit/data/workspaces/session-db6dc6c7-0510-49fe-9883-ef798d9740a6/canary-vfy-close",
+  "copy.equals-command": true,
+  "close.canary-not-executed": true,
+  "close.pageerrors": [],
+  "card.height-shortcmd": 224,
+  "link.audit": [
+    {
+      "id": "正文链接",
+      "ratio": 14.76,
+      "fg": "rgb(28, 28, 28)",
+      "bg": "rgb(239,239,239)",
+      "size": "14px",
+      "weight": "400"
+    }
+  ],
+  "palette-placeholder.audit": [
+    {
+      "id": "搜索面板占位",
+      "ratio": 3.96,
+      "fg": "rgba(28, 28, 28, 0.56)",
+      "bg": "rgb(255,255,255)",
+      "size": "16px",
+      "weight": "400"
+    }
+  ],
+  "final.pageerrors": []
+}

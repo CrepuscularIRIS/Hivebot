@@ -46,7 +46,7 @@ test('(b) window.open 与 <a target=_blank> 均不开新窗，http(s) 交给 ope
       a.target = '_blank'
       a.textContent = 'x'
       // U-21 起首屏是全窗 fixed 启动封面（拖拽区）：探针元素浮到其上方、显式 no-drag，保证真实点击可达
-      const probe = 'position:fixed;left:0;z-index:10;-webkit-app-region:no-drag;'
+      const probe = 'position:fixed;left:0;z-index:2147483647;-webkit-app-region:no-drag;' // P5-57 封面 z=2147483000
       a.style.cssText = `${probe}top:40px`
       document.body.appendChild(a)
       const b = document.createElement('button')

@@ -1,6 +1,6 @@
 # U1′ 差异表 · 初版（P5-53 对照台自动产出）
 
-差异行数：1142（value 1106 / 单侧缺失 36）
+差异行数：2558（value 1150 / 单侧缺失 36）
 
 | 视图 | 部位 | 属性 | REF 0.78.1 | OURS 0.18 | 类型 |
 |---|---|---|---|---|---|
@@ -95,46 +95,57 @@
 | conv-rest.light | chat.header | padding-left | 140px | 16px | value |
 | conv-rest.light | chat.header | border-bottom-width | 0px | 1px | value |
 | conv-rest.light | chat.header | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| conv-rest.light | chat.header-name | width | 110.25px | 28px | value |
-| conv-rest.light | chat.header-name | height | 41px | 28px | value |
-| conv-rest.light | chat.header-name | border-top-left-radius | 0px | 10px | value |
-| conv-rest.light | chat.header-name | border-top-right-radius | 0px | 10px | value |
-| conv-rest.light | chat.header-name | border-bottom-left-radius | 0px | 10px | value |
-| conv-rest.light | chat.header-name | border-bottom-right-radius | 0px | 10px | value |
-| conv-rest.light | chat.header-name | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| conv-rest.light | transcript.user-message | width | 960px | 308px | value |
+| conv-rest.light | chat.header-name | width | 55.25px | 63.1406px | value |
+| conv-rest.light | chat.header-name | height | 20px | 18px | value |
+| conv-rest.light | chat.header-name | color | rgb(28, 28, 28) | rgba(20, 20, 20, 0.6) | value |
+| conv-rest.light | chat.header-name | font-size | 14px | 16px | value |
+| conv-rest.light | chat.header-name | font-weight | 500 | 400 | value |
+| conv-rest.light | chat.header-name | line-height | 20px | normal | value |
+| conv-rest.light | transcript.user-message | width | 418.156px | 308px | value |
 | conv-rest.light | transcript.user-message | height | 34px | 56px | value |
 | conv-rest.light | transcript.user-message | min-height | auto | 0px | value |
-| conv-rest.light | transcript.user-message | padding-top | 0px | 8px | value |
-| conv-rest.light | transcript.user-message | padding-right | 0px | 12px | value |
-| conv-rest.light | transcript.user-message | padding-bottom | 0px | 8px | value |
-| conv-rest.light | transcript.user-message | padding-left | 0px | 12px | value |
-| conv-rest.light | transcript.user-message | border-top-left-radius | 0px | 18px | value |
-| conv-rest.light | transcript.user-message | border-top-right-radius | 0px | 18px | value |
-| conv-rest.light | transcript.user-message | border-bottom-left-radius | 0px | 18px | value |
-| conv-rest.light | transcript.user-message | border-bottom-right-radius | 0px | 18px | value |
-| conv-rest.light | transcript.user-message | background-color | rgba(0, 0, 0, 0) | rgb(238, 238, 238) | value |
-| conv-rest.light | transcript.user-message | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| conv-rest.light | transcript.assistant-message | width | 960px | 186.266px | value |
-| conv-rest.light | transcript.assistant-message | height | 184px | 193.047px | value |
-| conv-rest.light | transcript.assistant-message | padding-top | 2px | 8px | value |
-| conv-rest.light | transcript.assistant-message | padding-right | 0px | 12px | value |
-| conv-rest.light | transcript.assistant-message | padding-bottom | 2px | 8px | value |
-| conv-rest.light | transcript.assistant-message | padding-left | 0px | 12px | value |
-| conv-rest.light | transcript.assistant-message | border-top-left-radius | 0px | 18px | value |
-| conv-rest.light | transcript.assistant-message | border-top-right-radius | 0px | 18px | value |
-| conv-rest.light | transcript.assistant-message | border-bottom-left-radius | 0px | 18px | value |
-| conv-rest.light | transcript.assistant-message | border-bottom-right-radius | 0px | 18px | value |
-| conv-rest.light | transcript.assistant-message | background-color | rgba(0, 0, 0, 0) | rgb(238, 238, 238) | value |
+| conv-rest.light | transcript.user-message | padding-top | 7px | 8px | value |
+| conv-rest.light | transcript.user-message | padding-bottom | 7px | 8px | value |
+| conv-rest.light | transcript.user-message | background-color | rgb(28, 28, 28) | rgb(238, 238, 238) | value |
+| conv-rest.light | transcript.user-message | color | rgb(255, 255, 255) | rgb(20, 20, 20) | value |
+| conv-rest.light | transcript.user-message | font-size | 14px | 16px | value |
+| conv-rest.light | transcript.user-message | line-height | 20px | normal | value |
+| conv-rest.light | transcript.user-message | box-shadow | rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
+| conv-rest.light | transcript.assistant-message | width | 287.047px | 186.266px | value |
+| conv-rest.light | transcript.assistant-message | height | 168px | 193.047px | value |
+| conv-rest.light | transcript.assistant-message | min-height | auto | 0px | value |
+| conv-rest.light | transcript.assistant-message | padding-top | 7px | 8px | value |
+| conv-rest.light | transcript.assistant-message | padding-bottom | 7px | 8px | value |
+| conv-rest.light | transcript.assistant-message | margin-top | 12px | 0px | value |
+| conv-rest.light | transcript.assistant-message | background-color | rgba(28, 28, 28, 0.06) | rgb(238, 238, 238) | value |
 | conv-rest.light | transcript.assistant-message | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
+| conv-rest.light | transcript.assistant-message | font-size | 14px | 16px | value |
+| conv-rest.light | transcript.assistant-message | line-height | 20px | normal | value |
+| conv-rest.light | transcript.assistant-message | box-shadow | rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
 | conv-rest.light | transcript.thinking-row | (element) | MISSING | present | element-only-one-side |
 | conv-rest.light | transcript.tool-row | (element) | MISSING | present | element-only-one-side |
-| conv-rest.light | permission.card | width | 520px | 700px | value |
-| conv-rest.light | permission.card | height | 58px | 210.75px | value |
-| conv-rest.light | permission.card | padding-top | 10px | 12px | value |
-| conv-rest.light | permission.card | padding-bottom | 16px | 12px | value |
+| conv-rest.light | permission.card | width | 520px | 560px | value |
+| conv-rest.light | permission.card | height | 252px | 186.75px | value |
+| conv-rest.light | permission.card | padding-top | 0px | 14px | value |
+| conv-rest.light | permission.card | padding-right | 0px | 16px | value |
+| conv-rest.light | permission.card | padding-bottom | 0px | 14px | value |
+| conv-rest.light | permission.card | padding-left | 0px | 16px | value |
+| conv-rest.light | permission.card | border-top-width | 0px | 1px | value |
+| conv-rest.light | permission.card | border-bottom-width | 0px | 1px | value |
+| conv-rest.light | permission.card | border-left-width | 0px | 1px | value |
+| conv-rest.light | permission.card | border-right-width | 0px | 1px | value |
+| conv-rest.light | permission.card | border-top-left-radius | 24px | 10px | value |
+| conv-rest.light | permission.card | border-top-right-radius | 24px | 10px | value |
+| conv-rest.light | permission.card | border-bottom-left-radius | 24px | 10px | value |
+| conv-rest.light | permission.card | border-bottom-right-radius | 24px | 10px | value |
+| conv-rest.light | permission.card | background-color | rgb(255, 255, 255) | rgb(252, 252, 252) | value |
 | conv-rest.light | permission.card | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| conv-rest.light | permission.card-primary-btn | width | 95.7031px | 97.2344px | value |
+| conv-rest.light | permission.card | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
+| conv-rest.light | permission.card | font-size | 16px | 13px | value |
+| conv-rest.light | permission.card | line-height | normal | 18.2px | value |
+| conv-rest.light | permission.card | gap | normal | 8px | value |
+| conv-rest.light | permission.card | box-shadow | rgba(28, 28, 28, 0.12) 0px 0px 0px 0.5px, rgba(28, 28, 28, 0 | rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | value |
+| conv-rest.light | permission.card-primary-btn | width | 95.7031px | 85.7031px | value |
 | conv-rest.light | permission.card-primary-btn | height | 32px | 32.1875px | value |
 | conv-rest.light | permission.card-primary-btn | padding-right | 14px | 9px | value |
 | conv-rest.light | permission.card-primary-btn | padding-left | 14px | 9px | value |
@@ -146,8 +157,8 @@
 | conv-rest.light | permission.card-primary-btn | border-top-right-radius | 9999px | 6px | value |
 | conv-rest.light | permission.card-primary-btn | border-bottom-left-radius | 9999px | 6px | value |
 | conv-rest.light | permission.card-primary-btn | border-bottom-right-radius | 9999px | 6px | value |
-| conv-rest.light | permission.card-primary-btn | background-color | rgb(28, 28, 28) | rgb(197, 244, 103) | value |
-| conv-rest.light | permission.card-primary-btn | color | rgb(252, 252, 252) | rgb(22, 22, 22) | value |
+| conv-rest.light | permission.card-primary-btn | background-color | rgb(28, 28, 28) | rgb(53, 53, 53) | value |
+| conv-rest.light | permission.card-primary-btn | color | rgb(252, 252, 252) | rgb(20, 20, 20) | value |
 | conv-rest.light | permission.card-primary-btn | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
 | conv-rest.light | permission.card-primary-btn | font-size | 14px | 13px | value |
 | conv-rest.light | permission.card-primary-btn | font-weight | 500 | 400 | value |
@@ -263,46 +274,57 @@
 | conv-running.light | chat.header | padding-left | 140px | 16px | value |
 | conv-running.light | chat.header | border-bottom-width | 0px | 1px | value |
 | conv-running.light | chat.header | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| conv-running.light | chat.header-name | width | 110.25px | 28px | value |
-| conv-running.light | chat.header-name | height | 41px | 28px | value |
-| conv-running.light | chat.header-name | border-top-left-radius | 0px | 10px | value |
-| conv-running.light | chat.header-name | border-top-right-radius | 0px | 10px | value |
-| conv-running.light | chat.header-name | border-bottom-left-radius | 0px | 10px | value |
-| conv-running.light | chat.header-name | border-bottom-right-radius | 0px | 10px | value |
-| conv-running.light | chat.header-name | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| conv-running.light | transcript.user-message | width | 960px | 308px | value |
+| conv-running.light | chat.header-name | width | 55.25px | 63.1406px | value |
+| conv-running.light | chat.header-name | height | 20px | 18px | value |
+| conv-running.light | chat.header-name | color | rgb(28, 28, 28) | rgba(20, 20, 20, 0.6) | value |
+| conv-running.light | chat.header-name | font-size | 14px | 16px | value |
+| conv-running.light | chat.header-name | font-weight | 500 | 400 | value |
+| conv-running.light | chat.header-name | line-height | 20px | normal | value |
+| conv-running.light | transcript.user-message | width | 418.156px | 308px | value |
 | conv-running.light | transcript.user-message | height | 34px | 56px | value |
 | conv-running.light | transcript.user-message | min-height | auto | 0px | value |
-| conv-running.light | transcript.user-message | padding-top | 0px | 8px | value |
-| conv-running.light | transcript.user-message | padding-right | 0px | 12px | value |
-| conv-running.light | transcript.user-message | padding-bottom | 0px | 8px | value |
-| conv-running.light | transcript.user-message | padding-left | 0px | 12px | value |
-| conv-running.light | transcript.user-message | border-top-left-radius | 0px | 18px | value |
-| conv-running.light | transcript.user-message | border-top-right-radius | 0px | 18px | value |
-| conv-running.light | transcript.user-message | border-bottom-left-radius | 0px | 18px | value |
-| conv-running.light | transcript.user-message | border-bottom-right-radius | 0px | 18px | value |
-| conv-running.light | transcript.user-message | background-color | rgba(0, 0, 0, 0) | rgb(238, 238, 238) | value |
-| conv-running.light | transcript.user-message | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| conv-running.light | transcript.assistant-message | width | 960px | 186.266px | value |
-| conv-running.light | transcript.assistant-message | height | 184px | 193.047px | value |
-| conv-running.light | transcript.assistant-message | padding-top | 2px | 8px | value |
-| conv-running.light | transcript.assistant-message | padding-right | 0px | 12px | value |
-| conv-running.light | transcript.assistant-message | padding-bottom | 2px | 8px | value |
-| conv-running.light | transcript.assistant-message | padding-left | 0px | 12px | value |
-| conv-running.light | transcript.assistant-message | border-top-left-radius | 0px | 18px | value |
-| conv-running.light | transcript.assistant-message | border-top-right-radius | 0px | 18px | value |
-| conv-running.light | transcript.assistant-message | border-bottom-left-radius | 0px | 18px | value |
-| conv-running.light | transcript.assistant-message | border-bottom-right-radius | 0px | 18px | value |
-| conv-running.light | transcript.assistant-message | background-color | rgba(0, 0, 0, 0) | rgb(238, 238, 238) | value |
+| conv-running.light | transcript.user-message | padding-top | 7px | 8px | value |
+| conv-running.light | transcript.user-message | padding-bottom | 7px | 8px | value |
+| conv-running.light | transcript.user-message | background-color | rgb(28, 28, 28) | rgb(238, 238, 238) | value |
+| conv-running.light | transcript.user-message | color | rgb(255, 255, 255) | rgb(20, 20, 20) | value |
+| conv-running.light | transcript.user-message | font-size | 14px | 16px | value |
+| conv-running.light | transcript.user-message | line-height | 20px | normal | value |
+| conv-running.light | transcript.user-message | box-shadow | rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
+| conv-running.light | transcript.assistant-message | width | 287.047px | 186.266px | value |
+| conv-running.light | transcript.assistant-message | height | 168px | 193.047px | value |
+| conv-running.light | transcript.assistant-message | min-height | auto | 0px | value |
+| conv-running.light | transcript.assistant-message | padding-top | 7px | 8px | value |
+| conv-running.light | transcript.assistant-message | padding-bottom | 7px | 8px | value |
+| conv-running.light | transcript.assistant-message | margin-top | 12px | 0px | value |
+| conv-running.light | transcript.assistant-message | background-color | rgba(28, 28, 28, 0.06) | rgb(238, 238, 238) | value |
 | conv-running.light | transcript.assistant-message | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
+| conv-running.light | transcript.assistant-message | font-size | 14px | 16px | value |
+| conv-running.light | transcript.assistant-message | line-height | 20px | normal | value |
+| conv-running.light | transcript.assistant-message | box-shadow | rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
 | conv-running.light | transcript.thinking-row | (element) | MISSING | present | element-only-one-side |
 | conv-running.light | transcript.tool-row | (element) | MISSING | present | element-only-one-side |
-| conv-running.light | permission.card | width | 520px | 700px | value |
-| conv-running.light | permission.card | height | 58px | 210.75px | value |
-| conv-running.light | permission.card | padding-top | 10px | 12px | value |
-| conv-running.light | permission.card | padding-bottom | 16px | 12px | value |
+| conv-running.light | permission.card | width | 520px | 560px | value |
+| conv-running.light | permission.card | height | 252px | 186.75px | value |
+| conv-running.light | permission.card | padding-top | 0px | 14px | value |
+| conv-running.light | permission.card | padding-right | 0px | 16px | value |
+| conv-running.light | permission.card | padding-bottom | 0px | 14px | value |
+| conv-running.light | permission.card | padding-left | 0px | 16px | value |
+| conv-running.light | permission.card | border-top-width | 0px | 1px | value |
+| conv-running.light | permission.card | border-bottom-width | 0px | 1px | value |
+| conv-running.light | permission.card | border-left-width | 0px | 1px | value |
+| conv-running.light | permission.card | border-right-width | 0px | 1px | value |
+| conv-running.light | permission.card | border-top-left-radius | 24px | 10px | value |
+| conv-running.light | permission.card | border-top-right-radius | 24px | 10px | value |
+| conv-running.light | permission.card | border-bottom-left-radius | 24px | 10px | value |
+| conv-running.light | permission.card | border-bottom-right-radius | 24px | 10px | value |
+| conv-running.light | permission.card | background-color | rgb(255, 255, 255) | rgb(252, 252, 252) | value |
 | conv-running.light | permission.card | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| conv-running.light | permission.card-primary-btn | width | 95.7031px | 97.2344px | value |
+| conv-running.light | permission.card | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
+| conv-running.light | permission.card | font-size | 16px | 13px | value |
+| conv-running.light | permission.card | line-height | normal | 18.2px | value |
+| conv-running.light | permission.card | gap | normal | 8px | value |
+| conv-running.light | permission.card | box-shadow | rgba(28, 28, 28, 0.12) 0px 0px 0px 0.5px, rgba(28, 28, 28, 0 | rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | value |
+| conv-running.light | permission.card-primary-btn | width | 95.7031px | 85.7031px | value |
 | conv-running.light | permission.card-primary-btn | height | 32px | 32.1875px | value |
 | conv-running.light | permission.card-primary-btn | padding-right | 14px | 9px | value |
 | conv-running.light | permission.card-primary-btn | padding-left | 14px | 9px | value |
@@ -314,8 +336,8 @@
 | conv-running.light | permission.card-primary-btn | border-top-right-radius | 9999px | 6px | value |
 | conv-running.light | permission.card-primary-btn | border-bottom-left-radius | 9999px | 6px | value |
 | conv-running.light | permission.card-primary-btn | border-bottom-right-radius | 9999px | 6px | value |
-| conv-running.light | permission.card-primary-btn | background-color | rgb(28, 28, 28) | rgb(197, 244, 103) | value |
-| conv-running.light | permission.card-primary-btn | color | rgb(252, 252, 252) | rgb(22, 22, 22) | value |
+| conv-running.light | permission.card-primary-btn | background-color | rgb(28, 28, 28) | rgb(53, 53, 53) | value |
+| conv-running.light | permission.card-primary-btn | color | rgb(252, 252, 252) | rgb(20, 20, 20) | value |
 | conv-running.light | permission.card-primary-btn | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
 | conv-running.light | permission.card-primary-btn | font-size | 14px | 13px | value |
 | conv-running.light | permission.card-primary-btn | font-weight | 500 | 400 | value |
@@ -350,18 +372,7 @@
 | sidebar-collapsed.light | sidebar.header | border-bottom-width | 0px | 1px | value |
 | sidebar-collapsed.light | sidebar.header | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
 | sidebar-collapsed.light | sidebar.header | gap | 8px | normal | value |
-| sidebar-collapsed.light | sidebar.header-first-btn | width | 36px | 24px | value |
-| sidebar-collapsed.light | sidebar.header-first-btn | height | 36px | 24px | value |
-| sidebar-collapsed.light | sidebar.header-first-btn | min-height | 0px | auto | value |
-| sidebar-collapsed.light | sidebar.header-first-btn | border-top-width | 1px | 0px | value |
-| sidebar-collapsed.light | sidebar.header-first-btn | border-bottom-width | 1px | 0px | value |
-| sidebar-collapsed.light | sidebar.header-first-btn | border-left-width | 1px | 0px | value |
-| sidebar-collapsed.light | sidebar.header-first-btn | border-right-width | 1px | 0px | value |
-| sidebar-collapsed.light | sidebar.header-first-btn | background-color | rgb(255, 255, 255) | rgba(0, 0, 0, 0) | value |
-| sidebar-collapsed.light | sidebar.header-first-btn | color | rgba(28, 28, 28, 0.92) | rgba(20, 20, 20, 0.6) | value |
-| sidebar-collapsed.light | sidebar.header-first-btn | font-size | 13px | 16px | value |
-| sidebar-collapsed.light | sidebar.header-first-btn | line-height | 18px | normal | value |
-| sidebar-collapsed.light | sidebar.search-entry | (element) | present | MISSING | element-only-one-side |
+| sidebar-collapsed.light | sidebar.header-first-btn | (element) | MISSING | present | element-only-one-side |
 | sidebar-collapsed.light | sidebar.item | width | 54px | 63px | value |
 | sidebar-collapsed.light | sidebar.item | height | 54px | 44px | value |
 | sidebar-collapsed.light | sidebar.item | min-height | 0px | 44px | value |
@@ -498,46 +509,57 @@
 | info-pane.light | chat.header | padding-left | 0px | 16px | value |
 | info-pane.light | chat.header | border-bottom-width | 0px | 1px | value |
 | info-pane.light | chat.header | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| info-pane.light | chat.header-name | width | 110.25px | 28px | value |
-| info-pane.light | chat.header-name | height | 41px | 28px | value |
-| info-pane.light | chat.header-name | border-top-left-radius | 0px | 10px | value |
-| info-pane.light | chat.header-name | border-top-right-radius | 0px | 10px | value |
-| info-pane.light | chat.header-name | border-bottom-left-radius | 0px | 10px | value |
-| info-pane.light | chat.header-name | border-bottom-right-radius | 0px | 10px | value |
-| info-pane.light | chat.header-name | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| info-pane.light | transcript.user-message | width | 808px | 308px | value |
+| info-pane.light | chat.header-name | width | 55.25px | 63.1406px | value |
+| info-pane.light | chat.header-name | height | 20px | 18px | value |
+| info-pane.light | chat.header-name | color | rgb(28, 28, 28) | rgba(20, 20, 20, 0.6) | value |
+| info-pane.light | chat.header-name | font-size | 14px | 16px | value |
+| info-pane.light | chat.header-name | font-weight | 500 | 400 | value |
+| info-pane.light | chat.header-name | line-height | 20px | normal | value |
+| info-pane.light | transcript.user-message | width | 418.156px | 308px | value |
 | info-pane.light | transcript.user-message | height | 34px | 56px | value |
 | info-pane.light | transcript.user-message | min-height | auto | 0px | value |
-| info-pane.light | transcript.user-message | padding-top | 0px | 8px | value |
-| info-pane.light | transcript.user-message | padding-right | 0px | 12px | value |
-| info-pane.light | transcript.user-message | padding-bottom | 0px | 8px | value |
-| info-pane.light | transcript.user-message | padding-left | 0px | 12px | value |
-| info-pane.light | transcript.user-message | border-top-left-radius | 0px | 18px | value |
-| info-pane.light | transcript.user-message | border-top-right-radius | 0px | 18px | value |
-| info-pane.light | transcript.user-message | border-bottom-left-radius | 0px | 18px | value |
-| info-pane.light | transcript.user-message | border-bottom-right-radius | 0px | 18px | value |
-| info-pane.light | transcript.user-message | background-color | rgba(0, 0, 0, 0) | rgb(238, 238, 238) | value |
-| info-pane.light | transcript.user-message | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| info-pane.light | transcript.assistant-message | width | 808px | 186.266px | value |
-| info-pane.light | transcript.assistant-message | height | 184px | 193.047px | value |
-| info-pane.light | transcript.assistant-message | padding-top | 2px | 8px | value |
-| info-pane.light | transcript.assistant-message | padding-right | 0px | 12px | value |
-| info-pane.light | transcript.assistant-message | padding-bottom | 2px | 8px | value |
-| info-pane.light | transcript.assistant-message | padding-left | 0px | 12px | value |
-| info-pane.light | transcript.assistant-message | border-top-left-radius | 0px | 18px | value |
-| info-pane.light | transcript.assistant-message | border-top-right-radius | 0px | 18px | value |
-| info-pane.light | transcript.assistant-message | border-bottom-left-radius | 0px | 18px | value |
-| info-pane.light | transcript.assistant-message | border-bottom-right-radius | 0px | 18px | value |
-| info-pane.light | transcript.assistant-message | background-color | rgba(0, 0, 0, 0) | rgb(238, 238, 238) | value |
+| info-pane.light | transcript.user-message | padding-top | 7px | 8px | value |
+| info-pane.light | transcript.user-message | padding-bottom | 7px | 8px | value |
+| info-pane.light | transcript.user-message | background-color | rgb(28, 28, 28) | rgb(238, 238, 238) | value |
+| info-pane.light | transcript.user-message | color | rgb(255, 255, 255) | rgb(20, 20, 20) | value |
+| info-pane.light | transcript.user-message | font-size | 14px | 16px | value |
+| info-pane.light | transcript.user-message | line-height | 20px | normal | value |
+| info-pane.light | transcript.user-message | box-shadow | rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
+| info-pane.light | transcript.assistant-message | width | 287.047px | 186.266px | value |
+| info-pane.light | transcript.assistant-message | height | 168px | 193.047px | value |
+| info-pane.light | transcript.assistant-message | min-height | auto | 0px | value |
+| info-pane.light | transcript.assistant-message | padding-top | 7px | 8px | value |
+| info-pane.light | transcript.assistant-message | padding-bottom | 7px | 8px | value |
+| info-pane.light | transcript.assistant-message | margin-top | 12px | 0px | value |
+| info-pane.light | transcript.assistant-message | background-color | rgba(28, 28, 28, 0.06) | rgb(238, 238, 238) | value |
 | info-pane.light | transcript.assistant-message | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
+| info-pane.light | transcript.assistant-message | font-size | 14px | 16px | value |
+| info-pane.light | transcript.assistant-message | line-height | 20px | normal | value |
+| info-pane.light | transcript.assistant-message | box-shadow | rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
 | info-pane.light | transcript.thinking-row | (element) | MISSING | present | element-only-one-side |
 | info-pane.light | transcript.tool-row | (element) | MISSING | present | element-only-one-side |
-| info-pane.light | permission.card | width | 520px | 700px | value |
-| info-pane.light | permission.card | height | 58px | 210.75px | value |
-| info-pane.light | permission.card | padding-top | 10px | 12px | value |
-| info-pane.light | permission.card | padding-bottom | 16px | 12px | value |
+| info-pane.light | permission.card | width | 520px | 560px | value |
+| info-pane.light | permission.card | height | 252px | 186.75px | value |
+| info-pane.light | permission.card | padding-top | 0px | 14px | value |
+| info-pane.light | permission.card | padding-right | 0px | 16px | value |
+| info-pane.light | permission.card | padding-bottom | 0px | 14px | value |
+| info-pane.light | permission.card | padding-left | 0px | 16px | value |
+| info-pane.light | permission.card | border-top-width | 0px | 1px | value |
+| info-pane.light | permission.card | border-bottom-width | 0px | 1px | value |
+| info-pane.light | permission.card | border-left-width | 0px | 1px | value |
+| info-pane.light | permission.card | border-right-width | 0px | 1px | value |
+| info-pane.light | permission.card | border-top-left-radius | 24px | 10px | value |
+| info-pane.light | permission.card | border-top-right-radius | 24px | 10px | value |
+| info-pane.light | permission.card | border-bottom-left-radius | 24px | 10px | value |
+| info-pane.light | permission.card | border-bottom-right-radius | 24px | 10px | value |
+| info-pane.light | permission.card | background-color | rgb(255, 255, 255) | rgb(252, 252, 252) | value |
 | info-pane.light | permission.card | color | rgb(28, 28, 28) | rgb(20, 20, 20) | value |
-| info-pane.light | permission.card-primary-btn | width | 95.7031px | 97.2344px | value |
+| info-pane.light | permission.card | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
+| info-pane.light | permission.card | font-size | 16px | 13px | value |
+| info-pane.light | permission.card | line-height | normal | 18.2px | value |
+| info-pane.light | permission.card | gap | normal | 8px | value |
+| info-pane.light | permission.card | box-shadow | rgba(28, 28, 28, 0.12) 0px 0px 0px 0.5px, rgba(28, 28, 28, 0 | rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | value |
+| info-pane.light | permission.card-primary-btn | width | 95.7031px | 85.7031px | value |
 | info-pane.light | permission.card-primary-btn | height | 32px | 32.1875px | value |
 | info-pane.light | permission.card-primary-btn | padding-right | 14px | 9px | value |
 | info-pane.light | permission.card-primary-btn | padding-left | 14px | 9px | value |
@@ -549,8 +571,8 @@
 | info-pane.light | permission.card-primary-btn | border-top-right-radius | 9999px | 6px | value |
 | info-pane.light | permission.card-primary-btn | border-bottom-left-radius | 9999px | 6px | value |
 | info-pane.light | permission.card-primary-btn | border-bottom-right-radius | 9999px | 6px | value |
-| info-pane.light | permission.card-primary-btn | background-color | rgb(28, 28, 28) | rgb(197, 244, 103) | value |
-| info-pane.light | permission.card-primary-btn | color | rgb(252, 252, 252) | rgb(22, 22, 22) | value |
+| info-pane.light | permission.card-primary-btn | background-color | rgb(28, 28, 28) | rgb(53, 53, 53) | value |
+| info-pane.light | permission.card-primary-btn | color | rgb(252, 252, 252) | rgb(20, 20, 20) | value |
 | info-pane.light | permission.card-primary-btn | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
 | info-pane.light | permission.card-primary-btn | font-size | 14px | 13px | value |
 | info-pane.light | permission.card-primary-btn | font-weight | 500 | 400 | value |
@@ -666,46 +688,57 @@
 | conv-rest.dark | chat.header | padding-left | 140px | 16px | value |
 | conv-rest.dark | chat.header | border-bottom-width | 0px | 1px | value |
 | conv-rest.dark | chat.header | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| conv-rest.dark | chat.header-name | width | 110.25px | 28px | value |
-| conv-rest.dark | chat.header-name | height | 41px | 28px | value |
-| conv-rest.dark | chat.header-name | border-top-left-radius | 0px | 10px | value |
-| conv-rest.dark | chat.header-name | border-top-right-radius | 0px | 10px | value |
-| conv-rest.dark | chat.header-name | border-bottom-left-radius | 0px | 10px | value |
-| conv-rest.dark | chat.header-name | border-bottom-right-radius | 0px | 10px | value |
-| conv-rest.dark | chat.header-name | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| conv-rest.dark | transcript.user-message | width | 960px | 308px | value |
+| conv-rest.dark | chat.header-name | width | 55.25px | 63.1406px | value |
+| conv-rest.dark | chat.header-name | height | 20px | 18px | value |
+| conv-rest.dark | chat.header-name | color | rgb(245, 245, 245) | rgba(252, 252, 252, 0.6) | value |
+| conv-rest.dark | chat.header-name | font-size | 14px | 16px | value |
+| conv-rest.dark | chat.header-name | font-weight | 500 | 400 | value |
+| conv-rest.dark | chat.header-name | line-height | 20px | normal | value |
+| conv-rest.dark | transcript.user-message | width | 418.156px | 308px | value |
 | conv-rest.dark | transcript.user-message | height | 34px | 56px | value |
 | conv-rest.dark | transcript.user-message | min-height | auto | 0px | value |
-| conv-rest.dark | transcript.user-message | padding-top | 0px | 8px | value |
-| conv-rest.dark | transcript.user-message | padding-right | 0px | 12px | value |
-| conv-rest.dark | transcript.user-message | padding-bottom | 0px | 8px | value |
-| conv-rest.dark | transcript.user-message | padding-left | 0px | 12px | value |
-| conv-rest.dark | transcript.user-message | border-top-left-radius | 0px | 18px | value |
-| conv-rest.dark | transcript.user-message | border-top-right-radius | 0px | 18px | value |
-| conv-rest.dark | transcript.user-message | border-bottom-left-radius | 0px | 18px | value |
-| conv-rest.dark | transcript.user-message | border-bottom-right-radius | 0px | 18px | value |
-| conv-rest.dark | transcript.user-message | background-color | rgba(0, 0, 0, 0) | rgb(38, 38, 38) | value |
+| conv-rest.dark | transcript.user-message | padding-top | 7px | 8px | value |
+| conv-rest.dark | transcript.user-message | padding-bottom | 7px | 8px | value |
+| conv-rest.dark | transcript.user-message | background-color | rgba(245, 245, 245, 0.18) | rgb(38, 38, 38) | value |
 | conv-rest.dark | transcript.user-message | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| conv-rest.dark | transcript.assistant-message | width | 960px | 186.266px | value |
-| conv-rest.dark | transcript.assistant-message | height | 184px | 193.047px | value |
-| conv-rest.dark | transcript.assistant-message | padding-top | 2px | 8px | value |
-| conv-rest.dark | transcript.assistant-message | padding-right | 0px | 12px | value |
-| conv-rest.dark | transcript.assistant-message | padding-bottom | 2px | 8px | value |
-| conv-rest.dark | transcript.assistant-message | padding-left | 0px | 12px | value |
-| conv-rest.dark | transcript.assistant-message | border-top-left-radius | 0px | 18px | value |
-| conv-rest.dark | transcript.assistant-message | border-top-right-radius | 0px | 18px | value |
-| conv-rest.dark | transcript.assistant-message | border-bottom-left-radius | 0px | 18px | value |
-| conv-rest.dark | transcript.assistant-message | border-bottom-right-radius | 0px | 18px | value |
-| conv-rest.dark | transcript.assistant-message | background-color | rgba(0, 0, 0, 0) | rgb(38, 38, 38) | value |
+| conv-rest.dark | transcript.user-message | font-size | 14px | 16px | value |
+| conv-rest.dark | transcript.user-message | line-height | 20px | normal | value |
+| conv-rest.dark | transcript.user-message | box-shadow | rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
+| conv-rest.dark | transcript.assistant-message | width | 287.047px | 186.266px | value |
+| conv-rest.dark | transcript.assistant-message | height | 168px | 193.047px | value |
+| conv-rest.dark | transcript.assistant-message | min-height | auto | 0px | value |
+| conv-rest.dark | transcript.assistant-message | padding-top | 7px | 8px | value |
+| conv-rest.dark | transcript.assistant-message | padding-bottom | 7px | 8px | value |
+| conv-rest.dark | transcript.assistant-message | margin-top | 12px | 0px | value |
+| conv-rest.dark | transcript.assistant-message | background-color | rgba(245, 245, 245, 0.04) | rgb(38, 38, 38) | value |
 | conv-rest.dark | transcript.assistant-message | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
+| conv-rest.dark | transcript.assistant-message | font-size | 14px | 16px | value |
+| conv-rest.dark | transcript.assistant-message | line-height | 20px | normal | value |
+| conv-rest.dark | transcript.assistant-message | box-shadow | rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
 | conv-rest.dark | transcript.thinking-row | (element) | MISSING | present | element-only-one-side |
 | conv-rest.dark | transcript.tool-row | (element) | MISSING | present | element-only-one-side |
-| conv-rest.dark | permission.card | width | 520px | 700px | value |
-| conv-rest.dark | permission.card | height | 58px | 210.75px | value |
-| conv-rest.dark | permission.card | padding-top | 10px | 12px | value |
-| conv-rest.dark | permission.card | padding-bottom | 16px | 12px | value |
+| conv-rest.dark | permission.card | width | 520px | 560px | value |
+| conv-rest.dark | permission.card | height | 252px | 186.75px | value |
+| conv-rest.dark | permission.card | padding-top | 0px | 14px | value |
+| conv-rest.dark | permission.card | padding-right | 0px | 16px | value |
+| conv-rest.dark | permission.card | padding-bottom | 0px | 14px | value |
+| conv-rest.dark | permission.card | padding-left | 0px | 16px | value |
+| conv-rest.dark | permission.card | border-top-width | 0px | 1px | value |
+| conv-rest.dark | permission.card | border-bottom-width | 0px | 1px | value |
+| conv-rest.dark | permission.card | border-left-width | 0px | 1px | value |
+| conv-rest.dark | permission.card | border-right-width | 0px | 1px | value |
+| conv-rest.dark | permission.card | border-top-left-radius | 24px | 10px | value |
+| conv-rest.dark | permission.card | border-top-right-radius | 24px | 10px | value |
+| conv-rest.dark | permission.card | border-bottom-left-radius | 24px | 10px | value |
+| conv-rest.dark | permission.card | border-bottom-right-radius | 24px | 10px | value |
+| conv-rest.dark | permission.card | background-color | rgb(31, 31, 31) | rgb(24, 24, 24) | value |
 | conv-rest.dark | permission.card | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| conv-rest.dark | permission.card-primary-btn | width | 95.7031px | 97.2344px | value |
+| conv-rest.dark | permission.card | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
+| conv-rest.dark | permission.card | font-size | 16px | 13px | value |
+| conv-rest.dark | permission.card | line-height | normal | 18.2px | value |
+| conv-rest.dark | permission.card | gap | normal | 8px | value |
+| conv-rest.dark | permission.card | box-shadow | rgba(245, 245, 245, 0.1) 0px 0px 0px 0.5px, rgba(245, 245, 2 | rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | value |
+| conv-rest.dark | permission.card-primary-btn | width | 95.7031px | 85.7031px | value |
 | conv-rest.dark | permission.card-primary-btn | height | 32px | 32.1875px | value |
 | conv-rest.dark | permission.card-primary-btn | padding-right | 14px | 9px | value |
 | conv-rest.dark | permission.card-primary-btn | padding-left | 14px | 9px | value |
@@ -717,8 +750,8 @@
 | conv-rest.dark | permission.card-primary-btn | border-top-right-radius | 9999px | 6px | value |
 | conv-rest.dark | permission.card-primary-btn | border-bottom-left-radius | 9999px | 6px | value |
 | conv-rest.dark | permission.card-primary-btn | border-bottom-right-radius | 9999px | 6px | value |
-| conv-rest.dark | permission.card-primary-btn | background-color | rgb(245, 245, 245) | rgb(197, 244, 103) | value |
-| conv-rest.dark | permission.card-primary-btn | color | rgb(18, 18, 18) | rgb(22, 22, 22) | value |
+| conv-rest.dark | permission.card-primary-btn | background-color | rgb(245, 245, 245) | rgb(53, 53, 53) | value |
+| conv-rest.dark | permission.card-primary-btn | color | rgb(18, 18, 18) | rgb(252, 252, 252) | value |
 | conv-rest.dark | permission.card-primary-btn | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
 | conv-rest.dark | permission.card-primary-btn | font-size | 14px | 13px | value |
 | conv-rest.dark | permission.card-primary-btn | font-weight | 500 | 400 | value |
@@ -834,46 +867,57 @@
 | conv-running.dark | chat.header | padding-left | 140px | 16px | value |
 | conv-running.dark | chat.header | border-bottom-width | 0px | 1px | value |
 | conv-running.dark | chat.header | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| conv-running.dark | chat.header-name | width | 110.25px | 28px | value |
-| conv-running.dark | chat.header-name | height | 41px | 28px | value |
-| conv-running.dark | chat.header-name | border-top-left-radius | 0px | 10px | value |
-| conv-running.dark | chat.header-name | border-top-right-radius | 0px | 10px | value |
-| conv-running.dark | chat.header-name | border-bottom-left-radius | 0px | 10px | value |
-| conv-running.dark | chat.header-name | border-bottom-right-radius | 0px | 10px | value |
-| conv-running.dark | chat.header-name | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| conv-running.dark | transcript.user-message | width | 960px | 308px | value |
+| conv-running.dark | chat.header-name | width | 55.25px | 63.1406px | value |
+| conv-running.dark | chat.header-name | height | 20px | 18px | value |
+| conv-running.dark | chat.header-name | color | rgb(245, 245, 245) | rgba(252, 252, 252, 0.6) | value |
+| conv-running.dark | chat.header-name | font-size | 14px | 16px | value |
+| conv-running.dark | chat.header-name | font-weight | 500 | 400 | value |
+| conv-running.dark | chat.header-name | line-height | 20px | normal | value |
+| conv-running.dark | transcript.user-message | width | 418.156px | 308px | value |
 | conv-running.dark | transcript.user-message | height | 34px | 56px | value |
 | conv-running.dark | transcript.user-message | min-height | auto | 0px | value |
-| conv-running.dark | transcript.user-message | padding-top | 0px | 8px | value |
-| conv-running.dark | transcript.user-message | padding-right | 0px | 12px | value |
-| conv-running.dark | transcript.user-message | padding-bottom | 0px | 8px | value |
-| conv-running.dark | transcript.user-message | padding-left | 0px | 12px | value |
-| conv-running.dark | transcript.user-message | border-top-left-radius | 0px | 18px | value |
-| conv-running.dark | transcript.user-message | border-top-right-radius | 0px | 18px | value |
-| conv-running.dark | transcript.user-message | border-bottom-left-radius | 0px | 18px | value |
-| conv-running.dark | transcript.user-message | border-bottom-right-radius | 0px | 18px | value |
-| conv-running.dark | transcript.user-message | background-color | rgba(0, 0, 0, 0) | rgb(38, 38, 38) | value |
+| conv-running.dark | transcript.user-message | padding-top | 7px | 8px | value |
+| conv-running.dark | transcript.user-message | padding-bottom | 7px | 8px | value |
+| conv-running.dark | transcript.user-message | background-color | rgba(245, 245, 245, 0.18) | rgb(38, 38, 38) | value |
 | conv-running.dark | transcript.user-message | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| conv-running.dark | transcript.assistant-message | width | 960px | 186.266px | value |
-| conv-running.dark | transcript.assistant-message | height | 184px | 193.047px | value |
-| conv-running.dark | transcript.assistant-message | padding-top | 2px | 8px | value |
-| conv-running.dark | transcript.assistant-message | padding-right | 0px | 12px | value |
-| conv-running.dark | transcript.assistant-message | padding-bottom | 2px | 8px | value |
-| conv-running.dark | transcript.assistant-message | padding-left | 0px | 12px | value |
-| conv-running.dark | transcript.assistant-message | border-top-left-radius | 0px | 18px | value |
-| conv-running.dark | transcript.assistant-message | border-top-right-radius | 0px | 18px | value |
-| conv-running.dark | transcript.assistant-message | border-bottom-left-radius | 0px | 18px | value |
-| conv-running.dark | transcript.assistant-message | border-bottom-right-radius | 0px | 18px | value |
-| conv-running.dark | transcript.assistant-message | background-color | rgba(0, 0, 0, 0) | rgb(38, 38, 38) | value |
+| conv-running.dark | transcript.user-message | font-size | 14px | 16px | value |
+| conv-running.dark | transcript.user-message | line-height | 20px | normal | value |
+| conv-running.dark | transcript.user-message | box-shadow | rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
+| conv-running.dark | transcript.assistant-message | width | 287.047px | 186.266px | value |
+| conv-running.dark | transcript.assistant-message | height | 168px | 193.047px | value |
+| conv-running.dark | transcript.assistant-message | min-height | auto | 0px | value |
+| conv-running.dark | transcript.assistant-message | padding-top | 7px | 8px | value |
+| conv-running.dark | transcript.assistant-message | padding-bottom | 7px | 8px | value |
+| conv-running.dark | transcript.assistant-message | margin-top | 12px | 0px | value |
+| conv-running.dark | transcript.assistant-message | background-color | rgba(245, 245, 245, 0.04) | rgb(38, 38, 38) | value |
 | conv-running.dark | transcript.assistant-message | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
+| conv-running.dark | transcript.assistant-message | font-size | 14px | 16px | value |
+| conv-running.dark | transcript.assistant-message | line-height | 20px | normal | value |
+| conv-running.dark | transcript.assistant-message | box-shadow | rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
 | conv-running.dark | transcript.thinking-row | (element) | MISSING | present | element-only-one-side |
 | conv-running.dark | transcript.tool-row | (element) | MISSING | present | element-only-one-side |
-| conv-running.dark | permission.card | width | 520px | 700px | value |
-| conv-running.dark | permission.card | height | 58px | 210.75px | value |
-| conv-running.dark | permission.card | padding-top | 10px | 12px | value |
-| conv-running.dark | permission.card | padding-bottom | 16px | 12px | value |
+| conv-running.dark | permission.card | width | 520px | 560px | value |
+| conv-running.dark | permission.card | height | 252px | 186.75px | value |
+| conv-running.dark | permission.card | padding-top | 0px | 14px | value |
+| conv-running.dark | permission.card | padding-right | 0px | 16px | value |
+| conv-running.dark | permission.card | padding-bottom | 0px | 14px | value |
+| conv-running.dark | permission.card | padding-left | 0px | 16px | value |
+| conv-running.dark | permission.card | border-top-width | 0px | 1px | value |
+| conv-running.dark | permission.card | border-bottom-width | 0px | 1px | value |
+| conv-running.dark | permission.card | border-left-width | 0px | 1px | value |
+| conv-running.dark | permission.card | border-right-width | 0px | 1px | value |
+| conv-running.dark | permission.card | border-top-left-radius | 24px | 10px | value |
+| conv-running.dark | permission.card | border-top-right-radius | 24px | 10px | value |
+| conv-running.dark | permission.card | border-bottom-left-radius | 24px | 10px | value |
+| conv-running.dark | permission.card | border-bottom-right-radius | 24px | 10px | value |
+| conv-running.dark | permission.card | background-color | rgb(31, 31, 31) | rgb(24, 24, 24) | value |
 | conv-running.dark | permission.card | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| conv-running.dark | permission.card-primary-btn | width | 95.7031px | 97.2344px | value |
+| conv-running.dark | permission.card | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
+| conv-running.dark | permission.card | font-size | 16px | 13px | value |
+| conv-running.dark | permission.card | line-height | normal | 18.2px | value |
+| conv-running.dark | permission.card | gap | normal | 8px | value |
+| conv-running.dark | permission.card | box-shadow | rgba(245, 245, 245, 0.1) 0px 0px 0px 0.5px, rgba(245, 245, 2 | rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | value |
+| conv-running.dark | permission.card-primary-btn | width | 95.7031px | 85.7031px | value |
 | conv-running.dark | permission.card-primary-btn | height | 32px | 32.1875px | value |
 | conv-running.dark | permission.card-primary-btn | padding-right | 14px | 9px | value |
 | conv-running.dark | permission.card-primary-btn | padding-left | 14px | 9px | value |
@@ -885,8 +929,8 @@
 | conv-running.dark | permission.card-primary-btn | border-top-right-radius | 9999px | 6px | value |
 | conv-running.dark | permission.card-primary-btn | border-bottom-left-radius | 9999px | 6px | value |
 | conv-running.dark | permission.card-primary-btn | border-bottom-right-radius | 9999px | 6px | value |
-| conv-running.dark | permission.card-primary-btn | background-color | rgb(245, 245, 245) | rgb(197, 244, 103) | value |
-| conv-running.dark | permission.card-primary-btn | color | rgb(18, 18, 18) | rgb(22, 22, 22) | value |
+| conv-running.dark | permission.card-primary-btn | background-color | rgb(245, 245, 245) | rgb(53, 53, 53) | value |
+| conv-running.dark | permission.card-primary-btn | color | rgb(18, 18, 18) | rgb(252, 252, 252) | value |
 | conv-running.dark | permission.card-primary-btn | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
 | conv-running.dark | permission.card-primary-btn | font-size | 14px | 13px | value |
 | conv-running.dark | permission.card-primary-btn | font-weight | 500 | 400 | value |
@@ -921,18 +965,7 @@
 | sidebar-collapsed.dark | sidebar.header | border-bottom-width | 0px | 1px | value |
 | sidebar-collapsed.dark | sidebar.header | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
 | sidebar-collapsed.dark | sidebar.header | gap | 8px | normal | value |
-| sidebar-collapsed.dark | sidebar.header-first-btn | width | 36px | 24px | value |
-| sidebar-collapsed.dark | sidebar.header-first-btn | height | 36px | 24px | value |
-| sidebar-collapsed.dark | sidebar.header-first-btn | min-height | 0px | auto | value |
-| sidebar-collapsed.dark | sidebar.header-first-btn | border-top-width | 1px | 0px | value |
-| sidebar-collapsed.dark | sidebar.header-first-btn | border-bottom-width | 1px | 0px | value |
-| sidebar-collapsed.dark | sidebar.header-first-btn | border-left-width | 1px | 0px | value |
-| sidebar-collapsed.dark | sidebar.header-first-btn | border-right-width | 1px | 0px | value |
-| sidebar-collapsed.dark | sidebar.header-first-btn | background-color | rgb(31, 31, 31) | rgba(0, 0, 0, 0) | value |
-| sidebar-collapsed.dark | sidebar.header-first-btn | color | rgba(245, 245, 245, 0.9) | rgba(252, 252, 252, 0.6) | value |
-| sidebar-collapsed.dark | sidebar.header-first-btn | font-size | 13px | 16px | value |
-| sidebar-collapsed.dark | sidebar.header-first-btn | line-height | 18px | normal | value |
-| sidebar-collapsed.dark | sidebar.search-entry | (element) | present | MISSING | element-only-one-side |
+| sidebar-collapsed.dark | sidebar.header-first-btn | (element) | MISSING | present | element-only-one-side |
 | sidebar-collapsed.dark | sidebar.item | width | 54px | 63px | value |
 | sidebar-collapsed.dark | sidebar.item | height | 54px | 44px | value |
 | sidebar-collapsed.dark | sidebar.item | min-height | 0px | 44px | value |
@@ -1069,46 +1102,57 @@
 | info-pane.dark | chat.header | padding-left | 0px | 16px | value |
 | info-pane.dark | chat.header | border-bottom-width | 0px | 1px | value |
 | info-pane.dark | chat.header | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| info-pane.dark | chat.header-name | width | 110.25px | 28px | value |
-| info-pane.dark | chat.header-name | height | 41px | 28px | value |
-| info-pane.dark | chat.header-name | border-top-left-radius | 0px | 10px | value |
-| info-pane.dark | chat.header-name | border-top-right-radius | 0px | 10px | value |
-| info-pane.dark | chat.header-name | border-bottom-left-radius | 0px | 10px | value |
-| info-pane.dark | chat.header-name | border-bottom-right-radius | 0px | 10px | value |
-| info-pane.dark | chat.header-name | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| info-pane.dark | transcript.user-message | width | 808px | 308px | value |
+| info-pane.dark | chat.header-name | width | 55.25px | 63.1406px | value |
+| info-pane.dark | chat.header-name | height | 20px | 18px | value |
+| info-pane.dark | chat.header-name | color | rgb(245, 245, 245) | rgba(252, 252, 252, 0.6) | value |
+| info-pane.dark | chat.header-name | font-size | 14px | 16px | value |
+| info-pane.dark | chat.header-name | font-weight | 500 | 400 | value |
+| info-pane.dark | chat.header-name | line-height | 20px | normal | value |
+| info-pane.dark | transcript.user-message | width | 418.156px | 308px | value |
 | info-pane.dark | transcript.user-message | height | 34px | 56px | value |
 | info-pane.dark | transcript.user-message | min-height | auto | 0px | value |
-| info-pane.dark | transcript.user-message | padding-top | 0px | 8px | value |
-| info-pane.dark | transcript.user-message | padding-right | 0px | 12px | value |
-| info-pane.dark | transcript.user-message | padding-bottom | 0px | 8px | value |
-| info-pane.dark | transcript.user-message | padding-left | 0px | 12px | value |
-| info-pane.dark | transcript.user-message | border-top-left-radius | 0px | 18px | value |
-| info-pane.dark | transcript.user-message | border-top-right-radius | 0px | 18px | value |
-| info-pane.dark | transcript.user-message | border-bottom-left-radius | 0px | 18px | value |
-| info-pane.dark | transcript.user-message | border-bottom-right-radius | 0px | 18px | value |
-| info-pane.dark | transcript.user-message | background-color | rgba(0, 0, 0, 0) | rgb(38, 38, 38) | value |
+| info-pane.dark | transcript.user-message | padding-top | 7px | 8px | value |
+| info-pane.dark | transcript.user-message | padding-bottom | 7px | 8px | value |
+| info-pane.dark | transcript.user-message | background-color | rgba(245, 245, 245, 0.18) | rgb(38, 38, 38) | value |
 | info-pane.dark | transcript.user-message | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| info-pane.dark | transcript.assistant-message | width | 808px | 186.266px | value |
-| info-pane.dark | transcript.assistant-message | height | 184px | 193.047px | value |
-| info-pane.dark | transcript.assistant-message | padding-top | 2px | 8px | value |
-| info-pane.dark | transcript.assistant-message | padding-right | 0px | 12px | value |
-| info-pane.dark | transcript.assistant-message | padding-bottom | 2px | 8px | value |
-| info-pane.dark | transcript.assistant-message | padding-left | 0px | 12px | value |
-| info-pane.dark | transcript.assistant-message | border-top-left-radius | 0px | 18px | value |
-| info-pane.dark | transcript.assistant-message | border-top-right-radius | 0px | 18px | value |
-| info-pane.dark | transcript.assistant-message | border-bottom-left-radius | 0px | 18px | value |
-| info-pane.dark | transcript.assistant-message | border-bottom-right-radius | 0px | 18px | value |
-| info-pane.dark | transcript.assistant-message | background-color | rgba(0, 0, 0, 0) | rgb(38, 38, 38) | value |
+| info-pane.dark | transcript.user-message | font-size | 14px | 16px | value |
+| info-pane.dark | transcript.user-message | line-height | 20px | normal | value |
+| info-pane.dark | transcript.user-message | box-shadow | rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
+| info-pane.dark | transcript.assistant-message | width | 287.047px | 186.266px | value |
+| info-pane.dark | transcript.assistant-message | height | 168px | 193.047px | value |
+| info-pane.dark | transcript.assistant-message | min-height | auto | 0px | value |
+| info-pane.dark | transcript.assistant-message | padding-top | 7px | 8px | value |
+| info-pane.dark | transcript.assistant-message | padding-bottom | 7px | 8px | value |
+| info-pane.dark | transcript.assistant-message | margin-top | 12px | 0px | value |
+| info-pane.dark | transcript.assistant-message | background-color | rgba(245, 245, 245, 0.04) | rgb(38, 38, 38) | value |
 | info-pane.dark | transcript.assistant-message | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
+| info-pane.dark | transcript.assistant-message | font-size | 14px | 16px | value |
+| info-pane.dark | transcript.assistant-message | line-height | 20px | normal | value |
+| info-pane.dark | transcript.assistant-message | box-shadow | rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba(255, | none | value |
 | info-pane.dark | transcript.thinking-row | (element) | MISSING | present | element-only-one-side |
 | info-pane.dark | transcript.tool-row | (element) | MISSING | present | element-only-one-side |
-| info-pane.dark | permission.card | width | 520px | 700px | value |
-| info-pane.dark | permission.card | height | 58px | 210.75px | value |
-| info-pane.dark | permission.card | padding-top | 10px | 12px | value |
-| info-pane.dark | permission.card | padding-bottom | 16px | 12px | value |
+| info-pane.dark | permission.card | width | 520px | 560px | value |
+| info-pane.dark | permission.card | height | 252px | 186.75px | value |
+| info-pane.dark | permission.card | padding-top | 0px | 14px | value |
+| info-pane.dark | permission.card | padding-right | 0px | 16px | value |
+| info-pane.dark | permission.card | padding-bottom | 0px | 14px | value |
+| info-pane.dark | permission.card | padding-left | 0px | 16px | value |
+| info-pane.dark | permission.card | border-top-width | 0px | 1px | value |
+| info-pane.dark | permission.card | border-bottom-width | 0px | 1px | value |
+| info-pane.dark | permission.card | border-left-width | 0px | 1px | value |
+| info-pane.dark | permission.card | border-right-width | 0px | 1px | value |
+| info-pane.dark | permission.card | border-top-left-radius | 24px | 10px | value |
+| info-pane.dark | permission.card | border-top-right-radius | 24px | 10px | value |
+| info-pane.dark | permission.card | border-bottom-left-radius | 24px | 10px | value |
+| info-pane.dark | permission.card | border-bottom-right-radius | 24px | 10px | value |
+| info-pane.dark | permission.card | background-color | rgb(31, 31, 31) | rgb(24, 24, 24) | value |
 | info-pane.dark | permission.card | color | rgb(245, 245, 245) | rgb(252, 252, 252) | value |
-| info-pane.dark | permission.card-primary-btn | width | 95.7031px | 97.2344px | value |
+| info-pane.dark | permission.card | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
+| info-pane.dark | permission.card | font-size | 16px | 13px | value |
+| info-pane.dark | permission.card | line-height | normal | 18.2px | value |
+| info-pane.dark | permission.card | gap | normal | 8px | value |
+| info-pane.dark | permission.card | box-shadow | rgba(245, 245, 245, 0.1) 0px 0px 0px 0.5px, rgba(245, 245, 2 | rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | value |
+| info-pane.dark | permission.card-primary-btn | width | 95.7031px | 85.7031px | value |
 | info-pane.dark | permission.card-primary-btn | height | 32px | 32.1875px | value |
 | info-pane.dark | permission.card-primary-btn | padding-right | 14px | 9px | value |
 | info-pane.dark | permission.card-primary-btn | padding-left | 14px | 9px | value |
@@ -1120,8 +1164,8 @@
 | info-pane.dark | permission.card-primary-btn | border-top-right-radius | 9999px | 6px | value |
 | info-pane.dark | permission.card-primary-btn | border-bottom-left-radius | 9999px | 6px | value |
 | info-pane.dark | permission.card-primary-btn | border-bottom-right-radius | 9999px | 6px | value |
-| info-pane.dark | permission.card-primary-btn | background-color | rgb(245, 245, 245) | rgb(197, 244, 103) | value |
-| info-pane.dark | permission.card-primary-btn | color | rgb(18, 18, 18) | rgb(22, 22, 22) | value |
+| info-pane.dark | permission.card-primary-btn | background-color | rgb(245, 245, 245) | rgb(53, 53, 53) | value |
+| info-pane.dark | permission.card-primary-btn | color | rgb(18, 18, 18) | rgb(252, 252, 252) | value |
 | info-pane.dark | permission.card-primary-btn | font-family | -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif | Inter, ui-sans-serif, system-ui, sans-serif | value |
 | info-pane.dark | permission.card-primary-btn | font-size | 14px | 13px | value |
 | info-pane.dark | permission.card-primary-btn | font-weight | 500 | 400 | value |
@@ -1146,3 +1190,1375 @@
 | info-pane.dark | composer | transition-property | height, border-radius, border-color, background-color | all | value |
 | info-pane.dark | composer | transition-duration | 0.3s, 0.3s, 0.15s, 0.15s | 0s | value |
 | info-pane.dark | composer | transition-timing-function | linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%,  | ease | value |
+| conv-rest.light | sidebar.root | height | ours=288px | app=900px | app-vs-ours |
+| conv-rest.light | sidebar.root | background-color | ours=rgb(247, 247, 247) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.light | sidebar.root | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | sidebar.header | height | ours=50px | app=60px | app-vs-ours |
+| conv-rest.light | sidebar.header | min-height | ours=auto | app=52px | app-vs-ours |
+| conv-rest.light | sidebar.header | padding-top | ours=0px | app=12px | app-vs-ours |
+| conv-rest.light | sidebar.header | padding-right | ours=12px | app=16px | app-vs-ours |
+| conv-rest.light | sidebar.header | padding-bottom | ours=0px | app=12px | app-vs-ours |
+| conv-rest.light | sidebar.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | sidebar.header | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | sidebar.header | gap | ours=normal | app=8px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | width | ours=24px | app=36px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | height | ours=24px | app=36px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | background-color | ours=rgba(0, 0, 0, 0) | app=rgb(255, 255, 255) | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | color | ours=rgba(20, 20, 20, 0.6) | app=rgba(28, 28, 28, 0.92) | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | font-size | ours=16px | app=13px | app-vs-ours |
+| conv-rest.light | sidebar.header-first-btn | line-height | ours=normal | app=18px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | width | ours=255px | app=36px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | height | ours=28px | app=36px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | min-height | ours=28px | app=0px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | padding-top | ours=6px | app=0px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | padding-right | ours=8px | app=0px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | padding-left | ours=8px | app=0px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | margin-top | ours=4px | app=0px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | margin-bottom | ours=4px | app=0px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | border-top-left-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | border-top-right-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | border-bottom-left-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | border-bottom-right-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | background-color | ours=rgba(119, 119, 119, 0.09) | app=rgb(255, 255, 255) | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | color | ours=rgb(20, 20, 20) | app=rgba(28, 28, 28, 0.92) | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | gap | ours=4px | app=normal | app-vs-ours |
+| conv-rest.light | sidebar.search-entry | box-shadow | ours=rgba(20, 20, 20, 0.1) 0px 0px 0px 0.5px inset | app=none | app-vs-ours |
+| conv-rest.light | sidebar.item | height | ours=58px | app=54px | app-vs-ours |
+| conv-rest.light | sidebar.item | min-height | ours=58px | app=0px | app-vs-ours |
+| conv-rest.light | sidebar.item | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | sidebar.item | gap | ours=9px | app=8px | app-vs-ours |
+| conv-rest.light | sidebar.item | transition-property | ours=all | app=transform, width, padding | app-vs-ours |
+| conv-rest.light | sidebar.item | transition-duration | ours=0s | app=0.2s | app-vs-ours |
+| conv-rest.light | sidebar.item | transition-timing-function | ours=ease | app=cubic-bezier(0.22, 1, 0.36, 1) | app-vs-ours |
+| conv-rest.light | sidebar.item-name | width | ours=166.812px | app=50.5859px | app-vs-ours |
+| conv-rest.light | sidebar.item-name | height | ours=15px | app=20px | app-vs-ours |
+| conv-rest.light | sidebar.item-name | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | sidebar.item-name | font-size | ours=13px | app=14px | app-vs-ours |
+| conv-rest.light | sidebar.item-name | font-weight | ours=700 | app=500 | app-vs-ours |
+| conv-rest.light | sidebar.item-name | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-rest.light | sidebar.item-time | (element) | ours present | app MISSING | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | width | ours=264px | app=203px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | height | ours=38px | app=36px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | min-height | ours=38px | app=auto | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | padding-top | ours=6px | app=0px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | padding-right | ours=12px | app=16px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | padding-left | ours=8px | app=16px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | border-top-left-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | border-top-right-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | border-bottom-left-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | border-bottom-right-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | background-color | ours=rgba(119, 119, 119, 0.09) | app=rgb(255, 255, 255) | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | font-size | ours=13px | app=14px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | font-weight | ours=400 | app=500 | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | line-height | ours=18px | app=20px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | gap | ours=4px | app=0px | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | transition-property | ours=background-color, color | app=background-color, flex-grow, padding | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | transition-duration | ours=0.12s | app=0.3s | app-vs-ours |
+| conv-rest.light | sidebar.footer-pill | transition-timing-function | ours=ease-out | app=cubic-bezier(0.2, 0, 0, 1) | app-vs-ours |
+| conv-rest.light | chat.header | width | ours=1160px | app=1000px | app-vs-ours |
+| conv-rest.light | chat.header | height | ours=51px | app=61px | app-vs-ours |
+| conv-rest.light | chat.header | min-height | ours=51px | app=auto | app-vs-ours |
+| conv-rest.light | chat.header | padding-top | ours=0px | app=10px | app-vs-ours |
+| conv-rest.light | chat.header | padding-right | ours=16px | app=0px | app-vs-ours |
+| conv-rest.light | chat.header | padding-bottom | ours=0px | app=10px | app-vs-ours |
+| conv-rest.light | chat.header | padding-left | ours=16px | app=140px | app-vs-ours |
+| conv-rest.light | chat.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | chat.header | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | chat.header-name | width | ours=63.1406px | app=55.25px | app-vs-ours |
+| conv-rest.light | chat.header-name | height | ours=18px | app=20px | app-vs-ours |
+| conv-rest.light | chat.header-name | color | ours=rgba(20, 20, 20, 0.6) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | chat.header-name | font-size | ours=16px | app=14px | app-vs-ours |
+| conv-rest.light | chat.header-name | font-weight | ours=400 | app=500 | app-vs-ours |
+| conv-rest.light | chat.header-name | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-rest.light | transcript.user-message | width | ours=308px | app=418.148px | app-vs-ours |
+| conv-rest.light | transcript.user-message | height | ours=56px | app=34px | app-vs-ours |
+| conv-rest.light | transcript.user-message | min-height | ours=0px | app=auto | app-vs-ours |
+| conv-rest.light | transcript.user-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| conv-rest.light | transcript.user-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| conv-rest.light | transcript.user-message | background-color | ours=rgb(238, 238, 238) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | transcript.user-message | color | ours=rgb(20, 20, 20) | app=rgb(255, 255, 255) | app-vs-ours |
+| conv-rest.light | transcript.user-message | font-size | ours=16px | app=14px | app-vs-ours |
+| conv-rest.light | transcript.user-message | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-rest.light | transcript.user-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| conv-rest.light | transcript.assistant-message | width | ours=186.266px | app=287.031px | app-vs-ours |
+| conv-rest.light | transcript.assistant-message | height | ours=193.047px | app=168.5px | app-vs-ours |
+| conv-rest.light | transcript.assistant-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| conv-rest.light | transcript.assistant-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| conv-rest.light | transcript.assistant-message | margin-top | ours=0px | app=12px | app-vs-ours |
+| conv-rest.light | transcript.assistant-message | background-color | ours=rgb(238, 238, 238) | app=rgba(28, 28, 28, 0.06) | app-vs-ours |
+| conv-rest.light | transcript.assistant-message | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | transcript.assistant-message | font-size | ours=16px | app=14px | app-vs-ours |
+| conv-rest.light | transcript.assistant-message | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-rest.light | transcript.assistant-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | width | ours=690px | app=960px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | height | ours=36px | app=28px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | background-color | ours=rgb(252, 252, 252) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| conv-rest.light | transcript.thinking-row | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | transcript.tool-row | width | ours=690px | app=960px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | height | ours=36px | app=28px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.light | transcript.tool-row | background-color | ours=rgb(252, 252, 252) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| conv-rest.light | transcript.tool-row | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | permission.card | width | ours=560px | app=520px | app-vs-ours |
+| conv-rest.light | permission.card | height | ours=186.75px | app=181.398px | app-vs-ours |
+| conv-rest.light | permission.card | padding-top | ours=14px | app=16px | app-vs-ours |
+| conv-rest.light | permission.card | padding-bottom | ours=14px | app=16px | app-vs-ours |
+| conv-rest.light | permission.card | border-top-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | permission.card | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | permission.card | border-left-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | permission.card | border-right-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | permission.card | border-top-left-radius | ours=10px | app=24px | app-vs-ours |
+| conv-rest.light | permission.card | border-top-right-radius | ours=10px | app=24px | app-vs-ours |
+| conv-rest.light | permission.card | border-bottom-left-radius | ours=10px | app=24px | app-vs-ours |
+| conv-rest.light | permission.card | border-bottom-right-radius | ours=10px | app=24px | app-vs-ours |
+| conv-rest.light | permission.card | background-color | ours=rgb(252, 252, 252) | app=rgb(255, 255, 255) | app-vs-ours |
+| conv-rest.light | permission.card | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | permission.card | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| conv-rest.light | permission.card | font-size | ours=13px | app=16px | app-vs-ours |
+| conv-rest.light | permission.card | line-height | ours=18.2px | app=normal | app-vs-ours |
+| conv-rest.light | permission.card | box-shadow | ours=rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | app=rgba(28, 28, 28, 0.12) 0px 0px 0px 0.5px, rgba(28, 28, 2 | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | width | ours=85.7031px | app=95.7031px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | height | ours=32.1875px | app=32px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | padding-right | ours=9px | app=14px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | padding-left | ours=9px | app=14px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | border-top-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | border-left-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | border-right-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | background-color | ours=rgb(53, 53, 53) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | color | ours=rgb(20, 20, 20) | app=rgb(252, 252, 252) | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | font-size | ours=13px | app=14px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | font-weight | ours=400 | app=500 | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | line-height | ours=18.2px | app=20px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | gap | ours=normal | app=4px | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | transition-property | ours=all | app=background-color, color | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | transition-duration | ours=0s | app=0.12s | app-vs-ours |
+| conv-rest.light | permission.card-primary-btn | transition-timing-function | ours=ease | app=ease-out | app-vs-ours |
+| conv-rest.light | composer | width | ours=700px | app=960px | app-vs-ours |
+| conv-rest.light | composer | height | ours=108px | app=44px | app-vs-ours |
+| conv-rest.light | composer | padding-top | ours=9px | app=0px | app-vs-ours |
+| conv-rest.light | composer | padding-right | ours=9px | app=0px | app-vs-ours |
+| conv-rest.light | composer | padding-bottom | ours=9px | app=0px | app-vs-ours |
+| conv-rest.light | composer | padding-left | ours=9px | app=0px | app-vs-ours |
+| conv-rest.light | composer | border-top-left-radius | ours=16px | app=22px | app-vs-ours |
+| conv-rest.light | composer | border-top-right-radius | ours=16px | app=22px | app-vs-ours |
+| conv-rest.light | composer | border-bottom-left-radius | ours=16px | app=22px | app-vs-ours |
+| conv-rest.light | composer | border-bottom-right-radius | ours=16px | app=22px | app-vs-ours |
+| conv-rest.light | composer | background-color | ours=rgba(119, 119, 119, 0.09) | app=rgb(255, 255, 255) | app-vs-ours |
+| conv-rest.light | composer | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-rest.light | composer | box-shadow | ours=rgba(0, 0, 0, 0.12) 0px 1px 3px 0px | app=rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03 | app-vs-ours |
+| conv-rest.light | composer | transition-property | ours=all | app=height, border-radius, border-color, background-color | app-vs-ours |
+| conv-rest.light | composer | transition-duration | ours=0s | app=0.3s, 0.3s, 0.15s, 0.15s | app-vs-ours |
+| conv-rest.light | composer | transition-timing-function | ours=ease | app=linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768  | app-vs-ours |
+| conv-running.light | sidebar.root | height | ours=288px | app=900px | app-vs-ours |
+| conv-running.light | sidebar.root | background-color | ours=rgb(247, 247, 247) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-running.light | sidebar.root | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-running.light | sidebar.header | height | ours=50px | app=60px | app-vs-ours |
+| conv-running.light | sidebar.header | min-height | ours=auto | app=52px | app-vs-ours |
+| conv-running.light | sidebar.header | padding-top | ours=0px | app=12px | app-vs-ours |
+| conv-running.light | sidebar.header | padding-right | ours=12px | app=16px | app-vs-ours |
+| conv-running.light | sidebar.header | padding-bottom | ours=0px | app=12px | app-vs-ours |
+| conv-running.light | sidebar.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-running.light | sidebar.header | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-running.light | sidebar.header | gap | ours=normal | app=8px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | width | ours=24px | app=36px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | height | ours=24px | app=36px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | background-color | ours=rgba(0, 0, 0, 0) | app=rgb(255, 255, 255) | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | color | ours=rgba(20, 20, 20, 0.6) | app=rgba(28, 28, 28, 0.92) | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | font-size | ours=16px | app=13px | app-vs-ours |
+| conv-running.light | sidebar.header-first-btn | line-height | ours=normal | app=18px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | width | ours=255px | app=36px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | height | ours=28px | app=36px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | min-height | ours=28px | app=0px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | padding-top | ours=6px | app=0px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | padding-right | ours=8px | app=0px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | padding-left | ours=8px | app=0px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | margin-top | ours=4px | app=0px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | margin-bottom | ours=4px | app=0px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | border-top-left-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | border-top-right-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | border-bottom-left-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | border-bottom-right-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.search-entry | background-color | ours=rgba(119, 119, 119, 0.09) | app=rgb(255, 255, 255) | app-vs-ours |
+| conv-running.light | sidebar.search-entry | color | ours=rgb(20, 20, 20) | app=rgba(28, 28, 28, 0.92) | app-vs-ours |
+| conv-running.light | sidebar.search-entry | gap | ours=4px | app=normal | app-vs-ours |
+| conv-running.light | sidebar.search-entry | box-shadow | ours=rgba(20, 20, 20, 0.1) 0px 0px 0px 0.5px inset | app=none | app-vs-ours |
+| conv-running.light | sidebar.item | height | ours=58px | app=54px | app-vs-ours |
+| conv-running.light | sidebar.item | min-height | ours=58px | app=0px | app-vs-ours |
+| conv-running.light | sidebar.item | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-running.light | sidebar.item | gap | ours=9px | app=8px | app-vs-ours |
+| conv-running.light | sidebar.item | transition-property | ours=all | app=transform, width, padding | app-vs-ours |
+| conv-running.light | sidebar.item | transition-duration | ours=0s | app=0.2s | app-vs-ours |
+| conv-running.light | sidebar.item | transition-timing-function | ours=ease | app=cubic-bezier(0.22, 1, 0.36, 1) | app-vs-ours |
+| conv-running.light | sidebar.item-name | width | ours=166.812px | app=50.5859px | app-vs-ours |
+| conv-running.light | sidebar.item-name | height | ours=15px | app=20px | app-vs-ours |
+| conv-running.light | sidebar.item-name | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-running.light | sidebar.item-name | font-size | ours=13px | app=14px | app-vs-ours |
+| conv-running.light | sidebar.item-name | font-weight | ours=700 | app=500 | app-vs-ours |
+| conv-running.light | sidebar.item-name | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-running.light | sidebar.item-time | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | width | ours=264px | app=203px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | height | ours=38px | app=36px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | min-height | ours=38px | app=auto | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | padding-top | ours=6px | app=0px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | padding-right | ours=12px | app=16px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | padding-left | ours=8px | app=16px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | border-top-left-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | border-top-right-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | border-bottom-left-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | border-bottom-right-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | background-color | ours=rgba(119, 119, 119, 0.09) | app=rgb(255, 255, 255) | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | font-size | ours=13px | app=14px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | font-weight | ours=400 | app=500 | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | line-height | ours=18px | app=20px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | gap | ours=4px | app=0px | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | transition-property | ours=background-color, color | app=background-color, flex-grow, padding | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | transition-duration | ours=0.12s | app=0.3s | app-vs-ours |
+| conv-running.light | sidebar.footer-pill | transition-timing-function | ours=ease-out | app=cubic-bezier(0.2, 0, 0, 1) | app-vs-ours |
+| conv-running.light | chat.header | width | ours=1160px | app=1000px | app-vs-ours |
+| conv-running.light | chat.header | height | ours=51px | app=61px | app-vs-ours |
+| conv-running.light | chat.header | min-height | ours=51px | app=auto | app-vs-ours |
+| conv-running.light | chat.header | padding-top | ours=0px | app=10px | app-vs-ours |
+| conv-running.light | chat.header | padding-right | ours=16px | app=0px | app-vs-ours |
+| conv-running.light | chat.header | padding-bottom | ours=0px | app=10px | app-vs-ours |
+| conv-running.light | chat.header | padding-left | ours=16px | app=140px | app-vs-ours |
+| conv-running.light | chat.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-running.light | chat.header | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-running.light | chat.header-name | width | ours=63.1406px | app=50.5859px | app-vs-ours |
+| conv-running.light | chat.header-name | height | ours=18px | app=20px | app-vs-ours |
+| conv-running.light | chat.header-name | color | ours=rgba(20, 20, 20, 0.6) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-running.light | chat.header-name | font-size | ours=16px | app=14px | app-vs-ours |
+| conv-running.light | chat.header-name | font-weight | ours=400 | app=500 | app-vs-ours |
+| conv-running.light | chat.header-name | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-running.light | transcript.user-message | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.light | transcript.assistant-message | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.light | transcript.thinking-row | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.light | transcript.tool-row | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.light | permission.card | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.light | permission.card-primary-btn | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.light | composer | width | ours=700px | app=960px | app-vs-ours |
+| conv-running.light | composer | height | ours=108px | app=44px | app-vs-ours |
+| conv-running.light | composer | padding-top | ours=9px | app=0px | app-vs-ours |
+| conv-running.light | composer | padding-right | ours=9px | app=0px | app-vs-ours |
+| conv-running.light | composer | padding-bottom | ours=9px | app=0px | app-vs-ours |
+| conv-running.light | composer | padding-left | ours=9px | app=0px | app-vs-ours |
+| conv-running.light | composer | border-top-left-radius | ours=16px | app=22px | app-vs-ours |
+| conv-running.light | composer | border-top-right-radius | ours=16px | app=22px | app-vs-ours |
+| conv-running.light | composer | border-bottom-left-radius | ours=16px | app=22px | app-vs-ours |
+| conv-running.light | composer | border-bottom-right-radius | ours=16px | app=22px | app-vs-ours |
+| conv-running.light | composer | background-color | ours=rgba(119, 119, 119, 0.09) | app=rgb(255, 255, 255) | app-vs-ours |
+| conv-running.light | composer | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| conv-running.light | composer | box-shadow | ours=rgba(0, 0, 0, 0.12) 0px 1px 3px 0px | app=rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03 | app-vs-ours |
+| conv-running.light | composer | transition-property | ours=all | app=height, border-radius, border-color, background-color | app-vs-ours |
+| conv-running.light | composer | transition-duration | ours=0s | app=0.3s, 0.3s, 0.15s, 0.15s | app-vs-ours |
+| conv-running.light | composer | transition-timing-function | ours=ease | app=linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768  | app-vs-ours |
+| sidebar-collapsed.light | sidebar.root | height | ours=210px | app=900px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.root | background-color | ours=rgb(247, 247, 247) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.light | sidebar.root | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header | height | ours=50px | app=52px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header | min-height | ours=auto | app=52px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header | padding-right | ours=0px | app=4px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header | padding-left | ours=0px | app=4px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header | gap | ours=normal | app=8px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header-first-btn | width | ours=24px | app=28px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header-first-btn | height | ours=24px | app=28px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header-first-btn | color | ours=rgba(20, 20, 20, 0.6) | app=rgba(28, 28, 28, 0.66) | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header-first-btn | font-size | ours=16px | app=13px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.header-first-btn | line-height | ours=normal | app=18px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | width | ours=63px | app=54px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | height | ours=44px | app=54px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | min-height | ours=44px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | padding-top | ours=5px | app=9px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | padding-right | ours=5px | app=9px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | padding-bottom | ours=5px | app=9px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | padding-left | ours=5px | app=9px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | gap | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | transition-property | ours=all | app=transform, width, padding | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | transition-duration | ours=0s | app=0.2s | app-vs-ours |
+| sidebar-collapsed.light | sidebar.item | transition-timing-function | ours=ease | app=cubic-bezier(0.22, 1, 0.36, 1) | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | width | ours=78.6406px | app=28px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | height | ours=38px | app=28px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | min-height | ours=38px | app=auto | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | padding-top | ours=6px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | padding-right | ours=12px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | padding-left | ours=8px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | border-top-left-radius | ours=10px | app=9999px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | border-top-right-radius | ours=10px | app=9999px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | border-bottom-left-radius | ours=10px | app=9999px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | border-bottom-right-radius | ours=10px | app=9999px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | background-color | ours=rgba(119, 119, 119, 0.09) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | color | ours=rgb(20, 20, 20) | app=rgba(28, 28, 28, 0.66) | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | font-size | ours=13px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | font-weight | ours=400 | app=500 | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | line-height | ours=18px | app=20px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | gap | ours=4px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | transition-property | ours=background-color, color | app=background-color, flex-grow, padding | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | transition-duration | ours=0.12s | app=0.3s | app-vs-ours |
+| sidebar-collapsed.light | sidebar.footer-pill | transition-timing-function | ours=ease-out | app=cubic-bezier(0.2, 0, 0, 1) | app-vs-ours |
+| sidebar-collapsed.light | chat.header | width | ours=1352px | app=1192px | app-vs-ours |
+| sidebar-collapsed.light | chat.header | height | ours=51px | app=61px | app-vs-ours |
+| sidebar-collapsed.light | chat.header | min-height | ours=51px | app=auto | app-vs-ours |
+| sidebar-collapsed.light | chat.header | padding-top | ours=0px | app=10px | app-vs-ours |
+| sidebar-collapsed.light | chat.header | padding-right | ours=16px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | chat.header | padding-bottom | ours=0px | app=10px | app-vs-ours |
+| sidebar-collapsed.light | chat.header | padding-left | ours=16px | app=140px | app-vs-ours |
+| sidebar-collapsed.light | chat.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | chat.header | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | chat.header-name | width | ours=63.1406px | app=55.25px | app-vs-ours |
+| sidebar-collapsed.light | chat.header-name | height | ours=18px | app=20px | app-vs-ours |
+| sidebar-collapsed.light | chat.header-name | color | ours=rgba(20, 20, 20, 0.6) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | chat.header-name | font-size | ours=16px | app=14px | app-vs-ours |
+| sidebar-collapsed.light | chat.header-name | font-weight | ours=400 | app=500 | app-vs-ours |
+| sidebar-collapsed.light | chat.header-name | line-height | ours=normal | app=20px | app-vs-ours |
+| sidebar-collapsed.light | transcript.user-message | width | ours=308px | app=418.148px | app-vs-ours |
+| sidebar-collapsed.light | transcript.user-message | height | ours=56px | app=34px | app-vs-ours |
+| sidebar-collapsed.light | transcript.user-message | min-height | ours=0px | app=auto | app-vs-ours |
+| sidebar-collapsed.light | transcript.user-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| sidebar-collapsed.light | transcript.user-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| sidebar-collapsed.light | transcript.user-message | background-color | ours=rgb(238, 238, 238) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | transcript.user-message | color | ours=rgb(20, 20, 20) | app=rgb(255, 255, 255) | app-vs-ours |
+| sidebar-collapsed.light | transcript.user-message | font-size | ours=16px | app=14px | app-vs-ours |
+| sidebar-collapsed.light | transcript.user-message | line-height | ours=normal | app=20px | app-vs-ours |
+| sidebar-collapsed.light | transcript.user-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| sidebar-collapsed.light | transcript.assistant-message | width | ours=186.266px | app=287.031px | app-vs-ours |
+| sidebar-collapsed.light | transcript.assistant-message | height | ours=193.047px | app=168.5px | app-vs-ours |
+| sidebar-collapsed.light | transcript.assistant-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| sidebar-collapsed.light | transcript.assistant-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| sidebar-collapsed.light | transcript.assistant-message | margin-top | ours=0px | app=12px | app-vs-ours |
+| sidebar-collapsed.light | transcript.assistant-message | background-color | ours=rgb(238, 238, 238) | app=rgba(28, 28, 28, 0.06) | app-vs-ours |
+| sidebar-collapsed.light | transcript.assistant-message | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | transcript.assistant-message | font-size | ours=16px | app=14px | app-vs-ours |
+| sidebar-collapsed.light | transcript.assistant-message | line-height | ours=normal | app=20px | app-vs-ours |
+| sidebar-collapsed.light | transcript.assistant-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | width | ours=690px | app=960px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | height | ours=36px | app=28px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | background-color | ours=rgb(252, 252, 252) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| sidebar-collapsed.light | transcript.thinking-row | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | width | ours=690px | app=960px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | height | ours=36px | app=28px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | background-color | ours=rgb(252, 252, 252) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| sidebar-collapsed.light | transcript.tool-row | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | permission.card | width | ours=560px | app=520px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | height | ours=186.75px | app=181.398px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | padding-top | ours=14px | app=16px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | padding-bottom | ours=14px | app=16px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | border-top-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | border-left-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | border-right-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | border-top-left-radius | ours=10px | app=24px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | border-top-right-radius | ours=10px | app=24px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | border-bottom-left-radius | ours=10px | app=24px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | border-bottom-right-radius | ours=10px | app=24px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | background-color | ours=rgb(252, 252, 252) | app=rgb(255, 255, 255) | app-vs-ours |
+| sidebar-collapsed.light | permission.card | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | permission.card | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| sidebar-collapsed.light | permission.card | font-size | ours=13px | app=16px | app-vs-ours |
+| sidebar-collapsed.light | permission.card | line-height | ours=18.2px | app=normal | app-vs-ours |
+| sidebar-collapsed.light | permission.card | box-shadow | ours=rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | app=rgba(28, 28, 28, 0.12) 0px 0px 0px 0.5px, rgba(28, 28, 2 | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | width | ours=85.7031px | app=95.7031px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | height | ours=32.1875px | app=32px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | padding-right | ours=9px | app=14px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | padding-left | ours=9px | app=14px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | border-top-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | border-left-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | border-right-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | background-color | ours=rgb(53, 53, 53) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | color | ours=rgb(20, 20, 20) | app=rgb(252, 252, 252) | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | font-size | ours=13px | app=14px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | font-weight | ours=400 | app=500 | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | line-height | ours=18.2px | app=20px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | gap | ours=normal | app=4px | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | transition-property | ours=all | app=background-color, color | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | transition-duration | ours=0s | app=0.12s | app-vs-ours |
+| sidebar-collapsed.light | permission.card-primary-btn | transition-timing-function | ours=ease | app=ease-out | app-vs-ours |
+| sidebar-collapsed.light | composer | width | ours=700px | app=960px | app-vs-ours |
+| sidebar-collapsed.light | composer | height | ours=108px | app=44px | app-vs-ours |
+| sidebar-collapsed.light | composer | padding-top | ours=9px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | composer | padding-right | ours=9px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | composer | padding-bottom | ours=9px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | composer | padding-left | ours=9px | app=0px | app-vs-ours |
+| sidebar-collapsed.light | composer | border-top-left-radius | ours=16px | app=22px | app-vs-ours |
+| sidebar-collapsed.light | composer | border-top-right-radius | ours=16px | app=22px | app-vs-ours |
+| sidebar-collapsed.light | composer | border-bottom-left-radius | ours=16px | app=22px | app-vs-ours |
+| sidebar-collapsed.light | composer | border-bottom-right-radius | ours=16px | app=22px | app-vs-ours |
+| sidebar-collapsed.light | composer | background-color | ours=rgba(119, 119, 119, 0.09) | app=rgb(255, 255, 255) | app-vs-ours |
+| sidebar-collapsed.light | composer | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| sidebar-collapsed.light | composer | box-shadow | ours=rgba(0, 0, 0, 0.12) 0px 1px 3px 0px | app=rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03 | app-vs-ours |
+| sidebar-collapsed.light | composer | transition-property | ours=all | app=height, border-radius, border-color, background-color | app-vs-ours |
+| sidebar-collapsed.light | composer | transition-duration | ours=0s | app=0.3s, 0.3s, 0.15s, 0.15s | app-vs-ours |
+| sidebar-collapsed.light | composer | transition-timing-function | ours=ease | app=linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768  | app-vs-ours |
+| info-pane.light | sidebar.root | height | ours=288px | app=900px | app-vs-ours |
+| info-pane.light | sidebar.root | background-color | ours=rgb(247, 247, 247) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.light | sidebar.root | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | sidebar.header | height | ours=50px | app=60px | app-vs-ours |
+| info-pane.light | sidebar.header | min-height | ours=auto | app=52px | app-vs-ours |
+| info-pane.light | sidebar.header | padding-top | ours=0px | app=12px | app-vs-ours |
+| info-pane.light | sidebar.header | padding-right | ours=12px | app=16px | app-vs-ours |
+| info-pane.light | sidebar.header | padding-bottom | ours=0px | app=12px | app-vs-ours |
+| info-pane.light | sidebar.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | sidebar.header | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | sidebar.header | gap | ours=normal | app=8px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | width | ours=24px | app=36px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | height | ours=24px | app=36px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | border-top-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | border-left-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | border-right-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | background-color | ours=rgba(0, 0, 0, 0) | app=rgb(255, 255, 255) | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | color | ours=rgba(20, 20, 20, 0.6) | app=rgba(28, 28, 28, 0.92) | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | font-size | ours=16px | app=13px | app-vs-ours |
+| info-pane.light | sidebar.header-first-btn | line-height | ours=normal | app=18px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | width | ours=255px | app=36px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | height | ours=28px | app=36px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | min-height | ours=28px | app=0px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | padding-top | ours=6px | app=0px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | padding-right | ours=8px | app=0px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | padding-left | ours=8px | app=0px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | margin-top | ours=4px | app=0px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | margin-bottom | ours=4px | app=0px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | border-top-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | border-left-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | border-right-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | border-top-left-radius | ours=8px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | border-top-right-radius | ours=8px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | border-bottom-left-radius | ours=8px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | border-bottom-right-radius | ours=8px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.search-entry | background-color | ours=rgba(119, 119, 119, 0.09) | app=rgb(255, 255, 255) | app-vs-ours |
+| info-pane.light | sidebar.search-entry | color | ours=rgb(20, 20, 20) | app=rgba(28, 28, 28, 0.92) | app-vs-ours |
+| info-pane.light | sidebar.search-entry | gap | ours=4px | app=normal | app-vs-ours |
+| info-pane.light | sidebar.search-entry | box-shadow | ours=rgba(20, 20, 20, 0.1) 0px 0px 0px 0.5px inset | app=none | app-vs-ours |
+| info-pane.light | sidebar.item | height | ours=58px | app=54px | app-vs-ours |
+| info-pane.light | sidebar.item | min-height | ours=58px | app=0px | app-vs-ours |
+| info-pane.light | sidebar.item | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | sidebar.item | gap | ours=9px | app=8px | app-vs-ours |
+| info-pane.light | sidebar.item | transition-property | ours=all | app=transform, width, padding | app-vs-ours |
+| info-pane.light | sidebar.item | transition-duration | ours=0s | app=0.2s | app-vs-ours |
+| info-pane.light | sidebar.item | transition-timing-function | ours=ease | app=cubic-bezier(0.22, 1, 0.36, 1) | app-vs-ours |
+| info-pane.light | sidebar.item-name | width | ours=166.812px | app=50.5859px | app-vs-ours |
+| info-pane.light | sidebar.item-name | height | ours=15px | app=20px | app-vs-ours |
+| info-pane.light | sidebar.item-name | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | sidebar.item-name | font-size | ours=13px | app=14px | app-vs-ours |
+| info-pane.light | sidebar.item-name | font-weight | ours=700 | app=500 | app-vs-ours |
+| info-pane.light | sidebar.item-name | line-height | ours=normal | app=20px | app-vs-ours |
+| info-pane.light | sidebar.item-time | (element) | ours present | app MISSING | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | width | ours=264px | app=203px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | height | ours=38px | app=36px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | min-height | ours=38px | app=auto | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | padding-top | ours=6px | app=0px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | padding-right | ours=12px | app=16px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | padding-left | ours=8px | app=16px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | border-top-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | border-left-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | border-right-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | border-top-left-radius | ours=10px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | border-top-right-radius | ours=10px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | border-bottom-left-radius | ours=10px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | border-bottom-right-radius | ours=10px | app=9999px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | background-color | ours=rgba(119, 119, 119, 0.09) | app=rgb(255, 255, 255) | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | font-size | ours=13px | app=14px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | font-weight | ours=400 | app=500 | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | line-height | ours=18px | app=20px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | gap | ours=4px | app=0px | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | transition-property | ours=background-color, color | app=background-color, flex-grow, padding | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | transition-duration | ours=0.12s | app=0.3s | app-vs-ours |
+| info-pane.light | sidebar.footer-pill | transition-timing-function | ours=ease-out | app=cubic-bezier(0.2, 0, 0, 1) | app-vs-ours |
+| info-pane.light | chat.header | width | ours=1160px | app=820px | app-vs-ours |
+| info-pane.light | chat.header | height | ours=51px | app=61px | app-vs-ours |
+| info-pane.light | chat.header | min-height | ours=51px | app=auto | app-vs-ours |
+| info-pane.light | chat.header | padding-top | ours=0px | app=10px | app-vs-ours |
+| info-pane.light | chat.header | padding-right | ours=16px | app=0px | app-vs-ours |
+| info-pane.light | chat.header | padding-bottom | ours=0px | app=10px | app-vs-ours |
+| info-pane.light | chat.header | padding-left | ours=16px | app=0px | app-vs-ours |
+| info-pane.light | chat.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | chat.header | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | chat.header-name | width | ours=63.1406px | app=55.25px | app-vs-ours |
+| info-pane.light | chat.header-name | height | ours=18px | app=20px | app-vs-ours |
+| info-pane.light | chat.header-name | color | ours=rgba(20, 20, 20, 0.6) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | chat.header-name | font-size | ours=16px | app=14px | app-vs-ours |
+| info-pane.light | chat.header-name | font-weight | ours=400 | app=500 | app-vs-ours |
+| info-pane.light | chat.header-name | line-height | ours=normal | app=20px | app-vs-ours |
+| info-pane.light | transcript.user-message | width | ours=308px | app=418.148px | app-vs-ours |
+| info-pane.light | transcript.user-message | height | ours=56px | app=34px | app-vs-ours |
+| info-pane.light | transcript.user-message | min-height | ours=0px | app=auto | app-vs-ours |
+| info-pane.light | transcript.user-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| info-pane.light | transcript.user-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| info-pane.light | transcript.user-message | background-color | ours=rgb(238, 238, 238) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | transcript.user-message | color | ours=rgb(20, 20, 20) | app=rgb(255, 255, 255) | app-vs-ours |
+| info-pane.light | transcript.user-message | font-size | ours=16px | app=14px | app-vs-ours |
+| info-pane.light | transcript.user-message | line-height | ours=normal | app=20px | app-vs-ours |
+| info-pane.light | transcript.user-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| info-pane.light | transcript.assistant-message | width | ours=186.266px | app=287.031px | app-vs-ours |
+| info-pane.light | transcript.assistant-message | height | ours=193.047px | app=168.5px | app-vs-ours |
+| info-pane.light | transcript.assistant-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| info-pane.light | transcript.assistant-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| info-pane.light | transcript.assistant-message | margin-top | ours=0px | app=12px | app-vs-ours |
+| info-pane.light | transcript.assistant-message | background-color | ours=rgb(238, 238, 238) | app=rgba(28, 28, 28, 0.06) | app-vs-ours |
+| info-pane.light | transcript.assistant-message | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | transcript.assistant-message | font-size | ours=16px | app=14px | app-vs-ours |
+| info-pane.light | transcript.assistant-message | line-height | ours=normal | app=20px | app-vs-ours |
+| info-pane.light | transcript.assistant-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.16) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| info-pane.light | transcript.thinking-row | width | ours=690px | app=808px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | height | ours=36px | app=28px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.light | transcript.thinking-row | background-color | ours=rgb(252, 252, 252) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| info-pane.light | transcript.thinking-row | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | transcript.tool-row | width | ours=690px | app=808px | app-vs-ours |
+| info-pane.light | transcript.tool-row | height | ours=36px | app=28px | app-vs-ours |
+| info-pane.light | transcript.tool-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| info-pane.light | transcript.tool-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| info-pane.light | transcript.tool-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | transcript.tool-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | transcript.tool-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | transcript.tool-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | transcript.tool-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.light | transcript.tool-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.light | transcript.tool-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.light | transcript.tool-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.light | transcript.tool-row | background-color | ours=rgb(252, 252, 252) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| info-pane.light | transcript.tool-row | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | permission.card | width | ours=560px | app=520px | app-vs-ours |
+| info-pane.light | permission.card | height | ours=186.75px | app=181.398px | app-vs-ours |
+| info-pane.light | permission.card | padding-top | ours=14px | app=16px | app-vs-ours |
+| info-pane.light | permission.card | padding-bottom | ours=14px | app=16px | app-vs-ours |
+| info-pane.light | permission.card | border-top-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | permission.card | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | permission.card | border-left-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | permission.card | border-right-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | permission.card | border-top-left-radius | ours=10px | app=24px | app-vs-ours |
+| info-pane.light | permission.card | border-top-right-radius | ours=10px | app=24px | app-vs-ours |
+| info-pane.light | permission.card | border-bottom-left-radius | ours=10px | app=24px | app-vs-ours |
+| info-pane.light | permission.card | border-bottom-right-radius | ours=10px | app=24px | app-vs-ours |
+| info-pane.light | permission.card | background-color | ours=rgb(252, 252, 252) | app=rgb(255, 255, 255) | app-vs-ours |
+| info-pane.light | permission.card | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | permission.card | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| info-pane.light | permission.card | font-size | ours=13px | app=16px | app-vs-ours |
+| info-pane.light | permission.card | line-height | ours=18.2px | app=normal | app-vs-ours |
+| info-pane.light | permission.card | box-shadow | ours=rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | app=rgba(28, 28, 28, 0.12) 0px 0px 0px 0.5px, rgba(28, 28, 2 | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | width | ours=85.7031px | app=95.7031px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | height | ours=32.1875px | app=32px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | padding-right | ours=9px | app=14px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | padding-left | ours=9px | app=14px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | border-top-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | border-left-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | border-right-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | background-color | ours=rgb(53, 53, 53) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | color | ours=rgb(20, 20, 20) | app=rgb(252, 252, 252) | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | font-size | ours=13px | app=14px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | font-weight | ours=400 | app=500 | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | line-height | ours=18.2px | app=20px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | gap | ours=normal | app=4px | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | transition-property | ours=all | app=background-color, color | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | transition-duration | ours=0s | app=0.12s | app-vs-ours |
+| info-pane.light | permission.card-primary-btn | transition-timing-function | ours=ease | app=ease-out | app-vs-ours |
+| info-pane.light | composer | width | ours=700px | app=808px | app-vs-ours |
+| info-pane.light | composer | height | ours=108px | app=44px | app-vs-ours |
+| info-pane.light | composer | padding-top | ours=9px | app=0px | app-vs-ours |
+| info-pane.light | composer | padding-right | ours=9px | app=0px | app-vs-ours |
+| info-pane.light | composer | padding-bottom | ours=9px | app=0px | app-vs-ours |
+| info-pane.light | composer | padding-left | ours=9px | app=0px | app-vs-ours |
+| info-pane.light | composer | border-top-left-radius | ours=16px | app=22px | app-vs-ours |
+| info-pane.light | composer | border-top-right-radius | ours=16px | app=22px | app-vs-ours |
+| info-pane.light | composer | border-bottom-left-radius | ours=16px | app=22px | app-vs-ours |
+| info-pane.light | composer | border-bottom-right-radius | ours=16px | app=22px | app-vs-ours |
+| info-pane.light | composer | background-color | ours=rgba(119, 119, 119, 0.09) | app=rgb(255, 255, 255) | app-vs-ours |
+| info-pane.light | composer | color | ours=rgb(20, 20, 20) | app=rgb(28, 28, 28) | app-vs-ours |
+| info-pane.light | composer | box-shadow | ours=rgba(0, 0, 0, 0.12) 0px 1px 3px 0px | app=rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03 | app-vs-ours |
+| info-pane.light | composer | transition-property | ours=all | app=height, border-radius, border-color, background-color | app-vs-ours |
+| info-pane.light | composer | transition-duration | ours=0s | app=0.3s, 0.3s, 0.15s, 0.15s | app-vs-ours |
+| info-pane.light | composer | transition-timing-function | ours=ease | app=linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768  | app-vs-ours |
+| conv-rest.dark | sidebar.root | height | ours=288px | app=900px | app-vs-ours |
+| conv-rest.dark | sidebar.root | background-color | ours=rgb(17, 17, 17) | app=rgb(14, 14, 14) | app-vs-ours |
+| conv-rest.dark | sidebar.root | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | sidebar.header | height | ours=50px | app=60px | app-vs-ours |
+| conv-rest.dark | sidebar.header | min-height | ours=auto | app=52px | app-vs-ours |
+| conv-rest.dark | sidebar.header | padding-top | ours=0px | app=12px | app-vs-ours |
+| conv-rest.dark | sidebar.header | padding-right | ours=12px | app=16px | app-vs-ours |
+| conv-rest.dark | sidebar.header | padding-bottom | ours=0px | app=12px | app-vs-ours |
+| conv-rest.dark | sidebar.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | sidebar.header | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | sidebar.header | gap | ours=normal | app=8px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | width | ours=24px | app=36px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | height | ours=24px | app=36px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | background-color | ours=rgba(0, 0, 0, 0) | app=rgb(31, 31, 31) | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | color | ours=rgba(252, 252, 252, 0.6) | app=rgba(245, 245, 245, 0.9) | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | font-size | ours=16px | app=13px | app-vs-ours |
+| conv-rest.dark | sidebar.header-first-btn | line-height | ours=normal | app=18px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | width | ours=255px | app=36px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | height | ours=28px | app=36px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | min-height | ours=28px | app=0px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | padding-top | ours=6px | app=0px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | padding-right | ours=8px | app=0px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | padding-left | ours=8px | app=0px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | margin-top | ours=4px | app=0px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | margin-bottom | ours=4px | app=0px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | border-top-left-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | border-top-right-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | border-bottom-left-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | border-bottom-right-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | background-color | ours=rgba(119, 119, 119, 0.173) | app=rgb(31, 31, 31) | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | color | ours=rgb(252, 252, 252) | app=rgba(245, 245, 245, 0.9) | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | gap | ours=4px | app=normal | app-vs-ours |
+| conv-rest.dark | sidebar.search-entry | box-shadow | ours=rgba(252, 252, 252, 0.1) 0px 0px 0px 0.5px inset | app=none | app-vs-ours |
+| conv-rest.dark | sidebar.item | height | ours=58px | app=54px | app-vs-ours |
+| conv-rest.dark | sidebar.item | min-height | ours=58px | app=0px | app-vs-ours |
+| conv-rest.dark | sidebar.item | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | sidebar.item | gap | ours=9px | app=8px | app-vs-ours |
+| conv-rest.dark | sidebar.item | transition-property | ours=all | app=transform, width, padding | app-vs-ours |
+| conv-rest.dark | sidebar.item | transition-duration | ours=0s | app=0.2s | app-vs-ours |
+| conv-rest.dark | sidebar.item | transition-timing-function | ours=ease | app=cubic-bezier(0.22, 1, 0.36, 1) | app-vs-ours |
+| conv-rest.dark | sidebar.item-name | width | ours=166.812px | app=50.5859px | app-vs-ours |
+| conv-rest.dark | sidebar.item-name | height | ours=15px | app=20px | app-vs-ours |
+| conv-rest.dark | sidebar.item-name | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | sidebar.item-name | font-size | ours=13px | app=14px | app-vs-ours |
+| conv-rest.dark | sidebar.item-name | font-weight | ours=700 | app=500 | app-vs-ours |
+| conv-rest.dark | sidebar.item-name | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-rest.dark | sidebar.item-time | (element) | ours present | app MISSING | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | width | ours=264px | app=203px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | height | ours=38px | app=36px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | min-height | ours=38px | app=auto | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | padding-top | ours=6px | app=0px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | padding-right | ours=12px | app=16px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | padding-left | ours=8px | app=16px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | border-top-left-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | border-top-right-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | border-bottom-left-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | border-bottom-right-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | background-color | ours=rgba(119, 119, 119, 0.173) | app=rgb(31, 31, 31) | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | font-size | ours=13px | app=14px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | font-weight | ours=400 | app=500 | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | line-height | ours=18px | app=20px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | gap | ours=4px | app=0px | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | transition-property | ours=background-color, color | app=background-color, flex-grow, padding | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | transition-duration | ours=0.12s | app=0.3s | app-vs-ours |
+| conv-rest.dark | sidebar.footer-pill | transition-timing-function | ours=ease-out | app=cubic-bezier(0.2, 0, 0, 1) | app-vs-ours |
+| conv-rest.dark | chat.header | width | ours=1160px | app=1000px | app-vs-ours |
+| conv-rest.dark | chat.header | height | ours=51px | app=61px | app-vs-ours |
+| conv-rest.dark | chat.header | min-height | ours=51px | app=auto | app-vs-ours |
+| conv-rest.dark | chat.header | padding-top | ours=0px | app=10px | app-vs-ours |
+| conv-rest.dark | chat.header | padding-right | ours=16px | app=0px | app-vs-ours |
+| conv-rest.dark | chat.header | padding-bottom | ours=0px | app=10px | app-vs-ours |
+| conv-rest.dark | chat.header | padding-left | ours=16px | app=140px | app-vs-ours |
+| conv-rest.dark | chat.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | chat.header | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | chat.header-name | width | ours=63.1406px | app=55.25px | app-vs-ours |
+| conv-rest.dark | chat.header-name | height | ours=18px | app=20px | app-vs-ours |
+| conv-rest.dark | chat.header-name | color | ours=rgba(252, 252, 252, 0.6) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | chat.header-name | font-size | ours=16px | app=14px | app-vs-ours |
+| conv-rest.dark | chat.header-name | font-weight | ours=400 | app=500 | app-vs-ours |
+| conv-rest.dark | chat.header-name | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-rest.dark | transcript.user-message | width | ours=308px | app=418.148px | app-vs-ours |
+| conv-rest.dark | transcript.user-message | height | ours=56px | app=34px | app-vs-ours |
+| conv-rest.dark | transcript.user-message | min-height | ours=0px | app=auto | app-vs-ours |
+| conv-rest.dark | transcript.user-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| conv-rest.dark | transcript.user-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| conv-rest.dark | transcript.user-message | background-color | ours=rgb(38, 38, 38) | app=rgba(245, 245, 245, 0.18) | app-vs-ours |
+| conv-rest.dark | transcript.user-message | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | transcript.user-message | font-size | ours=16px | app=14px | app-vs-ours |
+| conv-rest.dark | transcript.user-message | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-rest.dark | transcript.user-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| conv-rest.dark | transcript.assistant-message | width | ours=186.266px | app=287.031px | app-vs-ours |
+| conv-rest.dark | transcript.assistant-message | height | ours=193.047px | app=168.5px | app-vs-ours |
+| conv-rest.dark | transcript.assistant-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| conv-rest.dark | transcript.assistant-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| conv-rest.dark | transcript.assistant-message | margin-top | ours=0px | app=12px | app-vs-ours |
+| conv-rest.dark | transcript.assistant-message | background-color | ours=rgb(38, 38, 38) | app=rgba(245, 245, 245, 0.04) | app-vs-ours |
+| conv-rest.dark | transcript.assistant-message | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | transcript.assistant-message | font-size | ours=16px | app=14px | app-vs-ours |
+| conv-rest.dark | transcript.assistant-message | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-rest.dark | transcript.assistant-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | width | ours=690px | app=960px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | height | ours=36px | app=28px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | background-color | ours=rgb(24, 24, 24) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| conv-rest.dark | transcript.thinking-row | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | width | ours=690px | app=960px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | height | ours=36px | app=28px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | background-color | ours=rgb(24, 24, 24) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| conv-rest.dark | transcript.tool-row | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | permission.card | width | ours=560px | app=520px | app-vs-ours |
+| conv-rest.dark | permission.card | height | ours=186.75px | app=181.398px | app-vs-ours |
+| conv-rest.dark | permission.card | padding-top | ours=14px | app=16px | app-vs-ours |
+| conv-rest.dark | permission.card | padding-bottom | ours=14px | app=16px | app-vs-ours |
+| conv-rest.dark | permission.card | border-top-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | permission.card | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | permission.card | border-left-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | permission.card | border-right-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | permission.card | border-top-left-radius | ours=10px | app=24px | app-vs-ours |
+| conv-rest.dark | permission.card | border-top-right-radius | ours=10px | app=24px | app-vs-ours |
+| conv-rest.dark | permission.card | border-bottom-left-radius | ours=10px | app=24px | app-vs-ours |
+| conv-rest.dark | permission.card | border-bottom-right-radius | ours=10px | app=24px | app-vs-ours |
+| conv-rest.dark | permission.card | background-color | ours=rgb(24, 24, 24) | app=rgb(31, 31, 31) | app-vs-ours |
+| conv-rest.dark | permission.card | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | permission.card | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| conv-rest.dark | permission.card | font-size | ours=13px | app=16px | app-vs-ours |
+| conv-rest.dark | permission.card | line-height | ours=18.2px | app=normal | app-vs-ours |
+| conv-rest.dark | permission.card | box-shadow | ours=rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | app=rgba(245, 245, 245, 0.1) 0px 0px 0px 0.5px, rgba(245, 24 | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | width | ours=85.7031px | app=95.7031px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | height | ours=32.1875px | app=32px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | padding-right | ours=9px | app=14px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | padding-left | ours=9px | app=14px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | border-top-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | border-left-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | border-right-width | ours=1px | app=0px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | background-color | ours=rgb(53, 53, 53) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | color | ours=rgb(252, 252, 252) | app=rgb(18, 18, 18) | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | font-size | ours=13px | app=14px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | font-weight | ours=400 | app=500 | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | line-height | ours=18.2px | app=20px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | gap | ours=normal | app=4px | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | transition-property | ours=all | app=background-color, color | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | transition-duration | ours=0s | app=0.12s | app-vs-ours |
+| conv-rest.dark | permission.card-primary-btn | transition-timing-function | ours=ease | app=ease-out | app-vs-ours |
+| conv-rest.dark | composer | width | ours=700px | app=960px | app-vs-ours |
+| conv-rest.dark | composer | height | ours=108px | app=44px | app-vs-ours |
+| conv-rest.dark | composer | padding-top | ours=9px | app=0px | app-vs-ours |
+| conv-rest.dark | composer | padding-right | ours=9px | app=0px | app-vs-ours |
+| conv-rest.dark | composer | padding-bottom | ours=9px | app=0px | app-vs-ours |
+| conv-rest.dark | composer | padding-left | ours=9px | app=0px | app-vs-ours |
+| conv-rest.dark | composer | border-top-left-radius | ours=16px | app=22px | app-vs-ours |
+| conv-rest.dark | composer | border-top-right-radius | ours=16px | app=22px | app-vs-ours |
+| conv-rest.dark | composer | border-bottom-left-radius | ours=16px | app=22px | app-vs-ours |
+| conv-rest.dark | composer | border-bottom-right-radius | ours=16px | app=22px | app-vs-ours |
+| conv-rest.dark | composer | background-color | ours=rgba(119, 119, 119, 0.173) | app=rgb(31, 31, 31) | app-vs-ours |
+| conv-rest.dark | composer | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-rest.dark | composer | box-shadow | ours=rgba(0, 0, 0, 0) 0px 1px 3px 0px | app=rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03 | app-vs-ours |
+| conv-rest.dark | composer | transition-property | ours=all | app=height, border-radius, border-color, background-color | app-vs-ours |
+| conv-rest.dark | composer | transition-duration | ours=0s | app=0.3s, 0.3s, 0.15s, 0.15s | app-vs-ours |
+| conv-rest.dark | composer | transition-timing-function | ours=ease | app=linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768  | app-vs-ours |
+| conv-running.dark | sidebar.root | height | ours=288px | app=900px | app-vs-ours |
+| conv-running.dark | sidebar.root | background-color | ours=rgb(17, 17, 17) | app=rgb(14, 14, 14) | app-vs-ours |
+| conv-running.dark | sidebar.root | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-running.dark | sidebar.header | height | ours=50px | app=60px | app-vs-ours |
+| conv-running.dark | sidebar.header | min-height | ours=auto | app=52px | app-vs-ours |
+| conv-running.dark | sidebar.header | padding-top | ours=0px | app=12px | app-vs-ours |
+| conv-running.dark | sidebar.header | padding-right | ours=12px | app=16px | app-vs-ours |
+| conv-running.dark | sidebar.header | padding-bottom | ours=0px | app=12px | app-vs-ours |
+| conv-running.dark | sidebar.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-running.dark | sidebar.header | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-running.dark | sidebar.header | gap | ours=normal | app=8px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | width | ours=24px | app=36px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | height | ours=24px | app=36px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | background-color | ours=rgba(0, 0, 0, 0) | app=rgb(31, 31, 31) | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | color | ours=rgba(252, 252, 252, 0.6) | app=rgba(245, 245, 245, 0.9) | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | font-size | ours=16px | app=13px | app-vs-ours |
+| conv-running.dark | sidebar.header-first-btn | line-height | ours=normal | app=18px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | width | ours=255px | app=36px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | height | ours=28px | app=36px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | min-height | ours=28px | app=0px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | padding-top | ours=6px | app=0px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | padding-right | ours=8px | app=0px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | padding-left | ours=8px | app=0px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | margin-top | ours=4px | app=0px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | margin-bottom | ours=4px | app=0px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | border-top-left-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | border-top-right-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | border-bottom-left-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | border-bottom-right-radius | ours=8px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | background-color | ours=rgba(119, 119, 119, 0.173) | app=rgb(31, 31, 31) | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | color | ours=rgb(252, 252, 252) | app=rgba(245, 245, 245, 0.9) | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | gap | ours=4px | app=normal | app-vs-ours |
+| conv-running.dark | sidebar.search-entry | box-shadow | ours=rgba(252, 252, 252, 0.1) 0px 0px 0px 0.5px inset | app=none | app-vs-ours |
+| conv-running.dark | sidebar.item | height | ours=58px | app=54px | app-vs-ours |
+| conv-running.dark | sidebar.item | min-height | ours=58px | app=0px | app-vs-ours |
+| conv-running.dark | sidebar.item | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-running.dark | sidebar.item | gap | ours=9px | app=8px | app-vs-ours |
+| conv-running.dark | sidebar.item | transition-property | ours=all | app=transform, width, padding | app-vs-ours |
+| conv-running.dark | sidebar.item | transition-duration | ours=0s | app=0.2s | app-vs-ours |
+| conv-running.dark | sidebar.item | transition-timing-function | ours=ease | app=cubic-bezier(0.22, 1, 0.36, 1) | app-vs-ours |
+| conv-running.dark | sidebar.item-name | width | ours=166.812px | app=50.5859px | app-vs-ours |
+| conv-running.dark | sidebar.item-name | height | ours=15px | app=20px | app-vs-ours |
+| conv-running.dark | sidebar.item-name | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-running.dark | sidebar.item-name | font-size | ours=13px | app=14px | app-vs-ours |
+| conv-running.dark | sidebar.item-name | font-weight | ours=700 | app=500 | app-vs-ours |
+| conv-running.dark | sidebar.item-name | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-running.dark | sidebar.item-time | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | width | ours=264px | app=203px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | height | ours=38px | app=36px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | min-height | ours=38px | app=auto | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | padding-top | ours=6px | app=0px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | padding-right | ours=12px | app=16px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | padding-left | ours=8px | app=16px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | border-top-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | border-left-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | border-right-width | ours=0px | app=1px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | border-top-left-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | border-top-right-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | border-bottom-left-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | border-bottom-right-radius | ours=10px | app=9999px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | background-color | ours=rgba(119, 119, 119, 0.173) | app=rgb(31, 31, 31) | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | font-size | ours=13px | app=14px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | font-weight | ours=400 | app=500 | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | line-height | ours=18px | app=20px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | gap | ours=4px | app=0px | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | transition-property | ours=background-color, color | app=background-color, flex-grow, padding | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | transition-duration | ours=0.12s | app=0.3s | app-vs-ours |
+| conv-running.dark | sidebar.footer-pill | transition-timing-function | ours=ease-out | app=cubic-bezier(0.2, 0, 0, 1) | app-vs-ours |
+| conv-running.dark | chat.header | width | ours=1160px | app=1000px | app-vs-ours |
+| conv-running.dark | chat.header | height | ours=51px | app=61px | app-vs-ours |
+| conv-running.dark | chat.header | min-height | ours=51px | app=auto | app-vs-ours |
+| conv-running.dark | chat.header | padding-top | ours=0px | app=10px | app-vs-ours |
+| conv-running.dark | chat.header | padding-right | ours=16px | app=0px | app-vs-ours |
+| conv-running.dark | chat.header | padding-bottom | ours=0px | app=10px | app-vs-ours |
+| conv-running.dark | chat.header | padding-left | ours=16px | app=140px | app-vs-ours |
+| conv-running.dark | chat.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| conv-running.dark | chat.header | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-running.dark | chat.header-name | width | ours=63.1406px | app=50.5859px | app-vs-ours |
+| conv-running.dark | chat.header-name | height | ours=18px | app=20px | app-vs-ours |
+| conv-running.dark | chat.header-name | color | ours=rgba(252, 252, 252, 0.6) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-running.dark | chat.header-name | font-size | ours=16px | app=14px | app-vs-ours |
+| conv-running.dark | chat.header-name | font-weight | ours=400 | app=500 | app-vs-ours |
+| conv-running.dark | chat.header-name | line-height | ours=normal | app=20px | app-vs-ours |
+| conv-running.dark | transcript.user-message | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.dark | transcript.assistant-message | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.dark | transcript.thinking-row | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.dark | transcript.tool-row | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.dark | permission.card | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.dark | permission.card-primary-btn | (element) | ours present | app MISSING | app-vs-ours |
+| conv-running.dark | composer | width | ours=700px | app=960px | app-vs-ours |
+| conv-running.dark | composer | height | ours=108px | app=44px | app-vs-ours |
+| conv-running.dark | composer | padding-top | ours=9px | app=0px | app-vs-ours |
+| conv-running.dark | composer | padding-right | ours=9px | app=0px | app-vs-ours |
+| conv-running.dark | composer | padding-bottom | ours=9px | app=0px | app-vs-ours |
+| conv-running.dark | composer | padding-left | ours=9px | app=0px | app-vs-ours |
+| conv-running.dark | composer | border-top-left-radius | ours=16px | app=22px | app-vs-ours |
+| conv-running.dark | composer | border-top-right-radius | ours=16px | app=22px | app-vs-ours |
+| conv-running.dark | composer | border-bottom-left-radius | ours=16px | app=22px | app-vs-ours |
+| conv-running.dark | composer | border-bottom-right-radius | ours=16px | app=22px | app-vs-ours |
+| conv-running.dark | composer | background-color | ours=rgba(119, 119, 119, 0.173) | app=rgb(31, 31, 31) | app-vs-ours |
+| conv-running.dark | composer | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| conv-running.dark | composer | box-shadow | ours=rgba(0, 0, 0, 0) 0px 1px 3px 0px | app=rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03 | app-vs-ours |
+| conv-running.dark | composer | transition-property | ours=all | app=height, border-radius, border-color, background-color | app-vs-ours |
+| conv-running.dark | composer | transition-duration | ours=0s | app=0.3s, 0.3s, 0.15s, 0.15s | app-vs-ours |
+| conv-running.dark | composer | transition-timing-function | ours=ease | app=linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768  | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.root | height | ours=210px | app=900px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.root | background-color | ours=rgb(17, 17, 17) | app=rgb(14, 14, 14) | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.root | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header | height | ours=50px | app=52px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header | min-height | ours=auto | app=52px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header | padding-right | ours=0px | app=4px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header | padding-left | ours=0px | app=4px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header | gap | ours=normal | app=8px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header-first-btn | width | ours=24px | app=28px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header-first-btn | height | ours=24px | app=28px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header-first-btn | color | ours=rgba(252, 252, 252, 0.6) | app=rgba(245, 245, 245, 0.64) | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header-first-btn | font-size | ours=16px | app=13px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.header-first-btn | line-height | ours=normal | app=18px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | width | ours=63px | app=54px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | height | ours=44px | app=54px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | min-height | ours=44px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | padding-top | ours=5px | app=9px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | padding-right | ours=5px | app=9px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | padding-bottom | ours=5px | app=9px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | padding-left | ours=5px | app=9px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | gap | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | transition-property | ours=all | app=transform, width, padding | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | transition-duration | ours=0s | app=0.2s | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.item | transition-timing-function | ours=ease | app=cubic-bezier(0.22, 1, 0.36, 1) | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | width | ours=78.6406px | app=28px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | height | ours=38px | app=28px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | min-height | ours=38px | app=auto | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | padding-top | ours=6px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | padding-right | ours=12px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | padding-left | ours=8px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | border-top-left-radius | ours=10px | app=9999px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | border-top-right-radius | ours=10px | app=9999px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | border-bottom-left-radius | ours=10px | app=9999px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | border-bottom-right-radius | ours=10px | app=9999px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | background-color | ours=rgba(119, 119, 119, 0.173) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | color | ours=rgb(252, 252, 252) | app=rgba(245, 245, 245, 0.64) | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | font-size | ours=13px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | font-weight | ours=400 | app=500 | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | line-height | ours=18px | app=20px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | gap | ours=4px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | transition-property | ours=background-color, color | app=background-color, flex-grow, padding | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | transition-duration | ours=0.12s | app=0.3s | app-vs-ours |
+| sidebar-collapsed.dark | sidebar.footer-pill | transition-timing-function | ours=ease-out | app=cubic-bezier(0.2, 0, 0, 1) | app-vs-ours |
+| sidebar-collapsed.dark | chat.header | width | ours=1352px | app=1192px | app-vs-ours |
+| sidebar-collapsed.dark | chat.header | height | ours=51px | app=61px | app-vs-ours |
+| sidebar-collapsed.dark | chat.header | min-height | ours=51px | app=auto | app-vs-ours |
+| sidebar-collapsed.dark | chat.header | padding-top | ours=0px | app=10px | app-vs-ours |
+| sidebar-collapsed.dark | chat.header | padding-right | ours=16px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | chat.header | padding-bottom | ours=0px | app=10px | app-vs-ours |
+| sidebar-collapsed.dark | chat.header | padding-left | ours=16px | app=140px | app-vs-ours |
+| sidebar-collapsed.dark | chat.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | chat.header | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | chat.header-name | width | ours=63.1406px | app=55.25px | app-vs-ours |
+| sidebar-collapsed.dark | chat.header-name | height | ours=18px | app=20px | app-vs-ours |
+| sidebar-collapsed.dark | chat.header-name | color | ours=rgba(252, 252, 252, 0.6) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | chat.header-name | font-size | ours=16px | app=14px | app-vs-ours |
+| sidebar-collapsed.dark | chat.header-name | font-weight | ours=400 | app=500 | app-vs-ours |
+| sidebar-collapsed.dark | chat.header-name | line-height | ours=normal | app=20px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.user-message | width | ours=308px | app=418.148px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.user-message | height | ours=56px | app=34px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.user-message | min-height | ours=0px | app=auto | app-vs-ours |
+| sidebar-collapsed.dark | transcript.user-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.user-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.user-message | background-color | ours=rgb(38, 38, 38) | app=rgba(245, 245, 245, 0.18) | app-vs-ours |
+| sidebar-collapsed.dark | transcript.user-message | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | transcript.user-message | font-size | ours=16px | app=14px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.user-message | line-height | ours=normal | app=20px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.user-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| sidebar-collapsed.dark | transcript.assistant-message | width | ours=186.266px | app=287.031px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.assistant-message | height | ours=193.047px | app=168.5px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.assistant-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.assistant-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.assistant-message | margin-top | ours=0px | app=12px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.assistant-message | background-color | ours=rgb(38, 38, 38) | app=rgba(245, 245, 245, 0.04) | app-vs-ours |
+| sidebar-collapsed.dark | transcript.assistant-message | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | transcript.assistant-message | font-size | ours=16px | app=14px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.assistant-message | line-height | ours=normal | app=20px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.assistant-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | width | ours=690px | app=960px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | height | ours=36px | app=28px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | background-color | ours=rgb(24, 24, 24) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| sidebar-collapsed.dark | transcript.thinking-row | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | width | ours=690px | app=960px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | height | ours=36px | app=28px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | background-color | ours=rgb(24, 24, 24) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| sidebar-collapsed.dark | transcript.tool-row | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | width | ours=560px | app=520px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | height | ours=186.75px | app=181.398px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | padding-top | ours=14px | app=16px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | padding-bottom | ours=14px | app=16px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | border-top-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | border-left-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | border-right-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | border-top-left-radius | ours=10px | app=24px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | border-top-right-radius | ours=10px | app=24px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | border-bottom-left-radius | ours=10px | app=24px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | border-bottom-right-radius | ours=10px | app=24px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | background-color | ours=rgb(24, 24, 24) | app=rgb(31, 31, 31) | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | font-size | ours=13px | app=16px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | line-height | ours=18.2px | app=normal | app-vs-ours |
+| sidebar-collapsed.dark | permission.card | box-shadow | ours=rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | app=rgba(245, 245, 245, 0.1) 0px 0px 0px 0.5px, rgba(245, 24 | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | width | ours=85.7031px | app=95.7031px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | height | ours=32.1875px | app=32px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | padding-right | ours=9px | app=14px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | padding-left | ours=9px | app=14px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | border-top-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | border-left-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | border-right-width | ours=1px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | background-color | ours=rgb(53, 53, 53) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | color | ours=rgb(252, 252, 252) | app=rgb(18, 18, 18) | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | font-size | ours=13px | app=14px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | font-weight | ours=400 | app=500 | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | line-height | ours=18.2px | app=20px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | gap | ours=normal | app=4px | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | transition-property | ours=all | app=background-color, color | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | transition-duration | ours=0s | app=0.12s | app-vs-ours |
+| sidebar-collapsed.dark | permission.card-primary-btn | transition-timing-function | ours=ease | app=ease-out | app-vs-ours |
+| sidebar-collapsed.dark | composer | width | ours=700px | app=960px | app-vs-ours |
+| sidebar-collapsed.dark | composer | height | ours=108px | app=44px | app-vs-ours |
+| sidebar-collapsed.dark | composer | padding-top | ours=9px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | composer | padding-right | ours=9px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | composer | padding-bottom | ours=9px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | composer | padding-left | ours=9px | app=0px | app-vs-ours |
+| sidebar-collapsed.dark | composer | border-top-left-radius | ours=16px | app=22px | app-vs-ours |
+| sidebar-collapsed.dark | composer | border-top-right-radius | ours=16px | app=22px | app-vs-ours |
+| sidebar-collapsed.dark | composer | border-bottom-left-radius | ours=16px | app=22px | app-vs-ours |
+| sidebar-collapsed.dark | composer | border-bottom-right-radius | ours=16px | app=22px | app-vs-ours |
+| sidebar-collapsed.dark | composer | background-color | ours=rgba(119, 119, 119, 0.173) | app=rgb(31, 31, 31) | app-vs-ours |
+| sidebar-collapsed.dark | composer | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| sidebar-collapsed.dark | composer | box-shadow | ours=rgba(0, 0, 0, 0) 0px 1px 3px 0px | app=rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03 | app-vs-ours |
+| sidebar-collapsed.dark | composer | transition-property | ours=all | app=height, border-radius, border-color, background-color | app-vs-ours |
+| sidebar-collapsed.dark | composer | transition-duration | ours=0s | app=0.3s, 0.3s, 0.15s, 0.15s | app-vs-ours |
+| sidebar-collapsed.dark | composer | transition-timing-function | ours=ease | app=linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768  | app-vs-ours |
+| info-pane.dark | sidebar.root | height | ours=288px | app=900px | app-vs-ours |
+| info-pane.dark | sidebar.root | background-color | ours=rgb(17, 17, 17) | app=rgb(14, 14, 14) | app-vs-ours |
+| info-pane.dark | sidebar.root | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | sidebar.header | height | ours=50px | app=60px | app-vs-ours |
+| info-pane.dark | sidebar.header | min-height | ours=auto | app=52px | app-vs-ours |
+| info-pane.dark | sidebar.header | padding-top | ours=0px | app=12px | app-vs-ours |
+| info-pane.dark | sidebar.header | padding-right | ours=12px | app=16px | app-vs-ours |
+| info-pane.dark | sidebar.header | padding-bottom | ours=0px | app=12px | app-vs-ours |
+| info-pane.dark | sidebar.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | sidebar.header | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | sidebar.header | gap | ours=normal | app=8px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | width | ours=24px | app=36px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | height | ours=24px | app=36px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | border-top-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | border-left-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | border-right-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | background-color | ours=rgba(0, 0, 0, 0) | app=rgb(31, 31, 31) | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | color | ours=rgba(252, 252, 252, 0.6) | app=rgba(245, 245, 245, 0.9) | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | font-size | ours=16px | app=13px | app-vs-ours |
+| info-pane.dark | sidebar.header-first-btn | line-height | ours=normal | app=18px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | width | ours=255px | app=36px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | height | ours=28px | app=36px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | min-height | ours=28px | app=0px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | padding-top | ours=6px | app=0px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | padding-right | ours=8px | app=0px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | padding-left | ours=8px | app=0px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | margin-top | ours=4px | app=0px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | margin-bottom | ours=4px | app=0px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | border-top-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | border-left-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | border-right-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | border-top-left-radius | ours=8px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | border-top-right-radius | ours=8px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | border-bottom-left-radius | ours=8px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | border-bottom-right-radius | ours=8px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | background-color | ours=rgba(119, 119, 119, 0.173) | app=rgb(31, 31, 31) | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | color | ours=rgb(252, 252, 252) | app=rgba(245, 245, 245, 0.9) | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | gap | ours=4px | app=normal | app-vs-ours |
+| info-pane.dark | sidebar.search-entry | box-shadow | ours=rgba(252, 252, 252, 0.1) 0px 0px 0px 0.5px inset | app=none | app-vs-ours |
+| info-pane.dark | sidebar.item | height | ours=58px | app=54px | app-vs-ours |
+| info-pane.dark | sidebar.item | min-height | ours=58px | app=0px | app-vs-ours |
+| info-pane.dark | sidebar.item | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | sidebar.item | gap | ours=9px | app=8px | app-vs-ours |
+| info-pane.dark | sidebar.item | transition-property | ours=all | app=transform, width, padding | app-vs-ours |
+| info-pane.dark | sidebar.item | transition-duration | ours=0s | app=0.2s | app-vs-ours |
+| info-pane.dark | sidebar.item | transition-timing-function | ours=ease | app=cubic-bezier(0.22, 1, 0.36, 1) | app-vs-ours |
+| info-pane.dark | sidebar.item-name | width | ours=166.812px | app=50.5859px | app-vs-ours |
+| info-pane.dark | sidebar.item-name | height | ours=15px | app=20px | app-vs-ours |
+| info-pane.dark | sidebar.item-name | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | sidebar.item-name | font-size | ours=13px | app=14px | app-vs-ours |
+| info-pane.dark | sidebar.item-name | font-weight | ours=700 | app=500 | app-vs-ours |
+| info-pane.dark | sidebar.item-name | line-height | ours=normal | app=20px | app-vs-ours |
+| info-pane.dark | sidebar.item-time | (element) | ours present | app MISSING | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | width | ours=264px | app=203px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | height | ours=38px | app=36px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | min-height | ours=38px | app=auto | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | padding-top | ours=6px | app=0px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | padding-right | ours=12px | app=16px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | padding-left | ours=8px | app=16px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | border-top-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | border-bottom-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | border-left-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | border-right-width | ours=0px | app=1px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | border-top-left-radius | ours=10px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | border-top-right-radius | ours=10px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | border-bottom-left-radius | ours=10px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | border-bottom-right-radius | ours=10px | app=9999px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | background-color | ours=rgba(119, 119, 119, 0.173) | app=rgb(31, 31, 31) | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | font-size | ours=13px | app=14px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | font-weight | ours=400 | app=500 | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | line-height | ours=18px | app=20px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | gap | ours=4px | app=0px | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | transition-property | ours=background-color, color | app=background-color, flex-grow, padding | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | transition-duration | ours=0.12s | app=0.3s | app-vs-ours |
+| info-pane.dark | sidebar.footer-pill | transition-timing-function | ours=ease-out | app=cubic-bezier(0.2, 0, 0, 1) | app-vs-ours |
+| info-pane.dark | chat.header | width | ours=1160px | app=820px | app-vs-ours |
+| info-pane.dark | chat.header | height | ours=51px | app=61px | app-vs-ours |
+| info-pane.dark | chat.header | min-height | ours=51px | app=auto | app-vs-ours |
+| info-pane.dark | chat.header | padding-top | ours=0px | app=10px | app-vs-ours |
+| info-pane.dark | chat.header | padding-right | ours=16px | app=0px | app-vs-ours |
+| info-pane.dark | chat.header | padding-bottom | ours=0px | app=10px | app-vs-ours |
+| info-pane.dark | chat.header | padding-left | ours=16px | app=0px | app-vs-ours |
+| info-pane.dark | chat.header | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | chat.header | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | chat.header-name | width | ours=63.1406px | app=55.25px | app-vs-ours |
+| info-pane.dark | chat.header-name | height | ours=18px | app=20px | app-vs-ours |
+| info-pane.dark | chat.header-name | color | ours=rgba(252, 252, 252, 0.6) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | chat.header-name | font-size | ours=16px | app=14px | app-vs-ours |
+| info-pane.dark | chat.header-name | font-weight | ours=400 | app=500 | app-vs-ours |
+| info-pane.dark | chat.header-name | line-height | ours=normal | app=20px | app-vs-ours |
+| info-pane.dark | transcript.user-message | width | ours=308px | app=418.148px | app-vs-ours |
+| info-pane.dark | transcript.user-message | height | ours=56px | app=34px | app-vs-ours |
+| info-pane.dark | transcript.user-message | min-height | ours=0px | app=auto | app-vs-ours |
+| info-pane.dark | transcript.user-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| info-pane.dark | transcript.user-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| info-pane.dark | transcript.user-message | background-color | ours=rgb(38, 38, 38) | app=rgba(245, 245, 245, 0.18) | app-vs-ours |
+| info-pane.dark | transcript.user-message | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | transcript.user-message | font-size | ours=16px | app=14px | app-vs-ours |
+| info-pane.dark | transcript.user-message | line-height | ours=normal | app=20px | app-vs-ours |
+| info-pane.dark | transcript.user-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| info-pane.dark | transcript.assistant-message | width | ours=186.266px | app=287.031px | app-vs-ours |
+| info-pane.dark | transcript.assistant-message | height | ours=193.047px | app=168.5px | app-vs-ours |
+| info-pane.dark | transcript.assistant-message | padding-top | ours=8px | app=7px | app-vs-ours |
+| info-pane.dark | transcript.assistant-message | padding-bottom | ours=8px | app=7px | app-vs-ours |
+| info-pane.dark | transcript.assistant-message | margin-top | ours=0px | app=12px | app-vs-ours |
+| info-pane.dark | transcript.assistant-message | background-color | ours=rgb(38, 38, 38) | app=rgba(245, 245, 245, 0.04) | app-vs-ours |
+| info-pane.dark | transcript.assistant-message | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | transcript.assistant-message | font-size | ours=16px | app=14px | app-vs-ours |
+| info-pane.dark | transcript.assistant-message | line-height | ours=normal | app=20px | app-vs-ours |
+| info-pane.dark | transcript.assistant-message | box-shadow | ours=none | app=rgba(255, 255, 255, 0.03) 0px 0.5px 0px 0px inset, rgba( | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | width | ours=690px | app=808px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | height | ours=36px | app=28px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | background-color | ours=rgb(24, 24, 24) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| info-pane.dark | transcript.thinking-row | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | transcript.tool-row | width | ours=690px | app=808px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | height | ours=36px | app=28px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | margin-top | ours=0px | app=4px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | margin-bottom | ours=10px | app=0px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | border-top-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | border-left-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | border-right-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | border-top-left-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | border-top-right-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | border-bottom-left-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | border-bottom-right-radius | ours=9px | app=8px | app-vs-ours |
+| info-pane.dark | transcript.tool-row | background-color | ours=rgb(24, 24, 24) | app=rgba(0, 0, 0, 0) | app-vs-ours |
+| info-pane.dark | transcript.tool-row | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | permission.card | width | ours=560px | app=520px | app-vs-ours |
+| info-pane.dark | permission.card | height | ours=186.75px | app=181.398px | app-vs-ours |
+| info-pane.dark | permission.card | padding-top | ours=14px | app=16px | app-vs-ours |
+| info-pane.dark | permission.card | padding-bottom | ours=14px | app=16px | app-vs-ours |
+| info-pane.dark | permission.card | border-top-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | permission.card | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | permission.card | border-left-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | permission.card | border-right-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | permission.card | border-top-left-radius | ours=10px | app=24px | app-vs-ours |
+| info-pane.dark | permission.card | border-top-right-radius | ours=10px | app=24px | app-vs-ours |
+| info-pane.dark | permission.card | border-bottom-left-radius | ours=10px | app=24px | app-vs-ours |
+| info-pane.dark | permission.card | border-bottom-right-radius | ours=10px | app=24px | app-vs-ours |
+| info-pane.dark | permission.card | background-color | ours=rgb(24, 24, 24) | app=rgb(31, 31, 31) | app-vs-ours |
+| info-pane.dark | permission.card | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | permission.card | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| info-pane.dark | permission.card | font-size | ours=13px | app=16px | app-vs-ours |
+| info-pane.dark | permission.card | line-height | ours=18.2px | app=normal | app-vs-ours |
+| info-pane.dark | permission.card | box-shadow | ours=rgba(0, 0, 0, 0.25) 0px 12px 28px 0px | app=rgba(245, 245, 245, 0.1) 0px 0px 0px 0.5px, rgba(245, 24 | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | width | ours=85.7031px | app=95.7031px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | height | ours=32.1875px | app=32px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | padding-right | ours=9px | app=14px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | padding-left | ours=9px | app=14px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | border-top-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | border-bottom-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | border-left-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | border-right-width | ours=1px | app=0px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | border-top-left-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | border-top-right-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | border-bottom-left-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | border-bottom-right-radius | ours=6px | app=9999px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | background-color | ours=rgb(53, 53, 53) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | color | ours=rgb(252, 252, 252) | app=rgb(18, 18, 18) | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | font-family | ours=Inter, ui-sans-serif, system-ui, sans-serif | app=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-seri | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | font-size | ours=13px | app=14px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | font-weight | ours=400 | app=500 | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | line-height | ours=18.2px | app=20px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | gap | ours=normal | app=4px | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | transition-property | ours=all | app=background-color, color | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | transition-duration | ours=0s | app=0.12s | app-vs-ours |
+| info-pane.dark | permission.card-primary-btn | transition-timing-function | ours=ease | app=ease-out | app-vs-ours |
+| info-pane.dark | composer | width | ours=700px | app=808px | app-vs-ours |
+| info-pane.dark | composer | height | ours=108px | app=44px | app-vs-ours |
+| info-pane.dark | composer | padding-top | ours=9px | app=0px | app-vs-ours |
+| info-pane.dark | composer | padding-right | ours=9px | app=0px | app-vs-ours |
+| info-pane.dark | composer | padding-bottom | ours=9px | app=0px | app-vs-ours |
+| info-pane.dark | composer | padding-left | ours=9px | app=0px | app-vs-ours |
+| info-pane.dark | composer | border-top-left-radius | ours=16px | app=22px | app-vs-ours |
+| info-pane.dark | composer | border-top-right-radius | ours=16px | app=22px | app-vs-ours |
+| info-pane.dark | composer | border-bottom-left-radius | ours=16px | app=22px | app-vs-ours |
+| info-pane.dark | composer | border-bottom-right-radius | ours=16px | app=22px | app-vs-ours |
+| info-pane.dark | composer | background-color | ours=rgba(119, 119, 119, 0.173) | app=rgb(31, 31, 31) | app-vs-ours |
+| info-pane.dark | composer | color | ours=rgb(252, 252, 252) | app=rgb(245, 245, 245) | app-vs-ours |
+| info-pane.dark | composer | box-shadow | ours=rgba(0, 0, 0, 0) 0px 1px 3px 0px | app=rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03 | app-vs-ours |
+| info-pane.dark | composer | transition-property | ours=all | app=height, border-radius, border-color, background-color | app-vs-ours |
+| info-pane.dark | composer | transition-duration | ours=0s | app=0.3s, 0.3s, 0.15s, 0.15s | app-vs-ours |
+| info-pane.dark | composer | transition-timing-function | ours=ease | app=linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768  | app-vs-ours |

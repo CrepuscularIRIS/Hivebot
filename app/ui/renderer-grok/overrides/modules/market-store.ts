@@ -110,6 +110,8 @@ export async function enterMarket(force = false): Promise<void> {
   if (state.sources !== null && !force) return
   set({ sources: null, sourcesError: null })
   const res = await api('pluginMarket/listIndexes', {})
+  // profile 没挂 market 插件时 dsh 无此端点（main connect.ts：pbots/upstream「HTTP 404 from …」）= 没配目录源，走空态而非报错
+  if (!res.ok && res.error?.code === 'pbots/upstream' && res.error.message.startsWith('HTTP 404')) { set({ sources: [], url: null }); return }
   if (!res.ok) { set({ sourcesError: res.error?.message ?? "Couldn't load" }); return }
   const sources = Array.isArray(res.value) ? res.value as Source[] : []
   set({ sources, url: sources[0]?.url ?? null })

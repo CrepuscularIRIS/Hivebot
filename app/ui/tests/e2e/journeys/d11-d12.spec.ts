@@ -14,7 +14,11 @@ import { PRESETS_PATCH, createBots, evidenceOut, finalAssistant, openBot, send, 
 const EVIDENCE = evidenceOut('U-31')
 const FORBIDDEN = ['sign in', 'log out', 'computer', 'ssh', 'billing', 'danger-full-access', '始终允许']
 
-const openPlugins = (page: Page) => page.locator('button', { hasText: 'Plugins' }).first().click()
+// P5-57：footer 入口文案 Connect apps，按类取
+const openPlugins = async (page: Page): Promise<void> => {
+  await page.locator('.sand-agents-sidebar__plugins').click()
+  await expect(page.locator('[data-market]')).toBeVisible()
+}
 async function openSettings(page: Page): Promise<void> {
   await page.click('button[aria-label="Account"]')
   await page.locator('[role=menuitem]', { hasText: 'Settings' }).click()
@@ -47,7 +51,13 @@ test('D12①/② + D11/D9 DOM + 8 张截图：零外网请求、token 零泄漏�
     await waitProductReady(page)
     await openPlugins(page)
     await page.waitForTimeout(800)
-    const pluginsText = (await page.locator('body').innerText()).toLowerCase()
+    // P5-57：市场列表是第三方目录数据（描述里可能有 computer / ssh 等词），禁区词只扫产品外壳：剔除条目列表
+    await expect(page.locator('[data-market-list]')).toBeVisible({ timeout: 20_000 })
+    const pluginsText = (await page.locator('[data-market]').evaluate((el) => {
+      const copy = el.cloneNode(true) as HTMLElement
+      copy.querySelector('[data-market-list]')?.remove()
+      return `${document.body.innerText}\n${copy.innerText}`.replace((el as HTMLElement).innerText, copy.innerText)
+    })).toLowerCase()
     await page.keyboard.press('Escape')
     await openSettings(page)
     // P5-31 起设置不渲染「Execution on Local Computer」下拉与团队 ceiling 文案（L-AP 档位不归 renderer），扫描不再剔除任何文案
@@ -85,8 +95,12 @@ test('D12①/② + D11/D9 DOM + 8 张截图：零外网请求、token 零泄漏�
     for (const [scope, text] of [['body', bodyText], ['plugins', pluginsText], ['settings', settingsText], ['pane', paneText]] as const) {
       for (const word of FORBIDDEN) expect(text, `${scope} 不应出现「${word}」（D12②/D9）`).not.toContain(word)
     }
-    // D11：会话设置里没有改 preset / 连接器 / 权限的入口
-    for (const word of ['preset', 'connector', 'permission']) expect(paneText, `D11 pane 不应出现「${word}」`).not.toContain(word)
+    // D11（P5-57 起 pane 只读展示 preset / 连接器）：没有改 preset / 连接器 / 权限的入口——配置段无输入控件，唯一 select 是 Model；无权限词
+    expect(paneText, 'D11 pane 不应出现 permission').not.toContain('permission')
+    const config = pane.locator('[data-pane-config]')
+    await expect(config.locator('input, textarea, [role=checkbox], [role=radio]')).toHaveCount(0)
+    await expect(config.locator('select')).toHaveCount(1)
+    await expect(config.locator('select[data-pane-model]')).toHaveCount(1)
 
     // ---- D12③：4 页 × 亮/暗 8 张截图 ----
     const shots = async (name: string): Promise<void> => {

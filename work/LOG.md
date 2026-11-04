@@ -918,3 +918,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 23:06 P5-58 builder 完成（d6809bf：OBS=取证时机缺陷+settle 规矩；市场默认挂载去 404；置顶落盘；WCAG 23 目标全过）→ verifier 派发 | P5-06 残留已清
 23:23 P5-57 验收 PASS（市场全链+视觉模型确认；desktop.ts 与 P5-58 交叠记录在案）→ 待 P5-58 验收后协调合并
 23:29 P5-57/58 双验收 PASS → 合并 9676926+cf6162a（desktop.ts 三方并集 onFocusAgent+pins 均在；sdk 305+ui 380），e2e 后台 | p5 任务图全部 done，剩 P5-41 GU 终评+W3 收口
+23:37 P5-57/58 回归全绿（68 e2e exit 0）闭环 | 派 P5-41 GU 终评

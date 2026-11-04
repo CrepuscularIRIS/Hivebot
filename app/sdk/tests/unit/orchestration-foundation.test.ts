@@ -82,18 +82,19 @@ beforeEach(reset)
 // The barrel is the P6-10+ wiring point (PLAN §2: later tasks only append
 // registration lines here); assert it re-exports today's whole surface.
 describe('index barrel', () => {
-  it('re-exports the P6-21 foundation surface (+ P6-10 / P6-11 / P6-12 / P6-13 追加注册行)', () => {
+  it('re-exports the P6-21 foundation surface (+ P6-10 / P6-11 / P6-12 / P6-13 / P6-14(+f1) 追加注册行)', () => {
     expect(Object.keys(orchestration).sort()).toEqual([
-      'ASSIGN_PREFIX', 'ASSIGN_SOURCE_KIND', 'BATCH_WINDOW_MS', 'BOTS_JSON', 'CREATE_BOT_DESCRIPTION', 'CREATE_BOT_TOOL',
-      'CreateChannel', 'DEFAULT_CAPACITY', 'DEFAULT_CREATE_TIMEOUT_MS', 'Delivery', 'ORCH_REQUESTS_ENDPOINT',
+      'ASSIGN_PREFIX', 'ASSIGN_SOURCE_KIND', 'BATCH_WINDOW_MS', 'BOTS_JSON', 'COORDINATOR_TOOLS', 'CREATE_BOT_DESCRIPTION', 'CREATE_BOT_TOOL',
+      'CreateChannel', 'DEFAULT_CAPACITY', 'DEFAULT_CREATE_TIMEOUT_MS', 'DELEGATION_TOOLS', 'Delivery', 'ENTRY_ANNOTATIONS',
+      'JOB_TOOLS', 'ORCH_REQUESTS_ENDPOINT',
       'ORCH_RESPOND_METHOD', 'OWN_SOURCE_KINDS', 'QUESTION_TOOL', 'REPORT_PREFIX', 'REPORT_SOURCE_KIND',
-      'RESULT_LIMIT', 'Reporter', 'SEND_TO_BOT_DESCRIPTION', 'SEND_TO_BOT_TOOL', 'STOP_BOT_DESCRIPTION',
+      'RESTRICT_TOOLS', 'RESULT_LIMIT', 'Reporter', 'SEND_TO_BOT_DESCRIPTION', 'SEND_TO_BOT_TOOL', 'STOP_BOT_DESCRIPTION',
       'STOP_BOT_TOOL', 'Slots', 'TAINT_KIND', 'TurnOrigin',
-      'assignMessageId', 'buildAssignMessage', 'buildReportMessage', 'classifyTurn',
-      'computeDue', 'deliveryIdOf', 'endOutcomeFor', 'foldAssignments', 'foldMainLog',
-      'newAssignmentId', 'orchDataDir', 'orchError', 'projectEvent', 'readMainBotId',
-      'registerSendToBot', 'registerStopBot', 'registerTaintGuard', 'relayText', 'reportMessageId',
-      'resultTextFor', 'sendRelayText', 'sharedSlots', 'truncateResult',
+      'applyWorkerRestriction', 'assignMessageId', 'buildAssignMessage', 'buildReportMessage', 'classifyTurn',
+      'computeDue', 'deliveryIdOf', 'endOutcomeFor', 'enumerateInstalledEntries', 'foldAssignments', 'foldMainLog',
+      'judgeWorkerCall', 'newAssignmentId', 'orchDataDir', 'orchError', 'projectEvent', 'readMainBotId',
+      'registerEnvelope', 'registerSendToBot', 'registerStopBot', 'registerTaintGuard', 'registerWorkerRestriction', 'relayText', 'reportMessageId',
+      'resultTextFor', 'sendRelayText', 'sharedSlots', 'truncateResult', 'workerRestrictDeny',
     ])
   })
 })

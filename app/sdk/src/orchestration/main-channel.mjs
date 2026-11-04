@@ -20,6 +20,7 @@ import { registerSendToBot } from './send.mjs'
 import { registerStopBot } from './stop.mjs'
 import { Reporter } from './report.mjs'
 import { registerTaintGuard } from './taint-guard.mjs'
+import { registerEnvelope, registerWorkerRestriction } from './envelope.mjs'
 
 // 依赖解析同 src/p2temp/index.mjs：裸包名只能解析 app/sdk 直接依赖，从稳定
 // 直接依赖（dsh-plugin-market）的真实路径 createResolve，pnpm peer store 保证
@@ -214,6 +215,12 @@ export default class OrchestrationPlugin extends TypertRemoteService {
     // P6-12：worker 回报 → 主 bot（合批投递 + 启动对账）与污染回合全工具拒。
     // taint-guard 复用上面 create 建的 orch.turns 账本；Reporter 挂事件即返回。
     this.taintGuard = registerTaintGuard(ctx, this)
+    // P6-14：worker 安全信封——worker 会话拒全部再委派与后台作业入口、协调者
+    // 工具 direct execute 兜底（D9③④⑤；guard 判定复用 readWorkerIds）。
+    this.envelope = registerEnvelope(ctx, this)
+    // P6-14.f1：per-agent restrict——worker 会话建立点收窄模型可见工具表
+    // （VERIFY-P6-14 [FIX]；主 bot 工具表不受影响），守卫保留为执行期兜底。
+    this.workerRestriction = registerWorkerRestriction(ctx, this)
     this.report = new Reporter(this)
     this.report.start()
   }

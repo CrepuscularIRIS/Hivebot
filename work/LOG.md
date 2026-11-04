@@ -905,3 +905,7 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 21:34 RE 第一波全派（R-10 跨session/R-05 outline 任务线程/R-01 提问卡/R-02 connector 授权/R-04 市场详情 + R-06 host 源码 scout）——41 条清单按下游价值排序，第二波 R-14/33/03/11/13 待第一波回 | 在途 10：P5-57、P6-03、S-5、K3 设计、RE×5、R-06
 21:35 设计席 K3.1 Pro 完成（main-orchestration-k3.md：6 实现包、安全信封前置 P6-14、终态竞态/提权/双头驾驶三风险）；S-5 Coworker 完成（官方=Claude Cowork、11 机制、开源候选 OpenCoworkAI__open-cowork 已登记）——1b 设计输入齐，等 R-10/05/06 证据后 director 出 PLAN v3
 21:39 P6-03 builder 完成（3a361ef：streamingAs 接线 5 行修复+D1/D2 DOM e2e 全套，365+64）→ verifier 派发 | 暗色对比度 OBS 转 p5 视觉
+21:46 R-06 回报：7 编排工具 schema+worker settle→completion callback→background 队列→父 session 隐藏回合全链（0.18 推定，WakeParent/SetPrimaryBot/StopAgent 无 host 定义不虚构）；dsh 原生映射与 P6 不兼容点已列
+21:48 R-10 回报：线程=task 合成 id、跨 session 唤醒客户端侧仅 Watch/事件/OS 通知四件（无本地直调）、SendGrokBotAgentMessage 客户端无调用方=边界外维持、P6 第一批 14 项机制对照表+复刻规格 7 条
+21:54 R-02 回报：连接器授权=两层（connector-grant 卡 per-bot 作答集含 always_this_bot / toolPermissions 云权威三值档默认 auto_review）；needs_approval 无本地卡（云端逐次）；Clear=设置 General 一键清；p5 per-bot 方向与原版一致、QUESTIONS-OPEN (b) 注记需修正
+22:03 P6-03 验收 PASS → 合并 0b929f6（365 单测绿，e2e 后台）| p6 done 4/12（1a 全部收口）

@@ -1,0 +1,28 @@
+Today 10:00 PM
+
+验收探针：检查环境配置
+
+
+
+A：收到，我先看看环境再动手。
+
+
+
+Bash
+echo vfy
+
+Thinking
+B：第一步结果正常，接着读配置。
+
+Read
+/tmp/bot-p554-FAq4lu/data/workspaces/session-4856dec0-8088-4d6a-94b0-32ea82058a1e/vfy-t2.txt
+
+Thinking
+C：配置读完，最后核对一次。
+
+Read
+/tmp/bot-p554-FAq4lu/data/workspaces/session-4856dec0-8088-4d6a-94b0-32ea82058a1e/vfy-t3.txt
+
+E：全部完成，共检查 3 处，没有问题。
+
+

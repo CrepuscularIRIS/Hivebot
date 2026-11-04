@@ -1,0 +1,30 @@
+P6-03 验收员独立复跑记录（worktree /tmp/bot-wt/P6-03 @ 3a361ef，HOME=/tmp/bot-vfy-P6-03/home，2026-11-03 21:44-22:04）
+
+[1] 安装：app/ui + app/sdk `pnpm install --frozen-lockfile` → 均 "Already up to date"
+[2] `pnpm build` → "✓ built in 28ms"（shim.iife.js 31.34 kB）
+[3] `pnpm vitest run tests/unit/grok-shim tests/unit/fold` →
+      Test Files  7 passed (7)
+           Tests  102 passed (102)
+[3b] `pnpm vitest run tests/unit/grok-shim/entries.test.ts -t "流式落点"` →
+      Tests  2 passed | 12 skipped (14)   ← 新增 streamingAs 2 例按名确认
+[4] `pnpm test:e2e p6-fold`（无 --）→
+      ✓ 1 tests/e2e/p6-fold.spec.ts:102:5 › D1 主链…reload 重放；亮暗 (7.5s)
+      ✓ 2 tests/e2e/p6-fold.spec.ts:151:5 › 无工具问答恰 1 气泡；D2 (b)(c)(d)(e)(f)…(11.8s)
+      2 passed (19.8s)
+[5] 全量 e2e `pnpm test:e2e` → "64 passed (7.1m)"
+[6] 全量单测 `pnpm test` → "Tests 365 passed (365)"
+
+[7] 红基线：entries.ts 还原为 9c3f8a6 版（git show 覆写，备份 /tmp/bot-vfy-P6-03/entries.fixed.ts，无 stash）+ pnpm build → `pnpm test:e2e p6-fold`：
+      ✘ 1 p6-fold.spec.ts:102:5 (34.0s)
+         Error: expect(locator).toHaveCount(expected) failed - unexpected value "0"
+         > 128 | …thinking…hasText: 'B：第一步结果正常，'…).toHaveCount(1
+      ✘ 2 p6-fold.spec.ts:151:5 (40.7s)
+         > 229 | …thinkingRows…hasText: '尾段写到一半'…).toHaveCount(1
+      2 failed / exit code 1
+[8] 恢复：git checkout -- entries.ts，sha256 与备份一致（2×c598e7ef4f58…454ff），git status 0 改动，rebuild → p6-fold "2 passed (20.0s)"
+
+[9] 独立探针（evidence/P6-03-vfy/probe.spec.ts，verifier 自写断言，不经 builder spec）：
+      ✓ 1 vfy probe: D1 ended DOM dump (6.6s) / 1 passed (7.1s)
+      产物：probe-transcript.txt（innerText：用户行 + A 气泡 + Bash 行 + Thinking B 首行预览 + Read×2 + Thinking C 首行预览 + E 气泡恰 1 次）、
+            probe-aria.txt（Thinking B/C 为 button 折叠行）、probe-ended.png
+      首跑探针自身笔误（未过滤侧别数到 3=用户+A+E）已修正为 assistantRows 后通过——产品无问题，探针问题。

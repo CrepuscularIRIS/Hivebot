@@ -110,7 +110,7 @@ describe('normalizeApiBase', () => {
 })
 
 describe('buildArgs', () => {
-  it('boots the web profile with the static, approval, and runtime patches, then extras', () => {
+  it('boots the web profile with the static, approval, market, and runtime patches, then extras', () => {
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_PORT: '4599', P2SDK_PATCH: '/tmp/x.yml' })
     const args = buildArgs(cfg, '/tmp/h/runtime-patch.yml')
     expect(args[0]).toBe('web')
@@ -119,9 +119,9 @@ describe('buildArgs', () => {
     expect(args[args.indexOf('--port') + 1]).toBe('4599')
     const patches = args.filter((_, i) => args[i - 1] === '--patch')
     expect(patches[0].endsWith('profile/patches/p2sdk.yml')).toBe(true)
-    expect(patches, 'p2sdk.yml + approval.yml + runtime patch + extras').toHaveLength(4)
-    expect(patches[2]).toBe('/tmp/h/runtime-patch.yml')
-    expect(patches[3]).toBe('/tmp/x.yml')
+    expect(patches, 'p2sdk.yml + approval.yml + market.yml + runtime patch + extras').toHaveLength(5)
+    expect(patches[3]).toBe('/tmp/h/runtime-patch.yml')
+    expect(patches[4]).toBe('/tmp/x.yml')
   })
 
   // T-12 (REVIEW R3/R5/R13): the shell-ask approval policy ships in the
@@ -131,7 +131,16 @@ describe('buildArgs', () => {
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_PATCH: '/tmp/x.yml' })
     const patches = buildArgs(cfg, '/tmp/h/runtime-patch.yml').filter((_, i, a) => a[i - 1] === '--patch')
     expect(patches[1].endsWith(join('profile', 'patches', 'approval.yml')), `second patch is approval.yml (got ${patches[1]})`).toBe(true)
-    expect(patches, 'p2sdk.yml, approval.yml, runtime patch, extras').toHaveLength(4)
+    expect(patches, 'p2sdk.yml, approval.yml, market.yml, runtime patch, extras').toHaveLength(5)
+  })
+
+  // P5-58：market.yml（plugin-market + p2temp 两个 insert 行）进默认链——生产启动
+  // pluginMarket/* 与 p2temp/session.createWithConnectors 开箱可用（UI M1 白名单
+  // 两者都在）；目录源仍由 P2SDK_MARKET_INDEXES 配，缺省空目录 = 诚实空态。
+  it('mounts profile/patches/market.yml by default after approval.yml', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock' })
+    const patches = buildArgs(cfg, '/tmp/h/runtime-patch.yml').filter((_, i, a) => a[i - 1] === '--patch')
+    expect(patches[2].endsWith(join('profile', 'patches', 'market.yml')), `third patch is market.yml (got ${patches[2]})`).toBe(true)
   })
 })
 

@@ -58,6 +58,17 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
     isTrackManagedByPolicy: false, isBelowMinimumVersion: false, autoUpdateWhenIdleOptIn: false, autoUpdateWhenIdleGateEnabled: false,
   }
 
+  // P5-58 去 mock：置顶是真实可见的功能（行菜单 Pin/Unpin → 上游 setPinnedAgents），
+  // 恒 [] 的桩会让 reload 后静默丢置顶。落 localStorage（与 clientPersistence 同存储），
+  // 损坏值回 []——置顶只是 UI 偏好，丢了不致命。
+  const pinnedKey = 'pbots.shim.pinned-agents'
+  const readPinned = (): string[] => {
+    try {
+      const raw = JSON.parse(store.getItem(pinnedKey) ?? '[]')
+      return Array.isArray(raw) && raw.every((v) => typeof v === 'string') ? raw : []
+    } catch { return [] }
+  }
+
   return {
     platform: opts.platform ?? 'linux',
     isDev: false,
@@ -153,8 +164,11 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
       clearApprovals: () => Promise.resolve(),
     },
     agent: {
-      getPinnedAgents: () => Promise.resolve([]),
-      setPinnedAgents: (ids: readonly string[]) => Promise.resolve([...ids]),
+      getPinnedAgents: () => Promise.resolve(readPinned()),
+      setPinnedAgents: (ids: readonly string[]) => {
+        try { store.setItem(pinnedKey, JSON.stringify([...ids])) } catch { /* 私有模式等：静默 */ }
+        return Promise.resolve([...ids])
+      },
       getSidebarSections: () => Promise.resolve(null),
       setSidebarSections: (s: readonly unknown[]) => Promise.resolve(s as never),
       getDefaultModel: () => Promise.resolve(null),

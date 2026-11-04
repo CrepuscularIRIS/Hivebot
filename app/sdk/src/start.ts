@@ -119,6 +119,12 @@ export function buildArgs(cfg: StartConfig, runtimePatch: string): string[] {
     // DEFAULT chain — no P2SDK_PATCH opt-in — so an ordinary bash call asks
     // out of the box (CLAUDE.md 安全反例: openclaw exec 默认不审批).
     '--patch', join(PKG_ROOT, 'profile', 'patches', 'approval.yml'),
+    // P5-58：market.yml（plugin-market + p2temp）同样进默认链——生产启动开箱
+    // 即有 pluginMarket/* 与 p2temp/session.createWithConnectors（UI M1 白名单
+    // 两者都在，缺这个 patch 时它们 404）。目录源仍由 P2SDK_MARKET_INDEXES 配；
+    // 缺省空目录 = 诚实空态（不是桩）。测试再显式链 market.yml 时同 id insert
+    // 行整行替换，无副作用（market-source.yml 同款语义）。
+    '--patch', join(PKG_ROOT, 'profile', 'patches', 'market.yml'),
     '--patch', runtimePatch,
   ]
   for (const p of cfg.extraPatches) args.push('--patch', p)

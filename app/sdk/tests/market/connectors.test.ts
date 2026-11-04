@@ -2,9 +2,9 @@
 // ② Install one MCP bundle fixture (enabled:false), then X created through
 //    p2temp/session.createWithConnectors gets `mcp__demo__ping` in its request
 //    tool table while a plain Y does not.
-// ③ The runtime's registered method table differs from the bare baseline
-//    (which keeps every @deepseek-ai/* enabled item) by exactly two methods:
-//    p2temp/session.createWithConnectors + p2temp/preset.ensure (T-16, Q-008=A).
+// ③ P5-58 起 market.yml 在默认链：锁定「默认 runtime 开箱含 pluginMarket/*，p2temp
+//    前缀恰 2 个方法」，market 挂载侧与默认侧方法表一致（原「差集恰 2」语义已随
+//    默认挂载失效——两侧同集，差集恒空）。
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -105,18 +105,24 @@ it('R14: a relative-path connector loads; its tool reaches the request tool tabl
   expect(tools).toContain(REL_TOOL)
 }, 180_000)
 
-it('the method table differs from the bare baseline by exactly the two p2temp methods', async () => {
+it('③ P5-58: the DEFAULT chain carries pluginMarket/* and exactly the two p2temp methods', async () => {
+  // 原「market-patched vs bare 差集恰 2 个 p2temp」在 market.yml 进默认链后两侧同集、
+  // 差集恒空；语义改为锁定默认链本身：pluginMarket/* 开箱可用（P5-58 生产挂载），
+  // p2temp 前缀恰 2 个方法（G2-r2 清单 3 的「无未知自有方法」不变）。
   const full = await readMethods(rt.home, 'p2temp/session.createWithConnectors')
-  const bare = new Set(await readMethods(rtBare.home, ''))
-  const added = full.filter((m) => !bare.has(m))
-  // pluginMarket/* methods come from the @deepseek-ai plugin-market service
-  // that market.yml assembles; the baseline keeps them (G2-r2 item 3).
-  const own = added.filter((m) => !m.startsWith('pluginMarket/')).sort()
-  expect(own).toEqual(['p2temp/preset.ensure', 'p2temp/session.createWithConnectors'])
+  const bareList = await readMethods(rtBare.home, '')
+  const bare = new Set(bareList)
   expect(full.filter((m) => m.startsWith('p2temp/')).sort()).toEqual([
     'p2temp/preset.ensure',
     'p2temp/session.createWithConnectors',
   ])
+  // bare = 默认链 + observerPatch：p2temp / pluginMarket 与 market 挂载侧一致（默认挂载生效）
+  expect(bareList.filter((m) => m.startsWith('p2temp/')).sort()).toEqual([
+    'p2temp/preset.ensure',
+    'p2temp/session.createWithConnectors',
+  ])
+  expect(bareList.some((m) => m.startsWith('pluginMarket/')), 'default chain exposes pluginMarket/* (P5-58)').toBe(true)
+  expect(full.filter((m) => !bare.has(m))).toEqual([])
 }, 120_000)
 
 it('the P2-TEMP annotation in src matches both signatures verbatim', async () => {

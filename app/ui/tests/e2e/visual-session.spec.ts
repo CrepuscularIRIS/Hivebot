@@ -72,7 +72,7 @@ test('B7 thinking 行（live → 定稿、鼠标 / 键盘开合）+ B14 时间�
     const order = await transcript(page).evaluate((el) => [...el.querySelectorAll('.sand-transcript-time-separator, .sand-transcript-row, .sand-outline-item')]
       .map((n) => n.classList.contains('sand-transcript-time-separator') ? 'sep' : 'row'))
     expect(order[0]).toBe('sep')
-    expect(await separators(page).first().evaluate((el) => getComputedStyle(el).marginBottom)).toBe('22px') // 几何 22（0.18 view.css）
+    expect(await separators(page).first().evaluate((el) => getComputedStyle(el).marginBottom)).toBe('8px') // P5-55：0.78.1 kit-timestamp margin 14 0 8（原 0.18 view.css 22）
     await bothThemes(page, 'b7-b14')
   } finally {
     await env.stop()
@@ -130,3 +130,37 @@ test('B14 未读线：切走后对方回复 → 切回恰 1 条、在首条未�
     await env.stop()
   }
 })
+
+// P5-55（P5-12 final #12 迁新 renderer）：切回时未读线以下超一屏 → 线滚到视口顶下 28px（不再停在底部）
+test('B14 未读线：线以下超一屏，切回滚到线（顶下 28±2px）', async () => {
+  test.setTimeout(120_000)
+  const env = await launchProduct()
+  try {
+    const { page, rt } = env
+    const [a] = await createBots(page, [{ title: 'UR-L', preset: 'p2-alpha' }])
+    await openBot(page, 'UR-L')
+    const long = Array.from({ length: 80 }, (_, i) => `Line ${i + 1} of the long background reply.`).join('\n\n')
+    rt.writeScriptCalls(a!, [textCall(['第一轮回复。']), textCall([long])])
+    await send(page, '第一轮')
+    await expect(finalAssistant(page).last()).toHaveText('第一轮回复。', { timeout: 20_000 })
+    await openBot(page, MAIN_TITLE)
+    await rt.client.call('session/prompt', { request: { requestId: `p555-ur-${Date.now()}`, sessionId: a, mode: 'queue', content: [{ type: 'text', text: '后台长答' }] } })
+    await expect.poll(async () => JSON.stringify(await page.evaluate((sid) =>
+      (window as unknown as { __pbotsDev: { state: { views: Record<string, { items: unknown[] }> } } }).__pbotsDev.state.views[sid]?.items ?? [], a)), { timeout: 20_000 })
+      .toContain('Line 80 of the long background reply.')
+    await openBot(page, 'UR-L')
+    await expect(unreadLine(page)).toHaveCount(1, { timeout: 10_000 })
+    await expect.poll(() => unreadLine(page).evaluate((el) => {
+      const sc = el.closest('.sand-virtual-transcript') as HTMLElement
+      return Math.round(el.getBoundingClientRect().top - sc.getBoundingClientRect().top)
+    }), { timeout: 5_000 }).toBeGreaterThanOrEqual(26)
+    const offset = await unreadLine(page).evaluate((el) => {
+      const sc = el.closest('.sand-virtual-transcript') as HTMLElement
+      return Math.round(el.getBoundingClientRect().top - sc.getBoundingClientRect().top)
+    })
+    expect(offset).toBeLessThanOrEqual(30)
+  } finally {
+    await env.stop()
+  }
+})
+

@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { launchChrome } from './cdp.mjs';
 import { semanticFixture, toV1, toV3, personaMatrixRoster, PERSONA_STATES, PERSONA_SHAPES, PERSONA_COLORS } from './fixture.mjs';
 import { THEMES, VIEWS, PARTS, STYLE_PROPS } from './views.mjs';
+import { writeAppRef } from './appref.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const RIGHT_DIST = process.env.COMPARE_RIGHT_DIST || '/tmp/bot-s0-build/.build/frontend-shell';
@@ -219,6 +220,11 @@ async function main() {
     const md = [`# U1′ 差异表 · 初版（P5-53 对照台自动产出）`, '', `差异行数：${diffRows.length}（value ${diffRows.filter(r => r.diff === 'value').length} / 单侧缺失 ${diffRows.filter(r => r.diff === 'element-only-one-side').length}）`, '', '| 视图 | 部位 | 属性 | REF 0.78.1 | OURS 0.18 | 类型 |', '|---|---|---|---|---|---|', ...diffRows.map(r => `| ${r.view} | ${r.part} | ${r.prop} | ${String(r.ref).slice(0, 60)} | ${String(r.ours).slice(0, 60)} | ${r.diff} |`)].join('\n');
     await fs.writeFile(path.join(EVID_DIR, 'u1-diff.md'), md);
     summary.u1DiffRows = diffRows.length;
+    // P5-55：app 列 vs ref 列（验收口径）——逐行处置（disposition.mjs），open = 可行动差异，必须为 0
+    if (summary.appColumn) {
+      const { count } = await writeAppRef(EVID_DIR);
+      summary.appRef = count;
+    }
 
     // —— 汇总与验收标记 ——
     const issues = [];
@@ -235,11 +241,12 @@ async function main() {
     if (!summary.views['conv-rest.light']?.ref?.hasToolBash) issues.push('conv-rest.ref: tool 行在桩下不渲染（R3 已提交 harness 同样复现，非对照台回归；v3 是静默丢行不是渲染报错）');
     if (persona.frames !== PERSONA_SHAPES.length * PERSONA_COLORS.length * Object.keys(PERSONA_STATES).length) issues.push(`persona 抽帧不全：${persona.frames}/264`);
     summary.issues = issues;
-    summary.pass = issues.filter(i => i.includes('boundary') || i.includes('缺用户消息')).length === 0;
+    if (summary.appRef && (summary.appRef.open ?? 0) > 0) issues.push(`app-vs-ref 可行动差异 open=${summary.appRef.open}（u1-appref.tsv）`);
+    summary.pass = issues.filter(i => i.includes('boundary') || i.includes('缺用户消息') || i.includes('open=')).length === 0;
     summary.durationSec = Math.round((Date.now() - t0) / 1000);
 
     await fs.writeFile(path.join(EVID_DIR, 'run-summary.json'), JSON.stringify(summary, null, 1));
-    const smd = [`# P5-53 对照台 run summary`, '', `- 时间：${summary.startedAt}（${summary.durationSec}s）`, `- 左（REF）：${LEFT_ROOT}`, `- 右（OURS）：${RIGHT_DIST}`, `- 拼图：${pairs} 张（pairs/）`, `- U1′ 差异行：${summary.u1DiffRows}（u1-diff.tsv / .md）`, `- persona 抽帧：${persona.frames}/264（persona/<state>/<shape>-<color>.png）`, `- 验收判定：${summary.pass ? 'PASS（两侧同 fixture 完成渲染，boundary=0）' : '见 issues'}`, ...issues.map(i => `- issue：${i}`)].join('\n');
+    const smd = [`# P5-53 对照台 run summary`, '', `- 时间：${summary.startedAt}（${summary.durationSec}s）`, `- 左（REF）：${LEFT_ROOT}`, `- 右（OURS）：${RIGHT_DIST}`, `- 拼图：${pairs} 张（pairs/）`, `- U1′ 差异行：${summary.u1DiffRows}（u1-diff.tsv / .md）`, ...(summary.appRef ? [`- app-vs-ref 处置：${JSON.stringify(summary.appRef)}（u1-appref.tsv，open = 可行动）`] : []), `- persona 抽帧：${persona.frames}/264（persona/<state>/<shape>-<color>.png）`, `- 验收判定：${summary.pass ? 'PASS（两侧同 fixture 完成渲染，boundary=0）' : '见 issues'}`, ...issues.map(i => `- issue：${i}`)].join('\n');
     await fs.writeFile(path.join(EVID_DIR, 'run-summary.md'), smd);
     console.log(smd);
   } finally {
@@ -255,7 +262,8 @@ const COLLECT_FN = `(parts, props) => {
   for (const [part, expr] of Object.entries(parts)) {
     let el = null;
     try { el = eval(expr); } catch (e) { el = null; }
-    if (!el) { out[part] = null; continue; }
+    // P5-55：不渲染（display:none 祖先 → 无 client rect）与不存在同记 null，否则隐藏的构件会被当成「存在」比值
+    if (!el || el.getClientRects().length === 0) { out[part] = null; continue; }
     const cs = getComputedStyle(el);
     const style = {};
     for (const p of props) style[p] = cs.getPropertyValue(p);

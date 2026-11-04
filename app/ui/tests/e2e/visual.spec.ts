@@ -1,6 +1,6 @@
 // U2′（P5-54）：旧 renderer 的 U2 / R8 数值断言（visual*.spec.ts，P5-15 / P5-11 / P5-12 / P5-14）迁到 renderer-grok 的等价锚点。
 // 每个锚点 = 旧条目 id（A1…E5 / 规则 n）+ 新 renderer 选择器 + 计算样式属性；亮暗各量一遍，逐项与基线
-// tests/e2e/visual-baseline.json 比对（= 0.18 移植树现值，防回归）。旧断言值记在 was 字段：
+// tests/e2e/visual-baseline.json 比对（P5-55 起 = 0.78.1 覆盖后现值，防回归；P5-54 时为 0.18 移植树现值）。旧断言值记在 was 字段：
 // 新值 ≠ was 的行就是交 P5-55 的 U2′ 差异表（跑完写 test-output/U2p/diff.tsv，报告转录）。
 // P5-55 换 0.78.1 值时：改覆盖文件 → PBOTS_UPDATE_VISUAL_BASELINE=1 重写基线 → diff.tsv 里对应行消失即为收口证据。
 // 无锚点的旧条目（0.18 没有该构件）以 sel=null 列出：断言「确实不存在」，同样进差异表。

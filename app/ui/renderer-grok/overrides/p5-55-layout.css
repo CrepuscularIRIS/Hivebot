@@ -1,0 +1,303 @@
+/* P5-55 · 0.18 移植树 → 0.78.1 版式收口（覆盖文件，ours，不在 SOURCES.tsv）。
+ * 数值来源：对照台 0.78.1 实测 computed（work/p5-parity/evidence/P5-55/ref-computed.{light,dark}.txt，与 u1-diff 同一 fixture）
+ * + RE-visual-078-values.md（R2）。颜色一律走 0.78.1 token（p5-55-palette.css），不写字面量。
+ * 上游 stylex 原子类带 :not(#\#) 三重 id 特异性、部分构件（审批卡）是 inline style，所以本文件统一 !important。
+ * 架构差异（0.78.1 会话流不渲染 tool/thinking 行、审批卡 0.18 在 dock 而非 transcript 内联）不改结构，只按 0.78.1 构件值换皮。 */
+
+/* ======== A · 侧栏 ======== */
+/* 侧栏高度残留（P5-52 交）：上游左列 = grid[1fr auto auto auto]，aside 落在内层 grid 的 auto 行只有内容高；
+ * 0.78.1 侧栏是整列（900），footer 在侧栏内底部。aside 跨满内层两行，footer 两块（plugins / account）脱流贴底。 */
+div:has(> div > .sand-agents-sidebar) { position: relative !important; }
+div:has(> .sand-agents-sidebar) { grid-row: 1 / -1 !important; }
+.sand-agents-sidebar {
+  grid-row: 1 / -1 !important;
+  height: 100% !important;
+  background: var(--sand-bg-sidebar) !important;
+  border-right: 1px solid var(--sand-border-tertiary-translucent) !important;
+}
+.sand-agents-list { padding-bottom: 76px !important; overflow-x: hidden !important; }
+
+/* A1 头部：0.78.1 = icon 圆钮行（搜索 + New），min-height 52、padding 12 16、gap 8、无底边线 */
+.sand-agents-sidebar__header {
+  min-height: 52px !important; height: auto !important;
+  padding: 12px 16px !important; gap: 8px !important;
+  justify-content: flex-end !important;
+  border-bottom: 0 !important;
+}
+.sand-agents-sidebar__new-actions { gap: 8px !important; }
+/* 圆钮：36 circle、1px border-tertiary-translucent、elevated 底、icon-primary、bg/color .12s ease-out */
+.sand-agents-sidebar__header .sand-kit-icon-button,
+.sand-agents-sidebar > .sand-agents-sidebar__search {
+  width: 36px !important; height: 36px !important; min-height: auto !important;
+  padding: 0 !important; margin: 0 !important; gap: normal !important;
+  border: 1px solid var(--sand-border-tertiary-translucent) !important;
+  border-radius: 9999px !important;
+  background: var(--sand-bg-elevated) !important;
+  box-shadow: none !important;
+  color: var(--sand-icon-primary) !important;
+  font-size: 13px !important; line-height: 18px !important;
+  transition: background-color, color !important; transition-duration: .12s !important; transition-timing-function: ease-out !important;
+}
+.sand-agents-sidebar__header .sand-kit-icon-button:hover,
+.sand-agents-sidebar > .sand-agents-sidebar__search:hover { background: var(--sand-bg-elevated-hover, var(--sand-bg-elevated)) !important; }
+/* 搜索：0.18 是头部下方整宽「Search」按钮；0.78.1 在头部 icon 行（New 左侧）。只挪位置与外形，入口与行为不变。 */
+.sand-agents-sidebar > .sand-agents-sidebar__search { position: absolute !important; top: 12px !important; right: 60px !important; z-index: 2 !important; justify-content: center !important; }
+.sand-agents-sidebar > .sand-agents-sidebar__search > span { font-size: 0 !important; gap: 0 !important; }
+.sand-agents-sidebar__header .ui-icon[data-size="sm"],
+.sand-agents-sidebar > .sand-agents-sidebar__search .ui-icon { font-size: 16px !important; }
+
+/* A4/A5 条目：0.78.1 固定高 54（无 min-height 58）、padding 8、gap 8、radius 10；选中 bg-active；
+ * transition transform/width/padding .2s cubic-bezier(.22,1,.36,1)；名字 14/500/20 */
+.sand-agent-item {
+  height: 54px !important; min-height: 0 !important;
+  padding: 8px !important; gap: 8px !important;
+  border-radius: 10px !important;
+  grid-template-columns: 36px minmax(0, 1fr) auto !important;
+  transition: transform, width, padding !important; transition-duration: .2s !important; transition-timing-function: cubic-bezier(.22,1,.36,1) !important;
+}
+.sand-agent-item:hover { background: var(--sand-bg-hover) !important; }
+.sand-agent-item[data-active="true"] { background: var(--sand-bg-active) !important; }
+/* A6 头像：0.78.1 实测头像盒 36×36（R2 推断 32 不成立；0.18 为 34 盒 28 标） */
+.sand-agent-item__avatar { width: 36px !important; height: 36px !important; }
+.sand-agent-item__avatar .sand-agent-avatar, .sand-agent-item__avatar svg { width: 36px !important; height: 36px !important; }
+.sand-agent-item__name { justify-self: start !important; width: fit-content !important; max-width: 100% !important; font-size: 14px !important; font-weight: 500 !important; line-height: 20px !important; }
+/* 0.78.1 侧栏条目无时间列（对照台实测 .sand-agent-item__time 不存在），未读/状态点保留 */
+.sand-agent-item__time { display: none !important; }
+/* 未读点：info → accent 蓝 8×8（R2 结论4 角标族） */
+.sand-agent-item .sand-kit-status-dot[data-status="info"] { width: 8px !important; height: 8px !important; background: var(--sand-text-accent-primary) !important; }
+
+/* 调宽把手 A18：0.78.1 right -6 / 宽 12 / 全高 */
+.sand-sidebar-resize-handle { height: 100% !important; }
+
+/* footer：0.78.1 = 账号头像圆（36）+「Connect apps」药丸同一行（padding 0 16 16，gap 8），在侧栏内底部 */
+.sand-agents-sidebar__account {
+  position: absolute !important; left: 16px !important; bottom: 16px !important; z-index: 3 !important;
+  width: 36px !important; height: 36px !important; padding: 0 !important; margin: 0 !important; border: 0 !important;
+}
+.sand-agents-sidebar__account > button {
+  display: grid !important; place-items: center !important;
+  width: 36px !important; height: 36px !important; padding: 0 !important; margin: 0 !important;
+  border: 0 !important; border-radius: 9999px !important; background: transparent !important;
+}
+.sand-agents-sidebar__account > button > span:first-child {
+  display: grid !important; place-items: center !important;
+  width: 36px !important; height: 36px !important; border-radius: 9999px !important;
+  background: var(--sand-bg-secondary-hover, var(--sand-bg-secondary)) !important;
+  color: var(--sand-text-secondary) !important; font-size: 13px !important; font-weight: 500 !important;
+}
+.sand-agents-sidebar__account > button > span:last-child { display: none !important; }
+.sand-agents-sidebar__plugins-entry {
+  position: absolute !important; left: 60px !important; right: 17px !important; bottom: 16px !important; z-index: 3 !important;
+  padding: 0 !important; margin: 0 !important; border: 0 !important;
+}
+.sand-agents-sidebar__plugins-entry > button {
+  width: 100% !important; height: 36px !important; min-height: auto !important;
+  padding: 0 16px !important; gap: 0 !important; justify-content: center !important;
+  border: 1px solid var(--sand-border-tertiary-translucent) !important; border-radius: 9999px !important;
+  background: var(--sand-bg-elevated) !important; color: var(--sand-text-primary) !important;
+  font-size: 14px !important; font-weight: 500 !important; line-height: 20px !important;
+  transition: background-color, flex-grow, padding !important; transition-duration: .3s !important; transition-timing-function: cubic-bezier(.2,0,0,1) !important;
+}
+.sand-agents-sidebar__plugins-entry > button .ui-icon { display: none !important; }
+
+/* 折叠态（侧栏 88，0.78.1 实测同为 88——派发单「88→78」按实测不改）：头部 padding 收 4、居中；条目 54×54 padding 9；
+ * footer 只留头像，药丸收起（0.78.1 折叠态药丸不渲染） */
+.sand-agents-sidebar[data-sidebar-collapsed="true"] .sand-agents-sidebar__header { padding: 0 4px !important; justify-content: center !important; }
+.sand-agents-sidebar[data-sidebar-collapsed="true"] .sand-agent-item { width: 54px !important; height: 54px !important; padding: 9px !important; grid-template-columns: 36px !important; margin-inline: auto !important; }
+/* 折叠态状态点：0.78.1 收进 corner（头像右下角 8×8），0.18 在 trailing 列 */
+.sand-agents-sidebar[data-sidebar-collapsed="true"] .sand-agent-item__trailing { position: absolute !important; right: 9px !important; bottom: 9px !important; }
+.sand-agents-sidebar[data-sidebar-collapsed="true"] .sand-agent-item__trailing .sand-agent-item__trailing { position: static !important; }
+/* 折叠 rail（0.78.1 实测）：New「+」与 Connect apps（grid-plus）是 rail 底部两个 28 ghost icon 钮（中心 y=783 / 818），头像圆在最底；
+ * 0.18 的 rail-new 在头部顶端 → 挪到底部；Plugins 药丸收成 icon 钮（文字隐藏）。 */
+.sand-agents-sidebar[data-sidebar-collapsed="true"] .sand-agents-sidebar__header { min-height: 52px !important; }
+.sand-agents-sidebar[data-sidebar-collapsed="true"] .sand-agents-sidebar__rail-new {
+  position: absolute !important; left: 0 !important; right: 0 !important; bottom: 103px !important; padding: 0 !important; justify-content: center !important;
+}
+.sand-agents-sidebar[data-sidebar-collapsed="true"] .sand-agents-sidebar__rail-new .sand-kit-icon-button {
+  width: 28px !important; height: 28px !important; border: 0 !important; background: transparent !important; color: var(--sand-icon-secondary, var(--sand-text-secondary)) !important;
+}
+div:has(> div > .sand-agents-sidebar[data-sidebar-collapsed="true"]) > .sand-agents-sidebar__plugins-entry { left: 0 !important; right: 0 !important; bottom: 68px !important; justify-content: center !important; }
+div:has(> div > .sand-agents-sidebar[data-sidebar-collapsed="true"]) > .sand-agents-sidebar__plugins-entry > button {
+  width: 28px !important; height: 28px !important; padding: 0 !important; border: 0 !important; background: transparent !important; font-size: 0 !important;
+  color: var(--sand-icon-secondary, var(--sand-text-secondary)) !important;
+}
+div:has(> div > .sand-agents-sidebar[data-sidebar-collapsed="true"]) > .sand-agents-sidebar__plugins-entry > button .ui-icon { display: inline-block !important; font-size: 16px !important; }
+div:has(> div > .sand-agents-sidebar[data-sidebar-collapsed="true"]) > .sand-agents-sidebar__account { left: 26px !important; }
+
+/* ======== B · 会话区 ======== */
+/* 会话区底色：0.78.1 实测 stage 区 = bg-chrome（#fcfcfc / #121212），不是 pane */
+.sand-chat-stage { background: var(--sand-bg-chrome) !important; }
+.sand-virtual-transcript { background: transparent !important; }
+.sand-chat-input-dock { background: var(--sand-bg-chrome) !important; }
+/* 标题游离（P5-52 交）：上游把 .sand-chat-header__title 渲在 .sand-shell 第一个子位（重构树缺 shell 网格样式），
+ * 落在侧栏头部左上角。0.78.1 标题在 chat header 药丸内（本覆盖已在药丸里显示名字），游离副本收起。 */
+.sand-shell > .sand-chat-header__title,
+.sand-shell > .sand-kit-status-dot { display: none !important; }
+
+/* chat header：0.78.1 = 顶部居中身份药丸，无底边线；药丸 elevated、1px border-tertiary、r9999、padding 7.5 13.5 7.5 7.5、gap 8、阴影 */
+.sand-chat-header {
+  display: grid !important; grid-template-columns: 1fr auto 1fr !important;
+  min-height: auto !important; height: 61px !important;
+  /* 0.78.1：header 左 8 / 右 12 + 窗口控件让位；padding-left 140（titlebar inset，pill 相对 stage 居中）；info pane 开时 0 */
+  margin: 0 calc(12px + var(--sand-window-controls-inset, 0px)) 0 8px !important;
+  padding: 10px 0 10px 140px !important;
+  gap: 8px !important; border-bottom: 0 !important;
+}
+.sand-shell:has(> .sand-info-pane[data-open]) .sand-chat-header { margin-right: 12px !important; padding-left: 0 !important; }
+.sand-chat-header #sand-conversation-heading { font-size: 14px !important; font-weight: 500 !important; line-height: 20px !important; }
+.sand-chat-header > .sand-chat-header__identity {
+  grid-column: 2 !important;
+  height: 41px !important; padding: 7.5px 13.5px 7.5px 7.5px !important; gap: 8px !important;
+  border: 1px solid var(--sand-border-tertiary-translucent) !important; border-radius: 9999px !important;
+  background: var(--sand-bg-elevated) !important; color: var(--sand-text-primary) !important;
+  box-shadow: 0 4px 12px -1px var(--sand-shadow-inline-ambient, transparent), 0 2px 4px -2px var(--sand-shadow-inline-key, transparent) !important;
+  font-size: 14px !important; font-weight: 500 !important; line-height: 20px !important;
+}
+.sand-chat-header__avatar, .sand-chat-header__avatar .sand-agent-avatar, .sand-chat-header__avatar svg { width: 24px !important; height: 24px !important; }
+.sand-chat-header__identity small { display: none !important; }
+.sand-chat-header__controls { grid-column: 3 !important; justify-self: end !important; }
+
+/* 会话列：0.78.1 transcript padding-inline 100、dock padding 0 100 16（stage 1160 → 内容 960） */
+.sand-virtual-transcript { padding: 0 max(16px, calc((100% - 960px) / 2)) 28px !important; }
+.sand-chat-input-dock { padding: 0 max(16px, calc((100% - 960px) / 2)) 16px !important; }
+.sand-transcript-row, .sand-message-action-anchor { margin: 0 !important; }
+.sand-outline-item { margin-top: 4px !important; }
+/* 分组：data-group-start → margin-top 12（R2 B3） */
+.sand-message[data-group-start] { margin-top: 12px !important; }
+.sand-transcript-time-separator + * .sand-message[data-group-start], .sand-transcript-time-separator + .sand-message-action-anchor > .sand-message { margin-top: 0 !important; }
+
+/* 时间分隔：0.78.1 kit-timestamp 12/16 text-secondary、padding 6 0、margin 14 0 8 */
+.sand-transcript-time-separator { margin: 14px 0 8px !important; padding: 6px 0 !important; color: var(--sand-text-secondary) !important; font-size: 12px !important; line-height: 16px !important; }
+/* 未读线：0.18 写死 lime（#c7ec6b/#53632f），换 accent */
+.sand-unread-divider { color: var(--sand-text-accent-primary) !important; font-size: 12px !important; }
+.sand-unread-divider::before, .sand-unread-divider::after { background: var(--sand-border-secondary-translucent) !important; }
+
+/* B3 气泡：padding 7 12、radius 18、正文 14/20；agent = bubble-agent 填充 + specular + inset 玻璃描边；
+ * user（用户消息落 assistant 侧已在 shim 修正）= 右对齐反色气泡 max min(80%,560px,100%-82px) */
+.sand-message {
+  padding: 7px 12px !important; border-radius: 18px !important;
+  font-size: 14px !important; line-height: 20px !important;
+  color: var(--sand-text-primary) !important;
+  background-color: var(--sand-fill-bubble-agent) !important;
+  background-image: linear-gradient(to bottom, var(--sand-specular-secondary), transparent) !important;
+  box-shadow: inset 0 .5px 0 var(--sand-specular-secondary), inset 0 -.5px 0 var(--sand-specular-secondary), inset 0 0 0 .5px var(--sand-border-quaternary-translucent) !important;
+  max-width: 560px !important;
+}
+.sand-message-prose { font-size: 14px !important; line-height: 20px !important; color: inherit !important; }
+.sand-message-prose p { line-height: 22px !important; }
+/* markdown 正文按 0.78.1：p 22 行高、普通空白（0.18 pre-wrap 把 markdown 渲染留下的前导换行显示成空行）；
+ * 列表 margin-top 10、li 行高 22、相邻 li 间距 4；代码块上下 10 */
+.sand-message[data-role="assistant"] .sand-message-prose p { white-space: normal !important; }
+.sand-message-prose ul, .sand-message-prose ol { margin: 10px 0 0 !important; }
+.sand-message-prose li { line-height: 22px !important; }
+.sand-message-prose li + li { margin-top: 4px !important; }
+.sand-message[data-role="user"] {
+  color: var(--sand-text-on-primary) !important;
+  background-color: var(--sand-fill-bubble-user) !important;
+  background-image: linear-gradient(to bottom, var(--sand-specular-quaternary), transparent) !important;
+  box-shadow: inset 0 .5px 0 var(--sand-specular-secondary), inset 0 -.5px 0 var(--sand-specular-secondary), inset 0 0 0 .5px var(--sand-border-quaternary-translucent) !important;
+  max-width: none !important;
+}
+.sand-message[data-role="user"] .sand-message-prose p { line-height: 20px !important; }
+.sand-message-action-anchor:has(> .sand-message[data-role="user"]),
+.sand-transcript-row[data-role="user"] .sand-message-action-anchor { margin-left: auto !important; }
+.sand-transcript-row[data-role="user"] { display: flex !important; flex-direction: column !important; align-items: flex-end !important; }
+.sand-message-action-anchor:has(> .sand-message[data-role="user"]) { display: flex !important; justify-content: flex-end !important; max-width: min(80%, 560px, 100% - 82px) !important; }
+/* typing 指示：0.18 写死深色；0.78.1 dots 6px text-tertiary、bubble-agent 底 */
+.sand-message-typing { background: var(--sand-fill-bubble-agent) !important; border-radius: 18px !important; padding: 7px 12px !important; }
+.sand-message-typing__dot { width: 6px !important; height: 6px !important; background: var(--sand-text-tertiary) !important; }
+
+/* 代码块：0.18 写死深色块；0.78.1 = 消息内浅色 elevated 圆角块、等宽 13/18 */
+.sand-code-block {
+  padding: 7px 14px !important; color: var(--sand-text-primary) !important;
+  background: var(--sand-bg-elevated) !important; border: 0 !important; border-radius: 12px !important;
+  font: 13px/18px var(--cursor-font-family-mono) !important;
+}
+
+/* B6/B7 工具 / thinking 行（架构差异：0.78.1 会话流不渲染，outline 面板才有——R10；这里按 outline 锚 sand-outline-item 的 0.78.1 值换皮）：
+ * 无边框裸行、radius 8、高 28、padding 7 8 7 12、hover 7%、label medium、preview 13 非等宽 ellipsis、chevron xs */
+.sand-outline-item { border: 0 !important; border-radius: 8px !important; background: transparent !important; margin-bottom: 0 !important; }
+.sand-outline-item__row {
+  min-height: 28px !important; padding: 4px 8px 4px 12px !important; gap: 8px !important;
+  border-radius: 8px !important; transition: background .12s ease !important;
+}
+.sand-outline-item__row:hover { background: color-mix(in srgb, var(--sand-text-primary) 7%, transparent) !important; }
+.sand-outline-item__icon { color: var(--sand-text-tertiary) !important; }
+.sand-outline-item__label { font-size: 13px !important; font-weight: 500 !important; color: var(--sand-text-primary) !important; }
+.sand-outline-item__preview { font-size: 13px !important; color: var(--sand-text-tertiary) !important; font-family: inherit !important; }
+.sand-outline-item__detail { padding: 0 10px 8px 30px !important; font-size: 13px !important; }
+
+/* ======== B8/B9 审批卡（0.18 在 dock、inline style；0.78.1 = elevated 卡 r24 + 药丸文本钮）======== */
+.sand-local-tool-permission-dock { align-items: flex-start !important; padding: 0 0 12px !important; }
+.sand-local-tool-permission-dock > [aria-label="Local tool permission"] {
+  display: flex !important; flex-direction: column !important; align-items: stretch !important;
+  width: min(88%, 520px, 100% - 82px) !important; max-width: min(88%, 520px, 100% - 82px) !important;
+  padding: 16px !important; gap: 8px !important;
+  font: 16px/normal var(--cursor-font-family-sans) !important;
+  color: var(--sand-text-primary) !important; background: var(--sand-bg-elevated) !important;
+  border: 0 !important; border-radius: 24px !important;
+  box-shadow: 0 0 0 .5px var(--sand-border-secondary-translucent), 0 2px 8px var(--sand-shadow-card) !important;
+}
+.sand-local-tool-permission-dock > [aria-label="Local tool permission"] > strong { font-size: 15px !important; font-weight: 600 !important; line-height: 22px !important; }
+.sand-local-tool-permission-dock > [aria-label="Local tool permission"] > span { color: var(--sand-text-secondary) !important; font-size: 14px !important; line-height: 20px !important; }
+.sand-local-tool-permission-dock [role="group"] { justify-content: flex-end !important; gap: 6px !important; margin-top: 16px !important; }
+.sand-local-tool-permission-dock [role="group"] > button {
+  height: 32px !important; padding: 6px 14px !important; gap: 4px !important;
+  border: 0 !important; border-radius: 9999px !important;
+  color: var(--sand-text-primary) !important; background: var(--sand-bg-secondary) !important;
+  font-family: var(--cursor-font-family-sans) !important; font-size: 14px !important; font-weight: 500 !important; line-height: 20px !important;
+  transition: background-color, color !important; transition-duration: .12s !important; transition-timing-function: ease-out !important;
+}
+/* 按钮语义（0.18 dock 按钮无类名，按位置；前提 = 0.18 dock 顺序 Always allow · Allow once · Never · Deny once）：
+ * Allow once = 主钮（text-primary 底反白）；Never / Deny once = tertiary 透明底 text-secondary；0.78.1 顺序 Never · Always · Allow once */
+.sand-local-tool-permission-dock [role="group"] > button:nth-child(2) { order: 3 !important; color: var(--sand-text-inverted) !important; background: var(--sand-text-primary) !important; }
+.sand-local-tool-permission-dock [role="group"] > button:nth-child(1) { order: 2 !important; }
+.sand-local-tool-permission-dock [role="group"] > button:nth-child(n+3) { order: 1 !important; color: var(--sand-text-secondary) !important; background: transparent !important; font-weight: 400 !important; }
+/* P5-31 两钮组 Allow once · Deny once（Always/Never 隐藏）：首钮为主钮居右、Deny once tertiary 居左。须排在上面 nth-child(2) 之后 */
+.sand-local-tool-permission-dock [role="group"] > button:first-child:nth-last-child(2) { order: 3 !important; color: var(--sand-text-inverted) !important; background: var(--sand-text-primary) !important; }
+.sand-local-tool-permission-dock [role="group"] > button:nth-child(2):last-child { order: 1 !important; color: var(--sand-text-secondary) !important; background: transparent !important; font-weight: 400 !important; }
+
+/* ======== composer：0.78.1 = 药丸 h44 r22、1px border-primary-translucent、elevated 底、三层阴影 ======== */
+.sand-prompt-shell {
+  display: flex !important; align-items: center !important;
+  height: 44px !important; min-height: 0 !important; padding: 0 !important;
+  background: var(--sand-bg-elevated) !important;
+  border: 1px solid var(--sand-border-primary-translucent) !important; border-radius: 22px !important;
+  box-shadow: 0 2px 8px -1px rgb(0 0 0 / .05), 0 1px 2px 0 rgb(0 0 0 / .03), 0 0 0 1px rgb(228 228 228 / .04) !important;
+  transition-property: height, border-radius, border-color, background-color !important;
+  transition-duration: .3s, .3s, .15s, .15s !important;
+  transition-timing-function: linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), ease, ease !important;
+}
+.sand-prompt-shell > div:first-child { flex: 1 1 auto !important; min-width: 0 !important; padding: 0 16px !important; }
+.sand-prompt-field { min-height: 20px !important; padding: 11px 0 !important; font-size: 14px !important; line-height: 20px !important; }
+.sand-prompt-field p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: var(--sand-text-tertiary);
+}
+
+/* ======== C1 info pane（P5-52 临时右浮，按 0.78.1 定稿）：0.78.1 pane 是 stage 右侧同级列（宽 320，stage 让出 320），
+ * 左缘 1px border-tertiary-translucent，顶到窗口顶（无 52 让位），底色 bg-chrome（实测 #fcfcfc / #121212） ======== */
+.sand-shell:has(> .sand-info-pane[data-open]) > div[style*="grid-template-columns"] { width: calc(100% - 320px) !important; }
+.sand-shell > .sand-info-pane[data-open] {
+  top: 0 !important; width: 320px !important;
+  background: var(--sand-bg-chrome) !important;
+  border-left: 1px solid var(--sand-border-tertiary-translucent) !important;
+}
+
+/* ======== 残项（P5-55 第二轮）======== */
+/* 工具 / thinking 行图标：上游 .sand-outline-item__icon 只有 data-icon-name、没给 cursor-icons 字体（其余 ui-icon 是 inline font-family），渲成豆腐块 */
+.sand-outline-item__icon { font-family: cursor-icons !important; }
+/* 代码块 copy 钮：stylex 定位原子类没落地，按钮掉进流里撑出空行；按 0.18/0.78.1 值 top 6 right 6、hover 才显 */
+.sand-code-figure > button[aria-label="Copy code"] { position: absolute !important; top: 6px !important; right: 6px !important; opacity: 0 !important; transition: opacity .12s ease-out !important; }
+.sand-code-figure:hover > button[aria-label="Copy code"], .sand-code-figure > button[aria-label="Copy code"]:focus-visible { opacity: 1 !important; }
+/* composer 占位行：段落默认外边距把占位文字压到底 */
+.sand-prompt-field p { margin: 0 !important; }
+/* 气泡 min-height 与 0.78.1 一致（auto） */
+.sand-message { min-height: auto !important; }
+/* footer 药丸作 flex 子项（min-height:auto 语义同 0.78.1） */
+.sand-agents-sidebar__plugins-entry { display: flex !important; }
+/* 侧栏 hover 预览卡：0.18 inline 写死橄榄深色（rgb(32,35,31)/rgb(58,64,54)），换 0.78.1 elevated 卡 token */
+.sand-agent-hover-card[role="tooltip"] {
+  color: var(--sand-text-primary) !important; background: var(--sand-bg-elevated) !important;
+  border: 0 !important; border-radius: 16px !important;
+  box-shadow: 0 0 0 .5px var(--sand-border-secondary-translucent), 0 6px 18px var(--sand-shadow-card) !important;
+}

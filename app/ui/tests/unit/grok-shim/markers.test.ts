@@ -3,7 +3,7 @@
 // runtime 真时钟造不出 15 分钟差，阈值 / 跨日 / 文案只在这里测（e2e 测首条 1 条 + 阈值内 0 条 + 未读线）。
 import { describe, expect, it } from 'vitest'
 import {
-  SEP_GAP_MS, createUnreadTracker, firstUnreadId, latestAt, timeLabel, withMarkers, type MarkerEntry,
+  SEP_GAP_MS, UNREAD_SCROLL_INSET, createUnreadTracker, firstUnreadId, latestAt, timeLabel, unreadScrollTop, withMarkers, type MarkerEntry,
 } from '../../../renderer-grok/overrides/modules/markers'
 
 const at = (y: number, mo: number, d: number, h: number, mi: number, s = 0): number => new Date(y, mo - 1, d, h, mi, s).getTime()
@@ -63,9 +63,9 @@ describe('未读线', () => {
     expect(withMarkers(items, NOW, 'gone').filter((r) => r.kind === 'unread-divider')).toHaveLength(0)
   })
 
-  it('shim 持久用户条目（send-message + text）同样不算未读起点', () => {
+  it('send-message + text 是 agent 发来的消息（0.18 判 assistant 侧，P5-55）：可作未读起点；用户消息 = message + role user', () => {
     const sent: MarkerEntry = { kind: 'send-message', id: 's1', timestampMs: T0 + 10, message: { type: 'text' } }
-    expect(firstUnreadId([u('m1', T0), sent, a('m2', T0 + 20)], T0)).toBe('m2')
+    expect(firstUnreadId([u('m1', T0), sent, a('m2', T0 + 20)], T0)).toBe('s1')
   })
 
   it('latestAt：取最大时间；无带时间的条目 → null', () => {
@@ -93,3 +93,19 @@ describe('未读线', () => {
     expect(t.visit('A', [a('m1', T0), a('m2', T0 + 10)])).toBe('m2')
   })
 })
+
+// P5-55（P5-12 final #12 迁新 renderer）：进入时线以下内容超一屏 → 线滚到视口顶下 28px；不超一屏 → 不动（null）
+describe('unreadScrollTop · 未读线进入滚动', () => {
+  it('线以下超一屏：scrollTop = 线 offsetTop − 28', () => {
+    expect(UNREAD_SCROLL_INSET).toBe(28)
+    expect(unreadScrollTop(1000, 3000, 800)).toBe(972)
+  })
+  it('线以下不超一屏：null（保持上游跟底）', () => {
+    expect(unreadScrollTop(2400, 3000, 800)).toBeNull()
+    expect(unreadScrollTop(2200, 3000, 800)).toBeNull() // 恰好一屏
+  })
+  it('线在顶部附近：不滚成负数', () => {
+    expect(unreadScrollTop(10, 3000, 800)).toBe(0)
+  })
+})
+

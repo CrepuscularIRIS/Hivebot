@@ -2,7 +2,7 @@
 // （module script 天然 defer，经典 script 解析即执行 → shim 先于 bundle；CSP script-src 'self' 放行同源）。
 // P5-52 · 同时把 overrides/*.css（我们的覆盖文件，不改上游）以 <link> 注入 </head> 前，排在 bundle 样式之后。
 // 幂等：已注入则跳过。
-import { copyFileSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, cpSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -21,4 +21,6 @@ for (const css of readdirSync(overridesDir).filter((f) => f.endsWith('.css')).so
   copyFileSync(path.join(overridesDir, css), path.join(shellDir, `override-${css}`))
   if (!html.includes(`override-${css}`)) html = html.replace('</head>', `  <link rel="stylesheet" href="./override-${css}">\n  </head>`)
 }
+// P5-55 · 覆盖样式引用的字体（overrides/fonts，0.78.1 原版 woff2）随拷到 ./fonts/
+cpSync(path.join(overridesDir, 'fonts'), path.join(shellDir, 'fonts'), { recursive: true })
 writeFileSync(htmlPath, html)

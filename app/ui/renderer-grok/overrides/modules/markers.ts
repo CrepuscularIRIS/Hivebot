@@ -31,10 +31,8 @@ export function timeLabel(at: number, now: number, locale = 'en-US'): string {
   return `${date} ${time}`
 }
 
-/** 用户本人消息：上游乐观条目（message + role user），或 shim 的持久用户条目（send-message + text，
- * entries.ts；其 0.18 判侧问题见 VERIFY-P5-51 OBS，交 P5-55 对照）。bot 正文恒为 message + role assistant。 */
-const isUserMessage = (e: MarkerEntry): boolean =>
-  (e.kind === 'message' && e.role === 'user') || (e.kind === 'send-message' && e.message?.type === 'text')
+/** 用户本人消息 = message + role user（上游乐观条目与 shim 持久条目同形，P5-55）；send-message 是 agent 发来的消息。 */
+const isUserMessage = (e: MarkerEntry): boolean => e.kind === 'message' && e.role === 'user'
 
 /** 条目列表里最新的时间（离开 bot 时的已读边界）；无带时间的条目 → null。 */
 export function latestAt(entries: readonly MarkerEntry[]): number | null {
@@ -99,4 +97,10 @@ export function createUnreadTracker(): UnreadTracker {
       return current.unreadBefore
     },
   }
+}
+
+/** P5-55（P5-12 final #12，0.78.1 进入未读会话的定位）：线以下内容超一屏 → 线滚到视口顶下 28px；否则 null（保持上游跟底）。 */
+export const UNREAD_SCROLL_INSET = 28
+export function unreadScrollTop(dividerTop: number, scrollHeight: number, clientHeight: number): number | null {
+  return scrollHeight - dividerTop > clientHeight ? Math.max(0, dividerTop - UNREAD_SCROLL_INSET) : null
 }

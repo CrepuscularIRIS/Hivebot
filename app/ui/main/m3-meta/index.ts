@@ -117,6 +117,15 @@ export function registerM3Meta(deps: M3Deps): M3Handle {
     if (!items.some((item) => item.sessionId === mainBotId)) {
       return invalidArgs(`mainBotId ${JSON.stringify(mainBotId)} is not in session/list`)
     }
+    // P6-10 验收 ④（#20 防提升，CONTRACT v1.5）：worker（带 createdBy）不得被设为主
+    // bot——只收紧、不放宽。
+    try {
+      if (store.read().bots?.[mainBotId] !== undefined) {
+        return invalidArgs(`mainBotId ${JSON.stringify(mainBotId)} is a worker bot (createdBy set); workers cannot be promoted to main (CONTRACT #20)`)
+      }
+    } catch (error) {
+      return { ok: false, error: { code: 'pbots/storage', message: `bots.json unreadable: ${String(error)}`, details: {} } }
+    }
     try {
       await store.patchMainBotId(mainBotId)
     } catch (error) {

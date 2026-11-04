@@ -30,3 +30,14 @@ export {
   classifyTurn,
   TurnOrigin,
 } from './turn-origin.mjs'
+// P6-10 注册行（PLAN §2 v4 接线归属：每任务只追加自己的导出，不重构）。
+export { Slots, sharedSlots, DEFAULT_CAPACITY } from './slots.mjs'
+export { orchDataDir, readMainBotId, BOTS_JSON } from './identity.mjs'
+export {
+  CreateChannel,
+  DEFAULT_CREATE_TIMEOUT_MS,
+  ORCH_REQUESTS_ENDPOINT,
+  ORCH_RESPOND_METHOD,
+  orchError,
+} from './main-channel.mjs'
+export { CREATE_BOT_TOOL, CREATE_BOT_DESCRIPTION, relayText } from './create.mjs'

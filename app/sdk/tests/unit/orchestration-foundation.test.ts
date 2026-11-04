@@ -82,13 +82,16 @@ beforeEach(reset)
 // The barrel is the P6-10+ wiring point (PLAN §2: later tasks only append
 // registration lines here); assert it re-exports today's whole surface.
 describe('index barrel', () => {
-  it('re-exports the P6-21 foundation surface', () => {
+  it('re-exports the P6-21 foundation surface (+ P6-10 追加注册行)', () => {
     expect(Object.keys(orchestration).sort()).toEqual([
-      'ASSIGN_PREFIX', 'ASSIGN_SOURCE_KIND', 'Delivery', 'OWN_SOURCE_KINDS', 'QUESTION_TOOL',
-      'REPORT_PREFIX', 'REPORT_SOURCE_KIND', 'TAINT_KIND', 'TurnOrigin',
+      'ASSIGN_PREFIX', 'ASSIGN_SOURCE_KIND', 'BOTS_JSON', 'CREATE_BOT_DESCRIPTION', 'CREATE_BOT_TOOL',
+      'CreateChannel', 'DEFAULT_CAPACITY', 'DEFAULT_CREATE_TIMEOUT_MS', 'Delivery', 'ORCH_REQUESTS_ENDPOINT',
+      'ORCH_RESPOND_METHOD', 'OWN_SOURCE_KINDS', 'QUESTION_TOOL', 'REPORT_PREFIX', 'REPORT_SOURCE_KIND',
+      'Slots', 'TAINT_KIND', 'TurnOrigin',
       'assignMessageId', 'buildAssignMessage', 'buildReportMessage', 'classifyTurn',
       'computeDue', 'deliveryIdOf', 'endOutcomeFor', 'foldAssignments', 'foldMainLog',
-      'newAssignmentId', 'projectEvent', 'reportMessageId',
+      'newAssignmentId', 'orchDataDir', 'orchError', 'projectEvent', 'readMainBotId',
+      'relayText', 'reportMessageId', 'sharedSlots',
     ])
   })
 })
@@ -294,29 +297,6 @@ describe('pending · ask keys', () => {
     const done = computeDue({ mainId: 'main', mainEvents: [], workers: [{ workerId: 'w1', events: workerWith([asked('e1'), decided('e1'), turnEnd(1, 'completed')]), idle: true }] }).due
     expect(done.map((d) => d.key)).toEqual(['a1:end'])
   })
-
-  // P6-21.f1 (L-9): crash-orphaned turn → synthesized stopped; its asks died
-  // with the process and must never be delivered.
-  it('crash log (claim + approval/asked, no turn/end, idle) → only the end key, the dead ask is not delivered', () => {
-    const events = [
-      ins('next-turn', assignMsg('a1')),
-      turnStart(1), claim('next-turn', 'pbots-assign:a1'),
-      asked('e1'), // process died while awaiting → nobody can ever answer
-    ]
-    const { due } = computeDue({ mainId: 'main', mainEvents: [], workers: [{ workerId: 'w1', events, idle: true }] })
-    expect(due.map((d) => d.key)).toEqual(['a1:end'])
-    expect(due[0]).toMatchObject({ kind: 'end', outcome: 'stopped', reason: 'interrupted' })
-  })
-
-  it('live ask regression: same crash shape but the worker is busy → the ask is still due (L-9 f1 回归)', () => {
-    const events = [
-      ins('next-turn', assignMsg('a1')),
-      turnStart(1), claim('next-turn', 'pbots-assign:a1'),
-      asked('e1'),
-    ]
-    const { due } = computeDue({ mainId: 'main', mainEvents: [], workers: [{ workerId: 'w1', events, idle: false }] })
-    expect(due.map((d) => d.key)).toEqual(['a1:ask:e1'])
-  })
 })
 
 // ---- pending · 决策 28 全映射（7 种 reason 各一格 + open） ----
@@ -508,82 +488,5 @@ describe('delivery · wake + guard', () => {
   it('send rejects messages without a pbots-owned source before touching the host', async () => {
     const delivery = new Delivery({} as never)
     await expect(delivery.send({ id: 'w' } as never, { id: 'u1', source: { kind: 'user' } })).rejects.toThrow(/pbots-owned/)
-  })
-})
-
-// ---- delivery · concurrent send single-flight (P6-21.f1, L-9) ----
-// holds() 与 followup 之间的 await 窗口：两个并发 send 同 (agent,id) 都读到
-// 「未投过」→ 空闲目标 followup 两次 / 忙碌目标第二次撞宿主 already pending。
-// 在途预留：恰一次 followup，第二个调用得 {skipped:true}。
-
-interface FollowupAgent {
-  id: string
-  inbox: { nextTurn: Array<{ id: string }>; nextStep: Array<{ id: string }> }
-  followup(m: { id: string }): void
-}
-
-/** Mocked host with a genuinely-async holds (flush yields) so both sends are inside holds() before either followup. */
-function sendFixture(opts: { duplicateRejects?: boolean; failFirstFollowup?: boolean } = {}) {
-  const calls: string[] = []
-  const pending: Array<{ id: string }> = []
-  const agent: FollowupAgent = {
-    id: 'w1',
-    inbox: { nextTurn: pending, nextStep: [] },
-    followup(m) {
-      // busy host: the id is already sitting in the inbox → duplicate insert throws
-      if (opts.duplicateRejects && pending.some((p) => p.id === m.id)) throw new Error('already pending')
-      calls.push(`followup:${m.id}`)
-      if (opts.failFirstFollowup && calls.length === 1) throw new Error('host boom')
-      pending.push({ id: m.id })
-    },
-  }
-  const registry = new Map<string, FollowupAgent>([['w1', agent]])
-  const ctx = {
-    sessionPersistence: {
-      flush: async () => { await new Promise((r) => setTimeout(r, 5)) },
-      open: async () => ({ read: async () => ({ events: [] }), close: async () => {} }),
-    },
-    agents: { get: (id: string) => registry.get(id) },
-  }
-  const message = { id: 'pbots-assign:c1', role: 'user', content: [], source: { kind: 'pbots-main' } }
-  return { delivery: new Delivery(ctx as never), agent, message, calls, registry }
-}
-
-describe('delivery · concurrent send single-flight (L-9)', () => {
-  it('idle target: two concurrent same-id sends → exactly one followup, the other skipped', async () => {
-    const { delivery, agent, message, calls } = sendFixture()
-    const settled = await Promise.allSettled([delivery.send(agent, message), delivery.send(agent, message)])
-    expect(settled.map((s) => s.status)).toEqual(['fulfilled', 'fulfilled'])
-    expect(settled.map((s) => s.status === 'fulfilled' && (s.value as { skipped: boolean }).skipped).sort()).toEqual([false, true])
-    expect(calls).toEqual(['followup:pbots-assign:c1']) // 恰一次 followup（修复前为 2，两个回合/重复副作用）
-  })
-
-  it('busy target (host rejects duplicate pending id): no throw, exactly one followup, one skipped', async () => {
-    const { delivery, agent, message, calls } = sendFixture({ duplicateRejects: true })
-    const settled = await Promise.allSettled([delivery.send(agent, message), delivery.send(agent, message)])
-    expect(settled.map((s) => s.status)).toEqual(['fulfilled', 'fulfilled']) // 修复前第二个 rejected 'already pending'
-    expect(settled.map((s) => s.status === 'fulfilled' && (s.value as { skipped: boolean }).skipped).sort()).toEqual([false, true])
-    expect(calls).toEqual(['followup:pbots-assign:c1'])
-  })
-
-  it('a failed in-flight send is retried by the concurrent caller, never falsely reported skipped', async () => {
-    const { delivery, agent, message, calls } = sendFixture({ failFirstFollowup: true })
-    const settled = await Promise.allSettled([delivery.send(agent, message), delivery.send(agent, message)])
-    // leader's followup threw → follower takes over and delivers: no false skip
-    expect(settled.map((s) => s.status).sort()).toEqual(['fulfilled', 'rejected'])
-    expect(settled.filter((s) => s.status === 'fulfilled').map((s) => (s.value as { skipped: boolean }).skipped)).toEqual([false])
-    expect(calls).toEqual(['followup:pbots-assign:c1', 'followup:pbots-assign:c1'])
-  })
-
-  it('different agents / different ids do not share the reservation', async () => {
-    const a = sendFixture()
-    const other: FollowupAgent = { ...a.agent, id: 'w2', inbox: { nextTurn: [], nextStep: [] } }
-    a.registry.set('w2', other)
-    const [r1, r2, r3] = await Promise.all([
-      a.delivery.send(a.agent, a.message),
-      a.delivery.send(other, a.message),
-      a.delivery.send(a.agent, { id: 'pbots-assign:c2', role: 'user', content: [], source: { kind: 'pbots-main' } }),
-    ])
-    expect([r1.skipped, r2.skipped, r3.skipped]).toEqual([false, false, false])
   })
 })

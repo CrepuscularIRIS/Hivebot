@@ -289,10 +289,10 @@ describe('deriveBots（D10d runtime 恒 dsh；孤儿不产生行）', () => {
 
   it('connectors/readOnly/mainBot/preset 按 C §3.1 推导', () => {
     const rows = deriveBots(sessions, view({ 'p2temp-abc': { agentPreset: 'p2-alpha', connectors: ['a'], live: true } }, 's-conn'))
-    expect(rows[0]).toEqual({ id: 's-plain', preset: 'p2-alpha', connectors: [], readOnly: false, mainBot: false, runtime: 'dsh', running: true, updatedAt: 1 })
-    expect(rows[1]).toEqual({ id: 's-conn', preset: 'p2-alpha', connectors: ['a'], readOnly: false, mainBot: true, runtime: 'dsh', running: false, updatedAt: 2 })
+    expect(rows[0]).toEqual({ id: 's-plain', preset: 'p2-alpha', connectors: [], readOnly: false, mainBot: false, runtime: 'dsh', running: true, updatedAt: 1, createdBy: null })
+    expect(rows[1]).toEqual({ id: 's-conn', preset: 'p2-alpha', connectors: ['a'], readOnly: false, mainBot: true, runtime: 'dsh', running: false, updatedAt: 2, createdBy: null })
     // p2temp-* 且无 recipe → 只读
-    expect(rows[2]).toEqual({ id: 's-stale', preset: null, connectors: [], readOnly: true, mainBot: false, runtime: 'dsh', running: false, updatedAt: 3 })
+    expect(rows[2]).toEqual({ id: 's-stale', preset: null, connectors: [], readOnly: true, mainBot: false, runtime: 'dsh', running: false, updatedAt: 3, createdBy: null })
   })
 
   it('recipe.live=false → 该 bot 只读；普通 preset 的 bot 不因此只读', () => {
@@ -303,7 +303,7 @@ describe('deriveBots（D10d runtime 恒 dsh；孤儿不产生行）', () => {
 
   it('header.agentPreset 缺失（SessionSummary 无 header 时）→ preset null', () => {
     const rows = deriveBots([{ sessionId: 's-1', running: false, updatedAt: 0 }], view({}))
-    expect(rows[0]).toEqual({ id: 's-1', preset: null, connectors: [], readOnly: false, mainBot: false, runtime: 'dsh', running: false, updatedAt: 0 })
+    expect(rows[0]).toEqual({ id: 's-1', preset: null, connectors: [], readOnly: false, mainBot: false, runtime: 'dsh', running: false, updatedAt: 0, createdBy: null })
   })
 })
 

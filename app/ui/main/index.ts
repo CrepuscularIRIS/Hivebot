@@ -14,7 +14,8 @@ import { m1Ledger, registerM1Api, type M1Request, type M1Result } from './m1-api
 import { registerM2Mux } from './m2-mux'
 import { registerM3Meta, type M3Handle } from './m3-meta'
 import { ensureThenReady, restoreGated } from './m3-meta/ensure'
-import { createBotWithConnectors, createSessionForcedWorkspace, type CreateBotArgs, type DshLike, type SessionCreateArgs } from './m3-meta/orchestrate'
+import { createBotWithConnectors, createSessionForcedWorkspace, createWorkerBot, type CreateBotArgs, type DshLike, type SessionCreateArgs } from './m3-meta/orchestrate'
+import { wireOrchChannel } from './m3-meta/orch-channel'
 import type { BotsMetaStore } from './m3-meta/store'
 
 if (process.type === 'browser') {
@@ -254,6 +255,9 @@ async function main(): Promise<void> {
       void m2Gated(event, req)
     })
     ipcMain.handle('pbots:bots-meta', (event, req) => { assertSender(event); return m3.handler(req) })
+
+    // P6-10 ⑤：main 常驻订阅 SDK 的 create 请求流（orchestration.yml 未加载时只记日志）
+    if (dsh !== undefined) wireOrchChannel({ dsh, create: (req) => createWorkerBot(dsh, m3.store, req, { dataDir }) })
 
     // U-14 先 restore 后 ready：连接成功 → 读盘完成 → #21 逐个 ensure（30s each 超时按
     // 失败、allSettled、失败进 failed set 不阻断）→ 放行 restore 条件。U-28 R3/R4：编排

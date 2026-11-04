@@ -10,7 +10,7 @@ import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { normalizedConnectors, presetIdOf } from './preset-id'
 import { invalidBundleNameReason } from '../m1-api'
-import type { BotsMetaStore } from './store'
+import type { BotsMeta, BotsMetaStore } from './store'
 
 export type ConnectionRpcResult<T = unknown> =
   | { ok: true; value: T }
@@ -237,7 +237,7 @@ export interface BotSessionLike {
   agentPreset?: string
 }
 
-/** C §3.1 Bot 的推导行（D10d：runtime 恒 'dsh'；v1 不含 bots 字段）。 */
+/** C §3.1 Bot 的推导行（D10d：runtime 恒 'dsh'；P6-10 起 createdBy 透传）。 */
 export interface BotRow {
   id: string
   preset: string | null
@@ -247,20 +247,43 @@ export interface BotRow {
   runtime: 'dsh'
   running: boolean
   updatedAt: number
+  /** P6-10：建该 worker 时的主 bot sessionId；普通 bot 为 null（决策 31）。 */
+  createdBy: string | null
 }
 
 export interface BotsMetaViewLike {
   mainBotId: string | null
   recipes: Record<string, { agentPreset: string; connectors: string[]; live: boolean }>
+  /** P6-10：可选 worker 身份（无 worker 时无键，字节与 P6 前一致）。 */
+  bots?: Record<string, { createdBy: string }>
 }
 
-/** bot 列表以 session 为准（孤儿 recipe 不产生行，D10b/D7）。 */
-export function deriveBots(sessions: BotSessionLike[], view: BotsMetaViewLike): BotRow[] {
-  return sessions.map((session) => {
+/** bot 列表以 session 为准（孤儿 recipe 不产生行，D10b/D7）。P6-10：creator 已不
+ * 存在的 worker（崩溃窗口 / 主 bot 被删）防御性跳过——不给不存在的 creator 建组，
+ * 每行记 1 条日志（验收 ⑫ / GU 观察项）。P6-10.f1 ③：bots.json 里 worker session
+ * 本身不存在（createdBy 先落盘、#3 失败或 session 被删的崩溃窗口，store.ts 注）
+ * 同样跳过并记 1 行日志——此前静默不显示。 */
+export function deriveBots(
+  sessions: BotSessionLike[],
+  view: BotsMetaViewLike,
+  log: (message: string) => void = () => {},
+): BotRow[] {
+  const known = new Set(sessions.map((session) => session.sessionId))
+  // P6-10.f1 ③：无 session 的 createdBy 条目不产生行（⑫ 正对象），逐条记日志。
+  for (const [id, { createdBy }] of Object.entries(view.bots ?? {})) {
+    if (!known.has(id)) log(`[m3] worker ${id} skipped: session ${id} is not in the session list (createdBy ${createdBy})`)
+  }
+  const rows: BotRow[] = []
+  for (const session of sessions) {
+    const createdBy = view.bots?.[session.sessionId]?.createdBy ?? null
+    if (createdBy !== null && !known.has(createdBy)) {
+      log(`[m3] worker ${session.sessionId} skipped: creator ${createdBy} is not in the session list`)
+      continue
+    }
     const header = session.agentPreset ?? null
     const recipe = header !== null ? view.recipes[header] : undefined
     const isTemp = header !== null && header.startsWith('p2temp-')
-    return {
+    rows.push({
       id: session.sessionId,
       preset: isTemp ? (recipe?.agentPreset ?? null) : header,
       connectors: recipe?.connectors ?? [],
@@ -269,6 +292,86 @@ export function deriveBots(sessions: BotSessionLike[], view: BotsMetaViewLike): 
       runtime: 'dsh',
       running: session.running,
       updatedAt: session.updatedAt,
+      createdBy,
+    })
+  }
+  return rows
+}
+
+/** ⑤ 通道的 create 请求体（CONTRACT §2.4：SDK 只发 {name, prompt}；kind /
+ * requestId 为通道信封标记）。 */
+export interface WorkerCreateRequest {
+  kind?: string
+  requestId?: string
+  name: string
+  prompt: string
+  mainBotId: string
+}
+
+/**
+ * ⑤ 建 bot 的 main 编排（P6-10，CONTRACT §2.4 / §3.1，决策 8/32）：
+ * 校验（D9①：越权参数拒；mainBotId 纵深防御）→ mintWorkspace → **createdBy
+ * 先落盘**（失败 → 0 次 dsh 调用）→ #3（P5-25 cwd 强制、默认 preset、无连接器）
+ * → #6 rename（决策 32：失败 → 成功 + warn，不诱发重复 create）。
+ * #3 失败不回滚 createdBy（作废 ≠ 回滚，§2.4：崩溃窗口由 deriveBots 过滤）。
+ */
+export async function createWorkerBot(
+  dsh: DshLike,
+  store: BotsMetaStore,
+  request: WorkerCreateRequest,
+  opts: GateOptions = {},
+): Promise<ConnectionRpcResult<{ sessionId: string; warn?: string }>> {
+  // 1 校验：只认 {kind?, name, prompt, mainBotId}；preset / connectors / cwd → 拒
+  if (typeof request !== 'object' || request === null) return invalid('create-bot request must be {kind, name, prompt, mainBotId}')
+  const extra = Object.keys(request).filter((key) => !['kind', 'requestId', 'name', 'prompt', 'mainBotId'].includes(key))
+  if (extra.length > 0) {
+    return invalid(`create-bot rejects unexpected fields: ${extra.join(', ')} (preset/connectors/cwd are main-owned, D9-1)`)
+  }
+  const { name, prompt, mainBotId } = request
+  if (typeof name !== 'string' || name.trim() === '') return invalid('name must be a non-empty string')
+  if (typeof prompt !== 'string' || prompt.trim() === '') return invalid('prompt must be a non-empty string')
+  if (typeof mainBotId !== 'string' || mainBotId === '') return invalid('mainBotId is required')
+  let meta: BotsMeta
+  try {
+    meta = store.read()
+  } catch (error) {
+    return { ok: false, error: { code: 'pbots/storage', message: `bots.json unreadable: ${String(error)}`, details: {} } }
+  }
+  if (meta.mainBotId !== mainBotId) {
+    return invalid(`mainBotId mismatch: request says ${JSON.stringify(mainBotId)}, authoritative is ${JSON.stringify(meta.mainBotId)}`)
+  }
+
+  // 2 工作区（P5-25）：mint botId 并建目录
+  const dataDir = resolveDataDir(opts)
+  if (dataDir === undefined) {
+    return { ok: false, error: { code: 'pbots/unavailable', message: 'workspace data dir unresolved (no dataDir option and PBOTS_DATA_DIR unset)', details: {} } }
+  }
+  const ws = await mintWorkspace(dataDir)
+  if (!ws.ok) return { ok: false, error: { ...ws.error, details: {} } }
+
+  // 3 createdBy 先于会话落盘（CONTRACT §3.1；验收 ①：写失败 → 0 次 dsh 调用）
+  try {
+    await store.putBot(ws.botId, mainBotId)
+  } catch (error) {
+    return { ok: false, error: { code: 'pbots/storage', message: `bots.json write failed: ${String(error)}`, details: {} } }
+  }
+
+  // 4 #3：默认 preset、无连接器、cwd 强制（typert {request:…} 壳，同 createSessionForcedWorkspace）
+  const created = await dsh.rpc('session/create', { request: { sessionId: ws.botId, cwd: ws.workspace } })
+  if (!created.ok) {
+    return {
+      ok: false,
+      error: {
+        code: 'pbots/orchestration-failed',
+        message: `session/create failed: ${created.error.code} ${created.error.message}`,
+        details: { step: 'session/create', code: created.error.code, details: created.error.details ?? {} },
+      },
     }
-  })
+  }
+
+  // 5 #6 rename（决策 32：失败 → 成功 + warn；改名失败不诱发重复 create）
+  let warn: string | undefined
+  const renamed = await dsh.rpc('session/rename', { request: { sessionId: ws.botId, title: name } })
+  if (!renamed.ok) warn = `rename failed: ${renamed.error.code} ${renamed.error.message}`
+  return { ok: true, value: { sessionId: ws.botId, ...(warn !== undefined ? { warn } : {}) } }
 }

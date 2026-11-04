@@ -143,4 +143,22 @@ export class BotsMetaStore {
       }
     })
   }
+
+  /**
+   * ⑤ 建 bot 编排写 worker 身份（P6-10，CONTRACT §3.1/§2.4）：先落盘成功才建会话
+   * / 返回成功——崩溃最多留下一条没有对应 session 的 createdBy（deriveBots 过滤）。
+   * flush 失败回滚内存态（W1 R9）。幂等：同 id 重写同 createdBy 无害。
+   */
+  putBot(sessionId: string, createdBy: string): Promise<void> {
+    return this.enqueue(async () => {
+      const prev = this.meta.bots
+      this.meta.bots = { ...(prev ?? {}), [sessionId]: { createdBy } }
+      try {
+        await this.flush()
+      } catch (error) {
+        this.meta.bots = prev
+        throw error
+      }
+    })
+  }
 }

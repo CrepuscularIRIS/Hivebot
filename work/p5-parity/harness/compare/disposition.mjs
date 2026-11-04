@@ -12,8 +12,8 @@ export const WAIVERS = [
     match: (r) => r.part === 'transcript.thinking-row' || r.part === 'transcript.tool-row',
   },
   {
-    tag: 'waived:arch',
-    reason: '审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）',
+    tag: 'signoff:arch',
+    reason: '审批卡（P5-41.f1）：分段结构已落（标题条 Computer+关闭钮 / 标题+说明+填充代码块+Copy / 按钮段，内边距在子段上，与 0.78.1 同口径）；剩余差异 = 位置（0.18 dock 在 composer 上方 vs 0.78.1 transcript 内）与高度（文案与按钮数随 L-AP A9④），交用户签收：evidence/P5-41f1/ACCEPTED-DEVIATIONS.md §2',
     match: (r) => r.part === 'permission.card' && ['height', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'gap', 'margin-top'].includes(r.prop),
   },
   {
@@ -27,13 +27,13 @@ export const WAIVERS = [
     match: (r) => r.view.startsWith('sidebar-collapsed') && (r.part === 'sidebar.header-first-btn' || r.part === 'sidebar.footer-pill'),
   },
   {
-    tag: 'waived:fixture',
-    reason: '对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话',
+    tag: 'unverified:fixture',
+    reason: '未验证（GU-P5-41 M3，不计入 open=0 覆盖面）：对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话',
     match: (r) => r.view.startsWith('sidebar-collapsed') && (r.part.startsWith('chat.') || r.part.startsWith('transcript.') || r.part.startsWith('permission.')),
   },
   {
-    tag: 'waived:data',
-    reason: 'app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席',
+    tag: 'unverified:data',
+    reason: '未验证（GU-P5-41 M3，不计入 open=0 覆盖面；运行中观感由 P5-56 e2e 支撑）：app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席',
     match: (r) => r.view.startsWith('conv-running') && isElem(r) && (r.part.startsWith('transcript.') || r.part.startsWith('permission.')),
   },
   {

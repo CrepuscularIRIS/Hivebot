@@ -21,11 +21,26 @@ dialog.pb-dialog::backdrop { background: var(--cursor-bg-scrim, rgba(0, 0, 0, .3
 .pb-error { color: var(--sand-text-danger-primary); font-size: 13px; margin: 0; }
 .pb-link { padding: 0; border: 0; background: none; color: var(--sand-text-accent-primary); font: inherit; cursor: pointer; }
 .pb-link:hover { text-decoration: underline; }
-.pb-select {
-  min-height: 32px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--sand-border-tertiary-translucent);
-  background: var(--sand-bg-secondary); color: var(--sand-text-primary); font: inherit; font-size: 13px;
+/* P5-41.f1 ④ 原生表单最小对齐：与市场搜索框 / composer 同族——secondary 填充、无硬边框、半像素描边、r12；
+ * select 去原生外观换 chevron（currentColor 遮罩，亮暗同源）。原生控件本身（下拉弹层、radio/checkbox 字形）仍是平台的，进签收单。 */
+.pb-select,
+.sand-agent-settings :is(input[type="text"], textarea) {
+  box-sizing: border-box; min-height: 36px; padding: 8px 12px; border: 0; border-radius: 12px; outline: 0;
+  background: var(--sand-bg-secondary); color: var(--sand-text-primary); font: inherit; font-size: 14px; line-height: 20px;
+  box-shadow: inset 0 0 0 .5px var(--sand-border-tertiary-translucent);
+  transition: box-shadow .12s ease-out;
 }
-.pb-select:disabled { opacity: .6; }
+.pb-select {
+  appearance: none; padding-right: 32px; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--sand-text-tertiary) 50%), linear-gradient(135deg, var(--sand-text-tertiary) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%; background-size: 5px 5px; background-repeat: no-repeat;
+}
+.pb-select option { background: var(--sand-bg-elevated); color: var(--sand-text-primary); }
+.sand-agent-settings :is(input[type="text"], textarea) { width: 100%; margin: 4px 0 8px; }
+.sand-agent-settings textarea { min-height: 72px; resize: none; }
+:is(.pb-select, .sand-agent-settings input[type="text"], .sand-agent-settings textarea)::placeholder { color: var(--sand-text-tertiary); }
+:is(.pb-select, .sand-agent-settings input[type="text"], .sand-agent-settings textarea):focus-visible { outline: 0 !important; box-shadow: 0 0 0 2px var(--cursor-stroke-focused, var(--sand-border-focus-primary)); }
+.pb-select:disabled { opacity: .6; cursor: default; }
 
 /* ======== ① 市场（D1 容器 900×700 / D2 头部 48 / D3 tablist）======== */
 .sand-plugins-dialog.pb-market {
@@ -67,7 +82,7 @@ div:has(> .pb-market) { background: rgba(0, 0, 0, .5) !important; }
 }
 /* ✓Connected 徽标（HAt：check 12 + Connected）；Not available / Not supported 状态徽标（role=status） */
 .pb-added { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; color: var(--sand-text-secondary); font-size: 13px; font-weight: 500; }
-.pb-status { flex-shrink: 0; color: var(--sand-text-tertiary); font-size: 13px; }
+.pb-status { flex-shrink: 0; color: var(--sand-text-secondary); font-size: 13px; } /* P5-41.f1：tertiary 亮色 3.96 <4.5；R-04 无该文字色值（VAt 未取到），改 secondary */
 .pb-status--danger { color: var(--sand-text-danger-primary); }
 .pb-fail { flex-shrink: 1; min-width: 0; color: var(--sand-text-danger-primary); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
 /* 已装预览条（R-04 §1.2 sand-plugins__installed-preview：≤4 图标堆叠 18px + 计数 + chevron-right 12） */
@@ -148,3 +163,4 @@ dialog.pb-dialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh
 /* ======== ③ 停止钮（会话头 trailing）======== */
 .pb-stop { display: inline-flex; align-items: center; gap: 8px; -webkit-app-region: no-drag; app-region: no-drag; }
 .pb-stop__error { color: var(--sand-text-danger-primary); font-size: 12px; }
+.pb-market__hint { padding: 10px 8px 0; }

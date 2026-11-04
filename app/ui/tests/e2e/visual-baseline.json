@@ -60,7 +60,7 @@
   "E4 正文字体|font-family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
   "E4 正文字体|font-size": "14px",
   "E4 正文字体|line-height": "20px",
-  "规则 5/9 链接色|color": "rgb(11, 109, 211)",
+  "规则 5/9 链接色|color": "rgb(28, 28, 28)",
   "规则 15 次要文字|color": "rgb(28, 28, 28)",
   "规则 15 次要文字|font-size": "14px"
  },
@@ -125,7 +125,7 @@
   "E4 正文字体|font-family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
   "E4 正文字体|font-size": "14px",
   "E4 正文字体|line-height": "20px",
-  "规则 5/9 链接色|color": "rgb(77, 155, 255)",
+  "规则 5/9 链接色|color": "rgb(245, 245, 245)",
   "规则 15 次要文字|color": "rgb(245, 245, 245)",
   "规则 15 次要文字|font-size": "14px"
  }

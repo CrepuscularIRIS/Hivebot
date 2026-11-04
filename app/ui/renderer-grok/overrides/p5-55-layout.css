@@ -185,6 +185,8 @@ div:has(> div > .sand-agents-sidebar[data-sidebar-collapsed="true"]) > .sand-age
 }
 .sand-message-prose { font-size: 14px !important; line-height: 20px !important; color: inherit !important; }
 .sand-message-prose p { line-height: 22px !important; }
+/* P5-41.f1 ①：0.78.1 气泡内链接 = text-primary（ref 实测 rgb(28,28,28) / rgb(245,245,245)，靠下划线区分），不是 accent 蓝（亮色气泡上 4.39） */
+.sand-message-prose a { color: var(--sand-text-primary) !important; }
 /* markdown 正文按 0.78.1：p 22 行高、普通空白（0.18 pre-wrap 把 markdown 渲染留下的前导换行显示成空行）；
  * 列表 margin-top 10、li 行高 22、相邻 li 间距 4；代码块上下 10 */
 .sand-message[data-role="assistant"] .sand-message-prose p { white-space: normal !important; }
@@ -232,15 +234,34 @@ div:has(> div > .sand-agents-sidebar[data-sidebar-collapsed="true"]) > .sand-age
 .sand-local-tool-permission-dock > [aria-label="Local tool permission"] {
   display: flex !important; flex-direction: column !important; align-items: stretch !important;
   width: min(88%, 520px, 100% - 82px) !important; max-width: min(88%, 520px, 100% - 82px) !important;
-  padding: 16px !important; gap: 8px !important;
+  padding: 0 !important; gap: 10px !important; overflow: hidden !important;
   font: 16px/normal var(--cursor-font-family-sans) !important;
   color: var(--sand-text-primary) !important; background: var(--sand-bg-elevated) !important;
   border: 0 !important; border-radius: 24px !important;
   box-shadow: 0 0 0 .5px var(--sand-border-secondary-translucent), 0 2px 8px var(--sand-shadow-card) !important;
 }
-.sand-local-tool-permission-dock > [aria-label="Local tool permission"] > strong { font-size: 15px !important; font-weight: 600 !important; line-height: 22px !important; }
-.sand-local-tool-permission-dock > [aria-label="Local tool permission"] > span { color: var(--sand-text-secondary) !important; font-size: 14px !important; line-height: 20px !important; }
-.sand-local-tool-permission-dock [role="group"] { justify-content: flex-end !important; gap: 6px !important; margin-top: 16px !important; }
+/* P5-41.f1 分段（B9）：section padding-inline 16；标题条 14px 16px；末段 padding-bottom 16；段间 gap 10 */
+.sand-local-tool-permission-dock > [aria-label="Local tool permission"] > section { padding: 0 16px !important; }
+.sand-local-tool-permission-dock > [aria-label="Local tool permission"] > section:last-child { padding-bottom: 16px !important; }
+.sand-local-tool-permission-dock > [aria-label="Local tool permission"] > section.pb-ask__titlebar { display: flex; align-items: center; gap: 10px; padding: 14px 16px 0 !important; }
+.sand-local-tool-permission-dock .pb-ask__badge {
+  display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px;
+  color: var(--sand-text-secondary); box-shadow: inset 0 0 0 .5px var(--sand-border-secondary-translucent);
+}
+.sand-local-tool-permission-dock .pb-ask__label { flex: 1; min-width: 0; font-size: 15px; font-weight: 500; line-height: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sand-local-tool-permission-dock .pb-ask__close { flex-shrink: 0; margin-right: -6px; color: var(--sand-text-secondary) !important; }
+.sand-local-tool-permission-dock > [aria-label="Local tool permission"] > section.pb-ask__body { display: flex; flex-direction: column; gap: 2px; padding-top: 4px !important; }
+.sand-local-tool-permission-dock .pb-ask__body > strong { font-size: 16px !important; font-weight: 600 !important; line-height: 22px !important; }
+.sand-local-tool-permission-dock .pb-ask__body > span { color: var(--sand-text-secondary) !important; font-size: 14px !important; line-height: 20px !important; }
+/* target 代码块：0.78.1 = 填充式（ref 实测 bg rgba(28,28,28,.04) = bg-quaternary、绿字 text-green-primary、mono），不是深色 1px 硬边框；右上 Copy code */
+.sand-local-tool-permission-dock .pb-ask__code { position: relative; margin-top: 14px; }
+.sand-local-tool-permission-dock .pb-ask__copy { position: absolute !important; top: 4px; right: 4px; color: var(--sand-text-tertiary) !important; }
+.sand-local-tool-permission-dock pre[data-pbots="ask-command"] {
+  margin: 0 !important; padding: 10px 44px 10px 16px !important; border: 0 !important; border-radius: 12px !important;
+  background: var(--sand-bg-quaternary) !important; box-shadow: inset 0 0 0 .5px var(--sand-border-tertiary-translucent) !important;
+  color: var(--sand-text-green-primary) !important; font: 13px/20px var(--cursor-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace) !important;
+}
+.sand-local-tool-permission-dock [role="group"] { justify-content: flex-end !important; gap: 6px !important; margin-top: 14px !important; }
 .sand-local-tool-permission-dock [role="group"] > button {
   height: 32px !important; padding: 6px 14px !important; gap: 4px !important;
   border: 0 !important; border-radius: 9999px !important;
@@ -270,6 +291,8 @@ div:has(> div > .sand-agents-sidebar[data-sidebar-collapsed="true"]) > .sand-age
 }
 .sand-prompt-shell > div:first-child { flex: 1 1 auto !important; min-width: 0 !important; padding: 0 16px !important; }
 .sand-prompt-field { min-height: 20px !important; padding: 11px 0 !important; font-size: 14px !important; line-height: 20px !important; }
+/* P5-41.f1 ①：搜索面板占位 = 0.78.1 text-tertiary（ref 实测 .56 / .54）；未设时是 Chromium 默认 #757575，暗色 3.58 */
+.sand-command-palette input::placeholder { color: var(--sand-text-tertiary) !important; }
 .sand-prompt-field p.is-editor-empty:first-child::before {
   content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: var(--sand-text-tertiary);
 }

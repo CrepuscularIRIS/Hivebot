@@ -12,6 +12,7 @@
 import { expect, test, type Page } from 'playwright/test'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { AUDIT, type Target } from '../support/contrast.ts'
 import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell, type ShellLaunch } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
@@ -61,6 +62,11 @@ async function launchMarket(): Promise<Env> {
   return { server, rt, shell, page: shell.page, async stop() { await shell.stop(); await rt.stop(); await server.close() } }
 }
 
+const MARKET_TARGETS: Target[] = [
+  { id: '市场 Not available', sel: '[data-market-list] [data-kind="browse"] .pb-status' },
+  { id: '市场条目副题', sel: '[data-market-list] .pb-row__desc' },
+  { id: '市场计数', sel: '[data-market-count]' },
+]
 const market = (page: Page) => page.locator('[data-market]')
 const pill = (page: Page) => page.locator('.sand-agents-sidebar__plugins')
 const dlg = (page: Page) => page.locator('dialog[data-dialog="new-bot"]')
@@ -91,10 +97,20 @@ test('P-C ①：入口 Connect apps → 浏览 / 搜索 / 分页 / 切源重置 
     await expect(page.locator('[data-market-source] option')).toHaveCount(2) // 两个源 → select（P11）
     await expect.poll(() => count(page), { timeout: 20_000 }).toBe('Showing 50 of 111')
     await page.screenshot({ path: join(EVIDENCE, 'market-list-light.png') })
+    // P5-41.f1 ④：可连接条目排在首屏（不被 109 条 Not available 埋掉）
+    await expect(page.locator('[data-market-list] [data-kind]').first()).not.toHaveAttribute('data-kind', 'browse')
+    const light = await AUDIT(page, MARKET_TARGETS)
     await page.emulateMedia({ colorScheme: 'dark' })
     await page.waitForTimeout(600) // 主题过渡（对照台同口径）
     await page.screenshot({ path: join(EVIDENCE, 'market-list-dark.png') })
+    const dark = await AUDIT(page, MARKET_TARGETS)
     await page.emulateMedia({ colorScheme: 'light' })
+    // P5-41.f1 ①：市场次级文字对比度（theme-dual 默认 profile 无目录源，列表态在这里审）
+    for (const [mode, rows] of [['light', light], ['dark', dark]] as const) {
+      expect.soft(rows.map((r) => r.id), `${mode} 市场审计目标齐`).toEqual(MARKET_TARGETS.map((t) => t.id))
+      for (const r of rows) expect.soft(r.ratio, `${mode} ${r.id} 对比度 ${r.fg} on ${r.bg}`).toBeGreaterThanOrEqual(4.5)
+    }
+    writeFileSync(join(EVIDENCE, 'contrast-market.tsv'), [...light.map((r) => ['light', r.id, r.ratio, r.fg, r.bg].join('\t')), ...dark.map((r) => ['dark', r.id, r.ratio, r.fg, r.bg].join('\t'))].join('\n') + '\n')
 
     // 分页：Load more ×2 → 111 / 111，按钮消失
     await page.click('[data-action="load-more"]')

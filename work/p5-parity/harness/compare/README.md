@@ -77,4 +77,5 @@ app 与 ours 的差异只可能来自 shim 或真实数据：差异表里记为 
 
 `run.mjs` 在有 `styles/app.json` 时额外写 `u1-appref.tsv`：app 列（真实 Electron + 覆盖文件）对 ref 列（0.78.1）逐部位逐属性的差异，
 每行按 `disposition.mjs` 的规则判 `waived:<理由>` 或 `open`；**open = 可行动差异，验收要求 0**（run-summary 的 issues 会列出 open 数）。
+P5-41.f1 起另有两类非 open 标签：`signoff:<理由>` = 已知形态偏差、交用户逐条签收（`evidence/P5-41f1/ACCEPTED-DEVIATIONS.md`）；`unverified:<理由>` = 两侧非同场景、无可比画面——**不计入 open=0 的覆盖面**，报告里如实写「未验证」。
 单独重算：`node appref.mjs <EVID_DIR>`。采集口径：不渲染（无 client rect）与不存在同记缺失。

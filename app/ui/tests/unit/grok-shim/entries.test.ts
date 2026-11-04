@@ -111,3 +111,20 @@ describe('askText · 审批卡显示的完整动作（P5-31 ③）', () => {
     expect(askText({ toolName: 'mcp__x__write', reason: null }, '{"body":"b"}')).toBe('mcp__x__write')
   })
 })
+
+// P6-03：流式落点接 foldTurns.streamingAs——首工具前流式正文 = message（ack 候选）；首工具后 = thinking 行
+// （回合进行中气泡 ≤1，BRIEF D1；原实现无视 streamingAs、恒推 live-stream message → 进行中 2 气泡）。
+describe('toRawEntries · 流式落点（streamingAs）', () => {
+  it('首工具前：live-stream message', () => {
+    const out = foldTurns([u('u1')], { hasMore: false, running: true })
+    const raw = toRawEntries(out, 'Bot', { text: '收到，' })
+    expect(raw.at(-1)).toMatchObject({ id: 'live-stream', kind: 'message', role: 'assistant', content: '收到，' })
+  })
+
+  it('首工具后：live-stream 落 thinking 行，气泡仍 ≤1', () => {
+    const out = foldTurns([u('u1'), a(1, 0, 'A'), tRun('c1')], { hasMore: false, running: true })
+    const raw = toRawEntries(out, 'Bot', { text: '中间 B' })
+    expect(raw.at(-1)).toMatchObject({ id: 'live-stream', kind: 'thinking', text: '中间 B' })
+    expect(raw.filter((e) => e.kind === 'message' && e.role === 'assistant')).toHaveLength(1)
+  })
+})

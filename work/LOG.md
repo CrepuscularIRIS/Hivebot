@@ -901,3 +901,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 21:10 用户指令：RE 覆盖不足需全量盘点 → director 派出（RE-COVERAGE.md 矩阵+波次清单）；P6-03（DOM 折叠接线，依赖已解）派出 | 在途 3：P5-57、RE 审计、P6-03
 21:15 用户答复 Q-018/019/020：R2+superagent 架构思路=多 bot 路由；worker 默认隐藏+coworker 式可展示；第一批=主 bot 编排+跨 session | 新指令：scout 查 Claude Coworker；设计交 Opus5.5+K3.1Pro → 三路派出
 21:16 三路派发：S-5 Coworker 调研 + 设计双席（Opus 5.5 + K3.1 Pro，用户点名的两模型独立出设计）→ 回来后 director 整合成 1b PLAN v3 | 在途 6：P5-57、RE 审计、P6-03、S-5、设计×2
+21:27 设计席 Opus 5.5 完成（design/main-orchestration-opus.md：五去向路由/busy 拒绝/hidden-chats 复用/回报合并防自激；风险=回报链需先 spike、Q-021 签字待用户）
+21:34 RE 第一波全派（R-10 跨session/R-05 outline 任务线程/R-01 提问卡/R-02 connector 授权/R-04 市场详情 + R-06 host 源码 scout）——41 条清单按下游价值排序，第二波 R-14/33/03/11/13 待第一波回 | 在途 10：P5-57、P6-03、S-5、K3 设计、RE×5、R-06

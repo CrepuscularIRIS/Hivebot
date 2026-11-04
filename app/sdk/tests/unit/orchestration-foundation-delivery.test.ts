@@ -128,3 +128,29 @@ it('delivers each stable id exactly once; user-authored messages never count as 
   expect(await landed()).toBe(1)
   expect((await control({ op: 'holds', sessionId: W, id: 'pbots-assign:p621-1' })) as { holds: boolean }).toEqual({ holds: true })
 })
+
+// P6-21.f1 (L-9): two concurrent sends of the same id must deliver exactly
+// once — the idle-target double insert and the busy-target 'already pending'
+// throw both stem from holds()→followup not being single-flighted.
+it('two concurrent same-id sends deliver exactly once (L-9 f1)', { timeout: 120_000 }, async () => {
+  const { sessionId: C } = (await rt.client.call('session/create', { request: { agentPreset: 'standard' } })) as { sessionId: string }
+  writeScript(C, ['ok']) // the woken assignment turn, if any, needs one reply
+  const message = {
+    id: 'pbots-assign:p621f1-1',
+    role: 'user',
+    content: [{ type: 'text', text: '并发投递' }],
+    source: { kind: 'pbots-main', form: 'relay', assignmentId: 'p621f1-1', mainBotId: 'p621-main' },
+  }
+  const settled = await Promise.allSettled([
+    control({ op: 'deliver', sessionId: C, message }),
+    control({ op: 'deliver', sessionId: C, message }),
+  ])
+  expect(settled.map((s) => s.status)).toEqual(['fulfilled', 'fulfilled']) // no 'already pending' rejection
+  const skipped = settled.map((s) => (s.status === 'fulfilled' ? (s.value as { skipped: boolean }).skipped : 'rejected')).sort().map(String)
+  expect(skipped).toEqual(['false', 'true'])
+  const events = await read(C)
+  expect(
+    events.filter((e) => e.type === 'agent/inbox/spliced' && (e.inserted ?? []).some((m) => m.id === message.id)).length,
+    'exactly one insert splice for the stable id (修复前空闲目标可落两条)',
+  ).toBe(1)
+})

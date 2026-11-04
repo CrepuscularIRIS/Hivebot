@@ -110,8 +110,12 @@ export function computeDue({ mainId, mainEvents, workers }) {
         maybeDue({ key: `${assignmentId}:end`, kind: 'end', ...base, ...endOutcomeFor(a.ended) })
       } else if (w.idle !== false) {
         // no turn/end and the agent is idle → stopped (决策 28; the resume
-        // closer would log `interrupted`, same mapping)
+        // closer would log `interrupted`, same mapping). P6-21.f1 (L-9): the
+        // ask died with the crashed process — nobody can ever answer a
+        // synthesized-stopped turn's approval/asked, so its asks are skipped.
+        // (Ended turns carry no asks anyway: the fold voids them at turn/end.)
         maybeDue({ key: `${assignmentId}:end`, kind: 'end', ...base, ...endOutcomeFor('interrupted') })
+        continue
       }
       for (const ask of a.asks) {
         maybeDue({ key: `${assignmentId}:ask:${ask.eventId}`, kind: 'ask', ...base, awaiting: ask.awaiting, eventId: ask.eventId })

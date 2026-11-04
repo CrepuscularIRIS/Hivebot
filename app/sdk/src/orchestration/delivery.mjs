@@ -88,6 +88,12 @@ export class Delivery {
    */
   constructor(ctx) {
     this.ctx = ctx
+    // P6-21.f1 (L-9): in-flight reservation per `${agent.id}:${messageId}`.
+    // holds() 与 followup 之间隔着 await（flush + 全量读日志），两个并发 send
+    // 同 (agent,id) 都会读到「未投过」→ 空闲目标 followup 两次、忙碌目标第二
+    // 次撞宿主 already pending。预留保证恰一次投递：在途调用成功后来者得
+    // skipped，失败后来者重试（不谎报已投）。
+    this.inflight = new Map()
   }
 
   /**
@@ -133,6 +139,9 @@ export class Delivery {
 
   /**
    * Deliver one pbots-owned message at most once per its stable id, then flush.
+   * Single-flighted per (agent.id, message id): concurrent sends of the same
+   * id yield exactly one followup — the rest return `{skipped:true}` once the
+   * in-flight one lands, or retry it if it failed (P6-21.f1, L-9).
    * @param {object} agent target agent (live or resumed).
    * @param {{ id: string, source: { kind: string } }} message
    * @returns {Promise<{ skipped: boolean }>} skipped = already held.
@@ -140,11 +149,29 @@ export class Delivery {
   async send(agent, message) {
     const id = deliveryIdOf(message)
     if (!id) throw new Error('delivery.send requires a pbots-owned message source')
-    if (await this.holds(agent, id)) return { skipped: true }
-    if (this.ctx.agents.get(agent.id) !== agent) throw new Error('Delivery target was disposed')
-    agent.followup(message)
-    await this.ctx.sessionPersistence.flush()
-    return { skipped: false }
+    const key = `${agent.id}:${id}`
+    const running = this.inflight.get(key)
+    if (running !== undefined) {
+      try {
+        await running
+        return { skipped: true } // the concurrent call delivered (or held) it
+      } catch {
+        return this.send(agent, message) // it failed undelivered — take over
+      }
+    }
+    const attempt = (async () => {
+      if (await this.holds(agent, id)) return { skipped: true }
+      if (this.ctx.agents.get(agent.id) !== agent) throw new Error('Delivery target was disposed')
+      agent.followup(message)
+      await this.ctx.sessionPersistence.flush()
+      return { skipped: false }
+    })()
+    this.inflight.set(key, attempt)
+    try {
+      return await attempt
+    } finally {
+      if (this.inflight.get(key) === attempt) this.inflight.delete(key)
+    }
   }
 
   /**

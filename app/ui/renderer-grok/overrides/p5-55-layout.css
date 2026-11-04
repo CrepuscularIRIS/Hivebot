@@ -253,6 +253,9 @@ div:has(> div > .sand-agents-sidebar[data-sidebar-collapsed="true"]) > .sand-age
 .sand-local-tool-permission-dock [role="group"] > button:nth-child(2) { order: 3 !important; color: var(--sand-text-inverted) !important; background: var(--sand-text-primary) !important; }
 .sand-local-tool-permission-dock [role="group"] > button:nth-child(1) { order: 2 !important; }
 .sand-local-tool-permission-dock [role="group"] > button:nth-child(n+3) { order: 1 !important; color: var(--sand-text-secondary) !important; background: transparent !important; font-weight: 400 !important; }
+/* P5-31 两钮组 Allow once · Deny once（Always/Never 隐藏）：首钮为主钮居右、Deny once tertiary 居左。须排在上面 nth-child(2) 之后 */
+.sand-local-tool-permission-dock [role="group"] > button:first-child:nth-last-child(2) { order: 3 !important; color: var(--sand-text-inverted) !important; background: var(--sand-text-primary) !important; }
+.sand-local-tool-permission-dock [role="group"] > button:nth-child(2):last-child { order: 1 !important; color: var(--sand-text-secondary) !important; background: transparent !important; font-weight: 400 !important; }
 
 /* ======== composer：0.78.1 = 药丸 h44 r22、1px border-primary-translucent、elevated 底、三层阴影 ======== */
 .sand-prompt-shell {

@@ -96,6 +96,7 @@ button.pb-task__from:hover { text-decoration: underline; }
 .pb-task__text { margin: 4px 0 0; color: var(--sand-text-primary); font-size: 14px; line-height: 22px; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pb-assign[data-status="pending"] .pb-assign__icon { animation-duration: 2.4s; }
+  /* GU-P6-15-r1 ④：不放慢、直接停——pending 行改静态图标（p5-57.css 同款 animation: none） */
+  .pb-assign[data-status="pending"] .pb-assign__icon { animation: none; }
   .pb-report__open, button.pb-report__row { transition: none; }
 }

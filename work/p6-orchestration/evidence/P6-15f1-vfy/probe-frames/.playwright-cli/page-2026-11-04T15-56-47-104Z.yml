@@ -1,0 +1,77 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - complementary "Agents" [ref=e7]:
+      - button "New" [ref=e10] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e11]: 
+      - button "Search" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]:
+          - generic [aria-hidden] [ref=e14]: 
+          - text: Search
+      - region "Agent list" [ref=e15]:
+        - generic "Main Bot chat preview" [ref=e20]:
+          - button "Main Bot" [ref=e21] [cursor=pointer]:
+            - generic [ref=e31]:
+              - strong [ref=e32]: Main Bot
+              - generic [ref=e33]: "Waiting for you: Doc writer: git push origin docs"
+            - status "Needs attention" [ref=e35]
+        - generic [ref=e36]:
+          - button "Workers" [expanded] [ref=e37] [cursor=pointer]
+          - generic [ref=e39]:
+            - generic "Doc writer chat preview" [ref=e42]:
+              - button "Doc writer" [ref=e43] [cursor=pointer]:
+                - generic [ref=e53]:
+                  - strong [ref=e54]: Doc writer
+                  - generic [ref=e55]: "Waiting for you: git push origin docs"
+                - status "Needs attention" [ref=e57]
+            - generic "Test fixer chat preview" [ref=e60]:
+              - button "Test fixer" [ref=e61] [cursor=pointer]:
+                - generic [ref=e71]:
+                  - strong [ref=e72]: Test fixer
+                  - generic [ref=e73]: On it, running tests first.
+                - status "Unread activity" [ref=e75]
+      - separator "Resize sidebar" [ref=e76]
+    - button "Connect apps" [ref=e78] [cursor=pointer]
+    - button "Account" [ref=e81] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e82]: P
+  - generic [ref=e83]:
+    - main [ref=e84]:
+      - group "Doc writer" [ref=e85]:
+        - button "View agent settings" [ref=e86] [cursor=pointer]:
+          - generic [ref=e95]: Doc writer
+        - button "Stop" [ref=e98] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e99]: 
+      - log "Conversation transcript" [ref=e101]:
+        - separator [ref=e102]:
+          - generic [ref=e103]: 1 new message
+        - separator [ref=e104]: Today 10:56 AM
+        - article "Task from Main Bot" [ref=e106]:
+          - generic [ref=e107]:
+            - button "From Main Bot" [ref=e116] [cursor=pointer]
+            - generic [ref=e117]: · Task
+            - time [ref=e118]: 10:56 AM
+          - paragraph [ref=e119]: Publish the docs.
+        - listitem [ref=e120]:
+          - button "Bash git push origin docs" [ref=e121] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e122]: 
+            - generic [ref=e123]: Bash
+            - generic [ref=e124]: git push origin docs
+    - generic [ref=e130]:
+      - region "Local tool permissions" [active] [ref=e131]:
+        - generic "Local tool permission" [ref=e132]:
+          - generic [ref=e133]:
+            - generic [aria-hidden] [ref=e135]: 
+            - generic [ref=e136]: Computer
+            - button "Deny once" [ref=e137] [cursor=pointer]:
+              - generic [aria-hidden] [ref=e138]: 
+          - generic [ref=e139]:
+            - strong [ref=e140]: Allow Grok Bot to run this on your computer?
+            - generic [ref=e141]: Only this time. Grok Bot will ask again next time.
+            - generic [ref=e142]:
+              - generic [ref=e143]: git push origin docs
+              - button "Copy code" [ref=e144] [cursor=pointer]:
+                - generic [aria-hidden] [ref=e145]: 
+          - group [ref=e146]:
+            - button "Allow once" [ref=e147] [cursor=pointer]
+            - button "Deny once (Esc)" [ref=e148] [cursor=pointer]: Deny once
+      - textbox "Prompt" [ref=e152]:
+        - paragraph [ref=e153]: Message Doc writer

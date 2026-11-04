@@ -5,7 +5,7 @@ import {
   aggregateOf, assignError, assignPeer, endKind, firstLine, orderWorkers, peerFallback, previewOf, rankOf, sectionsOf, viewFacts,
   type WorkerFacts,
 } from '../../../renderer-grok/shim/src/workers'
-import { createdByOf } from '../../../renderer-grok/shim/src/data'
+import { askPendingOf, createdByOf } from '../../../renderer-grok/shim/src/data'
 import { initView, reduceFollow } from '../../../renderer/session/reduce'
 
 const w = (id: string, over: Partial<WorkerFacts> = {}): WorkerFacts => ({
@@ -147,5 +147,34 @@ describe('P6-16 回报 / 任务回落文本（E19：覆盖层失效仍可读）'
     expect(peerFallback({ kind: 'report', items })).toBe('Test fixer · Done; Worker · Needs you')
     expect(peerFallback({ kind: 'report', items: [] })).toBe('Worker update')
     expect(peerFallback({ kind: 'task', fromId: 'm', text: '\nRun the suite\nmore' })).toBe('From main bot: Run the suite')
+  })
+})
+
+describe('GU-P6-15-r1 ②：ask 身份两路都对不上 → 中性，不借用该 worker 当前未决', () => {
+  const ev = (type: string, data: object) => ({ type: 'event', event: { type, data } })
+  /** w 的视图：ev-1 已答（rejected），ev-2 待答（第二个 ask）。 */
+  const answeredThenPending = () => {
+    let v = reduceFollow(initView('w'), { type: 'snapshot', header: {}, records: [] })
+    v = reduceFollow(v, ev('tool/call', { callId: 'c1', name: 'bash', arguments: '{}' }))
+    v = reduceFollow(v, ev('approval/asked', { id: 'ev-1', callId: 'c1' }))
+    v = reduceFollow(v, ev('approval/decided', { id: 'ev-1', outcome: 'rejected' }))
+    v = reduceFollow(v, ev('tool/call', { callId: 'c2', name: 'bash', arguments: '{}' }))
+    return reduceFollow(v, ev('approval/asked', { id: 'ev-2', callId: 'c2' }))
+  }
+  it('旧 ask 已答、第二个 ask 待答：旧 eventId → false（Answered），新 eventId → true（Needs you）', () => {
+    const v = answeredThenPending()
+    expect(askPendingOf('w', 'ev-1', new Map(), v)).toBe(false)
+    expect(askPendingOf('w', 'ev-2', new Map(), v)).toBe(true)
+  })
+  it('eventId 两路都对不上 → false（中性），即使该 worker 名下另有未决 ask', () => {
+    const asks = new Map([['ev-9', { agentId: 'w' }]]) // 如重启后 $events 丢了旧 id，worker 已有新 ask
+    expect(askPendingOf('w', 'ev-gone', asks, answeredThenPending())).toBe(false)
+    expect(askPendingOf('w', 'ev-gone', new Map(), undefined)).toBe(false)
+  })
+  it('$events 一路按 agentId 归属；eventId=null 仍看该 worker 是否有未决', () => {
+    expect(askPendingOf('w', 'ev-1', new Map([['ev-1', { agentId: 'w' }]]), undefined)).toBe(true)
+    expect(askPendingOf('w', 'ev-1', new Map([['ev-1', { agentId: 'other' }]]), undefined)).toBe(false)
+    expect(askPendingOf('w', null, new Map([['ev-9', { agentId: 'w' }]]), undefined)).toBe(true)
+    expect(askPendingOf('w', null, new Map([['ev-9', { agentId: 'other' }]]), undefined)).toBe(false)
   })
 })

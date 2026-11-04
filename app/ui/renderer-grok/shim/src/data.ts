@@ -29,6 +29,27 @@ export const createdByOf = (meta: unknown): Record<string, string> =>
   }))
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
+/** GU-P6-15-r1 ②：ask 是否仍算该 worker 待决。eventId 优先两路对身份（$events 一路按 asks 键、
+ * approval/asked 一路按 view.asked → 工具行 awaiting）；两路都对不上 → 中性 false（Answered），
+ * 不回落「该 worker 当前是否有别的未决」——旧 ask 不借新 ask 重新亮 Needs you。eventId=null 才是「有无未决」语义。 */
+export function askPendingOf(
+  workerId: string,
+  eventId: string | null,
+  asks: ReadonlyMap<string, { agentId: string }>,
+  view?: SessionView,
+): boolean {
+  if (eventId !== null) {
+    const byEvent = asks.get(eventId)
+    if (byEvent !== undefined) return byEvent.agentId === workerId
+    const callId = view?.asked[eventId]
+    if (callId !== undefined) return view!.items.some((i) => i.kind === 'tool' && i.callId === callId && i.awaiting && i.decision === null)
+    return false
+  }
+  let mine = false
+  for (const a of asks.values()) if (a.agentId === workerId) mine = true
+  return mine
+}
+
 interface ApiResult { ok: boolean; value?: unknown; error?: { code: string; message: string } }
 interface Summary { sessionId: string; title: string | null; preset: string | null; running: boolean; updatedAt: number }
 interface Ask { agentId: string; callId: string | null; toolName: string; reason: string | null; at: number }
@@ -553,21 +574,18 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     peer: (id) => peers.get(id) ?? null,
     agentName: (id) => (summaries[id] === undefined ? null : agentName(id)),
     askPending(workerId, eventId) {
-      const mine = [...asks.entries()].filter(([, a]) => a.agentId === workerId)
-      if (eventId !== null) {
-        // FINAL §2-5：$events eventId（gateway 生成）与 approval/asked.id（user-approval 生成）不同源，两种都认
-        if (asks.has(eventId)) return asks.get(eventId)!.agentId === workerId
-        const view = views.get(workerId)
-        const callId = view?.asked[eventId]
-        if (callId !== undefined) return view!.items.some((i) => i.kind === 'tool' && i.callId === callId && i.awaiting && i.decision === null)
-      }
-      return mine.length > 0
+      // FINAL §2-5：$events eventId（gateway 生成）与 approval/asked.id（user-approval 生成）不同源，两种都认
+      return askPendingOf(workerId, eventId, asks, views.get(workerId))
     },
     setActive(id) {
       const left = active
       active = id
-      // 打开 worker = 已读；离开一个已读 worker → 它此刻才归档进 Done（sections 签名变化即推 host-settings）
-      if ((isWorker(id) && unread.delete(id)) || (left !== null && left !== id && isWorker(left))) push.agents()
+      // 打开 worker = 已读；离开一个已读 worker → 它此刻才归档进 Done；
+      // 打开已读 worker（如回报卡 Open）→ 回 Workers 尾——sections 随 active 变就必须重推（GU-P6-15-r1 f1：
+      // 原来只在「打开未读」时推，打开已读 worker 不推，行留在折叠的 Done 里永远点不亮）。
+      // sig 未变时 wire 的 sectionsSig 守卫去重，多推无副作用。
+      if (isWorker(id)) unread.delete(id)
+      if (isWorker(id) || (left !== null && left !== id && isWorker(left))) push.agents()
     },
   }
 

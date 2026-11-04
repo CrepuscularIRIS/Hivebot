@@ -8,6 +8,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { AUDIT } from '../support/contrast.ts'
 import { tmkdir } from '../support/tmp-sweep.ts'
 import { launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
@@ -93,6 +94,7 @@ async function bothThemes(page: Page, name: string, check?: (mode: 'light' | 'da
   for (const mode of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme: mode })
     await expect(page.locator('html')).toHaveAttribute('data-theme', `cursor-${mode}`)
+    await page.waitForTimeout(600) // GU-P6-15-r1 ①：data-theme 到 ≠ 颜色过渡完（最长 .3s ease）；稳定态才截图（market.spec 同口径）
     await check?.(mode)
     await page.screenshot({ path: join(OUT, `${name}-${mode}.png`) })
   }
@@ -307,7 +309,15 @@ test('P6-16 两侧 transcript：Messaging 行、回报卡（纯文本 / 合批 /
       const a = document.activeElement
       return a !== null && a.closest('[aria-label="Local tool permissions"]') !== null && a.tagName !== 'BUTTON'
     }), { timeout: 5_000 }).toBe(true)
-    await bothThemes(page, 'worker-dock-focused')
+    // GU-P6-15-r1 ①：拒绝入口可读——Deny once 文字对有效背景的对比度（稳定态、亮暗各一次）
+    const denyRows: Array<[string, number, string, string]> = []
+    await bothThemes(page, 'worker-dock-focused', async (mode) => {
+      const rows = await AUDIT(page, [{ id: 'deny-once', sel: '[aria-label="Local tool permissions"] button[aria-label="Deny once (Esc)"]' }])
+      expect(rows, `${mode} Deny once 审计目标在`).toHaveLength(1)
+      denyRows.push([mode, rows[0]!.ratio, rows[0]!.fg, rows[0]!.bg])
+      expect(rows[0]!.ratio, `${mode} Deny once 对比度 ${rows[0]!.fg} on ${rows[0]!.bg}`).toBeGreaterThanOrEqual(4.5)
+    })
+    writeFileSync(join(OUT, 'contrast-deny.tsv'), denyRows.map((r) => r.join('\t')).join('\n') + '\n')
     await permissionDock(page).locator('button', { hasText: 'Allow once' }).click()
     await expect(permissionDock(page)).toHaveCount(0, { timeout: 20_000 })
     const answers = await page.evaluate(() => (window as unknown as { __pbotsShim: { answers: Array<{ eventId: string; value: string }> } }).__pbotsShim.answers)
@@ -366,6 +376,23 @@ test('P6-16 两侧 transcript：Messaging 行、回报卡（纯文本 / 合批 /
     await page.locator('.sand-agent-item[aria-label="Main Bot"]').click()
     await expect(peer('report')).toHaveCount(2, { timeout: 30_000 })
     await expect(peer('assign')).toHaveCount(2)
+
+    // GU-P6-15-r1 ④：reduced-motion 下 pending 旋转禁用（静态图标）——探针挂进真实 transcript，走同一张样式表
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    expect(await page.evaluate(() => {
+      const host = document.querySelector('.sand-virtual-transcript') ?? document.body
+      const probe = document.createElement('div')
+      probe.className = 'pb-assign'
+      probe.dataset.status = 'pending'
+      const icon = document.createElement('span')
+      icon.className = 'sand-outline-item__icon pb-assign__icon'
+      probe.append(icon)
+      host.append(probe)
+      const name = getComputedStyle(icon).animationName
+      probe.remove()
+      return name
+    })).toBe('none')
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
   } finally {
     await env.stop()
   }

@@ -1,0 +1,72 @@
+[
+  {
+    "file": "main-report-batch-dark.png",
+    "fresh_sha256": "07d9866a08b03c82da6e92445b85120845db6e44282596929b6cea6e267974ee",
+    "delivery_sha256": "a6b00cbdae04e011203ca2077dc8b3e8dcea9e6c53742b7c850a67e72e882cbd"
+  },
+  {
+    "file": "main-report-batch-light.png",
+    "fresh_sha256": "550e6ce78b58348602f96a1ab930fea5cdea2e72d1007e47598257eb0255f7c9",
+    "delivery_sha256": "61e43dd9fe945ded8df48dbcfd0868d665a2499bd054a849ca9b8ffaac87ab9a"
+  },
+  {
+    "file": "main-report-single-dark.png",
+    "fresh_sha256": "0e606a65079418844f13f066c512c94a6cfcb48fc2c0f2fcc4383699f8d48873",
+    "delivery_sha256": "8c77b1dc670429204c7523e6417fbf7ec569b64c509b91890794f33cf8d63a8f"
+  },
+  {
+    "file": "main-report-single-light.png",
+    "fresh_sha256": "322735e9381a1cf9547581d6d2389d301b733c00edb306bd6d577e7aef82c6c5",
+    "delivery_sha256": "dbe28fbb23edc9748d940635ce48fbd4bc7e2bd2ab484a1dec2afba7bef3ff4d"
+  },
+  {
+    "file": "sidebar-rail-dark.png",
+    "fresh_sha256": "e503d5e7215ed2731701c559decbd4cca4bb47086c9b7fc85eca2f1d2a475007",
+    "delivery_sha256": "fe711c17a3d3639d223b11cbb4457fd76c2632d04e7d9fbf09b6008389f6d1f9"
+  },
+  {
+    "file": "sidebar-rail-light.png",
+    "fresh_sha256": "27e6d7db10254b12330f7538bbc1f4af0c06901dd2467dbf77563c82c41b43d8",
+    "delivery_sha256": "5d420a9b0b879b250bda3f9e65a73e8cf39b4fcea4121fea6e1d0ca045f952d7"
+  },
+  {
+    "file": "sidebar-workers-4states-dark.png",
+    "fresh_sha256": "b44066730fd98785028d76088b65e8874bc3c1dd9bc31292f92fc206ebb82e8e",
+    "delivery_sha256": "a87bbba662106c80669c0c392fa57b04bf1acced0f01d45c0b87f26d71d0108e"
+  },
+  {
+    "file": "sidebar-workers-4states-light.png",
+    "fresh_sha256": "f478185fe805d9c13786803993acf81284f1abd91e3af082ce6a0fa39753008b",
+    "delivery_sha256": "2fd197ce0f426dbb6e9abe15ce92c7e2c1025c17206011e9bf3459eeda28080b"
+  },
+  {
+    "file": "sidebar-workers-folded-dark.png",
+    "fresh_sha256": "8179ef02bc9eb3775bb063c910f88de14bf4eaa90b21de4b38f00af63a09280c",
+    "delivery_sha256": "872d1f9510db8bfb2107abd6430f7642fe557ed838bd977df57b0cfdd72f9729"
+  },
+  {
+    "file": "sidebar-workers-folded-light.png",
+    "fresh_sha256": "ad388ffbf0ab5dc0976a82a581d3a491a44c162adf085aa13d8ec2b4325cd63e",
+    "delivery_sha256": "e97b256b21a1148f63b287967e921d7468faff329d1b36080f736b36b736cbaf"
+  },
+  {
+    "file": "worker-dock-focused-dark.png",
+    "fresh_sha256": "f5eb1a3c973303d468c61a32159c190425ff9ccb01cfb317bef87d9a39fdfdab",
+    "delivery_sha256": "276095be55707c19f97a5e435d117c5c76ebc9379ef75ae3403d93184483cdce"
+  },
+  {
+    "file": "worker-dock-focused-light.png",
+    "fresh_sha256": "a7cc007f0b2eec9ffc27a25fc2efa43acc4581607620cb477afcd0104da8b156",
+    "delivery_sha256": "d85b660b7cf8a14936cf59d0c33fdb38055e67cfc19fd60ee4beabdc33acec1b"
+  },
+  {
+    "file": "worker-task-dark.png",
+    "fresh_sha256": "7e3e725d4218a7fe4afacfff22b8689115f5404837bdfa7db629c1ec534b4018",
+    "delivery_sha256": "74ff64b68a3a1893d2ac2311298d52287a8904ea4247a59265da2bd2727c7ae7"
+  },
+  {
+    "file": "worker-task-light.png",
+    "fresh_sha256": "3b157b0a83654cc80f2dd1e7295896c0e201beb4da4f5e36a821e717fa6e9821",
+    "delivery_sha256": "eaae017dbda6dee5abe29b477eb60d280cd14839c75c59f2bba23cf3ff1b19f2"
+  }
+]

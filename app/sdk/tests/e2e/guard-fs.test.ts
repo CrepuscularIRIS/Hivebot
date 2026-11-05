@@ -14,11 +14,12 @@ import { basename, dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
+import { uniqueTestHome } from '../support/sandbox-home.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-const TEST_HOME = '/home/lingxufeng/bot/.test-homes/p5-02'
+const TEST_HOME = uniqueTestHome('p5-02') // P5-H3：运行级唯一（防并行全量互踩哨兵）
 const DATA_DIR = join(TEST_HOME, 'pbots-data')
 const PASSWD_HOME = userInfo().homedir
 const RUN_USER = `/run/user/${process.getuid()}`

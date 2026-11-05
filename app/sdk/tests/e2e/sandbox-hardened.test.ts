@@ -14,13 +14,14 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
+import { uniqueTestHome } from '../support/sandbox-home.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const REPO_ROOT = join(PKG_ROOT, '..', '..')
 const PASSWD_HOME = userInfo().homedir
-const TEST_HOME = '/home/lingxufeng/bot/.test-homes/p5-01' // 决策 8：主仓固定路径（.gitignore 已加 .test-homes/）
+const TEST_HOME = uniqueTestHome('p5-01') // 决策 8 父目录不变（⑧ 布局分支依赖）+ P5-H3 运行级唯一后缀
 const DATA_DIR = join(TEST_HOME, 'pbots-data')
 const DEFAULT_DATA_DIR = join(TEST_HOME, '.config', 'pbots-ui')
 const TOOL_PY = join(PASSWD_HOME, 'miniconda3', 'bin', 'python')

@@ -74,7 +74,7 @@ v4.5 · 2026-11-05 记账重建（P6-22 事故后从 LOG/VERIFY/review-coverage 
 | P6-14b | 开放闸：start.ts 默认链加 orchestration.yml 一行 | builder | start.ts | blocked | 前置：Q-021✅ Q-024✅ P6-22 定案✅（28/30）+ goal/schedule 回合污染暴露修复（turn-origin 对 goal/schedule 回合隐藏协调者工具，D-1 定案前）+ 启动顺序核对（f4 遗留③）+ persona/section 在场断言 |
 | T-taint | goal/schedule 来源回合当前不算污染（R2-1 只认 pbots-worker），create_bot 在其中可见——与 Q-021 告知矛盾 | builder | turn-origin.mjs/create.mjs | verifying（builder @e5286df：COORDINATOR_TAINT_KINDS=[pbots-worker,goal,schedule]、classifyTurn 增 coordinatorTainted/coordinatorTaintKinds 且 tainted 零变化、create.mjs when+execute 双读 fail-closed、unit 29 文件 572 绿、taint-guard 全工具口径不变属有意设计；R2-1 反向用例删 schedule 子断言待 verifier 核正当性；verifier 独立树在跑）| evidence/T-taint/REPORT.md；P6-14b 硬前置 |
 | T-taint.f1 | 残留收口：send_to_bot/stop_bot 的 when/execute 仍读 .tainted 未接 coordinatorTainted（builder 申报白名单外，各约一行）——goal/schedule 回合仍可操作其他 bot | builder | send_to_bot/stop_bot 定义处（以 T-taint REPORT 指路为准） | todo | P6-14b 开闸前完成 |
-| T-taint.q1 | 查证：followup 唤醒回合内 when 工具调用一律 UNKNOWN_TOOL（builder 探针发现，疑 dsh step admission 根因；live execute 断言疑似空转满足） | 先查证只读 | dsh step admission（repos 只读）对照我们的 when 接线 | todo | 不阻塞 14b；查清再定修否 |
+| T-taint.q1 | 查证：followup 唤醒回合内 when 工具调用一律 UNKNOWN_TOOL（builder 探针发现，疑 dsh step admission 根因；live execute 断言疑似空转满足） | 先查证只读 | dsh step admission（repos 只读）对照我们的 when 接线 | done（机制=身份 unknown 挂 scoped restriction，metadata 恢复晚于已生成 step admission，工具不补回→UNKNOWN_TOOL 而事后 visible=true；非所有 followup 异常。live ① 断言只证无建 bot 副作用、不证 execute 自查命中；历史 user-approval 探针缺原始记录无法唯一归因。不放宽 dsh admission；生产恢复窗口改善最小位置=envelope 恢复 sweep 时机，暂不立修） | evidence/T-taint-q1.md |
 
 ## v4.5 重建修订账
 

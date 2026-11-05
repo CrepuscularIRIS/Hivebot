@@ -21,6 +21,7 @@ import { registerStopBot } from './stop.mjs'
 import { Reporter } from './report.mjs'
 import { registerTaintGuard } from './taint-guard.mjs'
 import { registerEnvelope, registerWorkerRestriction } from './envelope.mjs'
+import { registerRoutingPrompt } from './routing-prompt.mjs'
 
 // 依赖解析同 src/p2temp/index.mjs：裸包名只能解析 app/sdk 直接依赖，从稳定
 // 直接依赖（dsh-plugin-market）的真实路径 createResolve，pnpm peer store 保证
@@ -221,6 +222,7 @@ export default class OrchestrationPlugin extends TypertRemoteService {
     // P6-14.f1：per-agent restrict——worker 会话建立点收窄模型可见工具表
     // （VERIFY-P6-14 [FIX]；主 bot 工具表不受影响），守卫保留为执行期兜底。
     this.workerRestriction = registerWorkerRestriction(ctx, this)
+    this.routingPrompt = registerRoutingPrompt(ctx, this)
     this.report = new Reporter(this)
     this.report.start()
   }

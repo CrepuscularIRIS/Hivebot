@@ -46,10 +46,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..', '..', '..')
 const SDK = join(REPO_ROOT, 'app', 'sdk')
-const EVID = HERE
+const EVID = process.env.P622_EVID_DIR || HERE
+const PROMPTS = process.env.P622_PROMPTS_FILE || join(HERE, 'prompts.json')
 const ORCH_YML = join(SDK, 'profile', 'patches', 'orchestration.yml')
 const FAKE_PLUGIN = join(SDK, 'tests', 'support', 'fake', 'plugin.mjs')
-const ROOT = '/tmp/bot-p620'
+const ROOT = process.env.P622_RUNTIME_ROOT || '/tmp/bot-p620'
+if (!/^\/tmp\/bot-p622r(?:1|2|2b|2c)-[a-zA-Z0-9_-]+$/.test(ROOT) && ROOT !== '/tmp/bot-p620') throw new Error('runtime root must be an isolated /tmp/bot-p622r1-*, /tmp/bot-p622r2-* or /tmp/bot-p622r2b-* directory')
 const DEFAULT_MODEL = 'glm-5.3' // 与生产主 bot 同模型（PLAN P6-20 行）
 const ORCH_REQUESTS = 'pbots/orchestration.requests'
 const ORCH_RESPOND = 'pbots/orchestration.respond'
@@ -74,11 +76,21 @@ function reserveName(path) {
 // 跨闭包状态：当前组（通道 handler 归属）、runtime 存活、smoke 脚本构造器。
 let currentGroup = null // { mainId, workers: [{sessionId,name,prompt,frames,stream}] }
 let runtimeExited = false
+let rateLimited = false
+let rateLimitDetails = ''
+let groupRetryCount = 0
+// Group retries use fresh sessions; archive every previous attempt through reserveName.
+function retry429Delay(details, retries) {
+  const seconds = [...details.matchAll(/(?:retry[- ]after["':\s]*|try again in\s*|retry in\s*)(\d+(?:\.\d+)?)/gi)].map((m) => Number(m[1]))
+  const longest = Math.max(0, ...seconds)
+  return retries >= 3 || longest >= 1000 ? null : Math.max(30000, Math.ceil(longest * 1000))
+}
+const detect429 = (frames) => frames.some((f) => f?.type === 'event' && f.event?.type === 'turn/end' && f.event.data?.reason?.kind === 'error' && /429|rate.?limit|too many requests/i.test(JSON.stringify(f.event.data)))
 let smokeScripts = null
 let llmBaseUsed = 'http://127.0.0.1:4001' // main() 起跑时赋值；runGroup meta 用
 
 function loadPrompts() {
-  const data = JSON.parse(readFileSync(join(EVID, 'prompts.json'), 'utf8'))
+  const data = JSON.parse(readFileSync(PROMPTS, 'utf8'))
   if (!Array.isArray(data.cases)) throw new Error('prompts.json 缺 cases 数组')
   return data.cases
 }
@@ -124,6 +136,9 @@ export function apply(ctx) {
 }
 `)
   writeFileSync(overlay, `\
+# Disable opaque provider retries; the harness bounds and records group-level retries.
+- id: llm-retry
+  disabled: true
 - insert:
     - id: p6-d3o-recorder
       name: '${pathToFileURL(join(dir, 'recorder.mjs')).href}'
@@ -191,7 +206,7 @@ async function waitMainTurn(frames, text, groupDeadline) {
         if (g?.type === 'event' && g.event?.type === 'turn/end') return { ok: true, idx: k }
       }
     }
-    if (Date.now() > deadline || runtimeExited) return { ok: false }
+    if (Date.now() > deadline || runtimeExited || rateLimited) return { ok: false }
     await sleep(400)
   }
 }
@@ -203,7 +218,7 @@ async function waitWorkersEnded(workers, n, groupDeadline, budgetMs = T_WORKER) 
   for (;;) {
     const counts = workers.map((w) => w.frames.filter((f) => f?.type === 'event' && f.event?.type === 'turn/end').length)
     if (counts.every((c) => c >= n)) return { ok: true, counts }
-    if (Date.now() > deadline || runtimeExited) return { ok: false, counts }
+    if (Date.now() > deadline || runtimeExited || rateLimited) return { ok: false, counts }
     await sleep(400)
   }
 }
@@ -222,7 +237,7 @@ async function waitReportConsumed(frames, groupDeadline) {
       if (f?.type !== 'event' || f.event?.type !== 'user/message') continue
       const kind = f.event.data?.source?.kind ?? ''
       if (kind === 'pbots-worker') { lastReportIdx = i; continue }
-      if (kind === 'user' && lastReportIdx >= 0) { lastReportIdx = -1; break } // 用户回合插队：其后回报才计
+      if (kind === 'user') lastReportIdx = -1 // 用户回合插队：继续扫描，只有其后回报才计
     }
     let consumed = false
     if (lastReportIdx >= 0) {
@@ -236,13 +251,14 @@ async function waitReportConsumed(frames, groupDeadline) {
       if (frames.length !== lastLen) { lastLen = frames.length; quietSince = Date.now() }
       if (Date.now() - quietSince >= 4000) return { ok: true }
     }
-    if (Date.now() > deadline || runtimeExited) return { ok: false }
+    if (Date.now() > deadline || runtimeExited || rateLimited) return { ok: false }
     await sleep(400)
   }
 }
 
 /** prompt 一次（mode queue；requestId 唯一）。 */
 async function promptTurn(client, sessionId, text) {
+  if (rateLimited) throw new Error('429 observed; no further model requests')
   await client.call('session/prompt', {
     request: {
       requestId: `p6-d3o-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
@@ -265,7 +281,7 @@ async function runGroup(client, entry, rep, smoke) {
   const { stream, snapshot } = await client.follow(M, { assistantStream: true, awaitSnapshot: true })
   const frames = [...snapshotFramesOf(snapshot)]
   const header = snapshot?.header ?? null
-  void (async () => { for await (const f of stream) frames.push(f) })().catch((e) => frames.push({ type: 'd3o-error', message: String(e?.message ?? e) }))
+  void (async () => { for await (const f of stream) { frames.push(f); if (detect429([f])) { rateLimited = true; rateLimitDetails += JSON.stringify(f.event.data) } } })().catch((e) => frames.push({ type: 'd3o-error', message: String(e?.message ?? e) }))
 
   // smoke：主脚本按 sessionId 写（P5-03 fake 游标 per-session）
   if (smoke) {
@@ -293,7 +309,7 @@ async function runGroup(client, entry, rep, smoke) {
 
   let turn2DelayMs = null
   let workerStillRunningAtTurn2 = null
-  if (w1.ok && entry.kind !== 'direct' && entry.kind !== 'chat') {
+  if (w1.ok && !rateLimited && entry.kind !== 'direct' && entry.kind !== 'chat') {
     const settleWorkers = (n, budgetMs) => waitWorkersEnded(currentGroup.workers, n, groupDeadline, budgetMs)
     const settleReport = async () => { const r = await waitReportConsumed(frames, groupDeadline); if (!r.ok) timeouts.push('report'); return r.ok }
     // 无 worker（模型未派工）则不烧 worker/回报预算——回报只可能来自本组
@@ -301,7 +317,7 @@ async function runGroup(client, entry, rep, smoke) {
     // 路由未派工由 score.mjs 记 FAIL，outcome 仍 turn/end。
     const settleAll = async (n) => {
       if (currentGroup.workers.length === 0) return
-      if (!(await settleWorkers(n, T_WORKER))) timeouts.push(n === 2 ? 'worker2' : 'workers')
+      if (!(await settleWorkers(n, T_WORKER)).ok) timeouts.push(n === 2 ? 'worker2' : 'workers')
       await settleReport()
     }
     if (entry.kind === 'attach') {
@@ -339,7 +355,8 @@ async function runGroup(client, entry, rep, smoke) {
     sessionId: M, cwd: work, agentPreset: header?.agentPreset ?? null,
     model: recRows[0]?.model ?? null, provider: recRows[0]?.provider ?? null,
     toolNames: recRows[0]?.toolNames ?? null, llmBase: llmBaseUsed,
-    outcome, frameCount: frames.length, timeouts,
+    outcome, frameCount: frames.length, timeouts, retryCount: groupRetryCount, rateLimited,
+    retryAfterMs: rateLimited ? retry429Delay(rateLimitDetails, groupRetryCount) : null,
     ...(turn2DelayMs !== null ? { turn2DelayMs } : {}), ...(workerStillRunningAtTurn2 !== null ? { workerStillRunningAtTurn2 } : {}),
     workers: currentGroup.workers.map((w, i) => ({ sessionId: w.sessionId, name: w.name, raw: `${gid}.w${i + 1}.jsonl` })),
   }
@@ -348,7 +365,7 @@ async function runGroup(client, entry, rep, smoke) {
   for (const f of frames) lines.push(JSON.stringify(f))
   writeFileSync(rawPath, lines.join('\n') + '\n')
   for (const [i, w] of currentGroup.workers.entries()) {
-    const wMeta = { type: 'd3o-worker-meta', ts: new Date().toISOString(), promptId: entry.id, rep, workerId: w.sessionId, name: w.name, assignPrompt: w.prompt, createdBy: M, frameCount: w.frames.length }
+    const wMeta = { type: 'd3o-worker-meta', ts: new Date().toISOString(), promptId: entry.id, rep, retryCount: groupRetryCount, workerId: w.sessionId, name: w.name, assignPrompt: w.prompt, createdBy: M, frameCount: w.frames.length }
     const wLines = [JSON.stringify(wMeta)]
     for (const f of w.frames) wLines.push(JSON.stringify(f))
     writeFileSync(reserveName(join(EVID, 'raw', `${gid}.w${i + 1}.jsonl`)), wLines.join('\n') + '\n')
@@ -464,7 +481,7 @@ async function main() {
   }
 
   const cases = smoke ? [{ id: 'smoke1', kind: 'single', prompt: '冒烟：建一个 a.txt，内容一行 hi，然后告诉我结果。' }] : loadPrompts()
-  const reps = smoke ? 1 : 3
+  const reps = smoke ? 1 : Number(process.env.P622_REPS || 3)
 
   const rec = recorderOverlay()
   rmSync(ROOT, { recursive: true, force: true })
@@ -520,7 +537,7 @@ async function main() {
   let stderr = ''
   child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8')
   child.stdout.on('data', (c) => process.stdout.write(`[sdk] ${c}`))
-  child.stderr.on('data', (c) => { stderr += c; process.stderr.write(`[sdk] ${c}`) })
+  child.stderr.on('data', (c) => { stderr += c; if (/\b429\b|rate.?limit|too many requests/i.test(c)) { rateLimited = true; rateLimitDetails += c } process.stderr.write(`[sdk] ${c}`) })
   child.on('exit', () => { runtimeExited = true })
   const dshPid = () => Number(/^p2sdk: dsh pid (\d+)$/m.exec(stderr)?.[1] ?? 0) || 0
 
@@ -579,9 +596,9 @@ async function main() {
     try { await mainClient.call('session/rename', { request: { sessionId: botId, title: item.name } }) } catch (e) { warn = `rename failed: ${String(e?.message ?? e)}` }
     const { stream, snapshot } = await mainClient.follow(botId, { assistantStream: true, awaitSnapshot: true })
     const worker = { sessionId: botId, name: item.name, prompt: item.prompt, frames: [...snapshotFramesOf(snapshot)], stream }
-    void (async () => { for await (const f of stream) worker.frames.push(f) })().catch(() => {})
+    void (async () => { for await (const f of stream) { worker.frames.push(f); if (detect429([f])) { rateLimited = true; rateLimitDetails += JSON.stringify(f.event.data) } } })().catch(() => {})
     currentGroup.workers.push(worker)
-    console.log(`[d3o]   ↳ worker「${item.name}」→ ${botId.slice(0, 18)}…`)
+    console.log(`[d3o] worker created #${currentGroup.workers.length}`)
     await mainClient.call(ORCH_RESPOND, { request: { requestId: item.requestId, value: { sessionId: botId, ...(warn !== undefined ? { warn } : {}) } } })
   }
 
@@ -666,18 +683,36 @@ async function main() {
     let consecutiveErrors = 0
     const pending = []
     for (const entry of cases) for (let rep = 1; rep <= reps; rep++) pending.push({ entry, rep })
-    const todo = only === null ? pending : pending.filter((t) => only.includes(t.entry.id))
+    const selected = only === null ? pending : pending.filter((t) => only.includes(t.entry.id))
+    const todo = process.env.P622_SENTINEL_ONCE === '1' ? selected.filter((t) => !['direct', 'chat'].includes(t.entry.kind) || t.rep === 1) : selected
+    const exactGroups = process.env.P622_GROUPS?.split(',')
     for (const t of todo) {
+      if (exactGroups && !exactGroups.includes(`${t.entry.id}-${t.rep}`)) continue
+      groupRetryCount = 0
       const gid = `${t.entry.id}-${t.rep}`
       if (!force && fileExists(join(EVID, 'raw', `${gid}.jsonl`))) { console.log(`[d3o] 跳过已有 ${gid}`); continue }
       if (runtimeExited) { console.error('[d3o] runtime 已退出，收尾'); runFailed = true; break }
       let r
-      try { r = await runGroup(mainClient, t.entry, t.rep, smoke) } catch (e) {
+      try {
+        while (true) {
+          rateLimited = false
+          rateLimitDetails = ''
+          r = await runGroup(mainClient, t.entry, t.rep, smoke)
+          if (!rateLimited) break
+          const delay = retry429Delay(rateLimitDetails, groupRetryCount)
+          if (delay === null) break
+          groupRetryCount++
+          console.log(`[d3o] ${gid} short-429 retry=${groupRetryCount}/3 delayMs=${delay}`)
+          await sleep(delay)
+        }
+      } catch (e) {
         r = { entry: t.entry, rep: t.rep, outcome: 'group-error', error: String(e?.message ?? e), timeouts: [], workers: [], frameCount: 0, rawPath: null }
         console.error(`[d3o] ${gid} 异常: ${r.error}`)
       }
       summary.push(r)
+      writeRunMeta(summary, { smoke, model, llmBase, litellm })
       console.log(`[d3o] ${gid} outcome=${r.outcome} mainFrames=${r.frameCount} workers=${r.workers.length} approvals=${answered.size} questions=${questionsAnswered} timeouts=${(r.timeouts ?? []).join('|') || '-'}`)
+      if (rateLimited) { console.error('[d3o] 429 detected: long retry-after or bounded retries exhausted; stop'); runFailed = true; break }
       const errored = r.outcome === 'turn-error' || r.outcome === 'runtime-exit' || r.outcome === 'group-error'
       consecutiveErrors = errored ? consecutiveErrors + 1 : 0
       if (consecutiveErrors >= 3) { console.error('[d3o] 连续 3 组出错（疑似限流/断链），提前收尾；已完成组均已落盘'); break }

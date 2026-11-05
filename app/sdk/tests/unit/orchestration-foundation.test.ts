@@ -88,12 +88,12 @@ describe('index barrel', () => {
       'CreateChannel', 'DEFAULT_CAPACITY', 'DEFAULT_CREATE_TIMEOUT_MS', 'DELEGATION_TOOLS', 'Delivery', 'ENTRY_ANNOTATIONS',
       'JOB_TOOLS', 'ORCH_REQUESTS_ENDPOINT',
       'ORCH_RESPOND_METHOD', 'OWN_SOURCE_KINDS', 'QUESTION_TOOL', 'REPORT_PREFIX', 'REPORT_SOURCE_KIND',
-      'RESTRICT_TOOLS', 'RESULT_LIMIT', 'Reporter', 'SEND_TO_BOT_DESCRIPTION', 'SEND_TO_BOT_TOOL', 'STOP_BOT_DESCRIPTION',
+      'RESTRICT_TOOLS', 'RESULT_LIMIT', 'ROUTING_PROMPT', 'ROUTING_SECTION', 'Reporter', 'SEND_TO_BOT_DESCRIPTION', 'SEND_TO_BOT_TOOL', 'STOP_BOT_DESCRIPTION',
       'STOP_BOT_TOOL', 'Slots', 'TAINT_KIND', 'TurnOrigin',
       'applyWorkerRestriction', 'assignMessageId', 'buildAssignMessage', 'buildReportMessage', 'classifyTurn',
       'computeDue', 'deliveryIdOf', 'endOutcomeFor', 'enumerateInstalledEntries', 'foldAssignments', 'foldMainLog',
       'isEnveloped', 'judgeWorkerCall', 'newAssignmentId', 'orchDataDir', 'orchError', 'projectEvent', 'readMainBotId',
-      'registerEnvelope', 'registerSendToBot', 'registerStopBot', 'registerTaintGuard', 'registerWorkerRestriction', 'relayText', 'reportMessageId',
+      'registerEnvelope', 'registerRoutingPrompt', 'registerSendToBot', 'registerStopBot', 'registerTaintGuard', 'registerWorkerRestriction', 'relayText', 'reportMessageId',
       'resolveWorkerStatus', 'resultTextFor', 'sendRelayText', 'sharedSlots', 'truncateResult', 'workerRestrictDeny',
     ])
   })

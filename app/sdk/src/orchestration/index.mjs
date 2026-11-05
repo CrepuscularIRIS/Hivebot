@@ -64,3 +64,4 @@ export {
   resolveWorkerStatus,
   isEnveloped,
 } from './envelope.mjs'
+export { ROUTING_SECTION, ROUTING_PROMPT, registerRoutingPrompt } from './routing-prompt.mjs'

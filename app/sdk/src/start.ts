@@ -19,6 +19,8 @@
  *                        as `p2sdk: handoff <dir>` for the operator client
  *   P2SDK_PORT           listen port, default 0 (OS-assigned)
  *   P2SDK_PATCH          colon-separated extra `--patch` overlays (absolute paths)
+ *   P2SDK_HOST_RECOVERY  '1' enables the main-confirmed F3 recovery barrier for orchestration;
+ *                        requires a connected main; standalone P6 is unchanged when unset.
  */
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
@@ -163,10 +165,11 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
     if (
       keep &&
       name !== 'P2SDK_HANDOFF' && name !== 'P2SDK_TEST_V8_COVERAGE' && name !== 'P2SDK_HOME' &&
-      name !== 'PBOTS_DATA_DIR' && name !== 'P2SDK_SANDBOX_MASK' &&
+      name !== 'PBOTS_DATA_DIR' && name !== 'P2SDK_SANDBOX_MASK' && name !== 'P2SDK_HOST_RECOVERY' &&
       (testSandbox || !testOnlySandboxVars.has(name))
     ) child[name] = value
   }
+  if (env.P2SDK_HOST_RECOVERY === '1') child.DSH_PBOTS_HOST_RECOVERY = '1'
   child.DSH_HOME = cfg.home
   child.P2SDK_PROVIDER = cfg.provider
   child.P2SDK_LLM_MODEL = cfg.model

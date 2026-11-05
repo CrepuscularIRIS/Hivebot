@@ -18,6 +18,8 @@ import { createBotWithConnectors, createSessionForcedWorkspace, createWorkerBot,
 import { wireOrchChannel } from './m3-meta/orch-channel'
 import type { BotsMetaStore } from './m3-meta/store'
 import { wireWorkerNotify } from './notify/worker-notify'
+import { OperationsLedger } from './admin/operations'
+import { wireAdminRecovery } from './admin/recovery'
 
 if (process.type === 'browser') {
   // 必须在 app ready 前注册；单测导入本模块时（纯 node）跳过。
@@ -158,18 +160,30 @@ export function wireRestoreOnReconnect(
   m3: M3Handle,
   ready: ReadyGate,
   log: (message: string) => void = (m) => console.warn(m),
-): void {
+): (generation: number) => Promise<void> {
   let run: Promise<void> = Promise.resolve()
+  let currentGeneration = 0
+  let current: Promise<void> = Promise.reject(new Error('M3 connection not restored'))
+  void current.catch(() => {})
   dsh.onConnected((generation) => {
-    ready.setDshReady()
+    currentGeneration = generation
+    ready.setDshReady(generation)
     log(`[m3] dsh connected (generation ${generation}); running preset restore`)
-    run = run
-      .then(async () => {
-        await m3.init
-        await ensureThenReady({ dsh, store: m3.store, failed: m3.failed, ready })
-      })
-      .catch((error) => log(`[m3] restore rerun failed: ${String(error)}`))
+    current = run.then(async () => {
+      await m3.init
+      const outcomes = await ensureThenReady({ dsh, store: m3.store, failed: m3.failed,
+        ready: { ...ready, setRestoreSettled: (failed) => ready.setRestoreSettled(failed, generation) } })
+      // Shell availability permits settled failures; management recovery never does.
+      m3.store.read()
+      if (generation !== currentGeneration || m3.failed.size || outcomes.some((outcome) => !outcome.ok)) throw new Error('M3 recovery not successful for current connection')
+    })
+    run = current.catch((error) => log(`[m3] restore rerun failed: ${String(error)}`))
   })
+  return async (generation) => {
+    if (generation !== currentGeneration || generation === 0) throw new Error('obsolete M3 recovery connection')
+    await current
+    if (generation !== currentGeneration) throw new Error('obsolete M3 recovery completion')
+  }
 }
 
 async function main(): Promise<void> {
@@ -276,7 +290,11 @@ async function main(): Promise<void> {
     // 挂「连接成功」事件而非一次性的 dshStart —— 首连超时 reject 只放行闸门（U-17 语义，
     // M1/M2 不永久挂），后台重连成功时补跑 preset.ensure，#21 不再被永久跳过。
     if (dsh !== undefined) {
-      wireRestoreOnReconnect(dsh, m3, ready)
+      const restored = wireRestoreOnReconnect(dsh, m3, ready)
+      const operations = new OperationsLedger(dataDir)
+      const recovery = wireAdminRecovery({ dsh, ledger: operations, restore: restored })
+      // F1 close durability/terminal semantics are independently repaired; do not reuse this instance.
+      app.once('before-quit', () => { recovery.close(); dsh?.stop(); operations.close() })
       dshStart?.catch((error) => {
         console.warn(`[m3] first connect timed out; restore deferred to reconnect: ${String(error)}`)
         // P6-14.f4（VERIFY-P6-14.f3 阻塞项）：超时放行同样先等身份存储 init ——

@@ -22,6 +22,8 @@ import { Reporter } from './report.mjs'
 import { registerTaintGuard } from './taint-guard.mjs'
 import { registerEnvelope, registerWorkerRestriction } from './envelope.mjs'
 import { registerRoutingPrompt } from './routing-prompt.mjs'
+import { HostRecovery, recoverAssignments } from '../admin/host.mjs'
+import { orchDataDir } from './identity.mjs'
 
 // 依赖解析同 src/p2temp/index.mjs：裸包名只能解析 app/sdk 直接依赖，从稳定
 // 直接依赖（dsh-plugin-market）的真实路径 createResolve，pnpm peer store 保证
@@ -206,10 +208,14 @@ export default class OrchestrationPlugin extends TypertRemoteService {
    */
   constructor(ctx, config = {}) {
     super(ctx, 'pbotsOrchestration', { namespace: 'pbots' })
-    this.config = config
+    this.config = { ...config, dataDir: config.dataDir ?? orchDataDir() }
+    // Opt-in at the current launcher/overlay; standalone P6 retains its original lifecycle.
+    if (config.hostRecovery === true || process.env.DSH_PBOTS_HOST_RECOVERY === '1') {
+      this.host = new HostRecovery((signal) => recoverAssignments(this, signal))
+    }
     this.channel = new CreateChannel({ timeoutMs: config.createTimeoutMs ?? DEFAULT_CREATE_TIMEOUT_MS })
     this.slots = sharedSlots(config.capacity)
-    this.delivery = new Delivery(ctx)
+    this.delivery = new Delivery(ctx, () => this.recovery)
     this.createBot = registerCreateBot(ctx, this)
     this.sendToBot = registerSendToBot(ctx, this) // P6-11：与 create 共用 turns/slotHolds/slots
     this.stopBot = registerStopBot(ctx, this) // P6-13：与 create/send 共用 turns 账本；两阶段，不占容量
@@ -224,7 +230,41 @@ export default class OrchestrationPlugin extends TypertRemoteService {
     this.workerRestriction = registerWorkerRestriction(ctx, this)
     this.routingPrompt = registerRoutingPrompt(ctx, this)
     this.report = new Reporter(this)
-    this.report.start()
+    ctx.effect(() => {
+      const stop = this.report.start()
+      return () => { this.host?.stop(); stop() }
+    })
+  }
+
+  get recovery() { return this.host?.current }
+
+  /** Separate control stream: connection, metadata restore and repair RPCs never wait on SDK readiness. */
+  async *recoveryRequests() {
+    if (!this.host) throw orchError('pbots/unavailable', 'host recovery is not enabled')
+    const { peer, signal } = this.ctx.invocation
+    if (this.host.current.peer !== null && !this.host.current.signal.aborted) throw orchError('pbots/forbidden', 'recovery already has a subscriber')
+    const handoff = this.host.attach(peer)
+    const detach = () => this.host.detach(peer)
+    signal.addEventListener('abort', detach, { once: true })
+    try {
+      yield handoff
+      if (!signal.aborted) await new Promise((resolve) => signal.addEventListener('abort', resolve, { once: true }))
+    } finally {
+      signal.removeEventListener('abort', detach)
+      detach()
+    }
+  }
+
+  async recoveryPrepare(request) {
+    if (!this.host) throw orchError('pbots/unavailable', 'host recovery is not enabled')
+    return this.host.prepare(this.ctx.invocation.peer, request?.challenge)
+  }
+
+  recoveryComplete(request) {
+    if (!this.host) throw orchError('pbots/unavailable', 'host recovery is not enabled')
+    const result = this.host.complete(this.ctx.invocation.peer, request?.challenge)
+    this.report.scheduleFlush()
+    return result
   }
 
   /** Live agent or resume-by-id (cold session attach, P6-09 (a) pattern). */
@@ -278,4 +318,7 @@ export default class OrchestrationPlugin extends TypertRemoteService {
 Object.defineProperty(OrchestrationPlugin.prototype, REMOTE_METHOD_DESCRIPTOR, { value: { version: 1, methods: [
   { method: 'requests', exportName: 'orchestration.requests', mode: 'stream', invocation: { kind: 'direct' } },
   { method: 'respond', exportName: 'orchestration.respond', invocation: { kind: 'direct' } },
+  { method: 'recoveryRequests', exportName: 'orchestration.recovery', mode: 'stream', invocation: { kind: 'direct' } },
+  { method: 'recoveryPrepare', exportName: 'orchestration.recoveryPrepare', invocation: { kind: 'direct' } },
+  { method: 'recoveryComplete', exportName: 'orchestration.recoveryComplete', invocation: { kind: 'direct' } },
 ] } })

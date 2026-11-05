@@ -68,6 +68,7 @@ export class DshConnection {
   private readyWaiters: Array<(g: number) => void> = []
   private firstConnectWaiters: Array<(g: number) => void> = []
   private connectedListeners: Array<(g: number) => void> = []
+  private disconnectedListeners: Array<() => void> = []
   /** main 侧已发出的 /api 调用计数（断言口径：拒绝时必须 === 0）。 */
   apiCount = 0
 
@@ -83,6 +84,15 @@ export class DshConnection {
    * 不再被一次性的首连 promise 永久跳过。listener 抛错被吞（不破坏后续 waiter）。 */
   onConnected(listener: (generation: number) => void): void {
     this.connectedListeners.push(listener)
+  }
+
+  /** F3 invalidates main's management permission as soon as the current socket dies. */
+  onDisconnected(listener: () => void): void { this.disconnectedListeners.push(listener) }
+
+  private notifyDisconnected(): void {
+    for (const listener of [...this.disconnectedListeners]) {
+      try { listener() } catch (error) { console.warn(`[dsh] onDisconnected listener failed: ${String(error)}`) }
+    }
   }
 
   /** 连接并完成首次 /connect + ws open；之后再断线自动重连。
@@ -132,6 +142,7 @@ export class DshConnection {
       if (this.socket !== socket) return
       // U-17（R13）：死 socket 立即出清，ready() 只会挂起等新代，不再返回死柄。
       this.socket = undefined
+      this.notifyDisconnected()
       void this.scheduleReconnect()
     })
     for (const w of this.readyWaiters.splice(0)) w(this.generation)
@@ -187,6 +198,7 @@ export class DshConnection {
 
   stop(): void {
     this.stopped = true
+    this.notifyDisconnected()
     if (this.reconnectTimer !== undefined) clearTimeout(this.reconnectTimer)
     this.socket?.close()
   }

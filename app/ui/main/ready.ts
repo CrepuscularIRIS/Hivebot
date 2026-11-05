@@ -19,9 +19,9 @@ export interface ReadyStatus {
 
 export interface ReadyGate {
   setWindowReady(): void
-  setDshReady(): void
+  setDshReady(generation?: number): void
   /** #21 恢复全部 settle（含失败）后调用；failed 进载荷，不阻断就绪。 */
-  setRestoreSettled(failed: string[]): void
+  setRestoreSettled(failed: string[], generation?: number): void
   /** 全部已配置条件就绪后 resolve（dsh 未配置时只等窗口）。 */
   wait(): Promise<void>
   /** 只等 #21 恢复 settle（M1/M2 入口闸门用；dsh 连不上时不挂死 —— M2 自带 10s 超时兜底）。 */
@@ -31,6 +31,7 @@ export interface ReadyGate {
 
 export function createReadyGate(opts: ReadyGateOptions = {}): ReadyGate {
   const dshConfigured = opts.dshConfigured ?? Boolean(process.env.PBOTS_DSH_HANDOFF)
+  let generation = 0
   let windowReady = false
   let dshReady: boolean | null = dshConfigured ? false : null
   let restoreReady: boolean | null = dshConfigured ? false : null
@@ -45,8 +46,21 @@ export function createReadyGate(opts: ReadyGateOptions = {}): ReadyGate {
   }
   return {
     setWindowReady() { windowReady = true; flush() },
-    setDshReady() { dshReady = true; flush() },
-    setRestoreSettled(failed: string[]) { restoreReady = true; failedPresets = [...failed]; flush() },
+    setDshReady(next?: number) {
+      if (next !== undefined) {
+        if (next < generation) return
+        if (next !== generation) restoreReady = false
+        generation = next
+      }
+      dshReady = true
+      flush()
+    },
+    setRestoreSettled(failed: string[], restoredGeneration?: number) {
+      if (generation !== (restoredGeneration ?? 0)) return
+      restoreReady = true
+      failedPresets = [...failed]
+      flush()
+    },
     wait() { if (done()) return Promise.resolve(); return new Promise((r) => waiters.push(r)) },
     waitRestore() { if (restoreDone()) return Promise.resolve(); return new Promise((r) => restoreWaiters.push(r)) },
     status() { return { window: windowReady, dsh: dshReady, restore: restoreReady, failedPresets: [...failedPresets] } },

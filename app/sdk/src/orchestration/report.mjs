@@ -16,6 +16,7 @@ import { join } from 'node:path'
 import { orchDataDir, readMainBotId, BOTS_JSON } from './identity.mjs'
 import { buildReportMessage, computeDue, REPORT_PREFIX } from './pending.mjs'
 import { foldAssignments, QUESTION_TOOL } from './assignment.mjs'
+import { waitForRecovery, RECOVERY_NOTE } from '../admin/host.mjs'
 
 /** 决策 15：空闲主 bot 首项回报后的收齐窗口（`ponytail:` 常量）。 */
 export const BATCH_WINDOW_MS = 2_000
@@ -102,6 +103,8 @@ export class Reporter {
      */
     this.cachedMainId = undefined
     this.off = () => {}
+    this.lifetime = new AbortController()
+    this.withdrawTimers = new Set()
   }
 
   /** Mount event listeners and run the boot reconcile (决策 27③: SDK 启动直接扫日志). */
@@ -112,6 +115,9 @@ export class Reporter {
   }
 
   stop() {
+    this.lifetime.abort()
+    for (const timer of this.withdrawTimers) clearTimeout(timer)
+    this.withdrawTimers.clear()
     this.off()
     if (this.timer !== null) {
       clearTimeout(this.timer)
@@ -121,7 +127,7 @@ export class Reporter {
 
   /** @param {unknown} session @param {{ type?: string, data?: any }} event */
   handleEvent(session, event) {
-    if (!event || typeof event.type !== 'string') return
+    if (this.lifetime.signal.aborted || !event || typeof event.type !== 'string') return
     const sid = String(session?.id ?? '')
     if (sid === '') return
     if (event.type === 'turn/start') {
@@ -152,7 +158,7 @@ export class Reporter {
 
   /** Open (or keep) the ≤2s collection window; one flush per window. */
   scheduleFlush() {
-    if (this.timer !== null) return
+    if (this.lifetime.signal.aborted || this.timer !== null) return
     this.timer = setTimeout(() => {
       this.timer = null
       this.flush('window').catch((error) => warn(`report flush failed: ${String(error instanceof Error ? error.message : error)}`))
@@ -177,11 +183,19 @@ export class Reporter {
    * @param {string} trigger 'boot' | 'window'（日志用）。
    */
   async flush(trigger) {
-    if (this.flushing) return
+    if (this.flushing || this.lifetime.signal.aborted) return
+    const recovery = this.orch.recovery
+    const permit = {
+      ready: recovery?.ready ?? Promise.resolve(),
+      signal: AbortSignal.any([this.lifetime.signal, ...(recovery ? [recovery.signal] : [])]),
+      get open() { return recovery?.open !== false },
+    }
     this.flushing = true
     try {
+      await waitForRecovery(permit)
       const dir = this.orch.config.dataDir ?? orchDataDir()
       const mainId = await readMainBotId(dir)
+      permit.signal.throwIfAborted()
       this.cachedMainId = mainId
       if (mainId === null || mainId === undefined) return // 无主 / 不可读 → 没有回报对象，fail closed
       let mainAgent
@@ -191,14 +205,18 @@ export class Reporter {
         warn(`main bot ${mainId} unresolvable, reports stay due: ${String(error instanceof Error ? error.message : error)}`)
         return
       }
+      permit.signal.throwIfAborted()
       if (this.mainBusy(mainAgent)) return // 忙：攒（决策 15），下次触发重开窗口
 
       const mainEvents = await this.orch.delivery.readLog(mainId)
+      permit.signal.throwIfAborted()
       /** @type {Array<{ workerId: string, events: object[], idle: boolean }>} */
       const workers = []
       const folds = new Map()
       for (const workerId of await ownWorkerIds(dir, mainId)) {
+        permit.signal.throwIfAborted()
         const events = await this.orch.delivery.readLog(workerId)
+        permit.signal.throwIfAborted()
         // 冷 worker 不 resume：重启后不可能有 running 回合（slots 同款口径），
         // 无 turn/end + 非 running 即崩溃孤儿 → computeDue 判 stopped。live 的
         // 才读 status（maintenance 期间报 idle，方向安全：最多早投，不丢）。
@@ -211,7 +229,11 @@ export class Reporter {
       // (f2)：恢复的 inbox 不自动认领——唤醒（remove + 同 id followup）
       for (const nw of needsWake) {
         try {
-          this.orch.delivery.wake(await this.orch.agentOf(nw.sessionId), nw.messageId)
+          // F3 never resumes a held/paused worker assignment automatically.
+          if (recovery && nw.sessionId !== mainId) continue
+          const agent = await this.orch.agentOf(nw.sessionId)
+          permit.signal.throwIfAborted()
+          this.orch.delivery.wake(agent, nw.messageId, permit)
         } catch (error) {
           warn(`wake ${nw.sessionId}/${nw.messageId} failed: ${String(error instanceof Error ? error.message : error)}`)
         }
@@ -221,13 +243,17 @@ export class Reporter {
       // 决策 17：end 项补 result（末工具后正文，≤4000 截断附 worker id）
       const items = due.map((item) => {
         if (item.kind !== 'end') return item
+        if (recovery && item.reason === 'interrupted') return { ...item, result: RECOVERY_NOTE }
         const turn = folds.get(item.workerId)?.assignments.get(item.assignmentId)?.turn
         const raw = turn === undefined ? undefined : resultTextFor(workers.find((w) => w.workerId === item.workerId)?.events ?? [], turn)
         return raw === undefined ? item : { ...item, result: truncateResult(raw, item.workerId) }
       })
       if (this.orch.config.crashAt === 'report-before-splice') process.exit(CRASH_EXIT_CODE)
-      await this.orch.delivery.send(mainAgent, buildReportMessage(items))
+      permit.signal.throwIfAborted()
+      await this.orch.delivery.send(mainAgent, buildReportMessage(items), permit)
       if (this.orch.config.crashAt === 'report-after-send') process.exit(CRASH_EXIT_CODE)
+    } catch (error) {
+      if (!permit.signal.aborted || error?.unconfirmedStart) throw error
     } finally {
       this.flushing = false
     }
@@ -241,15 +267,20 @@ export class Reporter {
    * pendingReports，与 claim 窗口同一恢复路径）。
    * @param {string} mainId @param {number} [attempt]
    */
-  withdrawWithRetry(mainId, attempt = 0) {
+  withdrawWithRetry(mainId, attempt = 0, recovery = this.orch.recovery) {
+    if (this.lifetime.signal.aborted || recovery?.signal.aborted || recovery?.open === false) return
     try {
-      this.withdrawPendingReports(mainId)
+      this.withdrawPendingReports(mainId, recovery)
     } catch (error) {
       if (attempt >= 50) {
         warn(`withdraw kept failing for ${mainId}: ${String(error instanceof Error ? error.message : error)}`)
         return
       }
-      setTimeout(() => this.withdrawWithRetry(mainId, attempt + 1), 50)
+      const timer = setTimeout(() => {
+        this.withdrawTimers.delete(timer)
+        this.withdrawWithRetry(mainId, attempt + 1, recovery)
+      }, 50)
+      this.withdrawTimers.add(timer)
     }
   }
 
@@ -259,11 +290,13 @@ export class Reporter {
    * 下一条用户消息的回合不会与回报混合，回合结束后补投恰一次。
    * @param {string} mainId
    */
-  withdrawPendingReports(mainId) {
+  withdrawPendingReports(mainId, recovery = this.orch.recovery) {
+    if (this.lifetime.signal.aborted || recovery?.signal.aborted || recovery?.open === false) return
     const agent = this.ctx.agents.get(mainId)
     if (agent === undefined) return // 冷主 bot无 live inbox；claim 窗口的键由日志重算覆盖
     let withdrawn = 0
     for (const message of [...agent.inbox.nextTurn, ...agent.inbox.nextStep]) {
+      if (this.lifetime.signal.aborted || recovery?.signal.aborted || recovery?.open === false) break
       if (String(message?.id ?? '').startsWith(REPORT_PREFIX)) {
         agent.inbox.remove(message.id)
         withdrawn += 1

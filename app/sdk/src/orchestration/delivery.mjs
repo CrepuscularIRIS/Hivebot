@@ -11,6 +11,7 @@
 // 不作已投依据；回报「已投」的权威判定是 pending.mjs 的主 session 日志 fold
 // （claim 后崩溃的键在两张表里都不可见，P6-09 (f5-ii) 实证）。
 /** Cross-session idempotent delivery on the dsh host (P6-21). */
+import { waitForRecovery } from '../admin/host.mjs'
 
 /** Source kinds owned by this SDK's orchestration layer. */
 export const OWN_SOURCE_KINDS = ['pbots-worker', 'pbots-main']
@@ -93,8 +94,9 @@ export class Delivery {
    * @param {{ sessionPersistence: object, agents: { get(id: string): object } }} ctx
    * dsh plugin context; only the two services SA's AgentDelivery uses.
    */
-  constructor(ctx) {
+  constructor(ctx, recovery = () => undefined) {
     this.ctx = ctx
+    this.recovery = recovery
     // P6-21.f1 (L-9): in-flight reservation per `${agent.id}:${messageId}`.
     // holds() 与 followup 之间隔着 await（flush + 全量读日志），两个并发 send
     // 同 (agent,id) 都会读到「未投过」→ 空闲目标 followup 两次、忙碌目标第二
@@ -153,7 +155,8 @@ export class Delivery {
    * @param {{ id: string, source: { kind: string } }} message
    * @returns {Promise<{ skipped: boolean }>} skipped = already held.
    */
-  async send(agent, message) {
+  async send(agent, message, permit = this.recovery()) {
+    await waitForRecovery(permit)
     const id = deliveryIdOf(message)
     if (!id) throw new Error('delivery.send requires a pbots-owned message source')
     const key = `${agent.id}:${id}`
@@ -161,17 +164,23 @@ export class Delivery {
     if (running !== undefined) {
       try {
         await running
+        permit?.signal.throwIfAborted()
         return { skipped: true } // the concurrent call delivered (or held) it
-      } catch {
-        return this.send(agent, message) // it failed undelivered — take over
+      } catch (error) {
+        permit?.signal.throwIfAborted()
+        if (error?.unconfirmedStart) throw error // followup may already have started; never replay it
+        return this.send(agent, message, permit) // retry only a confirmed pre-followup failure
       }
     }
     const attempt = (async () => {
-      if (await this.holds(agent, id)) return { skipped: true }
+      const held = await this.holds(agent, id)
+      permit?.signal.throwIfAborted()
+      if (held) return { skipped: true }
       if (this.ctx.agents.get(agent.id) !== agent) throw new Error('Delivery target was disposed')
       agent.followup(message)
       try {
         await this.ctx.sessionPersistence.flush()
+        permit?.signal.throwIfAborted()
       } catch (error) {
         // P6-10.f2 B-2：followup 已入列、仅持久化未确认——目标回合可能已启动，
         // 调用方不得按「未启动」处理（如 create_bot 释放容量）。带标记上抛。
@@ -196,10 +205,15 @@ export class Delivery {
    * @param {string} id pending message id.
    * @returns {boolean} whether the message was pending and got rewoken.
    */
-  wake(agent, id) {
+  wake(agent, id, permit = this.recovery()) {
+    permit?.signal.throwIfAborted()
+    if (permit?.open === false) return false
     const message = [...agent.inbox.nextTurn, ...agent.inbox.nextStep].find((m) => String(m.id) === id)
     if (!message) return false
+    permit?.signal.throwIfAborted()
     agent.inbox.remove(message.id)
+    // remove may synchronously publish an event which invalidates the lease.
+    permit?.signal.throwIfAborted()
     agent.followup(message)
     return true
   }

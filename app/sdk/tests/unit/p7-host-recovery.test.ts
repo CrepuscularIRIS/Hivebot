@@ -65,6 +65,74 @@ describe('P7-F3 existing Reporter lifecycle recovery barrier', () => {
     expect(f.orch.delivery.send.mock.calls[0][1].source.items[0].key).toBe('old:end')
   })
 
+  it('new recovery completion survives an old flush blocked past the default two-second window', async () => {
+    const f = fixture()
+    f.reporter.stop()
+    const host = new HostRecovery(async () => ({ issues: [] }))
+    const reporter = new Reporter(f.orch)
+    cleanups.push(() => { reporter.stop(); host.stop() })
+    Object.defineProperty(f.orch, 'recovery', { get: () => host.current })
+    const peer = {}, first = host.attach(peer)
+    await host.prepare(peer, first.challenge)
+    host.complete(peer, first.challenge)
+    const entered = deferred(), release = deferred()
+    f.orch.delivery.readLog.mockImplementationOnce(async () => {
+      entered.resolve()
+      await release.promise
+      return f.logs.main
+    })
+    // Model persisted delivery so a manual positive control cannot duplicate it.
+    f.orch.delivery.send.mockImplementation(async (_agent: unknown, message: any, lease: any) => {
+      lease.signal.throwIfAborted()
+      expect(lease.open).toBe(true)
+      f.logs.main.push({ type: 'agent/inbox/spliced', target: 'next-turn', start: 0, removedCount: 0,
+        inserted: [{ id: message.id, kind: 'pbots-worker', items: message.source.items }] })
+    })
+    const old = reporter.flush('boot')
+    await entered.promise
+    const second = host.attach(peer)
+    await host.prepare(peer, second.challenge)
+    host.complete(peer, second.challenge)
+    reporter.scheduleFlush()
+    expect(reporter.batchWindowMs).toBe(2_000)
+    await sleep(2_100)
+    expect(reporter.timer).toBeNull()
+    expect(f.orch.delivery.send).not.toHaveBeenCalled()
+    release.resolve()
+    await old
+    await sleep(50)
+    const automatic = f.orch.delivery.send.mock.calls.length
+    // Runs even on RED: proves the valid current lease and persisted due report work.
+    await reporter.flush('manual-control')
+    expect(f.orch.delivery.send).toHaveBeenCalledTimes(1)
+    expect(f.orch.delivery.send.mock.calls[0][2].signal.aborted).toBe(false)
+    expect(f.orch.delivery.send.mock.calls[0][1].source.items[0].key).toBe('old:end')
+    expect(automatic).toBe(1)
+  })
+
+  it('a pending new-generation reconcile never replays an unconfirmed old delivery', async () => {
+    const f = fixture()
+    f.recovery.resolve()
+    const entered = deferred(), release = deferred()
+    f.orch.delivery.send.mockImplementationOnce(async () => {
+      entered.resolve()
+      await release.promise
+      throw Object.assign(new Error('followup occurred but persistence is unknown'), { unconfirmedStart: true })
+    })
+    const old = f.reporter.flush('boot').catch((error: unknown) => error)
+    await entered.promise
+    f.recovery.abort()
+    f.orch.recovery = permit()
+    f.orch.recovery.resolve()
+    f.reporter.scheduleFlush()
+    await sleep(20)
+    expect(f.reporter.timer).toBeNull()
+    release.resolve()
+    expect(await old).toMatchObject({ unconfirmedStart: true })
+    await sleep(20)
+    expect(f.orch.delivery.send).toHaveBeenCalledTimes(1)
+  })
+
   it('withdraw checks the captured lease for every remove and stop cancels retry timers', async () => {
     const f = fixture()
     f.recovery.resolve()
@@ -292,6 +360,25 @@ describe('P7-F3 durable native interrupted termination', () => {
 })
 
 describe('P7-F3 real Loader control stream', () => {
+  it('standalone P6 exposes no recovery control without launcher opt-in', { timeout: 120_000 }, async () => {
+    const { launchRuntime } = await import('../support/runtime')
+    const root = mkdtempSync(join(tmpdir(), 'bot-P7-F3-standalone-'))
+    const data = join(root, 'data')
+    mkdirSync(data)
+    writeFileSync(join(data, 'bots.json'), JSON.stringify({ version: 1, mainBotId: null, recipes: {} }))
+    const rt = await launchRuntime({ env: { HOME: root, P2SDK_HOME: join(root, 'runtime'), PBOTS_DATA_DIR: data, P2SDK_ORCH_DATA_DIR: data, P2SDK_PATCH: join(new URL('../../', import.meta.url).pathname, 'profile/patches/orchestration.yml') } })
+    try {
+      await expect(rt.client.call('pbots/orchestration.recoveryPrepare', { request: {} })).rejects.toThrow('not enabled')
+      await expect(rt.client.call('pbots/orchestration.recoveryComplete', { request: {} })).rejects.toThrow('not enabled')
+      const stream = await rt.client.socket.open('pbots/orchestration.recovery', {})
+      await expect(stream[Symbol.asyncIterator]().next()).rejects.toThrow('not enabled')
+      stream.cancel()
+    } finally {
+      await rt.stop()
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
   it('binds native stream and unary RPC to the same Peer; reconnect is not process restart', { timeout: 120_000 }, async () => {
     const { launchRuntime } = await import('../support/runtime')
     const { connect } = await import('../../examples/lib/client.mjs')
@@ -307,6 +394,9 @@ describe('P7-F3 real Loader control stream', () => {
       expect(first.processId).toBeTypeOf('string')
       await expect(rt.client.call('pbots/orchestration.recoveryComplete', { request: { challenge: first.challenge } })).rejects.toThrow()
       other = await connect({ baseUrl: rt.baseUrl, token: rt.token })
+      const duplicate = await other.socket.open('pbots/orchestration.recovery', {})
+      await expect(duplicate[Symbol.asyncIterator]().next()).rejects.toThrow()
+      duplicate.cancel()
       await expect(other.call('pbots/orchestration.recoveryPrepare', { request: { challenge: first.challenge } })).rejects.toThrow()
       expect(await rt.client.call('pbots/orchestration.recoveryPrepare', { request: { challenge: first.challenge } })).toMatchObject({ processId: first.processId, interrupted: [], issues: [] })
       expect(await rt.client.call('pbots/orchestration.recoveryComplete', { request: { challenge: first.challenge } })).toMatchObject({ ready: true })

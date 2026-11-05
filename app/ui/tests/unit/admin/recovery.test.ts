@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -10,6 +10,7 @@ import { createReadyGate } from '../../../main/ready'
 vi.mock('electron', () => ({ app: {}, BrowserWindow: {}, ipcMain: {}, protocol: {}, MessageChannelMain: {} }))
 import { wireRestoreOnReconnect } from '../../../main/index'
 import { BotsMetaStore } from '../../../main/m3-meta/store'
+import { DshConnection } from '../../../main/dsh/connect'
 
 const deferred = () => Promise.withResolvers<void>()
 const tick = () => new Promise((resolve) => setTimeout(resolve, 10))
@@ -169,6 +170,29 @@ describe('P7-F3 main recovery gate', () => {
     expect(f.controller.isReady()).toBe(false)
   })
 
+  it('actual connection invalidates listeners on socket death and stop even when an earlier listener throws', async () => {
+    let dead = () => {}
+    const socket = { openPromise: Promise.resolve(), onDead(fn: () => void) { dead = fn }, close: vi.fn() }
+    vi.stubGlobal('fetch', vi.fn(async () => ({ status: 302, headers: { getSetCookie: () => ['session=synthetic'] } })))
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const connection = new DshConnection({ baseUrl: 'http://localhost.invalid', token: 'synthetic', interactions: 'answer', makeSocket: () => socket as any })
+    const invalidated = vi.fn()
+    try {
+      connection.onDisconnected(() => { throw new Error('injected listener failure') })
+      connection.onDisconnected(invalidated)
+      await connection.start()
+      dead()
+      expect(invalidated).toHaveBeenCalledTimes(1)
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('onDisconnected listener failed'))
+      connection.stop()
+      expect(invalidated).toHaveBeenCalledTimes(2)
+    } finally {
+      connection.stop()
+      warn.mockRestore()
+      vi.unstubAllGlobals()
+    }
+  })
+
   it('old generation restore-settled cannot release the newest ready gate; timeout settled is not management success', async () => {
     const ready = createReadyGate({ dshConfigured: true })
     ready.setDshReady(1)
@@ -180,5 +204,78 @@ describe('P7-F3 main recovery gate', () => {
     expect(ready.status().restore).toBe(false)
     ready.setRestoreSettled([], 2)
     expect(ready.status().restore).toBe(true)
+  })
+
+  it('main entry wires real F1 and recovery to M3 and disposes the control stream before quit without a desktop', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'bot-P7-F3-main-'))
+    const handoff = join(root, 'handoff')
+    mkdirSync(handoff)
+    writeFileSync(join(handoff, 'base-url'), 'http://localhost.invalid')
+    writeFileSync(join(handoff, 'launch-token'), 'synthetic-test-only')
+    const beforeQuit: Array<() => void> = [], connected: Array<(g: number) => void> = []
+    const frames: Array<(frame: unknown) => void> = []
+    const cancel = vi.fn(), loadURL = vi.fn(async () => {})
+    const dsh = {
+      start: vi.fn(async () => 1), stop: vi.fn(),
+      onConnected(fn: (g: number) => void) { connected.push(fn) }, onDisconnected: vi.fn(),
+      async ready() { return { openStream(_method: string, _args: unknown, cb: (frame: unknown) => void) { frames.push(cb); return { cancel } } } },
+      rpc: vi.fn(async (method: string) => ({ ok: true, value: method.endsWith('Prepare')
+        ? { processId: 'entry-process', interrupted: [], held: [], issues: [] }
+        : { processId: 'entry-process', ready: true } })),
+    }
+    const descriptor = Object.getOwnPropertyDescriptor(process, 'type')
+    let m3: any
+    vi.resetModules()
+    vi.doMock('electron', () => ({
+      app: { requestSingleInstanceLock: () => true, on: vi.fn(), once: (_event: string, fn: () => void) => beforeQuit.push(fn), whenReady: async () => {}, getPath: () => root, exit: vi.fn(), quit: vi.fn() },
+      BrowserWindow: { getAllWindows: () => [] }, ipcMain: { on: vi.fn(), handle: vi.fn() },
+      protocol: { registerSchemesAsPrivileged: vi.fn(), handle: vi.fn() }, MessageChannelMain: {},
+    }))
+    vi.doMock('../../../main/window', () => ({ restoreThemeSource: vi.fn(), applyThemeSource: vi.fn(), createMainWindow: () => ({ once: vi.fn(), loadURL, webContents: { send: vi.fn() } }) }))
+    vi.doMock('../../../main/dsh/connect', () => ({ DshConnection: class { constructor() { return dsh } } }))
+    vi.doMock('../../../main/m1-api', () => ({ m1Ledger: {}, registerM1Api: () => vi.fn() }))
+    vi.doMock('../../../main/m2-mux', () => ({ registerM2Mux: () => vi.fn() }))
+    vi.doMock('../../../main/m3-meta/orch-channel', () => ({ wireOrchChannel: vi.fn() }))
+    vi.doMock('../../../main/notify/worker-notify', () => ({ wireWorkerNotify: vi.fn() }))
+    vi.doMock('../../../main/m3-meta', async (original) => {
+      const actual = await original<any>()
+      return { ...actual, registerM3Meta: (deps: unknown) => (m3 = actual.registerM3Meta(deps)) }
+    })
+    vi.stubEnv('PBOTS_DSH_HANDOFF', handoff)
+    vi.stubEnv('PBOTS_DATA_DIR', root)
+    vi.stubEnv('PBOTS_SPIKE_BRIDGE', '')
+    Object.defineProperty(process, 'type', { configurable: true, value: 'browser' })
+    try {
+      await import('../../../main/index')
+      for (let n = 0; n < 100 && !loadURL.mock.calls.length; n++) await tick()
+      expect(loadURL).toHaveBeenCalledTimes(1)
+      expect(beforeQuit).toHaveLength(1)
+      connected.forEach((fn) => fn(1))
+      await tick()
+      frames.at(-1)!({ type: 'item', value: { processId: 'entry-process', challenge: 'entry-challenge' } })
+      for (let n = 0; n < 100 && dsh.rpc.mock.calls.length < 2; n++) await tick()
+      expect(dsh.rpc.mock.calls.map(([method]) => method)).toEqual(['pbots/orchestration.recoveryPrepare', 'pbots/orchestration.recoveryComplete'])
+      const { OperationsLedger: CurrentLedger } = await import('../../../main/admin/operations')
+      expect(() => new CurrentLedger(root)).toThrow('single-writer')
+      const priorCancels = cancel.mock.calls.length
+      beforeQuit[0]()
+      const successor = new CurrentLedger(root)
+      successor.close()
+      expect(dsh.stop).toHaveBeenCalledTimes(1)
+      expect(cancel).toHaveBeenCalledTimes(priorCancels + 1)
+      const count = dsh.rpc.mock.calls.length
+      frames.at(-1)!({ type: 'item', value: { processId: 'entry-process', challenge: 'late' } })
+      await tick()
+      expect(dsh.rpc).toHaveBeenCalledTimes(count)
+    } finally {
+      beforeQuit.forEach((fn) => fn())
+      m3?.store.close()
+      if (descriptor) Object.defineProperty(process, 'type', descriptor)
+      else Reflect.deleteProperty(process, 'type')
+      vi.unstubAllEnvs()
+      for (const path of ['electron', '../../../main/window', '../../../main/dsh/connect', '../../../main/m1-api', '../../../main/m2-mux', '../../../main/m3-meta/orch-channel', '../../../main/notify/worker-notify', '../../../main/m3-meta']) vi.doUnmock(path)
+      vi.resetModules()
+      rmSync(root, { recursive: true, force: true })
+    }
   })
 })

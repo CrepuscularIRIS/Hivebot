@@ -94,6 +94,7 @@ export class Reporter {
     this.batchWindowMs = batchWindowMs
     this.timer = null
     this.flushing = false
+    this.reconcilePending = false
     /** 进程内主 bot 回合记账：turn/start/end 事件维护，flush 判忙的快路径。 */
     this.mainRunning = false
     /**
@@ -183,7 +184,11 @@ export class Reporter {
    * @param {string} trigger 'boot' | 'window'（日志用）。
    */
   async flush(trigger) {
-    if (this.flushing || this.lifetime.signal.aborted) return
+    if (this.lifetime.signal.aborted) return
+    if (this.flushing) {
+      this.reconcilePending = true
+      return
+    }
     const recovery = this.orch.recovery
     const permit = {
       ready: recovery?.ready ?? Promise.resolve(),
@@ -253,9 +258,18 @@ export class Reporter {
       await this.orch.delivery.send(mainAgent, buildReportMessage(items), permit)
       if (this.orch.config.crashAt === 'report-after-send') process.exit(CRASH_EXIT_CODE)
     } catch (error) {
+      // An already-issued followup is unknown, not a canceled pre-delivery pass.
+      if (error?.unconfirmedStart) this.reconcilePending = false
       if (!permit.signal.aborted || error?.unconfirmedStart) throw error
     } finally {
       this.flushing = false
+      const reconcile = this.reconcilePending && permit.signal.aborted && !this.lifetime.signal.aborted
+      this.reconcilePending = false
+      // A completed new lease's window can expire behind the canceled old pass.
+      // Consume that one trigger after releasing single-flight; no polling/retry.
+      if (reconcile) queueMicrotask(() => {
+        this.flush('recovery').catch((error) => warn(`recovery reconcile failed: ${String(error instanceof Error ? error.message : error)}`))
+      })
     }
   }
 

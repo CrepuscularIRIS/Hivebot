@@ -2,11 +2,16 @@
 
 中文交流。**用户主导开发**：需求、方案取舍、节奏由用户定；agent 按用户指令执行，不自行启动多阶段流程。
 
+## 0. 开发架构（2026-11-05 起，优先于下文旧流程）
+
+**主 agent（GLM 5.3）直接开发**；Opus 5.5 只在需要设计决策时按需出方案（派 `director`）；6.1 Sol 作为独立 subagent 攒批审查。不派 builder / verifier，不建 cron。接手先读 `work/HANDOFF.md`。
+
 ## 1. 目录
 
 | 路径 | 内容 |
 |---|---|
-| `.claude/skills/grok-orchestrate/` | **主会话（GLM 5.3）编排手册**：一层派发、何时派 REA / 找 Opus director / 问用户、Build⇄Verify⇄Review、项目路线（`references/roadmap.md`）。推进开发前先加载 |
+| `work/HANDOFF.md` | **当前接手入口**：架构、状态、待办顺序、踩过的坑 |
+| `.claude/skills/grok-orchestrate/` | 旧编排手册（一层派发）。**已停用**，仅作参考；项目路线仍可看 `references/roadmap.md` |
 | `docs/harness/PROTOCOL.md` | 工程闭环参考：阶段、闸门、panel、逆向规则、任务图格式。用户要求走完整流程时再用 |
 | `docs/harness/MODELS.md` | 派发参数（`subagent_type`、何时必须传 `model`）和各模型的提示词写法。**派发前必读** |
 | `docs/harness/REVIEW.md` | 多模型 code review 的设计 |

@@ -1,0 +1,13 @@
+diff --git a/app/sdk/src/policy/shell-ask.mjs b/app/sdk/src/policy/shell-ask.mjs
+index 96a9761..340c395 100644
+--- a/app/sdk/src/policy/shell-ask.mjs
++++ b/app/sdk/src/policy/shell-ask.mjs
+@@ -321 +321,4 @@ export function apply(ctx, config = {}) {
+-        noteZoneVerdict(exec, { kind: write ? 'workspace-write' : 'workspace-read', allInside: false })
++        const fsFallback = typeof ctx.get === 'function' ? ctx.get('fs') : null
++        const resolved = fsFallback && typeof fsFallback.resolve === 'function'
++          ? await resolveTargets(ctx, exec, fsFallback) : { targets: [] }
++        noteZoneVerdict(exec, { kind: write ? 'workspace-write' : 'workspace-read', allInside: false, targets: [...resolved.targets] })
+@@ -360 +363 @@ export function apply(ctx, config = {}) {
+-    noteZoneVerdict(exec, { kind, allInside })
++    noteZoneVerdict(exec, { kind, allInside, targets: [...targets] })

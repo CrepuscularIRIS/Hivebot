@@ -1,0 +1,59 @@
+# P6-10.f2a 交付报告（builder）
+
+分支 feat/P6-10f2（基点 132edd7），两个 commit：
+- 459e43f feat(P6-10f2a): C-1 脱敏扩到 warn 文本与嵌套 details 字符串
+- 8cd0240 test(P6-10f2a): create-live 顺序无关（shuffle seed=61102 由 7 红到全绿）
+
+## ① C-1 脱敏扩展
+
+改动（只动 redact 与其接线，未碰 P6-11 在 main 上的 ⑤ 通道接线 / foundation barrel）：
+- app/sdk/src/orchestration/main-channel.mjs：新增 redactInternalDeep（复用
+  redactInternalPaths 的 message 规则递归；只动 plain object / array / string，
+  遇环保留原引用）；respond 的 error.details 改经它脱敏。
+- app/sdk/src/orchestration/create.mjs：决策 32 的 warn 透传前 redactInternalDeep。
+- app/sdk/tests/unit/orchestration-create.test.ts：C-1 describe +2 用例（details
+  递归 / warn 文本），先红（两处均泄漏 /tmp/bot-p610f2-internal 绝对路径）后绿。
+
+探针（evidence/P6-10f2/）：
+- probe-f2a-redact.mjs（新）：复用 verifier vfy-extra.mjs 的 c/d rig 断言反转，
+  PASS——details 三层（path / nested.cause / peers[]）与 warn 均只剩
+  <path>/sessions/worker.json 相对提示，无绝对路径。
+- vfy-extra.mjs（原样重跑）：其泄漏确认断言（:51 details includes secretPath）
+  现按预期失败——泄漏消除的直接对照。
+
+## ② P6-10 测试顺序隔离（create-live）
+
+根因与修法（详见 commit 8cd0240 正文）：
+- ⑫ durability：不再依赖 ② 的 happyWorker；杀共享 runtime 后把重启的 rt2 留作
+  describe 的 rt（失败路径才 stop）。
+- RT2 describe：独立 home2/dataDir2（避免与 RT1 抢 launcher.lock / bots.json 互踩）；
+  crash 例同样留活 rt2；③′ 开头重申自己的 bots.json。
+- ⑦⑥ capacity 开跑前显式等 slots 清零；② 非主对照改用本例 worker（visible(B)
+  在重启后无 live agent）。
+
+## 验收证据（全部 HOME=/tmp/bot-p610f2a/home，sdk 包内 vitest run）
+
+- 红基线：4 文件 shuffle seed=61102 修前 7 failed / 101 passed
+  （/tmp/bot-p610f2a/shuffle-red-61102.log，7 例与 VERIFY-P6-11 清单一致）。
+- 修后：seed=61102 → 4 files / 108 tests 全绿
+  （/tmp/bot-p610f2a/shuffle-green-61102b.log）。
+- 换 seed 抽验：61103、7（/tmp/bot-p610f2a/shuffle-green-*.log，结果见下）。
+- 定向计数：3 unit 文件 97/97（95+2 新用例，不降）；create-live 声明顺序 11/11。
+
+结果汇总（2026-11-04 12:2x–12:4x，node 24.22.2）：
+- shuffle seed=61102：4 files / 108 tests 全绿（shuffle-green-61102b.log）
+- shuffle seed=61103：4 files / 108 全绿；seed=7：4 files / 108 全绿
+  （shuffle-seeds.txt）
+- 定向 3 unit 文件：97/97（targeted-95.log，95+2 新 C-1 用例，不降）
+- create-live 声明顺序（最终代码）：11/11（ordered-live-final.log）
+
+自查：bot-reap --dry-run --match p610f2 exit=0 无输出（无残留）；
+pgrep start.mjs/dsh 无测试遗留（仅 pgrep 自身命令行自匹配）。
+
+## 范围外发现（不动，交派发者）
+
+- 全量 shuffle（41 文件，本分支基点）已有非 P6-10 顺序依赖：guard-fs 等 P5 e2e
+  编号场景对 within-file 顺序敏感，20 红/7 文件（含 create-live 修前 7 例）。
+  P6-10 范围内修毕；其余建议单立任务。
+- P6-11 send 测试不在本 worktree（基点早于 b00ab66）；merge 时主会话三方处理
+  main-channel（+2 行 P6-11 接线 vs 本分支 redactInternalDeep 接线行）。

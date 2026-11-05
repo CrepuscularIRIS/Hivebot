@@ -1,0 +1,2 @@
+total=16 kinds={'direct': 4, 'single': 4, 'parallel': 2, 'attach': 2, 'stop': 2, 'chat': 2}
+PASS: all checks satisfied

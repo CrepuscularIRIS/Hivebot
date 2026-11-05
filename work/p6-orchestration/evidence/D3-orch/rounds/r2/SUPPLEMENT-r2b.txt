@@ -1,0 +1,22 @@
+文案冻结 0ed1ed4；采集器修复 5092c75。
+保留 r2a 完整17组；计划补采19组如下（par1-two-tasks-2为429超时重采）。本次dev先遇429停采，held-out未启动，以下19组全部仍待采：
+par1-two-tasks-2
+par1-two-tasks-3
+par2-list-and-weekday-1
+par2-list-and-weekday-2
+par2-list-and-weekday-3
+attach1-hike-append-1
+attach1-hike-append-2
+attach1-hike-append-3
+attach2-backup-index-1
+attach2-backup-index-2
+attach2-backup-index-3
+stop1-lowercase-1
+stop1-lowercase-2
+stop1-lowercase-3
+stop2-archive-1
+stop2-archive-2
+stop2-archive-3
+chat1-thanks-1
+chat2-greeting-1
+另重采 dev-attach-recipe-allergy-1；旧raw和旧分表保留 archive-r2a。

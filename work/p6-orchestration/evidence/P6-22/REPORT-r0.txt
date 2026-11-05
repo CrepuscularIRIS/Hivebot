@@ -1,0 +1,54 @@
+P6-22 前半段交付记录：第 0 步 + dev 冻结 + r0 文案与接线（不含真模型轮次）
+分支 feat/P6-22；基点 main@60e8b02。
+首稿代码 commit：d92d5b4e42abe5c4eef8f5e85f441e9123f5f475。
+
+范围修正记录
+初次发现 production patch 直接加载 main-channel.mjs、不经过 index.mjs，按原范围停止而未绕过限制。随后收到明确授权：main-channel.mjs 可以添加 routing-prompt 的 import 与注册调用，index.mjs 仍只追加导出 1 行。本次按此修正继续，原阻塞已解除。
+
+第 0 步：PASS（无真模型）
+命令：HOME=/tmp/bot-p622-home node work/p6-orchestration/evidence/P6-22/probe-section.mjs
+输出：PASS installed dsh@0.2.2-alpha.2: per-agent scope + function text; main=present worker=absent ordinary=absent unscoped=absent disposed=absent; providerCalls=1
+探针使用已装包（createRequire 锚定 dsh-plugin-market 的 peer 依赖），实际调用 section/assemble/renderPrompt；scope 使用上游 agent.ctx 同一 createScope/scopeOf 机制。第一级 API 可用，不需要全局 fallback。
+复用依据：PLAN P6-22 / 决策 33；repos/MANIFEST.tsv 的 deepseek-harness@ce7073d512；探针参照 packages/core/system-prompt/tests/scoped.spec.ts。探针与审计脚本提交 0117524。
+
+dev 集：独立提交 9a8f680，早于任何文案改动
+该提交仅含 work/p6-orchestration/evidence/D3-orch/dev-prompts.json。
+命令：HOME=/tmp/bot-p622-home node work/p6-orchestration/evidence/P6-22/check-dev-prompts.mjs
+输出：{"devCases":10,"heldCases":16,"counts":{"single":4,"parallel":2,"attach":1,"stop":1,"direct":1,"chat":1},"normalizedWordingDuplicates":0,"overlappingTaskAssets":0,"uniqueDevTaskLabels":10}
+具体任务人工逐项复核不重复：CSV 转 JSON / SVG 徽章 / JSON 字段校验 / Markdown 链接提取 / CSS 卡片与长度单位 / 小诗与正则 / 过敏菜谱修改 / 定时采样取消 / HTTP 404 / 喝茶闲聊。
+脚本证明规范化措辞、文件资产、ID 去重与分布，不冒称能自动证明语义差异。没有读取 held-out raw，也未用 held-out 失败回复调词。
+
+r0 首稿与接线
+来源: https://github.com/b-nnett/grok-bot-0.18-reconstructed@a9f633e:source/packages/agent/prompts/project-prompt.ts:100,121-129
+第 3 级复制改造：保留「快问快答留主对话；多步或可能阻塞的活交给 worker，哪怕只需一次工具调用」与 coordinating workers 的段落/工具列表结构；把云端 Create/Send/StopAgent 适配为本地 create_bot/send_to_bot/stop_bot，删去不存在的云 VM、状态和转录 API。
+三个 DESCRIPTION 仅改常量：去掉 Only call this when 门槛，正向说明何时使用、主对话保持响应、Workers 可见性、与内部 subagent 的分工，并保留污染回合、busy、不可自动重试、停止结算等限制。
+main-channel.mjs 只增加 import 和 constructor 注册调用两行；index.mjs 只追加导出一行，未修改其他执行逻辑、persona 或默认链。
+按 agent 注册 scoped provider，text 为函数；每次 assemble 同步读取一个权威 bots.json 快照。只有 mainBotId 精确匹配且元数据可解析、版本合法、bots 形状合法、该会话不标为 worker 才返回正文。其余 scope 返回空串，不在模型系统提示中出现路由正文。换主、文件损坏或缺失在下一次 assemble 立即撤销，无缓存；监听器与 scoped registrations 随 owner/agent disposal 清理。
+section 名：pbots:orchestration-routing；排序复用已装 SystemPrompt.getSectionOrder('TEAM_POLICY')。
+section 正文 SHA-256：5e89aec8de696df5e0e2c81895b39578a20ac288daa045e67ed59c44abbd3420（套件内固定断言）。
+
+TDD / 定向测试
+RED：HOME=/tmp/bot-p622-home node node_modules/vitest/vitest.mjs run tests/unit/orchestration-routing*.test.ts --maxWorkers=1
+首轮 exit 1：routing 模块不存在；真实 Loader + fake 回合的 system/message 缺 marker 而断言失败，Test Files 2 failed，Tests 1 failed。日志 /tmp/bot-p622-red.log。
+GREEN：同命令 exit 0，Test Files 2 passed (2)，Tests 14 passed (14)。日志 /tmp/bot-p622-green.log。
+新测试含：真实已装 SystemPrompt 的主/worker/普通/无 scope 隔离，未知/非法/冲突身份反向用例，缺文件与恢复、换主撤权、新建 agent、重复注册、agent 和插件 dispose，以及正文 SHA 防静默回退。
+真实生产 Loader 测试显式加载 orchestration.yml + p2fake，记录 system/message：主 bot 有正文；worker/普通 bot 无正文；换主后旧主下一 step 无，新主有；损坏身份后新主下一 step 无。只用脚本假模型，不请求任何真模型。
+覆盖率命令：HOME=/tmp/bot-p622-home node node_modules/vitest/vitest.mjs run tests/unit/orchestration-routing.test.ts --maxWorkers=1 --coverage --coverage.include=src/orchestration/routing-prompt.mjs --coverage.reporter=text --coverage.reporter=json-summary --coverage.reportsDirectory=/tmp/bot-p622-coverage
+结果：13/13 PASS；新模块 statements 100% (37/37)，branches 95% (19/20)，functions 100% (8/8)，lines 100% (29/29)。日志 /tmp/bot-p622-coverage.log。
+首次全编排定向回归：250/252 PASS，两个失败均已定位为旧字符串/导出快照。foundation 的精确 Object.keys 全集尚无三个新导出；stop 旧测试固定检查 Stop a worker bot。仅给 foundation 白名单补上新增导出，并让正向 STOP_DESCRIPTION 保留该自然开头（没有修改 stop 测试）。修复后单跑 foundation + stop + routing*：4 文件 88/88 PASS，日志 /tmp/bot-p622-fixed.log。
+最终全编排定向回归：HOME=/tmp/bot-p622-home node node_modules/vitest/vitest.mjs run tests/unit/orchestration-*.test.ts --maxWorkers=1（cwd 为本 worktree 的 app/sdk），exit 0。
+最后输出：Test Files 14 passed (14)；Tests 252 passed (252)。日志 /tmp/bot-p622-final-unit-pass.log。
+score.mjs --selftest：最终复核 17/17 PASS；probe-section 与 dev 去重脚本亦已重新执行通过。
+
+改动文件清单（均在本 worktree）
+app/sdk/src/orchestration/routing-prompt.mjs（新）；main-channel.mjs（仅接线两行）；index.mjs（仅导出一行）；create.mjs / send.mjs / stop.mjs（仅 *_DESCRIPTION 常量）。
+app/sdk/tests/unit/orchestration-routing.test.ts 与 orchestration-routing-live.test.ts（新）；orchestration-foundation.test.ts（仅精确导出全集追加 ROUTING_PROMPT、ROUTING_SECTION、registerRoutingPrompt 三项，不删断言、不放宽比较）。
+work/p6-orchestration/evidence/D3-orch/dev-prompts.json；work/p6-orchestration/evidence/P6-22/probe-section.mjs、check-dev-prompts.mjs、本 REPORT-r0.txt。
+
+约束与收尾
+测试使用临时 HOME=/tmp/bot-p622-*，live 测试显式 P2SDK_ORCH_DATA_DIR 并预写 version:1 零 worker 骨架。运行期间只用已装依赖的临时 node_modules 软链接；不安装、不强制清空共享依赖。
+首次 pnpm exec 在临时 HOME 下触发安装预检，报 ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY；随后改用直接运行已装 Vitest，没有用 CI 强制删除模块。
+prompts.json 与 score.mjs 零 diff；无真模型调用；不跑全量 SDK 回归、不开放默认链。
+最终进程残留检查：/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p622 与 --match P6-22 均 exit 0、无匹配输出，未执行任何 kill；已仅 unlink 本 worktree 的临时 node_modules 软链接，没有删除共享依赖目标。
+未完成项：真模型 dev/held-out 轮次及收敛判定按指令留给后续派发，本次不作路由效果 PASS 声明。
+待 verifier 验收。

@@ -1,0 +1,56 @@
+P6-22 r1 — frozen first-draft d92d5b4, product baseline c33efa8, collector 1599276
+Model glm-5.3 / litellm; group delay 5000ms; no prompt changes.
+Dev: 6/10 total; single 1/4, parallel 2/2, attach 0/1, stop 1/1, direct 1/1, chat 1/1.
+Dev raw may be read; held-out raw was processed mechanically only.
+
+phase=heldout model=glm-5.3 planned=36 collected=36
+single: correct=0/12 complete-route-fail=12 timeout=0 other-incomplete=0 missing=0
+parallel: correct=3/6 complete-route-fail=3 timeout=0 other-incomplete=0 missing=0
+attach: correct=0/6 complete-route-fail=6 timeout=0 other-incomplete=0 missing=0
+stop: correct=0/6 complete-route-fail=6 timeout=0 other-incomplete=0 missing=0
+direct: correct=4/4 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+chat: correct=2/2 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+subset=3/30; sentinel-misdispatch=0/6; sentinel-correct=6/6
+hard: polluted-tool-success=0; reports=6; report-tailTexts-not-one=0
+converged=false (requires complete collection; timeout is not a demonstrated routing failure)
+Per-group score table (no raw prose):
+dir1-docker-vm-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+dir2-translate-ja-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+dir3-power-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+dir4-tv-rec-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single1-packing-1	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single1-packing-2	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single1-packing-3	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single2-date-diary-1	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single2-date-diary-2	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single2-date-diary-3	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single3-fib-run-1	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single3-fib-run-2	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single3-fib-run-3	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single4-count-logs-1	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single4-count-logs-2	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single4-count-logs-3	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+par1-two-tasks-1	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+par1-two-tasks-2	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+par1-two-tasks-3	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+par2-list-and-weekday-1	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par2-list-and-weekday-2	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par2-list-and-weekday-3	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+attach1-hike-append-1	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+attach1-hike-append-2	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+attach1-hike-append-3	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+attach2-backup-index-1	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+attach2-backup-index-2	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+attach2-backup-index-3	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+stop1-lowercase-1	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+stop1-lowercase-2	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+stop1-lowercase-3	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+stop2-archive-1	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+stop2-archive-2	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+stop2-archive-3	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+chat1-thanks-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+chat2-greeting-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+
+Decision: NOT CONVERGED (3/30 < 22/30). Do not run full 48 yet.
+Any r2 prompt work must use dev/raw only. No held-out failure prose was inspected.
+All 46 groups completed; timeouts 0; retries 0; remaining groups none.

@@ -1,0 +1,353 @@
+[
+  {
+    "seq": 0,
+    "type": "permission/preset",
+    "turn": null,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 1,
+    "type": "sandbox/mode",
+    "turn": null,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 2,
+    "type": "approval/policy",
+    "turn": null,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 3,
+    "type": "agent/inbox/spliced",
+    "target": "next-turn",
+    "outcome": null,
+    "insertedIds": [
+      "81264781-3eba-48d3-ad54-4f12caebe448"
+    ]
+  },
+  {
+    "seq": 4,
+    "type": "turn/start",
+    "turn": 1,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 5,
+    "type": "agent/inbox/spliced",
+    "target": "next-turn",
+    "outcome": null,
+    "insertedIds": []
+  },
+  {
+    "seq": 6,
+    "type": "step/start",
+    "turn": 1,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 7,
+    "type": "system/message",
+    "turn": 1,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 8,
+    "type": "user/message",
+    "id": "81264781-3eba-48d3-ad54-4f12caebe448",
+    "sourceKind": "user"
+  },
+  {
+    "seq": 9,
+    "type": "user/message",
+    "id": "7cd2b3f4-fc36-44cb-9a83-4c9b8216fa93",
+    "sourceKind": "runtime-context"
+  },
+  {
+    "seq": 10,
+    "type": "user/message",
+    "id": "1662aeb1-d530-4f85-a3cf-f94dfde9dcc6",
+    "sourceKind": "time-context"
+  },
+  {
+    "seq": 11,
+    "type": "request/header",
+    "turn": null,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 12,
+    "type": "request/context",
+    "turn": null,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 13,
+    "type": "session/title",
+    "turn": null,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 14,
+    "type": "assistant/message",
+    "turn": 1,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 15,
+    "type": "tool/call",
+    "turn": 1,
+    "callId": "q0",
+    "name": "send_to_bot"
+  },
+  {
+    "seq": 16,
+    "type": "tool/result",
+    "callId": "q0",
+    "isError": false,
+    "error": null,
+    "text": "{\"sessionId\":\"session-ffe14185-8480-450f-9c68-663d95945ab8\",\"assignmentId\":\"f6df017d-5e0c-4dd6-903d-6c5b9e970aab\"}"
+  },
+  {
+    "seq": 17,
+    "type": "step/end",
+    "turn": 1,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 18,
+    "type": "step/start",
+    "turn": 1,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 19,
+    "type": "agent/inbox/spliced",
+    "target": "next-turn",
+    "outcome": null,
+    "insertedIds": [
+      "pbots-report:stop-1793828566639"
+    ]
+  },
+  {
+    "seq": 20,
+    "type": "assistant/message",
+    "turn": 1,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 21,
+    "type": "step/end",
+    "turn": 1,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 22,
+    "type": "turn/end",
+    "turn": 1,
+    "reason": "aborted",
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 23,
+    "type": "agent/inbox/spliced",
+    "target": "next-turn",
+    "outcome": "canceled",
+    "insertedIds": []
+  },
+  {
+    "seq": 24,
+    "type": "agent/inbox/spliced",
+    "target": "next-turn",
+    "outcome": null,
+    "insertedIds": [
+      "d7ef5e1f-3db7-459a-acf1-893becbca7a8"
+    ]
+  },
+  {
+    "seq": 25,
+    "type": "turn/start",
+    "turn": 2,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 26,
+    "type": "agent/inbox/spliced",
+    "target": "next-turn",
+    "outcome": null,
+    "insertedIds": []
+  },
+  {
+    "seq": 27,
+    "type": "step/start",
+    "turn": 2,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 28,
+    "type": "user/message",
+    "id": "d7ef5e1f-3db7-459a-acf1-893becbca7a8",
+    "sourceKind": "user"
+  },
+  {
+    "seq": 29,
+    "type": "assistant/message",
+    "turn": 2,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 30,
+    "type": "tool/call",
+    "turn": 2,
+    "callId": "q1",
+    "name": "bash"
+  },
+  {
+    "seq": 31,
+    "type": "approval/asked",
+    "id": "0807275d-a0de-4e83-bb38-2eb6a8babf4d",
+    "outcome": null
+  },
+  {
+    "seq": 32,
+    "type": "approval/decided",
+    "id": "0807275d-a0de-4e83-bb38-2eb6a8babf4d",
+    "outcome": "allowed-once"
+  },
+  {
+    "seq": 33,
+    "type": "job/registered",
+    "turn": null,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 34,
+    "type": "job/settled",
+    "turn": null,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 35,
+    "type": "tool/result",
+    "callId": "q1",
+    "isError": false,
+    "error": null,
+    "text": "(no output)"
+  },
+  {
+    "seq": 36,
+    "type": "step/end",
+    "turn": 2,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 37,
+    "type": "step/start",
+    "turn": 2,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 38,
+    "type": "assistant/message",
+    "turn": 2,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 39,
+    "type": "step/end",
+    "turn": 2,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 40,
+    "type": "turn/end",
+    "turn": 2,
+    "reason": "completed",
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 41,
+    "type": "agent/inbox/spliced",
+    "target": "next-turn",
+    "outcome": null,
+    "insertedIds": [
+      "pbots-report:22f54d93eac29f48c32056a6954c11eb6e68298e69178a9c12b33f6e0f818e20"
+    ]
+  },
+  {
+    "seq": 42,
+    "type": "turn/start",
+    "turn": 3,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 43,
+    "type": "agent/inbox/spliced",
+    "target": "next-turn",
+    "outcome": null,
+    "insertedIds": []
+  },
+  {
+    "seq": 44,
+    "type": "step/start",
+    "turn": 3,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 45,
+    "type": "user/message",
+    "id": "pbots-report:22f54d93eac29f48c32056a6954c11eb6e68298e69178a9c12b33f6e0f818e20",
+    "sourceKind": "pbots-worker",
+    "items": [
+      {
+        "key": "f6df017d-5e0c-4dd6-903d-6c5b9e970aab:end",
+        "kind": "end",
+        "workerId": "session-ffe14185-8480-450f-9c68-663d95945ab8",
+        "assignmentId": "f6df017d-5e0c-4dd6-903d-6c5b9e970aab",
+        "outcome": "completed",
+        "result": "结果"
+      }
+    ]
+  },
+  {
+    "seq": 46,
+    "type": "request/header",
+    "turn": null,
+    "callId": "",
+    "name": ""
+  },
+  {
+    "seq": 47,
+    "type": "developer/message",
+    "turn": 3,
+    "callId": "",
+    "name": ""
+  }
+]

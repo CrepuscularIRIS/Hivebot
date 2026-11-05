@@ -1,0 +1,16 @@
+dev-only raw timeline (no held-out access)
+outcome=turn/end timeouts=- workers=1 retryCount=0
+line 11: user/message source=user
+line 12: user/message source=runtime-context
+line 13: user/message source=time-context
+line 338: tool/call create_bot
+line 413: turn/end reason=completed
+line 418: user/message source=pbots-worker
+line 503: tool/call read
+line 810: turn/end reason=completed
+line 815: user/message source=user
+line 1186: tool/call send_to_bot
+line 1235: turn/end reason=completed
+line 1240: user/message source=pbots-worker
+line 1495: turn/end reason=completed
+PASS: second report is after second user turn and is consumed; no old-batch replay substitution

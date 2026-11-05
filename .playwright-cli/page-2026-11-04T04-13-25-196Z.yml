@@ -1,0 +1,29 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - complementary "Agents" [ref=e7]:
+      - button "New" [ref=e10] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e11]: 
+      - button "Search" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]:
+          - generic [aria-hidden] [ref=e14]: 
+          - text: Search
+      - region "Agent list" [ref=e15]:
+        - generic [ref=e16]:
+          - generic "New chat chat preview" [ref=e1527]:
+            - button "New chat" [ref=e1528] [cursor=pointer]:
+              - strong [ref=e1539]: New chat
+          - generic "New chat chat preview" [ref=e19]:
+            - button "New chat" [ref=e20] [cursor=pointer]:
+              - strong [ref=e31]: New chat
+      - separator "Resize sidebar" [ref=e32]
+    - button "Connect apps" [ref=e34] [cursor=pointer]
+    - button "Account" [ref=e37] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e38]: P
+  - generic [ref=e1540]:
+    - main [ref=e1541]:
+      - group "New chat" [ref=e1542]:
+        - button "View agent settings" [ref=e1543] [cursor=pointer]:
+          - generic [ref=e1552]: New chat
+      - log "Conversation transcript" [ref=e1553]
+    - textbox "Prompt" [active] [ref=e1558]:
+      - paragraph [ref=e1559]: Message New chat

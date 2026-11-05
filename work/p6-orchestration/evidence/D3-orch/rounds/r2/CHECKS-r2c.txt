@@ -1,0 +1,19 @@
+P6-22 r2c — 6.1 Sol harness / glm-5.3 target
+Base ffe98e6; collector waitReportConsumed fix 5092c75; text frozen at 0ed1ed4.
+New collector f7ba26f, no product or frozen scoring changes.
+RED: node rounds/r2/test-retry-r2c.mjs => ReferenceError retry429Delay is not defined (before implementation).
+GREEN: node rounds/r2/test-retry-r2c.mjs => PASS: 5 bounded 429 retry checks.
+node --check run.mjs => exit 0.
+node rounds/r2/test-report-wait.mjs => PASS: 5 report-wait checks; real dev replay sees second batch; no held-out raw read.
+node score.mjs --selftest => 17/17.
+HOME=/tmp/bot-p622r2c-shell-home vitest run --root /tmp/bot-wt/P6-22/app/sdk tests/unit/orchestration-routing-live.test.ts tests/unit/orchestration-routing.test.ts
+Test Files 2 passed (2)
+Tests 14 passed (14)
+Duration 2.92s
+HOME=/tmp/bot-p622r2c-shell-home P622_RUNTIME_ROOT=/tmp/bot-p622r2c-smoke P622_EVID_DIR=rounds/r2/smoke-r2c node run.mjs --smoke
+SMOKE PASS: channel / assign / delivered+consumed / main+worker tool gating / raw shape.
+git diff 0ed1ed4 -- routing-prompt.mjs create.mjs send.mjs stop.mjs prompts.json score.mjs => empty.
+All real collection serial with groupDelayMs=5000. SDK child HOME=<runtime>/home and P2SDK_ORCH_DATA_DIR=<runtime>/data explicitly set by existing collector.
+Short429: fresh session, max 3 retries, >=30s delay. Final policy e75bbbf stops only at parsed retry-after >=1000s; 900s/1000s boundary was first RED (null != 900000), then all 7 checks GREEN. Already-started held-out process loaded f7ba26f's >120s cutoff; dev will load e75bbbf. Any actual rate-limit impact must be reported from metadata, not assumed equivalent. Unknown retry-after is treated as short with bounded retries, never assumed recovered. Main and worker raw metadata retryCount records attempt number; previous attempts archived by reserveName .prevN. llm-retry plugin remains disabled.
+Held-out: exact 19 group IDs from SUPPLEMENT-r2b; --force only those groups, old par1-two-tasks-2 preserved as .prevN. Other 17 complete groups not requested again. No heldout/raw prose displayed or used for tuning.
+No full regression or 48-group final evaluation requested/run. REUSE.md absent for this slug; task's PLAN specifies adapting existing run.mjs; no new dependency, reuse existing collector/scoreGroup/fake provider.

@@ -1,0 +1,190 @@
+- generic [ref=f2e4]:
+  - generic [ref=f2e5]:
+    - complementary "Agents" [ref=f2e7]:
+      - button "New" [ref=f2e10] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f2e11]: 
+      - button "Search" [ref=f2e12] [cursor=pointer]:
+        - generic [ref=f2e13]:
+          - generic [aria-hidden] [ref=f2e14]: 
+          - text: Search
+      - region "Agent list" [ref=f2e15]:
+        - generic [ref=f2e16]:
+          - generic "VFY-HISTORY-1-EARLIEST chat preview" [ref=f2e19]:
+            - button "VFY-HISTORY-1-EARLIEST" [ref=f2e20] [cursor=pointer]:
+              - strong [ref=f2e31]: VFY-HISTORY-1-EARLIEST
+          - generic "请执行验收命令并显示结果 chat preview" [ref=f2e34]:
+            - button "请执行验收命令并显示结果" [ref=f2e35] [cursor=pointer]:
+              - strong [ref=f2e46]: 请执行验收命令并显示结果
+      - separator "Resize sidebar" [ref=f2e47]
+    - button "Connect apps" [ref=f2e49] [cursor=pointer]
+    - button "Account" [ref=f2e52] [cursor=pointer]:
+      - generic [aria-hidden] [ref=f2e53]: P
+  - generic [ref=f2e54]:
+    - main [ref=f2e55]:
+      - group "VFY-HISTORY-1-EARLIEST" [ref=f2e56]:
+        - button "View agent settings" [ref=f2e57] [cursor=pointer]:
+          - generic [ref=f2e66]: VFY-HISTORY-1-EARLIEST
+      - log "Conversation transcript" [ref=f2e67]:
+        - separator [ref=f2e74]: Today 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e75]:
+          - generic [ref=f2e76]:
+            - group [ref=f2e77]:
+              - paragraph [ref=f2e79]: VFY-HISTORY-1-EARLIEST
+            - toolbar "Message actions for your message (749a990d-ab0b-4591-96e4-9229a658b22f)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e80]:
+          - generic [ref=f2e81]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e82]:
+          - generic [ref=f2e83]:
+            - group [ref=f2e84]:
+              - paragraph [ref=f2e86]: VFY-HISTORY-2
+            - toolbar "Message actions for your message (c6e79111-fd42-4abc-a1f0-669b99952e45)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e87]:
+          - generic [ref=f2e88]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e89]:
+          - generic [ref=f2e90]:
+            - group [ref=f2e91]:
+              - paragraph [ref=f2e93]: VFY-HISTORY-3
+            - toolbar "Message actions for your message (057ee342-b749-4e2d-be77-1c0f33164417)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e94]:
+          - generic [ref=f2e95]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e96]:
+          - generic [ref=f2e97]:
+            - group [ref=f2e98]:
+              - paragraph [ref=f2e100]: VFY-HISTORY-4
+            - toolbar "Message actions for your message (11650c4f-7c0a-47c4-97d9-2a62a3d4b142)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e101]:
+          - generic [ref=f2e102]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e103]:
+          - generic [ref=f2e104]:
+            - group [ref=f2e105]:
+              - paragraph [ref=f2e107]: VFY-HISTORY-5
+            - toolbar "Message actions for your message (95ba86d8-502f-47f3-9a90-97aa9b5fb274)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e108]:
+          - generic [ref=f2e109]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e110]:
+          - generic [ref=f2e111]:
+            - group [ref=f2e112]:
+              - paragraph [ref=f2e114]: VFY-HISTORY-6
+            - toolbar "Message actions for your message (859bfacd-5906-48bc-8e1a-56e7895780c9)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e115]:
+          - generic [ref=f2e116]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e117]:
+          - generic [ref=f2e118]:
+            - group [ref=f2e119]:
+              - paragraph [ref=f2e121]: VFY-HISTORY-7
+            - toolbar "Message actions for your message (a5c67c1f-0ee4-463c-9310-09bf860afd8e)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e122]:
+          - generic [ref=f2e123]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e124]:
+          - generic [ref=f2e125]:
+            - group [ref=f2e126]:
+              - paragraph [ref=f2e128]: VFY-HISTORY-8
+            - toolbar "Message actions for your message (fbfd60b9-1a10-44e0-a297-e39571036cf0)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e129]:
+          - generic [ref=f2e130]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e131]:
+          - generic [ref=f2e132]:
+            - group [ref=f2e133]:
+              - paragraph [ref=f2e135]: VFY-HISTORY-9
+            - toolbar "Message actions for your message (7372c2b4-5cbe-47a6-9b80-57ac6583ccbb)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e136]:
+          - generic [ref=f2e137]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e138]:
+          - generic [ref=f2e139]:
+            - group [ref=f2e140]:
+              - paragraph [ref=f2e142]: VFY-HISTORY-10
+            - toolbar "Message actions for your message (a30a0953-f69e-4e1b-917d-6e11f96a383c)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e143]:
+          - generic [ref=f2e144]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e145]:
+          - generic [ref=f2e146]:
+            - group [ref=f2e147]:
+              - paragraph [ref=f2e149]: VFY-HISTORY-11
+            - toolbar "Message actions for your message (3fcc79f0-bcb5-409a-8bdf-f931619fc1b2)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e150]:
+          - generic [ref=f2e151]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e152]:
+          - generic [ref=f2e153]:
+            - group [ref=f2e154]:
+              - paragraph [ref=f2e156]: VFY-HISTORY-12
+            - toolbar "Message actions for your message (772018cc-8de2-49a6-9b27-a27c09e6b583)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e157]:
+          - generic [ref=f2e158]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e159]:
+          - generic [ref=f2e160]:
+            - group [ref=f2e161]:
+              - paragraph [ref=f2e163]: VFY-HISTORY-13
+            - toolbar "Message actions for your message (bac98b66-b4a2-48f4-9cff-2d7066ed4b86)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e164]:
+          - generic [ref=f2e165]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e166]:
+          - generic [ref=f2e167]:
+            - group [ref=f2e168]:
+              - paragraph [ref=f2e170]: VFY-HISTORY-14
+            - toolbar "Message actions for your message (8e91ebf0-74c7-4666-87d8-ba4a1dcf7678)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e171]:
+          - generic [ref=f2e172]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:45 AM" [ref=f2e173]:
+          - generic [ref=f2e174]:
+            - group [ref=f2e175]:
+              - paragraph [ref=f2e177]: VFY-HISTORY-15
+            - toolbar "Message actions for your message (cf358463-72ff-41c0-8f08-57955951333e)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e178]:
+          - generic [ref=f2e179]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+        - article "You 11/4/2026, 3:56:46 AM" [ref=f2e180]:
+          - generic [ref=f2e181]:
+            - group [ref=f2e182]:
+              - paragraph [ref=f2e184]: VFY-HISTORY-16
+            - toolbar "Message actions for your message (218d395f-de56-4685-b3be-0a5d63261769)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - note [ref=f2e185]:
+          - generic [ref=f2e186]: "回复失败：p2sdk-fake-llm: no scripted call #0 for session session-bacd870d-47be-4009-9f16-ac917e21bb0d"
+          - time [aria-hidden]: 3:56 AM
+    - textbox "Prompt" [ref=f2e72]:
+      - paragraph [ref=f2e73]: Message VFY-HISTORY-1-EARLIEST

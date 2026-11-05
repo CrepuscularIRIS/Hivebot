@@ -1,0 +1,21 @@
+[d3o] spawn start.mjs mode=real model=glm-5.3
+[d3o] par1-two-tasks-2 outcome=turn/end mainFrames=1876 workers=2 approvals=23 questions=0 timeouts=-
+[d3o] par1-two-tasks-3 outcome=turn/end mainFrames=1657 workers=2 approvals=44 questions=0 timeouts=-
+[d3o] par2-list-and-weekday-1 outcome=turn/end mainFrames=692 workers=2 approvals=55 questions=0 timeouts=-
+[d3o] par2-list-and-weekday-2 outcome=turn/end mainFrames=629 workers=2 approvals=63 questions=1 timeouts=-
+[d3o] par2-list-and-weekday-3 outcome=turn/end mainFrames=2289 workers=2 approvals=72 questions=1 timeouts=-
+[d3o] attach1-hike-append-1 outcome=turn/end mainFrames=1571 workers=1 approvals=80 questions=1 timeouts=-
+[d3o] attach1-hike-append-2 outcome=turn/end mainFrames=1535 workers=1 approvals=87 questions=1 timeouts=-
+[d3o] attach1-hike-append-3 outcome=turn/end mainFrames=2174 workers=1 approvals=95 questions=1 timeouts=-
+[d3o] attach2-backup-index-1 outcome=turn/end mainFrames=7523 workers=1 approvals=119 questions=2 timeouts=-
+[d3o] attach2-backup-index-2 outcome=turn/end mainFrames=930 workers=1 approvals=125 questions=2 timeouts=-
+[d3o] attach2-backup-index-3 outcome=timeout mainFrames=3882 workers=2 approvals=160 questions=3 timeouts=worker2
+[d3o] stop1-lowercase-1 outcome=turn/end mainFrames=931 workers=1 approvals=161 questions=3 timeouts=-
+[d3o] stop1-lowercase-2 outcome=turn/end mainFrames=1373 workers=1 approvals=163 questions=3 timeouts=-
+[d3o] stop1-lowercase-3 outcome=turn/end mainFrames=723 workers=1 approvals=164 questions=3 timeouts=-
+[d3o] stop2-archive-1 outcome=turn/end mainFrames=919 workers=1 approvals=166 questions=3 timeouts=-
+[d3o] stop2-archive-2 outcome=turn/end mainFrames=2693 workers=1 approvals=168 questions=3 timeouts=-
+[d3o] stop2-archive-3 outcome=turn/end mainFrames=808 workers=0 approvals=169 questions=3 timeouts=-
+[d3o] chat1-thanks-1 outcome=turn/end mainFrames=146 workers=0 approvals=169 questions=3 timeouts=-
+[d3o] chat2-greeting-1 outcome=turn/end mainFrames=115 workers=0 approvals=169 questions=3 timeouts=-
+[d3o] run-meta → /tmp/bot-wt/P6-22/work/p6-orchestration/evidence/D3-orch/rounds/r2/heldout/raw/run-meta.json

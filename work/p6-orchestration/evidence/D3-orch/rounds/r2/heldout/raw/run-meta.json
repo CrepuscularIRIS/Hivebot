@@ -1,0 +1,511 @@
+{
+  "ts": "2026-11-05T11:57:14.809Z",
+  "mode": "real",
+  "model": "glm-5.3",
+  "llmBase": "http://127.0.0.1:4001",
+  "litellm": {
+    "ok": true,
+    "hasModel": true,
+    "modelCount": 21
+  },
+  "groupDelayMs": 5000,
+  "entries": [
+    {
+      "id": "attach1-hike-append",
+      "rep": 1,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-3a628bcb-9f20-431f-b6d4-a532001378c8",
+      "raw": "attach1-hike-append-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-201d4227-b3cb-4ef3-bc79-d5a89486a078",
+          "name": "徒步计划"
+        }
+      ]
+    },
+    {
+      "id": "attach1-hike-append",
+      "rep": 2,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-f58a4351-907e-4d3a-8b37-2ae6c8b37a7d",
+      "raw": "attach1-hike-append-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-6e91a8e4-6da2-4194-8fa6-fafda7a08651",
+          "name": "创建爬山计划"
+        }
+      ]
+    },
+    {
+      "id": "attach1-hike-append",
+      "rep": 3,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-9e0a844b-d843-4415-add8-d099e7a9a257",
+      "raw": "attach1-hike-append-3.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-56c33ede-7458-4aa9-bdfd-451b7378bbc2",
+          "name": "创建爬山计划"
+        }
+      ]
+    },
+    {
+      "id": "attach2-backup-index",
+      "rep": 1,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-86fd6eea-484c-4239-b154-bb26aa26d7fd",
+      "raw": "attach2-backup-index-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-6df6bfb5-3ddb-420c-a204-7b291198c73b",
+          "name": "备份txt文件"
+        }
+      ]
+    },
+    {
+      "id": "attach2-backup-index",
+      "rep": 2,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-2685fc37-c819-4cf7-be8a-fb18b2697901",
+      "raw": "attach2-backup-index-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-2cd63acf-bd73-4a3a-ba09-2ad90984bd6d",
+          "name": "备份 txt 文件"
+        }
+      ]
+    },
+    {
+      "id": "attach2-backup-index",
+      "rep": 3,
+      "kind": "attach",
+      "outcome": "timeout",
+      "sessionId": "session-a63897c1-dd29-4020-a848-d4b98ba283d3",
+      "raw": "attach2-backup-index-3.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-e97cd48b-da21-4956-82bf-c9f2f01a7c43",
+          "name": "备份txt文件"
+        },
+        {
+          "sessionId": "session-cb56d952-7853-49d1-8e22-322ececc8280",
+          "name": "创建空backup和list"
+        }
+      ]
+    },
+    {
+      "id": "chat1-thanks",
+      "rep": 1,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-b54807bb-47c3-4f60-ac5f-52abc4d55258",
+      "raw": "chat1-thanks-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "chat2-greeting",
+      "rep": 1,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-21969ab9-c862-4287-8512-9205f381f6a6",
+      "raw": "chat2-greeting-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dir1-docker-vm",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-cb89b14d-b923-45be-b3e7-26834f549b06",
+      "raw": "dir1-docker-vm-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dir2-translate-ja",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-26201d6b-285c-408b-8d73-bddb4cacf79e",
+      "raw": "dir2-translate-ja-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dir3-power",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-0c57adba-a289-4bd6-ab81-634ba2e5f00c",
+      "raw": "dir3-power-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dir4-tv-rec",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-6571d534-98f4-461e-b340-6bbafa4e7fbd",
+      "raw": "dir4-tv-rec-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "par1-two-tasks",
+      "rep": 1,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-ead1b145-4c96-44ce-b9a9-9fee9b5f2167",
+      "raw": "par1-two-tasks-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-89fbfca0-c12f-41fe-8c62-25b883d2b2b9",
+          "name": "写今日待办"
+        },
+        {
+          "sessionId": "session-7185f919-a2bc-452d-9e3c-42a66c051687",
+          "name": "算1到100求和"
+        }
+      ]
+    },
+    {
+      "id": "par1-two-tasks",
+      "rep": 2,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-45182156-f266-4544-a729-86b28cb96d59",
+      "raw": "par1-two-tasks-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-dfc2c053-6cde-426a-8620-c776b448de18",
+          "name": "写 todo.md"
+        },
+        {
+          "sessionId": "session-644d8d8c-f27c-4719-930e-90ae966729e8",
+          "name": "算 1 加到 100"
+        }
+      ]
+    },
+    {
+      "id": "par1-two-tasks",
+      "rep": 3,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-faba3cdc-be82-4609-a9fb-f847c53dad1d",
+      "raw": "par1-two-tasks-3.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-a463b623-9323-45cb-9dc8-0f204100b89c",
+          "name": "todo-writer"
+        },
+        {
+          "sessionId": "session-30bd8d3f-7d65-4e25-addd-4b37528a2dd7",
+          "name": "sum-calculator"
+        }
+      ]
+    },
+    {
+      "id": "par2-list-and-weekday",
+      "rep": 1,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-a04c5c4f-1761-4e12-a70f-c2afd333db64",
+      "raw": "par2-list-and-weekday-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-e125ee76-c582-4a40-8ef3-468fd071066a",
+          "name": "列出文件名"
+        },
+        {
+          "sessionId": "session-ffe3ce37-4586-47ab-8a70-0127783ec744",
+          "name": "查询星期几"
+        }
+      ]
+    },
+    {
+      "id": "par2-list-and-weekday",
+      "rep": 2,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-db0c1c57-187e-4ab9-90c0-5783e73582dd",
+      "raw": "par2-list-and-weekday-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-8414b7dd-95c3-46b7-ad85-b5f9ef3e87cb",
+          "name": "列出文件名"
+        },
+        {
+          "sessionId": "session-de4e596e-b98f-4642-97aa-fad0a0030b6b",
+          "name": "查询星期几"
+        }
+      ]
+    },
+    {
+      "id": "par2-list-and-weekday",
+      "rep": 3,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-1f35f6e3-fa6b-4625-bd33-5168685fa4b6",
+      "raw": "par2-list-and-weekday-3.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-633ff0d5-8550-468f-b0a2-e8fb001451e8",
+          "name": "列出文件名"
+        },
+        {
+          "sessionId": "session-93bb7e01-0845-4ab0-80ad-523cdb761c03",
+          "name": "查询星期几"
+        }
+      ]
+    },
+    {
+      "id": "single1-packing",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-6cd79acb-ca3a-4c99-9a93-49ba59fb8674",
+      "raw": "single1-packing-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-f3a8b415-d6c7-4256-b52f-c766623c014e",
+          "name": "建 packing.txt"
+        }
+      ]
+    },
+    {
+      "id": "single1-packing",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-a1e8d965-4e31-4a66-b63c-1430bf15337c",
+      "raw": "single1-packing-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-fba0df6e-e61f-437b-bc20-8ab6803f67b1",
+          "name": "写 packing.txt"
+        }
+      ]
+    },
+    {
+      "id": "single1-packing",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-e723b584-5cd4-41db-912b-1acecf433a06",
+      "raw": "single1-packing-3.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-62ad9a73-0de0-42be-8fdc-5f4c1c303010",
+          "name": "写入 packing.txt"
+        }
+      ]
+    },
+    {
+      "id": "single2-date-diary",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-ad0caea2-cbb9-40a4-b282-b03d6d6e90e9",
+      "raw": "single2-date-diary-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-e5b23dfe-9f2b-43b9-b1f3-ffeb4422d70f",
+          "name": "日期日记"
+        }
+      ]
+    },
+    {
+      "id": "single2-date-diary",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-4f87bad0-145e-4855-b70c-654789b50c3d",
+      "raw": "single2-date-diary-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-7e92311d-c1fa-4a2c-b1f3-f04e36dcb883",
+          "name": "date-diary"
+        }
+      ]
+    },
+    {
+      "id": "single2-date-diary",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-55cf2692-e66e-4cb0-a010-238a05143a99",
+      "raw": "single2-date-diary-3.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-b9f58503-cfdc-422b-bdf4-1e2302f3c2cd",
+          "name": "建日记文件"
+        }
+      ]
+    },
+    {
+      "id": "single3-fib-run",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-a3b369d9-f236-4bfb-8ec5-f2ce3484b159",
+      "raw": "single3-fib-run-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-0ec03915-10b3-4c71-bb7b-80f2a60f790d",
+          "name": "fib-task"
+        }
+      ]
+    },
+    {
+      "id": "single3-fib-run",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-1ce26006-e639-49b1-8294-adb9661be9e9",
+      "raw": "single3-fib-run-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-5e32da0e-2b08-4b23-abf9-0eb1e1708ff0",
+          "name": "fib-task"
+        }
+      ]
+    },
+    {
+      "id": "single3-fib-run",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-b592572c-ae5c-4a52-9a97-df2b94399c8d",
+      "raw": "single3-fib-run-3.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-86ff8cc0-3f4b-4629-8a08-6e12c716b024",
+          "name": "fib-task"
+        }
+      ]
+    },
+    {
+      "id": "single4-count-logs",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-0e4462d9-03e6-4e8f-b8cc-2844f64f7997",
+      "raw": "single4-count-logs-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-307d76e9-5a28-4b3e-b9d0-998d554f878e",
+          "name": "统计log文件"
+        }
+      ]
+    },
+    {
+      "id": "single4-count-logs",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-f6ebd983-c013-4a9e-b3d8-55a077b7d7f4",
+      "raw": "single4-count-logs-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-0a2682a1-cf77-40ee-83ce-7a2cb290c8e7",
+          "name": "count-logs"
+        }
+      ]
+    },
+    {
+      "id": "single4-count-logs",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-719dcaee-7460-4578-9aa0-4817f045cd0c",
+      "raw": "single4-count-logs-3.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-e935f378-05ef-4add-82a3-a7f5ce9978b7",
+          "name": "count-logs"
+        }
+      ]
+    },
+    {
+      "id": "stop1-lowercase",
+      "rep": 1,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-4892cec6-67a6-4c59-a39a-34eec9bde255",
+      "raw": "stop1-lowercase-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-6e92fc65-27f6-4bb0-9b13-499b266c2d9e",
+          "name": "lowercase-rename"
+        }
+      ]
+    },
+    {
+      "id": "stop1-lowercase",
+      "rep": 2,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-a7d010a5-be8c-4592-8917-e14f6f8a1ac5",
+      "raw": "stop1-lowercase-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-578fd636-5ebe-41b8-b4d8-cba4b8c8cecc",
+          "name": "小写重命名"
+        }
+      ]
+    },
+    {
+      "id": "stop1-lowercase",
+      "rep": 3,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-97ff4d89-530a-4f2a-abb5-4915622e773d",
+      "raw": "stop1-lowercase-3.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-cef3d431-ae80-4fad-832c-968c2750e1dc",
+          "name": "lowercase-renamer"
+        }
+      ]
+    },
+    {
+      "id": "stop2-archive",
+      "rep": 1,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-bcaab319-b188-408b-b75c-e20bf0b77dbf",
+      "raw": "stop2-archive-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-a4a69ea3-80d4-48b1-acf2-8e60ffb08f08",
+          "name": "archive-setup"
+        }
+      ]
+    },
+    {
+      "id": "stop2-archive",
+      "rep": 2,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-68e95504-d316-45de-8dbf-6646b0caae29",
+      "raw": "stop2-archive-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-0bebc9e8-7908-4222-b5e9-60a12e291cd7",
+          "name": "归档旧文件"
+        }
+      ]
+    },
+    {
+      "id": "stop2-archive",
+      "rep": 3,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-f7df3126-b8c5-48f1-8f80-8e49bf277bee",
+      "raw": "stop2-archive-3.jsonl",
+      "workers": []
+    }
+  ]
+}

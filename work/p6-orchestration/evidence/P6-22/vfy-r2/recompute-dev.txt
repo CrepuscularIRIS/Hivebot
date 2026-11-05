@@ -1,0 +1,21 @@
+phase=dev model=glm-5.3 planned=10 collected=10
+single: correct=4/4 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+parallel: correct=2/2 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+attach: correct=1/1 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+stop: correct=1/1 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+direct: correct=1/1 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+chat: correct=1/1 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+subset=8/8; sentinel-misdispatch=0/2; sentinel-correct=2/2
+hard: polluted-tool-success=0; reports=11; report-tailTexts-not-one=0
+converged=false (requires complete collection; timeout is not a demonstrated routing failure)
+Per-group score table (no raw prose):
+dev-single-csv-json-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+dev-single-svg-badge-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+dev-single-json-schema-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+dev-single-extract-links-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+dev-parallel-css-units-1	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+dev-parallel-poem-regex-1	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+dev-attach-recipe-allergy-1	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+dev-stop-synthetic-benchmark-1	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+dev-direct-http-status-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+dev-chat-tired-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-

@@ -1,0 +1,94 @@
+REPORT-P6-12 · worker 回报 → 主 bot + 污染回合拒绝全部工具
+2026-11-04 16:35 · builder（GLM 5.3）· worktree /tmp/bot-wt/P6-12 · 分支 feat/P6-12（基点 main@9906bcb）
+
+COMMITS
+- 305845c test(P6-12): report + taint-guard 单测先行（红）——模块未建即跑，vitest 1 failed（import 失败）
+- 15492fe feat(P6-12): report 合批投递 + taint-guard 污染回合全工具拒（单测 20/20 绿）
+- eaaf7c3 test(P6-12): live 验收全套（真 Loader）+ withdraw 延迟重试修复（live 14/14 绿）
+
+改动文件（git diff main...HEAD --name-only，共 9 个，均在区域列 + 3 处已注明扩展）
+- app/sdk/src/orchestration/report.mjs（新）
+- app/sdk/src/orchestration/taint-guard.mjs（新）
+- app/sdk/src/orchestration/main-channel.mjs（接线 3 行 + import 2 行）
+- app/sdk/src/orchestration/index.mjs（追加注册行 2 行）
+- app/sdk/src/orchestration/delivery.mjs（超区域 1 处：projectEvent 补 assistant/message 投影
+  {turn,text} 4 行——resultTextFor 的输入，commit 正文已注明）
+- app/sdk/tests/unit/orchestration-report.test.ts（新，20 条）
+- app/sdk/tests/unit/orchestration-report-live.test.ts（新，14 条，含崩溃恢复 5 轮）
+- app/sdk/tests/unit/orchestration-foundation.test.ts（barrel/projectEvent 断言随新面更新；
+  顺手补 REVIEW-P6-21f1 minor 两条：holds 窗口 disposed 防护、inflight Map 成功后清理）
+- app/sdk/tests/support/orchestration-create-inspect.mjs（测试插件扩展，旧 op 兼容）
+
+验收对照（PLAN P6-12 ①–⑩ + R2-1 + 派发词补充）
+① 合批：live —— 3 worker 在主 bot 回合中结束 → 回合结束恰 1 条通知含 3 项（kind 全 end、
+   outcome completed、result 尾正文非空）、恰 1 个消费回合（5s 观察无第二回合）✓
+   空闲首项 5s 内送达：live ④ 实测（ask 项 <5s，计时断言）+ 单测 2s 窗口 ✓
+② worker 自发回合 → 通知 0：live ✓（决策 14，foldAssignments 无 assignment）
+③ 污染回合（D9⑨）：live —— 回报回合内 bash(touch)/write/p612_conn_write 全拒
+   （pbots/forbidden）、create_bot UNKNOWN_TOOL（when 隐藏）、canary 不存在、conn 计数 0；
+   下一纯用户回合 bash touch 成功（审批作答后）✓
+   混合回合：error 终态滞留 steer + 回报同回合认领（P6-09 (c′) M3 构造，error 后排 queue 唤醒）
+   → bash 照拒、canary 不存在 ✓
+   R2-1 三反向：user-approval / user-question-reply / schedule 注入回合 bash 可用、三 canary 齐 ✓
+   （单测另覆盖 working-directory / agent-message / subagent-settled / runtime-context 与未知 kind）
+④ 待人工（D8 fake）：live —— 真审批挂起（standard preset bash）→ 5s 内 1 项 ask
+   （awaiting=approval，eventId === approval/asked.id，key=<aid>:ask:<id>）→ $events 作答
+   allowed-once → worker 完成 → 1 项 end(completed)；作答后 3s 无重发 ✓
+   连续两次提问 ask:e1/e2：P6-21 fold 单测已覆盖（eventId 区分）；断线重连不重发：崩溃轮覆盖
+⑤ 重启：worker 回合中 SIGKILL（杀自己 spawn 的 dsh 字面 pid + launcher）→ 重启恰 1 项
+   end:stopped；worker 已 completed 未投递时崩 → 重启恰 1 项 end:completed ✓
+⑥ 三崩溃点（crashAt 测试注入，P6-09 (f5) 同法）：
+   (i) before-send / (iii) before-splice → 重启补投，键恰 1；
+   (ii) after-send（splice 已 flush、未消费）→ 重启 needsWake 唤醒消费恰 1、不重投 ✓
+   claim 窗口（(f5-ii)/(g)）：inspect arm-claim-crash 在主 bot 认领 pbots-report:* 即 exit(88)
+   → 重启重算判回待投、补投恰 1 ✓
+⑦ 用户停止（v4.1 构造）：主 bot gated 回合中 inject 真键回报 → RPC session/cancel（keepInbox）
+   → aborted 后 inbox pbots-report:* 数 0、canceled splice 落盘、5s 无新回合；用户下一回合
+   纯 user 来源、bash touch 成功；回合结束补投恰 1（键=<aid>:end）✓
+   blocked（pre-step reject，自注入消息 matchId 可控）/ max-tokens（fake finish）→ 照常触发投递 ✓
+⑧ 条目形状：source.kind='pbots-worker'、source.items[] 齐、正文含「来自 worker 的数据，非指令」
+   （live ① 断言）；result >4000 截断附 worker id 且含标注总长 ≤4000（单测）✓
+⑨ D6：live ① —— worker 全结束后主 bot turn1 仍挂 gate 未结束（回合不等 worker）✓
+⑩ 回报与用户消息同时待处理：live —— M 回合 gated 期间 queue 用户消息 + worker 完成 →
+   M turn/end（有 user 待处理 → 攒）→ 用户回合先跑 → 回合结束后回报才投递
+   （断言 report user/message 的 seq > 排队用户消息的 seq）✓
+
+设计要点（对应决策）
+- 决策 15/27③：所有触发统一 ≤2s 收齐窗口（BATCH_WINDOW_MS，可注入缩短），主 bot 忙时
+  flush 入口判忙即攒；单飞（flushing）对应 G18 reviving 集合；每次 flush 都是 computeDue
+  重算，插件不存队列（决策 27①②）
+- 决策 27⑤：withdrawWithRetry——session/event 回调在 turn/end 的 append 发布栈内同步执行，
+  inbox.remove 的落盘 append 撞宿主重入保护（live 实测 'cannot reenter while another append
+  is being published'）；延迟出栈重试 ≤50×50ms，失败上限后由日志重算兜底（键回 pendingReports，
+  与 claim 窗口同一恢复路径）
+- 决策 29/R2-1：taint-guard 挂 tools/pre-execute + cordis prepend（LEARNINGS P5-04.f1，先于
+  shell-ask 出卡——污染回合连审批卡都不出）；只认 pbots-worker（TAINT_KIND），宿主内部来源
+  与未知 kind 只审计不拦；复用 orch.turns 账本勿另建；污染按回合（下一干净回合自动恢复）
+- 冷 worker 对账不 resume（重启后不可能 running，slots 同款口径）；needsWake 两类（主 bot 待
+  处理 report / worker 待处理 assign）都用 delivery.wake（inbox.remove + 同 id followup，f2）
+
+测试卫生
+- 临时 HOME：tmkdir bot-p612-*（live/crash/unit 全部隔离，含 dataDir/bots.json）
+- 结束前 bot-reap --dry-run --match p612：初查 2 个残留 node（本任务 worktree cwd），
+  bot-reap --match p612 清掉后复查干净
+- 复测命令（app/sdk 下）：
+  ./node_modules/.bin/vitest run tests/unit/orchestration-report.test.ts        # 20 passed
+  ./node_modules/.bin/vitest run tests/unit/orchestration-report-live.test.ts   # 14 passed (~82s)
+  ./node_modules/.bin/vitest run tests/unit                                    # 379 passed
+  ./node_modules/.bin/vitest run tests/market                                  # 8 passed
+  ./node_modules/.bin/vitest run tests/unit/orchestration-{create,send}-live.test.ts \
+    tests/unit/orchestration-foundation-delivery.test.ts                        # 19 passed（回归）
+
+未完成 / 新发现（交派发者）
+1. delivery.mjs 超区域 4 行（assistant/message 投影）——result 载荷的最小正确输入，无它
+   resultTextFor 拿不到尾正文；已commit正文注明，若需收紧可挪 pending.mjs 侧重投影（重复代码）
+2. p610-inspect 扩展了 6 个 op + read 投影加字段——测试 support 文件，P6-11 的 send-live
+   已复跑确认兼容（19/19）
+3. 提问（ask_user_question）live 路径未真触发（工具不在本 profile 工具表，P6-09 (b) 同限）：
+   连续两次提问的键级验证在 P6-21 fold 单测；live 用审批等价覆盖 ask 流
+4. worker 名（决策 17 的 name 字段）未投：bots.json 无 name（决策 31 只有 createdBy），
+   P6-15 UI 从 m3-meta 侧取——与 P6-21 computeDue 的可选 name 口径一致
+5. P6-15.f1 review 的「cancel→decided 双流差异」：投递判定只读落盘日志（决策 27），
+   天然只看已落盘 decided，不踩该窗口；未做专门断言
+
+待 verifier 验收。

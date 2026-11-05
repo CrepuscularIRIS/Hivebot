@@ -1,0 +1,11 @@
+[d3o] spawn start.mjs mode=real model=glm-5.3
+[sdk] p2sdk: dsh pid 4045158
+[sdk] p2sdk: handoff /tmp/bot-p622r2b-dev/handoff
+[sdk] [p2sdk] ready http://127.0.0.1:45415
+[sdk] [pbots-orchestration] main bot p620-boot unresolvable, reports stay due: pbots/orchestration-failed: worker session p620-boot unresolvable: RemoteError: session "p620-boot" not found
+[d3o] worker created #1
+[d3o] dev-attach-recipe-allergy-1 outcome=timeout mainFrames=281 workers=1 approvals=0 questions=0 timeouts=turn1
+[d3o] 429 detected: stop without retry
+[d3o] run-meta → /tmp/bot-wt/P6-22/work/p6-orchestration/evidence/D3-orch/rounds/r2/dev/raw/run-meta.json
+[sdk] p2sdk: forwarding SIGTERM to dsh
+[d3o] 运行时目录保留：/tmp/bot-p622r2b-dev（手工清理：rm -rf /tmp/bot-p622r2b-dev）

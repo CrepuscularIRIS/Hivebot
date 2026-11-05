@@ -1,0 +1,132 @@
+{
+  "ts": "2026-11-05T06:02:49.819Z",
+  "mode": "real",
+  "model": "glm-5.3",
+  "llmBase": "http://127.0.0.1:4001",
+  "litellm": {
+    "ok": true,
+    "hasModel": true,
+    "modelCount": 21
+  },
+  "groupDelayMs": 5000,
+  "entries": [
+    {
+      "id": "dev-attach-recipe-allergy",
+      "rep": 1,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-9f30c22a-5709-4948-8625-c492498c2536",
+      "raw": "dev-attach-recipe-allergy-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dev-chat-tired",
+      "rep": 1,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-e3605903-eb5c-4209-8918-f00a95725f80",
+      "raw": "dev-chat-tired-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dev-direct-http-status",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-5fc29d47-932d-4700-9b22-da612e089364",
+      "raw": "dev-direct-http-status-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dev-parallel-css-units",
+      "rep": 1,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-2ea680c0-5a08-406a-b966-ad7c1ce5efa3",
+      "raw": "dev-parallel-css-units-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-a16dc388-668e-42da-b768-46b2f601dc60",
+          "name": "card-html"
+        },
+        {
+          "sessionId": "session-43c5039c-6d00-4217-9639-d3e7c4ed24c4",
+          "name": "units-csv"
+        }
+      ]
+    },
+    {
+      "id": "dev-parallel-poem-regex",
+      "rep": 1,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-15fc04f9-f5f6-40e2-b089-70c0e21b5a6d",
+      "raw": "dev-parallel-poem-regex-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-688ceb42-b155-40bf-b86b-0294d020f748",
+          "name": "月亮小诗"
+        },
+        {
+          "sessionId": "session-d82fde3f-bbbc-4029-b8c3-5f9d133fc61a",
+          "name": "正则验证"
+        }
+      ]
+    },
+    {
+      "id": "dev-single-csv-json",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-0f1d3a69-3dc8-4598-acf6-8f2f7b1021ef",
+      "raw": "dev-single-csv-json-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dev-single-extract-links",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-7126a586-b003-4c52-832c-3ef41d78bd70",
+      "raw": "dev-single-extract-links-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dev-single-json-schema",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-067935c9-3c9e-43a3-baed-994cbab2ed4f",
+      "raw": "dev-single-json-schema-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-a9e66516-bdae-4498-9162-cb71dd57052c",
+          "name": "validate-json"
+        }
+      ]
+    },
+    {
+      "id": "dev-single-svg-badge",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-5dd7cd45-7ace-44c2-957c-a37086999c0d",
+      "raw": "dev-single-svg-badge-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dev-stop-synthetic-benchmark",
+      "rep": 1,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-48c323f7-6042-492e-9eaf-815bb671b25b",
+      "raw": "dev-stop-synthetic-benchmark-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-7c49a0c8-3793-42ee-8c71-a156f85112d9",
+          "name": "定时采样实验"
+        }
+      ]
+    }
+  ]
+}

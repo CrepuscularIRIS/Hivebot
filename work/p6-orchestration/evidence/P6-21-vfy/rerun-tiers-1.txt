@@ -1,0 +1,4 @@
+      Tests  1 passed | 5 skipped (6)
+   Start at  06:50:03
+   Duration  4.24s (tests 98%, import 1%, transform 1%)
+

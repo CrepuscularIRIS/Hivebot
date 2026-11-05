@@ -1,0 +1,46 @@
+P6-26.f1 实现回报（待 verifier 验收）
+分支 feat/P6-26；工作树 /tmp/bot-wt/P6-26；基点 b2fce24e799406939fddf49463622f9365217f93。
+提交 d09a48fcae067a1628eb0084ebd011a0982c1a76。
+
+改动文件
+/tmp/bot-wt/P6-26/app/sdk/src/policy/fs-zone.mjs
+/tmp/bot-wt/P6-26/app/sdk/tests/unit/fs-zone-read.test.ts
+/tmp/bot-wt/P6-26/app/sdk/tests/e2e/write-outside.test.ts
+
+实现
+1. 读侧作用域使用已装 dsh-sandbox 的 canonicalPath（同写侧），在 next/open 之前规范化工作区根、NEVER 根，fd readlink 核对仍是纯字符串身份比较。未增加依赖、未改上游。
+2. 已批准区外路径已经由 shell-ask 的 resolveTargets/ctx.fs.resolve 规范化，必须保留该真实路径快照，不能在执行时再 canonicalPath：独立 verifier 的 S4c 是批准 A 后、tools/execute 前将 A 的父目录换链到 B；再次解析将把旧审批重授给 B。本轮补进 unit，执行前与执行内换链两格均拒；审批别名的正常读取仍成功。
+3. ENOENT/ENOTDIR 保持 FS_NOT_FOUND，模型提示恢复 cannot read "<displayPath>": not found；不泄露 fd 路径。
+4. 真 Loader 别名 cwd 测试来自主仓 evidence/P6-26-vfy/vfy-alias.tail.ts：覆盖别名及真实路径 read、read_image、present、write→edit，零审批；缺失文件返回 not found。listDir 没有独立模型工具名，read 工具仅接受常规文件，因此 listDir 由真实上游后端 unit 覆盖，不伪称 read(directory) 能成功。
+5. 测试图片复用 deepseek-harness@ce7073d51254c26cd63b22a60835b8f948deb447:packages/fs/tool-fs/tests/read-image.spec.ts 的 PNG_1X1。原拒绝格图片不能作为正向解码夹具。
+6. launchWo 的 P2SDK_HOME 从已 trackTmpDir 的 TEST_ROOT 派生，避免新增 Loader 测试遗留运行时目录。
+
+TDD 证据（本目录 f1-*.log）
+f1-red-unit.log：修改实现前 7 failed / 16 passed，五种别名根读取均因 read-outside-workspace 拒绝，缺失提示非 not found。
+f1-red-loader.log：修改实现前真 Loader alias cwd 1 failed，read 被 read-outside-workspace 拒绝。
+f1-red-approval-snapshot.log：捕获执行时重新规范化审批快照会读出 UNAPPROVED；最终实现不重复解析记录。
+f1-green-focus.log：新增定向 8 passed（后续又加一格执行前审批换链，最终回归涵盖）。
+
+最终验证命令
+HOME=/tmp/bot-p626f1-home pnpm -C /tmp/bot-wt/P6-26/app/sdk exec vitest run tests/unit tests/e2e/guard-fs.test.ts tests/e2e/guard-escalation.test.ts tests/e2e/guard-plugin-manager.test.ts tests/e2e/approval.test.ts tests/e2e/write-outside.test.ts tests/e2e/tiers-policy.test.ts tests/e2e/w1ap0-matrix.test.ts
+最后输出（f1-regression-final.log），exit=0：
+ Test Files  32 passed (32)
+      Tests  547 passed (547)
+   Start at  05:37:29
+   Duration  111.99s (tests 99%, transform 1%)
+日志 /proc/self/fd 命中 0。没有运行 SDK 全量；范围是用户要求的 unit + 原 P6-26 定向验收。
+
+独立 verifier 探针复用
+HOME=/tmp/bot-p626f1-home node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-26-vfy/seam.mjs /tmp/bot-wt/P6-26 P6-26f1
+exit=0，输出 f1-seam-f1.log：S1 五种换链区外拒；S2 上游读前换链仍读原对象 len=300000/head=bbbbb；S5 假凭证两格拒；S4a/b 正常与别名批准成功、S4c/d 换链和不匹配拒；N5 别名根 INSIDE-OK；S7 abort fd 21→23→21；S6 1000 次混合读 fd 21→21、procLeak=0、缺失样例 not found。
+node --check fs-zone.mjs 与 git diff --check 均 exit=0；提交后工作树干净。
+
+隔离与清理
+全部命令 HOME=/tmp/bot-p626f1-home；只使用临时假凭证，不读取真实凭证。
+已删除本轮在修复 launchWo 前产生的三个 /tmp/bot-p626-dsh-*；保留其他人此前 05:09 的四个目录，未扩大清理范围。
+最终 /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p626 单独执行，exit=0、无输出。
+
+未完成/范围外
+本轮两条无已知未完成项；glob/grep 宿主搜索与写侧残余时序窗口继续归 P6-27，不在此修复中扩大范围。
+REUSE.md 在主仓不存在；沿用 PLAN P6-26 的第 2 级上游集成决策、repos/MANIFEST.tsv 与已装上游实现，无自建替代。
+待 verifier 验收。

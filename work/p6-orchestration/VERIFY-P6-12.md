@@ -1,0 +1,85 @@
+# VERIFY P6-12
+
+> 转正自 evidence/P6-12/VERIFY.txt。
+
+verdict: PASS
+commit: eaaf7c3416363696d417243bc11a748edd761172
+任务：P6-12（本次派发明确的 7 项验收）
+worktree：/tmp/bot-wt/P6-12
+branch：feat/P6-12
+基点：9906bcb
+验收日期：2026-11-04
+
+报告采用 TXT 兜底：本会话有“不写报告 .md”的格式限制；报告与全部证据均保存在主仓，不在待移除的 worktree 内。
+以下 E = /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-12/vfy
+以下 S = /tmp/bot-wt/P6-12/app/sdk
+
+| 验收项 | 结果 | 证据（命令/文件/日志） |
+| 1 live 14/14 + 单测 20/20；旧 orchestration live 19/19 | PASS | C1，E/targeted-verbose.log。逐条计数：report-live 14，report 20，create-live 11，send-live 6，foundation-delivery 2；共 53/53，5 文件全绿，退出码 0。首轮另含 foundation 58，共 111/111，见 E/targeted.log。 |
+| 2① 污染回合拒全部副作用工具 | PASS | 真 Loader report-live ③：bash / write / fake connector / create_bot 均 error；文件 canary 不存在、connector 计数不增长；下一纯用户回合 bash 经审批后成功。混合 user steer + pbots-worker 回合亦拒。E/targeted-verbose.log:51–52。通用 pre-execute 守卫不依赖工具名，prepend 先于审批。 |
+| 2② 三反向各一例真 Loader | PASS | report-live R2-1 在真 Loader 同一 session 分别注入 user-approval、user-question-reply、schedule，逐一发起 bash 并完成实际审批，三份 canary 均存在；见 S/tests/unit/orchestration-report-live.test.ts:273–296，E/targeted-verbose.log:53。这里是来源注入的 Loader 级测试，不宣称 UI 上真实切档/问答/schedule 调度器 e2e。 |
+| 2③ when 隐藏 + execute 双层 | PASS | 真 Loader create/send 污染用例验证工具不可见、目标零触达；P6-12 可见 bash/write/connector 由 pre-execute 拒。C4 另外强调被 when 隐藏的 create/send 定义直接调用 execute：均 pbots/forbidden、create 请求 0、worker prompt 0；4/4。E/two-layer.log。没有把 UNKNOWN_TOOL 当作 execute 守卫被触发的证据。 |
+| 3 三崩溃点 + claim 窗口；重启同键恰 1、合批 3 项一条消息 | PASS | 原 live 四窗口及 worker 中途 SIGKILL 均通过。独立 C2 在 before-send / after-send / before-splice / claim 各创建真实的三 worker assignment，待三 worker 结束再释放主 bot gate；前三 exit 87，claim exit 88；同 HOME 重启后等待全部键消费，额外观察 3.5s，断言一条 pbots-worker 消息、正好三键、每键计数 1、outcome 全 completed。E/crash-probe-verbose.log：4/4；逐例打印真实键/items。 |
+| 4⑦ session/cancel → withdrawWithRetry → 下一用户回合结束后补投 | PASS | C3 真 Loader；只加观测、不改变原 withdraw 行为。E/withdraw-observed.txt 真实记录首轮 session append cannot reenter while another append is being published，随后 withdrew 1 pending report、withdraw succeeded。用例明确等待 canceled splice、断言 inbox 回报数 0、5s 不新开回合、下一 user 回合 bash canary 成功；结束后唯一真键补投。E/cancel-events.json：aborted seq22 → canceled seq23 → user seq28 → completed seq40 → report 入列 seq41 → 回报被认领 seq45。 |
+| 5 delivery.mjs 超区域 assistant/message 投影逐行核查 | PASS | C5 差分探针：Delivery 整个类与 9906bcb 字节完全相同；其他 12 个事件样例投影相同，assistant 仅增加 turn 和 text，输入未修改；同一 assignment 日志经旧/新投影 computeDue 输出完全相同。E/projection.log。逐行说明见下。 |
+| 6 foundation disposed 防护 / inflight 清理断言真的补上 | PASS | 初轮 foundation 全 58/58。C6 拷贝当前测试与 delivery 到 E，不修改产品：原版两条通过；删 disposed 检查后，新用例因 promise resolved 而失败；删 inflight.delete 后，新用例因 size 1 != 0 而失败。E/mutation-original.log、E/mutation-no-disposed.log、E/mutation-no-inflight-cleanup.log。两变异均按预期 exit 1。 |
+| 7 坏路径：blocked worker 回报到达时主 bot 正在跑，不打断、结束后投递 | PASS | C3 独立真 Loader 用例，test-only pre-step reject 将真实 worker assignment 置 blocked。主 bot gate 保持 3.2s（超过 2s 收齐窗），断言主 bot status=running、turn/end=0、回报消息=0；释放 gate 后只投一次。E/probe.log、E/bad-path.json：主 bot turn/end seq21，回报 user/message seq26；outcome=error、reason=blocked（遵循既有 endOutcomeFor 契约）。 |
+
+投影逐行确认（S/src/orchestration/delivery.mjs:75–79）
+- case 'assistant/message'：新增该种事件的纯投影分支，其他 switch 分支未改。
+- return {：构造一个新返回对象，不修改宿主事件。
+- seq/event.type/turn：原样复制日志顺序、事件类型和回合号；不触发 followup、持久化或队列操作。
+- text：只保留 message.content 中 type=text 的块，按原顺序拼接；不纳入 thinking/tool-call；此处不截断，后续 resultTextFor/truncateResult 负责整段结果上限。
+- 对象关闭：分支返回即结束。Delivery.holds/send/wake 完整字节相等，未改幂等、flush 回执或唤醒语义。
+
+复现命令（全部已独立执行；每条 vitest 的 cwd 为 S，HOME=/tmp/bot-p612-vfy-home）
+C1：
+cd /tmp/bot-wt/P6-12/app/sdk
+HOME=/tmp/bot-p612-vfy-home ./node_modules/.bin/vitest run tests/unit/orchestration-report.test.ts tests/unit/orchestration-report-live.test.ts tests/unit/orchestration-create-live.test.ts tests/unit/orchestration-send-live.test.ts tests/unit/orchestration-foundation-delivery.test.ts --reporter=verbose
+输出尾部：Test Files 5 passed (5)；Tests 53 passed (53)；Duration 82.92s；exit 0。
+首轮同命令额外加入 tests/unit/orchestration-foundation.test.ts：Test Files 6 passed (6)；Tests 111 passed (111)；Duration 82.61s；exit 0。
+
+C2：
+python -I E/make-crash-probe.py
+HOME=/tmp/bot-p612-vfy-home ./node_modules/.bin/vitest run --config E/crash-probe.config.mjs --reporter=verbose
+输出尾部：Test Files 1 passed (1)；Tests 4 passed (4)；Duration 41.11s；exit 0。
+此前同探针已完整跑过一轮，4/4，见 E/crash-probe.log。
+
+C3：
+python -I E/make-probe.py
+python -I E/refine-probe.py
+HOME=/tmp/bot-p612-vfy-home ./node_modules/.bin/vitest run --config E/probe.config.mjs --reporter=verbose
+输出尾部：Test Files 1 passed (1)；Tests 2 passed (2)；Duration 22.04s；exit 0。
+探针 instrument-inspect.mjs 包装 withdrawPendingReports 仅记录成功/异常并原样 return/throw；blocked 注入复用原 fixture 的真实 agent/pre-step reject 机制。
+
+C4：
+HOME=/tmp/bot-p612-vfy-home ./node_modules/.bin/vitest run tests/unit/orchestration-create.test.ts tests/unit/orchestration-send.test.ts --testNamePattern='taint guard' --reporter=verbose
+输出尾部：Test Files 2 passed (2)；Tests 4 passed | 59 skipped (63)；exit 0。59 条有意按名称过滤，不算验收通过数。
+
+C5：
+HOME=/tmp/bot-p612-vfy-home node E/projection-probe.mjs
+输出：PASS: Delivery class byte-identical to 9906bcb; 12 other event projections unchanged; assistant text-only projection pure; computeDue keys/outcomes unchanged
+exit 0。
+
+C6：
+python -I E/make-mutation.py
+分别运行：HOME=/tmp/bot-p612-vfy-home ./node_modules/.bin/vitest run --config E/foundation-<variant>.config.mjs --reporter=verbose
+variant=original：2 passed，56 按名称过滤，exit 0。
+variant=no-disposed：1 failed | 1 passed，失败定位 copied foundation:609；promise resolved {skipped:false} instead of rejecting；exit 1，符合预期。
+variant=no-inflight-cleanup：1 failed | 1 passed，失败定位 copied foundation:616；expected 1 to be +0；exit 1，符合预期。
+原文件未改，所有变异副本仅存在 evidence。
+
+测试卫生与边界
+- 没有执行全量回归、全套 e2e；本任务是后端 Loader/RPC 验收，没有启动 UI 或截图。
+- 临时 HOME 与运行时数据均隔离；真实凭证未读取、未落证据。运行时 home/handoff 使用现有 tmkdir/sweep。
+- 崩溃只涉及测试自行 spawn 的 SDK/dsh；没有重启机器、注销会话或 shell 手工杀其他进程。
+- 结束命令：/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p612，以及 --match /tmp/bot-wt/P6-12，均无候选输出，无需执行清理 kill。
+- E/final-state.log：HEAD 仍为 eaaf7c3416363696d417243bc11a748edd761172，worktree status 空，两个 dry-run 均空。
+- 证据生成仅写主仓 evidence；没有改产品代码，没有提交。
+
+探针调试记录（不计产品 FAIL，也未隐去）
+- 第一轮自建观测插件用 subclass 导致 RPC 方法元数据未被发现，p610/control 404；改为保留原 Inspect 类、包装 prototype 后解决。保留 E/probe-harness-error.log。
+- 自建 blocked 探针最初把 blocked 预期写成 stopped；既有 pending.mjs:20–30 契约明确 blocked→error/reason=blocked；校正探针预期后通过。保留 E/probe-expectation-error.log。产品代码未做任何适配。
+
+新问题（每条一行，可直接成为修复任务）：
+- 无。本次 7 项验收全部 PASS；没有基于猜测提交 [FIX]。

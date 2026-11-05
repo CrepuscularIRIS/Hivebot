@@ -1,0 +1,106 @@
+P6-14 · worker 安全信封 · builder 回报
+2026-11-04 17:51 · 分支 feat/P6-14 @ 0057d1a（基点 944afa0，详见「基点变更」）
+
+== 交付物 ==
+- app/sdk/src/orchestration/envelope.mjs（新，~150 行）：judgeWorkerCall（纯判定）、
+  enumerateInstalledEntries（清单 ∩ 已装注册表）、registerEnvelope（tools/pre-execute
+  + cordis prepend，P5-05 同层）、ENTRY_ANNOTATIONS（入口 → 锚点表）
+- app/sdk/src/orchestration/main-channel.mjs：+1 import、+3 行接线（envelope，在
+  taintGuard 之后；stop 接线行未动）
+- app/sdk/src/orchestration/index.mjs：仅追加 P6-14 导出行（rebase 时与 P6-13 的
+  导出行同点插入，已三方合并保留双方）
+- 测试：tests/unit/orchestration-envelope.test.ts（12 用例）、
+  tests/unit/orchestration-envelope-live.test.ts（真 Loader 5 用例）、
+  orchestration-foundation.test.ts barrel 清单补 P6-14 七个导出名
+- 改动面（对 merge-base 944afa0）：仅上述 5 个文件，⊆ PLAN P6-14 区域列
+  （envelope.* 新、index.* 追加注册行、main-channel.mjs 接线、orchestration-envelope*）
+
+== 入口全集及锚点（ENTRY_ANNOTATIONS 逐名登记；repos/deepseek-harness@ce7073d）==
+协调者（本仓）：
+  create_bot     src/orchestration/create.mjs（P6-10）
+  send_to_bot    src/orchestration/send.mjs（P6-11）
+  stop_bot       src/orchestration/stop.mjs（P6-13，944afa0 起注册）
+再委派（standard preset delegation 组，approval.yml:139-160 / 上游
+  bundles/web-app/presets/standard.patch.yml:86-111）：
+  subagent           tool-subagent/src/index.ts:70-80（toolName 缺省）
+  subagent_fork      standard.patch.yml:102-104（toolName: subagent_fork）
+  list_subagent_models  tool-subagent/src/list-models.ts:110（modelDiscovery）
+  send_message       tool-subagent-control/src/index.ts:30
+  interrupt_agent    tool-subagent-control/src/index.ts:76
+  list_agents        tool-subagent-control/src/list-agents.ts:82
+  workflow           tool-workflow/src/index.ts:60,332（toolName 缺省）
+后台作业：
+  bash.run_in_background   tool-bash/src/index.ts:67,106-109（参数级入口）
+  pwsh.run_in_background   tool-pwsh/src/index.ts:85（参数级入口；linux 未装）
+  job_output/job_list/job_kill  tool-jobs/src/index.ts:433/541/561
+  schedule_create/list/update/delete  已装 0.2.2-alpha.2 lib 注册（repos HEAD
+    ce7073d 的 view/edit 是后起改名，:417/:431）
+清单核对发现：repos HEAD 与已装 0.2.2-alpha.2 的 schedule 工具名不一致（HEAD=
+view/edit，已装=update/delete）。按任务口径「从已装 dsh 注册表枚举」取已装名，
+live ① 逐名探测证明（7+4+3 全部在册）。这正是不能只抄 repos 源码的原因。
+workflow-ptc 不注册工具（仅 provider），不在清单。
+
+== 验收对照（全部 live 真 Loader，fake 模型驱动 worker 会话）==
+① D9③ worker 工具表无协调者工具：M 可见 create/send/stop_bot，W 三件全不可见。
+   入口清单枚举 = visible 逐名探测 → enumerateInstalledEntries 全集（live ①）
+② D9④ 再委派 7 入口（subagent/subagent_fork/workflow/send_message/
+   interrupt_agent/list_agents/list_subagent_models）全拒（pbots/forbidden +
+   delegate 字面串），session/list 前后相等（新增子会话 0）（live ②）
+③ D9⑤ 后台作业拒：bash run_in_background / schedule_create / job_list 三枚
+   全拒（live ③）
+④ 工具表隐藏之外 direct execute 被拒：W 强调 create_bot / send_to_bot /
+   stop_bot → 信封字面串（含 'coordinator'，区分于 create.mjs 的 main 校验文案），
+   session/list 不变（worker prompt 计数 0）（live ④）
+⑤ worker 写 workspaces/<其他 id> → 拒：write 他工作区 = 软遮蔽拒（'masked'），
+   read 他工作区同样拒；自工作区 write 成功（worker 仍能干活）（live ⑤）
+⑥ D9⑦ P5-06 矩阵子集在 worker 会话复跑绿（基线 = 本分支 merge-base，含 W3.f1
+   的 main）：read /proc/self/environ → p2sdk-fs-guard 硬 NEVER 拒（'hard-denied'）
+   （live ⑤）
+⑦ 顺序可区分用例：同名 bash 仅 run_in_background 翻转——true：信封字面串 +
+   approval/asked===0；false：穿透信封落 shell-ask 出卡（asked≥1）批准后正常执行。
+   若 envelope 未 prepend（落后 shell-ask），bg 分支会先出卡，本格即红（live ③）
+⑧ 单测：三族逐名判定、run_in_background 参数绑定（false/缺省/他工具同名参数放
+   行）、注册表枚举交集、prepend 旗标、bots.json 回合中后写立即生效、
+   不可读 bots.json 不误拦（12 用例）
+
+== 实现说明 / 取舍 ==
+- 捷径列的「第 1 级 subagent maxDepth / tools.restrict」评估后未用作主机制：
+  maxDepth 是 preset 插件 config（全局，无法按会话只对 worker 关）；tools.restrict
+  需要 agent scoped ctx（tools/index.ts:165 明确拒绝全局 restrict），profile 级
+  插件拿不到 worker 的 scoped ctx。按 PLAN 任务定义以 pre-execute 执行层为主
+  （对 worker 按会话判定），maxDepth 留给上游纵深。已按要求在报告注明。
+- worker 判定复用 slots.readWorkerIds（bots.json createdBy），每次 execute 重读
+  （无缓存窗口，worker 落盘即生效）；bots.json 不可读 → 不按 worker 拦（与
+  slots 收养同口径，P5 guard 链 + 协调者工具自身 main 校验仍在）。
+- 回调内不调宿主可重入 API（只读自己的 fs 与纯函数）。
+- 已知上限（envelope.mjs ponytail 注）：subagent/workflow 的 toolName 可被 preset
+  改名，名单跟 standard preset 缺省名；主 bot 不受信封约束（委派/后台照常）。
+- envelope 仅在 orchestration.yml 加载时存在（P2SDK_PATCH / P6-14b 开放闸），
+  默认链行为零变化（P6-10 起的同一约定）。
+
+== 基点变更（重要）==
+派发基点 80880b9（无 stop）。任务期间 main 前进到 944afa0（P6-13+f1 合并）。
+已把 feat/P6-14 rebase 到 944afa0：index.mjs 与 P6-13 导出行同点插入冲突，三方
+合并保留双方；main-channel.mjs 自动合并（stop 接线行未动，envelope 接线在其后）。
+rebase 后补了真 stop_bot 两格（① 可见性、④ direct execute），全量复测绿。
+
+== 复测命令与结果 ==
+- pnpm exec vitest run tests/unit/orchestration-envelope.test.ts → 12 passed
+- pnpm exec vitest run tests/unit/orchestration-envelope-live.test.ts → 5 passed
+- pnpm exec vitest run tests/unit/orchestration-{foundation,create,send,report,stop}.test.ts → 157 passed
+  （foundation 的 barrel 清单用例按新增导出名更新）
+- sdk 全量 vitest run 两轮：第一轮 w1ap0-matrix 红、第二轮 539/540（approval R1 红）。
+  两个红各自单跑均绿（matrix 10/10、approval 5/5），且这两套件不加载
+  orchestration.yml（envelope 代码不可达）；机器当时 load 10+（GPU 训练 + 并行
+  e2e），判定为负载时序 flake，非本任务回归。全量最终判定交主会话合并后复跑
+  （LEARNINGS 2026-11-04：全量回归只由主会话合并后跑一次）。
+- 清理自查：bot-reap --dry-run --match p614 → RC=0 无输出、无残留进程
+
+== 未完成 / 待 director ==
+1. 无未完成验收项。
+2. 顺带发现（不扩范围）：repos HEAD 与已装 alpha.2 的 schedule 工具名分叉（见上），
+   若日后升级 dsh 需同步核对新名（enumerateInstalledEntries 的 live ① 会红，可作
+   升级哨兵）。
+3. P6-13.f1 若再改 stop.mjs，与本分支无文件交叠（envelope 不 import stop.mjs，
+   仅名单含 'stop_bot' 字符串）。
+待 verifier 验收。

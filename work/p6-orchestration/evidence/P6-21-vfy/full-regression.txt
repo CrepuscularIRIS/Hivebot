@@ -1,0 +1,20 @@
++     at runPnpmCli (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:210245:5)
++     at runDepsStatusCheck (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:211947:7)
++
+
+ ❯ tests/e2e/security/w1ap0-scan.test.ts:216:35
+    214|   const res = scan({ secret: canary, prefix: CANARY_PREFIX, home: dir …
+    215|   expect(res.status, `植入 canary 必须 FAIL：\n${res.stdout}`).toBe(1)
+    216|   expect(res.stdout, '压缩会话文件被点名').toContain(`HIT ${zstdFile}`)
+       |                                   ^
+    217|   expect(res.stdout, '明文日志被点名').toContain(`HIT ${logFile}`)
+    218|   expect(res.stdout, '输出带 canary 前缀').toContain(CANARY_PREFIX)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  5 failed | 34 passed (39)
+      Tests  10 failed | 360 passed (370)
+   Start at  06:33:38
+   Duration  163.10s (tests 94%, transform 5%, import 1%)
+

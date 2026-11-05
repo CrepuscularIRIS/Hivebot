@@ -1,0 +1,44 @@
+# P6-10.f1a 容量收养计数错误修复（builder 回报，未自我通过）
+
+分支 feat/P6-10（worktree /tmp/bot-wt/P6-10，基点 baef53c）
+commit 6028985（fix(P6-10.f1a): slots 满额收养漏计——pending 记账 + 释放后补收养）
+
+## 根因（不是派发怀疑的「释放把 running 也算了」，是收养侧丢失）
+trackWorkerTurns 在 slots.reserve() 失败（满额）时直接丢弃该 turn/start：
+worker 实际 running 但不在 holds 也不在任何账上。此后任一持位 worker 的
+turn/end 释放一格 → used 下降，而仍在 running 的溢出 worker 永远不会被补记
+→ 3 running 只计 2，create_bot reserve 成功、main 实发建 bot 请求。
+
+## 修法（app/sdk/src/orchestration/slots.mjs，两处释放路径一处挂钩）
+- 满额未收养的 worker 记入 pending（Set）；turn/start 查重加 pending。
+- Slots.release() 末尾调 onFree?.()；trackWorkerTurns 挂补收养（释放后收养
+  最早的 pending）。create.mjs 的 release 与 trackWorkerTurns 的 turn/end 都
+  经 Slots.release()，故 create 路径释放同样补收养（有独立单测）。
+- 不变式：pending 非空 ⇔ used == limit；pending 中提前 turn/end 的 worker
+  只出 pending、不释放（没占过格子）。create.mjs 零改动。
+
+## 验收对照
+- 成对单测（orchestration-create.test.ts，trackWorkerTurns 组 +4）：
+  4 起跑 1 结束→3；全部结束→0；结束后新建→1→0；pending 先结束不多扣；
+  create 释放路径补收养。先红后绿：修复前新增 2 例红，修复后 8/8 绿。
+- live ②′（orchestration-create-live.test.ts，f1 组）复测 verifier 原场景：
+  4 人工 worker（首个 700ms pace 先结束、其余 6s）、首个结束后 slots=3
+  （修复前 2）、main 在纯用户回合 create → requests=0 且 pbots/capacity、
+  全部结束 slots=0、结束后重建占 1。还原 slots.mjs 单跑该用例红
+  （expected 3 received 2），恢复后绿（24.5s）。
+- 定向全组：create 30 + live 11 + foundation 50 + delivery 1 = 4 files /
+  92 passed（HOME=/tmp/bot-p610f1a-home）。
+
+## 复测命令
+cd /tmp/bot-wt/P6-10/app/sdk && HOME=/tmp/bot-p610f1a-* \
+  ./node_modules/.bin/vitest run tests/unit/orchestration-create.test.ts \
+  tests/unit/orchestration-create-live.test.ts \
+  tests/unit/orchestration-foundation.test.ts \
+  tests/unit/orchestration-foundation-delivery.test.ts
+
+## 未完成 / 新发现
+- 无未完成项。未跑全量（按派发约束）；UI m3 未动（本修复只改 SDK）。
+- 新发现（不扩范围，仅记录）：live ② 用 pace 2s×4 chunk 共 8s+，与本修复
+  无关的既有耗时；无产品影响。
+
+待 verifier 验收。

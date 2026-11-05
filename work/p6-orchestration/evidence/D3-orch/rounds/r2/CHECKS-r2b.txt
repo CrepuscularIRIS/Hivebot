@@ -1,0 +1,35 @@
+P6-22 r2b verification
+collector-fix=5092c75; product-wording=0ed1ed4
+RED: node rounds/r2/test-report-wait.mjs
+AssertionError [ERR_ASSERTION]: completed second batch must close (dev raw replay)
+false !== true
+GREEN: same test after collector fix
+PASS: 5 report-wait checks; real dev replay sees second batch; no held-out raw read
+
+FAKE: HOME=/tmp/bot-p622r2b-shell-home P622_RUNTIME_ROOT=/tmp/bot-p622r2b-smoke P2SDK_ORCH_DATA_DIR=/tmp/bot-p622r2b-smoke/data P622_EVID_DIR=<r2>/smoke-r2b node run.mjs --smoke
+SMOKE PASS：通道往返 / assign 首条 / 回报投递+消化 / 主工具表含协调者 / worker 工具表不含 / raw 形状
+
+FROZEN SCORER: node score.mjs --selftest
+17/17 passed
+
+HOME=/tmp/bot-p622r2b-shell-home /tmp/bot-wt/P6-22/app/sdk/node_modules/.bin/vitest run --root /tmp/bot-wt/P6-22/app/sdk /tmp/bot-wt/P6-22/app/sdk/tests/unit/orchestration-routing.test.ts /tmp/bot-wt/P6-22/app/sdk/tests/unit/orchestration-routing-live.test.ts
+ Test Files  2 passed (2)
+      Tests  14 passed (14)
+   Start at  03:04:10
+   Duration  4.96s
+
+node rounds/r2/audit-inputs.mjs
+routing-sha256=8bc4ea57810cbfcc2ac21c6cb4a510449df88c174dd22efc0d753bea81f04fc8
+dev: mainRaw=10/10 workerRaw=10; model/provider/tools/routing-input PASS; timeout=1; llm/retry=0; terminal429=1
+heldout: mainRaw=18/36 workerRaw=16; model/provider/tools/routing-input PASS; timeout=1; llm/retry=0; terminal429=1
+credential-value matches=0
+Dev diagnostic: main error-turns=0 terminal429=0; worker error-turns=1 terminal429=1; user-turns=1, workers=1, timeouts=turn1.
+Held-out not started in r2b. Baseline scores retained; 19 groups pending, not scored as demonstrated routing failures.
+
+git diff --name-only 0ed1ed4 -- four product wording files + prompts.json + score.mjs
+(no changes)
+
+/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p622
+(no matches)
+/home/lingxufeng/bot/scripts/bot-reap --dry-run --match P6-22
+(no matches)

@@ -1,0 +1,686 @@
+[
+  {
+    "id": "dir1-docker-vm-1",
+    "promptId": "dir1-docker-vm",
+    "kind": "direct",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 0,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "6b3c145f83503b46dc6037c48421f5ba8e7073556581f6bcd86c481b8a020c51"
+  },
+  {
+    "id": "dir2-translate-ja-1",
+    "promptId": "dir2-translate-ja",
+    "kind": "direct",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 0,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "7c313c174f833eded20c9a1700513a244f174de321b78e6864e60f62739e68ba"
+  },
+  {
+    "id": "dir3-power-1",
+    "promptId": "dir3-power",
+    "kind": "direct",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 0,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "c4aa3a960f439c29d8b7b3c026e98198182701431e6d6e98c253d3e3deac4182"
+  },
+  {
+    "id": "dir4-tv-rec-1",
+    "promptId": "dir4-tv-rec",
+    "kind": "direct",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 0,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "4ace9376fd83271638c1a654e699f27e081e9ff54cae19318726d8eccddf13ae"
+  },
+  {
+    "id": "single1-packing-1",
+    "promptId": "single1-packing",
+    "kind": "single",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "e02ba627f566e8144b3f1f68c81bf910e584df8d4cb9abe26849a21976b03958"
+  },
+  {
+    "id": "single1-packing-2",
+    "promptId": "single1-packing",
+    "kind": "single",
+    "rep": 2,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "679f7dd62ea9037ccd063f6aab443ac07cb56e845d39a980887dcfe01066ba84"
+  },
+  {
+    "id": "single1-packing-3",
+    "promptId": "single1-packing",
+    "kind": "single",
+    "rep": 3,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "28d7d5c508440c74ad99bc87f1a54700356c94fe1d1afd81873bf2c85ae7542f"
+  },
+  {
+    "id": "single2-date-diary-1",
+    "promptId": "single2-date-diary",
+    "kind": "single",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 3,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "ddc25aa37417c834a39118d65df3c5eec756f86efbeeffa73e13157c76848d68"
+  },
+  {
+    "id": "single2-date-diary-2",
+    "promptId": "single2-date-diary",
+    "kind": "single",
+    "rep": 2,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "1f534ef90731b6454e387cad7842aab050c23aeb9d173935c8640955a4a71d1b"
+  },
+  {
+    "id": "single2-date-diary-3",
+    "promptId": "single2-date-diary",
+    "kind": "single",
+    "rep": 3,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 1,
+        "toolSuccess": 0,
+        "toolRejected": 1
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "40c483418cde287155eb2a570681de6ccf7db3e73a6f797cff420794afb6d5bc"
+  },
+  {
+    "id": "single3-fib-run-1",
+    "promptId": "single3-fib-run",
+    "kind": "single",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 2,
+        "tailTexts": 1,
+        "toolCalls": 2,
+        "toolSuccess": 0,
+        "toolRejected": 2
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "4199b355fcfb3e8b2fc2c461a1c87d453d06af5d23356fd7346c415070291737"
+  },
+  {
+    "id": "single3-fib-run-2",
+    "promptId": "single3-fib-run",
+    "kind": "single",
+    "rep": 2,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 2,
+        "tailTexts": 1,
+        "toolCalls": 2,
+        "toolSuccess": 0,
+        "toolRejected": 2
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "c4ab27ab3efd12e70e934e513f91b69c25bc2b5bbd01fad6069f28ee8e85a72c"
+  },
+  {
+    "id": "single3-fib-run-3",
+    "promptId": "single3-fib-run",
+    "kind": "single",
+    "rep": 3,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 2,
+        "tailTexts": 1,
+        "toolCalls": 1,
+        "toolSuccess": 0,
+        "toolRejected": 1
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "32282dfad8346425259759810fd566df0deff97beb062f928d55efe30f882fb4"
+  },
+  {
+    "id": "single4-count-logs-1",
+    "promptId": "single4-count-logs",
+    "kind": "single",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 2,
+        "tailTexts": 1,
+        "toolCalls": 2,
+        "toolSuccess": 0,
+        "toolRejected": 2
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "647067e39a8bf0c734458dcf4a9d88e794836b6ac5029eac81973f2ff52df5c0"
+  },
+  {
+    "id": "single4-count-logs-2",
+    "promptId": "single4-count-logs",
+    "kind": "single",
+    "rep": 2,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 1,
+        "toolSuccess": 0,
+        "toolRejected": 1
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "cfb0f0b7d831c5efe1f578855fad3dd29daa5226e5970d5d46e39eccc5a70125"
+  },
+  {
+    "id": "single4-count-logs-3",
+    "promptId": "single4-count-logs",
+    "kind": "single",
+    "rep": 3,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 2,
+        "tailTexts": 1,
+        "toolCalls": 1,
+        "toolSuccess": 0,
+        "toolRejected": 1
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "c1ef70791b5ada24a1156ac198208b509fbf659090d090b2143d187a33b008e9"
+  },
+  {
+    "id": "par1-two-tasks-1",
+    "promptId": "par1-two-tasks",
+    "kind": "parallel",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 2,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      },
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "8e0b8e0957f6671264dd4a1c3d5b4973dadcfdb29ea2412231d4c21e1d82b945"
+  },
+  {
+    "id": "par1-two-tasks-2",
+    "promptId": "par1-two-tasks",
+    "kind": "parallel",
+    "rep": 2,
+    "outcome": "timeout",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 2,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      },
+      {
+        "endReason": "error",
+        "texts": 0,
+        "tailTexts": 0,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      }
+    ],
+    "orphanTools": 0,
+    "complete": false,
+    "routeOk": false,
+    "routeWhy": "incomplete",
+    "misdispatch": false,
+    "timeouts": [
+      "report"
+    ],
+    "sha256": "fe0eceb96f2f188a60c45cd2e57da3a0002f1ed7a839e38f16f44b18dedbd77a"
+  },
+  {
+    "id": "par1-two-tasks-3",
+    "kind": "parallel",
+    "missing": true
+  },
+  {
+    "id": "par2-list-and-weekday-1",
+    "kind": "parallel",
+    "missing": true
+  },
+  {
+    "id": "par2-list-and-weekday-2",
+    "kind": "parallel",
+    "missing": true
+  },
+  {
+    "id": "par2-list-and-weekday-3",
+    "kind": "parallel",
+    "missing": true
+  },
+  {
+    "id": "attach1-hike-append-1",
+    "kind": "attach",
+    "missing": true
+  },
+  {
+    "id": "attach1-hike-append-2",
+    "kind": "attach",
+    "missing": true
+  },
+  {
+    "id": "attach1-hike-append-3",
+    "kind": "attach",
+    "missing": true
+  },
+  {
+    "id": "attach2-backup-index-1",
+    "kind": "attach",
+    "missing": true
+  },
+  {
+    "id": "attach2-backup-index-2",
+    "kind": "attach",
+    "missing": true
+  },
+  {
+    "id": "attach2-backup-index-3",
+    "kind": "attach",
+    "missing": true
+  },
+  {
+    "id": "stop1-lowercase-1",
+    "kind": "stop",
+    "missing": true
+  },
+  {
+    "id": "stop1-lowercase-2",
+    "kind": "stop",
+    "missing": true
+  },
+  {
+    "id": "stop1-lowercase-3",
+    "kind": "stop",
+    "missing": true
+  },
+  {
+    "id": "stop2-archive-1",
+    "kind": "stop",
+    "missing": true
+  },
+  {
+    "id": "stop2-archive-2",
+    "kind": "stop",
+    "missing": true
+  },
+  {
+    "id": "stop2-archive-3",
+    "kind": "stop",
+    "missing": true
+  },
+  {
+    "id": "chat1-thanks-1",
+    "kind": "chat",
+    "missing": true
+  },
+  {
+    "id": "chat2-greeting-1",
+    "kind": "chat",
+    "missing": true
+  }
+]

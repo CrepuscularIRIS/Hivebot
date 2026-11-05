@@ -1,0 +1,79 @@
+# REVIEW P6-10 · 方向 D（回归与资源）
+
+> 转正自 evidence/P6-10-rvw/REVIEW-D.txt（txt 兜底，未经改写）。
+
+P6-10 code review · D 回归与资源
+commit: 29c6b1a5af425b4260479ddfdd918f795d2cba9b
+结论：CONFIRMED critical=0 / major=0 / minor=3。
+本席上层约束禁止写报告 .md，因此使用派发指定的 txt 兜底；请派发者转正为 work/p6-orchestration/REVIEW-P6-10-D.md。
+
+范围
+- 用户给的 397c7c8..29c6b1a 实际含 84 个文件（含 P6-21.f1、P6-15 等其他任务）。本次按“P6-10，18 文件”的限定，以 29c6b1a^..29c6b1a 的 18 文件为代码审查对象。
+- 为判断回归，运行全部 orchestration-foundation* 单测、create 单测与真 Loader 用例、m3 目录既有测试；额外只读取 DshConnection 连接生命周期、launcher 锁语义及测试 runtime 调用方。
+- 未跑全量回归、全套 e2e，未启动 UI，未修改产品代码。所有测试使用临时 HOME / TMPDIR=/tmp/vfy-r-p610-d。
+
+CONFIRMED
+
+D-1
+minor | app/sdk/tests/unit/orchestration-foundation.test.ts:297、490（删除位置） | 合并 P6-10 时覆盖了先合入的 P6-21.f1 测试增量 | 6 条既有修复回归用例被删除：崩溃后死 ask/活 ask 对照 2 条、并发投递 4 条；将 pending.mjs 的崩溃回合 continue 去掉后，当前 foundation 纯单测 50/50 仍绿，而恢复的旧用例立即失败（错误多投 a1:ask:e1） | /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/foundation-test-deletions.diff、mut-p621-current.log、mut-p621-restored.log、mutations.py
+说明：当前产品的 pending/delivery 实现并未回退；这是实证的测试保护丢失，不冒报成已经发生的运行时死 ask 回归。并发真 Loader 用例还在，但不能替代已删除的失败重试、跨 agent/id 隔离与死 ask 对照。
+探针原运行路径：/tmp/vfy-r-p610-d/mutations.py；/tmp/vfy-r-p610-d/sdk/tests/unit/legacy-f1.test.ts（git show 29c6b1a^ 提取）。
+
+D-2
+minor | app/ui/main/m3-meta/orch-channel.ts:69-86 | wireOrchChannel 在 dsh 首次连接前接线；subscribe() 等 ready，同时 onConnected 再次 subscribe() | 同一代建立 2 条流，SDK 拒绝第二条，但 current 已被第二条覆盖；close() 只取消第二条，第一条继续持有 SDK 通道。真实 SDK + 真实 DshConnection 实测 opens=2、cancels=1，close 后另一个 Peer 订阅仍被 another main client already holds 拒绝 | /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/real-lifecycle.test.ts、real-lifecycle.log、resource-probes.test.ts、resource-probes.log
+说明：生产当前按进程生命周期保留订阅，底层连接 stop 会清理 socket，因此不把它升级成常驻孤儿进程或创建功能失效。确认为订阅资源/close 语义缺陷。已有 fakeDsh 测试把 frameSink 覆盖，掩盖了第一条流；“reconnect re-subscribes”用例也没有实际触发第二次连接。
+探针原运行路径：/tmp/vfy-r-p610-d/sdk/tests/unit/real-lifecycle.test.ts。
+
+D-3
+minor | app/sdk/src/orchestration/main-channel.mjs:98-104 | 请求流仍附着，但消费者暂不取下一项（背压/暂停）；连续请求逐次超时 | timeout 仅删除 pending，不移除 subscriber.queue 中的对应请求和完整 prompt。20 个逐次超时后 pending=0，但 queue=20、仍保留 2,000,000 字符的 prompt；每轮容量可释放并允许后续请求，队列无上限 | /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/resource-probes.test.ts、resource-probes.log
+说明：正常 main 回调快速读流时不触发；需要附着且不消费的流，因此定 minor。仅报告已复现的载荷保留，不将“结果未知/作废不等于回滚”契约允许的建会话副作用误报为安全或幂等漏洞。
+探针原运行路径：/tmp/vfy-r-p610-d/sdk/tests/unit/resource-probes.test.ts。
+
+REFUTED / 已核验项
+
+1. P6-21 delivery / pending / turn-origin 现有行为被接线破坏：REFUTED。
+命令：HOME=/tmp/vfy-r-p610-d/home TMPDIR=/tmp/vfy-r-p610-d pnpm -C /home/lingxufeng/bot/app/sdk exec vitest run tests/unit/orchestration-foundation.test.ts tests/unit/orchestration-foundation-delivery.test.ts tests/unit/orchestration-create.test.ts
+输出：Test Files 3 passed (3)；Tests 82 passed (82)；Duration 2.44s。
+证据：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/sdk-regression.log。
+另恢复被删除的 6 条 f1 用例在未变异代码上全部通过：restored-f1.log，6 passed / 50 skipped。
+
+2. m3 既有行为及无 bots 键的写入字节变化：REFUTED。
+命令：HOME=/tmp/vfy-r-p610-d/home TMPDIR=/tmp/vfy-r-p610-d pnpm -C /home/lingxufeng/bot/app/ui exec vitest run tests/unit/m3
+输出：Test Files 8 passed (8)；Tests 97 passed (97)。
+补充探针将 git show 397c7c8:app/ui/main/m3-meta/store.ts 的真实旧写入器与当前写入器对照，分别执行 init→patchMainBotId→putRecipe→close→重开→patch→putRecipe；两轮真实文件逐字节相等，无 bots 键、无 .tmp 残留。不只检查键集合。
+证据：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/m3-regression.log、resource-probes.test.ts、resource-probes.log。
+
+3. create 失败路径遗留 slot / one-shot listener：REFUTED（D-3 队列载荷除外）。
+探针对 invalid、forbidden、capacity、timeout、main-error、flush、agent、delivery 共 8 种失败各执行 5 次：监听器始终 baseline=2，holds=0，channel.pending=0；slots 回到 0，容量拒绝保留原先人为占用的 1 格、不误释放他人的格子。成功 create+turn/end 循环 10 次不累积一shot监听。stream abort 后 pending=0、subscribed=false、abort-listeners=0。
+证据：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/resource-probes.test.ts、resource-probes.log。
+
+4. 真 Loader 的超时/容量拒绝/身份校验失败等回归：REFUTED。
+命令：HOME=/tmp/vfy-r-p610-d/home TMPDIR=/tmp/vfy-r-p610-d pnpm -C /home/lingxufeng/bot/app/sdk exec vitest run tests/unit/orchestration-create-live.test.ts
+输出：Test Files 1 passed (1)；Tests 11 passed (11)；Duration 55.61s。
+包含无订阅者、happy path、容量与归还、错 Peer、换主及坏 JSON、持久化重启、超时及迟到应答、冷 session 崩溃窗口、f1 taint、人工 worker、f1a 溢出补收养。
+证据：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/create-live.log。
+
+5. SDK 子进程 / launcher 锁成为本次改动造成的泄漏：REFUTED。
+真实 SDK 生命周期探针在 finally 关闭流/连接并调用 runtime 自有 stop（仅向其自行 spawn 的子进程转发终止）；随后 /proc 中 launcher/sdk 均已消失。launcher.lock 仍存在，但 start.ts:790-793 明定其为可回收 dead-pid 记录、不是活锁：同 HOME 重启实测成功。start.ts 在审查区间没有变更。
+证据：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/real-lifecycle.test.ts、real-lifecycle.log。
+限制：未对原 live suite 每个失败步骤逐点采集 /proc；实际进程退出/锁恢复由独立真实生命周期探针验证，细粒度 slot/listener 由失败探针验证，不混称逐路径进程证明。
+
+6. f1 / f1a 测试没有钉住根因：REFUTED。
+仅在 /tmp/vfy-r-p610-d/sdk 的副本中变异，始终 finally 恢复：
+- f1：禁掉 when 与 execute 的 turn-origin taint guard → 2 条 taint 单测均失败。
+- f1a：禁掉 slots.onFree = adopt → 2 条补收养根因用例失败，另 1 条归零用例通过。
+- f1/f1a 真 Loader 原用例 11/11 通过（见上），未使用 builder 粘贴输出。
+证据：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/mutations.py、mutation-summary.json、mut-f1-taint.log、mut-f1a-adoption.log。
+
+复跑探针
+1. python3 -I /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/prepare-probes.py（准备 /tmp/vfy-r-p610-d/sdk 源码副本及旧 foundation 测试；目录需尚未存在同名 node_modules 链接）。
+2. 将 evidence 目录 resource-probes.test.ts、real-lifecycle.test.ts 复制至 /tmp/vfy-r-p610-d/sdk/tests/unit/。
+3. git -C /home/lingxufeng/bot show 397c7c8:app/ui/main/m3-meta/store.ts > /tmp/vfy-r-p610-d/old-store.ts。
+4. HOME=/tmp/vfy-r-p610-d/home TMPDIR=/tmp/vfy-r-p610-d /home/lingxufeng/bot/app/sdk/node_modules/.bin/vitest run --root /tmp/vfy-r-p610-d/sdk tests/unit/resource-probes.test.ts tests/unit/real-lifecycle.test.ts --reporter=verbose。
+5. HOME=/tmp/vfy-r-p610-d/home python3 -I /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/mutations.py。
+
+收尾
+- HEAD 复核仍为 29c6b1a5af425b4260479ddfdd918f795d2cba9b。
+- git status --short -- app/sdk app/ui 无输出：产品代码未改。
+- /home/lingxufeng/bot/scripts/bot-reap --dry-run --match vfy-r-p610-d 无匹配、exit=0；未手工 kill、未启动 UI、未触碰沙箱外进程。
+- evidence 只保存探针脚本、变异汇总、测试日志和删除 diff；未复制 runtime/handoff/凭证。自行创建的 lifecycle-runtime、probe-data 已删除。

@@ -1,0 +1,65 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - complementary "Agents" [ref=e7]:
+        - button "New" [ref=e10] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e11]: 
+        - button "Search" [ref=e12] [cursor=pointer]:
+          - generic [ref=e13]:
+            - generic [aria-hidden] [ref=e14]: 
+            - text: Search
+        - region "Agent list" [ref=e15]:
+          - generic "New chat chat preview" [ref=e19]:
+            - button "New chat" [ref=e20] [cursor=pointer]:
+              - strong [ref=e31]: New chat
+        - separator "Resize sidebar" [ref=e32]
+      - button "Connect apps" [ref=e34] [cursor=pointer]
+      - button "Account" [ref=e37] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e38]: P
+    - generic [ref=e39]:
+      - main [ref=e40]:
+        - group "New chat" [ref=e41]:
+          - button "View agent settings" [ref=e42] [cursor=pointer]:
+            - generic [ref=e51]: New chat
+        - log "Conversation transcript" [ref=e52]
+      - textbox "Prompt" [ref=e57]:
+        - paragraph [ref=e58]: Message New chat
+  - dialog [ref=e910]:
+    - banner [ref=e61]:
+      - button "Back to Marketplace" [ref=e1356] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e1357]: 
+      - heading "Connect Apps" [level=2] [ref=e911]
+      - button "Close" [ref=e63] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e64]: 
+    - article [ref=e1358]:
+      - generic [ref=e1359]:
+        - generic [aria-hidden] [ref=e1360]: D
+        - generic [ref=e1361]:
+          - heading "Demo connector" [level=3] [ref=e1362]
+          - generic [ref=e1363]: "@bot-u23/demo-connector · v1.0.0"
+        - generic [ref=e1365]:
+          - generic [aria-hidden] [ref=e1366]: 
+          - text: Connected
+      - paragraph [ref=e1367]: U-23 可安装连接器（ping MCP）
+      - generic [ref=e1368]:
+        - paragraph [ref=e1369]: Connected apps aren't turned on for every bot. Pick this one when you create a bot.
+        - button "New bot with this app" [ref=e1370] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e1372]: 
+      - region "Information" [ref=e1373]:
+        - heading "Information" [level=4] [ref=e1374]
+        - generic [ref=e1375]:
+          - generic [ref=e1376]:
+            - term [ref=e1377]: Package
+            - definition [ref=e1378]: "@bot-u23/demo-connector"
+          - generic [ref=e1379]:
+            - term [ref=e1380]: Version
+            - definition [ref=e1381]: 1.0.0
+          - generic [ref=e1382]:
+            - term [ref=e1383]: Catalog
+            - definition [ref=e1384]: U-23 本地目录
+          - generic [ref=e1385]:
+            - term [ref=e1386]: Availability
+            - definition [ref=e1387]: Connected
+      - region "About" [ref=e1388]:
+        - heading "About" [level=4] [ref=e1389]
+        - paragraph [ref=e1390]: No details available.

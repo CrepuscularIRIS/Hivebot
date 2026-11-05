@@ -1,0 +1,42 @@
+P6-26v-base S1-swap-to-outside readText: {"ok":true,"val":"OUTSIDE-MARKER"}
+P6-26v-base S1-swap-to-outside readBytes: {"ok":true,"val":"OUTSIDE-MARKER"}
+P6-26v-base S1-swap-to-outside streamText: {"ok":true,"val":"OUTSIDE-MARKER"}
+P6-26v-base S1-swap-to-outside listDir: {"ok":true,"val":"a.txt,appr,big.txt,lnk"}
+P6-26v-base S1-swap-to-outside stat: {"ok":true,"val":"{\"version\":\"66306:83362163:14:1793873761496264190:1793873761496264190\",\"type\":\"file\",\"size\":14}"}
+P6-26v-base S2-upstream-afterstat-swap readBytes: {"ok":true,"val":"len=10 head=OOOOO"}
+P6-26v-base S5-fake-cred before-resolve: {"ok":true,"val":"FAKE-CRED-P626V"}
+P6-26v-base S5-fake-cred after-resolve: {"ok":true,"val":"FAKE-CRED-P626V"}
+P6-26v-base S4a approved A reads A: {"ok":true,"val":"APPROVED-OUTSIDE"}
+P6-26v-base S4b approved via symlink spelling: {"ok":true,"val":"APPROVED-OUTSIDE"}
+P6-26v-base S4c approval A then relink A->B: {"ok":true,"val":"SWAPPED-OTHER-OUTSIDE"}
+P6-26v-base S4d approval snapshot B, read different C: {"ok":true,"val":"OUTSIDE-MARKER"}
+P6-26v-base N1 inside readText: {"ok":true,"val":"INSIDE-OK"}
+P6-26v-base N2 inside listDir root: {"ok":true,"val":"sub"}
+P6-26v-base N3 internal read outside (no scope): {"ok":true,"val":"OUTSIDE-MARKER"}
+P6-26v-base N4 stat missing inside: {"ok":true,"val":"undefined"}
+P6-26v-base N5 workspaceRoot given as symlink alias, inside read: {"ok":true,"val":"INSIDE-OK"}
+P6-26v-base S7 stream mid-abort fds: {"base":22,"during":23,"afterAbortNoNext":22,"firstLen":65536}
+P6-26v-base S6 1000 mixed fds: {"base":22,"after":22,"errors":375,"procLeak":0,"sampleErr":["cannot read \"/tmp/bot-p626v-JO36eR/ws/sub/big.txt\": 300000 bytes exceeds the 10-byte limit","cannot read \"/tmp/bot-p626v-JO36eR/ws/sub/missing\": not found","read aborted"]}
+P6-26v-base LEAK /proc/self/fd anywhere in outputs: false
+exit=0
+P6-26 S1-swap-to-outside readText: {"ok":false,"code":"FS_PERMISSION_DENIED","msg":"code: p2sdk policy: read-outside-workspace denied (execute-time zone re-check; the call does not run)"}
+P6-26 S1-swap-to-outside readBytes: {"ok":false,"code":"FS_PERMISSION_DENIED","msg":"code: p2sdk policy: read-outside-workspace denied (execute-time zone re-check; the call does not run)"}
+P6-26 S1-swap-to-outside streamText: {"ok":false,"code":"FS_PERMISSION_DENIED","msg":"code: p2sdk policy: read-outside-workspace denied (execute-time zone re-check; the call does not run)"}
+P6-26 S1-swap-to-outside listDir: {"ok":false,"code":"FS_PERMISSION_DENIED","msg":"code: p2sdk policy: read-outside-workspace denied (execute-time zone re-check; the call does not run)"}
+P6-26 S1-swap-to-outside stat: {"ok":false,"code":"FS_PERMISSION_DENIED","msg":"code: p2sdk policy: read-outside-workspace denied (execute-time zone re-check; the call does not run)"}
+P6-26 S2-upstream-afterstat-swap readBytes: {"ok":true,"val":"len=300000 head=bbbbb"}
+P6-26 S5-fake-cred before-resolve: {"ok":false,"code":"FS_PERMISSION_DENIED","msg":"code: p2sdk policy: never-root denied at execution time (credential or masked root; the call does not run)"}
+P6-26 S5-fake-cred after-resolve: {"ok":false,"code":"FS_PERMISSION_DENIED","msg":"code: p2sdk policy: never-root denied at execution time (credential or masked root; the call does not run)"}
+P6-26 S4a approved A reads A: {"ok":true,"val":"APPROVED-OUTSIDE"}
+P6-26 S4b approved via symlink spelling: {"ok":true,"val":"APPROVED-OUTSIDE"}
+P6-26 S4c approval A then relink A->B: {"ok":false,"code":"FS_PERMISSION_DENIED","msg":"code: p2sdk policy: read-outside-workspace denied (execute-time zone re-check; the call does not run)"}
+P6-26 S4d approval snapshot B, read different C: {"ok":false,"code":"FS_PERMISSION_DENIED","msg":"code: p2sdk policy: read-outside-workspace denied (execute-time zone re-check; the call does not run)"}
+P6-26 N1 inside readText: {"ok":true,"val":"INSIDE-OK"}
+P6-26 N2 inside listDir root: {"ok":true,"val":"sub"}
+P6-26 N3 internal read outside (no scope): {"ok":true,"val":"OUTSIDE-MARKER"}
+P6-26 N4 stat missing inside: {"ok":true,"val":"undefined"}
+P6-26 N5 workspaceRoot given as symlink alias, inside read: {"ok":false,"code":"FS_PERMISSION_DENIED","msg":"code: p2sdk policy: read-outside-workspace denied (execute-time zone re-check; the call does not run)"}
+P6-26 S7 stream mid-abort fds: {"base":22,"during":24,"afterAbortNoNext":22,"firstLen":65536}
+P6-26 S6 1000 mixed fds: {"base":22,"after":22,"errors":500,"procLeak":0,"sampleErr":["cannot read \"/tmp/bot-p626v-brv5K9/ws/sub/big.txt\": 300000 bytes exceeds the 10-byte limit","code: p2sdk policy: read-outside-workspace denied (execute-time zone re-check; the call does not run)","cannot read \"/tmp/bot-p626v-brv5K9/ws/sub/missing\": file access failed","read aborted"]}
+P6-26 LEAK /proc/self/fd anywhere in outputs: false
+exit=0

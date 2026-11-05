@@ -1,0 +1,47 @@
+# VERIFY P6-14
+
+> 转正自 evidence/P6-14/VERIFY.txt。
+
+verdict: FAIL
+commit: 05d8dfca7973e3a27d9ebfc9da35562276bf6426
+任务：P6-14 envelope 会话封套
+分支 / worktree：feat/P6-14 / /tmp/bot-wt/P6-14
+验收日期：2026-11-04
+说明：按本次执行约束不写 Markdown 报告；本文件为 VERIFY-P6-14 的落盘正文。全部报告/探针/日志位于主仓 evidence，不在待移除 worktree 中。
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+| --- | --- | --- |
+| 1. 单测12 + live5（真Loader）+ orchestration单测157 | PASS | vfy-targeted.log；7 files / 174 passed / RC=0。检查7个测试源文件对应12+5+157。 |
+| 2. D9③ 真worker工具表无create_bot/send_to_bot/stop_bot | PASS | 独立vfy-probe.mjs开真Loader、session/create创建M/W、bots.json标注createdBy；vfy-inspect.mjs用tools.resolve + tools.schemas枚举完整工具表。vfy-probe.log mode=enabled：M三件全有，W三件全无（包括真stop_bot）。 |
+| 3. D9④⑤拒绝面与direct execute | PASS | 真Loader live②七个再委派入口全拒，session/list不增；live③拒bash后台/schedule_create/job_list；live④协调者三件均含coordinator信封字面串。另独立抽测subagent_fork、workflow、schedule_delete、job_kill，均pbots/forbidden，协调者三件亦全拒，7条结果、0审批、session/list不变，见vfy-probe.log。 |
+| 4. 顺序差分格 | PASS | 独立探针固定完全相同command='printf p614-vfy-order'与description，只翻run_in_background true/false：true含信封run_in_background文案、approval/asked=0、无job/registered；false asked=1、allowed-once后执行成功，text=p614-vfy-order。vfy-probe.log exact order differential保留完整两回合日志。原live③亦复跑通过。 |
+| 5. rebase完整性和默认链闸门 | PASS | vfy-source-anchors.txt：index.mjs:50保留STOP导出；main-channel.mjs:214保留registerStopBot、:220增加registerEnvelope；start.ts:114-132默认patch链不含orchestration。独立不加载orchestration.yml再启动，主/worker完整工具表都无三件协调者工具（vfy-probe.log mode=default）。 |
+| 6. 快捷列降级理由maxDepth/restrict无法按会话生效 | FAIL | maxDepth确实由插件config读取并传给subagents；但restrict的理由被真实环境推翻。profile插件可经ctx.agents.get(W).ctx.tools.restrict({deny:['subagent','workflow']})生效，M工具表完全不变，W独有两项消失，disposer恢复W。vfy-probe.log SCOPED_RESTRICT_PROBE / CONFIRMED；源码锚点vfy-source-anchors.txt。 |
+| 7. matrix和approval R1各单跑确认绿 | PASS | vfy-flakes.log；指定两文件，maxWorkers=1，2 files / 15 passed / RC=0（matrix10+approval5，含R1）。未跑全量，不能据此定性全量红一定是flake；全量终判仍交主会话。 |
+| worker隔离矩阵额外核对 | PASS | live⑤：worker读/proc/self/environ=hard-denied，读/写其他工作区=masked，自区write成功。已独立复跑，不采信builder旧输出。 |
+| 额外坏路径：已禁入口的错误/缺失参数 | PASS | 独立schedule_delete(args={})、job_kill(job_id='invalid-p614')均在执行前得到信封pbots/forbidden，而非进入工具动作；其余批量拒绝没有新会话、没有审批卡。vfy-probe.log vf3/vf4。 |
+
+真实环境命令（工作目录均 /tmp/bot-wt/P6-14/app/sdk；HOME=/tmp/bot-p614-vfy-home）：
+1. pnpm exec vitest run tests/unit/orchestration-envelope.test.ts tests/unit/orchestration-envelope-live.test.ts tests/unit/orchestration-foundation.test.ts tests/unit/orchestration-create.test.ts tests/unit/orchestration-send.test.ts tests/unit/orchestration-report.test.ts tests/unit/orchestration-stop.test.ts --maxWorkers=1
+   输出尾部：Test Files 7 passed (7)；Tests 174 passed (174)；Duration 7.70s；RC=0。
+2. pnpm exec vitest run tests/e2e/w1ap0-matrix.test.ts tests/e2e/approval.test.ts --maxWorkers=1
+   输出尾部：Test Files 2 passed (2)；Tests 15 passed (15)；Duration 95.50s；RC=0。
+3. ./node_modules/.bin/node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14/vfy-probe.mjs
+   输出：PASS four sampled entrances ... 7 results; no child session；PASS exact order differential；SCOPED_RESTRICT_PROBE restriction.ok=true, hasAgentCtx=true；CONFIRMED builder assertion false ... worker-only restriction succeeds; main unchanged；PASS default chain ...；RC=0。
+4. /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p614
+   首次自查RC=0，无输出。最终自查见vfy-final-state.log。
+
+第6项事实边界：
+- 源码 tools/src/index.ts:162-165 的报错仅禁止直接在无scope的全局ctx上调用restrict；不是禁止profile插件取得某个已存在agent.ctx后调用。
+- 安装版dsh-tools@0.2.2-alpha.2/lib/index.js:453-467与仓库源码一致。
+- 本次探针从真实profile挂载的Inspect类、通过远程control方法调用；不是手工构造scoped mock。
+- W restricted前有subagent/workflow，之后无；M before/after工具表深度相等；disposer后W工具表恢复。这足以反证“profile级插件拿不到worker的scoped ctx”。
+- 不声称maxDepth本身支持逐会话覆写，也不声称restrict能取代参数级run_in_background guard或direct-execute拒绝；pre-execute兜底仍必要。
+- 当前执行层封套的实测拒绝均成功，本发现是用户指定的第6项能力复用/降级依据缺口，不是已复现的安全绕过。
+
+新问题（可直接成为修复任务）：
+- [FIX] worker信封未采用PLAN快捷列tools.restrict，builder“profile插件拿不到worker scoped ctx、restrict无法按会话生效”的降级依据被真Loader探针推翻 | 复现：运行vfy-probe.mjs，profile Inspect经ctx.agents.get(W).ctx.tools.restrict({deny:['subagent','workflow']})成功，只隐藏W两工具、M不变、撤销后恢复 | 疑似位置：/tmp/bot-wt/P6-14/app/sdk/src/orchestration/main-channel.mjs:218-220、/tmp/bot-wt/P6-14/app/sdk/src/orchestration/envelope.mjs:20-24；builder REPORT.txt:67-71 | 严重度：major（明确验收项6失败，非已证实越权）；应落实worker scoped restrict的第一层复用并保留execute兜底，或提交针对真实生命周期/注册作用域不能适用的可复现实证后重审降级。
+
+证据目录（绝对路径）：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14/
+文件：vfy-targeted.log、vfy-flakes.log、vfy-probe.mjs、vfy-inspect.mjs、vfy-probe.log、vfy-source-anchors.txt、vfy-final-state.log。
+隔离：测试及独立探针均临时HOME、mock/fake模型、真实dsh Loader；不读凭证、不调用真实外部模型；运行时和handoff在临时目录，独立探针finally清理；产品代码无修改。此任务无UI验收，未打开桌面窗口、未截图。

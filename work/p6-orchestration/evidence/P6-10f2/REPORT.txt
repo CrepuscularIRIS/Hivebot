@@ -1,0 +1,50 @@
+P6-10.f2 修复报告（REVIEW-P6-10 A/B/C/D 合批，10 项）
+分支 feat/P6-10f2，基点 main@29c6b1a，提交 132edd7，worktree /tmp/bot-wt/P6-10f2
+
+修复清单（全部先红后绿；红基线 = 新增测试在未修复代码上按 review 症状失败）
+A1 orch-channel.ts onFrame：null/非对象 item 记 1 行日志丢弃，不再 TypeError。
+A2 main-channel.mjs respond：outcome 形状校验，非法（error:null / value:null /
+   {} / error 缺非空 string code）按契约 §2.4 收敛为 main-unavailable +
+   details{reason:'invalid-response',outcome:'unknown'}，请求必 settle、占位释放。
+A3 orch-channel.ts answer：respond rpc 拒绝（非法 JSON 等）捕获转日志；
+   SDK 侧请求由 createTimeoutMs 超时路径收敛（契约语义，未改）。
+C-1 main-channel.mjs redactInternalPaths（wire 边界）+ create.mjs 投递失败消息：
+   绝对路径 → <path>/尾两段；ENOTDIR 文本不含数据目录。
+B-1 create.mjs：holds 'turn'→'create' 归并（respond 前人工启动场景），全部
+   回合结束 used 归零；slots 对外接口未动。
+B-2 delivery.mjs unconfirmedStart 标记 + create.mjs 转移占位（released=true
+   使外层 release no-op，holds 转 'turn' 交 tracker 的 turn/end 归还）。
+B-3 store.ts putBotIfMain（校验与写入同队列位）+ orchestrate.ts 改用；
+   脏读窗口后 0 次 session/create、bots 无残留。
+D-2 orch-channel.ts subscribe 去重（subscribing/current 守卫 + onConnected
+   先 cancel 旧流）：首连竞态每代 1 条流，close 全回收。
+D-3 main-channel.mjs 超时从订阅者队列回收载荷；已 shift 的迟到 respond 拒绝不变。
+D-⑤ 自 2746c31 恢复 6 条 P6-21.f1 用例（2 ask + 4 single-flight），
+   与 P6-10 的 foundation 增量并存：foundation 41→56（vitest 计数 50→56），
+   delivery 2 不变，58 = 两批之和。
+
+测试证据（临时 HOME=/tmp/bot-p610f2-*；未跑全量，未跑 e2e）
+- sdk 定向：orchestration-create + foundation + foundation-delivery
+  95 passed（含新增 7 + 恢复 6）
+- sdk 真 Loader：orchestration-create-live 11 passed
+- ui：tests/unit/m3 + tests/unit/shell 168 passed（含 p610f2.test.ts 新 2、
+  orch-channel 新 3；p610.test.ts 1 处桩从 putBot 迁到 putBotIfMain 接缝）
+- 探针复跑（绿版，本目录 probes.mjs，直打 worktree 生产代码 + esbuild 打包
+  orch-channel/rpcRaw 子进程）：8/8 PASS——A1 null 帧不崩且后续合法请求仍答、
+  A2 三次 error:null 后 used=0 且第四次非 capacity、A3 非法 JSON 仅 1 行日志
+  无 unhandled rejection、C-1 文本断言、D-3 queue=0、B-1 afterAllEnded=0、
+  B-2 usedAfterFail=1 + newCreateAllowed=false、D-2 streams=1/close 全回收。
+  注意：探针 wait 预算须用时间制（本机高负载下 fs 线程池延迟可超 500 tick）。
+
+已知残留 / 说明
+- tsc --noEmit -p app/ui 在主仓同样报 TS2688（@types/node 解析），环境既有
+  噪音，非本次引入；vitest 编译通过。
+- A3 的「对应请求收敛」走既有超时路径（30s 默认），未新增主动回收。
+- C-1 只脱敏 message 文本；details/value.warn 未审计（review 未确认泄漏）。
+
+复测命令
+- cd /tmp/bot-wt/P6-10f2/app/sdk && HOME=/tmp/bot-p610f2-home pnpm exec vitest run tests/unit/orchestration-create.test.ts tests/unit/orchestration-foundation.test.ts tests/unit/orchestration-foundation-delivery.test.ts tests/unit/orchestration-create-live.test.ts
+- cd /tmp/bot-wt/P6-10f2/app/ui && HOME=/tmp/bot-p610f2-home pnpm exec vitest run tests/unit/m3 tests/unit/shell
+- HOME=/tmp/bot-p610f2-rerun/home node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10f2/probes.mjs（需 /tmp/bot-p610f2-rerun 目录与 worktree 存在）
+
+待 verifier 验收。

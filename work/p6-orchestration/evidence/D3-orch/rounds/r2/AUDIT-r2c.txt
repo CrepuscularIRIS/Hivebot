@@ -1,0 +1,4 @@
+routing-sha256=8bc4ea57810cbfcc2ac21c6cb4a510449df88c174dd22efc0d753bea81f04fc8
+dev: mainRaw=10/10 workerRaw=10; model/provider/tools/routing-input PASS; timeout=0; llm/retry=0; terminal429=0; groupRetries=0
+heldout: mainRaw=36/36 workerRaw=36; model/provider/tools/routing-input PASS; timeout=1; llm/retry=0; terminal429=0; groupRetries=0
+credential-value matches=0

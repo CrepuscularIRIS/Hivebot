@@ -1,0 +1,364 @@
+[
+  {
+    "id": "dev-single-csv-json-1",
+    "promptId": "dev-single-csv-json",
+    "kind": "single",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 2,
+        "tailTexts": 1,
+        "toolCalls": 1,
+        "toolSuccess": 0,
+        "toolRejected": 1
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "23705a40847072f5611ae373a15ecfc68340469949f26f17453ef779610c48d0"
+  },
+  {
+    "id": "dev-single-svg-badge-1",
+    "promptId": "dev-single-svg-badge",
+    "kind": "single",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 1,
+        "toolSuccess": 0,
+        "toolRejected": 1
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "c3d9a505e3ff8b36f290228a35672e6c6c64b76a2b9fd8c8178237189d404d0b"
+  },
+  {
+    "id": "dev-single-json-schema-1",
+    "promptId": "dev-single-json-schema",
+    "kind": "single",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 2,
+        "tailTexts": 1,
+        "toolCalls": 3,
+        "toolSuccess": 0,
+        "toolRejected": 3
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "3d510a6a2e2c2176086f32558b616d13266c8bc736b1a0706aaca10c3d523735"
+  },
+  {
+    "id": "dev-single-extract-links-1",
+    "promptId": "dev-single-extract-links",
+    "kind": "single",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 1,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 2,
+        "tailTexts": 1,
+        "toolCalls": 1,
+        "toolSuccess": 0,
+        "toolRejected": 1
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "fabe6d94a6efe462d9ab2899b2c5a66cbca7e777a8cae32e6475aafb38e83fb6"
+  },
+  {
+    "id": "dev-parallel-css-units-1",
+    "promptId": "dev-parallel-css-units",
+    "kind": "parallel",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 2,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      },
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 2,
+        "toolSuccess": 0,
+        "toolRejected": 2
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "483d7faab20730a8cd0b04193a1196740082b32b149b2a3a71db5748707f5d2f"
+  },
+  {
+    "id": "dev-parallel-poem-regex-1",
+    "promptId": "dev-parallel-poem-regex",
+    "kind": "parallel",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 2,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      },
+      {
+        "endReason": "completed",
+        "texts": 2,
+        "tailTexts": 1,
+        "toolCalls": 2,
+        "toolSuccess": 0,
+        "toolRejected": 2
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "6173fb96ec72c1d7ea396d7f3f688f8ab2a3e9c59e4dfbb760c8a9857589dce3"
+  },
+  {
+    "id": "dev-attach-recipe-allergy-1",
+    "promptId": "dev-attach-recipe-allergy",
+    "kind": "attach",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 0,
+      "send": 1,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [
+        "session-76cf5dcd-3c2c-4425-ba26-1379d5708293"
+      ],
+      "stopTargets": []
+    },
+    "turn0": {
+      "create": 1,
+      "workerIds": [
+        "session-76cf5dcd-3c2c-4425-ba26-1379d5708293"
+      ]
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 2,
+        "tailTexts": 1,
+        "toolCalls": 1,
+        "toolSuccess": 0,
+        "toolRejected": 1
+      },
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 0,
+        "toolSuccess": 0,
+        "toolRejected": 0
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "ee9ec1310f4fdaba500d84b6c21e4f4165bdb731af8827248d743077567fae6b"
+  },
+  {
+    "id": "dev-stop-synthetic-benchmark-1",
+    "promptId": "dev-stop-synthetic-benchmark",
+    "kind": "stop",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 0,
+      "send": 0,
+      "stop": 1,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": [
+        "session-3a3d8650-e571-43eb-96b3-584230e16660"
+      ]
+    },
+    "turn0": {
+      "create": 1,
+      "workerIds": [
+        "session-3a3d8650-e571-43eb-96b3-584230e16660"
+      ]
+    },
+    "reports": [
+      {
+        "endReason": "completed",
+        "texts": 1,
+        "tailTexts": 1,
+        "toolCalls": 1,
+        "toolSuccess": 0,
+        "toolRejected": 1
+      }
+    ],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "d4e5fa1a05243f2a4abaef29074853479803b5da4d6ebf1900390c2f2979dd1f"
+  },
+  {
+    "id": "dev-direct-http-status-1",
+    "promptId": "dev-direct-http-status",
+    "kind": "direct",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 0,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "768e51e246ab6f87816587bc0b9fc91588ef7347824b4996617e8d090cc6a8d6"
+  },
+  {
+    "id": "dev-chat-tired-1",
+    "promptId": "dev-chat-tired",
+    "kind": "chat",
+    "rep": 1,
+    "outcome": "turn/end",
+    "scoredTurn": {
+      "found": true,
+      "endReason": "completed",
+      "create": 0,
+      "send": 0,
+      "stop": 0,
+      "other": 0,
+      "sendTargets": [],
+      "stopTargets": []
+    },
+    "reports": [],
+    "orphanTools": 0,
+    "complete": true,
+    "routeOk": true,
+    "routeWhy": "",
+    "misdispatch": false,
+    "timeouts": [],
+    "sha256": "8daa0b6db8efcb87e1e67bdfab81a2731530b378325643370249ba3de21ba9ff"
+  }
+]

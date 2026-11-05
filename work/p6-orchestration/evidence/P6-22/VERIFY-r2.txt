@@ -1,0 +1,55 @@
+verdict: PASS
+commit: cd40f65da5f082329932eebbf20a356f8c89bae6
+范围：P6-22 r2 数据完整性验收；不是正式48组定案PASS，也不是产品整体PASS。
+报告采用 .txt 落盘（本验收会话禁止写报告 .md），存主仓，避免worktree移除后丢失。
+
+结论
+- 28/30 成立：单派12/12、并行6/6、追加5/6、停止5/6；哨兵误派0/6、完整6/6；dev10/10。原始分表与独立重算逐字节一致，汇总表仅generated时间不同。
+- 同意进入定案准备、不跑r3：保守将invalid算0仍为28/30，超过22/30，提升25组，哨兵及观测硬指标过线。48组等P6-24/P6-25.f1等依赖合并、使用生产布局与新安全基线后再跑；不开放P6-14b闸门。
+- 正式标签仍是35/36组闭合、1完整路由失败、1 timeout invalid、converged=false；没有把invalid记正确，也没有删分母或改评分器。
+- 超时成因已进一步查明：不是“模型没有动作”，也没有证据归因为429或负载。主bot第二用户回合完成后新建另一worker，两worker各自完成一次；采集器却等每个worker都有第二个turn/end，因而触发worker2等待超时。正式冻结评分仍保持invalid；这一采集器问题不增加正确数、不改变28/30。
+
+路径约定（以下B、V均为绝对路径缩写）
+B=/tmp/bot-wt/P6-22/work/p6-orchestration/evidence/D3-orch
+V=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-22/vfy-r2
+被验报告=/tmp/bot-wt/P6-22/work/p6-orchestration/evidence/P6-22/REPORT-r2c.txt
+原始分表=B/rounds/r2/SCORE.txt
+
+| 验收项 | 结果 | 真实命令与证据 |
+| 1 两集合复算一致 | PASS | HOME=$V/home node $V/D3-orch/rounds/r2/score-round.mjs heldout；同命令dev。只在V中运行原评分脚本的字节相同副本，raw只读链接到B，避免重写交付分表。输出V/recompute-heldout.txt、V/recompute-dev.txt；复算scores.json和各集合SCORE.txt与交付逐字节相同，汇总SCORE仅generated时间不同，见V/audit.txt:3-5。heldout subset=28/30、hard reports=42/toolSuccess=0/tailTexts!=1=0；dev各10组正确。 |
+| 2 六组raw判定帧抽验 | PASS | HOME=$V/home python -I $V/inspect.py > $V/frames.txt；只输出用户回合序号、工具调用/目标/结果、结束原因和计数，不展开heldout任务原文或思考正文。六组详见下表。 |
+| 3 超时invalid及不宣称正式PASS | PASS | frames.txt:61-83；HOME=$V/home node $V/timeout-probe.mjs > $V/timeout.txt。meta outcome=timeout/timeouts=[worker2]/retryCount=0/rateLimited=false，主worker合计llm/retry=0；两worker均completed，end计数[1,1]。原waitWorkersEnded(workers,2)虚拟时钟回放必返ok:false，排除“模型无动作”解释。REPORT-r2c.txt:11-13、34-37明确不宣称正式PASS；原SCORE.txt:21 converged=false。 |
+| 4 文案与冻结判据未动 | PASS | git -C /tmp/bot-wt/P6-22 log --format='%h %s' 7ea8fcc..HEAD -- <四个文案文件> <prompts.json> <score.mjs> 只返回0ed1ed4；git diff --exit-code 0ed1ed4 HEAD -- <同六文件> 退出0。audit.py又用git show逐字节比对文件；prompts/score相对r1亦零差异。证据V/freeze-history.txt、V/audit.txt:7-9。已人工读0ed1ed4 diff与主仓PLAN §12.5/12.6：身份第一句、按写文件/执行命令划界、write/edit/bash触发、文件少/调用少/耗时短反例、续改回原worker，均在唯一版本落实。 |
+| 5 原17组+补19组=36且不重不漏 | PASS | HOME=$V/home python -I $V/audit.py > $V/audit.txt。冻结cases按rep展开计划36组，主raw meta id+rep逐一核对，ID集合完全相等且无重复；SCORE来源标签集合完全相等；17原组raw SHA256同时与a4f1bb3原始git blob及archive-r2b基线评分一致；补采集合19（含par1-two-tasks-2重采），.prevN不进计分。输出V/audit.txt:6。 |
+| 6 42批硬指标及3批抽验 | PASS | audit.py不依赖scoreGroup，独立遍历raw事件关联callId/isError并数末工具结果后非空正文；42批全闭合completed，成功工具0，tailTexts!=1为0。3批实际拒绝帧见V/audit.txt:10-13，详见下文。 |
+| 额外坏路径 | PASS | timeout-probe.mjs直接提取当前run.mjs的waitWorkersEnded原函数，用真实worker帧和虚拟时钟回放“追加时误建新worker”，确认两个worker均结束仍会超时。只在内存把outcome改成turn/end作诊断，冻结scoreGroup判路由false，绝未覆盖原meta/分表。另HOME=$V/home node $V/D3-orch/score.mjs --selftest：17项全通过，V/selftest.txt。 |
+
+六组raw抽验（raw均为B/rounds/r2/heldout/raw/<id>.jsonl；行号指实际文件行，不是抽取文件行）
+| id | 期望 | 实际判定帧 | 结论 |
+| single1-packing-1 | create=1/send=0/stop=0 | L236 create_bot，L237成功返回worker；用户区间L11-382 completed，create恰1 | OK |
+| single3-fib-run-3 | create=1/send=0/stop=0 | L285 create_bot，L286返回worker；用户区间L11-351 completed，create恰1 | OK |
+| par1-two-tasks-2 | create=2/send=0/stop=0 | L1040、1042各一次create_bot，L1041、1043返回不同worker；L1123 completed | OK（补采替换原timeout） |
+| attach1-hike-append-3 | t0 create=1；t1 create=0/send>=1/stop=0，send目标为t0 worker | L477 create返回session-56c33ede-7458-4aa9-bdfd-451b7378bbc2；L1767 send_to_bot使用该botId，L1825 completed；计分回合create=0/send=1/stop=0 | OK |
+| stop1-lowercase-2 | t0 create=1；t1 create=0/stop=1 | L529 create返回session-578fd636-5ebe-41b8-b4d8-cba4b8c8cecc；L671 stop_bot目标相同，L786 completed | OK |
+| stop2-archive-3 | t0 create=1；t1 create=0/stop=1 | t0 L403调bash而非create，L614 completed；t1 L619-810无工具且completed；outcome=turn/end/timeouts=[] | 完整路由FAIL；不止stop=0，前置create也为0（评分器没有漏算） |
+
+超时组细节（不是额外读取heldout全文）
+- attach2-backup-index-3主raw：L275 create第一个worker；L922第二用户回合；L2493再次create，L2494返回不同session；L2531 completed。计分回合实际create=1/send=0。
+- 第一worker raw L9499 turn/end completed；第二worker raw L7093 turn/end completed，各有且仅有一次turn/end；meta retries均0。主raw第二次回报L2536-3884也已completed。
+- run.mjs:215-223对所有worker要求end>=n；:323-328在追加后无条件settleAll(2)。本组没有send给旧worker，因此旧worker不可能凭空产生第二次结束，新worker也只执行过首回合。虚拟时钟坏路径证明这是等待条件造成的invalid，不能仅凭timeout标签声称是负载/模型空转。
+- 既有冻结scoreGroup按meta.outcome=timeout令complete=false，正式表保留invalid是原判据的忠实结果。“只有1个完整组路由失败”是按整组标签统计；它不意味着第二个主bot路由没有可见违例。这个区别不改变保守28/30或进入定案准备的门槛。
+
+3批硬指标raw抽验
+1. single3-fib-run-3第1批：L356开始，L508 glob，L509对应结果isError=true，L672 completed；成功0，末工具后正文恰1。
+2. par1-two-tasks-2第2批：L1285开始，L1535/L1537 read，L1536/L1538对应结果isError=true，L1878 completed；成功0，末工具后正文恰1。
+3. attach1-hike-append-3第1批：L550开始，L841 glob，L842对应结果isError=true，L1207 completed；成功0，末工具后正文恰1。
+这是“成功0”，不是“从未尝试调工具”；拒绝调用没有被当成成功。
+
+新问题（不推翻本次数据完整性PASS；后续正式48组采集前需修正或显式处理）
+- [FIX] 追加回合误建新worker后，采集器等待所有worker各有2次turn/end，两个worker均完成也被记worker2超时 | 复现：HOME=$V/home node $V/timeout-probe.mjs，真实帧计数[1,1]而waitWorkersEnded(workers,2)返回ok:false | 疑似位置：/tmp/bot-wt/P6-22/work/p6-orchestration/evidence/D3-orch/run.mjs:215-223,323-328 | minor（采集假超时/额外等待，未抬高正确数；不要为消除invalid直接改冻结评分器）
+
+运行约束
+- 未重跑真模型、未跑全量回归/e2e；无UI任务，无截图。
+- 全部执行探针HOME=$V/home（新建、非真实HOME），Python均-I；只写主仓evidence目录，未改产品代码或被验worktree文件。
+- 没有启动SDK/模型/后台服务，也无需要清理的自建后台进程，未执行任何kill/清理命令。
+- 验收前后HEAD相同cd40f65da5f082329932eebbf20a356f8c89bae6；worktree status保持原有VERIFY-r0.txt、vfy-r0/两个未跟踪项，未碰既有材料。

@@ -1,0 +1,7 @@
+# LOG · p8-parity-full（1:1 复刻 Grok Bot 逆向全功能面 + 远程集成测试）
+2026-11-05 06:41 | 开 slug。用户 2026-11-05：「接下来是1比1复刻grok bot逆向的所有功能. 例如grok bot可以开放电脑. 所以后续要远程集成测试了」
+2026-11-05 06:49 | director 写 SCOPE.md v1（范围账：153 缺口面 16 簇；更正 COV 对 computer 的定性——0.78.1 有本机 CU，提议补 N1–N8；第一批 T-05/T-01/T-20~24 + 问 U-2）
+2026-11-05 06:50 p8 SCOPE 完成（153 缺口面归 16 簇；重大发现：0.78.1 有本机 computer use——daemon 14 个 computer_* 工具 + 应用白名单限速，RE-COVERAGE 全记成云 box 是错的，补 N1–N8 共 19 面；三风险=真桌面键鼠/浏览器 cookie/远程凭证；工作量 85–183 任务单元）→ 按建议派第一批：T-05 状态回写 + T-01 逆本机 computer use + 5 个 scout；U-2（开放哪块屏）进 QUESTIONS
+2026-11-05 06:55 | T-05 部分落实：已在 work/p1-re/panels/RE-COVERAGE-r1-snapshot.md 保存改前快照（派发未指定修订号，本次使用 r1），逐编号核对 SCOPE §1 簇 0 的 22 行并补入六份报告锚点；状态列未改，因为 SCOPE 没有逐行指定已逆/部分，且 R-04 未覆盖 skills 九方法、R-06 未覆盖 autoReview 判定及 memory/automations 全树，不能机械视作全已逆。已在 RE-COVERAGE §2.5 后追加 N1–N8（行 262–269），按本次派发统一记部分、承接 T-01；N8 的 SCOPE 证据只有 i18n /348Id 与 S31/R-26 引用，没有字节偏移，未臆补。差异统计为 37 行新增、22 行删除，断言核对通过：22 个旧行各只改锚点所在一列，状态保持；新增八行均为部分与 T-01。§0 计数及 R-31 未改，本次派发只要求状态/锚点两列与新增行。
+2026-11-05 07:03 T-01 RE 完成（RE-computer-use.md：云端大脑+本地手架构；两处 SCOPE 修正——终端是硬黑名单非 shell 特例、那组字段是被钉死的诱饵非限速；三层门+六类黑名单+fail-closed；云 box 驱动=native_x11/xdotool 与我们 Xvfb 路线对齐；启示：可抄 grants/动作后补视图/截图预算，该补密码框防护与 jsonl 审计）
+2026-11-05 07:05 T-20~24 完成：CU 首选 trycua（dsh CU 仅 macOS，完整 CUA 协议非胶水）；浏览器=dsh Playwright isolated launch 不碰用户 Chrome；SSH=dsh 工具+宿主 OpenSSH 持钥；Linux 上游 trycua 条件式首选/TideSparrow 后备；远程测试=先 Xvfb 日常回归，真远端需用户专机授权

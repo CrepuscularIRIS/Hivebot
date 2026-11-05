@@ -1,0 +1,34 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - complementary "Agents" [ref=e7]:
+      - button "New" [ref=e10] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e11]: 
+      - button "Search" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]:
+          - generic [aria-hidden] [ref=e14]: 
+          - text: Search
+      - region "Agent list" [ref=e15]:
+        - generic [ref=e16]:
+          - generic "New chat chat preview" [ref=e19]:
+            - button "New chat" [ref=e20] [cursor=pointer]:
+              - strong [ref=e31]: New chat
+          - generic "Main Bot chat preview" [ref=e34]:
+            - button "Main Bot" [active] [ref=e35] [cursor=pointer]:
+              - strong [ref=e46]: Main Bot
+            - tooltip "Main Bot chat preview" [ref=e47]:
+              - generic [ref=e48]:
+                - generic [ref=e49]: Main Bot
+                - time [ref=e60]: now
+                - text: No messages yet
+      - separator "Resize sidebar" [ref=e61]
+    - button "Connect apps" [ref=e63] [cursor=pointer]
+    - button "Account" [ref=e66] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e67]: P
+  - generic [ref=e68]:
+    - main [ref=e69]:
+      - group "Main Bot" [ref=e70]:
+        - button "View agent settings" [ref=e71] [cursor=pointer]:
+          - generic [ref=e80]: Main Bot
+      - log "Conversation transcript" [ref=e81]
+    - textbox "Prompt" [ref=e86]:
+      - paragraph [ref=e87]: Message Main Bot

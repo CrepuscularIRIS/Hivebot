@@ -1,0 +1,57 @@
+# P6-10 · 方向 B：并发、幂等与状态同步
+
+verdict: FAIL
+commit: 29c6b1a5af425b4260479ddfdd918f795d2cba9b
+范围：397c7c8..29c6b1a；主查 P6-10 的 18 文件合并差异，结合范围内 delivery/slots 改动及必须的宿主恢复调用方。
+CONFIRMED：critical 0 / major 3 / minor 0。
+说明：按本会话报告文件约束使用用户指定的 txt 兜底路径；未写产品代码，未提交，未跑全量回归或 e2e。
+
+## CONFIRMED
+
+B-1
+major | app/sdk/src/orchestration/create.mjs:131-132（交互 slots.mjs:70-73） | create 已 reserve、main 已建出 worker，但 #6 rename / respond 尚未结束时，用户从另一客户端启动该 worker；容量仍有余量 | tracker 为同一 worker 另占一格并记 turn hold，随后 create 用 set(id,'create') 覆盖该 hold，未归并两个占位。人工回合和随后 assign 回合全部结束后，holds 为空而 used=1，永久虚占一格；反复发生可把默认 3 格耗尽 | /tmp/vfy-r-p610-b/slots-channel.mjs
+
+复现：生产 registerCreateBot + CreateChannel + Slots；暂缓 respond，在已登记 bots.json 的 w 上发 turn/start，再 respond，随后人工回合及 assign 回合各发完整 end/start/end。默认 limit=3 输出：
+{"case":"pre-response-manual-start","limit":3,"afterAllEnded":1,"holds":[]}
+对照 limit=1 不会另占格，最终 used=0，说明不是所有交错都坏。问题根因是收养占位与 create 占位未做所有权转移，不是 release 下溢。
+
+B-2
+major | app/sdk/src/orchestration/create.mjs:152-155（交互 delivery.mjs:165-166） | Delivery.send 已执行 followup 且 worker 已 turn/start，随后全局 sessionPersistence.flush 失败（包括另一 session 的写入失败） | create 把未确认持久化当成未启动，直接删 create hold 并 release，且撤掉 turn/end 监听；tracker 已因 create hold 忽略本次 turn/start。worker 仍 running，used 却变 0，同容量下下一次 reserve 成功，绕过并发上限；worker 后续 turn/end 也无法补回丢失的运行态记账 | /tmp/vfy-r-p610-b/slots-channel.mjs
+
+复现使用生产 Delivery.send，而非把 send 替换成直接 throw。create 的首次 flush 和 Delivery.readLog 的 flush 成功；agent.followup 后以 microtask 发送 turn/start，屏障让第三次 flush 此时失败。输出：
+{"case":"delivery-flush-fails-while-worker-running","runningWorkers":1,"usedBeforeNewReserve":0,"newCreateAllowed":true,"holds":[]}
+宿主补查：session-persistence-jsonl 的 flush 是 tracker.flushAll，全局聚合错误不等于目标 worker 已停止；上游 live-write-contract 测试也明确失败 session 不妨碍健康 session 写成功。容量释放不能仅凭投递 Promise reject 判定回合已不存在。
+
+B-3
+major | app/ui/main/m3-meta/orchestrate.ts:334-354（交互 store.ts:134-142） | B 当主时发出的请求在通道中延迟；主已成功换为 A；用户再次尝试换为 B，但 patchMainBotId 的 rename 最终失败。在该未提交窗口，createWorkerBot 读取 store.read | store 的写队列只串行写者，不隔离读者：read 可见尚未提交的 B。create 校验通过后等 putBot 入队；换主失败回滚 A，putBot 随后成功，但不重验 mainBotId，最终以 B 为 createdBy 建出 worker，并返回成功，尽管整个建 worker 操作期间盘上权威主始终 A | /tmp/vfy-r-p610-b/main-races.test.ts
+
+复现：使用真实 BotsMetaStore、真实临时 bots.json 和 createWorkerBot，只对 node:fs/promises.rename 注入一个可控延迟及失败，dsh RPC 为记录调用的替身。先成功 B→A；阻塞失败的 A→B 写，此时断言内存 B / 磁盘 A；交入此前 B 的请求，放开失败屏障。最终断言主=A、唯一 worker.createdBy=B、session/create 调用=1、结果 ok=true。日志：
+DIRTY READ: failed patch A->B; final main=A, createdBy=B, session/create=1
+该缺陷不要求并发写者丢更新：它是新编排把 store 的暂态读用于权限/身份决策，随后跨队列 await 沿用失效快照。
+
+## REFUTED / 对照探针
+
+1. 不相关 pending worker 与 create 释放竞争：limit=1，create 占位时 x 启动进入 pending；w 结束后 x 被收养 used=1；x 结束归零。未复现丢占位/双释放。
+2. 满额时同 worker 在 respond 前启动：limit=1，pending→结束→create release，最终 used=0；B-1 仅在还能 reserve 的路径复现。
+3. create 首次 flush 等待期间人工回合已 turn/end：若 assign 后续正常运行并结束，最终 used=0；不能仅用人工回合的 end 就宣称漏释放，探针已包含后续 assign 回合。
+4. respond 先于 timeout、timeout 先于 respond、detach 先于 respond 三种顺序：各自迟到/重复 respond 被拒，pending=0、used=0，未复现双重释放或漏释放。三条均使用生产 CreateChannel + create 工具。
+5. store 并发 putBot 丢更新：20 个 Promise.all 写完成，内存和磁盘均保留 20 条，未复现丢更新。
+6. SDK 重启继续旧污染回合而丢 TurnOrigin：安装的 dsh-agent-loop resumeWith 在重建前调用真实 interruptedTurnClosers。探针对 turn=7 的污染中断日志实际得到 step/end 与 turn/end(reason=interrupted)；旧回合不是重启后继续执行。同一新进程中，新回合 claim pbots-worker 仍 tainted，新用户回合不污染。未复现所述同回合跨 SDK 重启放行；本探针是安装恢复原语 + 账本组合检查，未声称跑过完整 SDK 崩溃重启 e2e。
+7. 重复 requestId：人工向 wireOrchChannel 的 onFrame 重放同一帧确实生成两个 worker（控制用例），但生产 SDK requests 仅 shift 一次、新请求生成新 UUID，未找到重连重放旧请求的生产路径；不把手工造出的重复帧提升为 CONFIRMED。通道的迟到 respond 拒绝已独立实测。
+
+## 命令与输出
+
+临时根 /tmp/vfy-r-p610-b；HOME=/tmp/vfy-r-p610-b/home。探针、日志的持久副本均在本报告同目录，未复制 runtime、凭证、token 或 bots.json。
+
+1. HOME=/tmp/vfy-r-p610-b/home node /tmp/vfy-r-p610-b/slots-channel.mjs
+   exit 0；输出两条容量反例及全部容量/通道对照结果。完整日志 slots-channel.log。
+2. HOME=/tmp/vfy-r-p610-b/home /home/lingxufeng/bot/app/ui/node_modules/.bin/vitest run --config /tmp/vfy-r-p610-b/vitest.config.mjs --reporter verbose --disableConsoleIntercept
+   exit 0；1 file / 3 tests passed。注意测试断言的是上述反例实际发生，不代表产品通过。完整日志 main-races.log。
+3. HOME=/tmp/vfy-r-p610-b/home node /tmp/vfy-r-p610-b/restart-origin.mjs
+   exit 0；实际 closers=[step/end, turn/end(interrupted)]。完整日志 restart-origin.log。
+4. HOME=/tmp/vfy-r-p610-b/home /home/lingxufeng/bot/app/ui/node_modules/.bin/vitest run --root /home/lingxufeng/bot/app/ui tests/unit/m3/p610.test.ts tests/unit/m3/orch-channel.test.ts
+   exit 0；2 files / 21 tests passed。完整日志 existing-ui.log。已有定向测试未覆盖上述竞态。
+5. /home/lingxufeng/bot/scripts/bot-reap --dry-run --match vfy-r-p610-b
+   exit 0、无目标输出；未启动 SDK/Electron 常驻进程，无本任务残留需要清理。没有执行 kill/pkill。
+
+最终 HEAD 再核对为 29c6b1a5af425b4260479ddfdd918f795d2cba9b，未漂移。

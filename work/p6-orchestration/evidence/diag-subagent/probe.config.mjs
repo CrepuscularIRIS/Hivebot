@@ -1,0 +1,1 @@
+export default { test: { include: ['/home/lingxufeng/bot/work/p6-orchestration/evidence/diag-subagent/probe.test.ts'], testTimeout: 120000, hookTimeout: 120000, setupFiles: ['/home/lingxufeng/bot/app/sdk/tests/support/tmp-sweep.setup.ts'] } }

@@ -1,0 +1,45 @@
+# VERIFY P6-13.f1（P6-13 整体终验）
+
+> 转正自 evidence/P6-13/VERIFY-f1.txt。P6-13 整体判定：PASS。
+
+verdict: PASS
+commit: 23b0ac512ed5953e63ac9d9c00e2f1e83443d46e
+P6-13 整体判定: PASS（按本次定向复验范围；不代表全量回归或 code review 已通过）
+日期：2026-11-04；分支 feat/P6-13；工作树 /tmp/bot-wt/P6-13。
+本会话开发者约束禁止写报告 .md，按指定备选落主仓 evidence/P6-13/VERIFY-f1.txt。
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+| 1 上场唯一 FIX：idle stop cancel=0 | PASS | 独立重跑 vfy-guards.mjs；vfy-f1-probes.log 的 idle 行 accepted:true/wasRunning:false/sessionCalls:1/cancelCalls:0；非目标解析零调用要求仅用于拒绝面 |
+| 2 新增防残留测试复跑且验收员独立再造 | PASS | 定向 21/21 含 orchestration-stop.test.ts:148-158；自写 vfy-f1-transition.mjs：同目标连续 3 次 idle -> 0 cancel，转 running -> 恰 1 cancel，参数严格为 {kind:user},{keepInbox:true}，目标每次重新解析；vfy-f1-probes.log |
+| 3a 两阶段容量窗口抽测 | PASS | 定向真 Loader 场景③，orchestration-stop-live.test.ts:328-383：accepted 后无 turn/end 时第4次 create 为 capacity 且通道零触达；另一 worker turn/end 释放后 create 成功；vfy-f1-targeted.log |
+| 3b 唯一 stopped 回报抽测 | PASS | 定向真 Loader 场景① :243-293：自身 spawn 进程树退出，0 新工具/模型调用，观察窗后恰1项 end:stopped、0 ask；独立 ask 探针再次打印唯一 stopped 项；vfy-f1-targeted.log / vfy-f1-ask.log |
+| 3c 拒绝面零触达抽测 | PASS | vfy-guards.mjs 六格 foreign/tainted/identity/bad args/null/blank 全部 sessionCalls=cancelCalls=0；vfy-f1-probes.log；定向 live④另验污染回合目标作业树仍存活 |
+| 3d 未决 ask 打断额外抽测 | PASS | 独立复跑 vfy-ask.mjs；vfy-f1-ask.log：approval/asked -> approval/decided:cancelled -> turn/end:aborted，恰1项 end:stopped，canaryExists:false，未投失效 ask |
+| 4 定向21/21 | PASS | vfy-f1-targeted.log：Test Files 2 passed (2)，Tests 21 passed (21)，Duration 17.96s；包括非 Assignment 停止0回报与真 Loader idle 场景 |
+| 5 diff 增量恰2文件、单commit | PASS | vfy-f1-final.log：79899b0..HEAD 计数1，只有 app/sdk/src/orchestration/stop.mjs 与 app/sdk/tests/unit/orchestration-stop.test.ts；assert 比较精确文件清单与完整 SHA，diff --check 通过，worktree干净 |
+| 额外坏路径 | PASS | 自写 vfy-f1-transition.mjs：idle成功后 createdBy 改为other，同目标再次stop返回 forbidden，session解析与cancel都零新增；vfy-f1-probes.log |
+| 环境与结束清理 | PASS | 所有执行使用 /tmp/bot-p613f1-* 临时HOME；探针数据从mkdtemp根派生并finally删除；仅测试helper自管其spawn子进程，无shell kill；vfy-f1-final.log：bot-reap --dry-run --match p613 无输出、exit=0；最终HEAD不变；vmstat iowait=0。非UI改动，无截图要求 |
+
+命令（均已由验收员实际执行；证据目录 E=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-13）：
+1. cd /tmp/bot-wt/P6-13/app/sdk
+   export HOME="$(mktemp -d /tmp/bot-p613f1-vfy-home-XXXXXX)"
+   export PATH="/tmp/bot-wt/P6-13/app/sdk/node_modules/.bin:$PATH"
+   ./node_modules/.bin/vitest run tests/unit/orchestration-stop.test.ts tests/unit/orchestration-stop-live.test.ts
+   退出0，2 files / 21 tests passed。
+2. 同包目录，HOME=/tmp/bot-p613f1-probes-home-JbmZaT，PATH同上：
+   node "$E/vfy-guards.mjs" && node "$E/vfy-f1-transition.mjs"
+   退出0；6格拒绝PASS、idle cancel0 PASS、状态转换PASS、撤销所有权坏路径PASS。
+3. 同包目录，HOME由 mktemp -d /tmp/bot-p613f1-ask-home-XXXXXX 创建，PATH同上：
+   node "$E/vfy-ask.mjs"
+   退出0，PASS pending ask interrupted: no stale ask delivery, exactly one stopped end, unapproved command never ran。
+4. git -C /tmp/bot-wt/P6-13 diff --name-status 79899b0..HEAD
+   git -C /tmp/bot-wt/P6-13 rev-list --count 79899b0..HEAD
+   git -C /tmp/bot-wt/P6-13 diff --check 79899b0..HEAD
+   git -C /tmp/bot-wt/P6-13 status --porcelain
+   /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p613
+   输出见 vfy-f1-final.log；精确清单、SHA、干净树均经assert校验；无匹配残留，exit=0。
+
+新问题（每条一行，可直接成为修复任务）：
+- 无。本次明确验收项全部PASS，上一份79899b0的唯一产品FIX已关闭。
+
+范围说明：遵照本次指令不跑全量回归/全套e2e；旧报告中“未跑全量”的职责分工不是本次FAIL项，合并后全量由主会话负责；本报告不替代安全M档review。

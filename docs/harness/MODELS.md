@@ -21,12 +21,14 @@ slot 与实际模型的对应：`fable`=Opus 5.5，`opus`=GLM 5.3 1M，`sonnet`=
 | ux-proposer 席 C | `ux-proposer` | `"sonnet"` | 6.1 Sol | build-lead | 同上 |
 | frontend-dev | `frontend-dev` | 不传 | Opus 5.5 | build-lead | 每条 UI 任务一个 |
 | verifier | `verifier` | 不传 | GLM 5.3 | build-lead / 主会话 | 按任务多开 |
+| verifier-flash | `verifier-flash` | 不传（frontmatter 为 `glm-5.3-flash`） | GLM 5.3 Flash | 主会话 | 按任务多开（测试/验收） |
 | judge 席 A | `judge` | `"fable"` | Opus 5.5 | `/panel` | 两席同一条消息派出 |
 | judge 席 B | `judge` | `"sonnet"` | 6.1 Sol | `/panel` | 同上 |
 
 规则：
 - `judge` 和 `ux-proposer` 的 frontmatter 里**故意不锁模型**。漏传 `model` 时会继承会话模型（GLM），两席就退化成同一个模型，panel 等于没开。所以必须传。
 - 其余 agent 一律**不传** `model`，以 frontmatter 为准。传了反而会覆盖掉。
+- 2026-11-05 用户指示：测试/验收类派发用 GLM 5.3 Flash（`verifier-flash`，frontmatter `glm-5.3-flash`，LiteLLM 已配该路由）；builder 照旧 GLM 5.3（额度已恢复），但「注意限额问题」——builder 并发保持 ≤2~3。安全/存储语义/结论存疑的验收仍用 `verifier`（GLM 5.3 全量）。
 - 默认前台派发。同一条消息里的多个前台 Agent 调用会并发执行，结果作为工具返回值回来，不会遗漏。
 - 前提：`CLAUDE_CODE_SUBAGENT_MODEL=inherit`（claude-kimi 默认就是）。如果它被设成某个具体模型，所有 `model` 参数都会被覆盖，panel 也会失效。
 

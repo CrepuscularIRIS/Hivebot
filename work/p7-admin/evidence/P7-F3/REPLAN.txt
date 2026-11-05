@@ -1,0 +1,83 @@
+P7-F3 REDUCE 重规划（Sol代director；只读结论，不是实施批准）
+基线：/tmp/bot-wt/P7-F3-replan @1d501f181c311ee29912b82ea84f46c93d590bbb。
+源码锚点下文均相对此树；主仓 PLAN/REUSE/LEARNINGS 与 f2-REPORT.txt、f1-VERIFY.txt 已读。
+范围：只解决当前 worker Report 的未知投递隔离，不做通用投递平台、第二Assignment状态机/队列/授权库/supervisor。
+
+1. 可信状态与证据分级
+[E1 独立运行既有证据] f1-VERIFY.txt:54–59：V2已CONFIRMED，默认2秒窗口尚在时旧unknown返回，自动followup=2。
+原V1与十生产文件完整修改覆盖独立PASS接受；整文件coverage命令exit1及完整生产恢复链UNKNOWN不改写。
+[E2 本次独立源码核对] git diff de36bbc..HEAD只有p7-host-recovery.test.ts新增65行；生产未修，不能合为绿色交付。
+[E3 作者运行证据] f2-REPORT.txt:20–29：2 failed/42 passed；新增混批RED未在本次独立运行。
+[E2] 新混批用例已逐行核对，不仅转述作者结论：p7-host-recovery.test.ts:171–198。
+其Delivery真实、readLog受控、followup为不更新inbox/history的spy；post-followup flush失败，timer=null。
+随后换permit并追加fresh Assignment的原生形状投影；worker turn/end触发第二批；old/fresh键集改变batch id。
+对应生产路径为report.mjs:233–258→pending.mjs:93–110→delivery.mjs:175–195。
+因此源码确认“无未知事实可读时，下次合法触发会混入old”；不是已独立复演的真实JSONL丢盘事故。
+该受控未知输入有效：调用已发生而持久确认缺失；不能用正常inbox通常存在否认，也不能推导必须新建账本。
+本次未运行测试/安装/build/模型/桌面；源码足以定位两格，不重复原覆盖或扩大调查。
+
+2. 两个停止依据是否成立
+V2局部原因：report.mjs:161–166保留timer；:262只清reconcilePending，:264–272不撤销未到期timer。
+只清timer可关此窗口，但handleEvent(:138–153)、后续boot/manual flush仍会重新computeDue，不能隔离old。
+混批原因：pending.mjs:43–54只保留真实delivered与pending；:57–59按整个key集合生成id。
+Delivery.holds(:139–146)仅history/live inbox按message id查重；inflight(:162–195)完成即删、也按batch id。
+unconfirmedStart(:184–187)是抛错对象属性，仅通知当前并发等待者(:169–172)，不是持久逐键未知事实。
+Assignment(:63–122)记录worker认领/结束/ask，不记录回报投递尝试；终结Assignment不等于通知已送达。
+结论：停止“继续只改timer”成立；停止“超白名单自行添加存储语义”成立；“必需第二账本”不成立。
+
+3. 既有持久承载能复用到哪一步
+既有主/worker日志是首选物理承载，无需新文件库；未知输入下现有事件词汇却没有report-attempt事实。
+Delivery.readLog(:115–129)已有flush/read屏障；projectEvent(:81–82)目前丢弃未知事件payload，需显式投影。
+host.mjs:63–79的write handle只用于冷worker原生closers；不能照搬为给live main另开第二writer。
+已装锁定dsh 0.2.2-alpha.2只读取证，依赖根D=/tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm。
+D中@deepseek-ai+dsh-agent-loop@*/node_modules/@deepseek-ai/dsh-agent-loop/lib/index.js:564–571：followup先splice再wake。
+D中@deepseek-ai+dsh-session-persistence-jsonl@*/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:
+:315–316单writer；:421–432路由live事件并支持session/flush；:380–397全局flush汇总失败，不吞失败。
+所以存在“由live session现有writer写记录→持久屏障成功→才followup”的底座；此顺序当前尚未接入Report。
+D中@deepseek-ai+dsh-session@*/node_modules/@deepseek-ai/dsh-session/lib/index.js:1272–1298确有appendPluginRecord。
+但其契约明确ignorable、迁移best-effort、只能承载可丢状态，并限上游experimental调用；不能直接当安全必留记录。
+同包:1556–1569落实ignorable=true；types/types.d.ts:534的PluginRecordMap本身为空，不是现成Report未知账目。
+故“包能append任意JSON”不等于“安全恢复语义已批准”；不可伪造user/message、inbox splice或tool/result当占位。
+F1现有begin/dedupe可承载先存意图（app/ui/main/admin/operations.ts:56–81,428–456），无需第二账本。
+但它属于main；SDK Reporter未有逐键reserve/query桥，recovery.ts的读回并不把F1投影交给Reporter。
+F1最新版在main且本树旧版不等于最新版验证；本次不移入SDK、不合分支、不新建第二F1 writer。
+
+4. 双路线与推荐
+A（推荐的前置方向，尚BLOCKED）：复用当前session日志/writer，增加最小“Report键尝试前持久事实”的契约。
+只存目标mainId、精确report key集合及版本/尝试关联；不存正文/凭证、不存新Assignment状态、不建重试队列。
+该事实只表示“可能尝试”，不是delivered；真实主日志仍决定成功，unknown旧键不得自动再次send或wake。
+必须在followup前确认记录已持久；记录失败则本次副作用0；不能事后写unknown，因故障时未必还能写盘。
+恢复从原日志重算隔离键，先过滤old再算fresh batch id；fresh不得被全局关闸吞掉。
+若真实delivered可证则显示成功；记录仍在但无确认则保持待核实、不自动解除，不按时间/换代/batch id解禁。
+关键代价：意图持久后、followup前崩溃也保守隔离，可能一次也未发；这是at-most-once取舍，不是恰一次保证。
+A不可直接使用可丢的experimental记录充数；须先明确必留/版本/迁移/旧数据边界，或证明限定格式内可靠承载。
+B（放弃本轮）：通过现有受限SDK→main桥复用F1逐键begin/query；保留main唯一写者、不复制F1到SDK。
+B不需新账本，但需新增可信RPC、调用来源/键绑定及断链语义；F2自身blocked，范围大于当前Report日志接缝。
+C（放弃）：timer清理+进程内Set/保留batch id；只能缓解本进程窗口，混批/重启仍丢未知边界。
+永久停全部Reporter、伪造已投、删除RED、所有报告全拒均不是候选方案。
+
+5. 最小可证伪前置范围与准确停止点
+当前批准范围内可做：明确上述源码结论；不能派f3或换名重置预算。F3保持blocked、不合并。
+需确认的单一范围决定：是否批准A的逐report-key“先存尝试、未知不重放”存储契约及保守漏发取舍。
+附带必须定清：既有无尝试记录的历史unknown不能凭空补造；须有可信切换边界，否则旧范围继续待核实。
+未知解除只接受可信确认或另行明确授权的人工处置；本前置不开发重试UI/自动解禁协议。
+A候选实现白名单（仅供审批，当前未开放；路径均app/sdk/）：
+src/orchestration/report.mjs；src/orchestration/delivery.mjs；src/orchestration/pending.mjs；
+tests/unit/p7-host-recovery.test.ts；tests/unit/orchestration-foundation.test.ts；tests/unit/orchestration-foundation-delivery.test.ts。
+pending及后两测试超原F3 13文件，须显式增补；不用先扩大start/host/main-channel/UI/F1/F2/F4/WM。
+若需声明记录类型，只允许后续明确审批一个本地类型文件；不能把schema变化藏在投影代码里。
+若底座不能在不改依赖/锁/上游的条件下提供必留记录，立即停：准确回报所需schema/包变更，另定白名单。
+不批准“顺手补通用ledger/新数据库”；如改走B，须另定受限桥文件/协议，不能沿A六文件任务继续写。
+
+6. 未来验收（尚未执行，不能写PASS）
+单worker运行现有SDK(p7-host-recovery)，保留原65行RED；早/晚2秒、无timer后fresh混批均须绿。
+正常成功：合法fresh恰1，真实持久主日志含对应key；再flush/100并发/换代后仍1，原V1/stop/dispose不退化。
+真实锁定JSONL：持久尝试后、followup前故障→调用0且重开不自动补发，状态不是delivered；fresh仍恰1。
+真实followup计数1后、确认前故障→dispose/reopen全新Reporter/Delivery，old仍1、fresh恰1，非同batch id假去重。
+尝试append/flush失败→followup0；失败后重开读真实落盘结果，无记录才可重算，半落/坏版本不可当空历史。
+更换peer/新代、缓存清空、历史unknown无inbox、部分日志损坏均不可把old重新混进fresh或唤醒未知旧pending。
+原canceled/claim窗口自动补投与新“已尝试不自动重放”的冲突必须显式断言并更新契约，不能删旧反例悄悄改口。
+官方完整修改覆盖适用S/B/F/L≥80%，独立verifier与存储/协议审查通过后才谈合并；本次不自评闸门。
+
+结论：REDUCE到当前Report逐键未知边界；底座可复用，不证明需要新账本；新增必留语义/历史切换仍需决策，保持BLOCKED。
+安全：指定detached树只读、无.codegraph；无凭证读取/进程操作/Agent/SendMessage；仅输出本REPLAN.txt。

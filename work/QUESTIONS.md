@@ -236,3 +236,12 @@
 - 默认：A 起步、B 渐进；护栏先过 panel + 用户签字才开工。
 - 答复：（2026-11-05 主会话按「原版即规格」自决：**A 起步**——RE 证据支持：云 box 驱动即 native_x11/xdotool、原版有 desktop_lease 挂起语义；B 的按应用白名单留作后续按 RE standing grants 分层渐进，届时属法外授权再问用户）
 
+## Q-027 [open] P7-F3 修复收窄：是否批准「逐 report-key 先存尝试、未知不重放」的最小存储契约
+- slug：p7-admin ｜ 类型：契约（存储语义）｜ 阻塞：P7-F3.f3 ｜ 提出：2026-11-05 11:30
+- 背景：F3 修复两轮耗尽后 Sol 代 director REDUCE 重规划（`work/p7-admin/evidence/P7-F3/REPLAN.txt`）：V2 与混批两反例源码依据成立；「只修 timer」与「超白名单自行加存储」两个停止依据都成立，但「必须第二账本」**不成立**——既有 session 日志/writer 底座可承载（dsh jsonl persistence 单 writer + flush 汇总不吞失败）。
+- 选项：
+  - A（推荐）：批准最小契约——Report 每次投递前，先由现有 session writer 持久「尝试事实」（只存目标 mainId、精确 report key 集、版本/尝试关联；不存正文/凭证/Assignment 状态/重试队列）；记录持久成功才 followup，写失败则本次副作用 0；unknown 旧键不得自动重放或唤醒；恢复先过滤 old 再算 fresh batch id。白名单六文件（report.mjs/delivery.mjs/pending.mjs + 三测试文件），pending 与两测试超原 F3 13 文件范围须显式增补；若需新记录类型只批一个本地类型文件。**代价：at-most-once**（尝试已持久、followup 前崩溃 → 保守漏发一次，不是恰一次）；历史无尝试记录的 unknown 不能凭空补造，需可信切换边界（旧范围继续待核实）。验收（含跨重启故障注入）REPLAN §6 已列。
+  - B：复用 F1 逐键 begin/dedupe 经受限 SDK→main 桥——不新账本，但要新增可信 RPC/键绑定/断链语义；F2 自身 blocked，范围更大。
+  - C：不批准，F3 维持 blocked（新代恢复窗口的未知重投缺陷继续存在，依赖 F3 的 F4/L2/M1/M3/U1 排队不动）。
+- 答复：
+

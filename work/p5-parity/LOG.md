@@ -12,3 +12,5 @@
 2026-11-04 12:26 P5-61.f1 验收 FAIL（1 major：暗色冷启/重载按钮局部混色 10/10+17 采样点；封面/切换/原生控件全过，GTK 首帧本轮 0/10）→ 转正 VERIFY、立 P5-61.f2
 2026-11-04 12:41 P5-61.f2 回报 @000efb6（根因：按钮先于 data-theme 挂载取亮色默认，再被 .12s/.3s 过渡慢慢滑暗；修法：建桥时同步写 data-theme 8 行；红 20/19 坏帧→绿 0；新 spec 在旧构建 5 failed 抓得住）→ 派 Sol verifier（加「跟随系统」副作用边角）。GU 拟跳过：纯 bug 修复、验收是客观像素阈值、无品味取舍——LOG 记录，用户可随时要求补跑
 2026-11-04 13:04 P5-61.f2 VERIFY PASS → 合并；事故：交集 [main/index.ts] 打印了却仍走 checkout，回退 P6-10 接线，已 checkout 父版 + apply --3way + amend 修复（diff 9+/1-，orchestration+pbots:theme 双在）。LEARNINGS+SKILL：交集非空必须中止改走 git merge。回测后台
+2026-11-05 11:30 P5-H1 收尾 | 11-03 已完成 builder+verifier 但记账断链（压缩丢跟踪）：VERIFY-P5-H1 PASS @f2831a8（sdk 253 / ui 249 + e2e 61×2 绿、四类前缀残留 0）；trial merge + 哨兵文件逐字节一致 + tmkdir 计数三重复核，内容已随 d1b88be/3744500（P5-25 合并链）并入集成分支，PLAN 置 done，无需再合并。VERIFY 新问题立 P5-H5（约 147 个动物园前缀散点 wrap + min-client 登记不可见，todo）
+2026-11-05 11:30 派 P5-H3（feat/P5-H3 @/tmp/bot-wt/P5-H3，TEST_HOME 唯一化）、P5-H4（feat/P5-H4 @/tmp/bot-wt/P5-H4，fakeOverlay teardown 复用 tmp-sweep）两个 builder（GLM 5.3；用户确认额度已恢复，盯限额 ≤2 并发）；验收将派 verifier-flash（glm-5.3-flash，2026-11-05 用户指示测试用 flash）

@@ -261,6 +261,7 @@ async function assertChildDenied(
   feed: EventsFeed,
   delegation: object,
   m: string,
+  approveWorkflow: boolean,
 ): Promise<void> {
   const root = await createRootSession(rt)
   // Extra trailing text turns absorb the subagent completion notice turns.
@@ -268,6 +269,12 @@ async function assertChildDenied(
   writeChildScript(rt, m)
 
   await sendPrompt(rt.client, root, 'P5-05 委派探针')
+  if (approveWorkflow) {
+    // P6-26t: workflow now requires root approval before it can start a child.
+    const asked = await waitForApproval(feed, root, 1)
+    expect(asked.request?.toolName).toBe('workflow')
+    await feed.answer(asked, 'allowed-once')
+  }
   const child = await childSessionId(rt, root)
   await waitChildSettled(rt, child)
   expect(existsSync(m), `delegated child's bash was denied: ${m} must not exist (G1-r2 #1)`).toBe(false)
@@ -295,12 +302,12 @@ async function assertRootStillAsks(rt: FakeRuntime & { work: string }, feed: Eve
   }
 }
 
-async function runDelegationCase(delegation: object, mName: string): Promise<void> {
+async function runDelegationCase(delegation: object, mName: string, approveWorkflow = false): Promise<void> {
   const rt = await launchSubagentRuntime()
   const feed = await openEvents(rt)
   try {
     const m = join(rt.work, mName)
-    await assertChildDenied(rt, feed, delegation, m)
+    await assertChildDenied(rt, feed, delegation, m, approveWorkflow)
     await assertRootStillAsks(rt, feed, `${m}-root`)
   } finally {
     feed.close()
@@ -329,5 +336,6 @@ it('P5-05 ③ workflow: agent() child bash under the pinned never policy is deni
       meta: { name: 'p5-05-probe', description: 'P5-05 delegated child shell probe' },
     }),
     'm-workflow',
+    true,
   )
 })

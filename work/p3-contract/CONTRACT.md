@@ -1,7 +1,7 @@
 # CONTRACT · Grok 风格前端 ⇄ P2 SDK
 
-**v1.4 · G1-r2 有条件通过** · v1 2026-11-02 00:59 · v1.1 05:05 · v1.2 2026-11-02 · v1.3 2026-11-02 · v1.4 2026-11-02 · director
-输入：panels/D-route-r1{,-A,-B}.md、panels/G1-r1{,-A,-B}.md、p1-re/ARCH-0.78.md §4、RE-ipc-rpc.md §3.4、RE-marketplace.md §2–3、p2-sdk/PLAN.md §1、QUESTIONS Q-003/Q-007/Q-008/Q-009、`reuse/dsh-client-packages.md`（scout）、`VERIFY-T-15.md`。
+**v1.6 · C-2（P6-24 worker 工作区，Q-024 重签 C2-②）** · v1 2026-11-02 00:59 · v1.1 05:05 · v1.2 2026-11-02 · v1.3 2026-11-02 · v1.4 2026-11-02 · v1.5 2026-11-04 · v1.6 2026-11-05 · drafter（C-1 / C-2）
+输入：panels/D-route-r1{,-A,-B}.md、panels/G1-r1{,-A,-B}.md、p1-re/ARCH-0.78.md §4、RE-ipc-rpc.md §3.4、RE-marketplace.md §2–3、p2-sdk/PLAN.md §1、QUESTIONS Q-003/Q-007/Q-008/Q-009、`reuse/dsh-client-packages.md`（scout）、`VERIFY-T-15.md`；v1.5 增补：`work/p6-orchestration/PLAN.md` v4（决策 10 / 30 / 31）、`work/p6-orchestration/panels/D2-p6-r1{,-A,-B}.md`、`work/p6-orchestration/panels/G2-r2.md`、`work/p6-orchestration/reuse/s2-dsh-cross-session.md` §4。v1.6 增补：`work/p6-orchestration/panels/D3-r1{,-A,-B}.md`、`work/QUESTIONS.md` Q-024（用户 2026-11-05 重签 Q-015 C2-②）、p6 PLAN v4.3 决策 36 / v4.4 决策 37。
 锚点口径：`D/` = `repos/deepseek-harness@ce7073d`（与运行时 npm `0.2.2-alpha.2` 对照，PLAN §6 Q1）；`C/` = `D/packages/client`；`SC` = `D/packages/api/session-controller/src/index.ts`；`GW` = `D/packages/api/gateway/src`；T-15 测试 = `feat/T-15@a3758e0:app/sdk/tests/e2e/{connector-restart,events-replay}.test.ts`（尚未合入 main）。改动本契约里的任何接口形状 → 写 QUESTIONS（契约类），不得在 P4 任务里就地改。
 
 ## 1. 范围
@@ -21,7 +21,7 @@
 |---|---|---|---|
 | M1 `pbots:api` | `invoke({method, args})` → dsh 的 `ConnectionRpcResult` **原样**：`{ok:true,value}` \| `{ok:false,error:{code,message,details}}`（`C/connection/src/rpc.ts:19-28`；上游 `rebuiltFailure` 读 `details`，`GW/client/index.ts:458-461,870-871`） | ① method 不在白名单 → `{ok:false,error:{code:'pbots/forbidden',message,details:{}}}`；② 参数约束（§2.2）不过 → 同形状，code `'pbots/invalid-args'`；③ 通过后调 `POST /api/<method>`，返回值不改写（唯一例外：#1 过滤，见表）；凭证/account 类 remote 一律拒，不可协商 | `rpc-host.ts:304-347` |
 | M2 `pbots:mux-port` | 每次上游 `createWebSocket(url)` 换一个 MessagePort，跑 dsh mux wire 原帧（`open/item/end/cancel` ↔ `item/error/end`）；转交时序见 §2.3 | open.endpoint ∈ {`session/follow`,`$events`,`session/control`}；streamId 归属三条：(a) open 的 streamId 与 socket 上任一现有流（含 main 自己的）冲突即拒；(b) 上行 item/end/cancel 只放行经本 port open 过的 streamId；(c) 下行帧只转给拥有该 streamId 的 port；port 关闭 → 对本 port 的每个 streamId 发 `cancel`；socket 断开 → 关闭所有 port，重新 `/connect` 就绪前不转交新 port | `GW/stream-protocol.ts:234-257`；`GW/stream-server.ts:161-163`；session/control 读码已定必需：`D/packages/api/session-controller/src/client/index.ts:128-138`、`client/transport.ts:115-122` |
-| M3 `pbots:bots-meta` | `invoke({op:'get'})` → `BotsMetaView`；`invoke({op:'patch', mainBotId})` → `BotsMetaView` | 读写 `$PBOTS_DATA_DIR/bots.json`（§3），原子写（tmp + rename）；renderer 只能写 `mainBotId`，recipes 只由 main 在 #4 编排里写 | 无（main 本地） |
+| M3 `pbots:bots-meta` | `invoke({op:'get'})` → `BotsMetaView`；`invoke({op:'patch', mainBotId})` → `BotsMetaView` | 读写 `$PBOTS_DATA_DIR/bots.json`（§3），原子写（tmp + rename）；renderer 只能写 `mainBotId`，recipes 只由 main 在 #4 编排里写，`bots`（createdBy）只由 main 在 ⑤ 建 bot 编排（§2.4）里写 | 无（main 本地） |
 
 **业务接口（M1 = /api unary，M2 = mux stream，M3 = main 本地）**
 | # | 旅程 | 端点 / 操作 | 通道 | 入参 → 返回（要点） | 来源 | 锚点 |
@@ -45,7 +45,7 @@
 | 17 | A | `$events` | M2 | `{}` → `ready{clientId}` / `waterfall` / `cancel` / `emit`；每次 open 都补发全部未决项（§4） | 复用 dsh | `GW/stream-protocol.ts:10-75`；`GW/index.ts:574-589,1242-1247` |
 | 18 | A | `$events/result` | M1 | `{clientId, eventId, outcome:{kind:'result', value:ApprovalOutcome}}`；main 校验（§2.2） | 复用 dsh | `GW/stream-protocol.ts:13,98`；`GW/index.ts:497` |
 | 19 | J1/J4 | `bots-meta.get` | M3 | → `BotsMetaView` | **需新增** | — |
-| 20 | J1/J4 | `bots-meta.patch` | M3 | 只设主 bot：`mainBotId` 必须是 `session/list` 里存在的 id | **需新增** | — |
+| 20 | J1/J4 | `bots-meta.patch` | M3 | 只设主 bot：`mainBotId` 必须是 `session/list` 里存在的 id，且**不得指向带 `createdBy` 的 bot**（§3.1，防 worker 提升为主 bot；只收紧、不放宽） | **需新增** | — |
 | 21 | J3×J4 | `p2temp/preset.ensure` | main 内部（不进白名单） | `{agentPreset, connectors}` 幂等，id 用与 #4 同一个 `presetIdOf`；main 启动时按 `recipes` 逐个调用，全部完成前 M1/M2 不就绪 | **P2-TEMP · pending Q-008（只有本行的实现等 Q-008；数据模型与 #4 的 id 算法已定稿）** | VERIFY-T-15 ① |
 不进白名单（YAGNI，P4 用到再加，加行须过契约问题；P4 spike 的批量加行见 §7.4）：`agentPresets/select`（首轮前才能调，`registry index.ts:364-369` 的 `agent-preset/locked`）、workspace/*、session/fork、pluginManager 的其余方法、`setIndexes`、一切 credentials/account 类 remote。
 
@@ -74,6 +74,17 @@ dsh socket 断开 ─▶ main 关闭全部 port1 ─▶ W close ─▶ 上游 Re
 ```
 包装对象约 40 行：只实现 open/close/message/error 事件、readyState、send、close（上游连上 socket 后不发握手帧，`GW/client/stream-client.ts:241-295`）。
 
+### 2.4 ⑤ SDK→main 建 bot 通道（**暂定，Q-021**）
+> **整节暂定**：⑤ 在 D-2 两席分歧（`work/p6-orchestration/panels/D2-p6-r1.md`），按 A 收窄版 + B 安全语义执行；Q-021 单一签字题未决（p6 PLAN §9 第 1 条），只卡开放闸 P6-14b，不卡开发。用户否决 → 回 D 重投 ⑤，仅本节与 P6-10 通道两文件重写（p6 PLAN §5）。
+- **形态**（A 收窄版；S-2(h) 已实证整条往返，`work/p6-orchestration/reuse/s2-dsh-cross-session.md` §4.1-4.2、探针 `evidence/s2-cross-session/probe.mjs`）：SDK 编排插件注册自有 Remote stream（create 请求）+ respond unary（应答）；main 仍是纯客户端，常驻订阅该流（照 U-16 `$events` 模式，每代 socket 重开），收到请求后走既有建 bot 编排（v1.6：校验 → 主 bot cwd 解析 → createdBy 落盘 → #3 → #6 rename），再 `respond{requestId, value:{sessionId}}`；SDK 侧工具 await 该应答。
+- **worker 工作区（v1.6，决策 36 / Q-024 A，重签 Q-015 C2-② 的唯一例外）**：create 请求可带可选 `subdir`（单段路径，模型在 create_bot 里指定，renderer 不可传——M1/M3 面不变）。main 把 worker 的 cwd 解析为**发起主 bot 的 session header cwd**（`session/list` 的 `cwd`，main 侧解析）：无 subdir = 主 bot cwd 本身（worker 与主 bot 改同一批文件）；有 subdir = `<主 bot cwd>/<subdir>`（目录建好）。worker **不再 mint 独立工作区**（Q-024「任务自适应」：执行器按任务需要决定直接在主目录改或新开子目录）。主 bot cwd 不可解析（不在 session/list / 无 cwd / RPC 失败）或不在 `$PBOTS_DATA_DIR/workspaces/<mainBotId>` 下（P5-25 之前的旧 bot，cwd 可能是仓库 / SDK 目录）→ `pbots/orchestration-failed` **fail closed 不派，不回退 mint**。普通 bot 之间仍互相隔离（每会话的 workspaceRoot 例外只对本会话 header.cwd 生效，guard 判定不变；worker 是替换进主 bot 目录，bwrap 挂载面不叠加）。BotsMeta 形状不变：cwd 权威在 session header，不落盘。
+- **worker 工作区配套防护（v1.6，panels/D3-r1.md 必须回应 5 条全数入验收）**：① worker 的 write/edit 拒写 `AGENTS.md` / `CLAUDE.md`（含 `.local` 变体；按 resolve 后 basename 判，防软链逃逸）——防 worker 借 agent-instructions 注入给主 bot 下指令绕过污染守卫（决策 29）；bash 写同名文件的残余风险已知并标注（ponytail，堵不住）。③ 同文件并发按文件划分写入责任：create_bot 可选 `artifacts`（产物路径清单，SDK 进程内记账、随 worker turn/end 释放，**不入 ⑤ 通道**），同主 bot 下与在跑 worker 声明交叉 → `pbots/busy`；不声明 → 工具结果带分区提醒（声明+警告档）。④ 删 worker 只动 bots.json，worker 生命周期不触碰共享目录（硬门槛，回归测试钉住「清单前后一致」）。另：决策 37（P6-25）改写 Q-013 档位表第 3/4 行——文件写类目标 resolve 后不在本会话工作区内一律**拒、不出卡**（tier 表本体在 `profile/tiers.json` 与 p5 契约面，此处不重述）。
+- **只认 main**：请求流与 respond 均不进 M1 白名单、不进 M2_ENDPOINTS（`app/ui/main/m2-mux/index.ts:15`，renderer 转交白名单）；respond 只对持有该请求流的 Peer 生效（同「gateway 只认 active client」口径），错 Peer 的 respond 被拒。
+- **无订阅者**（UI 没开、重连间隙）：立即 `main-unavailable`，不排队、不挂起。
+- **超时（决策 30）**：`createTimeoutMs`（orchestration.yml 配置项，默认 30000）内未收到 respond → 工具返回 `main-unavailable`、`details:{reason:'timeout', outcome:'unknown'}`，工具文案要求主 bot 不重试、请用户到 worker 分组查看；容量占位当场释放；迟到的 respond 被拒。
+- **断流 / SDK 重启**：在途请求作废、占位释放、迟到 respond 拒收、请求流不重放。**作废 ≠ 回滚**：main 若已建出 bot 则保留（`createdBy` 已落盘、无 Assignment 消息 → 空闲 worker，用户可删）。**结果未知禁止自动重试**（防重复 worker）。
+- **错误码**（沿用 M1 的 `ConnectionRpcResult` 形状，`{ok:false,error:{code,message,details}}`，底层编排错误原样保留 details）：本通道四类——`pbots/invalid-args`（越权参数，main 侧再校验一次作纵深防御）、`pbots/capacity`（SDK 发请求前自判，不进通道）、`pbots/orchestration-failed`（#3 / #6 / 存储失败透传 code 与 details）、`main-unavailable`（无订阅者 / 超时）。协调者工具族另两码不经本通道：`pbots/forbidden`（非 createdBy 目标、受污染回合）、`pbots/busy`（send 目标回合中）。
+
 ## 3. 数据模型
 **3.1 Bot（renderer 视图，由 main 和 dsh 两处拼成，不另建存储）**
 ```ts
@@ -89,9 +100,10 @@ type Bot = {
   running: boolean; updatedAt: number   // SessionSummary
 }
 type Recipe = { agentPreset: string; connectors: string[] }   // connectors 规范化：去重、按码点排序
-type BotsMeta = { version: 1; mainBotId: SessionId | null; recipes: Record<PresetId, Recipe>; bots: Record<SessionId, { runtime?: 'superagent' }> }
+type BotsMeta = { version: 1; mainBotId: SessionId | null; recipes: Record<PresetId, Recipe>; bots?: Record<SessionId, { createdBy: SessionId }> }   // bots 可选（决策 31，v1.5）：无 worker 不写该键；createdBy = 建 worker 时的主 bot sessionId
 type BotsMetaView = BotsMeta & { recipes: Record<PresetId, Recipe & { live: boolean }> }  // live = 该 id 当前在 registry 里（main 用未过滤的 #1 判定），不写盘
 ```
+- **`bots` 可选键（v1.5，决策 31）**：`version` 保持 `1` 不升。没有 worker 时不写 `bots` 键（写出的文件与此前字节一致）；有 worker 时写 `bots[id].createdBy`，`createdBy` 只由 main 在 ⑤ 建 bot 编排（§2.4）里落盘，且**先落盘成功才建会话/返回成功**（照「recipe 先于 session」的做法，崩溃最多留下一条没有对应 session 的 createdBy，list 会过滤掉）。旧读取器只取 `mainBotId` / `recipes`（`app/ui/main/m3-meta/store.ts:67`），读到带 `bots` 的文件不报错，回滚不炸。**已知降级**：旧写入器下次写盘会抹掉 `createdBy`，worker 变回普通顶层 bot——接受，因为回滚后的 SDK 没有编排工具，安全面无损。原 `bots[*].runtime` 落盘占位随之删除：`runtime` 本就不写盘（§5），§8 第 4 条记的矛盾就此闭合。
 - **`presetIdOf(agentPreset, connectors)`** = `'p2temp-' + sha256(JSON.stringify([agentPreset, 规范化 connectors])).slice(0,12)`，放在 `app/sdk/src/p2temp/preset-id.mjs`，p2temp（#4/#21）与 main 共用这一个模块。不用 rows 内容派生：rows 来自 bundle 的 patch 文件（`p2temp/index.mjs:86-108`），bundle 一升级 id 就会变、对不上 header 里冻结的 id。单测：连接器换序同 id、基础 preset 不同则 id 不同。
 - **agentPreset 单点解析（§8 第 2 条）**：agentPreset 由 main 唯一显式解析（缺省 → #1 的 defaultId）后下传；p2temp 与 presetIdOf 拒绝缺省输入。
 - **#4 由 main 编排**（renderer 只发一次 M1）：main 校验参数 → 算 presetId → **先**原子写 `recipes[presetId]`（同 key 同值，重复写无害）→ 调 dsh #4 → 原样返回。recipe 先于 session 存在，所以任何时刻崩溃或重载都不会留下「有 session、无配方」的 bot。验收：在 recipe 已写、#4 未返回时重载 renderer，重开后该 bot 带连接器显示。
@@ -161,4 +173,6 @@ renderer 侧不手写：`$events` 由上游 `ClientRemoteEvents` 开（`GW/clien
 | 1.1→1.2 MEDIUM 9/9 吸收 + LOW 3/3 | main 专用桥模块、不直接复用 examples/lib（§2）；M2 streamId 归属三条；`session/control` 直接入 M2；#4 改 main 编排、M3 只写 mainBotId（§3.1，配方先于 session 落盘，取代「两步写入补偿」）；只读态 roster 比对；spike 时限/四场景/批量判据/止损/审批闸门（§7.4，A+B 合并）；Q-009 never preset 滤除并说明（#1、§2.2）。LOW：#1 滤 `p2temp-*`；`interactions:'answer'`（§2.1）；品味项文案与「用此配置新建」（§7.5） | G1-r1 A MEDIUM×6 + LOW×3、B MEDIUM×3 + product_ruling |
 | 1.2→1.3 | 新增 §8（G1-r2 清单，panels/G1-r2.md）；#1 删 danger-full-access 错位过滤文案、改指 §8 第 3 条；§3.1 补 agentPreset 单点解析行 | panels/G1-r2.md |
 | 1.3→1.4 | 已改：§2.1 末追加勘误行——UI 层自写（R0 追认）：本节 workspace 集成仅适用于 wire 协议参照与三桥实现，renderer 不启动 dsh client，[data-message-bubble] 等语义锚点不入契约；不算接口改动，不走 C2 | p4-ui/ui/R0-ruling.md |
+| 1.4→1.5 | 已改：§3.1 `BotsMeta.bots` 改为可选键 `{createdBy}`，`version` 保持 1（决策 31：无 worker 不写键、字节不变；旧读取器只取 mainBotId/recipes 不报错；旧写入器抹除 createdBy 记为**已知降级**；原 `bots[*].runtime` 落盘占位删除，§8 第 4 条矛盾闭合）；M3 行补 `bots` 只由 main 在 ⑤ 编排里写；#20 加防提升（mainBotId 不得指向带 createdBy 的 bot）；新增 §2.4 ⑤ SDK→main 建 bot 通道（A 收窄版 + B 安全语义：仅 main、绑持流 Peer、不进白名单、无订阅者立即失败、作废≠回滚、结果未知禁重试；决策 30 超时 `main-unavailable` + `outcome:'unknown'`；错误码四类 + forbidden/busy 归属），**整节注「暂定，Q-021」** | **C-1 / G2-r2 有条件通过**；p6 PLAN v4 决策 10 / 30 / 31；`work/p6-orchestration/panels/D2-p6-r1{,-A,-B}.md`、`work/p6-orchestration/panels/G2-r2.md`；`reuse/s2-dsh-cross-session.md` §4 |
+| 1.5→1.6 | 已改：§2.4 新增「worker 工作区」与「配套防护」两条——worker cwd = 发起主 bot 的 session header cwd（main 侧 session/list 解析；可选 subdir 建子目录；不再 mint 独立工作区；主 bot cwd 不在 `workspaces/<mainId>` 下 fail closed 不派，`pbots/orchestration-failed`）；修订 Q-015 C2-②「每 bot 独立工作区」为「worker ↔ 发起主 bot 共用」的唯一例外（普通 bot 间隔离不变）；指令文件拒写 / artifacts 写入责任（交叉 `pbots/busy`，SDK 侧记账不进通道）/ 删除边界硬门槛三项入契约；决策 37 对 Q-013 第 3/4 行的改写（写类区外拒、不出卡）记档。BotsMeta 不动（cwd 权威在 session header）。**Q-024 用户答复原文（2026-11-05）**：「这个无所谓, 可以新开一个. 按照任务决定」→ A（worker 与主 bot 共用目录）+ 授权任务自适应：执行器创建 worker 时按任务需要决定直接在主 bot 目录改或新开子目录，两种都在 A 的例外范围内 | **Q-024（重签 Q-015 C2-②）**；p6 PLAN v4.3 决策 36、v4.4 决策 37；`panels/D3-r1{,-A,-B}.md`（两席一致 ①）；P6-24 实现 |
 > 勘误（2026-11-02，G1-r2 A 席第 3 条）：§8-3 中「Q-009 答 A 前保持默认拒绝」的条件句作废——两条拒绝（/permission 命令行、configForms 写）为 **P4 永久判据**，与任何问题答复无关（Q-009=A 仅指 SDK 侧 shell-ask 行为）；放宽须另开安全红线问题并引用用户原话。P4 边界以 p4-ui/BRIEF v1.2 D9 为准。

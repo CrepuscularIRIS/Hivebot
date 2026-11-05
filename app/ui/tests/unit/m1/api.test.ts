@@ -1,10 +1,13 @@
 // U-11 M1 `pbots:api` 白名单透传桥：白名单 / D9 硬拒层 / §2.2 参数约束 / raw-result / #1 过滤。
 // 断言口径 PLAN §2（+4）：精确值断言；「dsh 没收到调用」统一 apiCount === 0。
 // 依据：work/p3-contract/CONTRACT.md §2/§2.2（v1.3）+ 勘误行、work/p4-ui/BRIEF.md D9、PLAN U-11 行。
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { M1_ALLOW, d9DeniedReason, m1Installs, registerM1Api } from '../../../main/m1-api'
 import { EventsLedger } from '../../../main/dsh/ledger'
 import type { ConnectionRpcResult } from '../../../main/dsh/connect'
+// P5-28.f1 S1 断言放本文件（白名单）：testAnswerEvent 是 M1 的旁路安装面。
+vi.mock('electron', () => ({ MessageChannelMain: class {} }))
+import { registerM2Mux } from '../../../main/m2-mux'
 
 type MockResult = ConnectionRpcResult | ((method: string, args: unknown) => ConnectionRpcResult)
 
@@ -346,6 +349,135 @@ describe('§2.2 $events/result 校验（ledger）', () => {
     const res = await api({ method: '$events/result', args: { clientId: 'cli-other', eventId: 'ev-q', outcome: { kind: 'result', value: { answers: [{ id: 'q1', selected: [] }, { id: 'q2', selected: [] }] } } } })
     expect(expectFail(res).code).toBe('pbots/forbidden')
     expect(dsh.apiCount).toBe(0)
+  })
+
+  // P5-28.f1 F2（REVIEW correctness CONFIRMED）：`selected: new Array(1)` 的稀疏槽被 every 跳过，
+  // structuredClone 后仍稀疏、rpcRaw JSON 编码成 [null] 上 wire。ledger 层拒后 M1 不得透传。
+  it('F2：稀疏 selected（structuredClone 保留洞）→ pbots/invalid-args，dsh 计数 === 0，pending 保留', async () => {
+    const { api, dsh, ledger } = makeApi(undefined, questionLedger())
+    const sparse = structuredClone(new Array(1))
+    expect(0 in sparse).toBe(false)
+    const res = await api({ method: '$events/result', args: answersArgs([{ id: 'q1', selected: sparse }, { id: 'q2', selected: [] }]) })
+    expect(expectFail(res).code).toBe('pbots/invalid-args')
+    expect(dsh.apiCount).toBe(0)
+    expect(ledger.pendingEvents().some((e) => e.eventId === 'ev-q')).toBe(true)
+  })
+})
+
+// P5-28.f1 F1（REVIEW correctness CONFIRMED）：同一 eventId 两个在途 api 调用都上 wire，
+// 第二份被 gateway 静默忽略却返回 ok:true（假成功）。修法：per-eventId 在途守卫——第一份
+// 未 settle 前第二个调用本地拒（forbidden：与 clientId/eventId 资格拒绝同族，不新增契约错误码）。
+describe('P5-28.f1 F1：$events/result 同 eventId 在途守卫', () => {
+  function deferredDsh(): {
+    dsh: { rpc(method: string, args: unknown): Promise<ConnectionRpcResult> }
+    calls: Array<{ method: string; args: unknown }>
+    resolvers: Array<(r: ConnectionRpcResult) => void>
+  } {
+    const resolvers: Array<(r: ConnectionRpcResult) => void> = []
+    const calls: Array<{ method: string; args: unknown }> = []
+    return {
+      resolvers, calls,
+      dsh: {
+        async rpc(method: string, args: unknown): Promise<ConnectionRpcResult> {
+          calls.push({ method, args })
+          return new Promise((resolve) => resolvers.push(resolve))
+        },
+      },
+    }
+  }
+  const questionLedgerF1 = (): EventsLedger => {
+    const ledger = readyLedger()
+    ledger.record({
+      type: 'waterfall', event: 'user-questions/request', eventId: 'ev-q', agentId: 's-1',
+      request: { questions: [{ id: 'q1', question: '路径?' }, { id: 'q2', question: '备注?' }] },
+    })
+    return ledger
+  }
+
+  it('并发二答（审批）：第二调用本地拒 forbidden、恰 1 份上 wire；成功 settle 后守卫解除且已消费', async () => {
+    const { dsh, calls, resolvers } = deferredDsh()
+    const api = registerM1Api({ dsh, ledger: readyLedger(), log: () => {} })
+    const args = { clientId: 'cli-1', eventId: 'ev-1', outcome: { kind: 'result', value: 'allowed-once' } }
+    const first = api({ method: '$events/result', args })
+    const second = await api({ method: '$events/result', args }) // 第一份在途
+    expect(expectFail(second).code).toBe('pbots/forbidden')
+    expect(expectFail(second).message).toContain('in flight')
+    expect(calls).toHaveLength(1)
+    resolvers[0]!({ ok: true, value: null })
+    expect((await first).ok).toBe(true)
+    const third = await api({ method: '$events/result', args }) // settle 后：已消费 → not pending
+    expect(expectFail(third).code).toBe('pbots/forbidden')
+    expect(calls).toHaveLength(1)
+  })
+
+  it('并发二答（提问 answers，review 复现场景）：第二调用拒、恰 1 份上 wire、ledger 保留', async () => {
+    const { dsh, calls, resolvers } = deferredDsh()
+    const api = registerM1Api({ dsh, ledger: questionLedgerF1(), log: () => {} })
+    const first = api({ method: '$events/result', args: { clientId: 'cli-1', eventId: 'ev-q', outcome: { kind: 'result', value: { answers: [{ id: 'q1', selected: ['/a'] }, { id: 'q2', selected: [] }] } } } })
+    const second = await api({ method: '$events/result', args: { clientId: 'cli-1', eventId: 'ev-q', outcome: { kind: 'result', value: { answers: [{ id: 'q1', selected: ['/b'] }, { id: 'q2', selected: [] }] } } } })
+    expect(second.ok).toBe(false)
+    expect(calls).toHaveLength(1)
+    resolvers[0]!({ ok: true, value: null })
+    expect((await first).ok).toBe(true)
+  })
+
+  it('失败 settle 同样解除守卫：ok:false 后重试可上 wire（pending 保留，R10 口径不变）', async () => {
+    const results: ConnectionRpcResult[] = [
+      { ok: false, error: { code: 'gateway/503', message: 'x', details: {} } },
+      { ok: true, value: null },
+    ]
+    const calls: Array<{ method: string; args: unknown }> = []
+    const dsh = { rpc: async (method: string, args: unknown): Promise<ConnectionRpcResult> => { calls.push({ method, args }); return results.shift()! } }
+    const ledger = readyLedger()
+    const api = registerM1Api({ dsh, ledger, log: () => {} })
+    const args = { clientId: 'cli-1', eventId: 'ev-1', outcome: { kind: 'result', value: 'rejected' } }
+    expect((await api({ method: '$events/result', args })).ok).toBe(false)
+    expect(ledger.pendingEvents().some((e) => e.eventId === 'ev-1')).toBe(true)
+    expect((await api({ method: '$events/result', args })).ok).toBe(true) // 守卫已随 settle 清除
+    expect(calls).toHaveLength(2)
+  })
+
+  it('不同 eventId 并发互不阻塞（守卫按 eventId）', async () => {
+    const { dsh, resolvers } = deferredDsh()
+    const ledger = readyLedger()
+    ledger.record({ type: 'waterfall', event: 'approval/request', eventId: 'ev-2', agentId: 's-1', request: { toolName: 'bash' } })
+    const api = registerM1Api({ dsh, ledger, log: () => {} })
+    const a = api({ method: '$events/result', args: { clientId: 'cli-1', eventId: 'ev-1', outcome: { kind: 'result', value: 'rejected' } } })
+    const b = api({ method: '$events/result', args: { clientId: 'cli-1', eventId: 'ev-2', outcome: { kind: 'result', value: 'allowed-once' } } })
+    resolvers[0]!({ ok: true, value: null })
+    resolvers[1]!({ ok: true, value: null })
+    const [ra, rb] = await Promise.all([a, b])
+    expect([ra.ok, rb.ok]).toEqual([true, true])
+  })
+})
+
+// P5-28.f1 S1（REVIEW security CONFIRMED）：testAnswerEvent 可绕 M1 把非法 answers 直发真实
+// gateway——生产构建不得安装该钩子；测试安装须显式 opt-in（PBOTS_TEST_HOOKS=1）。
+describe('P5-28.f1 S1：m2 testAnswerEvent 门控安装', () => {
+  afterEach(() => { vi.unstubAllEnvs() })
+
+  it('生产环境（NODE_ENV=production、无 PBOTS_TEST_HOOKS）→ 钩子不安装；stats/ledger/testDropSocket 观测面仍在', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('PBOTS_TEST_HOOKS', '')
+    registerM2Mux({})
+    const g = (globalThis as unknown as { __pbotsM2?: { testAnswerEvent?: unknown; stats?: unknown; ledger?: unknown; testDropSocket?: unknown } }).__pbotsM2
+    expect(g?.testAnswerEvent).toBeUndefined()
+    expect(g?.stats).toBeDefined()
+    expect(g?.ledger).toBeDefined()
+    expect(typeof g?.testDropSocket).toBe('function')
+  })
+
+  it('PBOTS_TEST_HOOKS=1（测试显式 opt-in）→ 安装并经 main peer 直发 $events/result（结构化 answers 原样）', async () => {
+    vi.stubEnv('PBOTS_TEST_HOOKS', '1')
+    const calls: Array<{ method: string; args: unknown }> = []
+    const h = registerM2Mux({
+      // ready 永不 resolve：抑制 U-16 常驻 $events 订阅循环（只测钩子的直发行为）
+      dsh: { ready: () => new Promise(() => {}), rpc: async (method: string, args: unknown): Promise<ConnectionRpcResult> => { calls.push({ method, args }); return { ok: true, value: null } } } as never,
+    })
+    expect(typeof h.testAnswerEvent).toBe('function')
+    const answers = [{ id: 'q3', selected: [], custom: 'via-hook' }]
+    await h.testAnswerEvent?.('c', 'q', { answers })
+    expect(calls).toEqual([{ method: '$events/result', args: { clientId: 'c', eventId: 'q', outcome: { kind: 'result', value: { answers } } } }])
   })
 })
 

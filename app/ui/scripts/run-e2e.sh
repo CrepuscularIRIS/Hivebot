@@ -2,6 +2,9 @@
 # e2e 默认在 Xvfb 虚拟显示里跑（真实桌面零弹窗，U-33）；
 # 逃生门：PBOTS_E2E_NO_XVFB=1 时直接用当前显示（调试需要看真实窗口时用）。
 set -e
+# P5-28.f1 S1：testAnswerEvent 等测试钩子生产不安装（main/m2-mux 门控）；e2e 全程显式
+# opt-in——m2-port / m2-deadline / questions-answer 的作答注入都依赖它。
+export PBOTS_TEST_HOOKS=1
 if [ "$PBOTS_E2E_NO_XVFB" = "1" ]; then
   exec playwright test "$@"
 fi

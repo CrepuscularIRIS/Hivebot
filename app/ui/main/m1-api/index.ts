@@ -175,6 +175,8 @@ export const m1Installs: Array<{ spec: unknown; enabled: unknown }> = []
 export function registerM1Api(deps: M1Deps = {}): (req: M1Request) => Promise<M1Result> {
   const ledger = deps.ledger ?? m1Ledger
   const log = deps.log ?? ((message: string) => { console.log(`[m1] ${message}`) })
+  /** P5-28.f1 F1：$events/result 同 eventId 在途集——第一份未 settle 前第二个调用本地拒。 */
+  const inflightEvents = new Set<string>()
   ;(globalThis as { __pbotsM1?: unknown }).__pbotsM1 = { installs: m1Installs }
   return async function m1Api(req: M1Request): Promise<M1Result> {
     const method = req?.method
@@ -204,9 +206,24 @@ export function registerM1Api(deps: M1Deps = {}): (req: M1Request) => Promise<M1
       const args = (typeof req.args === 'object' && req.args !== null ? req.args : {}) as { spec?: unknown; options?: { enabled?: unknown } }
       m1Installs.push({ spec: args.spec, enabled: args.options?.enabled })
     }
+    // P5-28.f1 F1：per-eventId 在途守卫——第二份并发作答不得上 wire（gateway 对二答静默忽略
+    // 却回 ok，调用方拿到假成功）。错误码用 pbots/forbidden：与 clientId/eventId 资格拒绝同族
+    // （U-15 ③ 联调口径），不为此新增契约错误码；settle（成功或失败）即解除，失败可重试。
+    const eventId = method === '$events/result' ? (req.args as { eventId?: unknown } | undefined)?.eventId : undefined
+    if (typeof eventId === 'string') {
+      if (inflightEvents.has(eventId)) {
+        log(`denied (in-flight): $events/result ${eventId}`)
+        return forbidden(`$events/result rejected: an answer for event ${JSON.stringify(eventId)} is already in flight`)
+      }
+      inflightEvents.add(eventId)
+    }
     let result: M1Result
     try {
-      result = await deps.dsh.rpc(method, req.args)
+      try {
+        result = await deps.dsh.rpc(method, req.args)
+      } finally {
+        if (typeof eventId === 'string') inflightEvents.delete(eventId)
+      }
     } catch (error) {
       // U-22 [GU-1]（A-HIGH）：rpcRaw 裸抛（断链 fetch 失败 / 非 200 / 坏 JSON）会 reject
       // ipcMain.handle → renderer invoke 全线抛错（loadRoster/start 卡封面、create 卡创建中）。
@@ -216,7 +233,7 @@ export function registerM1Api(deps: M1Deps = {}): (req: M1Request) => Promise<M1
       return { ok: false, error: { code: 'pbots/unavailable', message: `dsh rpc failed: ${message}`, details: {} } }
     }
     // R10：审批作答先发送后消费——rpc ok 才下账；失败（ok:false 或 throw）pending 保留可重试。
-    // consume 为 false = 并发路径已消费（gateway 同样只会收下一份作答），仅记日志。
+    // consume 为 false = settle 后本地已非 pending（gateway cancel 帧 / deadline 代答先下账），仅记日志。
     if (method === '$events/result' && result.ok) {
       const eventId = (req.args as { eventId?: unknown } | undefined)?.eventId
       if (!ledger.consumeResult(eventId)) {

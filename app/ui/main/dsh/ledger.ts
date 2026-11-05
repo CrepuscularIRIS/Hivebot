@@ -14,10 +14,11 @@ export type EventsItem =
   | { type: 'cancel'; eventId: string }
 
 /** P5-07：审批条目带 toolName/callId；提问条目没有 toolName（提问 request 无此字段，R7 ③）。
- * P5-28：提问条目带该批问题 id 集（作答 id 集合校验源）。 */
+ * P5-28：提问条目带该批问题 id 集（作答 id 集合校验源）。
+ * P5-28.f1 S2：问题形状不合法时 questionIds 缺席（作答不可达），条目仍入账供 deadline 协议拒绝。 */
 export type LedgerEntry =
   | { readonly event: 'approval/request'; readonly eventId: string; readonly agentId: string; readonly toolName: string; readonly callId?: string; readonly receivedAt: number }
-  | { readonly event: 'user-questions/request'; readonly eventId: string; readonly agentId: string; readonly questionIds: ReadonlySet<string>; readonly receivedAt: number }
+  | { readonly event: 'user-questions/request'; readonly eventId: string; readonly agentId: string; readonly questionIds?: ReadonlySet<string>; readonly receivedAt: number }
 
 /** 提问 request 里该批问题 id 集；questions 缺失/非数组/空/id 非字符串 → undefined（P5-28 fail-closed：不入账）。 */
 function questionIdsOf(request: Readonly<Record<string, unknown>>): ReadonlySet<string> | undefined {
@@ -53,8 +54,14 @@ export function invalidQuestionAnswersReason(outcome: unknown, expected: Readonl
     if (typeof answer !== 'object' || answer === null) return `answers[${i}] must be an object`
     const { id, selected, custom } = answer as { id?: unknown; selected?: unknown; custom?: unknown }
     if (typeof id !== 'string' || id === '') return `answers[${i}].id must be a non-empty string`
-    if (!Array.isArray(selected) || !selected.every((s) => typeof s === 'string')) {
-      return `answers[${i}].selected must be string[]`
+    if (!Array.isArray(selected)) return `answers[${i}].selected must be string[]`
+    // P5-28.f1 F2：稀疏槽（holes）不算 string[]——every/some 会跳洞（`new Array(1)` 曾以 [null]
+    // 上 wire），逐槽判存在性。answers 数组的洞由上面的 entries() 天然覆盖（数组迭代器逐下标
+    // 取值、洞为 undefined → 非对象即拒），同一规则。
+    for (let j = 0; j < selected.length; j += 1) {
+      if (!(j in selected) || typeof selected[j] !== 'string') {
+        return `answers[${i}].selected must be a dense string[] (sparse holes rejected)`
+      }
     }
     if (custom !== undefined && typeof custom !== 'string') return `answers[${i}].custom must be a string when present`
     const allowed = custom !== undefined ? ['id', 'selected', 'custom'] : ['id', 'selected']
@@ -90,7 +97,8 @@ export class EventsLedger {
     return typeof eventId === 'string' ? this.pending.get(eventId)?.event : undefined
   }
 
-  /** P5-28：未决提问事件的问题 id 集（作答 id 集合校验源）；非未决提问事件（或非字符串 eventId）→ undefined。 */
+  /** P5-28：未决提问事件的问题 id 集（作答 id 集合校验源）；非未决提问事件、非法问题批次
+   * （S2：无校验源，作答不可达）或非字符串 eventId → undefined。 */
   questionIds(eventId: unknown): ReadonlySet<string> | undefined {
     if (typeof eventId !== 'string') return undefined
     const entry = this.pending.get(eventId)
@@ -121,14 +129,16 @@ export class EventsLedger {
         return
       }
       if (item.event === 'user-questions/request') {
-        // P5-28：提取该批问题 id 集；形状不合法 → 不入账只记 warn（fail-closed：无法作答，deadline 到期协议级拒绝）
+        // P5-28.f1 S2（REVIEW security CONFIRMED）：问题形状不合法（questions 缺失/空/id 空串等）
+        // 也入账——不入账会让 deadline 无从协议拒绝、事件无限挂起。questionIds 缺席 = 作答不可达
+        // （M1 落入审批字符串分支拒），deadline 到期发 {kind:'rejected'}（绝不用 result 放行）。
         const questionIds = questionIdsOf(item.request)
         if (questionIds === undefined) {
-          this.warn(`user-questions/request (${item.eventId}) has no valid questions array; not ledgered`)
-          return
+          this.warn(`user-questions/request (${item.eventId}) has no valid questions array; ledgered for deadline rejection only`)
         }
         this.pending.set(item.eventId, {
-          event: 'user-questions/request', eventId: item.eventId, agentId: item.agentId, questionIds,
+          event: 'user-questions/request', eventId: item.eventId, agentId: item.agentId,
+          ...(questionIds !== undefined ? { questionIds } : {}),
           receivedAt: Date.now(),
         })
         return

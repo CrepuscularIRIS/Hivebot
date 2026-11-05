@@ -1,0 +1,30 @@
+[
+  {
+    "label": "dangling-file-symlink-existing-outside-parent",
+    "tool": "write",
+    "path": "/tmp/bot-p625-vfy-pCLyae/workspace/dangling-file",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: cannot write \"/tmp/bot-p625-vfy-pCLyae/workspace/dangling-file\": not a regular file",
+    "disk": {
+      "exists": false,
+      "content": null
+    }
+  },
+  {
+    "label": "existing-file-symlink-to-outside",
+    "tool": "write",
+    "path": "/tmp/bot-p625-vfy-pCLyae/workspace/existing-file-link",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)",
+    "disk": {
+      "exists": true,
+      "content": "before"
+    }
+  }
+]

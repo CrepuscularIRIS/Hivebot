@@ -15,8 +15,15 @@
 //   第 3/4 行 文件工具 → workspace-read / workspace-write：候选（复用 guard 的
 //     extractPaths）经 ctx.fs.resolve（realpath）后全部在会话 workspaceRoot 子树
 //     内 → 门开时 allow、门关时 ASK；读类任一候选在区外 → ASK（不可始终允许，
-//     Q-013 用户确认）；写类区外 → next()，交上游 workspace-write fence（审批
-//     改变不了 fence，出卡是表演；A3 的越界写由 fence + guard 承担）。
+//     Q-013 用户确认）；写类任一候选在区外（含 workspaceRoot 拿不到、候选解析
+//     失败、fs 服务不可用——证不出区内即区外）→ 一律 deny，不出卡（P6-25 决策
+//     37，2026-11-05：P5-21 曾把区外写 next() 交上游 fence，前提「越界写由 fence
+//     拒」不成立——dsh-sandbox fence 的可写根含宿主 /tmp 与 os.tmpdir()（lib/
+//     index.js:232-244），而 bash 的 /tmp 是私有 tmpfs，于是所有会话都能无卡改写
+//     宿主 /tmp（P6-22 r1 实锚 probe2.txt）。拒不出卡的理由：用户无从判断一个
+//     /tmp 路径该不该批，bot 自己的 bash 也看不见宿主 /tmp，写进去没有正当用途；
+//     原因串固定字面串（code 前缀），不回显宿主绝对路径。纯收紧不等答复（W1-AP-0
+//     先例），替代 Q-013 第 3/4 行「写类区外交 fence」的已确认语义，用户默认 A）。
 //     L-7 R6（2026-11-04）：「门关」细化——状态文件在候选路径上存在（无论内容
 //     是否有效）才关门；从未存在（写端 P5-29 未交付的生产默认态）不门控文件
 //     工具（回到 P5-21 之前的工作区内放行，委派子代理的文件能力随之恢复），
@@ -66,12 +73,15 @@ const STRICTLY_WIDER = {
 /** 档位表（profile/tiers.json）的词表；行语义见文件头。 */
 const TIER_KINDS = new Set(['allow', 'ask', 'sandbox-allow', 'workspace-read', 'workspace-write'])
 
-/** ask 卡原因（进审批卡的 reason，P5-07 的账本读 request.toolName，不读这里）。 */
+/** ask 卡原因（进审批卡的 reason，P5-07 的账本读 request.toolName，不读这里）。
+ * writeOut 是 deny 原因非 ask（P6-25 决策 37：写类区外硬拒不出卡），固定字面串、
+ * 不回显宿主绝对路径，测试按串断言（P5-05「原因固定字面串」同口径）。 */
 const ASK = {
   bash: 'p2sdk policy: ordinary shell commands require user approval',
   readOut: 'p2sdk policy: reading files outside the workspace requires user approval',
   readGate: 'p2sdk policy: reading in the workspace requires user approval (autonomy suspended)',
   writeGate: 'p2sdk policy: writing in the workspace requires user approval (autonomy suspended)',
+  writeOut: 'p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)',
   mcp: 'p2sdk policy: connector tools require user approval (metadata bridge pending)',
   fallback: 'p2sdk policy: tier table unavailable; failing closed to per-call approval',
   net: 'p2sdk policy: network access requested',
@@ -311,7 +321,9 @@ export function apply(ctx, config = {}) {
     // workspace 档：realpath 后判「是否全部候选都在会话工作区子树内」。
     const fs = typeof ctx.get === 'function' ? ctx.get('fs') : null
     if (fs === null || typeof fs !== 'object' || typeof fs.resolve !== 'function') {
-      return kind === 'workspace-write' ? next() : ask(ASK.readOut)
+      // P6-25：写类在 fs 服务不可用时也拒——证不出区内即区外，不再交 fence
+      //（fence 可写根含宿主 /tmp，见文件头第 3/4 行）。读类语义不变（ASK）。
+      return kind === 'workspace-write' ? { kind: 'deny', reason: ASK.writeOut } : ask(ASK.readOut)
     }
     const { targets, total, workspaceRoot } = await resolveTargets(ctx, exec, fs)
     if (total === 0) return next() // 无路径候选（guard 已放行）→ 无从判区外
@@ -323,9 +335,11 @@ export function apply(ctx, config = {}) {
         ? (fileGateOpen() ? next() : ask(ASK.readGate))
         : ask(ASK.readOut)
     }
-    // workspace-write：区内按门放行/出卡；区外交上游 fence（越界写由 fence 拒，
-    // 审批改不了 fence——出卡是表演，A3 的格由 fence + guard 承担）。
-    if (!allInside) return next()
+    // workspace-write：区内按门放行/出卡；区外一律 deny，不出卡（P6-25 决策 37，
+    // 2026-11-05）。判外包含三种「证不出区内」：任一候选 realpath 后在区外
+    //（含 .. 逃逸与符号链接——resolve 先 realpath 再判，绕法归一到同一分支）、
+    // 候选解析失败（targets < total）、workspaceRoot 拿不到。
+    if (!allInside) return { kind: 'deny', reason: ASK.writeOut }
     return fileGateOpen() ? next() : ask(ASK.writeGate)
   })
 }

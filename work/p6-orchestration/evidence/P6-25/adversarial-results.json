@@ -1,0 +1,181 @@
+[
+  {
+    "label": "absolute-host-tmp",
+    "tool": "write",
+    "path": "/tmp/bot-p625-vfy-qH2nid/outside/absolute",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)",
+    "disk": {
+      "exists": false,
+      "content": null
+    }
+  },
+  {
+    "label": "dotdot-escape",
+    "tool": "write",
+    "path": "../outside/dotdot",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)",
+    "disk": {
+      "exists": false,
+      "content": null
+    }
+  },
+  {
+    "label": "inside-symlink-to-outside",
+    "tool": "write",
+    "path": "/tmp/bot-p625-vfy-qH2nid/workspace/escape-link/linked-out",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)",
+    "disk": {
+      "exists": false,
+      "content": null
+    }
+  },
+  {
+    "label": "outside-symlink-to-inside",
+    "tool": "write",
+    "path": "/tmp/bot-p625-vfy-qH2nid/outside/inside-link/linked-in",
+    "expected": "deny",
+    "pass": false,
+    "error": false,
+    "cards": 0,
+    "text": "<path>/tmp/bot-p625-vfy-qH2nid/workspace/linked-in</path>\n<type>file</type>\n<content>\nCreated file\n</content>",
+    "disk": {
+      "exists": true,
+      "content": "unexpected"
+    }
+  },
+  {
+    "label": "proc-cwd-dotdot",
+    "tool": "write",
+    "path": "/proc/self/cwd/../../../../../../tmp/bot-p625-vfy-qH2nid/outside/proc",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)",
+    "disk": {
+      "exists": false,
+      "content": null
+    }
+  },
+  {
+    "label": "edit-existing-outside",
+    "tool": "edit",
+    "path": "/tmp/bot-p625-vfy-qH2nid/outside/edit-existing",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)",
+    "disk": {
+      "exists": true,
+      "content": "before"
+    }
+  },
+  {
+    "label": "double-slash",
+    "tool": "write",
+    "path": "//tmp//bot-p625-vfy-qH2nid//outside//double",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)",
+    "disk": {
+      "exists": false,
+      "content": null
+    }
+  },
+  {
+    "label": "trailing-slash",
+    "tool": "write",
+    "path": "/tmp/bot-p625-vfy-qH2nid/outside/tail/",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)",
+    "disk": {
+      "exists": false,
+      "content": null
+    }
+  },
+  {
+    "label": "case-distinct-workspace",
+    "tool": "write",
+    "path": "/tmp/bot-p625-vfy-qH2nid/WORKSPACE/case",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)",
+    "disk": {
+      "exists": false,
+      "content": null
+    }
+  },
+  {
+    "label": "outside-read-still-ask",
+    "tool": "read",
+    "path": "/tmp/bot-p625-vfy-qH2nid/outside/edit-existing",
+    "expected": "ask",
+    "pass": true,
+    "error": true,
+    "cards": 1,
+    "text": "Error: the user rejected tool \"read\"",
+    "disk": null
+  },
+  {
+    "label": "inside-write",
+    "tool": "write",
+    "path": "/tmp/bot-p625-vfy-qH2nid/workspace/normal",
+    "expected": "allow",
+    "pass": true,
+    "error": false,
+    "cards": 0,
+    "text": "<path>/tmp/bot-p625-vfy-qH2nid/workspace/normal</path>\n<type>file</type>\n<content>\nCreated file\n</content>",
+    "disk": {
+      "exists": true,
+      "content": "before"
+    }
+  },
+  {
+    "label": "never-root-sdk-home",
+    "tool": "write",
+    "path": "/tmp/bot-p625-vfy-qH2nid/dsh/guard-target",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: p2sdk-fs-guard: path \"/tmp/bot-p625-vfy-qH2nid/dsh/guard-target\" touches a hard-denied area (/tmp/bot-p625-vfy-qH2nid/dsh)",
+    "disk": {
+      "exists": false,
+      "content": null
+    }
+  },
+  {
+    "label": "dangling-symlink",
+    "tool": "write",
+    "path": "/tmp/bot-p625-vfy-qH2nid/workspace/dangling/x",
+    "expected": "deny",
+    "pass": true,
+    "error": true,
+    "cards": 0,
+    "text": "Error: ENOENT: no such file or directory, mkdir '/tmp/bot-p625-vfy-qH2nid/workspace/dangling'",
+    "disk": {
+      "exists": false,
+      "content": null
+    }
+  }
+]

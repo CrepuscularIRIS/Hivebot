@@ -1,0 +1,41 @@
+2026-11-05T02:35:22-05:00
+390f4d499913042f92e1c460a3ec1454e24c2047
+60e8b028c3c6724c2108ed5f3459dca55c5a18d6
+app/sdk/src/policy/shell-ask.mjs
+app/sdk/tests/e2e/write-outside.test.ts
+app/sdk/tests/unit/policy.test.ts
+Runtime ToolsService.view(exec.agent) registered tools: 33
+request_network | Request one-time network access for exactly one bash command. Shows the full command to the user for approval; after approval, run the SAME command with the bash tool immediately (
+working_directory | Read the current working directory, or change it with cd. Relative paths use the current directory. Existing shells and running processes keep their own directories.
+job_output | Read a background job: output since the previous read for stream jobs, or the result of a finished final-output job.
+job_list | List your background jobs (running and finished) with their ids, kinds, and statuses.
+job_kill | Request cancellation of a running background job.
+present | Declare existing files as final deliverables for the user. Hosts may show presented files only after your turn ends, so call it once the files are final. If the user needs to revie
+read | Read a UTF-8 text file and return line-numbered content.
+write | Create or fully replace a UTF-8 text file.
+edit | Edit an existing UTF-8 text file by replacing literal text.
+glob | Find files, not directories, whose paths match a glob pattern, including hidden and ignored files. Returns up to 100 paths in modification-time order; a larger result keeps the fir
+grep | Search file contents with a ripgrep regular expression. Returns matching lines with line numbers, grouped by file. Returns up to 250 matches; a larger result reports where the comp
+skill | Load the full instructions for a skill. Call it before acting on a task that names or clearly matches a skill in the session skill catalog.
+web_search | Search the web for current information. Returns an optional summary answer and a list of source URLs.
+web_fetch | Fetch the content of a specific HTTP(S) URL and return it decoded to text.
+bash | Execute a bash command (`bash -c`) and return its stdout/stderr. Each call runs in a fresh shell; pass `workdir` instead of using `cd`. Managed `$DSH_*` variables expose current ha
+read_image | Read a PNG/JPEG/WebP/GIF file and return the image itself. Large images are downscaled automatically; do not install image libraries or create thumbnails to inspect an image.
+get_goal | Read the current session goal, including the id and revision that update_goal requires.
+create_goal | Create a persisted goal that keeps this session working across automatic continuation rounds. Use it when the direct human request is a long-running objective, even if the user did
+update_goal | Update the current goal.
+ask_user_question | Ask the user a concise question when you need confirmation, a choice, or missing information before proceeding. An answer item with empty selected and no custom means the user skip
+workflow | Run a JavaScript workflow script that orchestrates subagents at scale. Use this for work that fans out across many independent pieces — an audit over many files, a migration, multi
+todo_write | Record and update a task list to plan multi-step work and show progress; skip it for trivial single-step tasks. Add one todo per concrete step before you start. While work remains,
+list_agents | List subagents you started, with their ids, labels, and status. running means it is working; inactive means it is not currently working. You will be notified when a subagent finish
+send_message | Send a message to an agent. A working agent receives it at its next step; an idle agent starts a new turn with it. Returns delivery confirmation, not the agent's answer.
+interrupt_agent | Ask a subagent to stop its current work. This call returns without waiting for it to stop. You can continue a local direct child's conversation later with send_message. External ex
+exit_plan_mode | Use only in plan mode. Present your plan for the user's review and, on approval, leave plan mode. The user may approve (carry out the plan from your next step) or keep planning — t
+list_subagent_models | Inspect subagent models without changing the current Agent. No arguments: providers; `provider`: allowed models; `provider` + `model`: that model and its reasoning efforts. Inspect
+subagent | Delegate a self-contained task to a subagent (a separate agent that works in its own context) to offload focused, independent work — research, a scoped implementation, an analysis 
+subagent_fork | Delegate a task to a subagent that inherits this conversation: a child agent seeded with all completed turns so far (it does not see the current in-flight turn). Use this when the 
+schedule_create | Create a reminder in the current session that delivers prompt when it becomes due. Supply exactly one timing parameter: after_seconds, at, every_seconds, daily, weekly, or cron. Lo
+schedule_list | List the active reminders in the current session.
+schedule_delete | Delete a reminder in the current session, active or inactive. Deletion does not retract a reminder message that is already queued.
+schedule_update | Change a reminder in place, keeping its id. Supply a new title, prompt, or at most one timing parameter; omitted fields keep their stored values. To change a relative delay, create
+str_replace_editor registered: False

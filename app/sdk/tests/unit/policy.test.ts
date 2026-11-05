@@ -75,6 +75,8 @@ const nextResult = Symbol('next')
 const next = (): unknown => nextResult
 const askShape = { kind: 'ask', reason: 'p2sdk policy: ordinary shell commands require user approval' }
 const neverDeny = { kind: 'deny', reason: 'approval unavailable in this session' }
+// P6-25（决策 37）：写类区外固定字面串 deny（同 P5-05 的「原因固定字面串」口径）。
+const writeOutDeny = { kind: 'deny', reason: 'p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)' }
 
 /** A temp handoff dir + policy-state dir wired as the plugin config would be. */
 function provisionedConfig(state: Record<string, unknown> | 'missing' | 'invalid-json'): { config: object; statePath: string; cleanup: () => void } {
@@ -323,7 +325,7 @@ describe('P5-21 ②: the five invalid policy-state states demote ALWAYS back to 
 
 // ── P5-21 ④：第 4 行（Q-013 编号）文件读工作区外 ASK，与门控无关 ──
 
-describe('P5-21 ④: reads outside the workspace ask regardless of the gate; outside writes hit the upstream fence', () => {
+describe('P5-21 ④: reads outside the workspace ask regardless of the gate; outside writes are denied (P6-25)', () => {
   const outside = { file_path: '/etc/hostname' }
 
   it('read outside the workspace asks even with the gate open (no always: every call re-asks)', async () => {
@@ -335,11 +337,11 @@ describe('P5-21 ④: reads outside the workspace ask regardless of the gate; out
     expect(await listener({ name: 'read', arguments: outside }, next), 'the identical call asks again (no standing grant at the SDK layer)').toMatchObject(first as object)
   })
 
-  it('write outside the workspace delegates (upstream workspace-write fence owns it; a card would be theater)', async () => {
+  it('write outside the workspace is denied with no card (P6-25 决策 37: the upstream fence writable roots include host /tmp — fence delegation was the hole, P6-22 r1 probe2)', async () => {
     const p = provisionedConfig(VALID)
     cleanups.push(p.cleanup)
     const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
-    expect(await listener({ name: 'write', arguments: { file_path: '/var/tmp/outside.txt', content: 'x' } }, next)).toBe(nextResult)
+    expect(await listener({ name: 'write', arguments: { file_path: '/var/tmp/outside.txt', content: 'x' } }, next)).toEqual(writeOutDeny)
   })
 
   it('reads that cannot be resolved ask (fail closed)', async () => {
@@ -640,5 +642,84 @@ describe('P5-21 ⑤ (A9 ⑦): with the gate open, ALWAYS-class tools run even in
     cleanups.push(p.cleanup)
     const listener = registeredListener({ mode: 'workspace-write', approval: approvalSvc('never'), config: p.config })
     expect(await listener({ name: 'bash', agent: { session: {} }, arguments: { command: 'echo x > m', description: 'x' } }, next)).toBe(nextResult)
+  })
+})
+
+// ── P6-25（PLAN p6-orchestration 决策 37，2026-11-05）：写类区外一律 deny，不出卡 ──
+// 根因：P5-21 起写类「区外 → next()」交上游 workspace-write fence，前提是 fence 会
+// 拒；但 dsh-sandbox fence 的可写根含宿主 /tmp 与 os.tmpdir()（dsh-sandbox
+// lib/index.js:232-244），而 bash 的 /tmp 是私有 tmpfs——所有会话都能用 write/edit
+// 无卡改写宿主 /tmp（P6-22 r1 实锚 probe2.txt，dev-single-json-schema-1.w1.jsonl:8760）。
+// 收紧为 deny（非出卡）：用户无从判断一个 /tmp 路径该不该批，bot 的 bash 也看不见
+// 宿主 /tmp。读类语义不变（区外读仍 ASK，Q-013 第 3 行）；NEVER 根规则归 guard 不变。
+
+describe('P6-25: write-class calls outside the workspace are denied (hard deny, no card, no fence delegation)', () => {
+  const OUT = '/tmp/bot-p6-25-unit/probe.txt'
+
+  it('denies write and edit with an absolute outside target even with the gate open', async () => {
+    const p = provisionedConfig(VALID)
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+    expect(await listener({ name: 'write', arguments: { file_path: OUT, content: 'x' } }, next)).toEqual(writeOutDeny)
+    expect(await listener({ name: 'edit', arguments: { file_path: OUT, old_string: 'a', new_string: 'b' } }, next)).toEqual(writeOutDeny)
+  })
+
+  it('the deny is identical under approvalPolicy=never (a hard deny, not the never ask-deny reason)', async () => {
+    const p = provisionedConfig(VALID)
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', approval: approvalSvc('never'), fs: true, config: p.config })
+    expect(await listener({ name: 'write', agent: { session: {} }, arguments: { file_path: OUT, content: 'x' } }, next)).toEqual(writeOutDeny)
+  })
+
+  it('the deny precedes the workspace gate: an existing-but-invalid policy-state does not turn it into a writeGate card', async () => {
+    const p = provisionedConfig('invalid-json')
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+    expect(await listener({ name: 'write', arguments: { file_path: OUT, content: 'x' } }, next)).toEqual(writeOutDeny)
+  })
+
+  it('fails closed without the fs service (cannot prove inside → deny, not delegate)', async () => {
+    const p = provisionedConfig(VALID)
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', config: p.config })
+    expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toEqual(writeOutDeny)
+  })
+
+  it('fails closed without a workspaceRoot (sandboxPolicy unreadable → allInside false → deny)', async () => {
+    const p = provisionedConfig(VALID)
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ fs: true, config: p.config })
+    expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toEqual(writeOutDeny)
+  })
+
+  it('a candidate that cannot be resolved is denied too (targets < total → unprovable is not inside)', async () => {
+    const p = provisionedConfig(VALID)
+    cleanups.push(p.cleanup)
+    const listeners: RecordedListener[] = []
+    const ctx = {
+      on: (event: string, listener: RecordedListener['listener']) => { listeners.push({ event, listener }) },
+      get: (name: string) =>
+        name === 'fs' ? { resolve: async () => { throw new Error('resolve boom') } }
+          : name === 'sandboxPolicy' ? { resolve: () => ({ mode: 'workspace-write', workspaceRoot: WS }) }
+          : undefined,
+    }
+    plugin.apply(ctx as never, p.config as never)
+    expect(listeners).toHaveLength(1)
+    expect(await listeners[0]!.listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toEqual(writeOutDeny)
+  })
+
+  it('read semantics unchanged by P6-25: the same outside target still asks (Q-013 row 3 intact)', async () => {
+    const p = provisionedConfig(VALID)
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+    expect(await listener({ name: 'read', arguments: { file_path: OUT } }, next)).toMatchObject({ kind: 'ask' })
+  })
+
+  it('in-workspace write/edit still pass with the gate open (only the outside branch tightened)', async () => {
+    const p = provisionedConfig(VALID)
+    cleanups.push(p.cleanup)
+    const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
+    expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toBe(nextResult)
+    expect(await listener({ name: 'edit', arguments: { file_path: 'a.txt', old_string: 'a', new_string: 'b' } }, next)).toBe(nextResult)
   })
 })

@@ -147,7 +147,7 @@ cron 的限制：只在主会话空闲时触发；会话退出就没了；7 天�
 
 ### 7.3 合并
 
-逐文件清单 checkout，禁止 `git checkout <sha> -- .` 这样的整树覆盖。清单显式排除 `work/**/LOG.md` 和 `work/LEARNINGS.md`。合并后 grep 任务的关键标记能命中、测试数量没有下降，然后 `git worktree remove` 清理。
+逐文件清单 checkout，禁止 `git checkout <sha> -- .` 这样的整树覆盖。清单显式排除 `work/**/LOG.md` 和 `work/LEARNINGS.md`。**默认用 `git merge --no-ff <分支>`（真三方）**；清单 checkout 仅当交集为空。修复「清单合并造成的回退」时，M 文件禁止一刀切恢复——以 merge-base 为基 `git diff <mb>..<branch> -- <file> | git apply --3way` 逐文件分辨假差异与真实增量（P6-22 r2 事故第三次）。合并后 grep 任务的关键标记能命中、测试数量没有下降，然后 `git worktree remove` 清理。**每次合并 commit 一并 `git add` 当日改过的记账文件**（work/<slug>/PLAN.md、work/QUESTIONS.md、work/LEARNINGS.md、work/LOG.md、work/<slug>/LOG.md）——记账只活在工作区＝一次误操作全损（P6-22 事故丢尽 p6/p5 PLAN 与 QUESTIONS）；tick 第 8 步收尾再补一次 docs(work) 提交。
 
 ## 8. 巡检 tick（args = tick，由 cron 每 10 分钟触发）
 

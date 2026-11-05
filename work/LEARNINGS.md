@@ -73,3 +73,17 @@
 2026-11-03 L-UI 观感差距根因（BRIEF §12.3，用户「数值对但看起来不对」的教训）：①组件来自 dsh 骨架只换 token——哪个面用哪个 token 是推断的；②审计按差异项逐条列，整屏构件形态（composer 药丸、40px 圆钮、选中态）从没进过清单；③**bot 头像原版是带状态动画的 SVG 角色、我们是首字母圆——头像内容从未被审计**，盒模型审计量不出这个；④原版动效 JS 驱动，CSS 断言测不到；⑤三个来源（0.18/0.78.1/dsh）混用；⑥半透明 token 颜色取决于底层。规则：观感对齐必须有「可运行的完整参照」（0.18 整树移植 + 对照台并排），逐项规格只防回归。
 
 2026-11-03 P5-25×P5-21 事故：git stash 栈（refs/stash）跨 worktree 共享，两 builder 在重叠窗口各自 stash、后 pop 者拿到对方栈顶双向串位（13:02 已恢复+备份 /tmp/bot-p5-25-stash-mixup/）→ **多 worktree 并行期间一律禁用 git stash**；临时收起改动用 `git diff > /tmp/<任务>.patch` + `git checkout --`，恢复 `git apply`；builder 派发提示词加入此条。
+
+## 又一次整树 checkout（P6-22 r2 合并，2026-11-05，第三次同类事故）
+- 现象：`git checkout feat/P6-22 -- .` 把分支基点（ae41ce7）以来 main 的 P6-26/26t 安全改动全部回退；事后补救第一刀「M 文件一律恢复 main 版」又把 P6-22 自己的 DESCRIPTION 文案冲掉。最终以 ae41ce7 为 base 逐文件 `git apply --3way` 修复（b138aad）。
+- 规则（升级 SKILL §7.3 为硬性）：合并一律 `git merge --no-ff`（真三方），清单 checkout 仅限「与 main 无共同改动文件」且交集检查为空；**修复回退时同样禁止一刀切**——M 文件里混着「基点旧导致的假差异」和「分支真实增量」，必须 `git diff <merge-base>..<branch> -- <file> | git apply --3way` 逐文件分辨。
+
+## （记账恢复 2026-11-05 07:4x）以下条目在 P6-22 合并事故中被整树 checkout 抹掉，按上下文重录；原文措辞可能略有出入
+- e2e 里 SDK 数据目录与 UI main 数据目录分裂：挂 orch 插件的测试必须显式 P2SDK_ORCH_DATA_DIR 并预写 {"version":1} 骨架（P6-17.f1）。
+- 裸 sh scripts/run-e2e.sh 会被 miniconda 旧版 playwright 截胡（unknown command 'test'）——一律 pnpm -C app/ui test:e2e。
+- 测试的桌面通知没隔离：Xvfb 只挡窗口不挡 DBus；run-e2e.sh Xvfb 分支已加死总线守卫（P6-18）。
+- 竞态/绕过类 review 派 Sol 可能被其服务商内容策略拦截——改用确定性测试接缝表述，或改派 Opus（fable）。
+- 短时限速 ≠ 长封：429 retry-after 很短或主会话直探 200 = 多消费者并发限速——真模型评测独占 GLM，采集器短 429 有界退避。
+- GLM 限流期 builder/drafter 改派 Sol（用户 2026-11-04）；Opus 限流期 director/judge 席 A/frontend-dev/ux 席 A 亦改派 Sol（用户 2026-11-05），panel 注明代席，续跑中的先 TaskStop 再换发。
+- /tmp/p2sdk-handoff-* 累积泄漏（launchRuntime 不自清）→ P5-64。
+- **work/ 记账文件（PLAN/QUESTIONS/LEARNINGS）的修改此前从未提交，全靠工作区存活——本次事故一次全损。规则：每次合并 commit 一并 `git add work/<slug>/PLAN.md work/QUESTIONS.md work/LEARNINGS.md work/LOG.md work/<slug>/LOG.md`；tick 结束时对当日有改动的记账文件做一次 docs(work) 提交。**

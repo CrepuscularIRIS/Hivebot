@@ -52,8 +52,12 @@ async function launchReal(capacity?: number): Promise<Real> {
   mkdirSync(dataDir, { recursive: true })
   writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1 }))
   const rt = await launchSdkRuntime({ patch, cwd: tmkdir('bot-p617-ws-'), dataDir, env: { P2SDK_ORCH_DATA_DIR: dataDir } })
+  // P6-24：主 bot session 按生产布局建在 <dataDir>/workspaces/<mainId>（真 create_bot
+  // 走 UI main 的 createWorkerBot，cwd 不在 workspaces/<mainId> 下会 fail closed 拒派）。
   const main = randomUUID()
-  await rt.client.call('session/create', { request: { sessionId: main } })
+  const mainWs = join(dataDir, 'workspaces', main)
+  mkdirSync(mainWs, { recursive: true })
+  await rt.client.call('session/create', { request: { sessionId: main, cwd: mainWs } })
   await rt.client.call('session/rename', { request: { sessionId: main, title: 'Main Bot' } })
   mkdirSync(join(home, 'data'), { recursive: true })
   writeFileSync(join(home, 'data', 'bots.json'), JSON.stringify({ version: 1, mainBotId: main, recipes: {}, bots: {} }))

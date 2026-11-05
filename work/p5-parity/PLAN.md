@@ -1,5 +1,9 @@
 # PLAN · p5-parity（UI 对齐原版 + 审批自主化）
 
+v4.5 · 2026-11-05 记账重建（P6-22 事故后从 LOG/VERIFY/review-coverage 重建；行描述为摘要，证据以 VERIFY/LOG 为准）
+
+本次保留现存正文，在尾部补回 11 月 4–5 日丢失的追加行；追加表是这些任务的当前状态来源。表内区分任务验收 SHA 与发现问题时的证据基线，不为 todo 条目补造实现提交。P5-W3.f1 的状态随 f2/f3 闭环同步，P5-29 的 deps 补回 `work/p6-orchestration/LOG.md` 11-05 04:46 记录的 P6-27 前置。
+
 v2.1 · 2026-11-03 · director（Opus 5.5）· **定稿**：落地 G2-r2 有条件通过的 5 条清单 + 席 A MEDIUM（`work/p5-parity/panels/G2-r2.md`；两席原文 `panels/G2-r2-{A,B}.md`），逐条见 §6 修订账 v2.1（#29–#38）；不开 G2-r3。
 v2 · 2026-11-03 · director（Opus 5.5）· 回应 G2-r1 REVISE（`work/p5-parity/panels/G2-r1.md` 9 条 HIGH + MEDIUM 处置行；两席原文 `panels/G2-r1-{A,B}.md`），吸收 R2（`RE-visual-078-values.md`）与 D-2 scout（`reuse/d2-mcp-meta.md`）。逐条处置见 §6 修订账。v1 = commit e39e67e。
 输入（全路径）：B = `work/p5-parity/BRIEF.md` v2.1（含 §11 波次）；`work/p5-parity/panels/G1-r2.md`（G#1–G#6）；`work/p5-parity/REUSE.md`（v2 新增，`reuse/*.md` 汇总，决策行索引）；`work/p5-parity/reuse/{r4-tool-gates,r5-sandbox-probe,r6-grant-format,r7-ask-user,d2-mcp-meta}.md`；`work/p5-parity/RE-approval-model.md`（R1）；`work/p5-parity/RE-visual-residual.md`（R8）；`work/p5-parity/RE-visual-078-values.md`（R2，**覆盖** R8 与 AUD 中与之冲突的旧规格，见 §0.1）；`docs/harness/PROTOCOL.md` §4/§7.1；`work/LEARNINGS.md`。
@@ -104,7 +108,7 @@ status：ready = 现在可派；todo = 只差本 PLAN 内的前序任务；block
 | P5-26 | **旧 bot 迁移**（A11，C2 ⑤） | builder | `app/ui/main/m3-meta/`、`app/ui/main/m1-api/` | Q-013(e), Q-015⑤, P5-25, **P5-21** | blocked | M | 复用 P5-25 | ① 调用后创建 `workspaces/<botId>`，此后新建会话 cwd = 该目录；迁移前的会话 header.cwd 不变；② 旧 cwd 下文件的 sha256 与文件列表不变（不复制不移动）；③ 不调用、重启 3 次 → 旧 bot 仍是旧 cwd；④ 未迁移的旧 bot：bash 每次出卡、卡片无 always（A8 后半，依赖 P5-21）；⑤ cwd = PKG_ROOT 的旧 bot 迁移后，bash 与 write 在新工作区可写（决策 14 代价的解除路径） | |
 | P5-27 | **中途打断**（A12） | builder | `app/sdk/tests/e2e/interrupt.test.ts`（新）；修复视 R4b | R4b, P5-01 |running| M | 先测上游打断链路 | ① fake 第 2 步 `sleep 600`，用户停止后 ≤ R4b 给出的时限内该 bash 进程树（含 bwrap 子进程）退出（按自身 spawn 记录的 PID 查 `/proc`，不用 pkill）；② 之后 0 个新工具调用；③ 会话可继续发消息并收到回复 | |
 | P5-28 | **提问作答 main 分支**（C2 ⑥） | builder | `app/ui/main/dsh/ledger.ts`、`app/ui/main/m1-api/` | Q-015⑥, Q-013, P5-07 | running | M | 集成上游问答协议（第 1 级，R7） | ① 合法 answers → 原样转 dsh，工具结果含同批 id；② id 缺 / 多 / 类型错 / 对审批事件传 answers → `pbots/invalid-args`，dsh 计数 === 0；③ 同一 eventId 第二次作答 → 拒绝（重连不重复提交） | |
-| P5-29 | **policy-state 写入 + 暂停开关 main 侧**（决策 16；开关的用户入口按 Q-013 (d)，通道无论 (d) 答复都要做）：main 单写者写 `$PBOTS_DATA_DIR/policy-state.json`，**每次连上 SDK 后**写 `instance = sha256(<handoff>/launch-token)`（v2.1；launch-token main 已在读，main/index.ts:201；生产「谁设」由此闭合，不另设 env）；启动时按 `grantsHealthy` 写 / 清 fault；暂停开关只把 ALWAYS 收窄为 ASK | builder | `app/ui/main/m3-meta/`（policy-state）、`app/ui/tests/unit/m3/`、`app/sdk/tests/e2e/policy-state-xproc.test.ts`（新，跨进程） | Q-015, P5-21, P5-24 | blocked | M | 复用 store.ts 模式 | ① 打开暂停 → P5-21 ① 的脚本每步出卡；关闭恢复 asked === 0；重启后状态保持；② **跨进程 fail-closed**（G2-r1 #7）：真实 main + 真实 SDK，`standing-grants.json` 写成非法 JSON 后 close + launch → policy-state 带 `fault:'grants-corrupt'`；普通工作区 bash 出卡（asked === 1）；此前已授权的连接器写工具出卡；NEVER 调用 deny 且 asked === 0；对 NEVER 尝试 allowed-once → 失败无副作用；坏文件 sha256 不变（不被重写）；③ **恢复**：换成合法文件（或删除 = 0 条授权）后 close + launch → fault 清除，bash 回到 asked === 0，合法授权生效；④ policy-state 文件本身写坏 → SDK 按暂停处理（asked === 1），main 下次启动重写为合法；⑤ 开关不能放宽任何 ASK / NEVER；⑥ **数据根不一致**（v2.1，决策 13 ⑤）：SDK 以 `PBOTS_DATA_DIR=A`、UI 以 `B` 启动 → 普通工作区 bash 出卡（asked === 1）；SDK 重启换新实例、main 未重连前 → 同样出卡；两侧同设 A → asked === 0 | |
+| P5-29 | **policy-state 写入 + 暂停开关 main 侧**（决策 16；开关的用户入口按 Q-013 (d)，通道无论 (d) 答复都要做）：main 单写者写 `$PBOTS_DATA_DIR/policy-state.json`，**每次连上 SDK 后**写 `instance = sha256(<handoff>/launch-token)`（v2.1；launch-token main 已在读，main/index.ts:201；生产「谁设」由此闭合，不另设 env）；启动时按 `grantsHealthy` 写 / 清 fault；暂停开关只把 ALWAYS 收窄为 ASK | builder | `app/ui/main/m3-meta/`（policy-state）、`app/ui/tests/unit/m3/`、`app/sdk/tests/e2e/policy-state-xproc.test.ts`（新，跨进程） | Q-015, P5-21, P5-24, **P6-27**（写侧进 bwrap，见 p6 LOG 11-05 04:46；不卡 P6-14b） | blocked | M | 复用 store.ts 模式 | ① 打开暂停 → P5-21 ① 的脚本每步出卡；关闭恢复 asked === 0；重启后状态保持；② **跨进程 fail-closed**（G2-r1 #7）：真实 main + 真实 SDK，`standing-grants.json` 写成非法 JSON 后 close + launch → policy-state 带 `fault:'grants-corrupt'`；普通工作区 bash 出卡（asked === 1）；此前已授权的连接器写工具出卡；NEVER 调用 deny 且 asked === 0；对 NEVER 尝试 allowed-once → 失败无副作用；坏文件 sha256 不变（不被重写）；③ **恢复**：换成合法文件（或删除 = 0 条授权）后 close + launch → fault 清除，bash 回到 asked === 0，合法授权生效；④ policy-state 文件本身写坏 → SDK 按暂停处理（asked === 1），main 下次启动重写为合法；⑤ 开关不能放宽任何 ASK / NEVER；⑥ **数据根不一致**（v2.1，决策 13 ⑤）：SDK 以 `PBOTS_DATA_DIR=A`、UI 以 `B` 启动 → 普通工作区 bash 出卡（asked === 1）；SDK 重启换新实例、main 未重连前 → 同样出卡；两侧同设 A → asked === 0 | |
 
 ### 3.4 W2-AP（frontend-dev，blocked）
 | id | 任务 | owner | 区域 | deps | status | review | 捷径（REUSE 决策行） | 验收（可证伪） | evidence |
@@ -232,4 +236,28 @@ status：ready = 现在可派；todo = 只差本 PLAN 内的前序任务；block
 | P5-57 | 新 renderer 承载 UI 面：P-C 市场页（浏览/搜索/分页/三分类/安装进度/用它新建/not-bundle）+ P-D 配置面板（新建选 preset/连接器、只读配置、改模型、设主 bot、失效显示）+ 停止钮 + 启动封面——契约测试已全在 M1/M3 层，缺 UI（P5-54 遗留） | frontend-dev（先 ux-proposer×2 或直做，视复杂度） | app/ui/renderer-grok/overrides/ | P5-54 | done | GU | 复用 0.18 组件+overrides | D5/D10c/D11 的 UI 段在新 renderer 全覆盖 | |
 | P5-58 | 【用户 2026-11-03 反馈】①双主题质量收口：亮/白与暗双色全面核验（P6-03 OBS：暗色 composer/Plugins 按钮浅底字不清；全 UI 部件亮暗逐面过）②去 mock 审计：枚举 shim desktop 桥全部桩/能力关返回，逐个定「接真实源/明确空态文案/隐藏」；市场 404 空态接 market 插件默认挂载 | builder | app/ui/renderer-grok/shim/src/desktop.ts + overrides/*.css + profile 挂载 | P5-54（与 P5-57 避开 market/boot 文件） | done | S/GU | – | ①亮暗逐部件对比图无对比度缺陷 ②审计表全处置+桩清零或明确降级 ③市场默认可浏览 | |
 | P5-41.f1 | GU-P5-41 清单：①theme-dual WCAG 算法修半透明合成+重跑审计（3.93 照原版标注交用户）②审批卡分段结构（P5-31 遗留：Computer 标题条/关闭钮/代码块/位置与高度）或形态偏差签收单③D2(b) 错误文案定位修（注入文本丢失露 JS 异常）④三 MEDIUM 处置 | frontend-dev | app/ui/tests/e2e/theme-dual.spec.ts + renderer-grok/overrides/ + shim | P5-57, P5-58 | done | GU(已裁) | – | ①算法反例过+重审计 ②分段结构落地或签收单 ③注入文本直达用户 ④处置表 | |
-| P5-W3.f1 | L-7 修复链 R1-R6（6 major：shell-ask 档位查表×2、shim entries×2、ProductionRenderer 上游模块×2——上游文件按覆盖文件层修）+O1-O7 minor 一并 | builder | 按 REVIEW-P5-W3.md 各条锚点 | – | ready | M | – | 逐条先红后绿；全量双包绿；L-8 复审 0 critical/major | |
+| P5-W3.f1 | L-7 修复链 R1-R6（6 major：shell-ask 档位查表×2、shim entries×2、ProductionRenderer 上游模块×2——上游文件按覆盖文件层修）+O1-O7 minor 一并 | builder | 按 REVIEW-P5-W3.md 各条锚点 | – | done（随 f2 闭合；L-8 新发现由 f3 修复） | M | – | 逐条先红后绿；全量双包绿；L-8 复审 0 critical/major | `VERIFY-P5-W3f1.md` 初验 FAIL → `VERIFY-P5-W3f2.md` PASS；`LOG.md` 11-04 05:29 合并 `92cb6af`，L-8 后续见 f3。 |
+
+### 记账重建追加表（2026-11-05；恢复 11 月 4–5 日记录）
+
+本表只恢复已有证据支持的状态，不把诊断完成等同于修复完成。P5-61.f1 的初验 FAIL 由 f2 修复后整体合并；P5-63 仍为观察项，不据复现分歧推定已经修复。
+
+| id | 任务 | owner | 区域 | deps | status | review | 捷径 | 验收 / 当前结论 | evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| P5-59 | 修复 data.ts 的断链游标问题。 | builder | `app/ui/renderer-grok/shim/src/data.ts` | P5-W3.f2 | todo | 待派发时确认 | 沿用现有 shim。 | W3.f2 回报发现断链游标问题，LOG 记为非阻塞待办。 | `LOG.md` 05:07；`REPORT-P5-W3f2.md`；发现时交付 `f03e0a3`，不是本任务验收 SHA。 |
+| P5-60 | 修复 SDK e2e 的 TEST_HOME 并行互踩问题。 | builder | SDK e2e 的 TEST_HOME 定义 | – | todo | 待派发时确认 | 沿用现有测试运行时。 | W3.f3 合并时立为待办，尚无本任务验收结论。 | `LOG.md` 11-04 07:07；同次 W3.f3 合并 `35afc63`，不是本任务验收 SHA。 |
+| P5-61 | 完成主题闪烁诊断，区分封面反色、过渡混色、原生控件与入口缺口。 | 诊断员 | `boot-cover.ts`、`desktop.ts`、主题 CSS 与原生控件 | – | done（诊断） | 诊断记录 | 使用现有录屏与主题采样。 | 已复现封面跟系统 media、正文跟 preference 的双向反色；诊断不等于全部缺口修复。 | `DIAG-P5-61.md`；`LOG.md` 11-04 11:06；诊断构建 `5930660`，期间 main 前进至 `2746c31`，不作为新 HEAD 验收。 |
+| P5-61.f1 | 合批修复启动主题统一、过渡混色与原生控件主题接线。 | builder | 主题初始化、CSS 与宿主主题桥 | P5-61 | done（随 f2 修复后已合并） | 客观像素验收；GU 拟跳过已记 LOG | 沿用现有主题桥。 | 初验封面、切换和原生控件通过，暗色冷启/重载按钮局部混色 FAIL，交 f2 闭合。 | `VERIFY-P5-61f1.md`（初验 `99c3d19`）；`VERIFY-P5-61f2.md`；`LOG.md` 11-04 13:04 记录整体合并，未记录合并 SHA。 |
+| P5-61.f2 | 建桥时同步写 data-theme，修复按钮先取亮色默认后过渡滑暗的问题。 | builder | `shim/src/desktop.ts` 与主题回归测试 | P5-61.f1 | done（已合并） | 客观像素验收；GU 拟跳过已记 LOG | 复用现有主题状态。 | 红 20/19 坏帧转为 0，独立验收 PASS；跟随系统副作用已复核。 | `VERIFY-P5-61f2.md` 验收 `000efb6`；`LOG.md` 11-04 13:04 记录合并及三方恢复，未记录合并 SHA。 |
+| P5-62 | 补 Tasks / Full conversation 入口的真实能力通路，不只恢复空按钮。 | 待 director 明确 | Tasks / outline 与侧栏入口 | P5-61 诊断；待 director | todo | 待派发时确认 | 按诊断定位现有入口。 | Tasks 顶部入口缺失，Full conversation 被主动剥除；能力范围等 director 明确。 | `DIAG-P5-61.md` 第 8–9 项；`LOG.md` 11-04 11:06；诊断基线 `5930660`，无本任务实现 SHA。 |
+| P5-63 | 跟踪 guard-fs 顺序依赖的复现分歧。 | 待派发时确认 | SDK `guard-fs` 测试 | – | 观察 | 暂无新的验收裁定 | 保留双方现有探针。 | P6-10.f2a 按 PLAN 三条验收裁定 PASS，旁支 guard-fs 复现分歧另记观察，不作为 f2a 缺陷。 | `../p6-orchestration/VERIFY-P6-10f2a.md`（验收 `8cd0240`，含主会话裁定）；`../p6-orchestration/LOG.md` 11-04 12:53（合并 `9906bcb`）。 |
+| P5-64 | 清理 launchRuntime 遗留的 p2sdk-handoff 目录。 | builder | `launchRuntime` 与测试清理路径 | – | todo | 待派发时确认 | 补现有运行时清理链路。 | P6-13 发现累计 1721 个目录，尚无本任务修复或验收结论。 | `../p6-orchestration/LOG.md` 11-04 17:21；当次 P6-13 交付 `79899b0`，不是本任务验收 SHA。 |
+| P5-W3.f2 | 修复 W3.f1 的聚合投影、rpcId 身份对账与跟根问题。 | builder | shim 聚合投影、RPC 对账与跟根区域 | P5-W3.f1 | done（已合并） | verifier | 沿用现有覆盖层。 | f1+f2 验收 PASS，合并后回测 319/405/68 全绿。 | `VERIFY-P5-W3f2.md` 验收 `f03e0a3`；`LOG.md` 05:29 合并 `92cb6af`，11-04 05:44 回测闭环。 |
+| P5-W3.f3 | 修复 L-8 的状态文件删除失效、null args、decision 遮输出和许可共享四项 major。 | builder | 状态伴生标记、投影隔离、summary 回落与许可原子抢占 | P5-W3.f2；L-8 | done（已合并） | verifier；L-9(M) 后续已起跑 | 复用现有状态与许可路径。 | 独立验收 PASS，merge-base 清单合并后进入回测与后续 review。 | `VERIFY-P5-W3f3.md` 验收 `6ffce9c`；`LOG.md` 11-04 07:07 合并 `35afc63`。 |
+
+### v4.5 重建修订账
+
+| 来源要点 | 本次处置 | 落点 / 证据 |
+|---|---|---|
+| 恢复 P5-59–64、P5-61.f1/f2 与 P5-W3.f2/f3。 | 已追加 10 行，逐行区分诊断、完成、todo 和观察状态，并注明 SHA 所属的任务或基线。 | 上表；p5/p6 的 LOG 与 VERIFY 实文。 |
+| 同步受影响的状态与跨 PLAN deps。 | P5-W3.f1 随 f2 闭环置 done；P5-29 补回 P6-27 前置，写侧窗口仍卡 P5-29 而不卡 P6-14b。 | 原 P5-W3.f1 行；P5-29 deps；p6 LOG 11-05 04:46。 |

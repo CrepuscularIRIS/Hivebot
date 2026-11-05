@@ -1,5 +1,88 @@
 # PLAN · p6-orchestration（主 bot 编排 + personal agent 三段式交互）
 
+v4.5 · 2026-11-05 记账重建（P6-22 事故后从 LOG/VERIFY/review-coverage 重建；行描述为摘要，证据以 VERIFY/LOG 为准）
+
+## 重建口径与证据
+
+本次以现存 v1 为底补回记账，不宣称逐字恢复已丢失的 v3–v4.4 决策和任务规格。当前 status 与 deps 以以下两张重建表为准；后附 v1 的决策、区域核实、任务图、计数和 D-2 题干仅保留为历史底稿，不再作为当前派发依据。修复链中的初验 FAIL 与后续 PASS 分开记载，不能把已合并等同于每份初验报告均为 PASS。
+
+证据来源为本目录 `LOG.md`、`VERIFY-*.md`、`work/LOG.md` 和 `work/review-coverage.txt`。coverage 现存内容截至 L-7，没有后续 p6 逐任务 head；下表 SHA 来自 LOG 或 VERIFY 实文。没有 VERIFY 或 SHA 的调研、提案、契约回报明确注明缺项，不推定验收通过。决策 36、D-3、Q-024 等新增引用按派发原文保留，不凭空补写丢失的决策正文。
+
+## 已完成任务与修复链汇总
+
+表内均为已完成交付或已并入后续修复链的任务记录；具体通过范围以证据中的最终裁定为准。没有合并 SHA 时使用验收 SHA，并明确标识。
+
+| id | 一句话摘要 | VERIFY 文件 / 其他直接证据 | 合并或验收 SHA |
+|---|---|---|---|
+| P6-01 | 三段式折叠纯函数已验收通过并合并，覆盖 33 条用例。 | `VERIFY-P6-01.md`；`work/LOG.md` 11-03 13:09 | 验收 `c43dcaa` |
+| P6-02 | 冻结提示集、p6-reply preset 与原始帧采集器已交付并合并。 | `VERIFY-P6-02.md`；`work/LOG.md` 11-03 13:17 | 合并 `0a18b2a` |
+| P6-03 | 新 renderer 的折叠接线与 D1/D2 DOM 验收已通过并合并。 | `VERIFY-P6-03.md`；`work/LOG.md` 11-03 22:03 | 合并 `0b929f6` |
+| P6-04 | D3 的 30 回合数据与计分器已验收通过，结果为 30/30。 | `VERIFY-P6-04.md`；`work/LOG.md` 11-03 13:50 | 验收 `4a7600c` |
+| P6-05 | persona 段落接入默认链已验收通过并合并，后续被回退的问题由 f1 修复。 | `VERIFY-P6-05.md`；`LOG.md` 05:09、11-04 22:15 | 合并 `8973a67` |
+| P6-09 | 跨会话原语 spike 的 62 条断言通过，实测修正投递与持久化语义。 | `VERIFY-P6-09.md`；`LOG.md` 11-04 06:06 | 合并 `38584ba` |
+| P6-19 | 16 条编排提示集先于编排实现提交并冻结，已验收通过。 | `VERIFY-P6-19.md`；`LOG.md` 04:45 | 合并 `bba98bb` |
+| P6-05.f1 | persona 恢复及真实系统提示断言已交付，初验仅余 drift 豁免面问题，随 f1a 闭合。 | `VERIFY-P6-05f1.md`、`VERIFY-P6-05f1a.md`；`LOG.md` 11-04 22:55 | 合并 `60e8b02` |
+| P6-05.f1a | drift 豁免范围收紧后复验通过，已并入 persona 恢复链。 | `VERIFY-P6-05f1a.md`；`LOG.md` 11-04 22:43–22:55 | 验收 `5cc1184`；链合并 `60e8b02` |
+| P6-21 | 投递地基已验收通过并合并，承接幂等投递与污染回合适配。 | `VERIFY-P6-21.md`；`LOG.md` 11-04 06:55 | 合并 `397c7c8` |
+| P6-21.f1 | inflight 串行化与 stopped 跳过 asks 的修复已通过真 Loader 验收并合并。 | `VERIFY-P6-21f1.md`、`REVIEW-P6-21f1.md`；`LOG.md` 11-04 10:26 | 合并 `5930660` |
+| P6-10 | create_bot、编排通道与容量检查初验失败，随 f1/f1a 修复后整体通过并合并。 | `VERIFY-P6-10.md`、`VERIFY-P6-10f1a.md`；`LOG.md` 11-04 11:27 | 合并 `29c6b1a` |
+| P6-10.f1 | 污染回合限制与既有 worker 收养已修，初验发现满额漏计，交 f1a 闭合。 | `VERIFY-P6-10f1.md`、`VERIFY-P6-10f1a.md`；`LOG.md` 11-04 11:11–11:27 | 初验 `baef53c`；链合并 `29c6b1a` |
+| P6-10.f1a | pending Set 与统一补收养路径修复满额漏计，终验通过。 | `VERIFY-P6-10f1a.md`；`LOG.md` 11-04 11:27 | 验收 `6028985`；链合并 `29c6b1a` |
+| P6-10.f2 | review 的通道健壮性、容量与撤权等问题已批量修复，初验尾项交 f2a 闭合。 | `VERIFY-P6-10f2.md`、`VERIFY-P6-10f2a.md`；`LOG.md` 11-04 12:05–12:53 | 初验 `132edd7`；链合并 `9906bcb` |
+| P6-10.f2a | details/warn 脱敏与 shuffle 顺序依赖已修，主会话按任务验收裁定 PASS 并三方合并。 | `VERIFY-P6-10f2a.md`；`LOG.md` 11-04 12:53 | 合并 `9906bcb` |
+| P6-11 | send_to_bot 已通过验收并合并，包含 busy 与 inbox 待认领语义。 | `VERIFY-P6-11.md`；`LOG.md` 11-04 12:13 | 合并 `b00ab66` |
+| P6-12 | worker 通知、污染守卫与撤回重试已通过真 Loader 验收并合并。 | `VERIFY-P6-12.md`；`LOG.md` 11-04 16:47 | 合并 `80880b9` |
+| P6-13 | stop_bot 的两阶段语义已交付，空闲目标多调 cancel 的尾项随 f1 闭合。 | `VERIFY-P6-13.md`、`VERIFY-P6-13f1.md`；`LOG.md` 11-04 17:37 | 合并 `944afa0` |
+| P6-13.f1 | 空闲目标不再调用 cancel，P6-13 整体验收通过。 | `VERIFY-P6-13f1.md`；`LOG.md` 11-04 17:37 | 验收 `23b0ac5`；链合并 `944afa0` |
+| P6-14 | worker 执行信封初验失败，f1 改用上游 restrict 后整体通过，review 新发现再由 f2–f4 闭合。 | `VERIFY-P6-14.md`、`VERIFY-P6-14f1.md`、`VERIFY-P6-14f4.md`；`LOG.md` 11-04 18:42、20:39 | 首链合并 `09f627b`；终验 `528c368` |
+| P6-14.f1 | 执行信封改用上游 restrict，隐藏与强拒入口的实测通过。 | `VERIFY-P6-14f1.md`；`LOG.md` 11-04 18:42 | 验收 `828aa90`；链合并 `09f627b` |
+| P6-14.f2 | 身份文件损坏与改名子代理的 review 问题已修，初验新增缺键与冷启动问题，转 f3/f4 闭合。 | `VERIFY-P6-14f2.md`、`VERIFY-P6-14f4.md`；`LOG.md` 11-04 19:45、20:39 | 初验 `5873660`；链终验 `528c368` |
+| P6-14.f3 | unknown 判定、store.init 骨架与撤销挂点已修，超时分支未等待初始化的问题转 f4 闭合。 | `VERIFY-P6-14f3.md`、`VERIFY-P6-14f4.md`；`LOG.md` 11-04 20:19–20:39 | 初验 `8db9636`；链终验 `528c368` |
+| P6-14.f4 | 两个超时分支等待 store.init 后再放行，修复链整体终验通过并合并。 | `VERIFY-P6-14f4.md`；`LOG.md` 11-04 20:39 | 验收 `528c368`（LOG 未记录本次合并 SHA） |
+| P6-15 | 合成 section 与 notice 载体的 1b UI 已验收通过并合并，GU 尾项由 f1 修复。 | `VERIFY-P6-15.md`；`LOG.md` 11-04 06:36 | 合并 `8540693` |
+| P6-16 | 与 P6-15 同批交付的 worker 标记、分组及通知 UI 已验收通过并合并。 | `VERIFY-P6-15.md`（15/16 共用）；`LOG.md` 11-04 06:16、06:36 | 合并 `8540693` |
+| P6-15.f1 | GU 的主题稳定等待、中性态、reduced-motion 与已读归组问题已验收通过并合并。 | `VERIFY-P6-15f1.md`；`LOG.md` 11-04 11:00 | 合并 `2746c31` |
+| P6-17 | D8 的真审批卡与提问链路 e2e 已验收通过并合并；提问卡 UI 缺口另记。 | `VERIFY-P6-17.md`；`LOG.md` 11-04 19:23–19:34 | 验收 `2c5e15b`（LOG 未记录本次合并 SHA） |
+| P6-17.f1 | 测试预写编排身份骨架，修复双数据目录分裂导致的 p6-stuck 红例，快验通过。 | `VERIFY-P6-17f1.md`；`LOG.md` 11-04 21:12、21:25 | 验收 `acec699` |
+| P6-18 | 通知语义、死总线降级与 e2e DBus 隔离守卫已交付并验收通过。 | `VERIFY-P6-18.md`；`LOG.md` 11-04 21:17 | 验收 `bc86f2e` |
+| P6-20 | 48 组 D3′ 数据已交付并合并，模型路由仍为 FAIL（19/48），报告算术笔误已修。 | `VERIFY-P6-20.md`；`LOG.md` 11-04 21:57、22:05 | 合并 `eb82460` |
+| P6-22 | 路由文案迭代 r1 FAIL（3/30）→ r2 数据完整性 PASS（28/30），不等于正式 48 组定案通过。 | `VERIFY-P6-22r2.md`；`LOG.md` 11-05 01:41、07:07；`work/LOG.md` 11-05 07:26 | 验收 `cd40f65`；事故后三方恢复 `b138aad` |
+| P6-25 | write/edit 区外写纯收紧已按真实落盘边界裁定 PASS 并合并，后续 TOCTOU 交 f1。 | `VERIFY-P6-25.md`；`LOG.md` 11-05 02:38 | 合并 `be37484` |
+| P6-25.f1 | 执行期复判、NEVER 根复判与坏表硬拒已完成，初验文档尾项随 f1a 闭合。 | `VERIFY-P6-25f1.md`、`VERIFY-P6-25f1a.md`；`LOG.md` 11-05 04:42 | 合并 `75267c6` |
+| P6-25.f1a | 来源说明、窄窗口描述与拒绝提示修正后复验通过，写侧残余窗口交 P6-27。 | `VERIFY-P6-25f1a.md`；`LOG.md` 11-05 04:34–04:46 | 验收 `d6af82e`；链合并 `75267c6` |
+| P6-26 | 读侧 fd 身份绑定已交付，软链工作目录的初验缺陷随 f1 闭合并三方合并。 | `VERIFY-P6-26.md`、`VERIFY-P6-26f1.md`；`LOG.md` 11-05 06:09 | 合并 `0fa0c37` |
+| P6-26.f1 | canonicalPath 修复软链工作目录下区内读被拒的问题，P6-26 整体验收通过。 | `VERIFY-P6-26f1.md`；`LOG.md` 11-05 06:09 | 验收 `d09a48f`；链合并 `0fa0c37` |
+| P6-26t | run_code 等进程执行工具改走 bash 审批档位，区域列补记后主会话裁定 PASS 并合并。 | `VERIFY-P6-26t.md`；`LOG.md` 11-05 06:02 | 合并 `62f94c3` |
+| C-1 | CONTRACT v1.5 已回报，通道暂定 Q-021、createdBy 可选键与防提升已记录，两项编辑待确认转 Q-022。 | `LOG.md` 04:42（无单独 VERIFY） | LOG 未记录提交 SHA |
+| S-5 | Coworker 调研已回报，11 项机制及开源候选作为 1b 设计输入。 | `reuse/s5-coworker.md`；`work/LOG.md` 11-03 21:35（无单独 VERIFY） | LOG 未记录提交 SHA |
+| S-6 | 污染回合适配与幂等投递复用结论已回报，LOG 明确置 done。 | `reuse/s6-delivery-taint.md`；`LOG.md` 04:47（无单独 VERIFY） | LOG 未记录提交 SHA |
+| S-7 | 写侧复用调研已回报，推荐集成已装 NodePtcRuntime，不批自建 stdio，延迟尚未实测。 | `reuse/s7-confined-fs-executor.md`；`LOG.md` 11-05 04:59（无单独 VERIFY） | LOG 未记录提交 SHA |
+| UX-1 | A/C 两份合成 section 提案已齐，作为 P6-15/16 实现输入。 | `ui/UX-1-A.md`、`ui/UX-1-C.md`；`LOG.md` 04:41、04:46（无单独 VERIFY） | LOG 未记录提交 SHA |
+
+## 活跃任务（按派发原文保留）
+
+以下为本次提供的精确任务行。P6-22 定案仍是 todo；P6-14b 原文中的「28/30」只对应 r2 子集，`VERIFY-P6-22r2.md` 明确不开放闸门。定案采集前须修采集器等待条件，48 组在依赖合并后的 main 上重跑；T-taint、启动顺序核对及 persona/section 在场断言仍为开闸硬前置。
+
+| id | 任务 | owner | 区域 / 派发条件 | status | evidence / deps |
+|---|---|---|---|---|---|
+| P6-24 | worker 继承发起者工作区（决策 36+D-3 五防护+Q-024 任务自适应子目录）| builder | orchestrate.ts/store.ts/契约 C-2 | running（Q-024 已答）| evidence 待 REPORT-P6-24 |
+| P6-26t.f1 | subagent-policy ③ workflow 分支先等卡→答 allowed-once→再等 child（测试适配，不放宽档位）| builder | tests/e2e/subagent-policy.test.ts | 验收中 @1ffdce1 |
+| P6-27 | 写侧进 bwrap：S-7 已定集成 NodePtcRuntime（不自建 stdio）；文件操作在 guest 内执行不绑回宿主 | builder | 待 director 按 S-7 改写本行后派 | todo | 卡 P5-29（不卡 14b）|
+| P6-22 定案 | 48 组全量重跑（r2 文案 0ed1ed4；采集器等待条件 minor 先修）| builder | evidence/D3-orch | todo | 等 P6-24 等依赖合并后在 main 跑 |
+| P6-14b | 开放闸：start.ts 默认链加 orchestration.yml 一行 | builder | start.ts | blocked | 前置：Q-021✅ Q-024✅ P6-22 定案✅（28/30）+ goal/schedule 回合污染暴露修复（turn-origin 对 goal/schedule 回合隐藏协调者工具，D-1 定案前）+ 启动顺序核对（f4 遗留③）+ persona/section 在场断言 |
+| T-taint | goal/schedule 来源回合当前不算污染（R2-1 只认 pbots-worker），create_bot 在其中可见——与 Q-021 告知矛盾 | builder | turn-origin.mjs/create.mjs | ready | P6-14b 硬前置（G1-r2 A 席发现）|
+
+## v4.5 重建修订账
+
+| 来源要点 | 本次处置 | 落点 |
+|---|---|---|
+| 1 已完成任务按 LOG/VERIFY/coverage 重建。 | 已补交付与修复链汇总，保留初验 FAIL、最终裁定与实文 SHA，不补造丢失的规格。 | 「已完成任务与修复链汇总」。 |
+| 2 六条活跃任务使用提供的原文。 | 已逐字保留六行，另据 VERIFY 注明 r2 子集通过不等于正式定案通过。 | 「活跃任务」；`VERIFY-P6-22r2.md`。 |
+| 3 p5 丢失追加行同步恢复。 | 已在 p5 PLAN 尾部补行，并把 P6-27 的跨 PLAN 依赖补回 P5-29。 | `work/p5-parity/PLAN.md` 的重建追加表及 P5-29 deps。 |
+| 4 证据文件不改写。 | 本次只重建两份 PLAN 正文，LOG/VERIFY/coverage 保持原文。 | 本节及两份原文件快照。 |
+
+## 以下为事故后现存 v1 历史底稿
+
 v1 · 2026-11-03 · director（Opus 5.5）· 首版。输入：`BRIEF.md` v2.1（下称 B）；`panels/G1-r2.md`（有条件通过，清单已进 B v2.1 修订账）；`work/p5-parity/PLAN.md` 2026-11-03 快照 + `work/LOG.md` 12:12 行（P5-21/25/27/28 已派 builder，P5 PLAN 状态列尚未同步）；只读核实 `app/ui/renderer/plugins/session/reduce.ts`、`app/sdk/src/start.ts:114-127`、`app/sdk/profile/patches/{approval,presets}.yml`、各 P5 worktree 的 `git diff --name-only`。
 口径：1a 无契约增量；1b 的接口改动全部 blocked 到 D-2 经 /panel D 并交用户 C2 批准。REUSE.md 尚未产出（S-1~S-4 待派）：1a 的捷径只用本仓第 2 级复用，已在下表写明；**1b 任务在 REUSE 有决策行之前不得转 ready**，届时 director 回填捷径列。
 

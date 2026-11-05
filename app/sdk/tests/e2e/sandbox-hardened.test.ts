@@ -14,13 +14,18 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
+import { uniqueTestHome } from '../support/sandbox-home.ts'
+import { trackTmpDir } from '../support/tmp-sweep.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const REPO_ROOT = join(PKG_ROOT, '..', '..')
 const PASSWD_HOME = userInfo().homedir
-const TEST_HOME = '/home/lingxufeng/bot/.test-homes/p5-01' // 决策 8：主仓固定路径（.gitignore 已加 .test-homes/）
+const TEST_HOME = uniqueTestHome('p5-01') // 决策 8 父目录不变（⑧ 布局分支依赖）+ P5-H3 运行级唯一后缀
+// ③ 的工作区：必须在 /var/tmp（ro-bind / 只读区，../outside 才是确定性 EROFS），
+// P5-H3 起叶子加随机后缀——固定路径会被并行全量的 ③ 互删 inside3
+const WS3 = trackTmpDir(mkdtempSync('/var/tmp/p5-01-ws3-'))
 const DATA_DIR = join(TEST_HOME, 'pbots-data')
 const DEFAULT_DATA_DIR = join(TEST_HOME, '.config', 'pbots-ui')
 const TOOL_PY = join(PASSWD_HOME, 'miniconda3', 'bin', 'python')
@@ -303,7 +308,7 @@ afterAll(async () => {
   }
   rmSync(join(PKG_ROOT, '.dsh'), { recursive: true, force: true })
   rmSync(join(tmpdir(), 'bot-p5-01-hosttmp-sentinel'), { force: true })
-  rmSync('/var/tmp/p5-01-ws3', { recursive: true, force: true })
+  rmSync(WS3, { recursive: true, force: true })
   rmSync(TEST_HOME, { recursive: true, force: true })
 })
 
@@ -388,7 +393,7 @@ it('② 遮蔽：凭证/数据/交接/D-Bus/HOME 外哨兵不可见，工具链�
 it('③ 写：cwd 宿主可见；$HOME 外与 cwd 外写不落宿主；cwd 同级与 /var/tmp EROFS（既有，标注）', async () => {
   // 工作区放 /var/tmp 下（ro-bind / / 的只读区）：../outside 才是确定性的 EROFS 探针。
   // TEST_HOME 内的工作区父目录是遮蔽 tmpfs，../outside 会被 tmpfs 吸收（宿主同样不存在）。
-  const ws3 = '/var/tmp/p5-01-ws3'
+  const ws3 = WS3
   rmSync(ws3, { recursive: true, force: true })
   mkdirSync(ws3, { recursive: true })
   const rt = await launchSandbox()

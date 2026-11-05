@@ -15,6 +15,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, expect, it } from 'vitest'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
+import { uniqueTestHome } from '../support/sandbox-home.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import {
   clearRealKeys,
@@ -28,7 +29,7 @@ import {
 } from '../support/fake/harness.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-const TEST_HOME = '/home/lingxufeng/bot/.test-homes/p5-27' // 决策 8：主仓固定路径（.gitignore 已加 .test-homes/）
+const TEST_HOME = uniqueTestHome('p5-27') // 决策 8 父目录 + P5-H3 运行级唯一后缀
 const DATA_DIR = join(TEST_HOME, 'pbots-data')
 const CANCEL_BUDGET_MS = 5_000 // R4b 验收阈值（PLAN P5-27 ①）
 

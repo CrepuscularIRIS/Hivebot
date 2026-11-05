@@ -33,11 +33,12 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
+import { uniqueTestHome } from '../support/sandbox-home.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-const TEST_HOME = '/home/lingxufeng/bot/.test-homes/p5-04'
+const TEST_HOME = uniqueTestHome('p5-04') // P5-H3：运行级唯一（防并行全量互踩哨兵）
 const DATA_DIR = join(TEST_HOME, 'pbots-data')
 /** P5-04 v2.1 定死的 deny 字面串（与 src/policy/guard.mjs 同源断言）。 */
 export const DFA_REASON = 'escalation path not available'

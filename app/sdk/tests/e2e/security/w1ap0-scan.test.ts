@@ -16,12 +16,13 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zstdCompressSync } from 'node:zlib'
 import { afterAll, expect, it } from 'vitest'
 import { connect, type DshClient } from '../../../examples/lib/client.mjs'
+import { uniqueTestHome } from '../../support/sandbox-home.ts'
 import { launchRuntime, type Runtime } from '../../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../../support/fake/harness.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 const SCAN = join(PKG_ROOT, 'tests', 'e2e', 'security', 'scan.mjs')
-const TEST_HOME = '/home/lingxufeng/bot/.test-homes/p5-06-scan' // 与 w1ap0-matrix.test.ts 并行 worker，独立 HOME
+const TEST_HOME = uniqueTestHome('p5-06-scan') // 与 w1ap0-matrix.test.ts 并行 worker，独立 HOME（P5-H3 起运行级唯一）
 const DATA_DIR = join(TEST_HOME, 'pbots-data')
 const CANARY_PREFIX = 'sk-canary-p2sdk-'
 const canary = `${CANARY_PREFIX}p506scan${Math.random().toString(16).slice(2, 10)}`

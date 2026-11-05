@@ -135,6 +135,18 @@ describe('authorize：否定词（§3.3 否定优先）', () => {
     expect(humanAuth({ action: 'install', target: 'gh-x', humanUtteranceOfGrant: '不是不要装 gh-x' })).toMatchObject({ decision: 'deny', code: 'negated' })
   })
 
+  it.each([
+    ['create', '建一个 bot。不要建 bot'],
+    ['create', '不要建 bot。建一个 bot'],
+    ['restart', '重启 bot。不要重启 bot'],
+    ['restart', '不要重启 bot。重启 bot'],
+    ['create', 'create a bot; do not create a bot'],
+    ['restart', 'never restart; restart'],
+  ])('%s 正负冲突不受子句顺序影响，否定压过有效 Mandate', (action, utterance) => {
+    const mandate = { actions: [action], scopes: { workspaces: ['ws-main'] }, grantUtterance: `${action} ws-main` }
+    expect(humanAuth({ action, humanUtteranceOfGrant: utterance, mandate })).toMatchObject({ decision: 'deny', code: 'negated' })
+  })
+
   it('引号 / 代码块里的动作指令不授权；引号里的目标值仍是完整值', () => {
     // 指令被引用：不构成授权
     expect(humanAuth({ action: 'install', target: 'gh-x', humanUtteranceOfGrant: '用户之前说过「装 gh-x」，但那只是引用' }).decision).toBe('handoff')
@@ -224,6 +236,29 @@ describe('authorize：Mandate 路径（单 Mandate 原则）', () => {
     // 否定子句里的同词不算证据
     const negated = { ...mandate, grantUtterance: '不要装 github-connectors' }
     expect(authorize({ turnClass: 'delegated', mandate: negated, humanUtteranceOfGrant: '', action: 'install', target: 'github-connectors', params: undefined } as Parameters<typeof authorize>[0])).toMatchObject({ decision: 'handoff', code: 'mandate-grant-unevidenced' })
+  })
+
+  it.each([
+    ['install', { plugins: ['gh-x'] }, 'gh-x', '装 gh-x。不要装 gh-x'],
+    ['install', { plugins: ['gh-x'] }, 'gh-x', '不要装 gh-x。装 gh-x'],
+    ['install', { plugins: ['gh-x'] }, 'gh-x', 'install gh-x; do not install gh-x'],
+    ['create', { workspaces: ['ws-main'] }, 'ws-main', '创建 ws-main。不要创建 ws-main'],
+    ['restart', {}, undefined, '重启 bot。不要重启 bot'],
+  ])('Mandate %s 授予同动作同目标正负冲突必须拒绝', (action, scopes, target, grantUtterance) => {
+    const grant = { id: 'conflicted', actions: [action], scopes, grantUtterance }
+    expect(authorize({ turnClass: 'delegated', mandate: grant, action, target })).toMatchObject({ decision: 'deny', code: 'negated' })
+  })
+
+  it('Mandate 的否定只约束同动作同精确目标，不误拒其他动作或目标', () => {
+    for (const grantUtterance of ['装 gh-x。不要装 gh-xy', '装 gh-x。不要卸载 gh-x']) {
+      const grant = { actions: ['install'], scopes: { plugins: ['gh-x'] }, grantUtterance }
+      expect(authorize({ turnClass: 'delegated', mandate: grant, action: 'install', target: 'gh-x' }).decision).toBe('allow')
+    }
+  })
+
+  it('Mandate 中其他已列范围项有冲突也不能把整份授予当作有效', () => {
+    const grant = { actions: ['install'], scopes: { plugins: ['gh-x', 'gh-y'] }, grantUtterance: '装 gh-x。装 gh-y。不要装 gh-y' }
+    expect(authorize({ turnClass: 'delegated', mandate: grant, action: 'install', target: 'gh-x' })).toMatchObject({ decision: 'deny', code: 'negated' })
   })
 
   it('过期 / 撤销 / 形状坏的 Mandate → deny', () => {

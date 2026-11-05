@@ -55,8 +55,8 @@ export function createAdminConsumer(options: { actions?: Record<string, AdminAct
   return {
     actions: Object.keys(actions),
     async dispatch(request) {
-      const handler = actions[request.action]
-      if (handler === undefined) {
+      const handler = Object.hasOwn(actions, request.action) ? actions[request.action] : undefined
+      if (typeof handler !== 'function') {
         return {
           error: {
             code: 'pbots/admin-unavailable',

@@ -200,6 +200,27 @@ describe('createAdminConsumer', () => {
     expect(message).toContain('install')
   })
 
+  it.each(['constructor', 'toString', 'hasOwnProperty', '__proto__'])(
+    '默认空动作表的原型成员 %s 必须 unavailable', async (action) => {
+      await expect(createAdminConsumer().dispatch({ ...REQUEST, action })).resolves.toMatchObject({ error: { code: 'pbots/admin-unavailable' } })
+    },
+  )
+
+  it('只路由自有函数属性，不调用自定义原型上的 handler 或非函数', async () => {
+    let calls = 0
+    const inherited = { list: async () => { calls++; return { value: { ok: true } } } }
+    const consumer = createAdminConsumer({ actions: Object.create(inherited) })
+    expect(await consumer.dispatch({ ...REQUEST, action: 'list' })).toMatchObject({ error: { code: 'pbots/admin-unavailable' } })
+    expect(calls).toBe(0)
+    const malformed = createAdminConsumer({ actions: { list: {} } as never })
+    expect(await malformed.dispatch({ ...REQUEST, action: 'list' })).toMatchObject({ error: { code: 'pbots/admin-unavailable' } })
+  })
+
+  it('自有函数即使与原型成员同名也可显式注册', async () => {
+    const consumer = createAdminConsumer({ actions: { toString: async () => ({ value: { ok: true } }) } })
+    expect(await consumer.dispatch({ ...REQUEST, action: 'toString' })).toEqual({ value: { ok: true } })
+  })
+
   it('注册进来的 handler 才被路由（WM 接线用缝），回复统一过 sanitize', async () => {
     const consumer = createAdminConsumer({
       actions: { list: async () => ({ value: { ok: true, rows: [{ name: 'a' }], token: 'sk-secret', process: { pid: 123 } } }) },

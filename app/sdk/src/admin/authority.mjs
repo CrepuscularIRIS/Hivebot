@@ -176,8 +176,8 @@ function humanPath(action, target, utterance) {
   const positive = actionClauses.filter((c) => !clauseNegated(c))
   // 人类回合 create 不做目标匹配；restart 无目标（§3.3）
   if (action === 'create' || action === 'restart') {
-    if (positive.length > 0) return allow({ source: 'human-utterance', clause: positive[0] })
-    return deny('negated', 'human explicitly negated this action')
+    if (negated.length > 0) return deny('negated', 'human explicitly negated this action')
+    return allow({ source: 'human-utterance', clause: positive[0] })
   }
   if (target == null || normalizeText(target) === '') return deny('target-required', 'action requires an exact target')
   if ([...normalizeText(target)].length < MIN_BOT_NAME_CODEPOINTS) {
@@ -209,6 +209,12 @@ function mandatePath(mandate, action, target, now) {
   for (const a of mandate.actions) {
     if (!clauses.some((c) => clauseHasAction(c, a) && !clauseNegated(c))) {
       return handoff('mandate-grant-unevidenced', `mandate action ${a} has no non-negated evidence in the granting human turn`)
+    }
+    // 授予同样否定优先；只匹配该动作的范围桶，restart 无目标。
+    const bucket = ACTION_SCOPE[a]
+    if (clauses.some((c) => clauseHasAction(c, a) && clauseNegated(c)
+      && (bucket === null || (mandate.scopes[bucket] ?? []).some((v) => targetMatches(c, v))))) {
+      return deny('negated', 'human explicitly negated this mandate action+target')
     }
   }
   for (const values of Object.values(mandate.scopes)) {

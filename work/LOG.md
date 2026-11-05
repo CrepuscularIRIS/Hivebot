@@ -957,3 +957,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-05 12:13 T-taint.q1 查证done | 机制=身份unknown挂scoped restriction、恢复晚于step admission生成→UNKNOWN_TOOL事后visible=true；live①断言只证无副作用不证execute命中；不放宽dsh admission，envelope恢复sweep为改善点暂不立修，随T-taint验收结论一并定。GLM 3席与H4 stale观察不变；ready未派=2；未答2。
 2026-11-05 12:20 T-taint验收PASS合并423939c | RED复演/删断言差分正当/572全量一致；残留send/stop未接新档实证转f1（中，14b前收口）；低severity classify字段并入f1。派P5-28f1 builder（GLM第3席回归满编，四发现逐条RED先行最小修）；合并后定向回测后台在跑待补记。GLM 3席=H3/H4/P5-28f1；ready未派=1（P5-H5）。未答2（Q-023、Q-027）。
 2026-11-05 12:25 T-taint回测flake判定 | 三文件连跑两次3红（超时18s/29s+⑫20ms），验收树同内容12/12绿+主仓同负载单跑⑫绿——判为H3并行全量期间跨树干扰/负载flake非内容回归；低负载窗口复跑补干净记录。
+2026-11-05 12:28 tick | load5.22/6.01/6.30 缓降。H3 分支无新 commit（8e3bbb6 后约30分钟）但报告在写+并行全量自测解释负载，不判 stale 等完成通知；H4 出现 REPORT.md 但分支零 commit——疑似停止报告（F3.f2 模式），不读半成品，下轮 tick 仍无完成通知则读取处置；P5-28f1 派出 8 分钟正常起步。Q-023/Q-027 均未答。GLM 3 席满（H3/H4/P5-28f1）；ready 未派=1（P5-H5）。T-taint 低负载复跑等 H3 完成。无新合并、无 review 欠派。cron 下次 12:47。

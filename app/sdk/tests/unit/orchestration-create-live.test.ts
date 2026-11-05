@@ -542,6 +542,39 @@ describe('P6-10.f1 live (taint guard + manual worker adoption)', () => {
     }
   })
 
+  // T-taint（G1-r2 A 席 R2-1 发现 / Q-021 定稿）：goal 来源回合内 create_bot
+  // 不可见。区分性断言是 'visible' 探针（真实 tools.resolve + when()）：goal
+  // 回合后最新回合来源为 goal → when 必须隐藏。不测 tool/result 文本：实测
+  // followup 唤醒的回合里 when 注册的工具在被调时一律 UNKNOWN_TOOL（与污染
+  // 无关，2026-11-05 探针：注入 user-approval 也 unknown tool），execute 层
+  // 拒绝由 orchestration-create.test.ts 的直接 execute 用例覆盖。
+  it('①′ T-taint：goal 来源回合 create_bot 不可见（visible 探针走真实 when）；0 次建 bot 请求', { timeout: 180_000 }, async () => {
+    const M = await newSession()
+    writeFileSync(join(f1data, 'bots.json'), JSON.stringify({ version: 1, mainBotId: M, recipes: {} }))
+    writeLocalScript(M, [createCall('t-taint-goal', 'bad', 'p'), text('done')])
+    let requests = 0
+    const sub = await subscribe(rt, async (item) => {
+      requests += 1
+      await rt.client.call(ORCH_RESPOND, { request: { requestId: item.requestId, error: { code: 'test/reached-main', message: 'must not reach main' } } }).catch(() => {})
+    })
+    try {
+      await rt.client.call('p610/control', { request: { op: 'inject', sessionId: M, kind: 'goal', id: `t-taint-goal-${Date.now()}` } })
+      await waitFor(async () => {
+        const events = await readLog(rt, M)
+        const goal = events.some((e) => e.type === 'user/message' && e.sourceKind === 'goal') // goal 回合真实发生并被认领
+        const ended = events.some((e) => e.type === 'turn/end')
+        return ended && goal ? events : null
+      }, 'goal turn finishes')
+      await sleep(300) // 让订阅 pump 走完
+      expect(requests).toBe(0) // 0 次建 bot 请求
+      const visible = ((await rt.client.call('p610/control', { request: { op: 'visible', sessionId: M, tool: 'create_bot' } })) as { visible: boolean }).visible
+      expect(visible).toBe(false) // 修复前：goal 不算污染 → visible=true（RED 已证）
+      expect(await slotsUsed()).toBe(0)
+    } finally {
+      sub.cancel()
+    }
+  })
+
   it('② 人工启动的 worker：running 时共享容量收养为 1，turn/end 释放', { timeout: 180_000 }, async () => {
     const M = await newSession()
     const W = await newSession()

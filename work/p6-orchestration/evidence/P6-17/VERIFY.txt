@@ -1,0 +1,52 @@
+verdict: PASS
+commit: 2c5e15bdccf8765444e365a92433aa577a61abd6
+任务：P6-17（D8 真链路 e2e），worktree /tmp/bot-wt/P6-17，分支 feat/P6-17。
+报告按当前禁止写报告 .md 的约束，落在本 evidence/VERIFY.txt；未改产品代码。
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+| 1. p6-stuck 两条复跑；独立检查调用数和同 eventId 断言 | PASS | 下述统一命令，vfy/e2e.log 第6–7行，两条分别10.7s/16.3s；p6-stuck.spec.ts:101–105、287–309；fake/plugin.mjs:128–147 |
+| 2. 生产 orchestration.yml + 缺失 P2SDK_ORCH_DATA_DIR 反例 | PASS | p6-stuck.spec.ts:24、39–48；app/sdk/profile/patches/orchestration.yml:13–16；vfy/identity-probe.mjs 与 vfy/identity-probe.log |
+| 3. 无标记窗口采样 | PASS | 本次 vfy/no-marker-window.json、vfy/no-marker-stats.json；3样本，36ms running、86ms running、137ms unread；noneSamples=0，maxGapMs=0 |
+| 4. p6-fold + p6-workers + theme-flash 抽跑 | PASS | vfy/e2e.log：fold 2、workers 2、theme-flash 6，加 stuck 2，共12 passed (1.9m)，退出码0 |
+| 5. 十张截图抽四张 Read 目检，含暗色 dock | PASS | 原报告目录4张及本次 vfy/ 对应4张均用 Read 打开；详见目检记录 |
+| 6. 恰一个文件 +421，无产品代码改动 | PASS | git diff 09f627b..HEAD --numstat：421 0 app/ui/tests/e2e/p6-stuck.spec.ts；rev-list --count=1；vfy/scope.txt；结束HEAD未变、git status --short为空 |
+
+证据统一目录（以下 vfy/ 均相对此目录）
+/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-17/
+
+实际执行（自己运行，未使用 builder 的通过输出）：
+cd /tmp/bot-wt/P6-17/app/ui
+env HOME=/tmp/bot-p617-vfy-home PATH="$PWD/node_modules/.bin:$PATH" pnpm build
+env HOME=/tmp/bot-p617-vfy-home PATH="$PWD/node_modules/.bin:$PATH" PBOTS_E2E_NO_XVFB=0 sh scripts/run-e2e.sh tests/e2e/p6-stuck.spec.ts tests/e2e/p6-fold.spec.ts tests/e2e/p6-workers.spec.ts tests/e2e/theme-flash.spec.ts
+输出尾部：12 passed (1.9m)。build退出0；build.log保留全日志（含既有bundle/dynamic-import警告）。所有 Electron 窗口均由 run-e2e.sh 的 Xvfb 承载，截图为 Playwright page.screenshot 的目标页面，不是全屏。
+
+断言质量核对：
+- modelCalls(rt,M) 真实读取当前 fake runtime 的 requests.jsonl，逐行JSON.parse并按 sessionId===M 过滤，非固定数组或常数比较。
+- fake/plugin.mjs 在真实模型请求入口将 options.sessionId、purpose、用户角色文本与toolResults append到 requests.jsonl。spec要求主bot有恰4次模型调用，且每次userTexts中均无allowed-once。因此“主 bot 模型侧作答调用数===0”是针对该旅程的真实运行时观测，不是0===0。它的准确覆盖边界是“该四次模型调用的用户文本不含本次作答值allowed-once”，不是证明任意格式作答都不会进入任何模型角色。
+- 原卡通过实际 Allow once 按钮点击作答，answers数组先要求空，再要求恰一条，并明确 sent[0].eventId===此前worker approval/request waterfall帧提取的waterfallId，value===allowed-once（spec:287–294）。同eventId存在明确比对。
+- asked.id与waterfall eventId是不同源。spec另外要求ask回报的eventId出现在worker view.asked中（252–254），并非要求waterfallId属于askedIds。builder REPORT.txt第12/29行将双认写成同一集合成员关系不够准确；本验收采用源码实际断言，不扩张其结论。
+
+真链路与环境反例：
+- spec的base patch含生产 SDK_ROOT/profile/patches/orchestration.yml；该文件挂../../src/orchestration/main-channel.mjs。不是p6-workers的测试编排wire复刻。inspect为观察插件，fake仅替代模型；第二条额外overlay只覆盖生产插件capacity=5。
+- 运行命令：env HOME=/tmp/bot-p617-vfy-home node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-17/vfy/identity-probe.mjs
+- 同样经scripts/start.mjs、生产orchestration.yml启动；给PBOTS_DATA_DIR的bots.json写正确主身份，故意不传P2SDK_ORCH_DATA_DIR，再用真实tools.resolve/schema观察create_bot。
+- 输出：without P2SDK_ORCH_DATA_DIR => visible:false；在同一runtime的临时HOME/.config/pbots-ui写入该身份后 => visible:true。两个值均有assert，排除了“插件根本没挂上”解释。
+- 所有HOME都是临时目录；未读取真实~/.config。若HOME是用户真实HOME，源码identity.mjs:27–33会回落该处，故确属需记住的环境约束。
+- start.ts:114–132的生产默认链只有p2sdk/approval/market/runtime，再加显式extraPatches，没有orchestration.yml；childEnv:147–168不传PBOTS_DATA_DIR但允许P2SDK_*。这与生产patch文件的“仅显式P2SDK_PATCH启用，默认开放归P6-14b”一致。反例证明身份fail-closed；默认链未开放另由实际配置源码核实，不能把反例单独当成默认链无插件的证明。
+
+无标记窗口范围：
+本次实际间隔50ms、51ms（名义50ms）。0个none样本，maxGapMs=0；只说明本次该采样分辨率下没观察到无标记窗口，不代表排除短于采样周期的瞬间。sampler在首次unread时停止。失败worker分支亦由第二条真实脚本执行到error、Failed预览及读取后归档Done。
+
+截图目检（均 Read 打开原目录和本次vfy目录的以下四张）：
+1. worker-dock-focused-dark.png：目标为Test fixer，From Main Bot任务卡、bash git push原命令、底部深色Computer权限dock均存在；标题/说明/Deny once/白底Allow once可辨，没有全白按钮或白色整块dock回归。
+2. sidebar-4states-light.png：Main Bot选中；Workers有Asker等待橙点、Runner Working绿点、Unreader研究结果蓝点；展开Done包含Failer失败摘要。
+3. sidebar-failed-row-dark.png：深色Workers顺序Asker、Runner、Failer、Unreader；Failer可见Failed: push rejected by remote及蓝色未读点。
+4. main-report-batch-light.png：4 worker updates合批卡，Asker Needs you，其余三个Answered，另有Unreader问题卡。确为被验收应用界面，非用户桌面/编辑器。
+本次十张独立重拍已全部复制到vfy/保留；上述目检不推定其余未抽查图的视觉细节。
+
+结束自查：
+/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p617
+退出0、输出为空（vfy/reap-dry-run.txt为空），没有匹配残留。没有手工kill其他进程；SDK探针只在finally对自己spawn的launcher发SIGTERM，e2e由既有teardown关闭自身子进程。未运行全量回归。
+
+新问题（每条一行，可直接成为修复任务）：
+- 无本次验收范围内阻塞问题。P5-33提问卡UI仍未覆盖；本spec只用生产$events/result覆盖提问作答链路，交付注释已明确该边界。

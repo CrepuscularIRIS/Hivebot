@@ -17,3 +17,5 @@ L-review-6 范围 86b4c2c..1e18112（P4 终审复审：U-28/U-29 对应 L-5 的 
 L-review-6 结果 PASS（0 critical/major，unfixed 0；4 CONFIRMED minor → U-32）报告 REVIEW-P4终审复审.md
 L-review-7 范围 5bd36e0..4624670（p5-parity W3 整分支终审：L-AP 主体 P5-21/22/25/27/28/31 + L-UI v3 P5-50~58/41.f1 全部合并）
 L-review-7 结果 FAIL（6 major + 7 minor CONFIRMED，17 候选 13 验证 0 误报；报告 REVIEW-P5-W3.md）——修复链启动
+P7-F2 review-e5ff286/A-REVIEW.txt e5ff286e686994b489766ea7d3bd1f74614a342b FAIL→P7-F2.f2（三major：H1参数替换、grant动作目标交叉组合、error.details过滤；定向85/85，两个安全探针exit1；仅模块与内存桥，未接生产动作，无真实凭证泄露证据）
+P7-F1及F2桥 review-e5ff286/B-REVIEW.txt e5ff286e686994b489766ea7d3bd1f74614a342b FAIL→P7-F1.f2（B1 HIGH首笔append/sync失败双占位，B2 MEDIUM close旧引用双写；定向66/66，最终探针2failed/2controls passed；不含F3/全量/真实管理旅程）

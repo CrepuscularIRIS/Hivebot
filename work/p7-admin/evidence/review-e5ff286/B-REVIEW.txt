@@ -1,0 +1,65 @@
+方向 B 独立定向 code review + probes
+verdict: FAIL（本方向模块契约存在 2 项 CONFIRMED；不是 P7 整体 verdict）
+commit: e5ff286e686994b489766ea7d3bd1f74614a342b
+固定树: /tmp/bot-wt/P7-review-B；开始及结束 git status --short 均空，HEAD 未变。
+报告及脚本目录: /home/lingxufeng/bot/work/p7-admin/evidence/review-e5ff286/
+
+范围
+- 精确读取 git diff bd70059^1 bd70059 -- app/ui/main/admin/operations.ts app/ui/tests/unit/admin/operations.test.ts。
+- 精确读取 git diff 713763c^1 713763c -- app/sdk/src/admin/channel.mjs app/ui/main/admin/channel.ts app/ui/main/admin/consumer.ts app/ui/tests/unit/admin/channel.test.ts app/sdk/tests/unit/p7-admin-channel.test.ts。
+- 固定 HEAD 上直接读取同文件、定向测试及 onConnected/cancel 最小调用接缝；没有扫描全仓。
+- 已先读主仓 work/LEARNINGS.md、当前 PLAN 的 F1/F2 验收行、P7-F2/VERIFY-f1.txt 既知差距。F2 分层未实现、动作表未接线不列新问题；未触碰 F3。
+
+CONFIRMED B1 [HIGH / 持久化与恢复一致性]
+文件: /tmp/bot-wt/P7-review-B/app/ui/main/admin/operations.ts:535-554（关键 536、546-549、553-554）；调用返回成功处 454-456，去重查找 511-515。
+现象: 新账本第一次真实 append 成功、sync 抛 EIO 后，fileAbsent 仍为 true、size 仍为 0、内存无 begin。立即重试同 key 时跳过 stat，追加第二个 begin 并返回 created:true；size 只计第二行，实际文件已有两行。后续 finish 因 size 不匹配抛 PBOTS_OPS_LOST。重新 init 后同 key 指向第一条失败调用残留的 operationId，而非调用者已收到的第二个 ID。
+最小输入: init 空目录 → 仅第一次 FileHandle.sync 注入 EIO（appendFile/close 都走真实文件）→ begin({action:'modify',actor:'test',turnCategory:'user',generation:1,dedupeKey:'same-key'}) 拒绝 → 同请求重试 → finish 第二个 ID → 关闭并重新 init → 再查同 key。
+真实输出: B-probe-confirmed.log:4-5；beginIds 为 6dfde527-f515-4a08-91cf-8ce38a014452 与 d96e9066-70d4-48f3-ba9f-9fda0cf3e4ad；第二次 created:true；finishError 为 PBOTS_OPS_LOST expected 194 bytes；重启 replay 返回首 ID、inProgress；恢复视图有两个相同 dedupeKey 的 inProgress。
+反证: 原 operations.test.ts:135-145/167-179 的 mock append 在写任何真实字节前拒绝，不代表 sync 失败；本 probe 只拦 sync，保留真实写入，因而不是 mock 虚构文件长度。正常并发同 key 控制测试通过。已有文件的失败后 size 检查可以挡写，但新文件 fileAbsent 分支挡不住。
+影响边界: 当前模块可向消费者返回“已持久化，可执行”的第二个占位，但它无法再记终态，恢复查询还指向另一个 ID；未声称已出现真实业务副作用或被利用。
+建议最小修复方向: 真实 append 可能已发生而 flush 失败时禁止继续按全新文件重试，进入待恢复/失败关闭状态；不能在不知道落盘状态时简单撤销内存占位后发新 ID。补首次真实写后 sync 失败的回归。
+
+CONFIRMED B2 [MEDIUM / 单实例写者生命周期]
+文件: /tmp/bot-wt/P7-review-B/app/ui/main/admin/operations.ts:308-311、518-525；文档声明 close 后“实例本身随之停用”，但只删 openLedgers，没有 closed 标记/写者归属检查。
+最小输入: old.init() 空目录 → old.close() → fresh = new OperationsLedger(同目录) 并 init → old.beginOperation(same-key) → fresh.beginOperation(same-key)。
+真实输出: B-probe-confirmed.log:7-8；closedWriter.created=true，replacementWriter.created=true，两个不同 operationId、磁盘两条同 key begin。没有跨进程，也没有绕过构造锁；双方均按导出的 API 调用。
+反证: 原单实例锁测试只断言“未 close 时第二次构造抛错”，未断言旧引用失效；本例先合法释放锁并合法取得新锁，旧引用仍可写，故 Electron 单实例不能兜底。正常单实例并发控制通过；本 probe 没有文件系统 mock 故障开启。
+影响边界: 这是 F1 导出模块已有 close 契约/进程内单写不变量失效；目前尚未接线，不能声称已在生产生命周期发生。接线方持有旧引用/异步回调时可能双占位。与 B1 根因不同：即使 fsync 全成功也复现。
+建议最小修复方向: close 令旧实例永久不可写，并明确处理已排队/在途写完成前转移锁的顺序；回归同时覆盖旧引用与在途队列，不只是第二实例构造。
+
+REFUTED / 已跑反证
+1. 常规同 key 并发双占位: 未复现。原测试 + B-controls 同实例并发恰一个 created:true。
+2. 无换行完整 JSON 与 UTF8 撕裂会损坏前行/静默成功: 未复现。B-controls 真实写无换行完整尾行后继续读写，继而注入中文字符中字节截断；完整 begin 保留、tailTruncated=true。原 28 项 operations 测试含同类边界/未知版本与修复失败等。
+3. 同代/旧代 receipt 可以写入: 未复现。原回执测试拒旧代/同代/重复，独立 B-controls 同代拒。
+4. close 后 reconnect 必然重复打开订阅: 未复现。B-bridge lifecycle 连续创建/关闭 5 次并触发 connect，opened=5 而不是10；closed guard 防止重新订阅。确有5个 listener 被保留、cancel 次数10，但 onConnected 本身无注销 API、wire 文档当前定义 production 为进程级常驻；不把未来反复装卸接线需要算本次新 HIGH。
+5. SDK wrong Peer / timeout / detach / late respond 仍 pending 或可复活: 原 SDK channel 定向 15 项通过；本轮没有取得相反证据，不报漏洞。注意这些是纯模块 fake subscriber 测试，不是 live SDK 通道已接线证明。
+6. 默认 consumer 可通过 Object 原型执行: 固定 HEAD 已用 hasOwn 限制，原 channel 测试覆盖 constructor/toString/__proto__/继承/非函数并通过；不重复报告已修复问题。
+
+命令、环境和原始退出码
+以下 E=/home/lingxufeng/bot/work/p7-admin/evidence/review-e5ff286。
+每次安装/测试使用 env -i PATH=/usr/bin:/bin:/home/lingxufeng/.npm-global/bin HOME=$E/B-env/home TMPDIR=$E/B-env/tmp CI=1，未透传用户环境/凭证。probe 的所有数据目录由 mkdtempSync(join(tmpdir(),'bot-review-B-')) 派生，finally 删除自身目录；原测试用 tmp-sweep。无真实模型、无真实桌面、无外部进程清理。
+1. pnpm -C /tmp/bot-wt/P7-review-B/app/ui install --frozen-lockfile --ignore-scripts
+   exit 0；B-install-ui.log。
+2. pnpm -C /tmp/bot-wt/P7-review-B/app/sdk install --frozen-lockfile --ignore-scripts
+   exit 0；B-install-sdk.log。未更新锁文件，不执行生命周期脚本。
+3. pnpm -C /tmp/bot-wt/P7-review-B/app/ui exec vitest run tests/unit/admin/operations.test.ts tests/unit/admin/channel.test.ts --maxWorkers=1 --no-file-parallelism
+   exit 0；B-original-ui.log:7-10，2 files / 51 passed，560ms。
+4. pnpm -C /tmp/bot-wt/P7-review-B/app/sdk exec vitest run tests/unit/p7-admin-channel.test.ts --maxWorkers=1 --no-file-parallelism
+   exit 0；B-original-sdk.log:8-11，1 file / 15 passed，233ms。
+5. pnpm -C /tmp/bot-wt/P7-review-B/app/ui exec vitest run --config $E/B-probe.config.mjs
+   初次 exit 1（B-probe.log，vitest mocks API 解析失败，0 tests）；第二次 exit 1（B-probe-run2.log，外部 import 的 vi 被提升到初始化前，0 tests）。这两次仅探针工具配置失败，不作产品证据。
+   改用 globals 后 exit 1（B-probe-final.log，B1 在 finish 检查时先抛 LOST，B2断言失败，2 controls passed）。
+   最终补齐 B1 finishError 捕获及重启查询，exit 1（B-probe-confirmed.log:60-63，2 failed / 2 passed，191ms）。两个 failed 均为正确性断言失败，原始输入→错误行为见 stdout，不以 exit 1 本身冒充发现。
+6. git -C /tmp/bot-wt/P7-review-B rev-parse HEAD && git -C /tmp/bot-wt/P7-review-B status --short
+   最终 exit 0，HEAD e5ff286e686994b489766ea7d3bd1f74614a342b，status 空。
+开始 load=3.25/3.14/3.69、iowait=0、idle=89%；结束 load=3.44/3.35/3.61。测试全部单 worker 串行；没有 build/全量回归/新框架/子agent/workflow。
+
+未验范围
+- 不做 P7 整体验收/全量 coverage，不更新 review-coverage、PLAN、LOG，不 commit/merge/push。
+- 未运行真实宿主流/Loader、持久断电或 OS 真实 EIO；fsync 故障是 FileHandle.sync 局部注入，实际 append/reopen 为真实文件系统。
+- 未检查 F3 恢复屏障或未来动作、真实授权分层、未接线来源采集；沿用已知差距归口，不据此新增发现。
+- 未实现任何产品修复。B1/B2 的 runnable 回归输入留于 B-probe.test.ts，配置 B-probe.config.mjs。
+
+可派发修复
+- [FIX] 首笔真实append后fsync失败仍允许同key新占位，造成双begin/后续finish LOST/恢复错指ID | 复现：运行B-probe配置的B1 | 位置：app/ui/main/admin/operations.ts:535-554 | HIGH
+- [FIX] close未停用旧账本实例，合法新实例获取锁后旧引用仍可双占位 | 复现：运行B-probe配置的B2 | 位置：app/ui/main/admin/operations.ts:308-311,518-525 | MEDIUM

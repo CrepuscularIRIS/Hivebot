@@ -1,0 +1,247 @@
+1649008 +++ exited with 1 +++
+1649007 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649008, si_uid=1000, si_status=1, si_utime=0, si_stime=0} ---
+1649009 +++ exited with 0 +++
+1649007 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649009, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649007 +++ exited with 0 +++
+1649006 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649007, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649010 +++ exited with 0 +++
+1649006 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649010, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649011 +++ exited with 0 +++
+1649006 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649011, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649012 +++ exited with 0 +++
+1649006 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649012, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649013 +++ exited with 0 +++
+1649006 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649013, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649014 +++ exited with 0 +++
+1649006 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649014, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649015 +++ exited with 0 +++
+1649006 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649015, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649033 +++ exited with 0 +++
+1649032 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649033, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649032 +++ exited with 0 +++
+1649017 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649032, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649006 --- SIGUSR1 {si_signo=SIGUSR1, si_code=SI_USER, si_pid=1649017, si_uid=1000} ---
+1649046 +++ exited with 0 +++
+1649045 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649046, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649047 +++ exited with 0 +++
+1649045 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649047, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649045 +++ exited with 0 +++
+1649044 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649045, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649044 +++ exited with 0 +++
+1649043 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649044, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649056 +++ exited with 0 +++
+1649043 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649056, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649091 +++ exited with 0 +++
+1649154 +++ exited with 0 +++
+1649202 connect(21, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+1649202 connect(21, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+1649710 +++ exited with 0 +++
+1649137 connect(23, {sa_family=AF_INET, sin_port=htons(44895), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress)
+1649137 connect(25, {sa_family=AF_INET, sin_port=htons(44895), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress)
+1649560 connect(26, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+1649560 connect(26, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+1649950 connect(20, {sa_family=AF_UNIX, sun_path="/run/dbus/system_bus_socket"}, 29) = 0
+1649137 connect(27, {sa_family=AF_INET, sin_port=htons(44229), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress)
+1650034 +++ exited with 0 +++
+1650076 +++ exited with 0 +++
+1649921 connect(46, {sa_family=AF_UNIX, sun_path=@"/tmp/.X11-unix/X100"}, 22) = 0
+1649921 connect(47, {sa_family=AF_UNIX, sun_path=@"/tmp/.X11-unix/X100"}, 22) = 0
+1649921 connect(49, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1650086 connect(56, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649950 connect(56, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)
+1649137 connect(29, {sa_family=AF_INET, sin_port=htons(33613), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress)
+1650095 connect(18, {sa_family=AF_UNIX, sun_path=@"/tmp/.X11-unix/X100"}, 22) = 0
+1649950 connect(71, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)
+1650095 connect(19, {sa_family=AF_UNIX, sun_path=@"/tmp/.X11-unix/X100"}, 22) = 0
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1650099 +++ exited with 0 +++
+1650097 +++ exited with 0 +++
+1649921 connect(90, {sa_family=AF_UNIX, sun_path=@"/tmp/.X11-unix/X100"}, 22) = 0
+1649921 connect(92, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649921 connect(100, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)
+1650136 connect(22, {sa_family=AF_INET6, sin6_port=htons(443), sin6_flowinfo=htonl(0), inet_pton(AF_INET6, "2001:4860:4860::8888", &sin6_addr), sin6_scope_id=0}, 28) = -1 ENETUNREACH (Network is unreachable)
+1650136 connect(22, {sa_family=AF_INET, sin_port=htons(53), sin_addr=inet_addr("127.0.0.53")}, 16) = 0
+1650136 connect(23, {sa_family=AF_INET, sin_port=htons(53), sin_addr=inet_addr("127.0.0.53")}, 16) = 0
+1650136 connect(22, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr("172.253.62.102")}, 16) = -1 EINPROGRESS (Operation now in progress)
+1649921 connect(68, {sa_family=AF_INET, sin_port=htons(44895), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress)
+1649921 connect(104, {sa_family=AF_INET, sin_port=htons(44895), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress)
+1649921 connect(66, {sa_family=AF_INET, sin_port=htons(44895), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress)
+1650222 +++ exited with 1 +++
+1649560 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1650222, si_uid=1000, si_status=1, si_utime=0, si_stime=0} ---
+1650228 +++ exited with 128 +++
+1649560 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1650228, si_uid=1000, si_status=128, si_utime=0, si_stime=0} ---
+1649921 connect(103, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649921 connect(103, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649921 connect(103, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649921 connect(103, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649921 connect(103, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1650136 connect(20, {sa_family=AF_INET6, sin6_port=htons(443), sin6_flowinfo=htonl(0), inet_pton(AF_INET6, "2001:4860:4860::8888", &sin6_addr), sin6_scope_id=0}, 28) = -1 ENETUNREACH (Network is unreachable)
+1650136 connect(23, {sa_family=AF_INET, sin_port=htons(53), sin_addr=inet_addr("127.0.0.53")}, 16) = 0
+1650136 connect(24, {sa_family=AF_INET, sin_port=htons(53), sin_addr=inet_addr("127.0.0.53")}, 16) = 0
+1650136 connect(24, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr("173.194.53.199")}, 16) = 0
+1650136 connect(23, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr("173.194.53.199")}, 16) = -1 EINPROGRESS (Operation now in progress)
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1650136 connect(24, {sa_family=AF_INET6, sin6_port=htons(443), sin6_flowinfo=htonl(0), inet_pton(AF_INET6, "2001:4860:4860::8888", &sin6_addr), sin6_scope_id=0}, 28) = -1 ENETUNREACH (Network is unreachable)
+1650130 connect(111, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649017 --- SIGALRM {si_signo=SIGALRM, si_code=SI_KERNEL} ---
+1649950 connect(111, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)
+1649950 connect(111, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)
+1650131 ???( <unfinished ...>
+1650171 +++ exited with 0 +++
+1650170 +++ exited with 0 +++
+1650159 +++ exited with 0 +++
+1650132 +++ exited with 0 +++
+1650131 +++ exited with 0 +++
+1650128 +++ exited with 0 +++
+1650127 +++ exited with 0 +++
+1650125 +++ exited with 0 +++
+1650124 +++ exited with 0 +++
+1650037 +++ exited with 0 +++
+1650126 +++ exited with 0 +++
+1650123 +++ exited with 0 +++
+1649930 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1650123, si_uid=1000, si_status=0, si_utime=66 /* 0.66 s */, si_stime=17 /* 0.17 s */} ---
+1650030 +++ exited with 0 +++
+1650031 +++ exited with 0 +++
+1650032 +++ exited with 0 +++
+1650029 +++ exited with 0 +++
+1650136 +++ exited with 0 +++
+1650134 +++ exited with 0 +++
+1650137 +++ exited with 0 +++
+1650146 +++ exited with 0 +++
+1650145 +++ exited with 0 +++
+1650140 +++ exited with 0 +++
+1650139 +++ exited with 0 +++
+1650138 +++ exited with 0 +++
+1650135 +++ exited with 0 +++
+1650133 +++ exited with 0 +++
+1650098 +++ exited with 0 +++
+1650092 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1650098, si_uid=1000, si_status=0, si_utime=4 /* 0.04 s */, si_stime=5 /* 0.05 s */} ---
+1650095 --- SIGTERM {si_signo=SIGTERM, si_code=SI_USER, si_pid=1649921, si_uid=1000} ---
+1650114 ???( <unfinished ...>
+1650147 +++ killed by SIGTERM +++
+1650118 +++ killed by SIGTERM +++
+1650114 +++ killed by SIGTERM +++
+1650113 +++ killed by SIGTERM +++
+1650112 +++ killed by SIGTERM +++
+1650111 +++ killed by SIGTERM +++
+1650089 +++ exited with 0 +++
+1649951 +++ exited with 0 +++
+1649948 +++ exited with 0 +++
+1650674 +++ killed by SIGTERM +++
+1650095 +++ killed by SIGTERM +++
+1649928 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_KILLED, si_pid=1650095, si_uid=1000, si_status=SIGTERM, si_utime=6 /* 0.06 s */, si_stime=7 /* 0.07 s */} ---
+1650093 +++ exited with 0 +++
+1650094 +++ exited with 0 +++
+1650143 +++ exited with 0 +++
+1650141 +++ exited with 0 +++
+1650144 +++ exited with 0 +++
+1650142 +++ exited with 0 +++
+1650130 +++ exited with 0 +++
+1650122 +++ exited with 0 +++
+1650121 +++ exited with 0 +++
+1650110 +++ exited with 0 +++
+1650109 +++ exited with 0 +++
+1650108 +++ exited with 0 +++
+1650107 +++ exited with 0 +++
+1650106 +++ exited with 0 +++
+1650096 +++ exited with 0 +++
+1650092 +++ exited with 0 +++
+1650091 +++ exited with 0 +++
+1650090 +++ exited with 0 +++
+1650088 +++ exited with 0 +++
+1650087 +++ exited with 0 +++
+1650086 +++ exited with 0 +++
+1650085 +++ exited with 0 +++
+1650078 +++ exited with 0 +++
+1650077 +++ exited with 0 +++
+1650035 +++ exited with 0 +++
+1649952 +++ exited with 0 +++
+1649950 +++ exited with 0 +++
+1649949 +++ exited with 0 +++
+1649947 +++ exited with 0 +++
+1649927 +++ exited with 0 +++
+1649921 +++ exited with 0 +++
+1649144 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649921, si_uid=1000, si_status=0, si_utime=53 /* 0.53 s */, si_stime=50 /* 0.50 s */} ---
+1649928 +++ exited with 0 +++
+1649930 +++ exited with 0 +++
+1649202 --- SIGTERM {si_signo=SIGTERM, si_code=SI_USER, si_pid=1649137, si_uid=1000} ---
+1649560 --- SIGTERM {si_signo=SIGTERM, si_code=SI_USER, si_pid=1649202, si_uid=1000} ---
+1650690 +++ exited with 0 +++
+1650689 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1650690, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1650689 +++ exited with 0 +++
+1649017 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1650689, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649006 --- SIGUSR1 {si_signo=SIGUSR1, si_code=SI_USER, si_pid=1649017, si_uid=1000} ---
+1649665 +++ exited with 0 +++
+1649668 +++ exited with 0 +++
+1649667 +++ exited with 0 +++
+1649666 +++ exited with 0 +++
+1649565 +++ exited with 0 +++
+1649562 +++ exited with 0 +++
+1649564 +++ exited with 0 +++
+1649561 +++ exited with 0 +++
+1649563 +++ exited with 0 +++
+1649566 +++ exited with 0 +++
+1649560 +++ exited with 0 +++
+1649202 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649560, si_uid=1000, si_status=0, si_utime=288 /* 2.88 s */, si_stime=101 /* 1.01 s */} ---
+1649212 +++ exited with 0 +++
+1649209 +++ exited with 0 +++
+1649210 +++ exited with 0 +++
+1649211 +++ exited with 0 +++
+1649208 +++ exited with 0 +++
+1649213 +++ exited with 0 +++
+1649202 +++ exited with 0 +++
+1649143 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649202, si_uid=1000, si_status=0, si_utime=40 /* 0.40 s */, si_stime=74 /* 0.74 s */} ---
+1649198 +++ exited with 0 +++
+1649197 +++ exited with 0 +++
+1649200 +++ exited with 0 +++
+1649199 +++ exited with 0 +++
+1649144 +++ exited with 0 +++
+1649146 +++ exited with 0 +++
+1649147 +++ exited with 0 +++
+1649145 +++ exited with 0 +++
+1649143 +++ exited with 0 +++
+1649148 +++ exited with 0 +++
+1649137 +++ exited with 0 +++
+1649043 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649137, si_uid=1000, si_status=0, si_utime=110 /* 1.10 s */, si_stime=19 /* 0.19 s */} ---
+1649130 +++ exited with 0 +++
+1649131 +++ exited with 0 +++
+1649128 +++ exited with 0 +++
+1649129 +++ exited with 0 +++
+1649066 +++ exited with 0 +++
+1649068 +++ exited with 0 +++
+1649069 +++ exited with 0 +++
+1649067 +++ exited with 0 +++
+1649065 +++ exited with 0 +++
+1649082 +++ exited with 0 +++
+1649043 +++ exited with 0 +++
+1649006 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1649043, si_uid=1000, si_status=0, si_utime=82 /* 0.82 s */, si_stime=12 /* 0.12 s */} ---
+1650703 +++ exited with 0 +++
+1649006 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1650703, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1650704 +++ exited with 0 +++
+1649006 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=1650704, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+1649017 --- SIGTERM {si_signo=SIGTERM, si_code=SI_USER, si_pid=1649006, si_uid=1000} ---
+1649006 +++ exited with 0 +++
+1649017 +++ exited with 0 +++

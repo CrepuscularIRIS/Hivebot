@@ -5,4 +5,8 @@ set -e
 if [ "$PBOTS_E2E_NO_XVFB" = "1" ]; then
   exec playwright test "$@"
 fi
+# P6-18：Xvfb 分支同时剥掉真实会话总线——被测 Electron 的 OS 通知（libnotify 经 DBus）
+# 必走降级路径，测试不会往用户真实桌面弹通知（与无 DBus 的 CI 容器同语义；spec 自己
+# 需要死总线时无需再覆盖）。真实通知呈现只在 NO_XVFB 调试或手动验收时可达。
+export DBUS_SESSION_BUS_ADDRESS="unix:path=$PWD/.build/e2e-dead-bus"
 exec xvfb-run -a --server-args="-screen 0 1600x1000x24" playwright test "$@"

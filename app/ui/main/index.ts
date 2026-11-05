@@ -17,6 +17,7 @@ import { ensureThenReady, restoreGated } from './m3-meta/ensure'
 import { createBotWithConnectors, createSessionForcedWorkspace, createWorkerBot, type CreateBotArgs, type DshLike, type SessionCreateArgs } from './m3-meta/orchestrate'
 import { wireOrchChannel } from './m3-meta/orch-channel'
 import type { BotsMetaStore } from './m3-meta/store'
+import { wireWorkerNotify } from './notify/worker-notify'
 
 if (process.type === 'browser') {
   // 必须在 app ready 前注册；单测导入本模块时（纯 node）跳过。
@@ -266,6 +267,9 @@ async function main(): Promise<void> {
 
     // P6-10 ⑤：main 常驻订阅 SDK 的 create 请求流（orchestration.yml 未加载时只记日志）
     if (dsh !== undefined) wireOrchChannel({ dsh, create: (req) => createWorkerBot(dsh, m3.store, req, { dataDir }) })
+
+    // P6-18（决策 23）：worker 挂起审批/提问 → 1 条 OS critical 通知；点击聚焦主窗并打开该 worker
+    wireWorkerNotify({ ledger: m1Ledger, store: m3.store, window: mainWindow, openWorker: (botId) => mainWindow.webContents.send('pbots:open-worker', botId) })
 
     // U-14 先 restore 后 ready：连接成功 → 读盘完成 → #21 逐个 ensure（30s each 超时按
     // 失败、allSettled、失败进 failed set 不阻断）→ 放行 restore 条件。U-28 R3/R4：编排

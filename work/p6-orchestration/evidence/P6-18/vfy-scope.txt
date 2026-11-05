@@ -1,0 +1,43 @@
+bc86f2e880124325a2377fe8e77cc818036975f9
+ app/ui/main/index.ts                           |   4 +
+ app/ui/main/notify/worker-notify.ts            | 162 ++++++++++++++
+ app/ui/scripts/run-e2e.sh                      |   4 +
+ app/ui/tests/e2e/p6-notify.spec.ts             | 104 +++++++++
+ app/ui/tests/unit/notify/worker-notify.test.ts | 286 +++++++++++++++++++++++++
+ 5 files changed, 560 insertions(+)
+diff --git a/app/ui/main/index.ts b/app/ui/main/index.ts
+index 7ddb82f..708bb24 100644
+--- a/app/ui/main/index.ts
++++ b/app/ui/main/index.ts
+@@ -17,6 +17,7 @@ import { ensureThenReady, restoreGated } from './m3-meta/ensure'
+ import { createBotWithConnectors, createSessionForcedWorkspace, createWorkerBot, type CreateBotArgs, type DshLike, type SessionCreateArgs } from './m3-meta/orchestrate'
+ import { wireOrchChannel } from './m3-meta/orch-channel'
+ import type { BotsMetaStore } from './m3-meta/store'
++import { wireWorkerNotify } from './notify/worker-notify'
+ 
+ if (process.type === 'browser') {
+   // 必须在 app ready 前注册；单测导入本模块时（纯 node）跳过。
+@@ -267,6 +268,9 @@ async function main(): Promise<void> {
+     // P6-10 ⑤：main 常驻订阅 SDK 的 create 请求流（orchestration.yml 未加载时只记日志）
+     if (dsh !== undefined) wireOrchChannel({ dsh, create: (req) => createWorkerBot(dsh, m3.store, req, { dataDir }) })
+ 
++    // P6-18（决策 23）：worker 挂起审批/提问 → 1 条 OS critical 通知；点击聚焦主窗并打开该 worker
++    wireWorkerNotify({ ledger: m1Ledger, store: m3.store, window: mainWindow, openWorker: (botId) => mainWindow.webContents.send('pbots:open-worker', botId) })
++
+     // U-14 先 restore 后 ready：连接成功 → 读盘完成 → #21 逐个 ensure（30s each 超时按
+     // 失败、allSettled、失败进 failed set 不阻断）→ 放行 restore 条件。U-28 R3/R4：编排
+     // 挂「连接成功」事件而非一次性的 dshStart —— 首连超时 reject 只放行闸门（U-17 语义，
+diff --git a/app/ui/scripts/run-e2e.sh b/app/ui/scripts/run-e2e.sh
+index 29545d7..b5f8a60 100755
+--- a/app/ui/scripts/run-e2e.sh
++++ b/app/ui/scripts/run-e2e.sh
+@@ -5,4 +5,8 @@ set -e
+ if [ "$PBOTS_E2E_NO_XVFB" = "1" ]; then
+   exec playwright test "$@"
+ fi
++# P6-18：Xvfb 分支同时剥掉真实会话总线——被测 Electron 的 OS 通知（libnotify 经 DBus）
++# 必走降级路径，测试不会往用户真实桌面弹通知（与无 DBus 的 CI 容器同语义；spec 自己
++# 需要死总线时无需再覆盖）。真实通知呈现只在 NO_XVFB 调试或手动验收时可达。
++export DBUS_SESSION_BUS_ADDRESS="unix:path=$PWD/.build/e2e-dead-bus"
+ exec xvfb-run -a --server-args="-screen 0 1600x1000x24" playwright test "$@"
+app/ui/main/index.ts:272:    wireWorkerNotify({ ledger: m1Ledger, store: m3.store, window: mainWindow, openWorker: (botId) => mainWindow.webContents.send('pbots:open-worker', botId) })

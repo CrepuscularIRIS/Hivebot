@@ -133,6 +133,71 @@ describe('P7-F3 existing Reporter lifecycle recovery barrier', () => {
     expect(f.orch.delivery.send).toHaveBeenCalledTimes(1)
   })
 
+  it.each([0, 2_100])('unknown delivery resolved after %i ms never replays through the default recovery window', async (delay) => {
+    const f = fixture()
+    f.reporter.stop()
+    const host = new HostRecovery(async () => ({ issues: [] }))
+    const reporter = new Reporter(f.orch)
+    cleanups.push(() => { reporter.stop(); host.stop() })
+    Object.defineProperty(f.orch, 'recovery', { get: () => host.current })
+    const peer = {}, first = host.attach(peer)
+    await host.prepare(peer, first.challenge)
+    host.complete(peer, first.challenge)
+    const entered = deferred(), release = deferred()
+    f.ctx.sessionPersistence.flush.mockImplementationOnce(async () => {
+      entered.resolve()
+      await release.promise
+      throw new Error('unknown post-followup disk confirmation')
+    })
+    const delivery = new Delivery(f.ctx, () => host.current)
+    vi.spyOn(delivery, 'readLog').mockImplementation(async (id: string) => f.logs[id])
+    f.orch.delivery = delivery
+    const old = reporter.flush('boot').catch((error: unknown) => error)
+    await entered.promise
+    expect(f.followup).toHaveBeenCalledTimes(1)
+    const second = host.attach(peer)
+    await host.prepare(peer, second.challenge)
+    host.complete(peer, second.challenge)
+    reporter.scheduleFlush()
+    expect(reporter.batchWindowMs).toBe(2_000)
+    if (delay) await sleep(delay)
+    expect(f.followup).toHaveBeenCalledTimes(1)
+    release.resolve()
+    expect(await old).toMatchObject({ unconfirmedStart: true })
+    await sleep(2_150)
+    expect(f.followup).toHaveBeenCalledTimes(1)
+  })
+
+  it('a later legitimate report must not rebatch an unknown old key even when no recovery timer was pending', async () => {
+    const f = fixture()
+    f.recovery.resolve()
+    const delivery = new Delivery(f.ctx, () => f.orch.recovery)
+    vi.spyOn(delivery, 'readLog').mockImplementation(async (id: string) => f.logs[id])
+    f.orch.delivery = delivery
+    f.ctx.sessionPersistence.flush.mockRejectedValueOnce(new Error('unknown post-followup disk confirmation'))
+    await expect(f.reporter.flush('boot')).rejects.toMatchObject({ unconfirmedStart: true })
+    expect(f.followup).toHaveBeenCalledTimes(1)
+    expect(f.reporter.timer).toBeNull()
+    f.recovery.abort()
+    f.orch.recovery = permit()
+    f.orch.recovery.resolve()
+    f.logs.worker.push(
+      { type: 'agent/inbox/spliced', target: 'next-turn', start: 0, removedCount: 0, inserted: [{ id: 'pbots-assign:fresh', kind: 'pbots-main' }] },
+      { type: 'turn/start', turn: 2 },
+      { type: 'agent/inbox/spliced', target: 'next-turn', start: 0, removedCount: 1, inserted: [] },
+      { type: 'user/message', id: 'pbots-assign:fresh', sourceKind: 'pbots-main' },
+      { type: 'turn/end', turn: 2, reason: 'completed' },
+    )
+    f.reporter.handleEvent({ id: 'worker' }, { type: 'turn/end', data: { turn: 2, reason: { kind: 'completed' } } })
+    await until(() => f.followup.mock.calls.length === 2)
+    const messages = f.followup.mock.calls.map(([message]) => message)
+    // Distinct key sets also change the batch id: retaining only the old id cannot guard this boundary.
+    expect(messages[1].id).not.toBe(messages[0].id)
+    const keys = messages.flatMap((message) => message.source.items.map((item: any) => item.key))
+    expect(keys.filter((key: string) => key === 'fresh:end')).toHaveLength(1)
+    expect(keys.filter((key: string) => key === 'old:end')).toHaveLength(1)
+  })
+
   it('withdraw checks the captured lease for every remove and stop cancels retry timers', async () => {
     const f = fixture()
     f.recovery.resolve()

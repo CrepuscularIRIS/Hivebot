@@ -441,6 +441,25 @@ describe('turn-origin', () => {
     }
   })
 
+  // T-taint（2026-11-05，G1-r2 A 席 R2-1 发现 / Q-021 定稿）：goal / schedule
+  // 来源回合对协调者工具（COORDINATOR_TOOLS：create/send/stop）也算污染
+  // （coordinatorTainted）；全工具污染（tainted，taint-guard 消费）仍只认
+  // pbots-worker（R2-1 口径零变化）。
+  it('T-taint: goal / schedule claims pollute the turn for coordinator tools only; full taint stays pbots-worker-only', () => {
+    expect(classifyTurn(['goal']).coordinatorTainted).toBe(true)
+    expect(classifyTurn(['schedule']).coordinatorTainted).toBe(true)
+    expect(classifyTurn(['user', 'goal']).tainted).toBe(false) // 全工具口径不变（R2-1）
+    expect(classifyTurn(['user', 'user-approval', 'brand-new-host-kind']).coordinatorTainted).toBe(false)
+    // 账本级：同回合单调（后到的宿主内部来源不解除）、下一干净回合复位
+    const origin = new TurnOrigin()
+    origin.record('m', 4, 'schedule')
+    expect(origin.classify('m').coordinatorTainted).toBe(true)
+    origin.record('m', 4, 'user-approval')
+    expect(origin.classify('m').coordinatorTainted).toBe(true)
+    origin.record('m', 5, 'user')
+    expect(origin.classify('m').coordinatorTainted).toBe(false)
+  })
+
   it('TurnOrigin tracks claims per agent/turn and classifies the running turn', () => {
     const origin = new TurnOrigin()
     origin.record('w1', 1, 'user')

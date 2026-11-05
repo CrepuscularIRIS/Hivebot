@@ -245,13 +245,34 @@ describe('create_bot taint guard (P6-10.f1 ①)', () => {
     writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'session-main', recipes: {} }))
     const { definition, when, claim } = registeredTool(dir)
     claim('session-main', 1, 'user-approval')
-    claim('session-main', 1, 'schedule')
+    // T-taint（2026-11-05 定案）：schedule 不再在本组——goal / schedule 对协调者
+    // 工具算污染，移到下一条用例；user-approval / 未知 kind 仍不污染。
     claim('session-main', 1, 'mystery-kind')
     expect(await when({ id: 'session-main' })).toBe(true)
     claim('session-main', 1, 'pbots-worker') // 同回合出现污染源 → 污染（回合内单调）
     expect(await when({ id: 'session-main' })).toBe(false)
     claim('session-main', 2, undefined) // 新回合只认领了纯用户消息（无 source）
     expect(await when({ id: 'session-main' })).toBe(true)
+  })
+
+  // T-taint（G1-r2 A 席 R2-1 发现 / Q-021 定稿）：goal / schedule 来源回合对
+  // 协调者工具算污染——create_bot 不可见、execute 拒（0 次 建 bot 请求、不占容量）。
+  it('goal / schedule rounds hide create_bot and execute rejects before the channel; monotonic within the turn', async () => {
+    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'session-main', recipes: {} }))
+    const { definition, when, slots, sub, claim } = registeredTool(dir)
+    expect(await when({ id: 'session-main' })).toBe(true) // 干净回合可见
+    claim('session-main', 5, 'goal')
+    expect(await when({ id: 'session-main' })).toBe(false)
+    claim('session-main', 5, 'user-approval') // 同回合后到的宿主内部来源不解除污染（回合内单调）
+    expect(await when({ id: 'session-main' })).toBe(false)
+    await expect(definition.execute({ name: 'w', prompt: 'p' }, { agent: { id: 'session-main' } }))
+      .rejects.toMatchObject({ code: 'pbots/forbidden' })
+    claim('session-main', 6, 'schedule') // schedule 同口径
+    expect(await when({ id: 'session-main' })).toBe(false)
+    claim('session-main', 7, undefined) // 下一干净回合恢复可见
+    expect(await when({ id: 'session-main' })).toBe(true)
+    expect(sub.queue.length).toBe(0) // 0 次建 bot 请求
+    expect(slots.used).toBe(0) // 拒绝不占容量
   })
 })
 

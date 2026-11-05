@@ -6,6 +6,9 @@
 // 释放占位，成功占位绑 worker turn/end（决策 9/26）。
 // P6-10.f1 ①：when / execute 接 P6-21 turn-origin——本回合认领过 pbots-worker
 // 来源（R2-1 唯一污染源）即拒，不能只看 mainBotId（污染回合里 main 仍是 main）。
+// T-taint（2026-11-05，G1-r2 A 席 R2-1 发现 / Q-021 定稿）：口径扩为协调者污染
+// coordinatorTainted（pbots-worker ∪ goal / schedule）——自主回合不是用户直接
+// 对话，不提供委派入口。全工具 taint-guard 仍只认 pbots-worker（R2-1 不变）。
 // P6-10.f1 ②：registerCreateBot 一并挂 trackWorkerTurns，人工启动的 worker
 // 回合收养进共享容量；holds 里 'create' 标记本工具的占位，防双重计数。
 import { orchDataDir, readMainBotId } from './identity.mjs'
@@ -73,10 +76,11 @@ export function registerCreateBot(ctx, orch) {
   }, {
     // when 每 step 读权威 mainBotId（S2 §3.4）；读取失败 / 无主 → 隐藏。
     // P6-10.f1 ①：受污染回合（认领过 pbots-worker）也隐藏（决策 29 / R2-1）。
+    // T-taint：goal / schedule 来源回合同样隐藏（coordinatorTainted，Q-021）。
     when: async ({ agent }) => {
       const mainId = await readMainBotId(orch.config.dataDir ?? orchDataDir())
       if (mainId === undefined || mainId === null || agent === undefined || agent.id !== mainId) return false
-      return !orch.turns.classify(String(agent.id)).tainted
+      return !orch.turns.classify(String(agent.id)).coordinatorTainted
     },
   })
 }
@@ -108,8 +112,10 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
 
   // 2.5 P6-10.f1 ①：受污染回合拒（本回合认领过 pbots-worker 来源，决策 29 /
   // R2-1）——when 之外 execute 再拦一次（S2 §3.4 口径：两道都读，fail closed）。
-  if (orch.turns.classify(String(exec.agent.id)).tainted) {
-    throw orchError('pbots/forbidden', 'create_bot is rejected in a turn that received worker reports', { taintKind: TAINT_KIND })
+  // T-taint：口径扩为 coordinatorTainted（pbots-worker ∪ goal / schedule）。
+  const turnOrigin = orch.turns.classify(String(exec.agent.id))
+  if (turnOrigin.coordinatorTainted) {
+    throw orchError('pbots/forbidden', 'create_bot is rejected in a turn that received worker reports or a goal/schedule round (not a direct user message)', { taintKind: TAINT_KIND, taintKinds: turnOrigin.coordinatorTaintKinds })
   }
 
   // 3 容量（决策 9 / D9⑥：同 tick 查 + 占位）

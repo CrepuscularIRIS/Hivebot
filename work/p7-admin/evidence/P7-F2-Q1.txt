@@ -1,0 +1,63 @@
+P7-F2 重规划 Q1：原生逐调用审批接缝（有限静态核查）
+结论：复用已装 dsh pipeline/user-approval，搬运阶梯1；不另造审批器。六文件足以承载“显式开发patch＋合成管理工具”的接缝候选，但尚不成立完整验收PASS，更不成立生产admin桥已贯通。
+边界：本次不联网、不安装/链接依赖、不启动宿主/测试/桌面/模型，不读凭证/用户env，不改产品/PLAN/LOG，不派Agent、不提交。
+
+1. 固定版本与记号
+W=/tmp/bot-wt/P7-F2-Q1；HEAD首尾均ed336c9a39660a30f23f415debc9e07f22b026ea；结束status --porcelain空。
+A=W/app；D=/home/lingxufeng/bot/repos/deepseek-harness；D HEAD=ce7073d51254c26cd63b22a60835b8f948deb447。
+P=/home/lingxufeng/bot/app/sdk/node_modules/.pnpm；以下为实际发布制品，不把参考源码等同运行版本。
+T=P/@deepseek-ai+dsh-tools@0.2.2-alpha.2_d570a50fd9051dfa7084c71da173b036/node_modules/@deepseek-ai/dsh-tools/lib/pipeline.js。
+U=P/@deepseek-ai+dsh-user-approval@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1_@deepsee_703d6fd5061fd2c4ff55c9f4f8876083/node_modules/@deepseek-ai/dsh-user-approval/lib/index.js。
+G=P/@deepseek-ai+dsh-api-gateway@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1/node_modules/@deepseek-ai/dsh-api-gateway/lib/index.js。
+sha256(T)=f6c850cefce30831c4c5f160e831856b105935331bacd1ae0823129001614bc6。
+sha256(U)=45b7c170b6897f15a338037b1951997a1b99018c30b5fc95f7e08ad798075be2。
+sha256(G)=91abae7edfaa2bf3154680829e77b1f341aa01ba9094795aa70b96ff3e15f52b。
+三个包package.json version均0.2.2-alpha.2、license均MIT；本次未查询外部维护状况，不作新依赖选型。
+已读主仓P7-F2-replan.txt全篇、PLAN F2/分层/白名单相关行、LEARNINGS全篇、p5-parity/reuse/r4-tool-gates.md和A/sdk/tests/e2e/approval.test.ts。
+
+2. 可直接复用的真实链路
+T:293–338：创建一次execution/token，捕获callId/rootCallId/name/agent/signal；JSON脱离原输入，arguments深冻结。
+T:375–427：tools/pre-execute waterfall默认allow；只有kind=ask进入serviceAsk；deny/cancel不dispatch；allow后仍checkGuards和检查原caller取消。
+T:608–658：将同exec.agent/name/callId/signal送approval.request；仅allowed-once转换allow，rejected/cancelled/unavailable全部deny；缺approval服务或agent直接deny。
+U:153–168：必须在req.agent.session的open turn内；生成独立ApprovalRequestId，approval/asked记录toolName/callId，approval/decided记录同id与outcome；审计append失败不返回允许。
+U:197–213：never先拒；无本地answerer、answerer异常、非法返回均unavailable；signal取消返回cancelled，迟到答案不能再次resolve已结算Promise。
+T:455–478：dispatch前再检查与原caller融合的signal，随后tool.execute(exec.arguments,exec)；批准继续原pipeline，不要求模型重新发一次工具调用，不产生长期grant。
+参考源码对应D/packages/core/tools/src/pipeline.ts:116–229,258–285,432–472；D/packages/interaction/user-approval/src/index.ts:242–260,293–332。
+本仓A/sdk/tests/e2e/approval.test.ts:170–198,246–277,310–341已有fake-provider下拒绝0、allowed-once执行、Y批准不放X的测试代码；本次未重跑，不能借其给admin判PASS。
+
+3. request/call/session/参数的关联和边界
+审批审计id、网关eventId、工具callId与admin bridge requestId是四种不同id，不能互相当授权票据。
+工具调用关联：T:624–630传callId与真实Agent；U:154–164写该Agent.session；gateway帧另生成eventId并携带agentId/request（G:1093–1136）。
+作答关联：$events/result带clientId/eventId/outcome；G:1000核同Peer，:1146–1155核pending及本client确曾收到delivery；重复/旧eventId幂等无操作，不授权另一pending调用。
+本仓A/ui/main/dsh/ledger.ts:109–164仅接受ready clientId＋未决eventId＋allowed-once/rejected，并在发送成功后消费；A/ui/main/m1-api/index.ts:117,222调用该校验/消费。
+UI沿用现有卡：A/ui/renderer-grok/shim/src/data.ts:363–374保留agentId/callId/toolName/reason；entries.ts:21–45只从常见command/path/query/url等字段提正文，否则退reason。
+因此admin的action/target/params不会自动完整显示；tools.mjs产生的可信ask.reason须含实际完整动作、目标、受限参数，不能只写“管理操作需批准”；不必为此改renderer或协议。
+参数防替换已有一部分：模型传入的原arguments对象后续修改不会改变脱离并冻结的exec.arguments；批准新call并不会自动授权另一新call。
+但不是防任意内部替换保证：T:329–332只冻结arguments值，未冻结exec外壳；:468在批准后按当前exec.name重新resolve工具；:492还经过tools/execute wrapper。
+所以受信插件替换exec.arguments/name/agent，或同名handler热替换，不存在上述代码可见的批准快照再比对；不能声称仅callId或deepFreeze已满足“执行前换动作/参数/handler也0”。
+最少适配须在tools.mjs的同次管理适配中保持/复核批准时实际调用与执行时请求一致，缺失/变化拒绝；不得从模型参数收“已批准/档位”。这不是新数据库/授权语法，也不是上游已具备的保证；具体实现与红例均未验证。
+
+4. 取消、无人回答、不可用
+原生审批前/等待中/dispatch前取消均阻止工具体启动（T:379–395,419–423,455–465；U:197–213）；已经启动的工具体取消不等于回滚（T:450–453,470–473）。
+无approval服务、无agent、never、非法答案/抛错明确拒绝；不得把approval/asked审计记录当卡已显示或已获准。
+重要缺口：网关已接管但无answer client时，G:1133–1136只留pending；client断开:1161–1165只移除delivery，不立即settle。不能等同“没有answerer立刻unavailable”。
+本仓已有无人值守监督A/ui/main/m2-mux/deadline.ts:55–61,72–104：无renderer端口连续到deadline才由main自己的Peer答rejected；有renderer却一直不答不走这个deadline。
+因此无人作答期间不执行成立，但“所有无人回答情形都有有界明确状态”未证成；需用已有取消/期限生命周期证明，不能伪称上游自带全局审批超时。
+admin桥A/sdk/src/admin/channel.mjs:113–131无AbortSignal接口，排队后timeout/断流是outcome unknown，不是副作用0；审批必须发生于bridge.request之前，执行期取消不能借本桥证明回滚。
+
+5. 六文件开发patch是否成立、最少适配文件
+挂载本身静态成立：A/sdk/src/start.ts:73,94–95,114–132已把显式P2SDK_PATCH绝对路径追加--patch；无需修改start.ts，也不应默认加载p7-admin。
+现有函数插件注册先例为A/sdk/src/policy/request-net.mjs:25–26,145–195（name/inject/apply、ctx.tools.register、ctx.effect释放）；tools.mjs可沿此承接注册与pre-execute，不需新增依赖。
+新patch须用可解析的本地模块URL/既有loader路径规则；start.ts:327–330说明DSH_HOME下不能盲用裸包名。具体p7-admin.yml尚不存在，未运行Loader验证。
+最小产品集合仍仅sdk/src/admin/tools.mjs、sdk/src/admin/authority.mjs、sdk/profile/patches/p7-admin.yml；测试仍仅unit/p7-admin-approval.test.ts、e2e/p7-admin-approval.test.ts、unit/p7-authority.test.ts。
+顺序风险：现有shell-ask.mjs:349–354对新工具按tiers.default返回ask可能截断后续hook；LEARNINGS:67已证明YAML排列不保证顺序。必须在tools模块内正确安排原生hook并验证硬拒优先、allow不重复问，不能靠调YAML顺序或放宽shell-ask。
+现有guard.mjs:38,240–258仍硬禁plugin_manager，对其他未知名称next；不得以新hook旁路该禁令、改名调用真实plugin_manager，或把合成handler成功说成真实M3已通。
+现状不是已接好的admin工具：tools.mjs:12空动作表；authority.mjs:271–283仅返回allow/deny/handoff；SDK src中AdminChannel与authorize只有定义、无生产调用，UI main的wireAdminChannel/createAdminConsumer也未在index/ready接入。
+所以六文件“可挂合成管理工具→原生ask→计数handler”有现成接缝；“原生产SDK→main管理动作闭环已接通”不成立。本次不把新增合成handler或测试接线冒充已存在生产消费者。
+若N1要求真实main订阅启动、向桥新增callId/取消字段、改start/shell-ask/协议才能验收，按replan:54–55立即BLOCK并回主会话；本报告不扩白名单。
+Q2的可信档位/审核结果来源不属本题，仍未验证；无该来源不能仅凭Q1宣告整个N1六文件方案可实施或always_allow/auto_review格已闭合。
+
+6. 给重规划的停止点
+可保留：已锁定原生审批、现有Peer/eventId台账与UI卡、原pipeline同次继续执行；不需要第二审批器、数据库或授权语法。
+必须保留未证实项：六文件真实Loader组合、完整admin调用显示、替换红例0、无人回答终结状态、可信分层输入、真实main桥消费者；这些不能由既有bash测试替代。
+本次已到事实足够的停止点；只写本TXT，未运行任何验收，不宣称F2解除blocked。

@@ -1,0 +1,91 @@
+P7-R1 · 已装 schedule 最小可信来源接缝（有限调研，非产品验收）
+日期：2026-11-05。独立工作树：/tmp/bot-wt/P7-R1，detached b5146bdb9fe95298666a842bd85aec705bb8da64。
+所有交付在主仓 /home/lingxufeng/bot/work/p7-admin/evidence/；未改产品、PLAN、LOG、参考仓、node_modules；未提交/合并/推送。
+
+结论
+现成接口能证明“某个已保存的投递 receipt 属于某个 routine”，不能直接证明“当前待执行动作已通过逐 routine 准入”。
+正常合法 schedule→真实 Agent→fake 文本回合完成→receipt 精确匹配的成功对照已取得，不是全拒。
+但 claim/pre-step 早于 receipt 提交；合批无可信完整成员快照；删除抹掉 history 而旧 inbox 继续消费；receipt 不含执行消费状态/授权代际。
+因此，在不升级/改上游、不把正文/部分 history 当授权且不增加本轮禁止的持久 claim/seal 体系的限定下，本次没有证实满足 L3/WL 全部要求的直接最小准入路径，应保持相应定时自动派工 blocked。
+这是“现成接口不足、最小安全路径未证实”，不是数学证明所有薄包装都必须完整 SB；不据此复活 SB、新授权库、第二调度器，也不继续无界检索。
+
+范围与前置
+已读主仓 LEARNINGS、PLAN v1.1 K7/§3:56/P7-R1、REUSE、BRIEF v2.4 §3/5/7/9、reuse/q2-schedule-mount.md。旧稿完整 SB 不作当前前提。
+仅已装 alpha.2 制品和本仓既有 P6 接缝；GitHub/npm 维护信息承接 Q2 历史事实，未在此轮重新联网查包，不批准新依赖或升级。
+worktree 无 node_modules（test -x 返回1）。为不写该树依赖链接，真实宿主复用主仓已装 SDK；启动器/基础 patch/fake provider 在前后两次 git diff --exit-code b5146bd 中均为0，与固定基线相同。没有操作 F3 工作树或其文件。
+初始 load=3.34/4.63/4.78，vmstat 两样本 wa=0；收尾 load=2.04/2.66/3.71，wa=0。未跑全量/build/UI/桌面/真模型/外部服务/60秒周期等待。
+
+固定版本源码锚点（以下为实际安装制品，不把较新参考仓当 alpha.2）
+S=/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-schedule@0.2.2-alpha.2_4a48717f67e8a6b8febb28d598132875/node_modules/@deepseek-ai/dsh-schedule
+S/lib/index.js SHA256=0168309d74c47ab1ff36e9c215a3e4417b18f04a90726191e58e4498a81c2deb。
+L=/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-agent-loop@0.2.2-alpha.2_04206c7ddbce35230b2bfbbb790058fc/node_modules/@deepseek-ai/dsh-agent-loop
+L/lib/index.js SHA256=a6fa8e0c7c90191caf5f4a3bb5c624a86e9845cf3c79d020b71420d0e20ae4c1。
+A=/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-agent@0.2.2-alpha.2_c09e321863b8ebb6167f522cda8f63dc/node_modules/@deepseek-ai/dsh-agent
+P=/tmp/bot-wt/P7-R1/app/sdk/src/orchestration（本仓固定 b5146bdb9fe95298666a842bd85aec705bb8da64）。
+E=/home/lingxufeng/bot/work/p7-admin/evidence。
+
+1. 正常投递、伪正文 id 与 history
+答：提交后的正向归属可以；claim 时立即归属并不可靠；不能从无匹配推出“伪造”，也不能从正文 id 推出“有授权”。
+S/lib/index.js:1574–1585 创建全新 message.id，可信 source 仅 {kind:'schedule'}，随后 followup，再 await sessions.flush；:1586–1612 才逐任务写 receipt。
+S/lib/index.js:1379–1403 的 routine id/occurrence/prompt 都只是 framing 文本；真实 reminder 的 prompt 经 JSON 转义，不能把 prompt 内嵌的伪 id 当新成员。
+S/lib/index.js:2146–2168 的 catalog 给 session 绑定，history 按 sessionId+routineId 查询并包含真实 messageId；应从宿主取得的 message.id 去匹配，不能从正文自行挑 id 借另一 routine 的 receipt。
+S/lib/index.js:1414–1418/1431–1475 允许 legacy 缺史/保留窗口/分页；earlierRecordsUnavailable 和 earlierRecordsPruned 是单任务历史完整性，不是某条消息的批次完整性。
+L/lib/index.js:103–110 claim 只同步 emit，不 await 监听器；:564–571 followup 会立刻唤醒既有 driver。
+A/lib/types/runtime-types.d.ts:290–339 有 inserted/claimed 与可 await 的 pre-step waterfall；pre-step 不是 schedule receipt commit 完成通知。
+真实最小 probe：S.create(after_seconds:1)，捕获真正 claim/pre-step，随后有界只读查询 catalog/history；既有 fake provider 返回文本，真实 turn/end reason=completed。
+成功：E/P7-R1-command-2.txt:5–7，messageId=d039d53c-628c-4b7b-a786-671ad495abf1，精确匹配 routine schedule-60e80a85-3a1c-4af6-81d9-8fdfdff796cb；E/P7-R1-events-2.jsonl:5 为真实 completed。
+失败/时序对照：E/P7-R1-events-2.jsonl:3–4 的同一正常消息在 claim/pre-step 时 records=[]，稍后 command-2:6 才有 receipt；这是实际“正常但暂缺史”，不能当非法投递。
+伪正文对照：把完全相同 framing 作为另一条 source=user、不同 message.id 的输入，真实 Agent 同样消费；E/P7-R1-command-2.txt:8–10 匹配为0，原消息则匹配为1。只读 body 的策略分不出，source+宿主 messageId 能分出该对照。
+限制：这里的 user-spoof 是受控宿主测试输入，不是声称测试了远程用户伪造 source/id；不把“内部插件可自己造消息”当公开接口漏洞。未证明任意来源都不能伪造 source。
+成功只覆盖投递、fake 回合完成、提交后归属；没有 P7 自动准入产品实现，也没有让 fake 模型实际 create_bot。
+
+2. 合批不同 routine、未结 Assignment 与时序接缝
+答：完整已提交 receipts 可分别确认 A/B 都参与了该 message；不能仅凭 source.kind 或剩余部分 history 把消息唯一归给 B，亦不能直接做到忙 A skip、闲 B 派工。
+S/lib/index.js:1555–1563 以同 session 的所有 due recurring 合批；:1599–1612 逐 routine 复用同一 message.id、逐笔 commit；不是一次提交全部成员或发出批次 seal。
+S/lib/types/index.d.ts:14–20 的 schedule/resolve-agent 只传 sessionId，不传 routineId/成员列表；不能在那里按 routine 查忙闲。
+S/lib/index.js:2268–2272 的 schedule/changed 是无参数通知，每笔 commit 都可能触发；没有“这个 message 的所有成员已提交”语义。catalog/history 的读也不加入 schedule 管理/投递 FIFO。
+真实 probe：先通过公开 create 建两个 every_seconds:60，再正常停自有宿主；只把自有临时 schedule 文档两条 scheduledAt 调整成已过期，重启后由未改动的真实 ScheduleRuntime 处理。
+这是一条离线过期恢复 fixture，不冒充实等60秒周期/离线125秒验收。E/P7-R1-command-2.txt:19–26 记录完整步骤及二成员共同 messageId=1ec9029f-f468-4470-821a-2c1b05778fa9。
+成功对照：command-2:25–26，两条真实 history 都能从同一 messageId 精确回查 A/B；events-2:17–18 则在 claim/pre-step 仍两者都无 receipt。
+部分 history 对照：用公开 delete 删除 A 后，command-2:27–29 同一 authentic batch 只剩 B 匹配；B 的 earlierRecordsUnavailable=false、earlierRecordsPruned=false，仍不能证明该 batch 从未含 A。正文仍含 A 只是数据，不能拿来给 A 补授权。
+这否证“扫描剩余 history 有且仅有一个匹配就当单 routine”以及“某任务未剪枝即完整批次”的策略；不否证未来对每个成员分别做完整可信核验的薄适配可能性。
+Assignment 接缝：P/assignment.mjs:63–122 已有 foldAssignments，pendingAssigns 和 ended===undefined 可观察未结；只有 assignment/worker 归属，没有 routineId 关联。仅看 agent.status 不够，maintenance 状态也显示 idle，本探针 command-2:13/15 已有 idle+nextTurn 非空。
+P/send.mjs:122–140 在同 tick 查 hold/inFlight、reserve 并占位；:146–153 await 取 agent 后再查 running/inbox，再交 Delivery 投 assign。P/create.mjs:115–157 同步 reserve→main channel await→flush→Delivery 投 assign。
+所以“逐 routine 当前允许/未暂停/未结 Assignment”应在真实副作用入口、现有占位之前或同一原子准入段重查，而不是只在 scheduler 选 due 或 inbox claimed 时查一次；跨 await 和 stop/revoke 仍有窗口。恢复应先由 F3 恢复现有 Assignment，再允许消费者做判断，但本轮不改/验 F3。
+本轮没有创建实际忙 A 的 P6 Assignment，也没有实现 routine→Assignment 关联，因此 busyA=0/idleB=1 的产品准入结论为 UNKNOWN/未验证，不能从 prompt 中的 busy/idle 字样冒称实证。
+时序接缝已有源码与真实 claim/pre-step/合批探针证据，当前没有开箱即用的 routine 级原子准入接口；不为补该格新建授权数据库。
+
+3. 暂停、撤销、重启与旧投递
+答：原生删除可阻止未来定时，但不撤回已排队的消息；持久 history 可跨进程保留，但不表示旧消息有新代执行资格。原生 alpha.2 没有独立 pause/resume API。
+S/lib/types/index.d.ts:80–143 公开 create/list/catalog/history/delete/deleteInactive/update，未声明 pause/resume；S/lib/index.js:2118–2125/2146–2152 的 status=active/inactive 描述调度存续，after 合法送达会 inactive，不能把 inactive 一律当“用户暂停”。
+S/lib/index.js:2170–2196 明确 delete 同时删除 task/history、留下 queued messages；:2234–2259 update 只改 active task 的时机/名字/prompt且保留历史，不提供授权 revision。
+S/lib/index.js:2300–2347 stopSessionTasks/FIFO 只保证同 scheduler 管理写与投递顺序；与 P6 工具副作用不是共同事务。
+真实 probe：用原生 Agent.runMaintenance 有限 gate 挡住消费→创建 after1→观察 nextTurn→公开 delete→nextTurn 仍有同 message→release gate→真实 claimed。command-2:11–18；history 返回 schedule_not_found，而 source 仍 schedule。没有实际进程崩溃、真实用户暂停或新 pause 实现。
+这给出一个明确 fail-closed 信号（task/history 已删除则不能据此准入），但“删除之后这条旧消息仍到达”不是上游缺陷宣称，上游明确如此设计。
+真实进程恢复：command-2:30–34，停止并重启仅本框架 spawn 的 launcher；A 删除状态保留，B 的旧 messageId receipt 保留，记录内无 host generation/消费成功标记。这个测试不是旧 inbox 跨 crash 重播的实证。
+因而旧 receipt 与新 receipt 都能做交付归属，不能单独判定是否已派工/已消费、是否经过暂停后恢复、是否属于当前恢复代际。崩溃在 followup/flush/receipt/实际副作用之间的重放安全本轮未验证。
+若未来只复用现有 F1/F3/Assignment 的持久业务状态解决这些问题，仍需具体消费者和正反例再证实；当前没有该证据，不建议为此重构完整 SB。
+
+运行命令、退出码与失败账
+正式调用1：env -i PATH=/usr/bin:/bin HOME=/tmp/bot-wt/P7-R1 TMPDIR=/tmp <Node24绝对路径> E/P7-R1-probe.mjs；stdout/stderr→E/P7-R1-command-1.txt，exit=1。
+调用1不是启动工具失败：正常 after1 已 claim，但探针错误假设 claim 后即时 history 必有 receipt，深等断言失败；E/P7-R1-command-1.txt:6–7、P7-R1-events.jsonl:1–3 原样保留。这只反证“即时可查”假设，不反证正常投递能力。自有 launcher 清理退出0。
+修正：按固定 d.ts 把不存在的 agent/inbox/queued 观测名改为 inserted；回执只读查询改为有限30次、50ms间隔的观测等待。该等待只是实验工具，不是建议的产品 claim/wait 协议。
+正式调用2：同 env -i/同 Node/同脚本，stdout/stderr→E/P7-R1-command-2.txt，exit=0；三个自有 launcher 均 code=0，signal=null；最后自有运行树删除。正常成功与负例均在同一次有效运行内。
+两次 node --check 均 exit=0；两次探针小修正脚本均 exit=0；未有第三次宿主尝试。
+Node=/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/node@24.22.2/node_modules/node/bin/node。
+实验宿主 env 为显式白名单：PATH=/usr/bin:/bin、HOME=<新/tmp/bot-P7-R1-*/home>、TMPDIR=<同根/tmp>、PBOTS_DATA_DIR、P2SDK_HOME、P2SDK_HANDOFF、P2SDK_PORT=0、P2SDK_PROVIDER=mock、P2SDK_PATCH、P2SDK_R1_ROOT/STAGE、DSH_TELEMETRY_MODE=DISABLED；不继承父环境。外层脚本自身的 HOME 指独立worktree而不是真实HOME，TMPDIR=/tmp；它不启动用户配置或读取任何凭证。
+未读取任何真实/临时凭证文件或 handoff 内容；不保存宿主 stdout（仅统计字节/识别ready，避免输出运行信息）；证据仅含受控 probe 文本与事件。退出仅测试代码 child.kill('SIGTERM') 对自身 spawn 对象，由 launcher 转发自身child；没有 shell kill/sudo/pkill/killall/父进程/负PID。
+定位命令失败保留说明：ls app/sdk/node_modules/@dsh 返回2（命名假设错，实际为 @deepseek-ai）；两次在 dsh-agent/lib 单文件找 claim 的 rg 返回1（runtime位于独立 dsh-agent-loop 包）；一次 .pnpm agent-* glob 搜索返回1（未跟进包内真实路径）；参考仓 packages/agent 路径查询返回2（目录假设错）。这些都是定位失败，不是产品反证；随后按已列出的实际 agent-loop 包路径取得源码，未反复盲试同一故障。
+其余定向 rg/ls/定位命令的已打印 exit 为0；worktree Node存在性 test 返回1如前述；负载命令最后 vmstat 返回0（uptime未单独采exit，不补造）；前后固定基线 diff 返回0；收尾事件读取和限定 status 返回0。Read 工具均成功，不属于进程exit。
+
+REUSE 决策（不写 REUSE.md，不生成 q2b-authorization-bridge.md）
+能力 | 候选 | 阶梯 | 许可证 | 维护 | 决策 | 理由/适配边界
+持久定时投递与事后归属 | @deepseek-ai/dsh-schedule@0.2.2-alpha.2 + 已装Agent/Session | 1（延续现有锁定依赖） | MIT（Q2已有出处） | Q2记录上游2026-11-04 commit/release；issue回应未验证，本轮未重查 | 集成 | 不新增挂载/升级；正常合法投递已成功，source+宿主messageId+已提交history可作归属证据，不能作执行授权或完成回执。
+逐routine最小安全自动准入 | 同一已装 source/catalog/history + 现有P6 Assignment/F1/F3候选接缝 | 1（现有接口复用候选，未批准新实现） | MIT/本仓现有模块 | 同上 | 集成 | 仅批准继续复用投递底座；安全准入目前blocked：未证完整批次、routine→Assignment、暂停撤销/代际/消费原子性。不得全拒后宣称L3/WL完成，不以改造上游或重建SB填空。
+第二调度器替代 | croner@11.0.0（Q2已比较候选，本轮不再运行） | 1候选 | MIT（Q2出处） | Q2记录2026-10-26 commit；本轮未重查 | 集成 | 不选：没有dsh Session/receipt/routine授权绑定，不能填本次缺口且违反唯一schedule边界；不新增包。
+
+最小白名单与停止条件
+本轮唯一文件白名单：E/P7-R1.txt、E/P7-R1-probe.mjs、E/P7-R1-command-{1,2}.txt、E/P7-R1-raw.jsonl、E/P7-R1-raw-2.jsonl、E/P7-R1-events.jsonl、E/P7-R1-events-2.jsonl；运行数据仅自有/tmp/bot-P7-R1-*。
+产品扩展白名单为空；不改F3，不加新授权库/第二scheduler，不提自动派SB。后续若主会话决定验证极薄适配，只沿现有L3的routines.mjs及其定向测试单独定任务，不能把本报告当已解锁证明。
+本角色末尾禁写Markdown报告约束仍遵守：未生成 reuse/q2b-authorization-bridge.md；REUSE行在本TXT和最终回报交派发者机械登记。
+缺项明确：pause产品语义、真实busyA/idleB Assignment准入、停撤与副作用原子性、崩溃恢复重放/已消费记录、真实P7合法派工1均未验收；本轮只取得真实正常投递成功和限定反例。已到最小路径证据边界，停止，不继续扩查/实现。

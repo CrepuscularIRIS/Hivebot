@@ -20,3 +20,4 @@ L-review-7 结果 FAIL（6 major + 7 minor CONFIRMED，17 候选 13 验证 0 误
 P7-F2 review-e5ff286/A-REVIEW.txt e5ff286e686994b489766ea7d3bd1f74614a342b FAIL→P7-F2.f2（三major：H1参数替换、grant动作目标交叉组合、error.details过滤；定向85/85，两个安全探针exit1；仅模块与内存桥，未接生产动作，无真实凭证泄露证据）
 P7-F1及F2桥 review-e5ff286/B-REVIEW.txt e5ff286e686994b489766ea7d3bd1f74614a342b FAIL→P7-F1.f2（B1 HIGH首笔append/sync失败双占位，B2 MEDIUM close旧引用双写；定向66/66，最终探针2failed/2controls passed；不含F3/全量/真实管理旅程）
 P7-F1.f2 p7-admin/evidence/P7-F1f2/VERIFY.txt d8765b6e779c397801be48651d8830a45995d3a4 B1/B2模块PASS、定向review无新CONFIRMED（57原测试+19独立探针绿）；整体FAIL仅覆盖证据缺失，不含F3/生产旅程，未合并，另补隔离coverage工具证据
+P7-F1.f2 p7-admin/evidence/P7-F1f2/VERIFY-coverage.txt d8765b6e779c397801be48651d8830a45995d3a4 模块覆盖补验PASS（官方provider5.0.5，53绿；全文件89.13/87.04/97.29/94.71%，修改29/29statement、14/15branch、11/11function、23/23line）；保留原FAIL历史，合并后回测另验，不外推生产旅程

@@ -10,4 +10,6 @@
 
 补充复用决策（2026-11-05）：F1.f2沿F1/R4修现有OperationsLedger持久化与close生命周期；F2.f2沿F2/R1/R4修authority既有H1/单grant动作目标关系及consumer既有回复过滤；两者都是本仓现有能力缺陷修正，不新增框架/授权数据库/依赖。发现与复现见 `evidence/review-e5ff286/{A,B}-REVIEW.txt`。
 
+R6/R7（P7-R1，限定调研）：集成现有锁定 `@deepseek-ai/dsh-schedule@0.2.2-alpha.2`（MIT），仅复用持久投递与提交后归属查询；正常真实投递成功。claim/pre-step早于receipt、合批删除后仅剩部分history、删除不撤回旧inbox均实测；逐routine安全自动准入仍blocked，不复活SB、不加授权数据库/第二scheduler。证据 `evidence/P7-R1.txt`；本轮未重查上游维护，未产出q2b Markdown，产品扩展白名单为空。
+
 本地浅仓日期不等于完整上游维护核验；本次仅批准文本改造及现有锁定依赖复用，不新增第1/2级依赖。参考仓只读，复制文本须注明来源URL@完整SHA:path与许可证。

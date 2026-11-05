@@ -295,6 +295,8 @@ export class OperationsLedger {
   private fileAbsent = true
   private loadError: Error | undefined
   private queue: Promise<unknown> = Promise.resolve()
+  private closed = false
+  private pending = 0
 
   constructor(dataDir: string) {
     this.file = resolve(dataDir, OPERATIONS_JSONL)
@@ -305,13 +307,23 @@ export class OperationsLedger {
     openLedgers.set(this.file, this)
   }
 
-  /** 释放单实例锁（实例本身随之停用；测试模拟重启时用）。 */
+  /** 永久停写；在途任务完成，未启动任务拒绝，全部结算后才释放锁。idle 时同步释放。 */
   close(): void {
-    if (openLedgers.get(this.file) === this) openLedgers.delete(this.file)
+    this.closed = true
+    this.releaseIfClosed()
+  }
+
+  private releaseIfClosed(): void {
+    if (this.closed && this.pending === 0 && openLedgers.get(this.file) === this) openLedgers.delete(this.file)
+  }
+
+  /** init 也可能修复写盘，必须参与同一队列与 close 的锁交接。 */
+  async init(): Promise<void> {
+    return this.enqueue(() => this.load())
   }
 
   /** 启动读盘建内存镜像。ENOENT → 新账本；版本未知/中段坏行 → loadError（读写全拒）。 */
-  async init(): Promise<void> {
+  private async load(): Promise<void> {
     let bytes: Buffer
     try {
       bytes = await readFile(this.file)
@@ -519,18 +531,27 @@ export class OperationsLedger {
     if (this.loadError !== undefined) throw this.loadError
   }
 
-  /** 变更加入单一队列：后入队的看到先入队的行（同 m3 store.ts enqueue）。 */
+  /** close 后拒绝新任务和未启动任务；已启动任务（含 init 修复）结算前仍独占锁。 */
   private enqueue<T>(job: () => Promise<T>): Promise<T> {
-    const run = this.queue.then(job, job)
-    this.queue = run.then(() => undefined, () => undefined)
+    if (this.closed) return Promise.reject(opsError('PBOTS_OPS_CLOSED', 'operations ledger is closed'))
+    this.pending += 1
+    const run = this.queue.then(() => {
+      if (this.closed) throw opsError('PBOTS_OPS_CLOSED', 'operations ledger is closed')
+      return job()
+    })
+    const settled = (): void => {
+      this.pending -= 1
+      this.releaseIfClosed()
+    }
+    this.queue = run.then(settled, settled)
     return run
   }
 
   /**
    * 追加一行并 fsync。append 前 stat 校验：文件存在且 size 等于记账值，否则（被删/被
    * 外部改动）PBOTS_OPS_LOST 拒收、不重建（丢文件失败关闭）。写失败 → PBOTS_OPS_APPEND_FAILED，
-   * 行不入内存镜像（begin 语义 = 副作用 0；若字节半落盘，size 记账不符，下次 append 拒收，
-   * 重启后 init 修复撕裂尾）。
+   * 行不入内存镜像（begin 抛错，调用方副作用 0）。只有确认零字节追加才允许重试；
+   * 部分追加或 sync 失败使读写 fail closed，须 close + 新实例 init 重读，未知意图不重放。
    */
   private async appendLine(line: string): Promise<void> {
     if (this.fileAbsent) {
@@ -542,11 +563,20 @@ export class OperationsLedger {
       }
     }
     const handle = await open(this.file, 'a')
+    let appended = false
     try {
       await handle.appendFile(line)
+      appended = true
       await handle.sync()
     } catch (error) {
-      throw opsError('PBOTS_OPS_APPEND_FAILED', `append failed: ${(error as Error).message}`)
+      const failure = opsError('PBOTS_OPS_APPEND_FAILED', `append failed: ${(error as Error).message}`)
+      // 只有能确认未追加字节时才允许重试；sync 失败永远不能证明意图未落盘。
+      const unchanged = !appended && await stat(this.file).then(
+        (st) => st.size === this.size,
+        (cause: NodeJS.ErrnoException) => this.fileAbsent && cause.code === 'ENOENT',
+      )
+      if (!unchanged) this.loadError = failure // 必须 close + 新实例 init 重读；不删除/重放未知意图。
+      throw failure
     } finally {
       await handle.close().catch(() => undefined)
     }

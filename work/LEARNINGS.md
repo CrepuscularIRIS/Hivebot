@@ -87,3 +87,9 @@
 - GLM 限流期 builder/drafter 改派 Sol（用户 2026-11-04）；Opus 限流期 director/judge 席 A/frontend-dev/ux 席 A 亦改派 Sol（用户 2026-11-05），panel 注明代席，续跑中的先 TaskStop 再换发。
 - /tmp/p2sdk-handoff-* 累积泄漏（launchRuntime 不自清）→ P5-64。
 - **work/ 记账文件（PLAN/QUESTIONS/LEARNINGS）的修改此前从未提交，全靠工作区存活——本次事故一次全损。规则：每次合并 commit 一并 `git add work/<slug>/PLAN.md work/QUESTIONS.md work/LEARNINGS.md work/LOG.md work/<slug>/LOG.md`；tick 结束时对当日有改动的记账文件做一次 docs(work) 提交。**
+
+## 「原版即规格」：行为问题去逆向，不要问用户（用户 2026-11-05）
+- 用户原话：「这块不应该去逆向吗 怎么一直在询问我. 你应该只有需求部分询问我才需要.」目标就是 1:1 对齐 Grok Bot，所以**产品行为、权限语义、交互细节的答案在 0.78.1 里**——派 RE 查证后按原版定，写进决策记录并注明 RE 锚点即可，不进 QUESTIONS。
+- 只有这几类才问用户：需求与范围（做什么/不做什么）、品味偏好（原版有两种做法时选哪种，先按 RE 主流做法执行并标注）、法外授权（越过 CLAUDE.md 硬约束的事，如开放真桌面）。
+- BRIEF/PLAN 里现存的 U-* 待确认项按此清理：能 RE 定的转为「按 RE 定（锚点）」，真剩需求类的才保留。
+- 例：plugin_manager 是否全局生效——用户已答「问题不是那么大」；RE 证据（RE-admin-078 §4）显示原版也非裸全局：有 always_allow/auto_review/needs_approval 分层 + CU 的 standing grants。按原版分层定，不自建更重的 Mandate 体系。

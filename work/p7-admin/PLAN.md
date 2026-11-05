@@ -90,7 +90,7 @@
 
 | id | 区域 / 复用 | status | 验收与证据 |
 |---|---|---|---|
-| P7-F1.f2 | 仅 `app/ui/main/admin/operations.ts`、`app/ui/tests/unit/admin/operations.test.ts`；沿F1/R4修现有账本，不加存储层 | 独立验收中（Sol交付d8765b6；34测试绿，覆盖≥80%未证实；09:48派Sol审+测，未合并；REPORT.txt因角色限制未写） | B1首笔真实append后sync失败须失败关闭，不能同key新ID双占位/finish LOST/恢复错指；B2 close永久停用旧写者，覆盖排队/在途与锁移交，不只idle guard。先RED/GREEN，改动覆盖≥80%，独立验收；报告 `evidence/P7-F1f2/REPORT.txt`，来源 `evidence/review-e5ff286/B-REVIEW.txt` |
+| P7-F1.f2 | 仅 `app/ui/main/admin/operations.ts`、`app/ui/tests/unit/admin/operations.test.ts`；沿F1/R4修现有账本，不加存储层 | blocked（d8765b6独立B1/B2模块PASS、57+19测试绿，整体FAIL仅覆盖证据缺失；09:58原verifier续补隔离覆盖工具，未合并；REPORT.txt未写） | B1首笔真实append后sync失败须失败关闭，不能同key新ID双占位/finish LOST/恢复错指；B2 close永久停用旧写者，覆盖排队/在途与锁移交，不只idle guard。先RED/GREEN，改动覆盖≥80%，独立验收；报告 `evidence/P7-F1f2/REPORT.txt`，来源 `evidence/review-e5ff286/B-REVIEW.txt` |
 | P7-F2.f2 | 仅 `app/sdk/src/admin/authority.mjs`、`app/sdk/tests/unit/p7-authority.test.ts`、`app/ui/main/admin/consumer.ts`、`app/ui/tests/unit/admin/channel.test.ts`；沿F2/R1/R4修现有校验与过滤，不造Mandate引擎 | running（Sol；`/tmp/bot-wt/P7-F2f2`，基线a2279cd；09:48派发；先独立复现再最小修复） | A1 H1批准Alice不能放行Mallory及额外model/prompt/cwd；A2安装X/停用Y不能授权停用X，保留合法动作目标成功；A3 error.details与value等价过滤token/PID，实际main→SDK桥用合成数据复验。先RED/GREEN、改动覆盖≥80%、独立验收；不得全拒假绿或声称真实凭证泄漏；来源 `evidence/review-e5ff286/A-REVIEW.txt` |
 | P7-R3.RE | 原版0.78.1只读取证；`evidence/P7-R3-RE-delete.txt`；不改产品 | 部分可证后停止（静态请求/客户端边界已回报；存储终态及终端保护UNKNOWN，不能解锁P6-24；raw.json/rea.json有，报告TXT未生成） | 仅删除终端、server/mirror历史附件cwd边界、main/createdBy worker/subagent保护停止与晚到消息；不可见云端明确unknown。R3底座归档不冒充原版完整删除，P6-24继续blocked |
 

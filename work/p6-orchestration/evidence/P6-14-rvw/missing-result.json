@@ -1,0 +1,220 @@
+{
+  "mode": "missing",
+  "worker": "session-1e1785c7-2799-4b89-bf86-536d580628d2",
+  "tool": "subagent",
+  "before": 3,
+  "after": 4,
+  "results": [
+    {
+      "seq": 17,
+      "type": "tool/result",
+      "callId": "probe-call",
+      "isError": false,
+      "error": null,
+      "text": "started subagent 3ed7d2ee-fdf3-4a56-8d9d-a1514fe24785"
+    }
+  ],
+  "childEvents": [
+    {
+      "seq": 0,
+      "type": "subagent/descriptor",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 1,
+      "type": "sandbox/mode",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 2,
+      "type": "approval/policy",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 3,
+      "type": "agent/inbox/spliced",
+      "target": "next-turn",
+      "outcome": null,
+      "insertedIds": [
+        "b25ef8ed-89f4-4853-8305-c7501adea298"
+      ]
+    },
+    {
+      "seq": 4,
+      "type": "turn/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 5,
+      "type": "agent/inbox/spliced",
+      "target": "next-turn",
+      "outcome": null,
+      "insertedIds": []
+    },
+    {
+      "seq": 6,
+      "type": "step/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 7,
+      "type": "system/message",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 8,
+      "type": "user/message",
+      "id": "b25ef8ed-89f4-4853-8305-c7501adea298",
+      "sourceKind": "user"
+    },
+    {
+      "seq": 9,
+      "type": "user/message",
+      "id": "f0752494-7790-4d22-8ab1-b33e448d924a",
+      "sourceKind": "runtime-context"
+    },
+    {
+      "seq": 10,
+      "type": "user/message",
+      "id": "7249bc36-00c0-425a-8c18-db1186592817",
+      "sourceKind": "time-context"
+    },
+    {
+      "seq": 11,
+      "type": "request/header",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 12,
+      "type": "request/context",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 13,
+      "type": "session/title",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 14,
+      "type": "assistant/message",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 15,
+      "type": "tool/call",
+      "turn": 1,
+      "callId": "probe-call",
+      "name": "job_list"
+    },
+    {
+      "seq": 16,
+      "type": "tool/result",
+      "callId": "probe-call",
+      "isError": false,
+      "error": null,
+      "text": "(no background jobs)"
+    },
+    {
+      "seq": 17,
+      "type": "step/end",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 18,
+      "type": "step/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 19,
+      "type": "assistant/message",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 20,
+      "type": "step/end",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 21,
+      "type": "turn/end",
+      "turn": 1,
+      "reason": "completed",
+      "callId": "",
+      "name": ""
+    }
+  ],
+  "snapshot": {
+    "agents": [
+      {
+        "id": "session-1e1785c7-2799-4b89-bf86-536d580628d2",
+        "names": [
+          "request_network",
+          "working_directory",
+          "create_bot",
+          "send_to_bot",
+          "stop_bot",
+          "p612_conn_write",
+          "job_output",
+          "job_list",
+          "job_kill",
+          "present",
+          "read",
+          "write",
+          "edit",
+          "glob",
+          "grep",
+          "skill",
+          "web_search",
+          "web_fetch",
+          "bash",
+          "read_image",
+          "get_goal",
+          "create_goal",
+          "update_goal",
+          "ask_user_question",
+          "workflow",
+          "todo_write",
+          "list_agents",
+          "send_message",
+          "interrupt_agent",
+          "exit_plan_mode",
+          "list_subagent_models",
+          "subagent",
+          "subagent_fork",
+          "schedule_create",
+          "schedule_list",
+          "schedule_delete",
+          "schedule_update"
+        ]
+      }
+    ]
+  }
+}

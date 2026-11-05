@@ -1,0 +1,196 @@
+diff --git a/app/sdk/tests/unit/orchestration-envelope.test.ts b/app/sdk/tests/unit/orchestration-envelope.test.ts
+index 5c5a3d4..159a87c 100644
+--- a/app/sdk/tests/unit/orchestration-envelope.test.ts
++++ b/app/sdk/tests/unit/orchestration-envelope.test.ts
+@@ -20,6 +20,8 @@ import {
+   workerRestrictDeny,
+   applyWorkerRestriction,
+   registerWorkerRestriction,
++  resolveWorkerStatus,
++  isEnveloped,
+ } from '../../src/orchestration/envelope.mjs'
+ 
+ const denyText = (name: string, args?: object) => judgeWorkerCall(name, args)?.reason ?? ''
+@@ -136,13 +138,11 @@ describe('P6-14 registerEnvelope（接线）', () => {
+     }
+   })
+ 
+-  it('③ worker 的普通工具 / 主 bot 会话（含调 subagent）/ bots.json 不可读的会话 → next() 放行', async () => {
++  it('③ worker 的普通工具 / 主 bot 会话（含调 subagent）→ next() 放行', async () => {
+     const g = bootGuard({ w1: { createdBy: 'm1' } })
+     expect(await g.call({ agent: { id: 'w1' }, name: 'read', arguments: { file_path: '/proc/self/environ' } })).toEqual({ kind: 'pass-through' })
+     expect(await g.call({ agent: { id: 'm1' }, name: 'subagent', arguments: {} })).toEqual({ kind: 'pass-through' })
+     expect(await g.call({ agent: { id: 'm1' }, name: 'bash', arguments: { run_in_background: true } })).toEqual({ kind: 'pass-through' })
+-    const broken = bootGuard() // 无 bots.json：readWorkerIds 返回 []，不按 worker 拦
+-    expect(await broken.call({ agent: { id: 'w1' }, name: 'subagent', arguments: {} })).toEqual({ kind: 'pass-through' })
+   })
+ 
+   it('④ 回合中 worker 被写进 bots.json 后立即生效（每次 execute 重读，不加缓存窗口）', async () => {
+@@ -154,6 +154,47 @@ describe('P6-14 registerEnvelope（接线）', () => {
+     writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: { w9: { createdBy: 'm1' } } }))
+     expect(await call({ agent: { id: 'w9' }, name: 'workflow', arguments: {} })).toMatchObject({ kind: 'deny' })
+   })
++
++  // P6-14.f2 C-1（REVIEW-P6-14-C major ①）：身份不可判定 = 按 worker 处理（fail
++  // closed，宁可误伤），只有文件健康且无 createdBy 才确认非 worker 放行。
++  it('⑤ f2 C-1 fail closed：bots.json 缺失 / 损坏 / 缺 bots 键时，任意会话（含陌生 id）的 subagent / 后台入口全拒；文件恢复健康后主 bot 放行', async () => {
++    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-unit-'))
++    let listener: ((exec: any, next: () => any) => Promise<any>) | undefined
++    const ctx = { on: (_n: string, fn: any) => { listener = fn; return () => {} } }
++    registerEnvelope(ctx as any, { config: { dataDir: dir } })
++    const call = (exec: any) => listener!(exec, () => ({ kind: 'pass-through' }))
++    // 缺失（未写文件）
++    for (const exec of [
++      { agent: { id: 'w1' }, name: 'subagent', arguments: { prompt: 'x' } },
++      { agent: { id: 'total-stranger' }, name: 'job_list', arguments: {} },
++      { agent: { id: 'bash-session' }, name: 'bash', arguments: { command: 'x', description: 'x', run_in_background: true } },
++    ]) expect(await call(exec)).toMatchObject({ kind: 'deny' })
++    // 损坏（坏 JSON）与合法 JSON 缺 bots 键同口径
++    writeFileSync(join(dir, 'bots.json'), '{broken')
++    expect(await call({ agent: { id: 'm1' }, name: 'subagent', arguments: {} })).toMatchObject({ kind: 'deny' })
++    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {} }))
++    expect(await call({ agent: { id: 'm1' }, name: 'subagent', arguments: {} })).toMatchObject({ kind: 'deny' })
++    // 恢复健康（bots 键在、该 id 无 createdBy）→ 确认非 worker，主 bot 正常路径放行
++    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: { w1: { createdBy: 'm1' } } }))
++    expect(await call({ agent: { id: 'm1' }, name: 'subagent', arguments: {} })).toEqual({ kind: 'pass-through' })
++    expect(await call({ agent: { id: 'm1' }, name: 'read', arguments: { file_path: '/tmp/x' } })).toEqual({ kind: 'pass-through' })
++  })
++
++  // P6-14.f2 C-2（REVIEW-P6-14-C major ②）执行层谱系：worker 的直接子代理
++  // （session header origin=subagent、parentSession=worker）按信封拦——改名委派
++  // 工具建出来的子代理在执行层不可达 job_list / 再委派；主 bot 的子代理不受影响。
++  it('⑥ f2 C-2 谱系：worker 直接子代理的 job_list / subagent 拒；主 bot 子代与谱系外会话放行', async () => {
++    const g = bootGuard({ w1: { createdBy: 'm1' } })
++    const childOf = (parent: string) => ({ session: { header: { origin: 'subagent', parentSession: parent } } })
++    expect(await g.call({ agent: { id: 'child-of-worker', ...childOf('w1') }, name: 'job_list', arguments: {} })).toMatchObject({ kind: 'deny' })
++    expect(await g.call({ agent: { id: 'child-of-worker', ...childOf('w1') }, name: 'subagent', arguments: { prompt: 'x' } })).toMatchObject({ kind: 'deny' })
++    // 主 bot（m1 无 createdBy）的子代理：委派是主 bot 的正常能力，放行
++    expect(await g.call({ agent: { id: 'child-of-main', ...childOf('m1') }, name: 'subagent', arguments: { prompt: 'x' } })).toEqual({ kind: 'pass-through' })
++    expect(await g.call({ agent: { id: 'child-of-main', ...childOf('m1') }, name: 'job_list', arguments: {} })).toEqual({ kind: 'pass-through' })
++    // 非 subagent 会话（无 origin 标记）不吃谱系误伤；subagent 但父健康非 worker 亦放行
++    expect(await g.call({ agent: { id: 'plain', session: { header: {} } }, name: 'job_list', arguments: {} })).toEqual({ kind: 'pass-through' })
++    expect(await g.call({ agent: { id: 'plain', session: { header: { origin: 'subagent', parentSession: 'unknown-parent' } } }, name: 'read', arguments: {} })).toEqual({ kind: 'pass-through' })
++  })
+ })
+ 
+ // ---------------------------------------------------------------------------
+@@ -213,7 +254,7 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', ()
+       tools: { definitions: () => registry.map((name) => ({ name })) },
+       logger: { warn: (m: string) => warns.push(m) },
+       on: (name: string, fn: any) => {
+-        expect(['agent/created', 'agent/disposed']).toContain(name)
++        expect(['agent/created', 'agent/disposed', 'session/created']).toContain(name)
+         listeners.set(name, [...(listeners.get(name) ?? []), fn])
+         return () => listeners.set(name, (listeners.get(name) ?? []).filter((f) => f !== fn))
+       },
+@@ -267,18 +308,62 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', ()
+     expect(warns.join('\n')).toContain('w1')
+   })
+ 
+-  it('⑤ bots.json 不可读 → 不挂（与 pre-execute 守卫同口径），不抛', () => {
++  it('⑤ f2 C-1 fail closed：bots.json 不可读 → 所有会话按 worker 挂 restrict（身份不可判定 ≠ 非 worker）', () => {
+     const dir = mkdtempSync(join(tmpdir(), 'bot-p614f1-unit-')) // 无 bots.json
+     const listeners = new Map<string, Array<(payload: any) => void>>()
+     const restricted: string[] = []
+     const ctx = {
+-      agents: { list: () => [{ id: 'w1', ctx: { tools: { restrict: () => { restricted.push('w1'); return () => {} } } } }] },
++      agents: { list: () => [{ id: 'w1', ctx: { tools: { restrict: () => { restricted.push('w1'); return () => {} } } } }, { id: 'm1', ctx: { tools: { restrict: () => { restricted.push('m1'); return () => {} } } } }] },
++      tools: { definitions: () => [{ name: 'subagent' }] },
++      logger: { warn: () => {} },
++      on: (name: string, fn: any) => { listeners.set(name, [fn]); return () => {} },
++    }
++    registerWorkerRestriction(ctx as any, { config: { dataDir: dir } })
++    expect(restricted).toEqual(['w1', 'm1']) // 宁可误伤：主 bot 在文件坏窗口同样收窄
++  })
++
++  // P6-14.f2 C-2（REVIEW-P6-14-C major ②）创建点谱系拒绝：worker 的直接子代理
++  // 在 session/created 同步抛错 veto 发布（比 agent/created 更早，session 与 agent
++  // 都不落 registry → 改名委派工具的调用 isError、0 子代理）；主 bot 的子代理
++  // 与身份健康的谱系外子代理照常创建。bootstrap 扫描（list）不走创建点，只挂
++  // restrict（已存在的会话不能在引导期 fail 启动）。
++  it('⑦ f2 C-2 创建点拒绝：worker 子代理的 session/created 抛 pbots/forbidden；主 bot 子代理不抛', () => {
++    const w = boot({ w1: { createdBy: 'm1' } })
++    const childSession = (parent: string) => ({ header: { origin: 'subagent', parentSession: parent } })
++    expect(() => w.emit('session/created', childSession('w1'))).toThrow(/pbots\/forbidden.*delegate/)
++    expect(() => w.emit('session/created', childSession('m1'))).not.toThrow()
++    // 普通（非 subagent）session 创建不受影响
++    expect(() => w.emit('session/created', { header: {} })).not.toThrow()
++    // 身份不可判定（文件坏）→ fail closed：任何 subagent 创建都拒（宁可误伤）
++    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-unit-')) // 无 bots.json
++    const listeners = new Map<string, Array<(payload: any) => void>>()
++    const ctx = {
++      agents: { list: () => [] },
+       tools: { definitions: () => [{ name: 'subagent' }] },
+       logger: { warn: () => {} },
+       on: (name: string, fn: any) => { listeners.set(name, [fn]); return () => {} },
+     }
+     registerWorkerRestriction(ctx as any, { config: { dataDir: dir } })
+-    expect(restricted).toEqual([])
++    expect(() => listeners.get('session/created')![0]!(childSession('some-parent'))).toThrow(/pbots\/forbidden/)
++  })
++
++  it('⑧ f2 C-2 谱系纵深：bootstrap list 里已 live 的 worker 子代理挂 restrict（历史残留不 fail 引导，工具表仍收窄）', () => {
++    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-unit-'))
++    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: { w1: { createdBy: 'm1' } } }))
++    const restricted: string[] = []
++    const mkAgent = (id: string, parent?: string) => ({
++      id,
++      ...(parent === undefined ? {} : { session: { header: { origin: 'subagent', parentSession: parent } } }),
++      ctx: { tools: { restrict: () => { restricted.push(id); return () => {} } } },
++    })
++    const ctx = {
++      agents: { list: () => [mkAgent('w1'), mkAgent('kid-of-w1', 'w1'), mkAgent('kid-of-m1', 'm1'), mkAgent('plain')] },
++      tools: { definitions: () => ['subagent', 'job_list'].map((name) => ({ name })) },
++      logger: { warn: () => {} },
++      on: () => () => {},
++    }
++    registerWorkerRestriction(ctx as any, { config: { dataDir: dir } })
++    expect(restricted).toEqual(['w1', 'kid-of-w1'])
+   })
+ 
+   it('⑥ 返回的 disposer：摘监听 + 撤销全部已挂 restriction', () => {
+@@ -292,6 +377,44 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', ()
+   })
+ })
+ 
++// ---------------------------------------------------------------------------
++// P6-14.f2（REVIEW-P6-14-C C-1/C-2）：三态身份判定 + 信封归属
++// ---------------------------------------------------------------------------
++
++describe('P6-14.f2 resolveWorkerStatus（三态身份，fail closed）', () => {
++  const mkDir = (content?: string) => {
++    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-st-'))
++    if (content !== undefined) writeFileSync(join(dir, 'bots.json'), content)
++    return dir
++  }
++  const healthy = JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: { w1: { createdBy: 'm1' }, w2: { createdBy: '' }, plain: {} } })
++
++  it('① 文件健康：createdBy 非空 → worker；createdBy 空 / 无记录 → main', () => {
++    const dir = mkDir(healthy)
++    expect(resolveWorkerStatus('w1', dir)).toBe('worker')
++    expect(resolveWorkerStatus('w2', dir)).toBe('main')
++    expect(resolveWorkerStatus('plain', dir)).toBe('main')
++    expect(resolveWorkerStatus('m1', dir)).toBe('main')
++  })
++
++  it('② 身份不可判定 → unknown：缺失 / 坏 JSON / 缺 bots 键 / bots 非对象', () => {
++    expect(resolveWorkerStatus('w1', mkDir())).toBe('unknown') // 文件不存在
++    expect(resolveWorkerStatus('w1', mkDir('{broken'))).toBe('unknown')
++    expect(resolveWorkerStatus('w1', mkDir(JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {} })))).toBe('unknown')
++    expect(resolveWorkerStatus('w1', mkDir(JSON.stringify({ version: 1, bots: null })))).toBe('unknown')
++  })
++
++  it('③ isEnveloped：worker / unknown / worker 直接子代为真；健康 main 与 main 子代为假', () => {
++    const dir = mkDir(healthy)
++    expect(isEnveloped({ id: 'w1' }, dir)).toBe(true)
++    expect(isEnveloped({ id: 'nope' }, mkDir())).toBe(true) // unknown → fail closed
++    expect(isEnveloped({ id: 'm1' }, dir)).toBe(false)
++    expect(isEnveloped({ id: 'kid', session: { header: { origin: 'subagent', parentSession: 'w1' } } }, dir)).toBe(true)
++    expect(isEnveloped({ id: 'kid', session: { header: { origin: 'subagent', parentSession: 'm1' } } }, dir)).toBe(false)
++    expect(isEnveloped({ id: 'plain', session: { header: {} } }, dir)).toBe(false)
++  })
++})
++
+ describe('P6-14.f1 升级哨兵：已装 dsh-tools 的 restrict API 形状', () => {
+   // 依赖解析同 src/orchestration/main-channel.mjs / tests/support/orchestration-create-inspect.mjs
+   // （裸包名只能从 app/sdk 直接依赖 createResolve）。对照 repos/deepseek-harness@ce7073d

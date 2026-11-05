@@ -62,13 +62,25 @@ export class BotsMetaStore {
     if (openStores.get(this.file) === this) openStores.delete(this.file)
   }
 
-  /** 启动读盘；ENOENT → 空 meta。坏 JSON / version 不符 → 记错，read() 抛。 */
+  /** 启动读盘；ENOENT → 空 meta。坏 JSON / version 不符 → 记错，read() 抛。
+   * P6-14.f3（VERIFY-P6-14.f2 新问题 3）：ENOENT 时立即写零 worker 骨架
+   * {version:1,mainBotId:null,recipes:{}}（无 bots 键，决策 31）——main 的 M1/M2
+   * 挂在 restore 闸门后、闸门等本 init，故首个 session/create 到达 dsh 前文件已
+   * 存在，SDK envelope 不会在冷启动判 unknown。写失败按坏文件处理（loadError →
+   * 读方 fail closed）；已存在的文件（含坏文件）只读不写。 */
   async init(): Promise<void> {
     let text: string
     try {
       text = await readFile(this.file, 'utf8')
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        try {
+          await this.flush()
+        } catch (ensureError) {
+          this.loadError = ensureError as Error
+        }
+        return
+      }
       this.loadError = error as Error
       return
     }

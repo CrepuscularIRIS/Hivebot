@@ -275,7 +275,14 @@ async function main(): Promise<void> {
       wireRestoreOnReconnect(dsh, m3, ready)
       dshStart?.catch((error) => {
         console.warn(`[m3] first connect timed out; restore deferred to reconnect: ${String(error)}`)
-        ready.setRestoreSettled([...m3.failed])
+        // P6-14.f4（VERIFY-P6-14.f3 阻塞项）：超时放行同样先等身份存储 init ——
+        // bots.json 未就位就开闸会让首个 session/create 以 unknown 身份到达 dsh。
+        // init 不 reject（错误留在 store.loadError，读方 fail closed）；两分支都
+        // 放行，保持 U-17「连接失败不永久挂死 M1/M2」的退路语义。
+        void m3.init.then(
+          () => ready.setRestoreSettled([...m3.failed]),
+          () => ready.setRestoreSettled([...m3.failed]),
+        )
       })
     }
     // main 侧观测面（U-15 ③ 断言口径：错 clientId 拒绝时 dsh /api 计数 === 0；不开新 IPC 通道）

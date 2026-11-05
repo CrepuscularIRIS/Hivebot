@@ -1,0 +1,47 @@
+{
+  "mode": "normal",
+  "worker": "session-f6270131-84ad-45a3-aecd-6f0975a76f3d",
+  "tool": "job_list",
+  "before": 1,
+  "after": 1,
+  "results": [
+    {
+      "seq": 16,
+      "type": "tool/result",
+      "callId": "probe-call",
+      "isError": true,
+      "error": null,
+      "text": "Error: pbots/forbidden: worker sessions cannot start or manage background work (tool \"job_list\" denied; a worker turn ends when its task ends)"
+    }
+  ],
+  "childEvents": [],
+  "snapshot": {
+    "agents": [
+      {
+        "id": "session-f6270131-84ad-45a3-aecd-6f0975a76f3d",
+        "names": [
+          "request_network",
+          "working_directory",
+          "p612_conn_write",
+          "present",
+          "read",
+          "write",
+          "edit",
+          "glob",
+          "grep",
+          "skill",
+          "web_search",
+          "web_fetch",
+          "bash",
+          "read_image",
+          "get_goal",
+          "create_goal",
+          "update_goal",
+          "ask_user_question",
+          "todo_write",
+          "exit_plan_mode"
+        ]
+      }
+    ]
+  }
+}

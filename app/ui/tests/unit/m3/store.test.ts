@@ -37,6 +37,33 @@ describe('BotsMetaStore · D10d 盘上形状', () => {
       recipes: { 'p2temp-bbbb2222': { agentPreset: 'p2-beta', connectors: ['x'] } },
     })
   })
+
+  // P6-14.f3（VERIFY-P6-14.f2 新问题 3）：冷启动顺序——bots.json 必须先于首个
+  // session 创建存在（否则 SDK envelope 判 unknown、主 bot 被收窄）。main 的 M1
+  // 挂在 restore 闸门后、闸门等 init，故 init() 在 ENOENT 时立即写零 worker 骨架
+  // （CONTRACT v1.5 §3.1 决策 31：无 worker 不写 bots 键）即可保证先于首会话。
+  it('f3 冷启动：空目录 init() 立即落盘 {version:1,mainBotId:null,recipes:{}}（无 bots 键）；已存在文件不被改写、坏文件不被覆盖', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const onDisk = JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8'))
+    expect(onDisk).toEqual({ version: 1, mainBotId: null, recipes: {} })
+    expect(Object.keys(onDisk).sort()).toEqual(['mainBotId', 'recipes', 'version'])
+    // 已存在的文件：init 只读不写（字节不变）
+    store.close()
+    writeFileSync(join(dir, BOTS_JSON), JSON.stringify({ version: 1, mainBotId: 's-keep', recipes: {} }))
+    const keep = new BotsMetaStore(dir)
+    await keep.init()
+    expect(readFileSync(join(dir, BOTS_JSON), 'utf8')).toBe(JSON.stringify({ version: 1, mainBotId: 's-keep', recipes: {} }))
+    keep.close()
+    // 坏文件：init 记错、不覆盖用户数据（fail closed 交给读方，envelope 侧 unknown）
+    writeFileSync(join(dir, BOTS_JSON), '{broken')
+    const broken = new BotsMetaStore(dir)
+    await broken.init()
+    expect(readFileSync(join(dir, BOTS_JSON), 'utf8')).toBe('{broken')
+    expect(() => broken.read()).toThrow()
+    broken.close()
+  })
 })
 
 describe('BotsMetaStore · D10e 单一 Promise 队列', () => {

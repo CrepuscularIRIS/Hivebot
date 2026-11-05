@@ -145,8 +145,9 @@ describe('P6-13 live (real Loader)', () => {
   const control = (request: object) => rt.client.call('p610/control', { request })
   const newSession = async (): Promise<string> =>
     ((await rt.client.call('session/create', { request: { agentPreset: 'standard', cwd: workspace } }) as { sessionId: string }).sessionId)
-  const writeBots = (mainBotId: string, bots: Record<string, { createdBy: string }>) => {
-    writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1, mainBotId, recipes: {}, bots }))
+  const writeBots = (mainBotId: string, bots: Record<string, { createdBy: string }> = {}) => {
+    // f3：零 worker = 省略 bots 键（生产 store 形状，CONTRACT v1.5 §3.1 决策 31）
+    writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1, mainBotId, recipes: {}, ...(Object.keys(bots).length === 0 ? {} : { bots }) }))
   }
   const readLog = async (sessionId: string): Promise<LogEvent[]> =>
     ((await control({ op: 'read', sessionId })) as { events: LogEvent[] }).events
@@ -217,6 +218,7 @@ describe('P6-13 live (real Loader)', () => {
   }
 
   beforeAll(async () => {
+    writeBots('p613-boot', {}) // f2 fail closed：首个会话建立前 bots.json 健康
     rt = await launchRuntime({ env: {
       P2SDK_PATCH: `${join(PKG_ROOT, 'profile', 'patches', 'orchestration.yml')}:${overlay}`,
       P2SDK_HOME: home, PBOTS_DATA_DIR: dataDir, P2SDK_ORCH_DATA_DIR: dataDir,

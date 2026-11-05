@@ -1,8 +1,8 @@
-// P6-14 worker 安全信封（PLAN p6-orchestration P6-14 + P6-14.f1；BRIEF D9③④⑤、
-// §4-5 HIGH#5/6）。两层：f1 起 worker 会话（bots.json bots[id].createdBy，
-// slots.readWorkerIds 同一判定）在建立点经 per-agent restrict 收窄模型可见工具
-// 表（RESTRICT_TOOLS，见文件尾）；pre-execute 执行层守卫拒三类入口并保留
-// restrict 覆盖不了的字面串拒 / 顺序差分：
+// P6-14 worker 安全信封（PLAN p6-orchestration P6-14 + P6-14.f1/.f2；BRIEF
+// D9③④⑤、§4-5 HIGH#5/6）。两层：f1 起 worker 会话（bots.json bots[id].createdBy
+// 经 resolveWorkerStatus 三态判定，f2）在建立点经 per-agent restrict 收窄模型
+// 可见工具表（RESTRICT_TOOLS，见文件尾）；pre-execute 执行层守卫拒三类入口并
+// 保留 restrict 覆盖不了的字面串拒 / 顺序差分：
 //   ① 协调者工具 create_bot / send_to_bot / stop_bot（D9③；按名拒绝不依赖
 //      注册时序，P6-13（944afa0）合并前名单已预置 stop_bot）
 //   ② 再委派 subagent / subagent_fork / list_subagent_models / send_message /
@@ -19,12 +19,19 @@
 // deny 先于 shell-ask 出卡（顺序差分格：worker 的 run_in_background bash 在
 // 出卡前被拒、asked===0；普通 bash 仍走 shell-ask）。
 // 已知上限（ponytail:）：subagent / workflow 的 toolName 可被 preset 改名，名单
-// 跟 standard preset 缺省名（approval.yml:139-160）——部署侧改名的入口拦不住，
-// 需要时把新名加进 DELEGATION_TOOLS。bots.json 不可读 → readWorkerIds 返回 []
-// 不按 worker 拦（与 slots 收养同口径；P5 guard 链与协调者工具自身的 main 校验
-// 仍在）。主 bot 不受信封约束（委派与后台作业照常）。
-import { orchDataDir } from './identity.mjs'
-import { readWorkerIds } from './slots.mjs'
+// 跟 standard preset 缺省名（approval.yml:139-160）。f2（REVIEW-P6-14-C C-2）后
+// 改名不再是绕过：worker 的直接子代理在创建点（session/created 谱系拒绝，见
+// registerWorkerRestriction）整体拒绝，执行层对 worker 子代同样按信封拦——名单
+// 只影响「工具表隐藏哪些名字」。
+// 主 bot 不受信封约束（委派与后台作业照常）。
+// f2 C-1（REVIEW-P6-14-C major ①）：身份不可判定（bots.json 缺失 / 损坏 /
+// version 不符）≠ 确认非 worker——fail closed 按 worker 处理（宁可误伤）。f3 起
+// 「合法 v1 文档省略 bots 键」是零 worker 的确认非 worker（CONTRACT v1.5 §3.1
+// 决策 31），不再算损坏；文件恢复健康后已挂的 restrict 由 registerWorkerRestriction
+// 的恢复 sweep 撤销（见内）。
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { orchDataDir, BOTS_JSON } from './identity.mjs'
 
 /** 协调者工具（本仓注册；worker 工具表已由 when 隐藏，这里兜 direct execute）。 */
 export const COORDINATOR_TOOLS = ['create_bot', 'send_to_bot', 'stop_bot']
@@ -74,6 +81,54 @@ const delegationSet = new Set(DELEGATION_TOOLS)
 const jobSet = new Set(JOB_TOOLS)
 
 /**
+ * 三态身份判定（f2 C-1 fail closed 的核心，f3 收窄 unknown 面）：一个 session id
+ * 是 worker / 确认非 worker / 身份不可判定。与 slots.readWorkerIds 分道：容量收养
+ * 仍按「读不到就没有可收养的 worker」（功能语义），安全判定把读取失败与确认非
+ * worker 区分开——unknown 一律按 worker 处理。f3（VERIFY-P6-14.f2 阻塞项，
+ * CONTRACT v1.5 §3.1 决策 31）：文件有效（version 1）且省略 bots 键 = 合法的
+ * 零 worker 状态（生产 BotsMetaStore 无 worker 时正是此形状）= 确认非 worker；
+ * unknown 仅剩文件缺失 / 损坏（含 version 不符、bots 键在但非对象）。
+ * @param {string} id session id。
+ * @param {string} [dir] data dir (default orchDataDir()).
+ * @returns {'worker' | 'main' | 'unknown'}
+ */
+export function resolveWorkerStatus(id, dir = orchDataDir()) {
+  let meta
+  try {
+    meta = JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8'))
+  } catch {
+    return 'unknown'
+  }
+  if (meta?.version !== 1) return 'unknown'
+  const bots = meta.bots
+  if (bots === undefined) return 'main' // 合法零 worker：省略键即「无 worker」（决策 31）
+  if (bots === null || typeof bots !== 'object' || Array.isArray(bots)) return 'unknown'
+  const record = bots[String(id)]
+  return typeof record?.createdBy === 'string' && record.createdBy !== '' ? 'worker' : 'main'
+}
+
+/**
+ * 一个 live agent 是否按 worker 信封处理（f2）：worker 本尊、身份不可判定的
+ * 会话（fail closed）、或 worker 的直接子代理（session header origin=subagent
+ * 且 parentSession 非 main——C-2 改名委派的执行层谱系拦）。
+ * ponytail: 只看直接父——worker 后代在创建点即被拒（registerWorkerRestriction
+ * 的谱系拒绝），能活到执行层的孙代要求其父先绕过创建点（即 envelope 未加载的
+ * 窗口），那时本层同样不在；需要全谱系时沿 parentSession 递归查 header。
+ * @param {{ id?: unknown, session?: { header?: { origin?: string, parentSession?: unknown } } }} agent live agent（exec.agent / agent/created payload）。
+ * @param {string} [dir] data dir.
+ * @returns {boolean}
+ */
+export function isEnveloped(agent, dir = orchDataDir()) {
+  const id = String(agent?.id ?? '')
+  if (resolveWorkerStatus(id, dir) !== 'main') return true
+  const header = agent?.session?.header
+  if (header?.origin === 'subagent') {
+    return resolveWorkerStatus(String(header.parentSession ?? ''), dir) !== 'main'
+  }
+  return false
+}
+
+/**
  * 纯判定：worker 会话内一次工具调用是否被信封拒绝。
  * @param {string} name 工具名（exec.name）。
  * @param {unknown} rawArgs 调用参数（exec.arguments，可能为 null/非对象）。
@@ -117,8 +172,9 @@ export function enumerateInstalledEntries(registeredNames) {
 
 /**
  * 把信封挂到宿主 pre-execute waterfall（cordis prepend 钉最外层）。
- * worker 判定每次 execute 重读 bots.json（slots.mjs 同款 ponytail：无缓存窗口，
- * worker 落盘后立即生效；文件极小、开销可忽略）。回调内不调宿主可重入 API。
+ * 信封归属（isEnveloped：worker / 身份不可判定 fail closed / worker 直接子代）
+ * 每次 execute 重读 bots.json（slots.mjs 同款 ponytail：无缓存窗口，worker 落盘
+ * 后立即生效；文件极小、开销可忽略）。回调内不调宿主可重入 API。
  * @param {{ on(name: string, fn: (...args: any[]) => any, prepend?: boolean): () => void }} ctx dsh plugin context.
  * @param {{ config?: { dataDir?: string } }} orch the owning OrchestrationPlugin。
  * @returns {() => void} disposer。
@@ -126,8 +182,7 @@ export function enumerateInstalledEntries(registeredNames) {
 export function registerEnvelope(ctx, orch) {
   return ctx.on('tools/pre-execute', async (exec, next) => {
     if (exec.agent !== undefined && exec.agent !== null) {
-      const agentId = String(exec.agent.id)
-      if (readWorkerIds(orch.config?.dataDir ?? orchDataDir()).includes(agentId)) {
+      if (isEnveloped(exec.agent, orch.config?.dataDir ?? orchDataDir())) {
         const verdict = judgeWorkerCall(exec.name, exec.arguments)
         if (verdict !== null) return verdict
       }
@@ -150,7 +205,8 @@ export function registerEnvelope(ctx, orch) {
 // 已知上限（ponytail:）：agent 先于 createdBy 落盘变 live（生产不会——main 在
 // session/create 前写 bots.json，orchestrate.ts createWorkerBot 第 3/4 步；仅
 // 手改 bots.json 的既有会话）→ 该实例不挂 restrict，执行期守卫照拒，会话重建
-// 后恢复；bots.json 不可读 → 不挂（与守卫同口径）。
+// 后恢复；f2 起 bots.json 不可读 → fail closed 全挂（不再与旧守卫的放行口径
+// 一致，C-1）。
 /** per-agent restrict 的拒绝面（三族并集；bash/pwsh 不进——参数级由守卫判）。 */
 export const RESTRICT_TOOLS = [...COORDINATOR_TOOLS, ...DELEGATION_TOOLS, ...JOB_TOOLS]
 
@@ -182,24 +238,42 @@ export function applyWorkerRestriction(agent, tools) {
 }
 
 /**
- * worker 会话建立点挂 per-agent restrict（P6-14.f1 主接线）：agent/created
- * （含 SDK 重启后 resume 的冷 worker 唤醒）+ 构造时已 live 的引导扫描，照
- * upstream tool-agent-team 的生命周期模式（agent/created / agent/disposed +
- * agents.list() bootstrap，experimental/tool-agent-team/src/index.ts:422-431）。
- * agent/created 是 serial dispatch（listener 抛错会 fail 会话创建）——本函数
- * 任何分支不外抛；挂不上只损失工具表收窄，执行期守卫照拒（fail open 到
- * 更强的兜底，不是放行）。
+ * worker 会话建立点挂 per-agent restrict（P6-14.f1 主接线）+ 创建点谱系拒绝
+ * （f2 C-2）：agent/created（含 SDK 重启后 resume 的冷 worker 唤醒）+ 构造时已
+ * live 的引导扫描，照 upstream tool-agent-team 的生命周期模式（agent/created /
+ * agent/disposed + agents.list() bootstrap，experimental/tool-agent-team/src/
+ * index.ts:422-431）。
+ * agent/created 是 serial dispatch（listener 抛错会 fail 会话创建）——f2 的
+ * 创建点谱系拒绝更早挂在 session/created（同步抛错 veto session 发布，见内）；
+ * agent/created 只做 restrict 挂载，任何分支不外抛：挂不上只损失工具表收窄，
+ * 执行期守卫照拒（fail open 到更强的兜底，不是放行）。
  * @param {{ agents: { list(): Array<{ id: unknown }> }, tools: { definitions(scope?: unknown): Array<{ name: string }> }, logger?: { warn?(message: string): void }, on(name: string, fn: (payload: any) => void): () => void }} ctx dsh plugin context.
  * @param {{ config?: { dataDir?: string } }} orch the owning OrchestrationPlugin。
  * @returns {() => void} disposer：摘监听并撤销全部已挂 restriction。
  */
 export function registerWorkerRestriction(ctx, orch) {
+  const dir = () => orch.config?.dataDir ?? orchDataDir()
   /** @type {Map<string, () => void>} */
   const applied = new Map()
+  /**
+   * C-2 创建点拒绝（f2）：挂在 session/created（比 agent/created 更早）——同步
+   * 抛错 veto session 发布并回滚 attach（dsh-session/src/index.ts:1297-1312
+   * "Synchronous throws intentionally propagate and veto publication"），改名
+   * 委派工具的调用以 isError 结束、子代理既无 agent 也无 session。判定按
+   * SessionHeader 持久字段（origin/parentSession，child-agent.ts childSessionMeta）。
+   */
+  const rejectWorkerChildSession = (session) => {
+    const header = session?.header
+    if (header?.origin !== 'subagent') return
+    const parent = String(header.parentSession ?? '')
+    if (resolveWorkerStatus(parent, dir()) !== 'main') {
+      throw new Error(`pbots/forbidden: worker sessions cannot delegate further (child session of "${parent}" denied at creation; run the task yourself)`)
+    }
+  }
   const maybeRestrict = (agent) => {
     const id = String(agent?.id ?? '')
     if (applied.has(id)) return
-    if (!readWorkerIds(orch.config?.dataDir ?? orchDataDir()).includes(id)) return
+    if (!isEnveloped(agent, dir())) return
     try {
       const undo = applyWorkerRestriction(agent, ctx.tools)
       if (undo !== null) applied.set(id, undo)
@@ -213,12 +287,36 @@ export function registerWorkerRestriction(ctx, orch) {
     applied.delete(id)
     try { undo() } catch { /* 幂等 disposer，重复撤销无害 */ }
   }
+  // f3 恢复撤销（VERIFY-P6-14.f2 新问题 1）：unknown 窗口（文件缺失/损坏）挂上
+  // 的 restrict，在身份变为确认非 worker 后撤掉（主 bot 工具表恢复）。SDK 观察
+  // 不到 main 的写盘，撤销挂在已有事件点：session/created / agent/created（全体
+  // sweep）与 tools/pre-execute（只查执行中的 agent）。只撤销、不新挂——新 worker
+  // 的 restrict 由创建点负责。ponytail: 无 fs.watch——恢复在下个可见事件生效；
+  // 被隐藏工具的首调确会经过 pre-execute（并当场撤销 restrict），但本次工具解析
+  // 快照仍按隐藏表报 UNKNOWN_TOOL 一次，重试即恢复；需要零窗口时再加文件监听。
+  const sweepAgent = (agent) => {
+    const id = String(agent?.id ?? '')
+    if (applied.has(id) && !isEnveloped(agent, dir())) lift(id)
+  }
+  const sweepAll = () => {
+    if (applied.size === 0) return
+    try {
+      for (const agent of ctx.agents.list()) sweepAgent(agent)
+    } catch { /* session/created 是 serial veto 点：sweep 不允许外抛 */ }
+  }
   for (const agent of ctx.agents.list()) maybeRestrict(agent)
-  const offCreated = ctx.on('agent/created', ({ agent }) => { maybeRestrict(agent) })
+  const offSessionCreated = ctx.on('session/created', (session) => { sweepAll(); rejectWorkerChildSession(session) })
+  const offCreated = ctx.on('agent/created', ({ agent }) => { sweepAll(); maybeRestrict(agent) })
   const offDisposed = ctx.on('agent/disposed', ({ agent }) => { lift(String(agent?.id ?? '')) })
+  const offPreExecute = ctx.on('tools/pre-execute', async (exec, next) => {
+    if (applied.size > 0 && exec.agent !== undefined && exec.agent !== null) sweepAgent(exec.agent)
+    return next()
+  }, true)
   return () => {
+    offSessionCreated()
     offCreated()
     offDisposed()
+    offPreExecute()
     for (const id of [...applied.keys()]) lift(id)
   }
 }

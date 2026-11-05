@@ -1,0 +1,17 @@
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const evidence=new URL('./probe-rename.log',import.meta.url);
+const raw=readFileSync(evidence,'utf8');
+const result=JSON.parse(raw.slice(0,raw.lastIndexOf('\ncleanup ')));
+const source=readFileSync('/tmp/bot-wt/P6-14f2/app/ui/renderer-grok/shim/src/data.ts','utf8');
+assert(source.includes(".filter((i) => typeof i.sessionId === 'string' && i.origin !== 'subagent' && i.parentSessionId === undefined)"));
+const orphan=result.orphanEvidence[0].item;
+const roster=[orphan].filter((i)=>typeof i.sessionId==='string'&&i.origin!=='subagent'&&i.parentSessionId===undefined);
+assert.equal(roster.length,0);
+assert.equal(orphan.agentAvailable,false);
+assert.equal(orphan.blank,true);
+assert.equal(result.orphanEvidence[0].events.length,0);
+assert(!result.snapshot.agents.some(a=>a.id===orphan.sessionId));
+assert(!result.snapshot.sessions.includes(orphan.sessionId));
+console.log(JSON.stringify({sessionListContainsOrphan:true,agentAvailable:orphan.agentAvailable,blank:orphan.blank,origin:orphan.origin,parentSessionId:orphan.parentSessionId,logEvents:0,liveSession:false,liveAgent:false,uiRosterProjectionCount:roster.length,promptDeniedBy:result.orphanEvidence[0].resumeError},null,2));
+console.log('PASS: durable orphan is exposed by raw RPC, excluded by current UI roster filter; no browser/visual claim');

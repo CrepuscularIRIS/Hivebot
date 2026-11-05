@@ -180,8 +180,12 @@ async function subscribe(rt: Runtime, onRequest: (item: Record<string, any>) => 
   return { cancel: () => { requests.cancel(); void pump } }
 }
 
-const writeBotsJson = (mainBotId: string | null, bots?: Record<string, { createdBy: string }>) => {
-  writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1, mainBotId, recipes: {}, ...(bots ? { bots } : {}) }))
+// P6-14.f3（VERIFY-P6-14.f2 阻塞项）：零 worker = 省略 bots 键是合法文档形状
+// （CONTRACT v1.5 §3.1 决策 31，与生产 BotsMetaStore 写盘字节一致）——空 bots
+// 不再强写空对象键，测试全程跑在真实 store 形状上；f2 的「缺键=损坏」口径废除，
+// 损坏用例只留坏 JSON / 缺文件。
+const writeBotsJson = (mainBotId: string | null, bots: Record<string, { createdBy: string }> = {}) => {
+  writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1, mainBotId, recipes: {}, ...(Object.keys(bots).length === 0 ? {} : { bots }) }))
 }
 
 describe('P6-10 live (real Loader)', () => {
@@ -196,6 +200,8 @@ describe('P6-10 live (real Loader)', () => {
   }
 
   beforeAll(async () => {
+    // f2 fail closed：首个会话建立前 bots.json 必须健康（生产 main 启动即写）
+    writeBotsJson('p610-boot')
     rt = await launchRuntime({ env: { P2SDK_PATCH: `${ORCH_YML}:${overlay1}`, P2SDK_HOME: home, PBOTS_DATA_DIR: dataDir, P2SDK_ORCH_DATA_DIR: dataDir } })
     B = (await rt.client.call('session/create', { request: { agentPreset: 'standard' } }) as { sessionId: string }).sessionId
   }, 120_000)
@@ -316,6 +322,9 @@ describe('P6-10 live (real Loader)', () => {
     writeFileSync(join(dataDir, 'bots.json'), '{broken')
     results = await runTurn(rt, M, 'identity-broken')
     expect(results[0].message.isError).toBe(true)
+    // 恢复健康文件：f2 起 fail-closed 窗口内建立的会话已挂 restrict 且不撤销，
+    // 坏状态留给后续用例会让它们的 create 建 worker 时工具表已收窄（测试卫生）
+    writeBotsJson(B)
   })
 
   it('⑫ durability: SIGKILL + restart keeps the worker session with its pbots-assign first message', { timeout: 240_000 }, async () => {
@@ -380,6 +389,7 @@ describe('P6-10 live RT2 (timeout + crash window)', () => {
   beforeAll(async () => {
     mkdirSync(join(home2, 'fake', 'scripts'), { recursive: true })
     mkdirSync(dataDir2, { recursive: true })
+    writeBotsJson2('p610-boot') // f2 fail closed：首会话建立前 bots.json 健康
     rt = await launchRuntime({ env: { P2SDK_PATCH: overlay2, P2SDK_HOME: home2, PBOTS_DATA_DIR: dataDir2, P2SDK_ORCH_DATA_DIR: dataDir2 } })
     M = (await rt.client.call('session/create', { request: { agentPreset: 'standard' } }) as { sessionId: string }).sessionId
     writeBotsJson2(M)

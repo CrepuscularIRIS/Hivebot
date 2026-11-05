@@ -139,6 +139,7 @@ describe('P6-12 live (real Loader)', () => {
   }
 
   beforeAll(async () => {
+    writeBots('p612-boot', {}) // f2 fail closed：首个会话建立前 bots.json 健康
     rt = await launchRuntime({ env: {
       P2SDK_PATCH: `${join(PKG_ROOT, 'profile', 'patches', 'orchestration.yml')}:${overlay}`,
       P2SDK_HOME: home, PBOTS_DATA_DIR: dataDir, P2SDK_ORCH_DATA_DIR: dataDir,
@@ -443,6 +444,10 @@ const crashHome = tmkdir('bot-p612-crash-')
 const crashData = join(crashHome, 'data')
 mkdirSync(join(crashHome, 'fake', 'scripts'), { recursive: true })
 mkdirSync(crashData, { recursive: true })
+// f2 fail closed：首个 crash 用例的 M/W 建立前 bots.json 必须健康（makeAssignment
+// 的 writeFileSync 在 session/create 之后，首跑时文件缺失会让 M 被 fail-closed
+// 收窄、send_to_bot 变 UNKNOWN_TOOL）
+writeFileSync(join(crashData, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'p612c-boot', recipes: {} }))
 const fakeOverlay = join(crashHome, 'fake.yml')
 writeFileSync(fakeOverlay, `\
 # P6-12 crash-suite fake provider overlay

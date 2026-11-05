@@ -92,9 +92,9 @@ describe('index barrel', () => {
       'STOP_BOT_TOOL', 'Slots', 'TAINT_KIND', 'TurnOrigin',
       'applyWorkerRestriction', 'assignMessageId', 'buildAssignMessage', 'buildReportMessage', 'classifyTurn',
       'computeDue', 'deliveryIdOf', 'endOutcomeFor', 'enumerateInstalledEntries', 'foldAssignments', 'foldMainLog',
-      'judgeWorkerCall', 'newAssignmentId', 'orchDataDir', 'orchError', 'projectEvent', 'readMainBotId',
+      'isEnveloped', 'judgeWorkerCall', 'newAssignmentId', 'orchDataDir', 'orchError', 'projectEvent', 'readMainBotId',
       'registerEnvelope', 'registerSendToBot', 'registerStopBot', 'registerTaintGuard', 'registerWorkerRestriction', 'relayText', 'reportMessageId',
-      'resultTextFor', 'sendRelayText', 'sharedSlots', 'truncateResult', 'workerRestrictDeny',
+      'resolveWorkerStatus', 'resultTextFor', 'sendRelayText', 'sharedSlots', 'truncateResult', 'workerRestrictDeny',
     ])
   })
 })

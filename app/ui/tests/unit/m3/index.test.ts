@@ -147,8 +147,9 @@ describe('get/patch · rpc 抛错（U-28 R2 / U-29 R7）', () => {
       ok: false,
       error: { code: 'pbots/unavailable', message: 'session/list failed: pbots/unavailable rpc failed: socket hang up', details: {} },
     })
-    // 未落盘：空 store 从未 putRecipe，文件不存在
-    expect(() => readFileSync(join(dir, BOTS_JSON), 'utf8')).toThrow()
+    // 未落盘：空 store 从未 putRecipe——盘上只有 init 的零 worker 骨架（f3 起
+    // ENOENT 即写骨架），mainBotId 仍为 null、recipes 为空
+    expect(JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8'))).toEqual({ version: 1, mainBotId: null, recipes: {} })
   })
 })
 

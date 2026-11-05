@@ -12,7 +12,7 @@
 //     stop_bot 自 944afa0（P6-13）起注册，本格为真检查）；
 //  ⑤ D9⑦ P5-06 矩阵子集在 worker 会话复跑（NEVER 路径拒读 / 工作区互不可见 /
 //     自己工作区可写），基线含 W3.f1 后的 main。
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -56,6 +56,11 @@ writeFileSync(overlay, `\
     - id: p610-inspect
       name: '${pathToFileURL(join(PKG_ROOT, 'tests', 'support', 'orchestration-create-inspect.mjs')).href}'
 `)
+
+// P6-14.f3（VERIFY-P6-14.f2 阻塞项 ②）：冷启动形状 = 生产 store 的零 worker 文档
+// （省略 bots 键，CONTRACT v1.5 §3.1 决策 31）。首会话在此文档下建立 → 身份判定
+// 为确认非 worker（不再 unknown），主 bot 工具表完整。各格 writeBots 覆盖此文件。
+writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'p614-boot', recipes: {} }))
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const text = (t: string, paceMs = 5) => ({ paceMs, chunks: [
@@ -362,5 +367,139 @@ describe('P6-14 live (real Loader)', () => {
     expect(log.filter((e) => e.type === 'approval/asked'), '零审批卡（后台入口先于 shell-ask 拒）').toHaveLength(0)
     const after = ((await rt.client.call('session/list', { _request: {} })) as { items: unknown[] }).items.length
     expect(after, '新增子会话 0').toBe(before)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// P6-14.f2 live ⑧（REVIEW-P6-14-C C-2 + A-minor）：升级「新增委派入口且留旧名」
+// ——overlay 在 preset-standard 的 delegation 组插入第二个 tool-subagent 实例
+// （toolName: delegate_v2，旧名 subagent 原样保留）。RESTRICT_TOOLS 名单没有
+// 新名 → restrict 拦不住、pre-execute 按名也不认识（这正是 A-minor 指出的哨兵
+// 盲区）；f2 的创建点谱系拒绝在 agent/created 把 worker 子代理整体拒掉——新名
+// 与旧名并测（A-minor「新旧名并测」）：旧名走 pre-execute 名单，新名走创建点。
+// ---------------------------------------------------------------------------
+describe('P6-14.f2 live ⑧（新增委派入口且留旧名：新名创建点拒 + 旧名名单拒）', () => {
+  let rt: Runtime
+  const home2 = tmkdir('bot-p614f2-live-')
+  const dataDir2 = join(home2, 'data')
+  mkdirSync(join(home2, 'fake', 'scripts'), { recursive: true })
+  mkdirSync(dataDir2, { recursive: true })
+
+  // probe.mjs（evidence/P6-14-rvw）同款抠段：preset-standard 整段复制后在
+  // tool-subagent-fork 前插入 delegate_v2 实例；后层同 id 覆盖前层。
+  const approval = readFileSync(join(PKG_ROOT, 'profile', 'patches', 'approval.yml'), 'utf8')
+  const section = approval.slice(approval.indexOf('- id: preset-standard\n'), approval.indexOf('- id: preset-cordis\n'))
+  const withV2 = section.replace(
+    '          - id: tool-subagent-fork',
+    `          - id: p614f2-delegate-v2
+            name: '@deepseek-ai/dsh-tool-subagent'
+            config:
+              provider: spawn
+              toolName: delegate_v2
+          - id: tool-subagent-fork`,
+  )
+  const overlay2 = join(home2, 'p614f2.yml')
+  writeFileSync(overlay2, `\
+# P6-14.f2 overlay: preset-standard + delegate_v2（新增委派入口，旧名保留）
+${withV2}
+- id: agent-default-model
+  config:
+    provider: p2fake
+    model: p2fake
+- insert:
+    - id: p2sdk-fake-llm
+      name: '${pathToFileURL(join(PKG_ROOT, 'tests', 'support', 'fake', 'plugin.mjs')).href}'
+      config:
+        providers:
+          - id: p2fake
+            name: P2 Fake
+            models:
+              - id: p2fake
+                contextWindow: 131072
+    - id: p610-inspect
+      name: '${pathToFileURL(join(PKG_ROOT, 'tests', 'support', 'orchestration-create-inspect.mjs')).href}'
+`)
+  writeFileSync(join(dataDir2, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'p614f2-boot', recipes: {} }))
+
+  beforeAll(async () => {
+    rt = await launchRuntime({ env: {
+      P2SDK_PATCH: `${join(PKG_ROOT, 'profile', 'patches', 'orchestration.yml')}:${overlay2}`,
+      P2SDK_HOME: home2, PBOTS_DATA_DIR: dataDir2, P2SDK_ORCH_DATA_DIR: dataDir2,
+    } })
+    await sleep(300)
+  }, 120_000)
+
+  afterAll(async () => { await rt?.stop() })
+
+  it('⑧ worker 调新名 delegate_v2 → 创建点谱系拒绝（isError + 0 子会话）；旧名 subagent / job_list 同回合仍名单拒；新名入口真实在册（主 bot 可见、worker 可见）', { timeout: 240_000 }, async () => {
+    const writeScript2 = (sessionId: string, calls: object[]) => {
+      writeFileSync(join(home2, 'fake', 'scripts', `${sessionId}.json`), JSON.stringify({ calls }))
+    }
+    const control = (request: object) => rt.client.call('p610/control', { request })
+    const readLog = async (sessionId: string): Promise<LogEvent[]> =>
+      ((await control({ op: 'read', sessionId })) as { events: LogEvent[] }).events
+    const visible = async (sessionId: string, tool: string): Promise<boolean> =>
+      ((await control({ op: 'visible', sessionId, tool })) as { visible: boolean }).visible
+    // 主 bot（文件健康，不在册 → 非 worker）：新名入口真实装上（不是 UNKNOWN_TOOL 假绿）
+    const M = ((await rt.client.call('session/create', { request: { agentPreset: 'standard', cwd: home2 } })) as { sessionId: string }).sessionId
+    writeScript2(M, [text('main warm')])
+    await rt.client.call('session/prompt', { request: { requestId: `p614f2-m-${Date.now()}`, sessionId: M, mode: 'queue', content: [{ type: 'text', text: 'warm' }] } })
+    for (let i = 0; i < 200; i++) { if ((await readLog(M)).some((e) => e.type === 'turn/end')) break; await sleep(150) }
+    expect(await visible(M, 'delegate_v2'), '新名入口在册（主 bot 可见）').toBe(true)
+    expect(await visible(M, 'subagent'), '旧名入口保留').toBe(true)
+    // worker（生产顺序：createdBy 先落盘 → 预铸 id 建 session）。脚本一次写全
+    // warm + 探测两回合（fake 游标 per-session，二次覆盖不重置，LEARNINGS P5-03）。
+    const W = `session-${crypto.randomUUID()}`
+    writeFileSync(join(dataDir2, 'bots.json'), JSON.stringify({ version: 1, mainBotId: M, recipes: {}, bots: { [W]: { createdBy: M } } }))
+    await rt.client.call('session/create', { request: { sessionId: W, cwd: home2, agentPreset: 'standard' } })
+    writeScript2(W, [
+      text('worker warm'),
+      batchCall([
+        { id: 'v1', name: 'delegate_v2', args: { description: 'P6-14.f2 new-name', prompt: 'reply done' } },
+        { id: 'v2', name: 'subagent', args: { description: 'P6-14.f2 old-name', prompt: 'reply done' } },
+        { id: 'v3', name: 'job_list', args: {} },
+      ]),
+    ])
+    await rt.client.call('session/prompt', { request: { requestId: `p614f2-w0-${Date.now()}`, sessionId: W, mode: 'queue', content: [{ type: 'text', text: 'warm' }] } })
+    for (let i = 0; i < 200; i++) { if ((await readLog(W)).some((e) => e.type === 'turn/end')) break; await sleep(150) }
+    // 盲区实存：restrict 名单无新名 → worker 工具表里 delegate_v2 仍可见
+    expect(await visible(W, 'subagent'), '旧名已被 restrict 收窄').toBe(false)
+    expect(await visible(W, 'job_list'), '作业入口已被 restrict 收窄').toBe(false)
+    expect(await visible(W, 'delegate_v2'), '新名不在名单，worker 仍可见（盲区实存）').toBe(true)
+    // 新旧名并测：worker 探测回合取脚本第 2 条（batchCall，见上）
+    const beforeList = ((await rt.client.call('session/list', { _request: {} })) as { items: Array<{ sessionId?: string, id?: string }> }).items
+    const beforeLen = (await readLog(W)).length
+    await rt.client.call('session/prompt', { request: { requestId: `p614f2-w1-${Date.now()}`, sessionId: W, mode: 'queue', content: [{ type: 'text', text: 'delegate probe' }] } })
+    const deadline = Date.now() + 90_000
+    let log: LogEvent[] = []
+    for (;;) {
+      log = (await readLog(W)).slice(beforeLen)
+      const ended = log.some((e) => e.type === 'turn/end')
+      const calls = log.filter((e) => e.type === 'tool/call').length
+      const results = log.filter((e) => e.type === 'tool/result').length
+      if (ended && results >= calls) break
+      if (Date.now() > deadline) throw new Error(`f2 ⑧ turn timed out; tail ${JSON.stringify(log.slice(-6))}`)
+      await sleep(150)
+    }
+    const at = (id: string) => log.filter((e) => e.type === 'tool/result' && e.callId === id).at(0)!
+    expect(at('v1').isError, '新名 delegate_v2 被拒（创建点谱系拒绝）').toBe(true)
+    expect(at('v1').text).toContain('pbots/forbidden')
+    expect(at('v2').isError, '旧名 subagent 仍被名单拒').toBe(true)
+    expect(at('v2').text).toContain('pbots/forbidden')
+    expect(at('v3').isError, 'job_list 仍拒').toBe(true)
+    // 0 子代理创建：无 started subagent 结果（探针/review 的攻击判据），子代理没跑
+    expect(log.some((e) => e.type === 'tool/result' && !e.isError && (e.text ?? '').includes('started subagent')), '无 started subagent').toBe(false)
+    // session/created veto 只回滚 live registry；持久层可能留下至多一条孤儿行——
+    // 它没有 agent、没跑过任何 turn，且 resume 会再次被 veto。逐条验证不可复活。
+    const afterList = ((await rt.client.call('session/list', { _request: {} })) as { items: Array<{ sessionId?: string, id?: string }> }).items
+    const beforeIds = new Set(beforeList.map((it) => it.sessionId ?? it.id))
+    const extras = afterList.filter((it) => !beforeIds.has(it.sessionId ?? it.id)).map((it) => it.sessionId ?? it.id)
+    expect(extras.length, '至多一条持久孤儿').toBeLessThanOrEqual(1)
+    for (const orphan of extras) {
+      await rt.client.call('session/prompt', { request: { requestId: `p614f2-o-${Date.now()}`, sessionId: orphan, mode: 'queue', content: [{ type: 'text', text: 'revive' }] } }).catch(() => {})
+      await sleep(2000)
+      const orphanLog = await readLog(orphan).catch(() => [] as LogEvent[])
+      expect(orphanLog.some((e) => e.type === 'turn/start'), `孤儿 ${orphan} 不可复活（无 turn）`).toBe(false)
+    }
   })
 })

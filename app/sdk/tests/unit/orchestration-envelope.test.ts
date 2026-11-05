@@ -20,6 +20,8 @@ import {
   workerRestrictDeny,
   applyWorkerRestriction,
   registerWorkerRestriction,
+  resolveWorkerStatus,
+  isEnveloped,
 } from '../../src/orchestration/envelope.mjs'
 
 const denyText = (name: string, args?: object) => judgeWorkerCall(name, args)?.reason ?? ''
@@ -136,13 +138,11 @@ describe('P6-14 registerEnvelope（接线）', () => {
     }
   })
 
-  it('③ worker 的普通工具 / 主 bot 会话（含调 subagent）/ bots.json 不可读的会话 → next() 放行', async () => {
+  it('③ worker 的普通工具 / 主 bot 会话（含调 subagent）→ next() 放行', async () => {
     const g = bootGuard({ w1: { createdBy: 'm1' } })
     expect(await g.call({ agent: { id: 'w1' }, name: 'read', arguments: { file_path: '/proc/self/environ' } })).toEqual({ kind: 'pass-through' })
     expect(await g.call({ agent: { id: 'm1' }, name: 'subagent', arguments: {} })).toEqual({ kind: 'pass-through' })
     expect(await g.call({ agent: { id: 'm1' }, name: 'bash', arguments: { run_in_background: true } })).toEqual({ kind: 'pass-through' })
-    const broken = bootGuard() // 无 bots.json：readWorkerIds 返回 []，不按 worker 拦
-    expect(await broken.call({ agent: { id: 'w1' }, name: 'subagent', arguments: {} })).toEqual({ kind: 'pass-through' })
   })
 
   it('④ 回合中 worker 被写进 bots.json 后立即生效（每次 execute 重读，不加缓存窗口）', async () => {
@@ -153,6 +153,57 @@ describe('P6-14 registerEnvelope（接线）', () => {
     const call = (exec: any) => listener!(exec, () => ({ kind: 'pass-through' }))
     writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: { w9: { createdBy: 'm1' } } }))
     expect(await call({ agent: { id: 'w9' }, name: 'workflow', arguments: {} })).toMatchObject({ kind: 'deny' })
+  })
+
+  // P6-14.f2 C-1（REVIEW-P6-14-C major ①）：身份不可判定 = 按 worker 处理（fail
+  // closed，宁可误伤）。f3（VERIFY-P6-14.f2 阻塞项）收窄 unknown 面：文件有效且
+  // 省略 bots 键 = 合法零 worker（确认非 worker），unknown 仅剩缺失 / 损坏 /
+  // version 不符。
+  it('⑤ C-1 fail closed：bots.json 缺失 / 损坏 / version 不符时，任意会话（含陌生 id）的 subagent / 后台入口全拒；合法零 worker 文档（省略 bots 键）主 bot 放行', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-unit-'))
+    let listener: ((exec: any, next: () => any) => Promise<any>) | undefined
+    const ctx = { on: (_n: string, fn: any) => { listener = fn; return () => {} } }
+    registerEnvelope(ctx as any, { config: { dataDir: dir } })
+    const call = (exec: any) => listener!(exec, () => ({ kind: 'pass-through' }))
+    // 缺失（未写文件）
+    for (const exec of [
+      { agent: { id: 'w1' }, name: 'subagent', arguments: { prompt: 'x' } },
+      { agent: { id: 'total-stranger' }, name: 'job_list', arguments: {} },
+      { agent: { id: 'bash-session' }, name: 'bash', arguments: { command: 'x', description: 'x', run_in_background: true } },
+    ]) expect(await call(exec)).toMatchObject({ kind: 'deny' })
+    // 损坏（坏 JSON）→ fail closed
+    writeFileSync(join(dir, 'bots.json'), '{broken')
+    expect(await call({ agent: { id: 'm1' }, name: 'subagent', arguments: {} })).toMatchObject({ kind: 'deny' })
+    // version 不符 → unknown → fail closed（f3：unknown 仅剩缺失 / 损坏 / version 不符）
+    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 2, mainBotId: 'm1', recipes: {}, bots: {} }))
+    expect(await call({ agent: { id: 'm1' }, name: 'subagent', arguments: {} })).toMatchObject({ kind: 'deny' })
+    // f3（VERIFY-P6-14.f2 阻塞项）：合法 v1 文档省略 bots 键 = 零 worker（CONTRACT
+    // v1.5 §3.1 决策 31；生产 BotsMetaStore 零 worker 正是此形状）→ 确认非 worker，
+    // 主 bot 正常路径放行，create_bot 不再被信封拒
+    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {} }))
+    expect(await call({ agent: { id: 'm1' }, name: 'subagent', arguments: {} })).toEqual({ kind: 'pass-through' })
+    expect(await call({ agent: { id: 'm1' }, name: 'create_bot', arguments: { name: 'a', prompt: 'b' } })).toEqual({ kind: 'pass-through' })
+    expect(await call({ agent: { id: 'stranger' }, name: 'create_bot', arguments: {} })).toEqual({ kind: 'pass-through' })
+    // 恢复健康（bots 键在、该 id 无 createdBy）→ 确认非 worker，主 bot 正常路径放行
+    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: { w1: { createdBy: 'm1' } } }))
+    expect(await call({ agent: { id: 'm1' }, name: 'subagent', arguments: {} })).toEqual({ kind: 'pass-through' })
+    expect(await call({ agent: { id: 'm1' }, name: 'read', arguments: { file_path: '/tmp/x' } })).toEqual({ kind: 'pass-through' })
+  })
+
+  // P6-14.f2 C-2（REVIEW-P6-14-C major ②）执行层谱系：worker 的直接子代理
+  // （session header origin=subagent、parentSession=worker）按信封拦——改名委派
+  // 工具建出来的子代理在执行层不可达 job_list / 再委派；主 bot 的子代理不受影响。
+  it('⑥ f2 C-2 谱系：worker 直接子代理的 job_list / subagent 拒；主 bot 子代与谱系外会话放行', async () => {
+    const g = bootGuard({ w1: { createdBy: 'm1' } })
+    const childOf = (parent: string) => ({ session: { header: { origin: 'subagent', parentSession: parent } } })
+    expect(await g.call({ agent: { id: 'child-of-worker', ...childOf('w1') }, name: 'job_list', arguments: {} })).toMatchObject({ kind: 'deny' })
+    expect(await g.call({ agent: { id: 'child-of-worker', ...childOf('w1') }, name: 'subagent', arguments: { prompt: 'x' } })).toMatchObject({ kind: 'deny' })
+    // 主 bot（m1 无 createdBy）的子代理：委派是主 bot 的正常能力，放行
+    expect(await g.call({ agent: { id: 'child-of-main', ...childOf('m1') }, name: 'subagent', arguments: { prompt: 'x' } })).toEqual({ kind: 'pass-through' })
+    expect(await g.call({ agent: { id: 'child-of-main', ...childOf('m1') }, name: 'job_list', arguments: {} })).toEqual({ kind: 'pass-through' })
+    // 非 subagent 会话（无 origin 标记）不吃谱系误伤；subagent 但父健康非 worker 亦放行
+    expect(await g.call({ agent: { id: 'plain', session: { header: {} } }, name: 'job_list', arguments: {} })).toEqual({ kind: 'pass-through' })
+    expect(await g.call({ agent: { id: 'plain', session: { header: { origin: 'subagent', parentSession: 'unknown-parent' } } }, name: 'read', arguments: {} })).toEqual({ kind: 'pass-through' })
   })
 })
 
@@ -213,7 +264,7 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', () 
       tools: { definitions: () => registry.map((name) => ({ name })) },
       logger: { warn: (m: string) => warns.push(m) },
       on: (name: string, fn: any) => {
-        expect(['agent/created', 'agent/disposed']).toContain(name)
+        expect(['agent/created', 'agent/disposed', 'session/created', 'tools/pre-execute']).toContain(name)
         listeners.set(name, [...(listeners.get(name) ?? []), fn])
         return () => listeners.set(name, (listeners.get(name) ?? []).filter((f) => f !== fn))
       },
@@ -267,18 +318,127 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', () 
     expect(warns.join('\n')).toContain('w1')
   })
 
-  it('⑤ bots.json 不可读 → 不挂（与 pre-execute 守卫同口径），不抛', () => {
+  it('⑤ f2 C-1 fail closed：bots.json 不可读 → 所有会话按 worker 挂 restrict（身份不可判定 ≠ 非 worker）', () => {
     const dir = mkdtempSync(join(tmpdir(), 'bot-p614f1-unit-')) // 无 bots.json
     const listeners = new Map<string, Array<(payload: any) => void>>()
     const restricted: string[] = []
     const ctx = {
-      agents: { list: () => [{ id: 'w1', ctx: { tools: { restrict: () => { restricted.push('w1'); return () => {} } } } }] },
+      agents: { list: () => [{ id: 'w1', ctx: { tools: { restrict: () => { restricted.push('w1'); return () => {} } } } }, { id: 'm1', ctx: { tools: { restrict: () => { restricted.push('m1'); return () => {} } } } }] },
       tools: { definitions: () => [{ name: 'subagent' }] },
       logger: { warn: () => {} },
       on: (name: string, fn: any) => { listeners.set(name, [fn]); return () => {} },
     }
     registerWorkerRestriction(ctx as any, { config: { dataDir: dir } })
+    expect(restricted).toEqual(['w1', 'm1']) // 宁可误伤：主 bot 在文件坏窗口同样收窄
+  })
+
+  // P6-14.f2 C-2（REVIEW-P6-14-C major ②）创建点谱系拒绝：worker 的直接子代理
+  // 在 session/created 同步抛错 veto 发布（比 agent/created 更早，session 与 agent
+  // 都不落 registry → 改名委派工具的调用 isError、0 子代理）；主 bot 的子代理
+  // 与身份健康的谱系外子代理照常创建。bootstrap 扫描（list）不走创建点，只挂
+  // restrict（已存在的会话不能在引导期 fail 启动）。
+  it('⑦ f2 C-2 创建点拒绝：worker 子代理的 session/created 抛 pbots/forbidden；主 bot 子代理不抛', () => {
+    const w = boot({ w1: { createdBy: 'm1' } })
+    const childSession = (parent: string) => ({ header: { origin: 'subagent', parentSession: parent } })
+    expect(() => w.emit('session/created', childSession('w1'))).toThrow(/pbots\/forbidden.*delegate/)
+    expect(() => w.emit('session/created', childSession('m1'))).not.toThrow()
+    // 普通（非 subagent）session 创建不受影响
+    expect(() => w.emit('session/created', { header: {} })).not.toThrow()
+    // 身份不可判定（文件坏）→ fail closed：任何 subagent 创建都拒（宁可误伤）
+    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-unit-')) // 无 bots.json
+    const listeners = new Map<string, Array<(payload: any) => void>>()
+    const ctx = {
+      agents: { list: () => [] },
+      tools: { definitions: () => [{ name: 'subagent' }] },
+      logger: { warn: () => {} },
+      on: (name: string, fn: any) => { listeners.set(name, [fn]); return () => {} },
+    }
+    registerWorkerRestriction(ctx as any, { config: { dataDir: dir } })
+    expect(() => listeners.get('session/created')![0]!(childSession('some-parent'))).toThrow(/pbots\/forbidden/)
+  })
+
+  it('⑧ f2 C-2 谱系纵深：bootstrap list 里已 live 的 worker 子代理挂 restrict（历史残留不 fail 引导，工具表仍收窄）', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-unit-'))
+    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: { w1: { createdBy: 'm1' } } }))
+    const restricted: string[] = []
+    const mkAgent = (id: string, parent?: string) => ({
+      id,
+      ...(parent === undefined ? {} : { session: { header: { origin: 'subagent', parentSession: parent } } }),
+      ctx: { tools: { restrict: () => { restricted.push(id); return () => {} } } },
+    })
+    const ctx = {
+      agents: { list: () => [mkAgent('w1'), mkAgent('kid-of-w1', 'w1'), mkAgent('kid-of-m1', 'm1'), mkAgent('plain')] },
+      tools: { definitions: () => ['subagent', 'job_list'].map((name) => ({ name })) },
+      logger: { warn: () => {} },
+      on: () => () => {},
+    }
+    registerWorkerRestriction(ctx as any, { config: { dataDir: dir } })
+    expect(restricted).toEqual(['w1', 'kid-of-w1'])
+  })
+
+  // P6-14.f3（VERIFY-P6-14.f2 阻塞项 ②）：合法零 worker 文档 = 省略 bots 键
+  // （CONTRACT v1.5 §3.1 决策 31），冷启动在 healthy 文档下建会话不再有 unknown
+  // 窗口——bootstrap / agent/created 都不挂 restrict。
+  it('⑨ f3 合法零 worker 文档（省略 bots 键）→ bootstrap 与 agent/created 均不挂 restrict（主 bot 工具表不受影响）', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f3-unit-'))
+    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {} }))
+    const restricted: string[] = []
+    const mkAgent = (id: string) => ({ id, ctx: { tools: { restrict: () => { restricted.push(id); return () => {} } } } })
+    const listeners = new Map<string, Array<(payload: any) => void>>()
+    const ctx = {
+      agents: { list: () => [mkAgent('m1'), mkAgent('plain')] },
+      tools: { definitions: () => ['subagent', 'job_list'].map((name) => ({ name })) },
+      logger: { warn: () => {} },
+      on: (name: string, fn: any) => { listeners.set(name, [...(listeners.get(name) ?? []), fn]); return () => {} },
+    }
+    registerWorkerRestriction(ctx as any, { config: { dataDir: dir } })
+    expect(restricted).toEqual([]) // 零 worker 文档：无人收窄
+    listeners.get('agent/created')!.forEach((fn) => fn({ agent: mkAgent('newcomer') }))
     expect(restricted).toEqual([])
+  })
+
+  // P6-14.f3（VERIFY-P6-14.f2 新问题 1）：unknown 窗口挂上的 restrict，在身份
+  // 恢复为确认非 worker 后撤销（sweep 挂 session/created / agent/created /
+  // tools/pre-execute 三个已有事件点，SDK 观察不到 main 的写盘）。真 worker 不误撤。
+  it('⑩ f3 恢复撤销：unknown 窗口挂的 restrict 在文件恢复健康后撤销（agent/created / tools/pre-execute 两个触发点）；真 worker 不撤', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f3-unit-')) // 无 bots.json → unknown
+    const restricted: string[] = []
+    const lifted: string[] = []
+    const mkAgent = (id: string) => ({ id, ctx: { tools: { restrict: () => { restricted.push(id); return () => lifted.push(id) } } } })
+    const m1 = mkAgent('m1')
+    const w1 = mkAgent('w1')
+    const live = [m1, w1]
+    const listeners = new Map<string, Array<(payload: any) => any>>()
+    const ctx = {
+      agents: { list: () => live },
+      tools: { definitions: () => ['subagent', 'job_list'].map((name) => ({ name })) },
+      logger: { warn: () => {} },
+      on: (name: string, fn: any) => { listeners.set(name, [...(listeners.get(name) ?? []), fn]); return () => {} },
+    }
+    registerWorkerRestriction(ctx as any, { config: { dataDir: dir } })
+    expect(restricted).toEqual(['m1', 'w1']) // 文件缺失 → fail closed 全挂
+    // 身份恢复：写健康零 worker 文档（省略 bots 键）→ agent/created 触发 sweep 撤销
+    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {} }))
+    listeners.get('agent/created')!.forEach((fn) => fn({ agent: mkAgent('newcomer') }))
+    expect(new Set(lifted)).toEqual(new Set(['m1', 'w1'])) // 两者此刻都确认非 worker
+    // 再进 unknown（文件损坏）→ 重挂；随后本 agent 任意工具调用（tools/pre-execute）触发撤销
+    restricted.length = 0
+    lifted.length = 0
+    writeFileSync(join(dir, 'bots.json'), '{broken')
+    listeners.get('agent/created')!.forEach((fn) => fn({ agent: m1 }))
+    expect(restricted).toEqual(['m1'])
+    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {} }))
+    const pre = listeners.get('tools/pre-execute')!
+    expect(await pre[pre.length - 1]!({ agent: m1, name: 'read', arguments: {} }, () => ({ kind: 'pass-through' }))).toEqual({ kind: 'pass-through' })
+    expect(lifted).toEqual(['m1'])
+    // 真 worker（在册 createdBy）：sweep 不误撤
+    writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: { w1: { createdBy: 'm1' } } }))
+    restricted.length = 0
+    lifted.length = 0
+    listeners.get('agent/created')!.forEach((fn) => fn({ agent: w1 })) // unknown 已无 → w1 是 worker → 挂上
+    expect(restricted).toEqual(['w1'])
+    listeners.get('session/created')!.forEach((fn) => fn({ header: {} })) // 任意新 session → sweep
+    expect(lifted).toEqual([]) // worker 的 restrict 保留
   })
 
   it('⑥ 返回的 disposer：摘监听 + 撤销全部已挂 restriction', () => {
@@ -289,6 +449,56 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', () 
     expect(new Set(w.lifted)).toEqual(new Set(['w1', 'w2']))
     w.emit('agent/created', { agent: w.mkAgent('w1') }) // 监听已摘，不再挂
     expect(w.restricted.filter((r) => r.agentId === 'w1')).toHaveLength(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// P6-14.f2（REVIEW-P6-14-C C-1/C-2）：三态身份判定 + 信封归属
+// ---------------------------------------------------------------------------
+
+describe('P6-14.f2 resolveWorkerStatus（三态身份，fail closed）', () => {
+  const mkDir = (content?: string) => {
+    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-st-'))
+    if (content !== undefined) writeFileSync(join(dir, 'bots.json'), content)
+    return dir
+  }
+  const healthy = JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: { w1: { createdBy: 'm1' }, w2: { createdBy: '' }, plain: {} } })
+
+  it('① 文件健康：createdBy 非空 → worker；createdBy 空 / 无记录 → main', () => {
+    const dir = mkDir(healthy)
+    expect(resolveWorkerStatus('w1', dir)).toBe('worker')
+    expect(resolveWorkerStatus('w2', dir)).toBe('main')
+    expect(resolveWorkerStatus('plain', dir)).toBe('main')
+    expect(resolveWorkerStatus('m1', dir)).toBe('main')
+  })
+
+  it('② 身份不可判定 → unknown：缺失 / 坏 JSON / version 不符 / bots 键在但非对象（f3：省略键不再算 unknown）', () => {
+    expect(resolveWorkerStatus('w1', mkDir())).toBe('unknown') // 文件不存在
+    expect(resolveWorkerStatus('w1', mkDir('{broken'))).toBe('unknown')
+    // version 不符（含字符串 '1'）→ 损坏口径
+    expect(resolveWorkerStatus('w1', mkDir(JSON.stringify({ version: 2, mainBotId: 'm1', recipes: {}, bots: { w1: { createdBy: 'm1' } } })))).toBe('unknown')
+    expect(resolveWorkerStatus('w1', mkDir(JSON.stringify({ version: '1', mainBotId: 'm1', recipes: {}, bots: {} })))).toBe('unknown')
+    expect(resolveWorkerStatus('w1', mkDir(JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: null })))).toBe('unknown')
+    expect(resolveWorkerStatus('w1', mkDir(JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: [] })))).toBe('unknown')
+  })
+
+  it('②b f3 契约语义（VERIFY-P6-14.f2 阻塞项）：文件有效（version 1）且省略 bots 键 = 零 worker = 确认非 worker（CONTRACT v1.5 §3.1 决策 31「无 worker 不写键」，生产 BotsMetaStore 零 worker 正是此形状）', () => {
+    const dir = mkDir(JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {} }))
+    expect(resolveWorkerStatus('w1', dir)).toBe('main')
+    expect(resolveWorkerStatus('m1', dir)).toBe('main')
+    expect(resolveWorkerStatus('total-stranger', dir)).toBe('main')
+    expect(isEnveloped({ id: 'anyone' }, dir)).toBe(false)
+    expect(isEnveloped({ id: 'kid', session: { header: { origin: 'subagent', parentSession: 'm1' } } }, dir)).toBe(false)
+  })
+
+  it('③ isEnveloped：worker / unknown / worker 直接子代为真；健康 main 与 main 子代为假', () => {
+    const dir = mkDir(healthy)
+    expect(isEnveloped({ id: 'w1' }, dir)).toBe(true)
+    expect(isEnveloped({ id: 'nope' }, mkDir())).toBe(true) // unknown → fail closed
+    expect(isEnveloped({ id: 'm1' }, dir)).toBe(false)
+    expect(isEnveloped({ id: 'kid', session: { header: { origin: 'subagent', parentSession: 'w1' } } }, dir)).toBe(true)
+    expect(isEnveloped({ id: 'kid', session: { header: { origin: 'subagent', parentSession: 'm1' } } }, dir)).toBe(false)
+    expect(isEnveloped({ id: 'plain', session: { header: {} } }, dir)).toBe(false)
   })
 })
 

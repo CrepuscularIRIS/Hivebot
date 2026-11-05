@@ -140,11 +140,13 @@ describe('P6-11 live (real Loader)', () => {
 
   const newSession = async (): Promise<string> =>
     ((await rt.client.call('session/create', { request: { agentPreset: 'standard' } }) as { sessionId: string }).sessionId)
-  const writeBots = (mainBotId: string | null, bots?: Record<string, { createdBy: string }>) => {
-    writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1, mainBotId, recipes: {}, ...(bots ? { bots } : {}) }))
+  const writeBots = (mainBotId: string | null, bots: Record<string, { createdBy: string }> = {}) => {
+    // f3：零 worker = 省略 bots 键（生产 store 形状，CONTRACT v1.5 §3.1 决策 31）
+    writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1, mainBotId, recipes: {}, ...(Object.keys(bots).length === 0 ? {} : { bots }) }))
   }
 
   beforeAll(async () => {
+    writeBots('p611-boot') // f2 fail closed：首个会话建立前 bots.json 健康
     rt = await launchRuntime({ env: {
       P2SDK_PATCH: `${join(PKG_ROOT, 'profile', 'patches', 'orchestration.yml')}:${overlay}`,
       P2SDK_HOME: home, PBOTS_DATA_DIR: dataDir, P2SDK_ORCH_DATA_DIR: dataDir,

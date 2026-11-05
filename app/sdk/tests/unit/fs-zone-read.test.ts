@@ -11,25 +11,30 @@ const { default: LocalFs } = await import(fromDsh.resolve('@deepseek-ai/dsh-fs-l
 const cleanup: Array<() => void> = []
 afterEach(() => { vi.restoreAllMocks(); while (cleanup.length) cleanup.pop()!() })
 
-function harness() {
-  const root = mkdtempSync('/tmp/bot-p626-read-')
+function harness(aliasWorkspace = false) {
+  const root = mkdtempSync('/tmp/bot-p626f1-read-')
   cleanup.push(() => rmSync(root, { recursive: true, force: true }))
   const ws = join(root, 'ws')
   const outside = join(root, 'outside')
   const never = join(root, 'home', '.ssh')
   for (const dir of [join(ws, 'sub'), outside, never]) mkdirSync(dir, { recursive: true })
   for (const dir of [join(ws, 'sub'), outside, never]) writeFileSync(join(dir, 'a.txt'), dir === join(ws, 'sub') ? 'INSIDE' : 'FAKE-CRED-MARKER')
+  const workspaceRoot = aliasWorkspace ? join(root, 'ws-alias') : ws
+  if (aliasWorkspace) symlinkSync(ws, workspaceRoot)
   const fs = Object.assign(Object.create(ZoneCheckedFileSystem.prototype), {
     config: { cwd: ws, diffBasisMaxBytes: 1 << 20 }, internals: {}, locks: new Map(), p2sdkNeverRoots: [never],
   })
   let wrapper: (exec: object, next: () => Promise<unknown>) => Promise<unknown>
   applyZoneRecheck({
     on: (_: string, fn: typeof wrapper) => { wrapper = fn },
-    get: (name: string) => ({ fs, sandboxPolicy: { resolve: () => ({ mode: 'workspace-write', workspaceRoot: ws }) } })[name],
+    get: (name: string) => ({ fs, sandboxPolicy: { resolve: () => ({ mode: 'workspace-write', workspaceRoot }) } })[name],
   }, [never])
-  async function run(body: () => Promise<unknown>, approved?: string[]) {
+  async function run(body: () => Promise<unknown>, approved?: string[], beforeExecute?: () => void) {
     const exec = { name: 'read', arguments: { file_path: approved?.[0] ?? join(ws, 'sub', 'a.txt') } }
-    noteZoneVerdict(exec, { kind: 'workspace-read', allInside: !approved, targets: approved ?? [join(ws, 'sub', 'a.txt')] })
+    // 与 shell-ask 的 resolveTargets 一致：审批记录保存已经解析的真实路径。
+    const targets = await Promise.all((approved ?? [join(ws, 'sub', 'a.txt')]).map(async (path) => (await fs.resolve(path)).targetKey))
+    noteZoneVerdict(exec, { kind: 'workspace-read', allInside: !approved, targets })
+    beforeExecute?.()
     return wrapper!(exec, body)
   }
   function swap(to: string) {
@@ -51,6 +56,32 @@ async function read(fs: any, method: typeof methods[number], target: object, sig
   }
   return fs[method](target, signal)
 }
+
+it.each(methods)('%s：软链工作区根不误伤区内读取', async (method) => {
+  const h = harness(true)
+  const result = await h.run(async () => read(h.fs, method, await h.target(method === 'listDir' ? join(h.ws, 'sub') : undefined)))
+  if (method === 'listDir') expect((result as any[]).map((entry) => entry.name)).toContain('a.txt')
+  else expect(result).toBe('INSIDE')
+})
+
+it.each(['before-execute', 'inside-execute'])('审批别名按真实路径匹配；%s 换链不可重授目标', async (when) => {
+  const h = harness()
+  const alias = join(h.ws, 'approved-alias')
+  symlinkSync(h.outside, alias)
+  const approved = join(alias, 'a.txt')
+  expect(await h.run(async () => h.fs.readText(await h.target(approved)), [approved])).toBe('FAKE-CRED-MARKER')
+  const other = join(h.outside, 'other')
+  mkdirSync(other)
+  writeFileSync(join(other, 'a.txt'), 'UNAPPROVED')
+  function swapApprovedParent() {
+    renameSync(h.outside, h.outside + '.original')
+    symlinkSync(join(h.outside + '.original', 'other'), h.outside)
+  }
+  await expect(h.run(async () => {
+    if (when === 'inside-execute') swapApprovedParent()
+    return h.fs.readText(await h.target(approved))
+  }, [approved], when === 'before-execute' ? swapApprovedParent : undefined)).rejects.toMatchObject({ code: 'FS_PERMISSION_DENIED' })
+})
 
 it.each(methods)('%s：模型调用中换链到区外时后端拒绝', async (method) => {
   const h = harness()
@@ -156,7 +187,8 @@ it('打开失败和上游 I/O 错误仅显示原 displayPath', async () => {
   const h = harness()
   await h.run(async () => {
     const missing = await h.target(join(h.ws, 'sub', 'missing'))
-    await expect(h.fs.readText(missing)).rejects.toMatchObject({ code: 'FS_NOT_FOUND', message: expect.not.stringContaining('/proc/self/fd') })
+    await expect(h.fs.readText(missing)).rejects.toMatchObject({ code: 'FS_NOT_FOUND', message: `cannot read "${missing.displayPath}": not found` })
+    expect(h.fs.readError({ code: 'ENOTDIR' }, missing)).toMatchObject({ code: 'FS_NOT_FOUND', message: `cannot read "${missing.displayPath}": not found` })
     const original = LocalFs.prototype.readBytes
     vi.spyOn(LocalFs.prototype, 'readBytes').mockImplementationOnce((target) => { throw new Error(`I/O failed at ${target.targetKey}`) })
     await expect(h.fs.readBytes(await h.target(), undefined, 10)).rejects.toMatchObject({ message: expect.not.stringContaining('/proc/self/fd') })

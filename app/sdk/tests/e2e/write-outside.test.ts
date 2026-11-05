@@ -106,7 +106,7 @@ async function launchWo(extraPatch?: string): Promise<WoRuntime> {
   const rt = await launchRuntime({
     env: {
       HOME: TEST_HOME,
-      P2SDK_HOME: mkdtempSync(join(tmpdir(), 'bot-p626-dsh-')),
+      P2SDK_HOME: mkdtempSync(join(TEST_ROOT, 'dsh-')),
       P2SDK_PATCH: patches.join(':'),
       PBOTS_DATA_DIR: DATA_DIR,
     },
@@ -428,6 +428,45 @@ it('P6-26 真 Loader：inner 接缝的 read/read_image/present/listDir 拒区外
 })
 
 // ── ⑦：never 子代理（ptc）写区外 → deny（修复前 never 会话的区外写也无卡成功）──
+
+// 复用 verifier evidence/P6-26-vfy/vfy-alias.tail.ts 的真 Loader 别名 cwd 对照，补齐读写入口。
+it('P6-26.f1 alias cwd：区内 read/read_image/present/write/edit 不误伤', { timeout: 240_000 }, async () => {
+  const alias = join(TEST_ROOT, 'ws-alias')
+  symlinkSync(WS, alias)
+  const file = join(WS, `alias-${R}.txt`)
+  const image = join(alias, `alias-${R}.png`)
+  writeFileSync(file, 'ALIAS-INSIDE-OK')
+  // 来源: deepseek-harness@ce7073d packages/fs/tool-fs/tests/read-image.spec.ts PNG_1X1。
+  writeFileSync(image, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC', 'base64'))
+  const rt = await launchWo()
+  for (const [cwd, args, tool] of [
+    [alias, { file_path: join(alias, `alias-${R}.txt`) }, 'read'],
+    [alias, { file_path: file }, 'read'],
+    [alias, { file_path: image }, 'read_image'],
+    [alias, { files: [{ path: join(alias, `alias-${R}.txt`) }] }, 'present'],
+    [WS, { file_path: file }, 'read'],
+  ] as const) {
+    const sess = await scriptedSession(rt, cwd, [toolTurnCall(tool, args)])
+    const result = toolResults(await sess.next('none'))[0]
+    expect(result, `${tool} ${JSON.stringify(args)}`).toBeDefined()
+    expect(result?.isError, JSON.stringify(result)).toBe(false)
+    if (tool === 'read') expect(result?.text).toContain('ALIAS-INSIDE-OK')
+    expect(askedCount(rt, sess.sessionId)).toBe(0)
+  }
+  const written = join(alias, `alias-write-${R}.txt`)
+  const sess = await scriptedSession(rt, alias, [
+    toolTurnCall('write', { file_path: written, content: 'alias-before' }),
+    toolTurnCall('edit', { file_path: written, old_string: 'alias-before', new_string: 'alias-after' }),
+    toolTurnCall('read', { file_path: join(alias, `missing-${R}`) }),
+  ])
+  for (let i = 0; i < 2; i++) expect(toolResults(await sess.next('none'))[0]?.isError).toBe(false)
+  expect(readFileSync(written, 'utf8')).toBe('alias-after')
+  const missing = toolResults(await sess.next('none'))[0]
+  expect(missing?.isError).toBe(true)
+  expect(missing?.text).toContain('not found')
+  expect(missing?.text).not.toContain('/proc/self/fd')
+  expect(askedCount(rt, sess.sessionId)).toBe(0)
+})
 
 /** 已装 ptc worker bootstrap（/tmp worktree 下须复制进会话工作区，P5-05/P5-21 同法）。 */
 function ptcBootstrapSource(): string {

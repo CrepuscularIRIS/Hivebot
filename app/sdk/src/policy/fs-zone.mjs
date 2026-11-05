@@ -63,7 +63,13 @@ export function applyZoneRecheck(ctx, neverRoots) {
     }
     // 每个后端实例独立持有作用域；内部读没有记录，不套用模型调用的审批语义。
     fs.p2sdkReadScope ??= new AsyncLocalStorage()
-    return fs.p2sdkReadScope.run({ record, workspaceRoot }, next)
+    // 根与写侧同用 canonicalPath，在 next/open 前固定。审批 targets 已由 shell-ask
+    // 的 resolveTargets 规范化；不能再次解析，否则换链会把旧审批重授给新目标。
+    return fs.p2sdkReadScope.run({
+      record,
+      workspaceRoot: typeof workspaceRoot === 'string' ? canonicalPath(workspaceRoot) : undefined,
+      neverRoots: neverRoots.map(canonicalPath),
+    }, next)
   })
 }
 
@@ -103,7 +109,7 @@ export class ZoneCheckedFileSystem extends SandboxedFileSystem {
       const key = `/proc/self/fd/${handle.fd}`
       const actual = await readlink(key)
       const under = (root) => typeof root === 'string' && (actual === root || actual.startsWith(root.endsWith(sep) ? root : root + sep))
-      if (this.p2sdkNeverRoots.some(under)) throw denyFs(NEVER)
+      if (scope.neverRoots.some(under)) throw denyFs(NEVER)
       const approved = scope.record.kind === 'workspace-read' && scope.record.allInside === false
         && scope.record.targets?.includes(actual)
       if (actual.endsWith(' (deleted)') || (!under(scope.workspaceRoot) && !approved)) throw denyFs(READ_OUT)
@@ -121,7 +127,7 @@ export class ZoneCheckedFileSystem extends SandboxedFileSystem {
       : ['ENOENT', 'ENOTDIR'].includes(error?.code) ? 'FS_NOT_FOUND' : 'FS_PERMISSION_DENIED'
     const message = typeof error?.message === 'string' && error.code?.startsWith('FS_')
       ? error.message.replace(/\/proc\/self\/fd\/\d+/g, () => target.displayPath)
-      : `cannot read "${target.displayPath}": file access failed`
+      : `cannot read "${target.displayPath}": ${code === 'FS_NOT_FOUND' ? 'not found' : 'file access failed'}`
     return new FsError(message, code)
   }
 

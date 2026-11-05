@@ -86,7 +86,9 @@ class FakeAdapter {
 
   resolveModel(provider, model) {
     const declared = this.providers.find((p) => p.id === provider)?.models?.find((m) => m.id === model)
-    return Promise.resolve({ provider, id: model, name: model, contextWindow: declared?.contextWindow ?? 131072 })
+    return Promise.resolve({ provider, id: model, name: model, contextWindow: declared?.contextWindow ?? 131072,
+      ...(declared?.inputModalities ? { inputModalities: declared.inputModalities } : {}),
+    })
   }
 
   async prepareCall(provider, model, signal) {

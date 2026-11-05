@@ -1,0 +1,66 @@
+P6-26 builder 回报（实现完成，待 verifier 验收）
+分支 feat/P6-26；基点 main@75267c6；工作树 /tmp/bot-wt/P6-26。
+
+实现与依据
+- PLAN 决策 39 / §12.11 的第 2 级集成：继续继承已安装 SandboxedFileSystem，读取实现完全委派上游，无新增依赖。
+- 来源 https://github.com/deepseek-ai/deepseek-harness@ce7073d51254c26cd63b22a60835b8f948deb447:packages/fs/fs-sandbox/src/index.ts、packages/fs/fs-local/src/index.ts。
+- repos/MANIFEST.tsv 已登记上述只读参考仓；本 slug 没有 REUSE.md，依 PLAN 行已明确的第 2 级复用决策执行。
+- tools/execute 将判定记录及工作区根放入每个后端实例的 AsyncLocalStorage；无模型调用记录的技能等内部读取保持上游行为。
+- readText / streamText / readBytes / readByteRange / listDir：fresh resolve → open(O_RDONLY|O_NONBLOCK) → 内核 readlink 核对实际对象 → 原 displayPath + fd targetKey 调上游 → finally close。stream 延迟到首次迭代打开，break / throw / abort 均回收；abort 不需要消费者继续 next 才能关闭绑定 fd。
+- 已批准区外读只匹配 shell-ask 判定时存下的 canonical targets；不能把一张区外读审批换成另一区外目标。NEVER / mask 总是优先拒绝。
+- 额外必要收口：present 上游只有 lstat / resolve / stat，不经过五个读取方法；真 Loader 实证原先仍能发布假凭证路径，故 stat 也复用 fd 核对。保留不存在文件 stat 返回 undefined 的上游语义。
+- shell-ask.mjs 只增加审批目标快照（含 tiers 损坏回退），resolve.mjs 只扩充交接类型注释；可能与 P6-26t 同改 shell-ask.mjs，合并必须三方处理，不能整文件覆盖。
+
+第 0 步：glob / grep 移交 P6-27（按任务允许的路径）
+- 上游 packages/fs/tool-fs-search/src/search-core.ts:222-249 的 runRipgrep 固定调用同步 ctx.subprocess.spawn；spawn 接收已经就绪的 argv 并立即返回句柄。
+- ctx.sandbox.confine 是异步接口（packages/sandbox/sandbox/src/index.ts:192），搜索插件配置仅有结果/输出/超时上限，没有 command/provider/confine 注入点。
+- 无法仅通过局部 spawn 包装保持原同步句柄与取消/回收语义；若全局替换共享 subprocess 服务或另造延迟句柄，会影响非搜索调用并接管上游生命周期。因此本任务不修改上游、不全局 monkeypatch；把区内 rg 在 bash 同一 confine 视图中启动及其换链格明确留给 P6-27。
+- 本任务仍实测原区内 glob/grep 正常，以及区外 glob 出卡一次、获批后返回目标。搜索残余时序窗口没有声称已关闭。
+
+验收证据
+1. 正对照：在本 worktree 临时恢复 main@75267c6 的 fs-zone / shell-ask / resolve 原文件，运行新增 inner 两格，finally 恢复当前文件。两个拒绝断言预期红，返回均包含 FAKE-CRED-MARKER-OUTSIDE；outside 与临时 HOME/.ssh 各一格，0 卡。见 positive-control.txt。最初动代码前也先运行这两个新增断言，2 failed / 14 passed。
+2. 修后 inner 格全部拒绝，返回没有假凭证内容。真 Loader 覆盖 read 区外、read 假凭证、read_image、present、read(directory/listDir)，均 0 卡并返回区域/NEVER 拒绝。
+3. 单元逐一覆盖五种读取方法：模型侧换链后拒绝；open 后、上游读之前换链，仍得到已打开的区内原对象，不得到区外内容/路径。
+4. 单元覆盖 fresh resolve 后、open 前换链到区外/假凭证，实际打开对象复核后拒；已批准区外原路径可读，不同区外路径和 NEVER 拒；内部读取不变。
+5. fd：1000 次成功、失败、预中止及 stream break/abort 混合操作后数量 ≤ 基线+2；跨工具返回的 stream 作用域保持；未开始的 iterable 不持有 fd；中途 abort 后不 next 也回到基线+2 内。
+6. 不误伤：真 Loader 区内 glob 返回 a.txt，grep 返回 needle-p626，read→edit 0 卡落盘成功；区外 read 出卡批准仍可读（既有第②格）；区外 glob 一卡批准后返回目标。
+7. 错误/输出：open 失败与上游 I/O 错误只保留 displayPath，测试输出扫描内部 fd 路径命中均为 0。
+8. 没有触碰任何真实凭证，假凭证均放在 /tmp/bot-p626-* 单元临时根；write-outside 套件的临时 HOME / runtime / patch 根也统一改为 /tmp/bot-p626-*（最终文件工具复测使用新前缀）。
+
+测试命令与实际输出（均 HOME=/tmp/bot-p626-home）
+A. pnpm -C /tmp/bot-wt/P6-26/app/sdk exec vitest run tests/unit tests/e2e/guard-fs.test.ts tests/e2e/guard-escalation.test.ts tests/e2e/guard-plugin-manager.test.ts tests/e2e/approval.test.ts tests/e2e/write-outside.test.ts tests/e2e/tiers-policy.test.ts tests/e2e/w1ap0-matrix.test.ts
+   Test Files  32 passed (32)
+        Tests  536 passed (536)
+   exit 0；见 regression.txt。这是 VERIFY-P6-25f1 第7项的相同范围；不是 SDK 全量。
+B. pnpm -C /tmp/bot-wt/P6-26/app/sdk exec vitest run tests/unit/fs-zone-read.test.ts tests/unit/fs-zone.test.ts --coverage --coverage.include=src/policy/fs-zone.mjs
+   Test Files  2 passed (2)
+        Tests  33 passed (33)
+   fs-zone.mjs statements 88.03%, branches 82.55%, functions 86.66%, lines 93.25%；exit 0；见 coverage.txt。
+C. A 之后补强了 fd 生命周期两格与区外 glob 的结果断言，分别用 B 与下列最终文件工具命令复测。
+   pnpm -C /tmp/bot-wt/P6-26/app/sdk exec vitest run tests/e2e/write-outside.test.ts
+   Test Files  1 passed (1)
+        Tests  9 passed (9)
+   exit 0；见 write-outside.txt。
+D. git diff --check：无输出；regression / coverage / write-outside 最终输出扫描内部 fd 路径命中为 0。
+E. /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p626：先前为空，收尾时子串命中并行 P6-26t 的回归进程，未清理它们。再按本任务 worktree 的带斜杠精确前缀及 p626-run / p626-dsh 根自查，无本任务残留。测试只结束自己 spawn 的 runtime 子进程。证据日志仅去掉行尾空白和多余末尾空行。
+
+改动文件（绝对路径）
+/tmp/bot-wt/P6-26/app/sdk/src/policy/fs-zone.mjs
+/tmp/bot-wt/P6-26/app/sdk/src/policy/resolve.mjs
+/tmp/bot-wt/P6-26/app/sdk/src/policy/shell-ask.mjs
+/tmp/bot-wt/P6-26/app/sdk/tests/unit/fs-zone.test.ts
+/tmp/bot-wt/P6-26/app/sdk/tests/unit/fs-zone-read.test.ts
+/tmp/bot-wt/P6-26/app/sdk/tests/e2e/write-outside.test.ts
+/tmp/bot-wt/P6-26/app/sdk/tests/support/fs-zone-swap.mjs
+/tmp/bot-wt/P6-26/app/sdk/tests/support/fake/plugin.mjs（测试模型现在透传显式 inputModalities，使 read_image 格确实到达后端，而不是被文本模型能力门先挡住）
+/tmp/bot-wt/P6-26/work/p6-orchestration/evidence/P6-26/REPORT.txt
+/tmp/bot-wt/P6-26/work/p6-orchestration/evidence/P6-26/positive-control.txt
+/tmp/bot-wt/P6-26/work/p6-orchestration/evidence/P6-26/regression.txt
+/tmp/bot-wt/P6-26/work/p6-orchestration/evidence/P6-26/coverage.txt
+/tmp/bot-wt/P6-26/work/p6-orchestration/evidence/P6-26/write-outside.txt
+
+未完成/新问题
+- glob / grep 受限视图启动明确移交 P6-27；宿主写侧的残余窗口仍由 P6-27 处理。本任务没有放宽审批和沙箱。
+- present 的后续 UI/下载读取不属于本任务模型工具调用路径；此处硬化的是工具阶段的目标/元数据判定。
+- 未改 PLAN / LOG / LEARNINGS、未合并 main、未自评通过。
+待 verifier 验收。

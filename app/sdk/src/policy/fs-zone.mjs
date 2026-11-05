@@ -3,11 +3,13 @@
 // 写操作在 fresh resolve 后加工作区/NEVER 校验；模型侧读操作在 tools/execute 复判。
 // 共享 fs 的内部读取（技能等）不受模型审批语义影响；已批准的区外读保持 Q-013。
 // start.ts 禁用 stock fs-sandbox 并插入本后端，NEVER 清单与 guard 同源。
-// ponytail: 残余窗口是执行时解析路径 → 实际系统调用之间；读侧工具层会再解析一次，
-// 两次解析不比对，身份未绑定；写侧锁队列可拉长窗口。赢得竞态可读写本用户可达的
-// 任意宿主路径（含 NEVER 根），ptc run_code 可作无卡并发行动方。升级路径：文件 I/O
-// 改到与 bash 相同的 bwrap 命名空间内执行；另立跟进任务，本次不扩范围。
+// ponytail: 模型读侧已用 Linux fd 绑定对象；写侧与 rg 搜索仍按宿主路径操作，
+// 残余窗口由 P6-27 的 bash 同一 bwrap 视图关闭，不重写上游 I/O。
+import { AsyncLocalStorage } from 'node:async_hooks'
+import { constants } from 'node:fs'
+import { open, readlink } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import { sep } from 'node:path'
 import { isPathUnder } from './containment.mjs'
 import { resolveTargets, zoneVerdictOf } from './resolve.mjs'
 
@@ -56,9 +58,12 @@ export function applyZoneRecheck(ctx, neverRoots) {
     const inside = workspaceRoot !== undefined
       && targets.length === total
       && (await Promise.all(targets.map((t) => isPathUnder(t, workspaceRoot)))).every(Boolean)
-    if (inside) return next()
-    if (record.kind === 'workspace-read' && record.allInside === false) return next() // 区外读已出卡并获批准（Q-013 语义保持）
-    return denied(record.kind === 'workspace-write' ? WRITE_OUT : READ_OUT)
+    if (!inside && !(record.kind === 'workspace-read' && record.allInside === false)) {
+      return denied(record.kind === 'workspace-write' ? WRITE_OUT : READ_OUT)
+    }
+    // 每个后端实例独立持有作用域；内部读没有记录，不套用模型调用的审批语义。
+    fs.p2sdkReadScope ??= new AsyncLocalStorage()
+    return fs.p2sdkReadScope.run({ record, workspaceRoot }, next)
   })
 }
 
@@ -86,6 +91,103 @@ export class ZoneCheckedFileSystem extends SandboxedFileSystem {
     const roots = Array.isArray(config.neverRoots) ? config.neverRoots.filter((p) => typeof p === 'string' && p.length > 0) : []
     this.p2sdkNeverRoots = [...new Set(roots)]
     applyZoneRecheck(this.ctx, this.p2sdkNeverRoots)
+  }
+
+  /** Linux readlink 返回内核解析的绝对路径；不能再按可被换链的祖先 stat 判身份。 */
+  async openReadTarget(target, signal, scope) {
+    if (signal?.aborted) throw new FsError('read aborted', 'FS_ABORTED')
+    const fresh = await this.resolve(target.targetKey, { signal })
+    // NONBLOCK 避免模型把末级换成 FIFO 后卡死 open；上游仍负责常规文件类型检查。
+    const handle = await open(fresh.targetKey, constants.O_RDONLY | constants.O_NONBLOCK)
+    try {
+      const key = `/proc/self/fd/${handle.fd}`
+      const actual = await readlink(key)
+      const under = (root) => typeof root === 'string' && (actual === root || actual.startsWith(root.endsWith(sep) ? root : root + sep))
+      if (this.p2sdkNeverRoots.some(under)) throw denyFs(NEVER)
+      const approved = scope.record.kind === 'workspace-read' && scope.record.allInside === false
+        && scope.record.targets?.includes(actual)
+      if (actual.endsWith(' (deleted)') || (!under(scope.workspaceRoot) && !approved)) throw denyFs(READ_OUT)
+      if (signal?.aborted) throw new FsError('read aborted', 'FS_ABORTED')
+      return { handle, target: { ...target, targetKey: key } }
+    } catch (error) {
+      await handle.close()
+      throw error
+    }
+  }
+
+  /** fd 路径不进入模型错误；原 displayPath 保留，上游错误码保持。 */
+  readError(error, target) {
+    const code = typeof error?.code === 'string' && error.code.startsWith('FS_') ? error.code
+      : ['ENOENT', 'ENOTDIR'].includes(error?.code) ? 'FS_NOT_FOUND' : 'FS_PERMISSION_DENIED'
+    const message = typeof error?.message === 'string' && error.code?.startsWith('FS_')
+      ? error.message.replace(/\/proc\/self\/fd\/\d+/g, () => target.displayPath)
+      : `cannot read "${target.displayPath}": file access failed`
+    return new FsError(message, code)
+  }
+
+  async withReadTarget(target, signal, read) {
+    const scope = this.p2sdkReadScope?.getStore()
+    if (!scope) return read(target)
+    let bound
+    try {
+      bound = await this.openReadTarget(target, signal, scope)
+      return await read(bound.target)
+    } catch (error) {
+      throw this.readError(error, target)
+    } finally {
+      await bound?.handle.close()
+    }
+  }
+
+  async readText(target, signal) {
+    return this.withReadTarget(target, signal, (bound) => super.readText(bound, signal))
+  }
+
+  async readBytes(target, signal, maxBytes) {
+    return this.withReadTarget(target, signal, (bound) => super.readBytes(bound, signal, maxBytes))
+  }
+
+  async readByteRange(target, range, signal) {
+    return this.withReadTarget(target, signal, (bound) => super.readByteRange(bound, range, signal))
+  }
+
+  async listDir(target, signal) {
+    return this.withReadTarget(target, signal, (bound) => super.listDir(bound, signal))
+  }
+
+  // present 只调用 stat，不读内容；同样不能发布未经批准的区外目标。
+  async stat(target, signal) {
+    try {
+      return await this.withReadTarget(target, signal, (bound) => super.stat(bound, signal))
+    } catch (error) {
+      if (error?.code === 'FS_NOT_FOUND') return undefined
+      throw error
+    }
+  }
+
+  async streamText(target, signal) {
+    const scope = this.p2sdkReadScope?.getStore()
+    if (!scope) return super.streamText(target, signal)
+    const fs = this
+    const read = (bound) => super.streamText(bound, signal)
+    // 延迟到首次迭代才打开：未消费的 iterable 不持有 fd；scope 跨出 tools/execute 仍有效。
+    return (async function* () {
+      let bound
+      let closeError
+      const abort = () => { void bound.handle.close().catch((error) => { closeError = error }) }
+      try {
+        bound = await fs.openReadTarget(target, signal, scope)
+        signal?.addEventListener('abort', abort, { once: true })
+        if (signal?.aborted) throw new FsError('read aborted', 'FS_ABORTED')
+        yield* await read(bound.target)
+      } catch (error) {
+        throw fs.readError(error, target)
+      } finally {
+        signal?.removeEventListener('abort', abort)
+        await bound?.handle.close()
+        if (closeError) throw fs.readError(closeError, target)
+      }
+    })()
   }
 
   /**

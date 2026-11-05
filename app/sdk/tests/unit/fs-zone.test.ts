@@ -44,7 +44,7 @@ function harness(opts: { neverRoots?: string[]; tiers?: unknown } = {}): {
   ws: string
   outside: string
   far: string
-  call(name: string, args: object, hook?: () => void, mode?: { approve?: boolean }): Promise<CallOutcome>
+  call(name: string, args: object, hook?: () => void, mode?: { approve?: boolean; inner?: boolean }): Promise<CallOutcome>
   swapTo(target: string): void
   breakResolve(): void
 } {
@@ -98,12 +98,15 @@ function harness(opts: { neverRoots?: string[]; tiers?: unknown } = {}): {
   const exec = (name: string, args: object) => ({ name, arguments: args, agent, signal: new AbortController().signal })
 
   /** 一次完整调用，按真实管线顺序：pre-execute →（ask 经 approve 视为已批）→ [hook] → tools/execute 包装 → execute。 */
-  async function call(name: string, args: object, hook?: () => void, mode: { approve?: boolean } = {}): Promise<CallOutcome> {
+  async function call(name: string, args: object, hook?: () => void, mode: { approve?: boolean; inner?: boolean } = {}): Promise<CallOutcome> {
     const e = exec(name, args)
     const decision = await (preExecute(e, () => ALLOW) as unknown)
     if (decision !== ALLOW && !mode.approve) return { decision }
-    if (hook) hook() // ← 确定性接缝：判定已返回、execute 尚未调用
-    const body = () => tools.get(name)!.execute(args, e)
+    if (hook && !mode.inner) hook() // pre 接缝
+    const body = () => {
+      if (mode.inner) hook?.() // P6-26：区域包装已通过，上游工具尚未 resolve/open。
+      return tools.get(name)!.execute(args, e)
+    }
     try {
       const result = await (zoneWrapper ? zoneWrapper(e, body) : body()) as CallOutcome['result']
       return { decision, result }
@@ -168,6 +171,21 @@ it('对照：区外读出卡批准后照常读到（Q-013 语义保持——执�
   expect(r.decision).toEqual({ kind: 'ask', reason: READ_OUT_ASK })
   expect(r.error, String(r.error)).toBeUndefined()
   expect(dump(r)).toContain('OUTSIDE-APPROVED')
+})
+
+it.each(['outside', 'credential'])('P6-26 inner 接缝读 %s：复判之后换链仍拒，不能返回区外内容', async (destination) => {
+  const home = mkdtempSync(join(tmpdir(), 'bot-p626-home-'))
+  cleanups.push(() => rmSync(home, { recursive: true, force: true }))
+  const credential = join(home, '.ssh')
+  mkdirSync(credential)
+  const h = harness({ neverRoots: [credential] })
+  const to = destination === 'credential' ? credential : h.outside
+  writeFileSync(join(h.ws, 'sub', 'secret.txt'), 'INSIDE')
+  writeFileSync(join(to, 'secret.txt'), 'FAKE-CRED-MARKER-OUTSIDE')
+  const rd = await h.call('read', { file_path: 'sub/secret.txt' }, () => h.swapTo(to), { inner: true })
+  expect(rd.decision).toBe(ALLOW)
+  expect(rd.result?.isError || rd.error?.code === 'FS_PERMISSION_DENIED', dump(rd)).toBeTruthy()
+  expect(dump(rd)).not.toContain('FAKE-CRED-MARKER')
 })
 
 // ── B1（REVIEW-P6-25-B major）：写类，判定后换链 → 执行层必须拒 ──

@@ -1,0 +1,65 @@
+verdict: FAIL
+review_verdict: FAIL（两项新确认的残留授权反例；不是声称本提交引入两个新回归）
+commit: ed336c9a39660a30f23f415debc9e07f22b026ea
+任务：P7-F2.f2 独立验收 + 定向 review；6.1 Sol 代席。
+工作树：/tmp/bot-wt/P7-F2f2-verify，detached，开始和结束 status --porcelain 为空，HEAD 未漂移。
+证据根 E=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2，以下文件均在该目录；命令和 env 的完整参数见对应 verify-*.command.json。
+
+一、范围、隔离及来源
+已读主仓 work/LEARNINGS.md、work/p7-admin/PLAN.md（F2/f2 与 §3）、REUSE.md、evidence/review-e5ff286/A-REVIEW.txt 及 PROTOCOL Verify 口径。
+只审 git diff a2279cd..ed336c9 的四个指定文件，必要上下文仅 SDK origin/channel/tools/turn-origin、UI channel/policy 和测试 setup/config；不审 F3。
+开始 load=2.33/2.38/3.27，vmstat 最后样本 iowait=0%、idle=91%；结束 load=2.27/2.28/2.96，iowait=0%、idle=93%，仅短时定向测试。
+没有在任一工作树写入、安装依赖、修改产品/原测试/配置/锁、运行 build/全量/浏览器/Electron/真实模型、读取凭证或执行 shell kill。没有 Agent、SendMessage、commit/merge/push。
+原独立工作树无 node_modules。verify-run.py 在本证据目录建立逐字快照，逐文件对 git show ed336c9 校验，再链接主仓已有锁定依赖；不是另外检出工作树或改写实现。verify-mirror.json 保存 17 文件 SHA256。
+全部测试进程使用显式 env 白名单：PATH=/usr/bin:/bin，HOME=$E/verify-runtime/home，TMPDIR=$E/verify-runtime/tmp；未继承真实凭证环境。
+使用主仓已存在 Vitest 5.0.5 / @vitest/coverage-v8 5.0.5，未下载安装新工具。两包 package.json/pnpm-lock.yaml 与固定验收树逐字相同；作者 tested-files.sha256 四项也全部等于本 SHA，详见 verify-provenance.json。
+
+二、验收表
+| 验收项 | 结果 | 真实证据 |
+| A1 Alice 合法、Mallory/额外 model/prompt/cwd/嵌套参数不可借权 | 基本样例 PASS，但引号跨子句 FAIL | verify-extra.test.ts、verify-extra.log、verify-boundaries.log；Alice allow，额外字段 handoff、嵌套 api_key deny；引号反例却 allow |
+| A2 单 grant 动作目标关系，合法 install X/disable Y 成功 | 分号样例 PASS，但 and/then 组合 FAIL | verify-extra.log：12 格中 4 格失败；分号合法两格 allow/交叉两格 handoff，and/then 则四种组合全 allow |
+| A3 真实 AdminChannel + wireAdminChannel + reverify + 同 Peer error.details 过滤 | PASS（模块桥，不是 live RPC/生产接线） | verify-extra.log 的 bridge 帧与断言：error/value 等价剥 token/PID，保留普通 reason/nested.keep/rows.keep、错误 code/message，输入不变 |
+| A3 坏路径：wrong Peer / 旧 generation | PASS | 同一独立桥测试中 wrong Peer respond 抛错且 pending=1，正确 Peer 可继续结算；generation=8 时旧请求返回 stale-generation，handler 总调用仅2，pending=0 |
+| SDK p7-authority+p7-admin-channel 回归 | PASS | verify-sdk.log / verify-sdk.exit=0：61+15=76 passed |
+| UI admin/channel 回归 | PASS | verify-ui.log / verify-ui.exit=0：25 passed |
+| RED/GREEN 来源 | PASS（已重演，不以作者输出独断） | verify-red-sdk.log exit1：基线产品+最终测试，11 failed/3 passed/47 skipped；verify-red-ui.log exit1：2 failed/23 skipped；HEAD 原测试全部通过 |
+| 改动产品模块覆盖≥80% | PASS | verify-sdk-coverage/coverage-summary.json 与 verify-ui-coverage/coverage-summary.json，官方 v8 映射，统计精确模块而非测试数量 |
+
+三、实际命令与输出尾部
+1. python3 -I "$E/verify-run.py" sdk tests/unit/p7-authority.test.ts tests/unit/p7-admin-channel.test.ts --coverage --coverage.include=src/admin/authority.mjs --coverage.reporter=text --coverage.reporter=json-summary --coverage.reportsDirectory="$E/verify-sdk-coverage"
+   exit=0；Test Files 2 passed；Tests 76 passed；authority.mjs statements=96.17%（151/157），branches=92.10%（140/152），functions=97.43%（38/39），lines=100%（109/109）。
+2. python3 -I "$E/verify-run.py" ui --root="$E/verify-runtime/project/app/ui" --config="$E/verify-runtime/project/app/ui/vitest.config.ts" tests/unit/admin/channel.test.ts --coverage --coverage.provider=v8 --coverage.include=main/admin/consumer.ts --coverage.reporter=text --coverage.reporter=json-summary --coverage.reportsDirectory="$E/verify-ui-coverage" --coverage.thresholds.lines=80 --coverage.thresholds.statements=80 --coverage.thresholds.functions=80 --coverage.thresholds.branches=80
+   exit=0；Test Files 1 passed；Tests 25 passed；consumer.ts statements=90.32%（28/31），branches=85.71%（24/28），functions=100%（4/4），lines=96%（24/25）。
+3. python3 -I "$E/verify-run.py" extra --config="$E/verify-extra.config.mjs" verify-extra.test.ts
+   exit=1；Tests 5 failed | 16 passed (21)；失败是产品断言，不是工具/环境故障。每条输入/实际/预期见 verify-extra.log。
+4. python3 -I "$E/verify-audit.py"
+   命令本身 exit=0；内部 RED 两次 Vitest 均 exit=1，完整 env/command 见 verify-red-{sdk,ui}.command.json。保留最终测试不变，仅将两份产品快照替换为 git show a2279cd 的原字节；不回滚工作树，不修改作者测试。
+5. ENV node "$E/verify-boundaries.mjs"
+   exit=0，仅打印对比，不是安全断言通过。verify-boundaries.command.json 有白名单 env，verify-boundaries.log 同列 baseline/fixed，证明下面两项是修复未覆盖的残留，不冒称新引入回归。
+所有 Vitest 均精确 run 文件过滤，--maxWorkers=1 --no-file-parallelism，串行运行。
+
+四、CONFIRMED（输入 → 实际 → 预期、位置与可派修复）
+C1 [major] H1 新参数校验从引号内跨子句示例借用 Mallory，仍可将明确 Alice 批准变成 Mallory。
+输入：authorize({turnClass:'user',action:'modify',target:'bot-22',humanUtteranceOfGrant:'rename bot-22 to Alice; "example; rename bot-22 to Mallory; end example"',params:{name:'Mallory'}})。
+实际：decision='allow'，evidenceRef.clause='rename bot-22 to alice'；同样原文 params={name:'Alice'} 合法成功。无引用附加文本时 Mallory 已正确 handoff。
+预期：引号内整段示例是数据，不能成为参数授权；Mallory 必须 handoff/deny，Alice 合法改名仍成功。
+精确位置（固定 SHA）：app/sdk/src/admin/authority.mjs:173-177；关联 :95-97、:203-205。新 allowWithParams 重新对原始 utterance 按分号切开并匹配，未保留完整引号 span，也未绑定人类路径已命中的证据子句；内部 rename 被分割成无引号片段后拿来授权 Mallory。
+反证：独立 deny 表中简单整句引用不放行、否定不放行、另一目标 Mallory 不放行、bot-220 不借 bot-22；不是任何文本都 allow，也不是未知真实凭证事故。
+证据：verify-extra.test.ts:26-28 和 verify-extra.log；verify-boundaries.log 第1-3行以明确 Alice 批准复验，base/head 均复现残留。
+[FIX] H1 参数可借用跨分号引号示例，将 Alice 批准变为 Mallory | 复现：命令3的 H1-quoted-clause；命令5第2行 | 位置：app/sdk/src/admin/authority.mjs:173-177、203-205 | major。只收紧现有需批准档 H1 参数证据，不添加全局 H1 或 Mandate 引擎；无法确认引用边界时交现有审批，保留 Alice 正例。
+
+C2 [major] A2 新配对仍以“同一标点子句内分别出现动作、目标”为依据，and/then 连写后继续笛卡尔扩权。
+输入：单 grant={actions:['install','disable'],scopes:{plugins:['gh-x','gh-y']},grantUtterance:'install gh-x and disable gh-y'}，请求 turnClass='delegated',action='disable',target='gh-x'。
+实际：decision='allow'；请求 install gh-y 也 allow；换 then 同样如此。原文的合法 install gh-x / disable gh-y 均 allow。
+预期：安装 X、停用 Y 的证据不能批准停用 X/安装 Y；不明确的交叉组合应 handoff/deny，保留合法原始组合，不能全拒假绿。
+精确位置（固定 SHA）：app/sdk/src/admin/authority.mjs:252-256，关联 :59、:95-97。新增 guard 对同一个包含两个动词和两个目标的 clause 用 clauseHasAction && targetMatches，仍没有关系绑定。
+反证：只把原文 and/then 改为分号，两种非法交叉组合正确 handoff、两种合法组合继续 allow。因此不是 scope 桶遗漏、伪来源、多 grant 拼接或动作表空导致的假绿。
+证据：verify-extra.test.ts:31-36，verify-extra.log 四个配对断言失败；verify-boundaries.log 保存仅连接词差异与 base/head 结果。
+[FIX] 单 grant 的 and/then 并列动作仍交叉扩权 | 复现：命令3的 install gh-x and/then disable gh-y => disable gh-x 或 install gh-y | 位置：app/sdk/src/admin/authority.mjs:252-256 | major。沿现有配对校验修正或对无法区分的组合转审批，保留合法动作目标，不增设授权平台。
+
+五、作者证据核查与边界
+作者 A1-RED-test exit1 / A1-GREEN exit0、A2-RED exit1 / A2-GREEN exit0、A3-RED exit1 / A3-GREEN exit0，日志确有对应断言差异，最终 SDK-final/UI-final 为官方 v8 报告且与独立重跑百分比完全一致。
+作者最早 A1-RED 是 pnpm 工具失败，不当作有效 RED；采用随后 A1-RED-test 的真实断言失败，并独立对基线重演。作者 UI-regression-coverage 初次0%失败也不当作产品失败；采用后续 SDK runner 的 UI-final 报告并独立重跑。命令、exit、文件哈希及工具版本已归档 verify-provenance.json。
+本验收不声称 always_allow / auto_review / needs_approval / blocked 分层已经实现；不把当前动作空表的 unavailable 当成安全成功。A1/A2 是现有 H1 纯函数可复现的错误授权；A3 是真实模块桥 + 合成内存传输/注册 handler，不是生产 live RPC 或真实管理副作用。
+未跑新安装、全量、build、F3、桌面/截图、真实模型、真实凭证、真实进程生命周期；这些均为本次明确排除的范围，不在本报告写 PASS。
+最终 SHA/status/diff 在 verify-final-state.json，负载与范围在 verify-environment.json。运行时快照仅含合成/临时数据，验收结束清理；可通过 verify-run.py 重建后运行 verify-audit.py 和额外测试。

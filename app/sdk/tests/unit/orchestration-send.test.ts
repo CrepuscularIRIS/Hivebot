@@ -294,7 +294,8 @@ describe('send_to_bot taint guard (决策 29)', () => {
     writeBots(dir, 'session-main', bots)
     const { call, when, claim } = rig(dir, { agents: [fakeAgent('session-w1')] })
     claim('session-main', 1, 'user-approval')
-    claim('session-main', 1, 'schedule')
+    // T-taint.f1：schedule 对协调者工具也拦（coordinatorTainted），从本「不拦」
+    // 用例移除；goal/schedule 拦截断言在 orchestration-taintf1.test.ts。
     expect(await when({ id: 'session-main' })).toBe(true)
     claim('session-main', 1, 'pbots-worker') // 混合回合：回报与用户消息同回合
     expect(await when({ id: 'session-main' })).toBe(false)

@@ -189,7 +189,8 @@ describe('stop_bot taint guard (决策 29)', () => {
     writeBots(dir, 'session-main', bots)
     const r = rig(dir, { agents: [fakeAgent('session-w1', { status: 'running' })] })
     r.claim('session-main', 1, 'user-approval')
-    r.claim('session-main', 1, 'schedule')
+    // T-taint.f1：schedule 对协调者工具也拦（coordinatorTainted），从本「不拦」
+    // 用例移除；goal/schedule 拦截断言在 orchestration-taintf1.test.ts。
     expect(await r.when({ id: 'session-main' })).toBe(true)
     await expect(r.call({ botId: 'session-w1' })).resolves.toMatchObject({ accepted: true })
   })

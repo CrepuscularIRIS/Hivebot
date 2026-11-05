@@ -61,10 +61,11 @@ export function registerStopBot(ctx, orch) {
   }, {
     // when 每 step 读权威 mainBotId（S2 §3.4）；受污染回合（认领过 pbots-worker）
     // 隐藏，execute 再拦一次（两道都读，fail closed）。
+    // T-taint.f1：口径扩为 coordinatorTainted（pbots-worker ∪ goal / schedule）。
     when: async ({ agent }) => {
       const mainId = await readMainBotId(orch.config.dataDir ?? orchDataDir())
       if (mainId === undefined || mainId === null || agent === undefined || agent.id !== mainId) return false
-      return !turns.classify(String(agent.id)).tainted
+      return !turns.classify(String(agent.id)).coordinatorTainted
     },
   })
 }
@@ -86,15 +87,16 @@ async function executeStopBot(orch, rawArgs, exec) {
   if (typeof botId !== 'string' || botId.trim() === '') throw orchError('pbots/invalid-args', 'botId must be a non-empty string')
   const target = botId.trim()
 
-  // 2 身份 + 污染（同 create/send：execute 每次读权威 mainBotId；认领过
-  //   pbots-worker 即拒，cancel 零调用）
+  // 2 身份 + 污染（同 create/send：execute 每次读权威 mainBotId；T-taint.f1
+  //   口径 = coordinatorTainted：pbots-worker ∪ goal / schedule 即拒，cancel 零调用）
   const mainId = await readMainBotId(orch.config.dataDir ?? orchDataDir())
   if (mainId === undefined) throw orchError('pbots/unavailable', 'main bot identity unreadable (fail closed)', {})
   if (mainId === null || exec.agent?.id !== mainId) {
     throw orchError('pbots/forbidden', 'stop_bot is only available to the current main bot', { mainBotId: mainId ?? null })
   }
-  if (orch.turns.classify(String(exec.agent.id)).tainted) {
-    throw orchError('pbots/forbidden', 'stop_bot is rejected in a turn that received worker reports', { taintKind: TAINT_KIND })
+  const turnOrigin = orch.turns.classify(String(exec.agent.id))
+  if (turnOrigin.coordinatorTainted) {
+    throw orchError('pbots/forbidden', 'stop_bot is rejected in a turn that received worker reports or a goal/schedule round (not a direct user message)', { taintKind: TAINT_KIND, taintKinds: turnOrigin.coordinatorTaintKinds })
   }
 
   // 3 目标白名单：只许 createdBy = 当前主 bot（自身 / 未知 / 他人 worker 拒，

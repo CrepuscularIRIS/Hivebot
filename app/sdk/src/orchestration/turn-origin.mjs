@@ -80,7 +80,9 @@ export class TurnOrigin {
    * @param {string} agentId @param {number} [turn]
    */
   classify(agentId, turn = this.lastTurn(agentId)) {
-    if (turn === undefined || turn === null) return { tainted: false, auditKinds: [] }
+    // T-taint.f1：早返回补齐 coordinatorTainted / coordinatorTaintKinds（与有
+    // claim 路径同一形状；此前 undefined falsy 恰安全但契约不一致）。
+    if (turn === undefined || turn === null) return { tainted: false, coordinatorTainted: false, coordinatorTaintKinds: [], auditKinds: [] }
     return classifyTurn(this.claims(agentId, turn))
   }
 }

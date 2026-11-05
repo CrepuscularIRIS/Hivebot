@@ -1,0 +1,57 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-taintf1-verify/app/sdk
+
+ ❯ tests/unit/orchestration-send.test.ts (24 tests | 1 failed) 28ms
+   ❯ send_to_bot taint guard (决策 29) (2)
+     × host-internal and unknown kinds do not taint (R2-1); a mixed user+report turn still rejects 5ms
+ ❯ tests/unit/orchestration-stop.test.ts (16 tests | 1 failed) 26ms
+   ❯ stop_bot taint guard (决策 29) (2)
+     × host-internal and unknown kinds do not taint (R2-1) 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/orchestration-send.test.ts > send_to_bot taint guard (决策 29) > host-internal and unknown kinds do not taint (R2-1); a mixed user+report turn still rejects
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/orchestration-send.test.ts:298:48
+    296|     claim('session-main', 1, 'user-approval')
+    297|     claim('session-main', 1, 'schedule')
+    298|     expect(await when({ id: 'session-main' })).toBe(true)
+       |                                                ^
+    299|     claim('session-main', 1, 'pbots-worker') // 混合回合：回报与用户消息同回合
+    300|     expect(await when({ id: 'session-main' })).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/orchestration-stop.test.ts > stop_bot taint guard (决策 29) > host-internal and unknown kinds do not taint (R2-1)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/orchestration-stop.test.ts:193:50
+    191|     r.claim('session-main', 1, 'user-approval')
+    192|     r.claim('session-main', 1, 'schedule')
+    193|     expect(await r.when({ id: 'session-main' })).toBe(true)
+       |                                                  ^
+    194|     await expect(r.call({ botId: 'session-w1' })).resolves.toMatchObje…
+    195|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 38 passed (40)
+   Start at  13:11:59
+   Duration  430ms (transform 45%, import 23%, tests 23%, setup 7%, worker 3%)
+
+exit=1

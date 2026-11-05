@@ -93,3 +93,8 @@
 - 只有这几类才问用户：需求与范围（做什么/不做什么）、品味偏好（原版有两种做法时选哪种，先按 RE 主流做法执行并标注）、法外授权（越过 CLAUDE.md 硬约束的事，如开放真桌面）。
 - BRIEF/PLAN 里现存的 U-* 待确认项按此清理：能 RE 定的转为「按 RE 定（锚点）」，真剩需求类的才保留。
 - 例：plugin_manager 是否全局生效——用户已答「问题不是那么大」；RE 证据（RE-admin-078 §4）显示原版也非裸全局：有 always_allow/auto_review/needs_approval 分层 + CU 的 standing grants。按原版分层定，不自建更重的 Mandate 体系。
+
+## 判 stale 与主仓回测（2026-11-05 H3 事件）
+- 现象：H3 builder 51 分钟无 commit/报告更新，判 stale#1；同窗口主仓 create-live 连跑两次同 3 红（超时 18s/29s+20ms 快败）疑内容回归。
+- 根因：两者同源——builder 正在跑 e2e 长链（guard-fs→w1ap0→sandbox-hardened→全量，单文件负载下 >1000s），stale 判定只看 git/文件 mtime 漏了进程活性；主仓回测与其跨树同文件互踩。
+- 规则：①判 stale 前必须 `pgrep -af 'bot-wt/<task-id>'` 看 agent shell 与子进程是否在干活，有活跃进程就不判 stale；②主仓回测出现红灯且签名是超时/快败混合时，先查有无并行 agent 在跑 e2e/全量（pgrep vitest），再判回归；③干净复跑统一安排在无并行 agent 的窗口。

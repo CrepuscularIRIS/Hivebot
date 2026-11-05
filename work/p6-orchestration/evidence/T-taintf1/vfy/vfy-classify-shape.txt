@@ -1,0 +1,4 @@
+no-claim keys: ["auditKinds","coordinatorTaintKinds","coordinatorTainted","tainted"] {"tainted":false,"coordinatorTainted":false,"coordinatorTaintKinds":[],"auditKinds":[]}
+claim keys:   ["auditKinds","coordinatorTaintKinds","coordinatorTainted","tainted"] {"tainted":false,"coordinatorTainted":true,"coordinatorTaintKinds":["goal"],"auditKinds":["user","goal"]}
+key-sets equal: true
+no-claim coordinatorTaintKinds is array: true len 0

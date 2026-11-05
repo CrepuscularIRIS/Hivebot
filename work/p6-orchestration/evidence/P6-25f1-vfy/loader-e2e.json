@@ -1,0 +1,85 @@
+{
+  "seam": [
+    {
+      "boot": true,
+      "ctor": "ZoneCheckedFileSystem",
+      "zone": true
+    },
+    {
+      "tool": "write",
+      "file": "/tmp/bot-p625f1-vfy-home-z1B7vw/pbots-data/workspaces/x/vfy-swap-3777cb-0/w-3777cb.txt",
+      "zone": true,
+      "verdict": {
+        "kind": "workspace-write",
+        "allInside": true
+      },
+      "swapped": true
+    },
+    {
+      "tool": "write",
+      "file": "/tmp/bot-p625f1-vfy-home-z1B7vw/pbots-data/workspaces/x/vfy-swap-3777cb-1/w-3777cb.key",
+      "zone": true,
+      "verdict": {
+        "kind": "workspace-write",
+        "allInside": true
+      },
+      "swapped": true
+    },
+    {
+      "tool": "read",
+      "file": "/tmp/bot-p625f1-vfy-home-z1B7vw/pbots-data/workspaces/x/vfy-swap-3777cb-2/vfy_marker",
+      "zone": true,
+      "verdict": {
+        "kind": "workspace-read",
+        "allInside": true
+      },
+      "swapped": true
+    },
+    {
+      "tool": "read",
+      "file": "/tmp/bot-p625f1-vfy-home-z1B7vw/pbots-data/workspaces/x/vfy-swap-3777cb-3/vfy_marker",
+      "zone": true,
+      "verdict": {
+        "kind": "workspace-read",
+        "allInside": true
+      },
+      "swapped": true
+    }
+  ],
+  "rows": [
+    {
+      "case": 0,
+      "tool": "write",
+      "dest": "outside",
+      "cards": 0,
+      "isError": true,
+      "text": "Error: [sandbox: file access denied under workspace-write mode]\n[sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]",
+      "landed": false
+    },
+    {
+      "case": 1,
+      "tool": "write",
+      "dest": "fake-cred",
+      "cards": 0,
+      "isError": true,
+      "text": "Error: [sandbox: file access denied under workspace-write mode]\n[sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]",
+      "landed": false
+    },
+    {
+      "case": 2,
+      "tool": "read",
+      "dest": "outside",
+      "cards": 0,
+      "isError": false,
+      "text": "<path>/tmp/bot-p625f1-vfy-out/vfy_marker</path>\n<type>file</type>\n<content>\n1: VFY-OUTSIDE\n\n(End of file - total 1 lines)\n</content>"
+    },
+    {
+      "case": 3,
+      "tool": "read",
+      "dest": "fake-cred",
+      "cards": 0,
+      "isError": false,
+      "text": "<path>/tmp/bot-p625f1-vfy-home-z1B7vw/.ssh/vfy_marker</path>\n<type>file</type>\n<content>\n1: VFY-FAKE-CRED\n\n(End of file - total 1 lines)\n</content>"
+    }
+  ]
+}

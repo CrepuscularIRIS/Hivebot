@@ -1,0 +1,10 @@
+{
+  "cases": 64,
+  "uncaught": 0,
+  "denied": 12,
+  "rejected": 36,
+  "successInside": 16,
+  "outsideUnchanged": true,
+  "maxMs": 221
+}
+PASS: installed schema has only file_path; malformed inputs cannot write outside; successful calls resolve inside workspace

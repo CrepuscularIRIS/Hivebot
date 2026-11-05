@@ -1,0 +1,10 @@
+ ✓ tests/e2e/write-outside.test.ts > ① 复刻 probe2：绝对路径写宿主 /tmp → deny、文件不存在、0 卡（修复前这里无卡成功） 3695ms
+ ✓ tests/e2e/write-outside.test.ts > ② 预置区外文件 edit → deny、内容不变；其读前提（区外 read）仍出卡（读语义不变差分） 871ms
+ ✓ tests/e2e/write-outside.test.ts > ③ .. 逃逸：相对路径带 .. 段出工作区 → deny 330ms
+ ✓ tests/e2e/write-outside.test.ts > ④ 工作区内软链指向区外 → 经软链写 deny、目标不存在 441ms
+ ✓ tests/e2e/write-outside.test.ts > ⑤ 区内 write/edit 照常（policy-state 从未 provision 态；本测试的合法工作区就在 /tmp 下——区外判定不看 /tmp） 1089ms
+ ✓ tests/e2e/write-outside.test.ts > ⑥ 普通第二会话（另一工作区）写区外/写他人工作区 → deny（不只 worker 受约束） 873ms
+ ✓ tests/e2e/write-outside.test.ts > P6-25.f1 真 Loader：文件工具走新后端，同一判定/执行窗口换链后读写及假凭证读写均拒 4790ms
+ ✓ tests/e2e/write-outside.test.ts > ⑦ never 子代理（ptc）写区外 → 本地 deny、宿主无文件、子会话 0 卡 3717ms
+ Test Files  1 passed (1)
+      Tests  8 passed (8)

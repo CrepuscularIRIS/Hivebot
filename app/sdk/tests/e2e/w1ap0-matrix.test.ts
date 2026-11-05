@@ -170,6 +170,11 @@ ${opts.stock === true ? `\
     probeTimeoutMs: 5000
 - id: p2sdk-fs-guard
   disabled: true
+# P6-25.f1：stock 必须恢复上游 fs，而不是保留执行层防线。
+- id: p2sdk-fs-zone
+  disabled: true
+- id: fs-sandbox
+  disabled: false
 - id: p2sdk-shell-ask
   disabled: true
 ` : ''}\
@@ -500,7 +505,7 @@ afterAll(async () => {
 
 it('① 根会话：11 类凭证 × 7 文件入口逐格 deny（isError + guard 原因 + asked 0），写类哨兵 sha 不变', { timeout: 600_000 }, async () => {
   for (const cat of CATS()) {
-    const before = sha256(cat.textFile)
+    const before = cat.stock === 'content' ? sha256(cat.textFile) : undefined // 只打开临时哨兵，不读真实系统凭证
     const entries = ENTRIES.map((e) => entryCall(cat, e))
     const { results, asked } = await fileTurn(M, WS, entries)
     expect(asked, `${cat.name}：全部 deny，无审批`).toBe(0)
@@ -510,7 +515,7 @@ it('① 根会话：11 类凭证 × 7 文件入口逐格 deny（isError + guard 
       expect(r.text, `${cat.name}/${id} guard 原因`).toContain('p2sdk-fs-guard')
       expect(r.text, `${cat.name}/${id} 文件工具不经 shell-ask`).not.toContain('approval unavailable in this session')
     }
-    expect(sha256(cat.textFile), `${cat.name} 写类哨兵不变`).toBe(before)
+    if (cat.stock === 'content') expect(sha256(cat.textFile), `${cat.name} 写类哨兵不变`).toBe(before)
     for (const entry of ENTRIES) cell('①-file', `root/${cat.name}/${entry}`)
   }
   expect(CELLS.filter((c) => c.section === '①-file').length, '根会话文件格 11×7=77').toBe(77)
@@ -705,7 +710,7 @@ it('① stock 差分（摘三层 P5 防线）：根会话逐格读到哨兵/上�
   for (const cat of cats) {
     const entries = ENTRIES.map((e) => entryCall(cat, e))
     for (const [idx, entry] of ENTRIES.entries()) {
-      if (cat.skipStockWrite && (entry === 'write' || entry === 'edit')) {
+      if (cat.name === 'ppp' || (cat.skipStockWrite && (entry === 'write' || entry === 'edit'))) {
         cell('①-stock', `stock-root/${cat.name}/${entry}(真实系统态跳过)`)
         continue
       }

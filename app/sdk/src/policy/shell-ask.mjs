@@ -60,7 +60,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { isPathUnder } from './containment.mjs'
-import { resolveTargets } from './resolve.mjs'
+import { noteZoneVerdict, resolveTargets } from './resolve.mjs'
 import { claimLivePermit, validateRequest } from './request-net.mjs'
 
 /** 严格更宽表，来源: deepseek-harness@ce7073d packages/sandbox/sandbox/src/escalation.ts WIDER_MODES。 */
@@ -307,7 +307,32 @@ export function apply(ctx, config = {}) {
     }
 
     // 表坏 → 一律 ASK（A9 ②；NEVER 已由 guard 在外层处理，不受影响）。
-    if (tiers === null) return ask(ASK.fallback)
+    // P6-25.f1（REVIEW-C minor，Q-023）：写类文件工具例外——工作区外写在任何状态
+    // 下都硬拒，包括档位表不可用：此前表坏时 write/edit 落到本行出「tier table
+    // unavailable」卡，批准后真落到宿主 /tmp（fence 可写根含 /tmp）。写类名单取
+    // profile/tiers.json 的 workspace-write 行（write/edit）——表坏无法查表，按
+    // 本仓实际装载的写类工具回填；判外口径与表可用时相同：fs 服务不可用、候选解
+    // 析失败、workspaceRoot 拿不到、任一候选 resolve 后在区外，一律 deny。其余
+    // 工具（含读类）维持 A9 ② 的全退 ASK。
+    if (tiers === null) {
+      // 回退卡批准的是本次文件调用，不豁免执行期 NEVER 复判。
+      const write = exec.name === 'write' || exec.name === 'edit'
+      if (write || ['read', 'read_image', 'glob', 'grep', 'present'].includes(exec.name)) {
+        noteZoneVerdict(exec, { kind: write ? 'workspace-write' : 'workspace-read', allInside: false })
+      }
+      if (write) {
+        const fsBroken = typeof ctx.get === 'function' ? ctx.get('fs') : null
+        let outside = true // 证不出区内即区外（P6-25 同口径）
+        if (fsBroken !== null && typeof fsBroken === 'object' && typeof fsBroken.resolve === 'function') {
+          const { targets, total, workspaceRoot } = await resolveTargets(ctx, exec, fsBroken)
+          outside = !(workspaceRoot !== undefined
+            && targets.length === total
+            && (await Promise.all(targets.map((t) => isPathUnder(t, workspaceRoot)))).every(Boolean))
+        }
+        if (outside) return { kind: 'deny', reason: ASK.writeOut }
+      }
+      return ask(ASK.fallback)
+    }
     // L-7 R1：mcp__ 工具在表里缺 mcp 行（稀疏 overlay 只强制 default 键）时回退
     // default 行——此前 kind=undefined 落 workspace 分支，MCP 工具无路径候选被
     // next() 静默放行（绕过「连接器一律出卡」与 A9 ② fail-closed）。
@@ -330,6 +355,9 @@ export function apply(ctx, config = {}) {
     const allInside = workspaceRoot !== undefined
       && targets.length === total
       && (await Promise.all(targets.map((t) => isPathUnder(t, workspaceRoot)))).every(Boolean)
+    // P6-25.f1：判定结果交给执行层复判（fs-zone 的 tools/execute；见 resolve.mjs
+    // 的交接注记——exec 同引用）。allInside=false 的读档出卡获批后执行层照常放行。
+    noteZoneVerdict(exec, { kind, allInside })
     if (kind === 'workspace-read') {
       return allInside
         ? (fileGateOpen() ? next() : ask(ASK.readGate))

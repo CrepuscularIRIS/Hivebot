@@ -61,14 +61,18 @@ function fakeOverlay(): string {
   return overlay
 }
 
-/** stock 差分：禁用 guard（文件工具不走 wrapper，sandbox 行无需动）。 */
+/** stock 差分：禁用两层文件 guard 并恢复上游 fs（文件工具不走 shell wrapper）。 */
 function stockOverlay(): string {
   const dir = mkdtempSync(join(tmpdir(), 'p5-02-stock-'))
   const overlay = join(dir, 'stock.yml')
   writeFileSync(overlay, `\
-# P5-02 差分对照：恢复 stock（无文件工具 guard）
+# P5-02 差分对照：恢复 stock（无文件工具 guard，包括 P6-25.f1 执行层）
 - id: p2sdk-fs-guard
   disabled: true
+- id: p2sdk-fs-zone
+  disabled: true
+- id: fs-sandbox
+  disabled: false
 `)
   return overlay
 }
@@ -325,7 +329,8 @@ it('① 9 类哨兵 × 7 入口：deny（isError + 原因 + asked 0）、写类 
     const dir = cat.name === 'dsh-home' || cat.name === 'handoff' ? join(TEST_HOME, 'ws-ok') : join(TEST_HOME, 'ws-ok')
     const entries = ENTRIES.map((e) => entryCall(cat, e, pid))
     // proc/run-user 类别的 write/edit/present 目标与 read 相同（bus/environ）
-    const before = sha256(cat.textFile)
+    // 只校验临时哨兵；不打开真实系统凭证路径。
+    const before = cat.restore ? sha256(cat.textFile) : undefined
     const { results, asked } = await toolTurn(GUARD_RT, dir, entries)
     expect(asked, `${cat.name}：全部 deny，无审批`).toBe(0)
     for (const [id, r] of results) {
@@ -336,7 +341,7 @@ it('① 9 类哨兵 × 7 入口：deny（isError + 原因 + asked 0）、写类 
 
     // 差分：stock 同一调用（逐入口单 turn，读类断内容、写类断成功后恢复）
     for (const [idx, entry] of ENTRIES.entries()) {
-      if (cat.skipStockWrite && (entry === 'write' || entry === 'edit')) continue // 保护真实系统态（报告注明）
+      if (cat.name === 'ppp' || (cat.skipStockWrite && (entry === 'write' || entry === 'edit'))) continue // 真实凭证无 stock 读写；仅测 guard 拒绝
       const r = await oneTool(STOCK_RT, dir, entries[idx].name, entries[idx].args)
       expect(r.text, `${cat.name}/${entry} stock 无 guard 拦截`).not.toContain('p2sdk-fs-guard')
       if (cat.stock === 'content') {

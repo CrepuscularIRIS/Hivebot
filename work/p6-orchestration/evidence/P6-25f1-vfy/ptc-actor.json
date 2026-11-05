@@ -1,0 +1,13 @@
+{
+  "cards": [],
+  "res": [
+    {
+      "isError": false,
+      "text": "{\n  \"swap\": \"ok\"\n}"
+    }
+  ],
+  "host": {
+    "isLink": true,
+    "target": "/tmp/bot-p625f1-vfy-out"
+  }
+}

@@ -25,14 +25,16 @@ import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
 import { trackTmpDir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-// 派发约束：临时 HOME 用 /tmp/bot-p625-*（沙箱清单内、tmp-sweep 登记）。
-const TEST_HOME = mkdtempSync(join(tmpdir(), 'bot-p625-home-'))
-trackTmpDir(TEST_HOME)
+// HOME 与区外探针互为兄弟，避免 HOME mask 先于区域判定拦截探针。
+const TEST_ROOT = mkdtempSync(join(tmpdir(), 'bot-p625f1-run-'))
+trackTmpDir(TEST_ROOT)
+const TEST_HOME = join(TEST_ROOT, 'home')
+mkdirSync(TEST_HOME)
 const DATA_DIR = join(TEST_HOME, 'pbots-data')
 const WS = join(DATA_DIR, 'workspaces', 'x')
 const WS2 = join(DATA_DIR, 'workspaces', 'y')
-// 区外目标根：PLAN 验收 ① 的字面路径。登记清扫；文件名带随机段防并行撞名。
-const OUT_DIR = '/tmp/bot-p6-25'
+// 区外目标仍在宿主 /tmp，从本次临时根派生，避免并行清扫其他测试。
+const OUT_DIR = join(TEST_ROOT, 'outside')
 mkdirSync(OUT_DIR, { recursive: true })
 trackTmpDir(OUT_DIR)
 const R = Math.random().toString(16).slice(2, 8)
@@ -326,6 +328,44 @@ it('⑥ 普通第二会话（另一工作区）写区外/写他人工作区 → 
   expect(askedCount(rt, sess.sessionId), '0 卡').toBe(0)
   expect(existsSync(out), '宿主文件不存在').toBe(false)
   expect(existsSync(others), '他人工作区文件不存在').toBe(false)
+})
+
+it('P6-25.f1 真 Loader：文件工具走新后端，同一判定/执行窗口换链后读写及假凭证读写均拒', { timeout: 240_000 }, async () => {
+  const fakeCred = join(TEST_HOME, '.ssh')
+  mkdirSync(fakeCred, { recursive: true })
+  writeFileSync(join(fakeCred, 'marker.txt'), 'FAKE-CREDENTIAL-CONTENT')
+  writeFileSync(join(OUT_DIR, 'marker.txt'), 'OUTSIDE-CONTENT')
+  const evidence = join(TEST_HOME, 'fs-zone-executions.jsonl')
+  const cases = [
+    { name: 'write', leaf: 'new.txt', destination: OUT_DIR, code: 'write-outside-workspace' },
+    { name: 'read', leaf: 'marker.txt', destination: OUT_DIR, code: 'read-outside-workspace' },
+    { name: 'write', leaf: 'new-key.txt', destination: fakeCred, code: 'never-root' },
+    { name: 'read', leaf: 'marker.txt', destination: fakeCred, code: 'never-root' },
+  ].map((c, i) => {
+    const directory = join(WS, `execute-swap-${R}-${i}`)
+    mkdirSync(directory)
+    return { ...c, directory, filePath: join(directory, c.leaf) }
+  })
+  const overlay = join(TEST_HOME, 'fs-zone-swap.yml')
+  writeFileSync(overlay, `- insert:\n    - id: p625f1-swap\n      name: '${pathToFileURL(join(PKG_ROOT, 'tests/support/fs-zone-swap.mjs')).href}'\n      config:\n        evidence: ${JSON.stringify(evidence)}\n        swaps: ${JSON.stringify(cases)}\n`)
+  const rt = await launchWo(overlay)
+  for (const c of cases) {
+    const args = { file_path: c.filePath, ...(c.name === 'write' ? { content: 'MUST-NOT-BE-WRITTEN' } : {}) }
+    const sess = await scriptedSession(rt, WS, [toolTurnCall(c.name, args)])
+    const frames = await sess.next('none')
+    const result = toolResults(frames)[0]
+    expect(result?.isError, `${c.name} -> ${c.code}; seam=${readFileSync(evidence, 'utf8')}; result=${JSON.stringify(result)}`).toBe(true)
+    expect(result?.text).toContain(c.code)
+    expect(result?.text).not.toContain('FAKE-CREDENTIAL-CONTENT')
+    expect(result?.text).not.toContain('OUTSIDE-CONTENT')
+    expect(askedCount(rt, sess.sessionId), '判定时区内：0 卡').toBe(0)
+  }
+  const executions = readFileSync(evidence, 'utf8').trim().split('\n').map((line) => JSON.parse(line))
+  expect(executions).toHaveLength(4)
+  expect(executions.every((e) => e.backend === true && e.verdict?.allInside === true), '真 Loader 后端类型及 exec 同引用交接').toBe(true)
+  expect(existsSync(join(OUT_DIR, 'new.txt'))).toBe(false)
+  expect(existsSync(join(fakeCred, 'new-key.txt'))).toBe(false)
+  expect(readFileSync(join(fakeCred, 'marker.txt'), 'utf8')).toBe('FAKE-CREDENTIAL-CONTENT')
 })
 
 // ── ⑦：never 子代理（ptc）写区外 → deny（修复前 never 会话的区外写也无卡成功）──

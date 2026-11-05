@@ -1,0 +1,7 @@
+Already up to date
+Done in 426ms using pnpm v11.0.9
+Already up to date
+Done in 323ms using pnpm v11.0.9
+undefined
+[ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL] Command failed with EACCES: /tmp/bot-wt/P6-25f1/app/sdk vitest run tests/unit/fs-zone.test.ts tests/unit/policy.test.ts
+spawn /tmp/bot-wt/P6-25f1/app/sdk EACCES

@@ -1,0 +1,21 @@
+{
+  "cards": [],
+  "res": [
+    {
+      "isError": false,
+      "text": "nh-25eabb/deep/a.txt"
+    },
+    {
+      "isError": false,
+      "text": "Found 1 match\n\nnh-25eabb/deep/a.txt\nLine 1: needle-vfy"
+    },
+    {
+      "isError": false,
+      "text": "<path>/tmp/bot-p625f1-vfy-home-xOLDPr/pbots-data/workspaces/x/nh-25eabb/deep/a.txt</path>\n<type>file</type>\n<content>\n1: needle-vfy\n\n(End of file - total 1 lines)\n</content>"
+    },
+    {
+      "isError": false,
+      "text": "The file /tmp/bot-p625f1-vfy-home-xOLDPr/pbots-data/workspaces/x/nh-25eabb/deep/a.txt has been updated successfully."
+    }
+  ]
+}

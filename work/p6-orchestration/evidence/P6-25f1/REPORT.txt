@@ -1,0 +1,60 @@
+P6-25.f1 实现回报（待 verifier 验收）
+
+分支：feat/P6-25f1
+工作树：/tmp/bot-wt/P6-25f1
+基点：be374843f45a87a1fe77ec67d042ab8563b7715a
+提交：a6e5b8f8a4373473136f5b64069c8b17ecd6ba7a
+提交后 git status --short：无输出，工作树干净。
+
+改动文件（完整清单）
+/tmp/bot-wt/P6-25f1/app/sdk/src/policy/fs-zone.mjs
+/tmp/bot-wt/P6-25f1/app/sdk/src/policy/resolve.mjs
+/tmp/bot-wt/P6-25f1/app/sdk/src/policy/shell-ask.mjs
+/tmp/bot-wt/P6-25f1/app/sdk/src/start.ts
+/tmp/bot-wt/P6-25f1/app/sdk/tests/e2e/guard-fs.test.ts
+/tmp/bot-wt/P6-25f1/app/sdk/tests/e2e/w1ap0-matrix.test.ts
+/tmp/bot-wt/P6-25f1/app/sdk/tests/e2e/write-outside.test.ts
+/tmp/bot-wt/P6-25f1/app/sdk/tests/support/fs-zone-swap.mjs
+/tmp/bot-wt/P6-25f1/app/sdk/tests/unit/fs-zone.test.ts
+/tmp/bot-wt/P6-25f1/app/sdk/tests/unit/policy.test.ts
+
+实现与取舍
+- 第 2 级集成：继承已安装的 SandboxedFileSystem，不复制上游存储实现、不加依赖。出处 https://github.com/deepseek-ai/deepseek-harness@ce7073d51254c26cd63b22a60835b8f948deb447:packages/fs/fs-sandbox/src/index.ts。
+- 写操作 checkedTarget fresh resolve 后复判本会话工作区与 NEVER 根；additionalWritableRoots 不代替工作区。tools/execute 再检查模型文件调用，阻断 pre-execute 后换链的读、写绕过。
+- WeakMap 按同一 exec 对象传递区域判定；已批准区外读保留 Q-013，仍须完成 fresh 解析和 NEVER 校验。解析失败或执行期 fs 服务缺失时拒绝。
+- 坏档位表下区外 write/edit 硬拒、无卡；读回退审批也记录执行期判定，不能借坏表跳过 NEVER。
+- 真 Loader 发现 patch.name 只是匹配条件，不能替换插件。修为禁用 fs-sandbox + insert p2sdk-fs-zone。正式 e2e 的四次确定性换链均检查真实后端 instanceof 和同一 exec 的判定记录，而非仅测替身。
+- stock 差分显式禁用新后端、恢复上游。区外探针由临时根派生，与临时 HOME 并列，避免 HOME mask 提前拦截区域策略。
+- 安全夹具修正：既有 guard-fs / w1ap0 套件的 SHA 与 stock 差分会尝试打开真实 /etc/ppp/chap-secrets；已取消真实凭证的 stock I/O 和 SHA，仅保留 guard 拒绝测试。此前该文件为 root:root 0600，未获得其内容。新凭证换链测试只使用临时 HOME/.ssh 假文件，不读取真实凭证。
+
+TDD 与证据
+- REVIEW-P6-25-B 的确定性 pre-execute / execute 换链接缝迁入正式单测，包含控制格、write、read+edit、旁支读与同路径下一次重新判定。
+- 新增红测试实际暴露：坏表已批准读缺执行记录、执行期解析失败未形成 authored 拒绝、additionalWritableRoots 越区写、真 Loader 后端未接上；逐项修复后复测。
+- 红证据日志：/tmp/bot-p625f1-red.log、/tmp/bot-p625f1-loader-diagnostic.log、/tmp/bot-p625f1-resolve-red.log、/tmp/bot-p625f1-extra-root-red.log。
+- 早期完整回归的 stock 接线与 HOME mask 夹具问题已修复；被主动停止的中间运行不作为通过证据。
+
+最终完整指定回归命令
+HOME=/tmp/bot-p625f1-home pnpm -C /tmp/bot-wt/P6-25f1/app/sdk exec vitest run tests/unit tests/e2e/guard-fs.test.ts tests/e2e/guard-escalation.test.ts tests/e2e/guard-plugin-manager.test.ts tests/e2e/approval.test.ts tests/e2e/write-outside.test.ts tests/e2e/tiers-policy.test.ts tests/e2e/w1ap0-matrix.test.ts --maxWorkers=1
+日志：/tmp/bot-p625f1-verified.log
+退出码：0
+最后统计：
+ Test Files  31 passed (31)
+      Tests  518 passed (518)
+   Duration  534.10s (tests 100%)
+
+新后端定向覆盖率（fs-zone + policy，85 tests 通过；覆盖率命令退出码 0）
+文件：/tmp/bot-p625f1-coverage/coverage-summary.json
+Statements 86.53% / Branches 80.85% / Functions 80% / Lines 87.5%
+仅声称新后端覆盖率达到门槛，不将其外推为整个 SDK 覆盖率。
+
+其他检查
+node --check /tmp/bot-wt/P6-25f1/app/sdk/src/policy/fs-zone.mjs：通过。
+node --check /tmp/bot-wt/P6-25f1/app/sdk/tests/support/fs-zone-swap.mjs：通过。
+git -C /tmp/bot-wt/P6-25f1 diff --cached --check：提交前通过。
+/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p625f1：最终回归退出后无输出，无匹配残留。
+未修改 repos/、主检出产品代码、PLAN、LOG 或 LEARNINGS，未合并 main。
+
+未完成项 / 新问题
+- 本任务实现已提交，尚未由独立 verifier 验收，未作自评通过。
+- 仍有 fresh resolve 至 syscall 之间的更窄残余窗口（上游同样存在）；彻底关闭需要原生逐级 dirfd/openat，不在本次第 2 级集成范围内，源码已明确注释。
+待 verifier 验收。

@@ -416,6 +416,34 @@ describe('P5-21 ③ (A9 ②): a corrupt tier table fails closed to per-call appr
       err.mockRestore()
     }
   })
+
+  // P6-25.f1（REVIEW-C minor，Q-023）：档位表不可用也不给「出卡批准后写宿主 /tmp」
+  // 留路径——写类（write/edit）目标 resolve 后在区外 → 硬拒固定字面串，不出卡；
+  // 区内写与其他工具维持 A9 ② 全退 ASK。
+  it('P6-25.f1: under a corrupt table, write/edit outside the workspace hard-deny (no fallback card)', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const listener = registeredListener({ mode: 'workspace-write', fs: true, config: { tiers: 'garbage' } })
+      expect(await listener({ name: 'write', arguments: { file_path: '/var/tmp/outside.txt', content: 'x' } }, next), '区外写：硬拒不出卡').toEqual(writeOutDeny)
+      expect(await listener({ name: 'edit', arguments: { file_path: join('/var/tmp', 'outside.txt'), old_string: 'a', new_string: 'b' } }, next), '区外 edit 同口径').toEqual(writeOutDeny)
+      expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next), '区内写：仍退 ASK（fail closed，可批）').toMatchObject({ kind: 'ask' })
+      expect(await listener({ name: 'read', arguments: { file_path: '/var/tmp/outside.txt' } }, next), '读类：语义不变（fallback 卡）').toMatchObject({ kind: 'ask' })
+      expect(err).toHaveBeenCalledTimes(1)
+    } finally {
+      err.mockRestore()
+    }
+  })
+
+  it('P6-25.f1: corrupt table + fs service unavailable → write still hard-denies (cannot prove inside)', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const listener = registeredListener({ mode: 'workspace-write', config: { tiers: 'garbage' } })
+      expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next), '证不出区内即区外').toEqual(writeOutDeny)
+      expect(err).toHaveBeenCalledTimes(1)
+    } finally {
+      err.mockRestore()
+    }
+  })
 })
 
 // ── L-7 修复链（P5-W3.f1）：R1 稀疏 overlay 的 mcp 兜底 / R6 未 provision 状态不门控文件工具 ──

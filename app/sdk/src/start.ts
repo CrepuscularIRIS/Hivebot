@@ -259,6 +259,33 @@ function guardRow(cfg: StartConfig): string {
 }
 
 /**
+ * P6-25.f1：禁用 stock fs-sandbox，插入继承它的执行期区域后端。
+ * Loader patch 的 name 仅用于匹配，不会替换插件名，故必须 disable + insert。
+ * neverRoots 与 guardRow 同取 computeRoots.guardRoots.hardRoots。
+ * file URL 让 $DSH_HOME 下的 Loader 能定位本仓插件。
+ */
+function fsSandboxRow(cfg: StartConfig): string {
+  const roots = computeRoots({
+    envHome: cfg.envHome,
+    home: cfg.home,
+    handoff: cfg.handoff,
+    dataDirs: cfg.dataDirs,
+    extraMaskRoots: cfg.extraMaskRoots,
+    pkgRoot: PKG_ROOT,
+  })
+  const list = (xs: readonly string[]): string => (xs.length === 0 ? ' []' : `\n${xs.flatMap((p) => [`        - ${yamlScalar(p)}`]).join('\n')}`)
+  return `\
+- id: fs-sandbox
+  disabled: true
+- insert:
+    - id: p2sdk-fs-zone
+      name: '${fileUrl(join(PKG_ROOT, 'src', 'policy', 'fs-zone.mjs'))}'
+      config:
+        neverRoots:${list(roots.guardRoots.hardRoots)}
+`
+}
+
+/**
  * P5-21（决策 16a）：p2sdk-shell-ask 行的运行时 config。loader 对同 id 行整键
  * 替换 config（cordis-plugin-include applyEntryPatches），approval.yml 的 insert
  * 行不带 config，运行时值全在这里：handoff（launch-token 所在；插件算
@@ -330,6 +357,7 @@ export function writeRuntimePatch(cfg: StartConfig): string {
         dir: '${cfg.handoff}'
 `)
   rows.push(sandboxRow(cfg))
+  rows.push(fsSandboxRow(cfg))
   rows.push(guardRow(cfg))
   rows.push(shellAskRow(cfg))
   rows.push(requestNetRow(cfg))

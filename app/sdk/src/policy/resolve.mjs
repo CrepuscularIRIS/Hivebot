@@ -6,6 +6,32 @@
 // extractPaths 复用 guard 的导出（含 ~ 展开、glob pattern 归一、present files）。
 import { extractPaths } from './guard.mjs'
 
+// P6-25.f1：pre-execute 判定结果的执行期交接。shell-ask 在算完 allInside 后按
+// exec 对象记一条（noteZoneVerdict）；fs-zone 的 tools/execute 复判读同一条
+// （zoneVerdictOf）。exec 对象从 pre-execute waterfall 到 tools/execute 是同一
+// 引用（dsh-tools pipeline.js：prepare 创建一次，dispatch 复用），WeakMap 即可。
+// allInside=false 的读档 = pre-execute 已按「区外读」出卡，批准后到达执行层——
+// 复判放行（Q-013 语义保持）；allInside=true 而执行时在区外 = 判定与执行之间被
+// 换链（B2），复判拒。
+const zoneVerdicts = new WeakMap()
+
+/**
+ * 记录一次文件档位调用的 pre-execute 判定结果（shell-ask 侧调用）。
+ * @param {object} exec 工具调用对象（tools/pre-execute 与 tools/execute 同引用）。
+ * @param {{kind: 'workspace-read'|'workspace-write', allInside: boolean}} verdict
+ */
+export function noteZoneVerdict(exec, verdict) {
+  zoneVerdicts.set(exec, verdict)
+}
+
+/**
+ * 读取该调用的 pre-execute 判定记录；无记录（非文件档位 / shell-ask 未挂载）返回
+ * undefined，调用方按「不归执行层管」处理。
+ */
+export function zoneVerdictOf(exec) {
+  return zoneVerdicts.get(exec)
+}
+
 /**
  * 解析一次工具调用的全部路径候选。
  * @param {object} ctx 宿主 ctx（fs / workingDirectory / sandboxPolicy）

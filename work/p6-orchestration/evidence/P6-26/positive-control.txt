@@ -1,0 +1,54 @@
+Already up to date
+Done in 384ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/P6-26/app/sdk
+
+ ❯ tests/unit/fs-zone.test.ts (16 tests | 2 failed | 14 skipped) 26ms
+   × P6-26 inner 接缝读 outside：复判之后换链仍拒，不能返回区外内容 16ms
+   × P6-26 inner 接缝读 credential：复判之后换链仍拒，不能返回区外内容 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/fs-zone.test.ts > P6-26 inner 接缝读 outside：复判之后换链仍拒，不能返回区外内容
+AssertionError: {"path":"/tmp/bot-p625f1-unit-wjI9D0/outside/secret.txt","offset":1,"lines":[{"number":1,"text":"FAKE-CRED-MARKER-OUTSIDE"}],"totalLines":1}: expected false to be truthy
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/fs-zone.test.ts:187:85
+    185|   const rd = await h.call('read', { file_path: 'sub/secret.txt' }, () …
+    186|   expect(rd.decision).toBe(ALLOW)
+    187|   expect(rd.result?.isError || rd.error?.code === 'FS_PERMISSION_DENIE…
+       |                                                                                     ^
+    188|   expect(dump(rd)).not.toContain('FAKE-CRED-MARKER')
+    189| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/fs-zone.test.ts > P6-26 inner 接缝读 credential：复判之后换链仍拒，不能返回区外内容
+AssertionError: {"path":"/tmp/bot-p626-home-3Imj3V/.ssh/secret.txt","offset":1,"lines":[{"number":1,"text":"FAKE-CRED-MARKER-OUTSIDE"}],"totalLines":1}: expected false to be truthy
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/fs-zone.test.ts:187:85
+    185|   const rd = await h.call('read', { file_path: 'sub/secret.txt' }, () …
+    186|   expect(rd.decision).toBe(ALLOW)
+    187|   expect(rd.result?.isError || rd.error?.code === 'FS_PERMISSION_DENIE…
+       |                                                                                     ^
+    188|   expect(dump(rd)).not.toContain('FAKE-CRED-MARKER')
+    189| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 skipped (16)
+   Start at  05:02:50
+   Duration  258ms (import 41%, transform 27%, tests 20%, setup 9%, worker 3%)

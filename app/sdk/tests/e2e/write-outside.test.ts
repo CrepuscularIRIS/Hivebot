@@ -26,7 +26,7 @@ import { trackTmpDir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 // HOME 与区外探针互为兄弟，避免 HOME mask 先于区域判定拦截探针。
-const TEST_ROOT = mkdtempSync(join(tmpdir(), 'bot-p625f1-run-'))
+const TEST_ROOT = mkdtempSync(join(tmpdir(), 'bot-p626-run-'))
 trackTmpDir(TEST_ROOT)
 const TEST_HOME = join(TEST_ROOT, 'home')
 mkdirSync(TEST_HOME)
@@ -62,7 +62,7 @@ interface WoRuntime extends Runtime {
 const runtimes: WoRuntime[] = []
 
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p625-patch-'))
+  const dir = mkdtempSync(join(tmpdir(), 'bot-p626-patch-'))
   trackTmpDir(dir)
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
@@ -80,6 +80,7 @@ function fakeOverlay(): string {
             models:
               - id: p2fake
                 contextWindow: 131072
+                inputModalities: [text, image]
 `)
   return overlay
 }
@@ -105,7 +106,7 @@ async function launchWo(extraPatch?: string): Promise<WoRuntime> {
   const rt = await launchRuntime({
     env: {
       HOME: TEST_HOME,
-      P2SDK_HOME: mkdtempSync(join(tmpdir(), 'bot-p625-dsh-')),
+      P2SDK_HOME: mkdtempSync(join(TEST_ROOT, 'dsh-')),
       P2SDK_PATCH: patches.join(':'),
       PBOTS_DATA_DIR: DATA_DIR,
     },
@@ -368,7 +369,104 @@ it('P6-25.f1 真 Loader：文件工具走新后端，同一判定/执行窗口�
   expect(readFileSync(join(fakeCred, 'marker.txt'), 'utf8')).toBe('FAKE-CREDENTIAL-CONTENT')
 })
 
+it('P6-26 真 Loader：inner 接缝的 read/read_image/present/listDir 拒区外及假凭证，区内搜索与 read→edit 不误伤', { timeout: 240_000 }, async () => {
+  const fakeCred = join(TEST_HOME, '.ssh')
+  mkdirSync(fakeCred, { recursive: true })
+  for (const dir of [fakeCred, OUT_DIR]) {
+    writeFileSync(join(dir, 'p626.txt'), 'FAKE-CRED-MARKER-OUTSIDE')
+    writeFileSync(join(dir, 'p626.png'), Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j9l8AAAAASUVORK5CYII=', 'base64'))
+  }
+  const evidence = join(TEST_HOME, 'p626-inner.jsonl')
+  const cases = [
+    { name: 'read', leaf: 'p626.txt', destination: OUT_DIR },
+    { name: 'read', leaf: 'p626.txt', destination: fakeCred },
+    { name: 'read_image', leaf: 'p626.png', destination: fakeCred },
+    { name: 'present', leaf: 'p626.txt', destination: fakeCred },
+    { name: 'read', leaf: '', destination: fakeCred },
+  ].map((c, i) => {
+    const directory = join(WS, `p626-inner-${R}-${i}`)
+    mkdirSync(directory)
+    if (c.leaf) writeFileSync(join(directory, c.leaf), c.name === 'read_image' ? readFileSync(join(OUT_DIR, c.leaf)) : 'INSIDE')
+    return { ...c, directory, filePath: c.leaf ? join(directory, c.leaf) : directory }
+  })
+  const overlay = join(TEST_HOME, 'p626-inner.yml')
+  writeFileSync(overlay, `- insert:\n    - id: p626-inner\n      name: '${pathToFileURL(join(PKG_ROOT, 'tests/support/fs-zone-swap.mjs')).href}'\n      config:\n        inner: true\n        evidence: ${JSON.stringify(evidence)}\n        swaps: ${JSON.stringify(cases)}\n`)
+  const rt = await launchWo(overlay)
+  for (const c of cases) {
+    const args = c.name === 'present' ? { files: [{ path: c.filePath }] } : { file_path: c.filePath }
+    const sess = await scriptedSession(rt, WS, [toolTurnCall(c.name, args)])
+    const result = toolResults(await sess.next('none'))[0]
+    expect(result?.isError, JSON.stringify(result)).toBe(true)
+    expect(result?.text).toMatch(/never-root|read-outside-workspace/)
+    expect(result?.text).not.toMatch(/FAKE-CRED-MARKER|\/proc\/self\/fd/)
+    expect(askedCount(rt, sess.sessionId)).toBe(0)
+  }
+  expect(readFileSync(evidence, 'utf8').trim().split('\n')).toHaveLength(cases.length)
+  const dir = join(WS, `p626-noharm-${R}`)
+  mkdirSync(dir)
+  const file = join(dir, 'a.txt')
+  writeFileSync(file, 'needle-p626\n')
+  const sess = await scriptedSession(rt, WS, [
+    toolTurnCall('glob', { pattern: '*.txt', path: dir }),
+    toolTurnCall('grep', { pattern: 'needle-p626', path: dir }),
+    toolTurnCall('read', { file_path: file }),
+    toolTurnCall('edit', { file_path: file, old_string: 'needle-p626', new_string: 'edited-p626' }),
+  ])
+  for (let i = 0; i < 4; i++) {
+    const result = toolResults(await sess.next('none'))[0]
+    expect(result?.isError).toBe(false)
+    if (i === 0) expect(result?.text).toContain('a.txt')
+    if (i === 1) expect(result?.text).toContain('needle-p626')
+  }
+  expect(askedCount(rt, sess.sessionId)).toBe(0)
+  expect(readFileSync(file, 'utf8')).toBe('edited-p626\n')
+  const outsideGlob = await scriptedSession(rt, WS, [toolTurnCall('glob', { pattern: 'p626.txt', path: OUT_DIR })])
+  const globResult = toolResults(await outsideGlob.next('allowed-once'))[0]
+  expect(globResult?.isError).toBe(false)
+  expect(globResult?.text).toContain('p626.txt')
+  expect(askedCount(rt, outsideGlob.sessionId)).toBe(1)
+})
+
 // ── ⑦：never 子代理（ptc）写区外 → deny（修复前 never 会话的区外写也无卡成功）──
+
+// 复用 verifier evidence/P6-26-vfy/vfy-alias.tail.ts 的真 Loader 别名 cwd 对照，补齐读写入口。
+it('P6-26.f1 alias cwd：区内 read/read_image/present/write/edit 不误伤', { timeout: 240_000 }, async () => {
+  const alias = join(TEST_ROOT, 'ws-alias')
+  symlinkSync(WS, alias)
+  const file = join(WS, `alias-${R}.txt`)
+  const image = join(alias, `alias-${R}.png`)
+  writeFileSync(file, 'ALIAS-INSIDE-OK')
+  // 来源: deepseek-harness@ce7073d packages/fs/tool-fs/tests/read-image.spec.ts PNG_1X1。
+  writeFileSync(image, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC', 'base64'))
+  const rt = await launchWo()
+  for (const [cwd, args, tool] of [
+    [alias, { file_path: join(alias, `alias-${R}.txt`) }, 'read'],
+    [alias, { file_path: file }, 'read'],
+    [alias, { file_path: image }, 'read_image'],
+    [alias, { files: [{ path: join(alias, `alias-${R}.txt`) }] }, 'present'],
+    [WS, { file_path: file }, 'read'],
+  ] as const) {
+    const sess = await scriptedSession(rt, cwd, [toolTurnCall(tool, args)])
+    const result = toolResults(await sess.next('none'))[0]
+    expect(result, `${tool} ${JSON.stringify(args)}`).toBeDefined()
+    expect(result?.isError, JSON.stringify(result)).toBe(false)
+    if (tool === 'read') expect(result?.text).toContain('ALIAS-INSIDE-OK')
+    expect(askedCount(rt, sess.sessionId)).toBe(0)
+  }
+  const written = join(alias, `alias-write-${R}.txt`)
+  const sess = await scriptedSession(rt, alias, [
+    toolTurnCall('write', { file_path: written, content: 'alias-before' }),
+    toolTurnCall('edit', { file_path: written, old_string: 'alias-before', new_string: 'alias-after' }),
+    toolTurnCall('read', { file_path: join(alias, `missing-${R}`) }),
+  ])
+  for (let i = 0; i < 2; i++) expect(toolResults(await sess.next('none'))[0]?.isError).toBe(false)
+  expect(readFileSync(written, 'utf8')).toBe('alias-after')
+  const missing = toolResults(await sess.next('none'))[0]
+  expect(missing?.isError).toBe(true)
+  expect(missing?.text).toContain('not found')
+  expect(missing?.text).not.toContain('/proc/self/fd')
+  expect(askedCount(rt, sess.sessionId)).toBe(0)
+})
 
 /** 已装 ptc worker bootstrap（/tmp worktree 下须复制进会话工作区，P5-05/P5-21 同法）。 */
 function ptcBootstrapSource(): string {
@@ -381,7 +479,7 @@ function ptcBootstrapSource(): string {
 it('⑦ never 子代理（ptc）写区外 → 本地 deny、宿主无文件、子会话 0 卡', { timeout: 420_000 }, async () => {
   const bootstrap = join(WS, '.p625-ptc-boot.mjs')
   copyFileSync(ptcBootstrapSource(), bootstrap)
-  const dir = mkdtempSync(join(tmpdir(), 'p625-sub-'))
+  const dir = mkdtempSync(join(tmpdir(), 'bot-p626-sub-'))
   trackTmpDir(dir)
   const overlay = join(dir, 'sub.yml')
   writeFileSync(overlay, `\

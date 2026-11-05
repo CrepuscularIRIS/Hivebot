@@ -325,7 +325,10 @@ export function apply(ctx, config = {}) {
       // 回退卡批准的是本次文件调用，不豁免执行期 NEVER 复判。
       const write = exec.name === 'write' || exec.name === 'edit'
       if (write || ['read', 'read_image', 'glob', 'grep', 'present'].includes(exec.name)) {
-        noteZoneVerdict(exec, { kind: write ? 'workspace-write' : 'workspace-read', allInside: false })
+        const fsFallback = typeof ctx.get === 'function' ? ctx.get('fs') : null
+        const resolved = fsFallback && typeof fsFallback.resolve === 'function'
+          ? await resolveTargets(ctx, exec, fsFallback) : { targets: [] }
+        noteZoneVerdict(exec, { kind: write ? 'workspace-write' : 'workspace-read', allInside: false, targets: [...resolved.targets] })
       }
       if (write) {
         const fsBroken = typeof ctx.get === 'function' ? ctx.get('fs') : null
@@ -364,7 +367,7 @@ export function apply(ctx, config = {}) {
       && (await Promise.all(targets.map((t) => isPathUnder(t, workspaceRoot)))).every(Boolean)
     // P6-25.f1：判定结果交给执行层复判（fs-zone 的 tools/execute；见 resolve.mjs
     // 的交接注记——exec 同引用）。allInside=false 的读档出卡获批后执行层照常放行。
-    noteZoneVerdict(exec, { kind, allInside })
+    noteZoneVerdict(exec, { kind, allInside, targets: [...targets] })
     if (kind === 'workspace-read') {
       return allInside
         ? (fileGateOpen() ? next() : ask(ASK.readGate))

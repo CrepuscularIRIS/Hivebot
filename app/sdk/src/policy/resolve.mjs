@@ -18,7 +18,7 @@ const zoneVerdicts = new WeakMap()
 /**
  * 记录一次文件档位调用的 pre-execute 判定结果（shell-ask 侧调用）。
  * @param {object} exec 工具调用对象（tools/pre-execute 与 tools/execute 同引用）。
- * @param {{kind: 'workspace-read'|'workspace-write', allInside: boolean}} verdict
+ * @param {{kind: 'workspace-read'|'workspace-write', allInside: boolean, targets?: string[]}} verdict canonical targets 为此次审批的精确路径，不授权其他区外目标。
  */
 export function noteZoneVerdict(exec, verdict) {
   zoneVerdicts.set(exec, verdict)

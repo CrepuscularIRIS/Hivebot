@@ -1,0 +1,13 @@
+P6-05.f1a builder 回报
+分支 feat/P6-05f1；基点 4a3d96f；commit 5cc11841d8fe215c18b87906cb1dd4dc08b144e9。
+唯一代码改动 /tmp/bot-wt/P6-05f1/app/sdk/tests/e2e/guard-plugin-manager.test.ts。
+复用原 drift 检查并抽成同文件断言函数供真实配置变异回归复用；不引入依赖。原实现从 persona.config 到下一插件全删除，现仅替换 prefix 行及更深缩进的值续行，保留其他键。
+红先行：先抽出原检查、不改豁免算法，加 suffix / name / prefix 三种变异断言；运行 -t 'drift 回归'，suffix 用例因 expected [Function] to throw an error 失败，1 failed | 2 passed | 4 skipped。
+红阶段日志 /tmp/bot-p605f1a/red.log。
+修复后命令：HOME=/tmp/bot-p605f1a/home TMPDIR=/tmp/bot-p605f1a/tmp PBOTS_DATA_DIR=/tmp/bot-p605f1a/data DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-p605f1a/no-bus pnpm -C /tmp/bot-wt/P6-05f1/app/sdk test tests/e2e/guard-plugin-manager.test.ts tests/e2e/config.test.ts --maxWorkers=1。
+结果：Test Files 2 passed (2)；Tests 9 passed (9)；Duration 11.59s；exit 0。
+绿阶段日志 /tmp/bot-p605f1a/green.log。
+新增 suffix、修改 persona 既有 name 均触发 drift 拒绝；只改 standard prefix 值仍通过。config.test.ts 未改，其独立 persona 段落哈希断言仍通过。
+git diff --check 无输出；提交后 worktree 干净。结束前 /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p605f1 无匹配输出，exit 0。
+未完成项 / 新问题：无本任务内遗留；未跑 SDK 全量，按派发只做定向测试。
+待 verifier 验收。

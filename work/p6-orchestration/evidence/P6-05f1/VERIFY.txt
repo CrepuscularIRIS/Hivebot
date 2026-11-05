@@ -1,0 +1,34 @@
+verdict: FAIL
+commit: 4a3d96fe14ed77dbb2dd13149f0b8629ce58379a
+任务：P6-05.f1；分支 feat/P6-05f1；工作树 /tmp/bot-wt/P6-05f1。
+报告按本会话禁止写报告 .md 的约束，使用派发许可的 evidence/P6-05f1/VERIFY.txt。全部下列证据由 verifier 新运行，未使用 builder 测试输出代替。
+
+| 验收项 | 结果 | 证据（命令/文件/输出） |
+|---|---|---|
+| 1. 当前 standard persona 编排段落与 git show 8973a67 同段逐字节一致 | PASS | python3 -I /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-05f1/verify-probes.py；vfy-hash.json：equal=true，639 UTF-8 bytes；两边 sha256 均 c7c53cd4e281e361191cbdecf873d2c6c5a5d9d7e56277091bf0d54a9734b356。 |
+| 2. 新断言三态独立性；检查实际 standard 会话系统提示 | PASS | verify-probes.py；vfy-present.log（6 passed，exit 0），vfy-removed.log（1 failed / 1 passed / 4 skipped，exit 1），vfy-restored.log（2 passed / 4 skipped，exit 0）。删除在隔离 SDK 副本执行，只撤 standard persona 的编排段落，不改断言/drift。删除后唯一红项为 config.test.ts 的 P6-05.f1，收到空段落 hash e3b0c442…b855；drift 仍绿。config.test.ts:220–235 创建默认会话、验证 agentPreset=standard，真实 dsh 回合后从 llm/stream options.messages 的 system 文本取段落并算 hash，不是读取 yml 断言。 |
+| 3. 指定两个 spec 定向复跑 | PASS | vfy-present.log：pnpm -C /tmp/bot-wt/P6-05f1/app/sdk test tests/e2e/guard-plugin-manager.test.ts tests/e2e/config.test.ts --maxWorkers=1；Test Files 2 passed (2)，Tests 6 passed (6)，Duration 11.32s，exit 0。 |
+| 4a. 分支 diff 只有 approval.yml 与两个测试文件 | PASS | vfy-hygiene.log；git diff $(git merge-base main HEAD)..HEAD --name-only 恰 app/sdk/profile/patches/approval.yml、app/sdk/tests/e2e/config.test.ts、app/sdk/tests/e2e/guard-plugin-manager.test.ts；终态 status 干净，diff --check 无输出。 |
+| 4b. 既有其他字段 drift 保护 | PASS | vfy-drift-maxBytes.log：在隔离副本把 standard 的 agent-instructions.config.maxBytes 65536 改成 65537，实际跑 guard-plugin-manager.test.ts -t drift，1 failed / 3 skipped，exit 1。原 P6-05 的 M2 结论不退化。 |
+| 4c. 严格“只豁免 persona prefix 值” | FAIL | vfy-drift-suffix.log：standard persona.config 中在 prefix 之后插入 suffix: UNAPPROVED-P605F1-SUFFIX，实际跑 drift，1 passed / 3 skipped，exit 0。guard-plugin-manager.test.ts:414–422 的 cutPersonaPrefix 从 persona config 起一直删到下一个 6 空格插件 id，豁免整个 config/后续字段，而非仅 prefix 值。 |
+| 5. 完全不设 P2SDK_PATCH，默认链 standard 实际系统提示含段落 | PASS | /tmp/bot-wt/P6-05f1/app/sdk/node_modules/node/bin/node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-05f1/verify-default-no-patch.mjs；vfy-default-no-patch.log/json：patchEnvPresent=false，preset=standard，/v1/chat/completions 收到 1 个真实适配器 HTTP 请求，系统文本 6156 字符，段落 hash=c7c53cd4…b356，turnEnded=true，responseObserved=true，exit 0。 |
+
+新问题（每条一行，可直接成为修复任务）：
+- [FIX] drift 豁免吞掉 persona.config 中非 prefix 字段，不满足本次验收项4“只豁免 persona prefix 值” | 复现：运行 verify-probes.py 的 vfy-drift-suffix 分支，在 standard persona 的 prefix 后、agent-instructions 前添加 10 空格缩进 suffix: UNAPPROVED-P605F1-SUFFIX，再跑 guard-plugin-manager.test.ts -t drift；实际仍 exit 0 | 疑似位置：app/sdk/tests/e2e/guard-plugin-manager.test.ts:414–422 | 严重度：minor（验收保护边界缺口，非本次新引入的产品回归）
+
+范围与先前判决的关系：
+这个 FAIL 不是声称本次造成新回归。主仓 VERIFY-P6-05.md:30–32 已记录同一 M5 并按“当时 config 只有 prefix”接受；本次指令另外明确要求“只豁免 persona prefix 值”，按该严格可证伪条件判 FAIL。现存 maxBytes 保护与段落防回退断言均实证正常。若派发者要沿用先前 M5 的已接受偏离，应明确保留该例外；本报告不自行把严格验收条件改为例外通过。
+
+真实默认链实证的方法边界：
+默认无补丁探针使用 real provider 适配器连接本机临时 HTTP stub，并提供仅用于此 stub 的占位 key；未调用付费/真实模型、未读取任何真实凭证。stub 在 HTTP 请求边界直接记录 system/developer 消息，不依赖 recorder patch，也不加载 p6-reply-style.yml。原样保存系统提示于 vfy-default-no-patch.json（只有隔离工作区内容）。额外坏路径：同一无补丁 runtime 创建 agentPreset=p6-reply 被 agent-preset/not-found 拒绝，available 只有 standard/ptc/minimal/cordis，排除插入 persona 偶然被加载。
+
+环境与卫生：
+- 已先读 work/LEARNINGS.md、PROTOCOL §7 / Verify；不跑 SDK 全量或 UI e2e，无 UI 改动不截图。
+- 初始 load average 21.25 / 30.35 / 30.73，vmstat 瞬时 iowait 0；只串行定向测试，maxWorkers=1。
+- 全部测试用随机 /tmp/bot-p605f1-vfy-* 下的 HOME、TMPDIR、PBOTS_DATA_DIR，禁用真实 DBus 地址。默认链探针使用独立 /tmp/bot-p605f1-default-*；两者 finally 清理。
+- 三态变异从 SDK 副本执行，目标 worktree 产品代码从未改动。副本共享只读使用的 node_modules 链接；pnpm 在搬迁副本上会触发安装检查，首次探针因此在实际测试前退出（ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY），该次不作验收证据；调整为直接调用已安装 Node 24.22.2 + Vitest 5.0.5，所有有效变异运行的完整命令/CWD 均在日志中。
+- 测试 teardown / finally 仅结束自己 spawn 的 SDK 子进程；未用 shell kill、pkill、killall，未操作桌面会话。
+- 结束前 /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p605f1：无匹配输出，exit 0。vfy-hygiene.log 记录终态 HEAD 仍为上述 SHA，status 干净。
+
+证据目录（上述文件均相对此目录）：
+/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-05f1/

@@ -8,6 +8,7 @@
 // system/tools），两者都穿过真实 dsh runtime；只回显配置（session/projections
 // 各自返回自己的配置）仅作查询侧补充，不构成通过依据。
 import { expect, it } from 'vitest'
+import { createHash } from 'node:crypto'
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -213,6 +214,29 @@ async function scriptedTurn(client: D4Runtime['client'], sessionId: string, prom
   void drained // cancel is locally terminal; the loop settles when rt.stop() closes the socket
   expect(text, 'the scripted fake text arrived').toBeTruthy()
 }
+
+// P6-05.f1: independent of approval.yml's drift exemption. Rolling back both
+// P6-05 files must still fail here; hash pinned to P6-02's D3 run-meta.json.
+it('P6-05.f1: default standard persona retains the approved reply section sha256', async () => {
+  const rt = await launchD4Runtime()
+  try {
+    const { sessionId, agentPreset } = await rt.client.call('session/create', {
+      request: { cwd: join(rt.home, 'workspace') },
+    }) as { sessionId: string; agentPreset: string }
+    expect(agentPreset).toBe('standard')
+    rt.writeScript(sessionId, [['persona check']])
+    await scriptedTurn(rt.client, sessionId, 'P6-05.f1 persona check')
+    const records = rt.readStreams().filter((r) => r.sessionId === sessionId)
+    expect(records).toHaveLength(1)
+    const systemText = records[0].systemTexts.join('\n')
+    const section = systemText.match(/^## Replying to the user\n\n[^\n]+/m)?.[0] ?? ''
+    expect(createHash('sha256').update(section, 'utf8').digest('hex'),
+      'default standard system prompt must contain the frozen P6-02 persona section',
+    ).toBe('c7c53cd4e281e361191cbdecf873d2c6c5a5d9d7e56277091bf0d54a9734b356')
+  } finally {
+    await rt.stop()
+  }
+})
 
 it('D4: two sessions keep different preset + model configs, per-session, request-side', async () => {
   const rt = await launchD4Runtime()

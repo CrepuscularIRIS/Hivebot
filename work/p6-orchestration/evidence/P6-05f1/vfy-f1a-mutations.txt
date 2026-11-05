@@ -1,0 +1,6 @@
+copy-control: exit=0 expected=0; log=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-05f1/vfy-f1a-copy-control.log
+suffix: exit=1 expected=1; log=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-05f1/vfy-f1a-suffix.log
+prefix: exit=0 expected=0; log=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-05f1/vfy-f1a-prefix.log
+name: exit=1 expected=1; log=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-05f1/vfy-f1a-name.log
+section-deleted-drift: exit=0 expected=0; log=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-05f1/vfy-f1a-section-deleted-drift.log
+section-deleted-config: exit=1 expected=1; log=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-05f1/vfy-f1a-section-deleted-config.log

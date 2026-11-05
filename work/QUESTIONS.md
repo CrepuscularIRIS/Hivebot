@@ -229,9 +229,10 @@
 - 方案：基于 dsh+SuperAgent 拼接（goal/round-driver/schedule 已装实测）。7a-L 闭环与 7a-M 管家四项并行（全自主不弹卡、护栏=可回退+溯源三元组）→ 7b 长期职责 → 7c PR 自动合并（另行确认 U-1）。
 - 答复：（2026-11-05 用户：「是」）→ 按 BRIEF v2.3（G2 有条件通过）推进
 
-## Q-026 [open] p8「开放电脑」：bot 操控哪块屏？（高风险，护栏过 panel 前不开工）
+## Q-026 [answered] p8「开放电脑」：bot 操控哪块屏？（高风险，护栏过 panel 前不开工）
 - slug：p8-parity-full ｜ 类型：高风险（方向子题）｜ 阻塞：p8 computer use 开工 ｜ 提出：2026-11-05
 - 背景：0.78.1 有完整本机 computer use（daemon 14 个 computer_* 工具，RE-computer-use.md 已逆）。浏览器 cookie 复制违反「凭证不进模型」，默认不做。
 - 选项：A（推荐）隔离 Xvfb 虚拟屏起步（安全、可当远程测试目标机）；B 隔离屏基础上按应用白名单逐步放行真桌面（每应用签字）；C 直接开放真桌面（不推荐）。
 - 默认：A 起步、B 渐进；护栏先过 panel + 用户签字才开工。
-- 答复：
+- 答复：（2026-11-05 主会话按「原版即规格」自决：**A 起步**——RE 证据支持：云 box 驱动即 native_x11/xdotool、原版有 desktop_lease 挂起语义；B 的按应用白名单留作后续按 RE standing grants 分层渐进，届时属法外授权再问用户）
+

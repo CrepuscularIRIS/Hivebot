@@ -27,3 +27,4 @@ P7-F3.f1 p7-admin/evidence/P7-F3/f1-VERIFY.txt de36bbc587d604c2672ede53c32d45549
 P5-H1 无独立REVIEW（纯测试基建无产品代码；VERIFY-P5-H1.md PASS @f2831a8，内容经P5-25链d1b88be并入集成分支）；S档随下次Sol分方向审查覆盖
 P5-28 M档待审（VERIFY-P5-28.md PASS @eb6e73a；合并ec42304后ui unit全量547绿）——Sol分方向审下轮派
 P5-28 正确性席 REVIEW-P5-28-correctness.md ec42304 FAIL（2 CONFIRMED 中：F1 并发双答两份均 ok:true 而第二份被 gateway 静默忽略；F2 稀疏 selected 绕过 every → wire 上 [null] 破 fail-closed；104 定向绿为断言坏行为成立；审点1/4 PASS、其余 REFUTED 有证）——待安全席合并发现后立 P5-28.f1
+P5-28 安全席 REVIEW-P5-28-security.md ec42304 FAIL（2 CONFIRMED 中：S1 生产保留 testAnswerEvent 全局旁路可绕 M1 校验、真实 gateway 接受（需 main JS 访问权，无 renderer 可达路径；基线已有、本次扩展暴露）；S2 非法问题批次不入账致 deadline 无法协议拒绝可挂起（差分 c6aba1b pending=1→ec42304=0）；82 单测+12 探针+双差分；1a/2/3/5 REFUTED 有证）——与 F1/F2 合并立 P5-28.f1（ready，GLM 席满顺延）

@@ -1,0 +1,59 @@
+verdict: FAIL
+commit: aa19bc6bf430f4561512da3f85c459f607a475be
+任务：P7-F2；worktree /tmp/bot-wt/P7-F2；基点 757bd259903048417f527544ebe2c3fb5dd3887b
+验收员独立实跑；未修改产品代码。报告按本会话禁止写报告 .md 的约束使用用户指定的 TXT 备用路径。
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+|---|---|---|
+| SDK 49 + UI/main 17 定向复跑 | PASS | verify-sdk.log：2 files / 49 passed；verify-ui.log：1 file / 17 passed |
+| origin 三分，未知 kind 不污染但无自主权 | PASS（纯模块） | origin.mjs:12-48；p7-authority.test.ts:17-67,167-179；继承 P6 TurnOrigin 的 record/claims，分类增加 originClass；当前没有生产接线，不宣称 Loader 实跑 |
+| 与 P6 污染判定一致且未改变 P6 已有路径 | PASS（当前零接线范围） | P6 classifyTurn 只认 pbots-worker；P7 同样污染优先；10 文件全新增，P6 create/taint-guard 未改。下述 classify 返回值兼容性留给接线检查 |
+| H1 token 相等、单 Mandate 无并集、四类专测、禁区键 | PASS（既有定向用例范围） | p7-authority.test.ts:93-106,146-156,167-192,209-246；authority.mjs:49-55,138-142,194-229。动作错配/否定/子串/工具结果均有独立用例；先别装 gh-x 的新增探针为 deny |
+| H1 否定优先覆盖 create/restart 与 Mandate 授予 | FAIL | verify-bad-path.mjs / verify-bad-path.log:9-11：3 个反例均返回 allow |
+| 管理桥单订阅、持流 Peer 绑定、30s 默认、超时 unknown 不重试、断流作废/迟到拒 | PASS（簿记及 mock 传输） | p7-admin-channel.test.ts 16 tests；SDK 日志 49 tests 包含该文件；常量 DEFAULT_ADMIN_TIMEOUT_MS=30000，超时分支用 30ms 测试；新增真实计时断流探针 pending=0、unknown、迟到 forbidden。未接插件，不能声称已建立 live RPC 通道 |
+| requestId/generation 走私收紧 | PASS | channel.mjs:48 拒调用方非 undefined 字段，129 spread 后盖章；p7-admin-channel.test.ts:56-59 专测通过 |
+| main 权威身份/代际/台账重验 | PASS（模块） | policy.ts:80-97；UI 17 中含伪 ref、请求旧代、台账旧代、错 session/turn、tainted；宿主采集原文未接线，按用户允许的读实现+单测口径接受，不把未来采集能力算完成 |
+| tools/consumer 空动作表；一律 unavailable | FAIL | tools.mjs 使用 Object.hasOwn 正确；consumer.ts:54-59 直接 actions[request.action]，空对象原型成员被当 handler；verify-bad-path.log:13-16 |
+| p7-admin.yml 和 main/index.ts 未动；无真实管理动作接线 | PASS | git diff --name-status 757bd25..HEAD 全部 10 个 A；两目标路径 git diff 空；tools 表={}、consumer 默认={} |
+| 不返 token/PID（既有结构化 value 测试） | PASS（目前空动作范围） | consumer.ts:12-38,74；UI 测试深剥嵌套/数组，原对象不变；不据此声称任意字符串或 error 信封已脱敏 |
+| builder 三条边界归口 | 已复核 | pnpm -- 参数确实不作文件过滤；subagent-policy 代码相对基点未改，主仓 p6 PLAN 已有 P6-26t.f1（验收中 @1ffdce1）；UI coverage-v8 resolve 报 ERR_MODULE_NOT_FOUND，package.json 基点即无该依赖 |
+
+一、独立命令及输出尾部
+所有外层命令使用 HOME=/tmp/bot-p7f2-verify-home。下列证据文件都在本报告同目录 /home/lingxufeng/bot/work/p7-admin/evidence/P7-F2/。
+
+1. cd /tmp/bot-wt/P7-F2/app/sdk && HOME=/tmp/bot-p7f2-verify-home pnpm exec vitest run tests/unit/p7-authority.test.ts tests/unit/p7-admin-channel.test.ts
+   exit 0；Test Files 2 passed (2)；Tests 49 passed (49)。verify-sdk.log。
+2. cd /tmp/bot-wt/P7-F2/app/ui && HOME=/tmp/bot-p7f2-verify-home pnpm exec vitest run tests/unit/admin/channel.test.ts
+   exit 0；Test Files 1 passed (1)；Tests 17 passed (17)。verify-ui.log。
+3. 两包 pnpm install --frozen-lockfile --offline
+   exit 0；Already up to date。verify-install-sdk.log / verify-install-ui.log。
+4. UI pnpm build && pnpm exec vitest run
+   exit 0；构建完成；Test Files 44 passed (44)；Tests 507 passed (507)。verify-ui-build.log / verify-ui-full.log。
+   本任务改 UI 的 Electron main 纯模块，无 renderer 界面/接线，故没有 UI 操作截图，也不声称已验 UI 用户旅程。
+5. SDK pnpm exec vitest run ... --coverage --coverage.include='src/admin/**' --coverage.reportsDirectory=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2/sdk-coverage
+   exit 0；49 passed；Statements 96.5%、Branches 89.89%、Functions 98.03%、Lines 98.83%。verify-sdk-coverage.log。
+   注意输出表只有 authority/channel/tools，不包含 origin，不能把聚合率当作每个新增模块都已证明 >=80%。UI 未装覆盖率依赖，未加依赖；不以单测数代替 UI 覆盖率。
+6. cd /tmp/bot-wt/P7-F2/app/sdk && HOME=/tmp/bot-p7f2-verify-home pnpm exec node /home/lingxufeng/bot/work/p7-admin/evidence/P7-F2/verify-bad-path.mjs
+   exit 1；FAILED_CHECKS=7。包含正常 install/先别装 正反控制、3 个授权否定冲突、4 个空表原型动作反例、断流和迟到应答检查。日志无真实凭证。
+
+二、额外全量运行的局限（不得当成干净回归结论）
+SDK 全量 verify-sdk-full.log：exit 1；5 files failed / 52 passed；6 failed / 695 passed / 1 skipped，120.64s。
+复核 pnpm 的 `--` 行为时使用 `pnpm test -- --help`，实际打印 `$ vitest run -- --help` 并意外启动第二份全套，而非 help。该次 verify-pnpm-filter.log：exit 1；8 failed / 693 passed / 1 skipped。
+这两次重叠不应发生，验收员承担误启动第二份的责任，不把因此产生的红算 P7-F2 产品回归：日志存在同 P2SDK_HOME 的 launcher.lock 冲突、哨兵串值、共享 TEST_HOME 被另一套 teardown 删除。
+另发现既有 tiers-policy.test.ts:29、guard-escalation.test.ts:40 等硬编码 /home/lingxufeng/bot/.test-homes，覆盖了外层临时 HOME；不满足临时根派生规则。已停止追加全量运行；本次没有获得隔离干净的 SDK 全量绿证据。
+subagent-policy 同栈失败 271→326 在两次均出现，归 P6-26t.f1；本次未在基点重跑，因此只确认代码未变和已有归口，不声称由本次证明基点必红。其余全量红因并发污染不可归因，待主会话安排隔离串行回归。
+
+三、与简化令的差距（按派发口径不单独作为本任务 FAIL）
+authority.mjs 仍以 H1/单 Mandate 作为所有已知管理动作的放行路径；没有 always_allow / auto_review / needs_approval / blocked 分层。没有人类原文或 Mandate 时 handoff，而非原版分层。交 director 在 v1.1 定，不能按本次 PASS 表述为已完成分层。本次 FAIL 来自已实现 H1 的否定漏洞与空表不封闭，不是以“未做分层”定 FAIL。
+
+四、P6 复用边界与后续接线风险（不虚构当前生产漏洞）
+AdminTurnOrigin extends TurnOrigin，复用账本实现，但重写 classify 返回 {originClass,auditKinds}，没有 P6 依赖的 tainted boolean。当前它未接到 orch.turns，P6 仍用原 TurnOrigin，故当前 P6 运行判定未变。未来不能直接用该子类替换 orch.turns：create.mjs:79/111 与 taint-guard.mjs:29 读取 .tainted，会拿到 undefined。接线任务须复用同一真实 claims 或显式适配，不能以“继承”推断可直接替换。
+受限桥此时是簿记对象和 main wiring 函数，没有 SDK Typert 插件注册；真实权限检查 attach 的调用者、宿主原文采集、originRef 发行生命周期属于后续接线，本次不冒充 Loader/live 端到端证据。
+
+新问题（每条一行，可直接成为修复任务）：
+- [FIX] create/restart 正负指令冲突仍 allow，违反否定优先 | 复现：运行 verify-bad-path.mjs；authorize({turnClass:'user',action:'restart',humanUtteranceOfGrant:'重启 bot。不要重启 bot'}) 返回 allow，create 同理 | 疑似位置：app/sdk/src/admin/authority.mjs:178-180 | 严重度：高
+- [FIX] Mandate 授予原文同动作同目标存在显式否定仍有效 | 复现：同脚本，actions=['install']、plugins=['gh-x']、grantUtterance='装 gh-x。不要装 gh-x'，delegated install gh-x 返回 allow | 疑似位置：app/sdk/src/admin/authority.mjs:208-229（只找非否定证据，不检查冲突） | 严重度：高
+- [FIX] 默认空 consumer 命中继承属性而非一律 unavailable | 复现：同脚本，createAdminConsumer().dispatch({...request,action:'constructor'}) 返回原请求；toString 抛 TypeError；hasOwnProperty/__proto__ 返回 admin-failed | 疑似位置：app/ui/main/admin/consumer.ts:54-59,74（缺 own-property / handler 类型检查） | 严重度：中
+- [FIX] 既有 E2E 硬编码共享 HOME，外层临时 HOME 不能隔离，重复回归互相删除/覆盖 | 复现：见两份全量日志的 lock、哨兵串值和 ENOENT；源码直接写死 /home/lingxufeng/bot/.test-homes/p5-21 与 p5-04 | 疑似位置：app/sdk/tests/e2e/tiers-policy.test.ts:29,237,255；app/sdk/tests/e2e/guard-escalation.test.ts:40（范围外，归测试基础设施，不归 F2 代码） | 严重度：中
+
+最终 SHA 仍 aa19bc6bf430f4561512da3f85c459f607a475be，git status --short 为空，git diff --check 无输出。未用手工 kill/pkill；全量测试只由框架 teardown 管理自己 spawn 的子进程。bot-reap --dry-run --match P7-F2 无输出；结束前按用户要求另留 p7f2 自查日志。

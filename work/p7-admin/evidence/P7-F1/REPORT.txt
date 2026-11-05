@@ -1,0 +1,58 @@
+P7-F1 操作账本 · builder 报告（2026-11-05 07:58）
+
+分支 feat/P7-F1（worktree /tmp/bot-wt/P7-F1，基点 main 757bd25）
+commit 78a3c15（feat(P7-F1): 操作账本 append-only jsonl…）
+
+改动文件（白名单内，共 2 个新增、0 个修改）：
+- app/ui/main/admin/operations.ts（534 行）
+- app/ui/tests/unit/admin/operations.test.ts（445 行）
+
+测试（验收命令 UI(operations)）：
+$ cd /tmp/bot-wt/P7-F1/app/ui && pnpm test tests/unit/admin/operations.test.ts
+ Test Files  1 passed (1)
+      Tests  21 passed (21)
+      Duration  177ms
+exit=0
+
+TDD：先写测试（RED：Cannot find module '../../../main/admin/operations'，
+07:46 首跑 failing）→ 实现 → GREEN（07:58）。中途 4 红修复：async 方法校验错须以
+rejected promise 抛出；mock open 未建文件的断言修正；撤销操作自身应入 completed 桶的
+预期修正；凭证键切词漏 apiKey/x-api-key（改词元+相邻词对匹配）。
+
+定向 coverage（@vitest/coverage-v8@5.0.5 临时装后测，package.json/lockfile 已还原，
+worktree git status 仅 2 个新文件）：
+ operations.ts | stmt 87.86% | branch 84.91% | fn 96.77% | line 94.23%（均 ≥80%）
+
+验收项对照（PLAN P7-F1 行）：
+- append/flush 失败→副作用 0：begin 抛 PBOTS_OPS_APPEND_FAILED，盘上无行、内存无操作；同 key
+  失败后后来者可建（P6-21.f1 接管语义）。
+- 同 key 并发仅 1 占位：Promise.all 两 begin → 恰 1 created，文件 1 条 begin；去重检查在
+  单写队列位内做（P6-10.f2 B-3 无 TOCTOU）；跨重启同 key 返回既有操作（created:false）。
+- 尾行截断/版本未知/丢文件失败关闭：版本未知与中段坏行 → 整册 PBOTS_OPS_UNTRUSTED（读写
+  全拒）；丢文件/外部截短 → append 前 stat 对记账 size，PBOTS_OPS_LOST 拒收不重建。
+  尾行撕裂 = 行原子修复：截到最后换行 + 持久 repaired 审计事件 + tailTruncated 永久标记
+  （跨重启可读）。【取舍点】未做「整册拒绝」：line-atomic 前置记录完整可信，且 F1 的
+  恢复投影要能扛最常见的崩溃产物；模块头注明若 verifier 判需更严改 init 修复分支即可。
+- state unknown 不变成功：finish 撕裂 → 重启后该操作 inProgress（21 例中的崩溃截断恢复）。
+- 读回前后投影/undo：before/after/undo 结构化读回；readUndo 只对带句柄的已完成/已撤销操作
+  返回；undoOf 操作完成翻转原操作到 undone（未完成目标不翻）。
+- 凭证字段拒入账：params/before/after/undo 深层键名扫描（token/secret/password/credential/
+  apikey/privatekey/authorization/cookie 及复数），驼峰 apiKey、连字符 x-api-key 命中；
+  误伤（maxTokens 类）按设计接受——审计边界宁拒勿漏，调用方只传参数摘要。
+- 接口：beginOperation/finishOperation/readOperations/readUndo + recordReceipt（代际回执，
+  须新于 begin 代，双回执拒）+ foldOperations（纯折叠，读侧唯一语义源）。恢复投影
+  OperationsView：inProgress/completed/failed/undone + tailTruncated，供 P7-F3/P7-M 消费。
+
+模式来源（文件头已注明）：本仓 m3-meta/store.ts（单写队列/单实例锁/loadError fail-closed）、
+本仓 sdk orchestration/delivery.mjs ← dsh-superagent-prototype@6337fc8:src/app/delivery.ts
+（MIT，至多一次+flush 后回执）。存储 Node fs+fsync，无新依赖、无数据库（REUSE R4）。
+SA stored work 精确文本按 R4 留给 P7-R2 回填，未复制未核实内容。
+
+未完成项 / 发现：
+- 无未完成验收项。两处留给消费方/后续任务的口子：① tsc 全量在本环境因缺 @types/node 提升
+  不可跑（main 检出同样报错，属既有环境状况）；本任务两文件经补 typeRoots 的定向 tsc 校验，
+  除与全仓 124 处既有一致的 .ts 后缀 import 外零错误。② worktree 全量套件有 1 个与本任务
+  无关的既有失败（P2TempService 动态 import，需 app/sdk build 产物；首跑即红，非本次引入）。
+- bot-reap --dry-run --match p7f1：无匹配进程；pgrep 无残留。
+
+待 verifier 验收。

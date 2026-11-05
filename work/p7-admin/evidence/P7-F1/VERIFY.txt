@@ -1,0 +1,56 @@
+verdict: FAIL
+commit: 78a3c158bd08c4e904a8335484240ad8057c395e
+任务：P7-F1 操作账本；分支 feat/P7-F1；基点 757bd25。
+验收日期：2026-11-05。验收前后 HEAD 一致，worktree 干净。
+报告采用用户允许的 evidence/P7-F1/VERIFY.txt 备用路径：本验收会话禁止写报告类 .md 文件。未覆盖 builder 的 REPORT.txt。
+
+证据根目录 E=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1
+运行约束：HOME=/tmp/bot-p7f1-verify-home；探针数据由该 HOME 下 mkdtemp 派生并在 finally 删除；无产品代码修改；未跑全量、安装或构建（按本次定向指令）；无 UI 变更，不涉及截图；未杀任何进程。
+
+| 验收项 | 结果 | 证据（命令/文件） |
+| 1. 复跑 operations 21 项 | PASS | HOME=/tmp/bot-p7f1-verify-home pnpm -C /tmp/bot-wt/P7-F1/app/ui test tests/unit/admin/operations.test.ts；E/verifier-unit.log：1 file passed，21 tests passed，exit=0 |
+| 2. 尾行撕裂：截断、repaired、永久 tailTruncated、恢复可用 | FAIL | E/verifier-probe.mjs 的 tail-ascii-repair 通过；tail-unicode-repair 第二次重开出现 PBOTS_OPS_UNTRUSTED: corrupt line 1；repair-audit-fsync-failure-restart 在 truncate 后注入修复记录 open EIO，再重开 tailTruncated=false；E/verifier-probe.log:5-12,23-30 |
+| 2. 中段坏行 / 版本未知 / 丢文件硬 fail closed | FAIL（部分通过） | middle-corruption、unknown-version（有换行）、missing-file-live 全通过；unknown-version-no-newline 未抛错，完整未知版本尾行被当撕裂删除；E/verifier-probe.log:13-19。丢文件检测验证的是已打开账本后删除；未声称首次启动 ENOENT 能区分新建与历史丢失 |
+| 3. begin fsync 后才可执行；flush 失败副作用 0 | PASS | 源码 operations.ts:432-434 await appendLine 后才 push/return；:524-529 appendFile → sync → close。独立探针用真实 fd 完成 append、阻塞 sync，确认 Promise 未返回、effects=0；随后注入 sync EIO，begin 抛 PBOTS_OPS_APPEND_FAILED、内存无操作、effects=0。E/verifier-probe.log:21-22：events=[append,sync-start,sync-fail]，physicalBytes=193。此结论是业务副作用为 0，不是磁盘零字节 |
+| 4. 同 key 并发仅 1 占位；undo 句柄往返 | PASS | concurrent100-undo-four-state-reopen：Promise.all 100 个相同 key 恰 1 created、所有 operationId 相同；保存业务 state 前后投影与 restore 句柄，应用读回的 restore 完成 undo，state 与 before 深相等，重开读回的 undo 完成记录 after 也与 before 相等。E/verifier-probe.log:20；脚本对应断言 |
+| 5. 四态重启恢复 | PASS | 同一独立探针创建 inProgress/completed/failed/undone 四类并 close→new→init，按 operationId 精确对比四桶、undo 句柄、撤销后投影及跨重启 key 去重。E/verifier-probe.mjs；E/verifier-probe.log:20 |
+| 6. 仅 operations.ts 与测试；来源锚点 | PASS | E/verifier-scope.log：diff 仅 app/ui/main/admin/operations.ts 与 app/ui/tests/unit/admin/operations.test.ts。operations.ts:4-12 有本仓 store.ts、delivery.mjs、上游 URL@SHA:path 与 MIT 来源；SA 精确文本仍明确标 P7-R2 回填，不把待核实文本当已核实 |
+| 6. P2TempService 首跑红为既有：基点裸跑复核 | 已复核；仅支持环境失败，不支持报告的精确根因 | 用 git archive 757bd25 app/ui app/sdk 提取到 E/baseline（无 build 产物），复用 UI 已装依赖，直接 vitest 指定 baseline --root。E/verifier-baseline-direct.log：ensure.test.ts 在 :23 因 SDK node_modules 缺失 ENOENT、0 tests；HEAD 相同测试同样 ENOENT，E/verifier-head-ensure.log。将基点快照 SDK node_modules 链到主仓已装依赖后，未 build、同一测试 5/5 通过（E/verifier-baseline-sdk-deps.log）。故不是本次两文件增量引入，但未复现 builder 所称“动态 import 需 SDK build 产物”这一精确原因，不可原样采信 |
+
+独立探针复跑命令：
+HOME=/tmp/bot-p7f1-verify-home node --experimental-strip-types /home/lingxufeng/bot/work/p7-admin/evidence/P7-F1/verifier-probe.mjs
+输出尾部：
+PASS middle-corruption
+PASS unknown-version
+FAIL unknown-version-no-newline AssertionError [ERR_ASSERTION]: Missing expected exception.
+PASS missing-file-live
+PASS concurrent100-undo-four-state-reopen
+DETAIL fsync {"events":["append","sync-start","sync-fail"],"effects":0,"physicalBytes":193}
+PASS fsync-block-and-failure
+FAIL repair-audit-fsync-failure-restart AssertionError [ERR_ASSERTION]: repair must remain visible after failed repair append + restart
+false !== true
+SUMMARY failures=3
+退出码 1；在 pnpm -C /tmp/bot-wt/P7-F1/app/ui exec node 下另复跑一次相同结果（E/verifier-probe-managed-node.log）。Node v22.23.4，Vitest v5.0.5。
+说明：探针末项名称含 fsync，但实际故障接缝是修复阶段 open 抛 EIO（在 truncate 之后、repaired 持久化之前）；上面 flush 专项才是 sync 阶段故障。
+
+基点复核命令（快照与链接已删除，只保留脚本/日志；没有改 worktree）：
+mkdir -p "$E/baseline"
+git -C /tmp/bot-wt/P7-F1 archive 757bd25 app/ui app/sdk | tar -x -C "$E/baseline"
+ln -s /tmp/bot-wt/P7-F1/app/ui/node_modules "$E/baseline/app/ui/node_modules"
+# 原 worktree SDK node_modules 本就不存在；首次链接此路径得到同样 ENOENT。
+ln -s /tmp/bot-wt/P7-F1/app/sdk/node_modules "$E/baseline/app/sdk/node_modules"
+HOME=/tmp/bot-p7f1-verify-home /tmp/bot-wt/P7-F1/app/ui/node_modules/.bin/vitest run --root "$E/baseline/app/ui" tests/unit/m3/ensure.test.ts
+# 依赖补齐对照，只修改证据快照的链接，不 build：
+ln -sfn /home/lingxufeng/bot/app/sdk/node_modules "$E/baseline/app/sdk/node_modules"
+HOME=/tmp/bot-p7f1-verify-home /tmp/bot-wt/P7-F1/app/ui/node_modules/.bin/vitest run --root "$E/baseline/app/ui" tests/unit/m3/ensure.test.ts
+最初尝试 pnpm -C 快照路径被工作区依赖安装前置检查中止（E/verifier-baseline.log）；该日志不是产品测试失败证据，以上直接 vitest 结果才是。
+
+取舍评估与建议：
+“确实为尾部不完整 JSON 的记录”按行原子修复而非整册永久拒绝，可以接受：begin 未返回就没有执行资格；finish 撕裂必须恢复到 inProgress，不猜成功。ASCII 正常路径已有实证。不过现有实现不满足这个取舍成立的三个前提：修复不得触碰已完整记录的 UTF-8 字节；完整未知版本记录必须硬拒绝而非降级删除；修复本身再次失败/崩溃后审计痕迹必须保持。先修下面 3 项再接受该取舍。当前不能因 21 单测绿而放行，也不建议仅改测试预期迁就行为。
+
+新问题（每条一行，可直接成为修复任务）：
+- [FIX] 含中文等非 ASCII 的完整记录在尾行修复时被截坏，第二次启动整册不可读 | 复现：begin(actor='主机器人',before={name:'测试'})落盘→追加不完整 finish JSON→init 修复→close→再次 init/readOperations，报 PBOTS_OPS_UNTRUSTED corrupt line 1；独立脚本 tail-unicode-repair | 疑似位置：/tmp/bot-wt/P7-F1/app/ui/main/admin/operations.ts:370-374，text.lastIndexOf 得 JS 字符偏移却传给按字节计的 truncate，并把字符长度写入 size | 严重度：HIGH（破坏完整审计记录）
+- [FIX] 完整但无尾换行的未知版本 JSON 被当撕裂丢弃，未硬 fail closed | 复现：正常 begin 后追加完整 JSON version=999 且不附换行→init→readOperations 不抛错；独立脚本 unknown-version-no-newline | 疑似位置：/tmp/bot-wt/P7-F1/app/ui/main/admin/operations.ts:331-337，把 JSON 可解析与 isTrustedLine 混成 parses，未知版本误入截断路径 | 严重度：HIGH（绕过版本失败关闭并删除不认识的记录）
+- [FIX] truncate 与 repaired 审计追加之间失败后，重启抹掉 tailTruncated 永久标记 | 复现：有效 begin 后追加 '{torn'→init 中允许 truncate、让后续 open 抛 EIO→本次读失败关闭→解除故障后重开，tailTruncated=false 且无 repaired；独立脚本 repair-audit-fsync-failure-restart | 疑似位置：/tmp/bot-wt/P7-F1/app/ui/main/admin/operations.ts:372-379，先不可逆截断再追加审计，未保证修复过程自身的崩溃一致性 | 严重度：HIGH（永久审计证据丢失）
+
+清理自查：/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p7f1；E/verifier-cleanup.log，输出无匹配进程、退出 0。探针运行目录已 finally 删除，基点快照已删除，仅保留报告、探针和日志。

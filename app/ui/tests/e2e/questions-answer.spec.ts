@@ -102,7 +102,8 @@ async function toolResultHas(rt: SdkRuntime, sessionId: string, markers: string[
 
 test('P5-28 ①合法 answers 经生产路径透传（工具结果含同批 id）②漏答 id → invalid-args ③重连再答 → 拒绝', async () => {
   const rt = await launchSdkRuntime({ patch: fakeOverlayPath() })
-  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })
+  // P5-28.f1 S1：testAnswerEvent 生产不安装——测试经 PBOTS_TEST_HOOKS=1 显式 opt-in（门控安装路径）
+  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff, PBOTS_TEST_HOOKS: '1' } })
   try {
     const clientId = await waitEventsReady(shell.page)
     const cwd = mkdtempSync(join(tmpdir(), 'bot-P5-28-ws-'))

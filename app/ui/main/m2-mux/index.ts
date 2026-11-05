@@ -63,8 +63,10 @@ export type M2Handler = ((event: IpcMainEvent, req: M2Request) => void) & {
   testDropSocket(): void
   /** E2E 作答注入：经 main 自己的 peer 调 $events/result（U-11 M1 白名单落成前的测试通道；
    * 审批作答要求与 $events 流同一 Peer，node 侧测试客户端属另一 Peer 会被 gateway 拒）。
-   * P5-28：value 扩为「审批二值 | 提问结构化 answers」，二者都装 {kind:'result', value}（VERIFY-P5-07 跟进项）。 */
-  testAnswerEvent(clientId: string, eventId: string, value: 'allowed-once' | 'rejected' | { answers: Array<{ id: string; selected: string[]; custom?: string }> }): Promise<unknown>
+   * P5-28：value 扩为「审批二值 | 提问结构化 answers」，二者都装 {kind:'result', value}（VERIFY-P5-07 跟进项）。
+   * P5-28.f1 S1：绕 M1 校验直达 gateway，属测试注入面——生产不安装（可选），仅
+   * PBOTS_TEST_HOOKS=1（测试显式 opt-in）时挂上（handler 与 __pbotsM2 皆然）。 */
+  testAnswerEvent?(clientId: string, eventId: string, value: 'allowed-once' | 'rejected' | { answers: Array<{ id: string; selected: string[]; custom?: string }> }): Promise<unknown>
 }
 
 /** main 归属标记（socket.open 自开的流；与 port 归属共用 owners 表）。 */
@@ -115,6 +117,11 @@ export function registerM2Mux(deps: M2Deps = {}): M2Handler {
   const timeoutMs = deps.timeoutMs ?? PORT_TRANSFER_TIMEOUT_MS
   const pollMs = deps.pollMs ?? 100
   const makeChannel = deps.makeChannel ?? ((): M2Channel => new MessageChannelMain() as unknown as M2Channel)
+  // P5-28.f1 S1（REVIEW security CONFIRMED）：testAnswerEvent 可绕 M1 把任意 answers 直发真实
+  // gateway，生产构建不得安装。仓内 main 无现成生产/测试判别（NODE_ENV 无人设读、无打包目标、
+  // app.isPackaged 恒 false），故显式 opt-in：PBOTS_TEST_HOOKS=1（e2e 由 launchShell env /
+  // run-e2e.sh 显式开，单测在用例里 stubEnv）。testDropSocket/stats/ledger 非作答旁路，不门控。
+  const installTestHooks = process.env.PBOTS_TEST_HOOKS === '1'
 
   const stats: M2Stats = {
     downlink: { total: 0, orphan: 0, items: {}, streamChunks: {} },
@@ -352,10 +359,12 @@ export function registerM2Mux(deps: M2Deps = {}): M2Handler {
       const socket = wired as (DshMuxSocket & { ws?: { terminate?: () => void } }) | undefined
       try { socket?.ws?.terminate?.() } catch { /* 已死 */ }
     },
-    testAnswerEvent(clientId: string, eventId: string, value: 'allowed-once' | 'rejected' | { answers: Array<{ id: string; selected: string[]; custom?: string }> }): Promise<unknown> {
-      if (deps.dsh === undefined) return Promise.resolve(undefined)
-      return deps.dsh.rpc('$events/result', { clientId, eventId, outcome: { kind: 'result', value } })
-    },
+    ...(installTestHooks ? {
+      testAnswerEvent(clientId: string, eventId: string, value: 'allowed-once' | 'rejected' | { answers: Array<{ id: string; selected: string[]; custom?: string }> }): Promise<unknown> {
+        if (deps.dsh === undefined) return Promise.resolve(undefined)
+        return deps.dsh.rpc('$events/result', { clientId, eventId, outcome: { kind: 'result', value } })
+      },
+    } : {}),
   } satisfies Partial<M2Handler>)
 
   const g = globalThis as { __pbotsM2?: M2Handler }

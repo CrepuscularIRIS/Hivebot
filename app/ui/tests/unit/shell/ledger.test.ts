@@ -1,6 +1,7 @@
 // EventsLedger：ready/waterfall/cancel 记录与 §2.2 校验（D9 拒绝测试的数据面）。
 import { describe, expect, it } from 'vitest'
 import { EventsLedger, invalidQuestionAnswersReason } from '../../../main/dsh/ledger'
+import { createApprovalDeadline, QUESTION_DEADLINE_REJECTION } from '../../../main/m2-mux/deadline'
 
 const ready = { type: 'ready', clientId: 'cli-1' } as const
 const waterfall = {
@@ -130,7 +131,9 @@ describe('P5-28 提问作答（questionIds / validateQuestionResult / invalidQue
     expect(l.questionIds('ev-q2')).toBeUndefined()
   })
 
-  it('提问 request 的 questions 缺失/非数组/空/id 非字符串/空串 → 不入账 + warn 恰 1 次（fail-closed，交 deadline 协议级拒绝）', () => {
+  // P5-28.f1 S2（REVIEW security CONFIRMED）：「不入账」让 deadline 无从协议拒绝、事件无限挂起——
+  // 改为监督入账：questionIds 缺席 = 作答不可达（M1 走审批字符串分支拒），deadline 到期协议级拒绝。
+  it('S2：questions 缺失/非数组/空/id 非字符串/空串 → 仍入账（questionIds 缺席）+ warn 恰 1 次；cancel 幂等下账', () => {
     const bad: Array<{ name: string; request: Record<string, unknown> }> = [
       { name: 'questions 缺失', request: { wait: {} } },
       { name: 'questions 非数组', request: { questions: 'x' } },
@@ -144,10 +147,45 @@ describe('P5-28 提问作答（questionIds / validateQuestionResult / invalidQue
       const l = new EventsLedger({ warn: (m) => warns.push(m) })
       l.record(ready)
       l.record({ type: 'waterfall', event: 'user-questions/request', eventId: 'ev-bad', agentId: 's-1', request })
-      expect(l.pendingEvents(), name).toEqual([])
+      expect(l.pendingEvents(), name).toHaveLength(1)
+      expect(l.pendingEventKind('ev-bad'), name).toBe('user-questions/request') // deadline 可见
+      expect(l.questionIds('ev-bad'), name).toBeUndefined()                     // 作答校验源不存在
       expect(warns, name).toHaveLength(1)
       expect(warns[0], name).toContain('ev-bad')
+      l.record({ type: 'cancel', eventId: 'ev-bad' }) // 协议拒绝后下账（幂等）
+      expect(l.pendingEvents(), name).toHaveLength(0)
     }
+  })
+
+  it('S2 闭环：空串 id 批次越 deadline → 协议级 rejected（非 result）恰 1 次、下账、不挂起', async () => {
+    const ledger = new EventsLedger({ warn: () => {} })
+    ledger.record({
+      type: 'waterfall', event: 'user-questions/request', eventId: 'ev-bad', agentId: 's-1',
+      request: { questions: [{ id: '', question: 'a?' }] }, // 空串 id 过上游 string schema（REVIEW S2 可达输入）
+    })
+    const calls: Array<{ method: string; args: unknown }> = []
+    let nowMs = 0
+    const dl = createApprovalDeadline({
+      dsh: { rpc: async (method: string, args: unknown) => { calls.push({ method, args }); return { ok: true, value: undefined } } },
+      ledger,
+      isPortMounted: () => false, // 无 renderer $events 端口在场
+      mainClientId: () => 'main-c1',
+      deadlineMs: 2_000,
+      now: () => nowMs,
+      log: () => {},
+    })
+    dl.review() // t=0 观察窗口起算
+    nowMs += 1_999; dl.review()
+    expect(calls).toEqual([]) // 窗口内不发
+    nowMs += 1; dl.review()   // 越 deadline
+    await new Promise((r) => setTimeout(r, 0))
+    expect(calls).toEqual([{
+      method: '$events/result',
+      args: { clientId: 'main-c1', eventId: 'ev-bad', outcome: { kind: 'rejected', error: QUESTION_DEADLINE_REJECTION } },
+    }])
+    expect(JSON.stringify(calls[0]).includes('"kind":"result"')).toBe(false) // 绝不以 result 放行
+    expect(ledger.pendingEvents()).toEqual([])                              // 下账，不挂起
+    dl.stop()
   })
 
   it('validateQuestionResult：clientId 匹配 ok；不匹配 / 未 ready → 拒（与审批同口径的资格判定）', () => {
@@ -187,6 +225,9 @@ describe('P5-28 提问作答（questionIds / validateQuestionResult / invalidQue
       ['answer item 带额外字段', { kind: 'result', value: { answers: [{ id: 'q1', selected: [], extra: 'x' }, { id: 'q2', selected: [] }] } }],
       ['value 带额外字段', { kind: 'result', value: { answers: valid.value.answers, note: 'x' } }],
       ['answers 重复 id', { kind: 'result', value: { answers: [{ id: 'q1', selected: [] }, { id: 'q1', selected: [] }, { id: 'q2', selected: [] }] } }],
+      // P5-28.f1 F2（REVIEW correctness CONFIRMED）：稀疏槽被 every 跳过、以 [null] 上 wire——同规则拒。
+      ['F2 selected 稀疏槽（holes）', { kind: 'result', value: { answers: [{ id: 'q1', selected: new Array(1) }, { id: 'q2', selected: [] }] } }],
+      ['answers 稀疏槽（holes，同规则锁定）', { kind: 'result', value: { answers: new Array(2) } }],
     ])('%s → 返回原因', (_name, outcome) => {
       expect(invalidQuestionAnswersReason(outcome, expectedIds)).toEqual(expect.any(String))
     })

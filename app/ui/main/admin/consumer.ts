@@ -72,7 +72,7 @@ export function createAdminConsumer(options: { actions?: Record<string, AdminAct
         outcome = { error: { code: 'pbots/admin-failed', message: `管理动作 ${request.action} 执行异常：${String(error instanceof Error ? error.message : error)}`, details: {} } }
       }
       if ('value' in outcome) return { value: sanitizeAdminValue(outcome.value) as object }
-      return outcome
+      return { error: { ...outcome.error, details: sanitizeAdminValue(outcome.error.details) as object | undefined } }
     },
   }
 }

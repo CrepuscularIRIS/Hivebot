@@ -1,7 +1,7 @@
-// P7-F2 H1 溯源检查 = 授权三元组（BRIEF v2.3 §6.1.1 H1 + p7-admin PLAN §3.3）。
-// 管理操作与协调者派工执行前，执行器核对（动作，精确目标，受限参数）是否被
-// 「本回合人类来源原文」或「当前有效 Mandate」授权；未授权 → 不执行、转
-// 「需要你处理」（P6-18 通道，由调用方消费 handoff 决定）。全部常量在此，
+// P7-F2 H1 核对（BRIEF v2.4 §6.1）：仅是 needs_approval 档的一种检查，
+// 不是 always_allow / auto_review 的逐词原文引擎；原版分层接线另有任务。
+// 核对（动作，精确目标，受限参数）；复用本回合人类原文或现有 grant 字段，
+// 未能核验则 handoff 给现有审批，不增设 Mandate 格式或数据库。
 // 不用 LLM 判断「像不像授权」；语义不清也不猜意图。
 //
 // 证据来源边界（H2/H4）：本函数只吃宿主传入的 humanUtteranceOfGrant（人类
@@ -163,12 +163,28 @@ const allow = (evidenceRef) => ({ decision: 'allow', code: 'allowed', reason: 'a
 const deny = (code, reason) => ({ decision: 'deny', code, reason })
 const handoff = (code, reason) => ({ decision: 'handoff', code, reason })
 
+function allowWithParams(evidenceRef, action, target, params, utterance) {
+  if (params == null) return allow(evidenceRef)
+  const keys = Object.keys(params)
+  if (!Array.isArray(params) && typeof params === 'object' && keys.length === 0) return allow(evidenceRef)
+  // ponytail: H1 仅识别明确改名的单个 name 值；其他参数交回现有审批，
+  // 不从值的“出现”推导字段授权，也不扩建通用原文解析引擎。
+  if (action === 'modify' && keys.length === 1 && keys[0] === 'name' && typeof params.name === 'string') {
+    const matched = String(utterance).split(CLAUSE_SPLIT_RE).some((clause) => {
+      const match = clause.trim().match(/^rename\s+(\S+)\s+to\s+(.+)$/i)
+      return match !== null && normalizeText(match[1]) === normalizeText(target) && match[2] === params.name
+    })
+    if (matched) return allow(evidenceRef)
+  }
+  return handoff('params-uncovered', 'H1 cannot verify the requested restricted parameters; route to existing approval')
+}
+
 /**
  * 人类原文路径（只对 turnClass 'user' 调用）。
  * @returns {{decision,code,reason,evidenceRef?} | null} null = 本路径无证据
  * （动作没提 / 目标没提），继续尝试 Mandate 路径。
  */
-function humanPath(action, target, utterance) {
+function humanPath(action, target, utterance, params) {
   const clauses = splitClauses(utterance)
   const actionClauses = clauses.filter((c) => clauseHasAction(c, action))
   if (actionClauses.length === 0) return null
@@ -177,7 +193,7 @@ function humanPath(action, target, utterance) {
   // 人类回合 create 不做目标匹配；restart 无目标（§3.3）
   if (action === 'create' || action === 'restart') {
     if (negated.length > 0) return deny('negated', 'human explicitly negated this action')
-    return allow({ source: 'human-utterance', clause: positive[0] })
+    return allowWithParams({ source: 'human-utterance', clause: positive[0] }, action, target, params, utterance)
   }
   if (target == null || normalizeText(target) === '') return deny('target-required', 'action requires an exact target')
   if ([...normalizeText(target)].length < MIN_BOT_NAME_CODEPOINTS) {
@@ -186,7 +202,7 @@ function humanPath(action, target, utterance) {
   // 否定优先：同动作同目标的正负冲突、目标只在否定子句出现 → 拒
   if (negated.some((c) => targetMatches(c, target))) return deny('negated', 'human explicitly negated this action+target')
   const hit = positive.find((c) => targetMatches(c, target))
-  if (hit !== undefined) return allow({ source: 'human-utterance', clause: hit })
+  if (hit !== undefined) return allowWithParams({ source: 'human-utterance', clause: hit }, action, target, params, utterance)
   return null // 动作在、目标不在：不短路，Mandate 还可能覆盖
 }
 
@@ -195,7 +211,7 @@ function humanPath(action, target, utterance) {
  * 目标只能各自失败）。授予本身受 H1：逐动作、逐范围项都要在授予回合人类
  * 原文找到非否定且与动作共现的证据。
  */
-function mandatePath(mandate, action, target, now) {
+function mandatePath(mandate, action, target, now, params) {
   const malformed = typeof mandate !== 'object' || mandate === null
     || !Array.isArray(mandate.actions) || mandate.actions.length === 0
     || mandate.actions.some((a) => typeof a !== 'string' || !Object.hasOwn(ACTION_WORDS, a))
@@ -232,7 +248,12 @@ function mandatePath(mandate, action, target, now) {
       return handoff('mandate-target-uncovered', 'target not covered by this mandate (no union across mandates)')
     }
   }
-  return allow({ source: 'mandate', mandateId: typeof mandate.id === 'string' ? mandate.id : null })
+  // 桶成员资格不能把 install X / disable Y 交叉组合为 disable X。
+  if (!clauses.some((c) => clauseHasAction(c, action) && !clauseNegated(c)
+    && (bucket === null || targetMatches(c, target)))) {
+    return handoff('mandate-pair-uncovered', 'requested action+target has no matching grant clause')
+  }
+  return allowWithParams({ source: 'mandate', mandateId: typeof mandate.id === 'string' ? mandate.id : null }, action, target, params, mandate.grantUtterance)
 }
 
 /**
@@ -255,9 +276,9 @@ export function authorize(input = {}) {
   }
   if (hasProhibitedParam(params)) return deny('prohibited-param', 'params touch a prohibited zone (credentials / permissions / approval tiers)')
   if (turnClass === 'user' && typeof humanUtteranceOfGrant === 'string' && normalizeText(humanUtteranceOfGrant) !== '') {
-    const human = humanPath(action, target, humanUtteranceOfGrant)
+    const human = humanPath(action, target, humanUtteranceOfGrant, params)
     if (human !== null) return human // 显式否定在此短路，压过 Mandate
   }
-  if (mandate !== null && mandate !== undefined) return mandatePath(mandate, action, target, now)
+  if (mandate !== null && mandate !== undefined) return mandatePath(mandate, action, target, now, params)
   return handoff('no-human-source', 'no human source in this turn and no mandate; route to 需要你处理')
 }

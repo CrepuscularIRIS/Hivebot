@@ -11,6 +11,7 @@ import {
   type AdminChannelFrame, type AdminDshLike,
 } from '../../../main/admin/channel'
 import { createAdminConsumer, sanitizeAdminValue } from '../../../main/admin/consumer'
+import { AdminChannel } from '../../../../sdk/src/admin/channel.mjs'
 
 // ---- policy：main 按权威身份 / generation / 记录重验 ----
 
@@ -234,6 +235,63 @@ describe('createAdminConsumer', () => {
     const consumer = createAdminConsumer({ actions: { list: async () => ({ value: { ok: true } }) } })
     const out = await consumer.dispatch({ ...REQUEST, action: 'install' } as never)
     expect(out).toMatchObject({ error: { code: 'pbots/admin-unavailable' } })
+  })
+})
+
+describe('A3：error.details 与 value 使用等价过滤', () => {
+  const details = { token: 'SYNTHETIC-BRIDGE-MARKER', process: { pid: 4242, keep: 1 }, rows: [{ access_token: 'SYNTHETIC', process_id: 4243, keep: true }] }
+  const clean = { process: { keep: 1 }, rows: [{ keep: true }] }
+
+  it('错误详情深剥禁区键，保留 code/message 和普通字段且不改输入', async () => {
+    const consumer = createAdminConsumer({ actions: { list: async () => ({ error: { code: 'mock-upstream-error', message: 'failed', details } }) } })
+    const valueConsumer = createAdminConsumer({ actions: { list: async () => ({ value: details }) } })
+    expect(await consumer.dispatch({ ...REQUEST, action: 'list' })).toEqual({ error: { code: 'mock-upstream-error', message: 'failed', details: clean } })
+    expect(await valueConsumer.dispatch({ ...REQUEST, action: 'list' })).toEqual({ value: clean })
+    expect(details.token).toBe('SYNTHETIC-BRIDGE-MARKER')
+    expect(details.process.pid).toBe(4242)
+  })
+
+  it('实际 main→同 Peer respond→SDK rejection 只收到过滤后的详情', async () => {
+    const sdk = new AdminChannel({ timeoutMs: 1000 })
+    const peer = {}
+    const queue: object[] = []
+    const frames: unknown[] = []
+    sdk.attach({ peer, generation: 3, queue })
+    let sink: ((frame: AdminChannelFrame) => void) | undefined
+    const consumer = createAdminConsumer({ actions: { list: async () => ({ error: { code: 'mock-upstream-error', message: 'failed', details } }) } })
+    const main = wireAdminChannel({
+      dsh: {
+        onConnected() {},
+        async ready() { return { openStream(_endpoint, _args, callback) { sink = callback; return { cancel() { sink = undefined } } } } },
+        async rpc(method, args) {
+          expect(method).toBe(ADMIN_RESPOND_METHOD)
+          frames.push(args)
+          const { requestId, ...outcome } = (args as { request: { requestId: string } }).request
+          sdk.respond(requestId, outcome, peer)
+          return { ok: true }
+        },
+      },
+      verify: (request) => reverifyAdminRequest(request, RECORD, 3),
+      dispatch: consumer.dispatch,
+      currentGeneration: () => 3,
+    })
+    try {
+      await settled()
+      const pending = sdk.request({ sessionId: RECORD.sessionId, turnId: RECORD.turnId, originRef: RECORD.originRef, action: 'list', params: {} })
+        .then(() => { throw new Error('expected SDK rejection') }, (error) => error)
+      expect(queue).toHaveLength(1)
+      sink!({ type: 'item', value: queue.shift() })
+      const rejection = await pending
+      expect(rejection.code).toBe('mock-upstream-error')
+      expect(rejection.details).toEqual(clean)
+      expect(frames).toHaveLength(1)
+      expect((frames[0] as { request: { error: { details: object } } }).request.error.details).toEqual(clean)
+      expect(JSON.stringify(frames)).not.toContain('SYNTHETIC-BRIDGE-MARKER')
+      expect(sdk.pendingCount()).toBe(0)
+    } finally {
+      main.close()
+      sdk.detach()
+    }
   })
 })
 

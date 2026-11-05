@@ -117,6 +117,36 @@ describe('authorize：词表正例与反例（§3.3）', () => {
   })
 })
 
+describe('A1：H1 受限参数不随动作和目标放行', () => {
+  const request = { action: 'modify', target: 'bot-22', humanUtteranceOfGrant: 'rename bot-22 to Alice' }
+
+  it('明确批准的改名成功，参数对象不变', () => {
+    const params = { name: 'Alice' }
+    expect(humanAuth({ ...request, params }).decision).toBe('allow')
+    expect(params).toEqual({ name: 'Alice' })
+  })
+
+  it.each([
+    { name: 'Mallory' }, { name: 'ALICE' }, { name: 'Ali' },
+    { name: 'Alice', model: 'other-model' },
+    { name: 'Alice', prompt: 'unrequested instructions' },
+    { name: 'Alice', cwd: '/unrequested' },
+    { name: 'Mallory', model: 'other-model', prompt: 'unrequested instructions', cwd: '/unrequested' },
+  ])('批准 Alice 不批准参数 %j', (params) => {
+    expect(humanAuth({ ...request, params }).decision).not.toBe('allow')
+  })
+
+  it('另一目标或另一子句里的参数值不能借用', () => {
+    expect(humanAuth({ ...request, humanUtteranceOfGrant: 'rename bot-22 to Alice; rename bot-23 to Mallory', params: { name: 'Mallory' } }).decision).not.toBe('allow')
+  })
+
+  it('现有 grant 路径同样校验受限参数，合法改名仍成功', () => {
+    const mandate = { actions: ['modify'], scopes: { bots: ['bot-22'] }, grantUtterance: request.humanUtteranceOfGrant }
+    expect(authorize({ turnClass: 'delegated', mandate, action: 'modify', target: 'bot-22', params: { name: 'Alice' } }).decision).toBe('allow')
+    expect(authorize({ turnClass: 'delegated', mandate, action: 'modify', target: 'bot-22', params: { name: 'Mallory' } }).decision).not.toBe('allow')
+  })
+})
+
 describe('authorize：否定词（§3.3 否定优先）', () => {
   it('「不要装X，装Y」：X 拒 Y 允许（逗号切分并列指令，目标不跨子句借用）', () => {
     const x = humanAuth({ action: 'install', target: 'github-connectors', humanUtteranceOfGrant: '不要装 github-connectors，装 dsh-plugin-market' })
@@ -201,6 +231,18 @@ describe('authorize：来源与禁区', () => {
     expect(humanAuth({ action: 'install', target: 'gh-x', humanUtteranceOfGrant: '装 gh-x', params: { apiKey: 'sk-1' } })).toMatchObject({ decision: 'deny', code: 'prohibited-param' })
     expect(humanAuth({ action: 'modify', target: '小助手', humanUtteranceOfGrant: '修改小助手', params: { profile: { password: 'x' } } })).toMatchObject({ decision: 'deny', code: 'prohibited-param' })
     expect(humanAuth({ action: 'modify', target: '小助手', humanUtteranceOfGrant: '修改小助手', params: { approvalTiers: ['bypass'] } })).toMatchObject({ decision: 'deny', code: 'prohibited-param' })
+  })
+})
+
+describe('A2：现有 grant 的动作和目标不能交叉组合', () => {
+  const mandate = { id: 'grant-1', actions: ['install', 'disable'], scopes: { plugins: ['gh-x', 'gh-y'] }, grantUtterance: 'install gh-x; disable gh-y' }
+
+  it.each([['install', 'gh-x'], ['disable', 'gh-y']])('合法 %s %s 保持成功', (action, target) => {
+    expect(authorize({ turnClass: 'delegated', mandate, action, target }).decision).toBe('allow')
+  })
+
+  it.each([['disable', 'gh-x'], ['install', 'gh-y']])('未批准组合 %s %s 不执行', (action, target) => {
+    expect(authorize({ turnClass: 'delegated', mandate, action, target }).decision).not.toBe('allow')
   })
 })
 

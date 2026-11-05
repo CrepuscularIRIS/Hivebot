@@ -1,0 +1,49 @@
+P7-F3.f2 第二轮最后一轮：BLOCKED，触发新增账本/状态机停止条件，交 director
+
+固定起点 de36bbc587d604c2672ede53c32d4554973082ec
+分支 feat/P7-F3
+交接 SHA 1d501f181c311ee29912b82ea84f46c93d590bbb
+工作树 /tmp/bot-wt/P7-F3
+这不是修复通过提交；仅固定 RED 测试，禁止作为绿色产品合并。本轮未改任何生产源码、依赖、配置或锁；未给任务换名重置轮次。
+
+精确 diff
+仅 /tmp/bot-wt/P7-F3/app/sdk/tests/unit/p7-host-recovery.test.ts，新增 65 行。
+新增三格：真实 Delivery + HostRecovery 下，unknown 在默认两秒窗口到期前/后返回；无旧恢复 timer 时，后续合法新任务不得把旧未知键重新混批。
+原测试全部保留。git diff --check EXIT 0；提交后 git status --short 无输出。
+
+已读与证据
+已重读 LEARNINGS、PLAN F3/§3、REUSE F3、f1-VERIFY.txt 全文、f1-verify-unknown-window.mjs 及 txt。
+原 V1 和十生产文件修改覆盖的独立 PASS 接受，不重开旧缺口；本轮仅跟进独立 V2 及派发要求的“合法新任务/未知旧项”边界。
+只读检查现有 Reporter 全部调度入口、main-channel.complete、Delivery.send/inflight/holds、pending.computeDue/foldMainLog/reportMessageId；沿 R1/R4/R8 现有模块，不新增包或自建框架。
+
+复现与真实退出码
+1. 生成 f2-unknown-window-red.mjs：原 f1-verify-unknown-window.mjs 只替换三个导入，从已清理的 f1-verify-source 改为固定 /tmp/bot-wt/P7-F3/app/sdk/src；原断言未改。
+命令：env -i HOME=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f2-home TMPDIR=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f2-tmp PATH=/usr/bin:/bin DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-P7-F3-no-dbus /tmp/bot-wt/P7-F3/app/sdk/node_modules/.bin/node /home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f2-unknown-window-red.mjs
+结果 f2-unknown-window-red.txt：followup=2（预期1），EXIT 1。独立 V2 在固定源码重现。
+2. python3 -I /home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f2-prepare.py，EXIT 0。
+用 git archive 固定起点生成本轮隔离源，叠加唯一新测试；689 文件与实际待交接树逐字节一致，哈希 f2-source-hashes.txt。依赖逐顶层条目链接，排除 .vite/.cache；test cache=false，cacheDir 仅 f2-cache-*。
+3. env -i HOME=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f2-home TMPDIR=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f2-tmp PATH=/home/lingxufeng/.npm-global/bin:/usr/bin:/bin DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-P7-F3-no-dbus /home/lingxufeng/.npm-global/bin/pnpm -C /home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f2-source/app/sdk --config.verify-deps-before-run=false exec vitest run --config /home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f2-sdk.config.mjs --coverage.enabled=false --maxWorkers=1 --no-file-parallelism tests/unit/p7-host-recovery.test.ts tests/unit/orchestration-report.test.ts
+f2-tests-red.txt 最后输出：Test Files 1 failed |1 passed (2)；Tests 2 failed |42 passed (44)；EXIT 1。
+早于默认窗口格失败：expected followup 1，actual 2；晚于默认窗口格通过（实际等待2100ms后释放，再等待2150ms，未缩短生产窗口）。
+合法新任务格失败：fresh:end 出现恰1（正对照通过），old:end 出现2（预期1），两批 message id 不同（断言通过）。原 V1 自动恰1/旧代0/手动幂等、原 stop/换代/并发未知调用等既有测试在本组保留且通过。
+4. python3 -I /home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f2-byte-reference.py，EXIT 0：十生产文件与固定 f1 及本轮测试输入均字节一致。见 f2-byte-reference.json。
+本轮没有 GREEN 产品修复或新 coverage 成功，不能把测试命令 EXIT 1 写成 0。无外层 runner 隐藏退出码。
+
+停止原因（不是把正常 native inbox 去重当未知确认）
+V2 直接原因已确认：unconfirmedStart 只清 reconcilePending，尚未到期的 timer 继续存在。取消该 timer 能关掉这个已排队窗口，但不足以满足派发的后续新旧边界。
+第二个 RED 在 unknown 返回时明确 timer=null、没有旧恢复窗口；随后新 lease 放行、合法 fresh Assignment 完成，既有正常 turn/end 开新窗口，真实 Reporter/Delivery 发出 fresh:end 一次，同时再次发出 old:end。因而“只取消 unknown 当时的 timer”对此格没有任何影响。
+数据路径：pending.mjs:93–99 只按权威主日志 delivered/pending 排除；受控未知输入没有可确认的旧项记录，所以 old 仍 due。reportMessageId(:57–59)取整批 key 集哈希，新旧混批会生成新 id。Delivery.inflight(:158–195)只按 agent+messageId 单飞且 finally 删除，既不保留逐 report key 的 unknown，也不能靠保留旧 batch id 拦住新混批。
+仅全局禁用 Reporter/所有后续恢复会使 fresh 合法任务也永远无法回报，违反“不永久关闭所有合法恢复”。把 old 伪造为已投则虚构持久确认；拿正常 inbox/history 通常存在来否认该未知输入同样不成立。
+当前可复用投影没有逐键 unknown 事实。若继续同时保证“old未知不自动重放”与“fresh合法仍可投”，至少需要由已有可信持久记录承载逐键 unknown/确认边界，或增加等价逐键记账；进程内 Set/缓存也不能冒充跨重启可靠事实。本轮派发明确“若需新状态机/账本/依赖/对外协议，停报”，因此未擅加此状态，也未提交只清 timer 的局部假绿。
+交 director 决定最小可信未知结果承载/解除条件及对应精确白名单；不要直接派 f3 换名继续。本报告不选新架构，不扩大 F4/WM，不合 F1/F2。
+
+覆盖与局限
+所有十生产文件未改，按派发仅引用字节一致的 f1 官方证据；f2-byte-reference.json 保存逐文件源码 SHA256、原官方 JSON 路径及其 SHA256、原修改指标。worker/child/UI 来源沿原分离，不混坐标；原 f1/verify 文件未改。
+原 f1 修改映射 S/B/F/L：start 100/100/100/100；host 98.91/92.50/100/100；delivery 90.91/81.82/100/100；main-channel 97.30/94.44/90.91/100；report 88.71/89.29/83.33/95.24；index 96.77/80/100/100；ready 93.33/80/100/100；recovery 94.74/89.39/94.12/98.57；restart和connect适用项100、branch N.A.。
+这些是固定 f1 的独立已确认修改指标，不是本轮新采集，不代表 V2 修好。原整文件 coverage 命令 EXIT 1 保持不变。
+本轮没有为尚未实现的产品修复重复做全十文件覆盖；没有完整重跑独立100并发/插件disposer矩阵，也没有生产完整恢复 E2E，不能声称这些在新修复上通过。现有真实 Loader 两项随 p7-host 原组运行通过，不重复算唯一测试数。
+
+安全与收尾
+env 白名单、隔离 HOME/TMPDIR/死 DBus；输入为本任务合成日志/错误，未读真实凭证；未写 repos/node_modules 产品、未安装/升级、未全量/build/模型/桌面。只使用既有测试框架自管 spawn/stop，没有 sudo/shell kill/pkill/killall/重启注销；无 agent、stash/reset/clean、merge/push，未改 PLAN/LOG/LEARNINGS。
+起始 load=1.44/1.63/1.84，vmstat 后样本 idle95%、iowait0；只定向单worker。结束后删除本轮自建 f2-source/home/tmp/cache 临时目录，保留日志、测试快照哈希、脚本、字节证据与本报告。
+未完成：F3f1-V2 未修，任务最后一轮 BLOCKED；交 director，不自评 PASS。待 verifier 验收（本提交仅供独立确认 RED/停止依据，不是产品完成验收）。

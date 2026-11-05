@@ -1,6 +1,7 @@
 // M3 bots.json 存储（U-13）：原子写（tmp + rename）+ 单一 Promise 写队列（D10e）。
 // v1 盘上形状 {version:1, mainBotId, recipes, bots?}——bots 为可选键（CONTRACT v1.5 §3.1，p6 决策 31）：
-// 没有 worker 不写该键（字节与此前一致）；P6-15 只做读写透传（renderer 推导 worker 分组），写入方是 P6-10 的 ⑤ 编排。
+// 没有 worker 不写该键（字节与此前一致）；P6-15 只做读写透传（renderer 推导 worker 分组），写入方是
+// P6-10 的 ⑤ 编排（putBot）；删除方是 removeBot（P6-24.f1 D-3-④：删 worker = 移除该条目）。
 // W1 R8：进程内单实例锁（双写者全量快照互覆）；W1 R9：flush 失败回滚内存态。
 import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
@@ -192,6 +193,29 @@ export class BotsMetaStore {
         throw error
       }
       return true
+    })
+  }
+
+  /**
+   * P6-24.f1（D-3-④ / VERIFY-P6-24）：删 worker 的存储 API——「删除 worker」=
+   * 移除 bots.json 的 createdBy 条目（worker 生命周期唯一可触碰的面，CONTRACT
+   * v1.6 删除边界）。仅存储 API（单写者队列 + 原子写 + 失败回滚，与 putBot
+   * 同格），不代表已有 session/delete RPC 或 UI 入口。条目清空 → 省略 bots 键（决策 31）。幂等：
+   * 条目不存在 → 不写盘。
+   */
+  removeBot(sessionId: string): Promise<void> {
+    return this.enqueue(async () => {
+      if (this.meta.bots?.[sessionId] === undefined) return
+      const prev = this.meta.bots
+      const next = { ...prev }
+      delete next[sessionId]
+      this.meta.bots = Object.keys(next).length === 0 ? undefined : next
+      try {
+        await this.flush()
+      } catch (error) {
+        this.meta.bots = prev
+        throw error
+      }
     })
   }
 }

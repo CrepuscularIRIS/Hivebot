@@ -11,8 +11,9 @@
 //      mint 过独立工作区（workspaces/<workerId> 不存在）。
 // main 侧 cwd 解析 / fail closed / subdir 语法由 app/ui/tests/unit/m3/p624.test.ts
 // 钉住；本文件钉 SDK 侧运行时行为。只结束自己 spawn 的子进程（stop 自管）。
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync, symlinkSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { BotsMetaStore } from '../../../ui/main/m3-meta/store.ts'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, expect, it } from 'vitest'
@@ -145,6 +146,10 @@ beforeAll(async () => {
     toolCall('edit', { file_path: join(MAIN_WS, 'CLAUDE.md'), old_string: 'orig', new_string: 'hijack' }),
     toolCall('write', { file_path: join(MAIN_WS, 'AGENTS.local.md'), content: 'hijack' }),
     toolCall('write', { file_path: join(MAIN_WS, 'link.md'), content: 'hijack-via-link' }),
+    // f1 HIGH#1 反向软链：CLAUDE.local.md → innocent.md；先 read 满足上游
+    // read-before-edit（P5-06 ⑤），再 edit 指令名本身
+    toolCall('read', { file_path: join(MAIN_WS, 'CLAUDE.local.md') }),
+    toolCall('edit', { file_path: join(MAIN_WS, 'CLAUDE.local.md'), old_string: 'innocent', new_string: 'injected-instruction' }),
     textCall('P6-24 完成'),
   ])
   t.writeScriptCalls(MAIN, [
@@ -240,16 +245,17 @@ function textCall(text: string): object {
 const askedFrom = (h: WRuntime, sessionId: string): number =>
   h.feed.frames.filter((f) => f.type === 'waterfall' && f.event === 'approval/request' && f.agentId === sessionId).length
 
-/** 递归文件清单（相对路径 → 内容）。 */
+/** 完整清单：相对路径、目录、软链原文、文件 SHA256（不按 utf8 解码、不排除名字）。 */
 function inventory(dir: string): Array<[string, string]> {
   const out: Array<[string, string]> = []
   const walk = (d: string, rel: string): void => {
     for (const name of readdirSync(d).sort()) {
-      if (name === '.p2sdk-policy-state-seen' || name === 'gates') continue
       const p = join(d, name)
       const r = join(rel, name)
-      if (statSync(p).isDirectory()) walk(p, r)
-      else out.push([r, readFileSync(p, 'utf8')])
+      const stat = lstatSync(p)
+      if (stat.isSymbolicLink()) out.push([r, `link:${readlinkSync(p)}`])
+      else if (stat.isDirectory()) { out.push([r, 'directory']); walk(p, r) }
+      else out.push([r, createHash('sha256').update(readFileSync(p)).digest('hex')])
     }
   }
   walk(dir, '')
@@ -295,18 +301,27 @@ it('⑤ 隔离不放宽：worker 写别的 bot 工作区拒；无关 bot 写主 
   expect(askedFrom(h, PLAIN) - pBefore).toBe(0)
 })
 
-it('① 指令文件拒写：AGENTS.md / CLAUDE.md / .local 变体 / 软链逃逸全拒且内容不变；主 bot 写自己的 AGENTS.md 不受限', { timeout: 180_000 }, async () => {
+it('① 指令文件拒写：AGENTS.md / CLAUDE.md / .local 变体 / 正反软链逃逸全拒且内容不变；主 bot 写自己的 AGENTS.md 不受限', { timeout: 180_000 }, async () => {
   const h = runtimes[0]!
   writeFileSync(join(MAIN_WS, 'CLAUDE.md'), 'orig-claude')
   writeFileSync(join(MAIN_WS, 'AGENTS.local.md'), 'orig-local')
   writeFileSync(join(MAIN_WS, 'AGENTS.md'), 'orig-agents')
   symlinkSync('AGENTS.md', join(MAIN_WS, 'link.md'))
+  // f1 HIGH#1 反向软链：指令名 → 普通文件（resolved basename 无害、raw 名命中）
+  writeFileSync(join(MAIN_WS, 'innocent.md'), 'innocent')
+  symlinkSync('innocent.md', join(MAIN_WS, 'CLAUDE.local.md'))
   const before = askedFrom(h, WORKER)
   const results = await turn(h, WORKER, '① worker 写指令文件', 'none')
   for (const [i, want] of ['AGENTS.md', 'CLAUDE.md', 'AGENTS.local.md', 'link.md'].entries()) {
     expect(results[i]!.isError, `${want} 应被信封拒`).toBe(true)
     expect(results[i]!.text).toContain('instruction files')
   }
+  // 反向软链：read 可读（信封不拦读），edit 必须拒且宿主字节不变（经 CLAUDE.local.md
+  // 实改 innocent.md = 给主 bot 注入指令，HIGH#1）
+  expect(results[4]!.isError, `read CLAUDE.local.md: ${results[4]!.text}`).toBe(false)
+  expect(results[5]!.isError, '反向软链 CLAUDE.local.md→innocent.md 的 edit 应被信封拒').toBe(true)
+  expect(results[5]!.text).toContain('instruction files')
+  expect(readFileSync(join(MAIN_WS, 'innocent.md'), 'utf8')).toBe('innocent')
   expect(readFileSync(join(MAIN_WS, 'AGENTS.md'), 'utf8')).toBe('orig-agents')
   expect(readFileSync(join(MAIN_WS, 'CLAUDE.md'), 'utf8')).toBe('orig-claude')
   expect(readFileSync(join(MAIN_WS, 'AGENTS.local.md'), 'utf8')).toBe('orig-local')
@@ -324,13 +339,28 @@ it('subdir worker：产物落主 bot 目录的子目录（Q-024 任务自适应�
   expect(readFileSync(join(MAIN_WS, 'sub', 'sub-note.txt'), 'utf8')).toBe('in-sub')
 })
 
-it('④ 删除边界（硬门槛）：bots.json 移除 worker 条目后主 bot 目录文件清单不变', { timeout: 60_000 }, async () => {
-  const h = runtimes[0]!
+it('④ 删除边界（硬门槛）：真实 removeBot 存储 API 删除 worker 后完整字节清单不变', { timeout: 60_000 }, async () => {
+  writeFileSync(join(MAIN_WS, 'binary.bin'), Buffer.from([0, 255, 254, 128, 1]))
+  mkdirSync(join(MAIN_WS, 'empty-directory'))
+  symlinkSync('binary.bin', join(MAIN_WS, 'binary-link'))
   const before = inventory(MAIN_WS)
   expect(before.map(([p]) => p)).toContain('bash-note.txt')
   expect(before.map(([p]) => p)).toContain('write-note.txt')
-  // 「删除 worker」：bots.json 去掉条目（本仓 worker 生命周期唯一可触碰的面）
-  writeBots({})
+  // 真实 M3 单写者 API，不再手改元数据；这里只证明存储删除边界，非 session/delete
+  // 用户旅程（本分支没有该 RPC / UI 入口）。保留主 bot、配方与另一 worker。
+  const store = new BotsMetaStore(DATA_DIR)
+  try {
+    await store.init()
+    await store.removeBot(WORKER)
+    expect(store.read().bots).toEqual({ [WORKER_SUB]: { createdBy: MAIN } })
+    await store.removeBot(WORKER_SUB)
+    expect(store.read().bots).toBeUndefined()
+  } finally { store.close() }
+  const reopened = new BotsMetaStore(DATA_DIR)
+  try {
+    await reopened.init()
+    expect(reopened.read()).toEqual({ version: 1, mainBotId: MAIN, recipes: {} })
+  } finally { reopened.close() }
   const after = inventory(MAIN_WS)
   expect(after).toEqual(before)
   // worker 从未 mint 独立工作区（没有可误删的第二目录）

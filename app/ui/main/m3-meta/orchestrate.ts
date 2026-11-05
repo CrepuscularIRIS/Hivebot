@@ -10,7 +10,7 @@
 // closed 不派（panels/D3-r1.md 必须回应 ②）。
 import { randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, realpath } from 'node:fs/promises'
 import { join, resolve, sep } from 'node:path'
 import { normalizedConnectors, presetIdOf } from './preset-id'
 import { invalidBundleNameReason } from '../m1-api'
@@ -413,12 +413,34 @@ export async function createWorkerBot(
   if (!mainWs.ok) return { ok: false, error: { ...mainWs.error } }
   let workspace = mainWs.cwd
   if (subdir !== undefined) {
-    workspace = join(mainWs.cwd, (subdir as string).trim())
+    const candidate = join(mainWs.cwd, (subdir as string).trim())
     try {
-      await mkdir(workspace, { recursive: true })
+      await mkdir(candidate, { recursive: true })
     } catch (error) {
-      return { ok: false, error: { code: 'pbots/storage', message: `worker subdir mkdir failed for "${workspace}": ${String(error)}`, details: {} } }
+      return { ok: false, error: { code: 'pbots/storage', message: `worker subdir mkdir failed for "${candidate}": ${String(error)}`, details: {} } }
     }
+    // P6-24.f1 HIGH#3：mkdir 会接受目录软链；两侧 realpath 后须仍在发起者 cwd
+    // 子树内（不只是 mainId 根），再把已检查的 canonical cwd 交给 session/create。
+    // ponytail: 静态软链包含检查，不宣称能抵抗检查后并发替换整个目录树。
+    let realCandidate: string
+    let realRoot: string
+    try {
+      realCandidate = await realpath(candidate)
+      realRoot = await realpath(mainWs.cwd)
+    } catch (error) {
+      return { ok: false, error: { code: 'pbots/storage', message: `worker subdir realpath failed for "${candidate}": ${String(error)}`, details: {} } }
+    }
+    if (realCandidate !== realRoot && !realCandidate.startsWith(`${realRoot}${sep}`)) {
+      return {
+        ok: false,
+        error: {
+          code: 'pbots/orchestration-failed',
+          message: `worker subdir "${String(subdir)}" resolves outside the main bot workspace cwd (symlinked directory) — refusing to create a worker (fail closed, D-3-2)`,
+          details: {},
+        },
+      }
+    }
+    workspace = realCandidate
   }
 
   // 2 P6-24：只 mint botId（与上游 minted session 同形），不建独立工作区

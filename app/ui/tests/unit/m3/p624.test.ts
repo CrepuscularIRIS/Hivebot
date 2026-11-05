@@ -5,7 +5,8 @@
 // 的模型参数，单段路径）新开子目录；主 bot cwd 不在 workspaces/<mainId> 下 →
 // fail closed 不派（D-3 ②）；删 worker 后主 bot 目录文件清单不变（D-3 ④）。
 import { describe, expect, it } from 'vitest'
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, realpathSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 import { tmkdir } from '../../support/tmp-sweep.ts'
 import { BOTS_JSON, BotsMetaStore, type BotsMeta } from '../../../main/m3-meta/store'
@@ -123,6 +124,58 @@ describe('P6-24 createWorkerBot: worker 继承发起者工作区（决策 36 / Q
     store.close()
   })
 
+  it('③″ f1 HIGH#3：subdir 已是软链指向别的 bot 工作区 → containment 判定后 fail closed 拒，0 次 session/create、不落 createdBy', async () => {
+    const { store, dataDir } = await newMainStore()
+    const mainCwd = join(dataDir, 'workspaces', 'session-main')
+    const otherWs = join(dataDir, 'workspaces', 'session-other')
+    mkdirSync(mainCwd, { recursive: true })
+    mkdirSync(otherWs, { recursive: true })
+    // main/out 软链 → 另一 bot 的工作区（mkdir 经软链成功，词面路径仍在 main 下）
+    symlinkSync(otherWs, join(mainCwd, 'out'), 'dir')
+    const dsh = mockDsh({ 'session/list': listWithMainCwd(mainCwd), 'session/create': createOk, 'session/rename': renameOk })
+    const r = await createWorkerBot(dsh, store, REQ({ subdir: 'out' }), { dataDir })
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.error.code).toBe('pbots/orchestration-failed')
+      expect(r.error.message).toContain('fail closed')
+    }
+    // 拒在会话创建前：0 次 session/create、bots.json 无 worker 条目
+    expect(dsh.calls.some((c) => c.method === 'session/create')).toBe(false)
+    const onDisk = JSON.parse(readFileSync(join(dataDir, BOTS_JSON), 'utf8')) as BotsMeta
+    expect(onDisk.bots).toBeUndefined()
+    // 正常子目录（非软链）不受影响：相邻用例 ①′ 已覆盖
+    store.close()
+  })
+
+  it('f1 HIGH#3：主 cwd 是 inner 时，subdir 软链不能逃到同主根下的兄弟目录', async () => {
+    const { store, dataDir } = await newMainStore()
+    const root = join(dataDir, 'workspaces', 'session-main')
+    const cwd = join(root, 'inner')
+    mkdirSync(cwd, { recursive: true })
+    mkdirSync(join(root, 'sibling'))
+    symlinkSync('../sibling', join(cwd, 'out'), 'dir')
+    const dsh = mockDsh({ 'session/list': listWithMainCwd(cwd), 'session/create': createOk, 'session/rename': renameOk })
+    try {
+      const result = await createWorkerBot(dsh, store, REQ({ subdir: 'out' }), { dataDir })
+      expect(result).toMatchObject({ ok: false, error: { code: 'pbots/orchestration-failed' } })
+      expect(dsh.calls.filter((c) => c.method === 'session/create')).toHaveLength(0)
+      expect(store.read().bots).toBeUndefined()
+    } finally { store.close() }
+  })
+
+  it('f1 HIGH#3：区内软链允许，但 session/create 只接收已检查的 canonical cwd', async () => {
+    const { store, dataDir } = await newMainStore()
+    const cwd = join(dataDir, 'workspaces', 'session-main')
+    mkdirSync(join(cwd, 'target'), { recursive: true })
+    symlinkSync('target', join(cwd, 'out'), 'dir')
+    const dsh = mockDsh({ 'session/list': listWithMainCwd(cwd), 'session/create': createOk, 'session/rename': renameOk })
+    try {
+      expect((await createWorkerBot(dsh, store, REQ({ subdir: 'out' }), { dataDir })).ok).toBe(true)
+      expect(dsh.calls.find((c) => c.method === 'session/create')?.args)
+        .toMatchObject({ request: { cwd: realpathSync(join(cwd, 'target')) } })
+    } finally { store.close() }
+  })
+
   it('③ 主 bot cwd 不可解析：不在 session/list / cwd 缺失 / session/list 失败 → orchestration-failed（不回退到 mint）', async () => {
     for (const listHandler of [
       () => ({ ok: true as const, value: { items: [{ sessionId: 'session-plain', cwd: '/x' }] } }), // 主 bot 不在列表
@@ -149,11 +202,14 @@ describe('P6-24 createWorkerBot: worker 继承发起者工作区（决策 36 / Q
     store.close()
   })
 
-  it('④ D-3-④ 删除 worker（bots.json 移除条目）后主 bot 目录文件清单不变；worker 从未拥有独立目录', async () => {
+  it('④ D-3-④ 删除 worker（存储 API removeBot）后主 bot 目录文件清单不变；worker 从未拥有独立目录', async () => {
     const { store, dataDir } = await newMainStore()
     const mainCwd = join(dataDir, 'workspaces', 'session-main')
     mkdirSync(mainCwd, { recursive: true })
     writeFileSync(join(mainCwd, 'user-notes.md'), '用户文件')
+    writeFileSync(join(mainCwd, 'blob.bin'), Buffer.from([0, 255, 254, 128, 1]))
+    mkdirSync(join(mainCwd, 'empty-dir'))
+    symlinkSync('blob.bin', join(mainCwd, 'blob-link'))
     const dsh = mockDsh({ 'session/list': listWithMainCwd(mainCwd), 'session/create': createOk, 'session/rename': renameOk })
     const r = await createWorkerBot(dsh, store, REQ(), { dataDir })
     expect(r.ok).toBe(true)
@@ -168,21 +224,27 @@ describe('P6-24 createWorkerBot: worker 继承发起者工作区（决策 36 / Q
         for (const name of readdirSync(d).sort()) {
           const p = join(d, name)
           const r2 = join(rel, name)
-          if (statSync(p).isDirectory()) walk(p, r2)
-          else out.push([r2, readFileSync(p, 'utf8')])
+          const stat = lstatSync(p)
+          if (stat.isSymbolicLink()) out.push([r2, `link:${readlinkSync(p)}`])
+          else if (stat.isDirectory()) { out.push([r2, 'directory']); walk(p, r2) }
+          else out.push([r2, createHash('sha256').update(readFileSync(p)).digest('hex')])
         }
       }
       walk(dir, '')
       return out
     }
     const before = inventory(mainCwd)
-    // 「删除 worker」：bots.json 去掉条目（本仓无 session 删除面；worker 生命周期不触碰共享目录）
-    store.close()
-    const meta = JSON.parse(readFileSync(join(dataDir, BOTS_JSON), 'utf8')) as BotsMeta
-    delete meta.bots?.[workerId]
-    writeFileSync(join(dataDir, BOTS_JSON), JSON.stringify(meta))
+    // 「删除 worker」经存储 API（P6-24.f1：删除旅程走 removeBot——单写者队列 + 原子写，
+    // 不再手改 bots.json；worker 生命周期唯一可触碰的面就是该条目）
+    await store.removeBot(workerId)
+    const onDisk = JSON.parse(readFileSync(join(dataDir, BOTS_JSON), 'utf8')) as BotsMeta
+    expect(onDisk.bots).toBeUndefined() // 零 worker → 省略 bots 键（决策 31）
     const after = inventory(mainCwd)
     expect(after).toEqual(before)
+    // 幂等：条目已不存在再删不炸、不改盘
+    await expect(store.removeBot(workerId)).resolves.toBeUndefined()
+    expect(JSON.parse(readFileSync(join(dataDir, BOTS_JSON), 'utf8')).bots).toBeUndefined()
     expect(existsSync(join(dataDir, 'workspaces', workerId))).toBe(false)
+    store.close()
   })
 })

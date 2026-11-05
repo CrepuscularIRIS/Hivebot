@@ -157,3 +157,38 @@ describe('BotsMetaStore · v1.5 可选 bots（createdBy）透传', () => {
     store.close()
   })
 })
+
+describe('BotsMetaStore · removeBot（P6-24.f1 D-3-④：删除 worker 的存储 API）', () => {
+  it('与 putBot 共用写队列：先删后加同 id 不丢更新，配方与主 bot 不变', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    try {
+      await store.init()
+      await store.patchMainBotId('m')
+      await store.putRecipe('preset', { agentPreset: 'standard', connectors: ['c'] })
+      await store.putBot('w', 'm')
+      await Promise.all([store.removeBot('w'), store.putBot('w', 'm2')])
+      const expected = { version: 1, mainBotId: 'm', recipes: { preset: { agentPreset: 'standard', connectors: ['c'] } }, bots: { w: { createdBy: 'm2' } } }
+      expect(store.read()).toEqual(expected)
+      expect(JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8'))).toEqual(expected)
+    } finally { store.close() }
+  })
+
+  it('删单条：其余条目保留；删到最后一条 → 省略 bots 键（决策 31）；幂等', async () => {
+    const dir = tmpHome()
+    writeFileSync(join(dir, BOTS_JSON), JSON.stringify({ version: 1, mainBotId: 'm', recipes: {}, bots: { w1: { createdBy: 'm' }, w2: { createdBy: 'm' } } }))
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    await store.removeBot('w1')
+    expect(store.read().bots).toEqual({ w2: { createdBy: 'm' } })
+    expect(JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8')).bots).toEqual({ w2: { createdBy: 'm' } })
+    await store.removeBot('w2')
+    expect('bots' in store.read()).toBe(false)
+    expect(Object.keys(JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8'))).sort()).toEqual(['mainBotId', 'recipes', 'version'])
+    // 幂等：不存在的条目 → 不炸、不写盘（mtime 不变）
+    const before = readFileSync(join(dir, BOTS_JSON), 'utf8')
+    await expect(store.removeBot('w2')).resolves.toBeUndefined()
+    expect(readFileSync(join(dir, BOTS_JSON), 'utf8')).toBe(before)
+    store.close()
+  })
+})

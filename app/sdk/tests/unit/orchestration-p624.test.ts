@@ -102,7 +102,12 @@ function registeredTool(dataDir: string, slotsLimit = 3) {
     const item = await nextRequest()
     channel.respond(item.requestId as string, { value: { sessionId } }, 'peer-main')
   }
-  return { definition, options, orch, slots, sub, fire, answerCreate, nextRequest }
+  // f1 HIGH#2 探针用：应答队列里第 n 个请求（不等新请求出现）。
+  const answerNth = (index: number, sessionId: string) => {
+    const item = sub.queue[index] as Record<string, unknown>
+    channel.respond(item.requestId as string, { value: { sessionId } }, 'peer-main')
+  }
+  return { definition, options, orch, slots, sub, fire, answerCreate, answerNth, nextRequest }
 }
 
 describe('P6-24 create_bot 参数面（execute 校验 + 请求体 + 冲突）', () => {
@@ -201,6 +206,62 @@ describe('P6-24 create_bot 参数面（execute 校验 + 请求体 + 冲突）', 
     fire('session/event', { id: 'session-w1' }, { type: 'turn/end' })
     fire('session/event', { id: 'session-w2' }, { type: 'turn/end' })
   })
+
+  it.each(['channel', 'delivery'])('f1 HIGH#2：%s 失败后声明与容量都释放，不阻塞下次同文件创建', async (phase) => {
+    writeBots()
+    const { definition, orch, sub, answerNth, slots, fire } = registeredTool(dir)
+    if (phase === 'delivery') orch.delivery.send = async () => { throw new Error('simulated delivery failure') }
+    const creating = definition.execute({ name: 'w', prompt: 'p', artifacts: ['shared.txt'] }, { agent: { id: 'session-main' } })
+    const rejected = expect(creating).rejects.toMatchObject({ code: phase === 'channel' ? 'main-unavailable' : 'pbots/orchestration-failed' })
+    await expect.poll(() => sub.queue.length).toBe(1)
+    if (phase === 'channel') orch.channel.detach()
+    else answerNth(0, 'session-failed')
+    await rejected
+    expect(slots.used).toBe(0)
+    expect(orch.claims.size).toBe(0)
+    orch.channel.attach(sub)
+    orch.delivery.send = async () => {}
+    const retry = definition.execute({ name: 'w2', prompt: 'p', artifacts: ['shared.txt'] }, { agent: { id: 'session-main' } })
+    await expect.poll(() => sub.queue.length).toBe(2)
+    answerNth(1, 'session-retry')
+    await retry
+    fire('session/event', { id: 'session-retry' }, { type: 'turn/end' })
+    expect(slots.used).toBe(0)
+    expect(orch.claims.size).toBe(0)
+  })
+
+  // VERIFY-P6-24 HIGH#2：并发两个 create 都显式声明同一 artifacts，检查与登记
+  // 跨 await（登记在 channel.request 返回后）→ 互相看不见，双双 created。
+  it('f1 HIGH#2：并发同 artifacts 声明 → 恰一个进通道 created，另一个 pbots/busy（检查+登记原子化）', async () => {
+    writeBots()
+    const { definition, sub, answerNth, fire, slots } = registeredTool(dir)
+    let rejectedBeforeReply = 0
+    const jobs = ['w1', 'w2'].map((name) =>
+      definition.execute({ name, prompt: 'p', artifacts: ['shared.txt'] }, { agent: { id: 'session-main' } })
+        .catch((error: unknown) => { rejectedBeforeReply++; throw error }),
+    )
+    // 身份读取是异步 IO，谁先取得占位不固定；立即接住两边的拒绝，不能假定 w1 先到。
+    const settled = Promise.allSettled(jobs)
+    await expect.poll(() => sub.queue.length + rejectedBeforeReply).toBe(2)
+    // 基点红时也应答所有请求，避免遗留 30s 通道计时器掩盖真正的断言失败。
+    sub.queue.forEach((_, i) => answerNth(i, `session-w${i + 1}`))
+    const results = await settled
+    expect(sub.queue.length, '同文件并发只应有一次 main 创建请求').toBe(1)
+    const created = results.filter((r) => r.status === 'fulfilled')
+    const rejected = results.filter((r) => r.status === 'rejected')
+    expect(created).toHaveLength(1)
+    expect(rejected).toHaveLength(1)
+    expect((rejected[0] as PromiseRejectedResult).reason).toMatchObject({ code: 'pbots/busy' })
+    expect(slots.used).toBe(1)
+    fire('session/event', { id: 'session-w1' }, { type: 'turn/end' })
+    expect(slots.used).toBe(0)
+    // 释放后同文件可再占（占位确已释放，不泄漏）
+    const p3 = definition.execute({ name: 'w3', prompt: 'p', artifacts: ['shared.txt'] }, { agent: { id: 'session-main' } })
+    await expect.poll(() => sub.queue.length).toBe(2) // 释放后确实进入通道，而非等一个未 resolve 的 timer
+    answerNth(1, 'session-w3')
+    await p3
+    fire('session/event', { id: 'session-w3' }, { type: 'turn/end' })
+  })
 })
 
 // ---- D-3-①：worker 的 write/edit 拒写指令文件 ----
@@ -225,6 +286,22 @@ describe('P6-24 instructionFileDenial（D-3-①）', () => {
     expect(instructionFileDenial('link.md', '/ws/main/notes.md')).toBe(null)
     // resolve 失败（undefined）→ 退回 raw basename 判定
     expect(instructionFileDenial('AGENTS.md', undefined)?.kind).toBe('deny')
+  })
+
+  it('basename 级拒绝不误伤同名目录中的普通文件', () => {
+    expect(instructionFileDenial('/ws/AGENTS.md/notes.md', '/ws/AGENTS.md/notes.md')).toBe(null)
+  })
+
+  // VERIFY-P6-24 HIGH#1：raw 名本身是指令文件（反向软链 AGENTS/CLAUDE 名 → 普通
+  // 文件）时，resolved 存在不能舍弃 raw——软链任一端命中即拒，否则 edit 经
+  // CLAUDE.local.md 实改 innocent.md 的指令内容。
+  it('f1 HIGH#1 反向软链：raw 与 resolved 两端 basename 都过清单，任一命中即拒', () => {
+    expect(instructionFileDenial('CLAUDE.local.md', '/ws/main/innocent.md')?.kind).toBe('deny')
+    expect(instructionFileDenial(join('/ws/main', 'AGENTS.md'), '/ws/main/innocent.md')?.kind).toBe('deny')
+    expect(instructionFileDenial(join('/ws/main', 'sub', 'AGENTS.local.md'), '/ws/main/sub/innocent.md')?.kind).toBe('deny')
+    // 两端都无害 → 放行（不误伤普通文件；中间段是普通目录名不受影响）
+    expect(instructionFileDenial('/ws/main/notes.md', '/ws/main/other.md')).toBe(null)
+    expect(instructionFileDenial('/ws/AGENTS_tree/x.md', '/ws/AGENTS_tree/x.md')).toBe(null)
   })
 })
 

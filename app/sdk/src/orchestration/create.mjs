@@ -13,6 +13,7 @@
 // 划分写入责任：同主 bot 下交叉 → pbots/busy，D-3-③）；两者都不声明 → 结果带
 // advisory 提醒分区（声明+警告档）。worker cwd 本身由 main 解析（P6-24 的 ui 侧
 // 改动），SDK 不参与 cwd 决策。
+import { randomUUID } from 'node:crypto'
 import { orchDataDir, readMainBotId } from './identity.mjs'
 import { subdirProblem, artifactsProblem, claimDescriptors, claimsConflict, registerClaims, dropClaims } from './claims.mjs'
 import { orchError, redactInternalPaths, redactInternalDeep } from './main-channel.mjs'
@@ -131,7 +132,11 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
     throw orchError('pbots/forbidden', 'create_bot is rejected in a turn that received worker reports', { taintKind: TAINT_KIND })
   }
 
-  // 2.7 P6-24 D-3-③：声明产物与同主在跑 worker 交叉 → 拒（不占容量、不出通道）
+  // 2.7 P6-24 D-3-③：声明产物与同主在跑 worker 交叉 → 拒（不占容量、不出通道）。
+  // f1（VERIFY-P6-24 HIGH#2）：检查与登记原子化——P6-21 delivery 的 inflight 先例，
+  // 同 tick 检查+占位、其间无 await；原「channel.request 返回后才 registerClaims」
+  // 让两个并发 create 的声明在 pending 窗口里互相看不见（双双 created）。占位键
+  // 拿到 sessionId 后在同一同步块内转正；通道失败 / 后续任何失败由 release() 释放。
   const conflict = claimsConflict(orch.claims, mainId, descriptors)
   if (conflict !== null) {
     throw orchError('pbots/busy', `artifact "${conflict.descriptor}" is claimed by a running worker (${conflict.holder}); partition writes via subdir/artifacts, or create after it finishes`, { artifact: conflict.descriptor, holder: conflict.holder })
@@ -141,6 +146,10 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
   if (!orch.slots.reserve()) {
     throw orchError('pbots/capacity', `${orch.slots.limit} worker turns are already running`, { limit: orch.slots.limit })
   }
+  // 3.5 f1：声明占位登记（同步，紧随容量占位——自此并发的同文件声明在 2.7 处即见 busy）
+  const pendingKey = `pending:${randomUUID()}`
+  registerClaims(orch.claims, mainId, pendingKey, descriptors)
+  let claimsKey = pendingKey // 当前有效的声明键（pending 占位 → sessionId 转正）
   let released = false
   let heldSession // P6-10.f1 ②：本工具占位绑定的 worker session（拿到 id 后登记）
   const release = () => {
@@ -148,8 +157,8 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
     released = true
     if (heldSession !== undefined) {
       orch.slotHolds.delete(heldSession)
-      dropClaims(orch.claims, heldSession)
     }
+    dropClaims(orch.claims, claimsKey)
     orch.slots.release()
   }
 
@@ -164,9 +173,11 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
     // 另占一格（'turn'）——create 接管所有权，归并多占的一格（同步，仍无 await）。
     if (orch.slotHolds.get(heldSession) === 'turn') orch.slots.release()
     orch.slotHolds.set(heldSession, 'create')
-    // P6-24 D-3-③：登记写入责任（同步，先于任何 await——worker 回合要在 assign 投递
-    // 后才起跑，登记必先于可交叉的下一个 create）。
+    // P6-24.f1：声明占位转正（同一同步块内换键，无 await 间隙——两个键的交接
+    // 期间并发的 create 看到的仍是同一组描述符，无窗口）
+    dropClaims(orch.claims, pendingKey)
     registerClaims(orch.claims, mainId, heldSession, descriptors)
+    claimsKey = heldSession
 
     // 5 v4.1 冷 session 窗口（P6-09 附 1）：#3 刚返回的 session 尚零事件，
     //   SIGKILL 会丢——先 flush 再做别的，然后第一件事就是投 assign（其 splice

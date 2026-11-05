@@ -89,4 +89,23 @@ describe('BotsMetaStore · flush 失败回滚（W1 R9）', () => {
     expect(readFileSync(join(dir, BOTS_JSON), 'utf8')).toBe(goodOnDisk)
     store.close()
   })
+
+  it('removeBot 的 rename 失败（P6-24.f1）：条目回滚，磁盘保留先前好状态', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    await store.putBot('w1', 'm')
+    await store.putBot('w2', 'm')
+    const goodOnDisk = readFileSync(join(dir, BOTS_JSON), 'utf8')
+
+    mockedRename.mockRejectedValueOnce(new Error('simulated rename failure'))
+    await expect(store.removeBot('w1')).rejects.toThrow('simulated rename failure')
+
+    // 内存回滚：两条 worker 都还在；后续成功提交不带失败的删除
+    expect(store.read().bots).toEqual({ w1: { createdBy: 'm' }, w2: { createdBy: 'm' } })
+    expect(readFileSync(join(dir, BOTS_JSON), 'utf8')).toBe(goodOnDisk)
+    await store.removeBot('w1')
+    expect(store.read().bots).toEqual({ w2: { createdBy: 'm' } })
+    store.close()
+  })
 })

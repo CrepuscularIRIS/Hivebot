@@ -2,7 +2,7 @@
 // 写入、createWorkerBot ⑤ 编排（校验 → mintWorkspace → createdBy 先落盘 → #3
 // → #6 rename）、#20 防提升、deriveBots 防御性过滤。通道接线在 orch-channel.test.ts。
 import { describe, expect, it } from 'vitest'
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmkdir } from '../../support/tmp-sweep.ts'
 import { BOTS_JSON, BotsMetaStore, type BotsMeta } from '../../../main/m3-meta/store'
@@ -99,12 +99,21 @@ describe('BotsMetaStore.putBot', () => {
 
 describe('createWorkerBot', () => {
   const opts = (dataDir: string) => ({ dataDir })
+  // P6-24：worker cwd 继承主 bot 的 session header cwd（session/list 解析）。
+  const mainCwd = (dataDir: string) => join(dataDir, 'workspaces', 'session-main')
+  const listMain = (cwd: string) => () => ({
+    ok: true as const,
+    value: { items: [{ sessionId: 'session-main', cwd }] },
+  })
 
   it('full happy path: createdBy lands before #3; cwd forced; default preset; rename (验收 ②)', async () => {
     const dataDir = tmkdir('bot-p610-create-')
     const store = await newStore()
     await store.patchMainBotId('session-main')
+    const wsMain = mainCwd(dataDir)
+    mkdirSync(wsMain, { recursive: true })
     const dsh = mockDsh({
+      'session/list': listMain(wsMain),
       'session/create': (args) => {
         // createdBy 必须先于 #3 落盘（CONTRACT §3.1）
         const onDisk = readJson(store)
@@ -121,14 +130,15 @@ describe('createWorkerBot', () => {
     if (!result.ok) return
     expect(result.value.sessionId).toMatch(/^session-/)
     const create = dsh.calls.find((c) => c.method === 'session/create')
-    expect(create?.args).toMatchObject({ request: { sessionId: result.value.sessionId, cwd: join(dataDir, 'workspaces', result.value.sessionId) } })
+    expect(create?.args).toMatchObject({ request: { sessionId: result.value.sessionId, cwd: wsMain } })
     expect((create?.args as { request: { agentPreset?: string } }).request.agentPreset).toBeUndefined()
     expect(Object.keys((create?.args as { request: Record<string, unknown> }).request).sort()).toEqual(['cwd', 'sessionId'])
     expect(dsh.calls.some((c) => c.method === 'p2temp/session.createWithConnectors')).toBe(false)
     const rename = dsh.calls.find((c) => c.method === 'session/rename')
     expect(rename?.args).toMatchObject({ request: { sessionId: result.value.sessionId, title: '调研员' } })
     expect(readJson(store).bots).toEqual({ [result.value.sessionId]: { createdBy: 'session-main' } })
-    mkdirSync(join(dataDir, 'workspaces', result.value.sessionId), { recursive: true })
+    // P6-24：不再 mint 独立工作区（worker 与主 bot 共用目录，Q-024 A）
+    expect(existsSync(join(dataDir, 'workspaces', result.value.sessionId))).toBe(false)
   })
 
   it('rejects preset / connectors / cwd fields (D9①) with zero dsh calls', async () => {
@@ -148,16 +158,19 @@ describe('createWorkerBot', () => {
     expect(dsh.calls.length).toBe(0)
   })
 
-  it('createdBy write failure → zero dsh calls (验收 ①)', async () => {
+  it('createdBy write failure → zero dsh session calls (验收 ①)', async () => {
     const dataDir = tmkdir('bot-p610-wf-')
     const store = await newStore()
     await store.patchMainBotId('session-main')
     store.putBotIfMain = async () => { throw new Error('bots.json write failed') }
-    const dsh = mockDsh()
+    const wsMain = mainCwd(dataDir)
+    mkdirSync(wsMain, { recursive: true })
+    const dsh = mockDsh({ 'session/list': listMain(wsMain) })
     const r = await createWorkerBot(dsh, store, { kind: 'create-bot', name: 'w', prompt: 'p', mainBotId: 'session-main' }, opts(dataDir))
     expect(r.ok).toBe(false)
     if (!r.ok) expect(r.error.code).toBe('pbots/storage')
-    expect(dsh.calls.length).toBe(0)
+    // P6-24：workspace 解析先于 createdBy（session/list 1 次），但零会话调用
+    expect(dsh.calls.filter((c) => c.method === 'session/create').length).toBe(0)
   })
 
   it('request mainBotId must match the authoritative one (纵深防御)', async () => {
@@ -174,7 +187,10 @@ describe('createWorkerBot', () => {
     const dataDir = tmkdir('bot-p610-f3-')
     const store = await newStore()
     await store.patchMainBotId('session-main')
+    const wsMain = mainCwd(dataDir)
+    mkdirSync(wsMain, { recursive: true })
     const dsh = mockDsh({
+      'session/list': listMain(wsMain),
       'session/create': () => ({ ok: false, error: { code: 'gateway/internal', message: 'boom', details: { hint: 1 } } }),
     })
     const r = await createWorkerBot(dsh, store, { kind: 'create-bot', name: 'w', prompt: 'p', mainBotId: 'session-main' }, opts(dataDir))
@@ -192,7 +208,10 @@ describe('createWorkerBot', () => {
     const dataDir = tmkdir('bot-p610-rn-')
     const store = await newStore()
     await store.patchMainBotId('session-main')
+    const wsMain = mainCwd(dataDir)
+    mkdirSync(wsMain, { recursive: true })
     const dsh = mockDsh({
+      'session/list': listMain(wsMain),
       'session/create': (args) => ({ ok: true, value: { sessionId: (args as { request: { sessionId: string } }).request.sessionId } }),
       'session/rename': () => ({ ok: false, error: { code: 'gateway/internal', message: 'rename refused', details: {} } }),
     })
@@ -202,7 +221,6 @@ describe('createWorkerBot', () => {
     expect(typeof r.value.warn).toBe('string')
     expect((r.value.warn as string)).toContain('rename')
     expect(dsh.calls.filter((c) => c.method === 'session/create').length).toBe(1)
-    mkdirSync(join(dataDir, 'workspaces', r.value.sessionId), { recursive: true })
   })
 })
 

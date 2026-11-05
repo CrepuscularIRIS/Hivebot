@@ -4,10 +4,14 @@
 // P5-25（Q-015 C2-②，R4 §4）：#3/#4 的 cwd 由 main 强制为 $PBOTS_DATA_DIR/workspaces/<botId>
 // （目录建好），renderer 传入即拒——缺省 cwd 继承 SDK runtime 启动目录会让初始工作区
 // 覆盖仓库/SDK 目录（R4 §4 纠偏）；header.cwd 不可变，事后无法缩小。
+// P6-24（决策 36 / Q-024 A + 任务自适应）：worker 是该规则的唯一例外——createWorkerBot
+// 的 cwd 改为发起主 bot 的 session header cwd（main 侧经 session/list 解析，renderer
+// 不可传），可选 subdir 新开子目录；主 bot cwd 不在 workspaces/<mainId> 下 → fail
+// closed 不派（panels/D3-r1.md 必须回应 ②）。
 import { randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, resolve, sep } from 'node:path'
 import { normalizedConnectors, presetIdOf } from './preset-id'
 import { invalidBundleNameReason } from '../m1-api'
 import type { BotsMeta, BotsMetaStore } from './store'
@@ -299,21 +303,77 @@ export function deriveBots(
 }
 
 /** ⑤ 通道的 create 请求体（CONTRACT §2.4：SDK 只发 {name, prompt}；kind /
- * requestId 为通道信封标记）。 */
+ * requestId 为通道信封标记）。P6-24 增可选 subdir：模型在 create_bot 里指定的工作
+ * 区子目录名（单段路径，Q-024「按任务自适应」），经 ⑤ 通道直达 main——renderer 面
+ * 不扩大（M1/M3 均不可传）。 */
 export interface WorkerCreateRequest {
   kind?: string
   requestId?: string
   name: string
   prompt: string
   mainBotId: string
+  subdir?: string
+}
+
+/** P6-24：subdir 只认单段路径（无分隔符、非 "."/".."、≤128 字符），拒绝一切拼路径。 */
+function subdirProblem(subdir: unknown): string | undefined {
+  if (subdir === undefined) return undefined
+  if (typeof subdir !== 'string') return 'subdir must be a string (a single path segment under the main bot workspace)'
+  const value = subdir.trim()
+  if (value === '' || value === '.' || value === '..') {
+    return 'subdir must be a non-empty single path segment (not "." or "..")'
+  }
+  if (value.length > 128) return 'subdir is too long (max 128 characters)'
+  if (/[\\/]/.test(value)) return 'subdir must be a single path segment (no path separators)'
+  if (/[\0\u0001-\u001f]/.test(value)) return 'subdir must not contain control characters'
+  return undefined
 }
 
 /**
- * ⑤ 建 bot 的 main 编排（P6-10，CONTRACT §2.4 / §3.1，决策 8/32）：
- * 校验（D9①：越权参数拒；mainBotId 纵深防御）→ mintWorkspace → **createdBy
- * 先落盘**（失败 → 0 次 dsh 调用）→ #3（P5-25 cwd 强制、默认 preset、无连接器）
- * → #6 rename（决策 32：失败 → 成功 + warn，不诱发重复 create）。
- * #3 失败不回滚 createdBy（作废 ≠ 回滚，§2.4：崩溃窗口由 deriveBots 过滤）。
+ * P6-24（决策 36，Q-024 A + 任务自适应）：从 session/list 解析发起主 bot 的
+ * session header cwd，并核对它在 <dataDir>/workspaces/<mainBotId> 之下（P5-25 布
+ * 局）。主 bot cwd 不可解析（不在列表 / 无 cwd / RPC 失败）或指向区外（P5-25 之前
+ * 的旧 bot，cwd 可能是仓库或 SDK 目录——正是 C2-② 要防的）→ fail closed 拒派，
+ * 绝不回退到 mint 独立工作区（panels/D3-r1.md 必须回应 ②；PLAN P6-24 验收 ③）。
+ * 布局核对按词面路径（session/create 收到的就是 main 拼好的绝对路径）；dataDir
+ * 自身被换成软链的部署不在核对面内（ponytail: 需要时升级 realpath 对照）。
+ */
+async function resolveMainWorkspace(
+  dsh: DshLike,
+  dataDir: string,
+  mainBotId: string,
+): Promise<{ ok: true; cwd: string } | { ok: false; error: { code: 'pbots/orchestration-failed'; message: string; details: {} } }> {
+  const failed = (message: string): { ok: false; error: { code: 'pbots/orchestration-failed'; message: string; details: {} } } => ({
+    ok: false,
+    error: { code: 'pbots/orchestration-failed', message: `${message} — refusing to create a worker (fail closed, D-3-2)`, details: {} },
+  })
+  const list = await dsh.rpc('session/list', { _request: {} })
+  if (!list.ok) {
+    return failed(`session/list failed: ${list.error.code} ${list.error.message}`)
+  }
+  const items = (list.value as { items?: Array<{ sessionId?: string; cwd?: string }> }).items ?? []
+  const main = items.find((item) => item.sessionId === mainBotId)
+  if (main === undefined) return failed(`main bot ${JSON.stringify(mainBotId)} is not in session/list`)
+  if (typeof main.cwd !== 'string' || main.cwd === '') {
+    return failed('main bot session records no workspace cwd')
+  }
+  const expected = resolve(dataDir, 'workspaces', mainBotId)
+  const actual = resolve(main.cwd)
+  if (actual !== expected && !actual.startsWith(`${expected}${sep}`)) {
+    return failed('main bot cwd is outside $PBOTS_DATA_DIR/workspaces/<mainBotId> (pre-P5-25 layout)')
+  }
+  return { ok: true, cwd: actual }
+}
+
+/**
+ * ⑤ 建 bot 的 main 编排（P6-10，CONTRACT §2.4 / §3.1，决策 8/32；P6-24 改工作区来源）：
+ * 校验（D9①：越权参数拒；mainBotId 纵深防御）→ 解析主 bot cwd（fail closed，见
+ * resolveMainWorkspace）→ **createdBy 先落盘**（失败 → 0 次 dsh 会话调用）→ #3
+ * （cwd = 主 bot cwd[/<subdir>]，默认 preset、无连接器）→ #6 rename（决策 32：失败
+ * → 成功 + warn，不诱发重复 create）。
+ * P6-24：不再 mint 独立工作区——worker 与发起主 bot 共用目录（Q-024 A）；subdir
+ * 时只建子目录。#3 失败不回滚 createdBy（作废 ≠ 回滚，崩溃窗口由 deriveBots 过滤）；
+ * worker 生命周期不触碰共享目录的删除（D-3-④ 硬门槛：删 worker 只动 bots.json）。
  */
 export async function createWorkerBot(
   dsh: DshLike,
@@ -321,16 +381,18 @@ export async function createWorkerBot(
   request: WorkerCreateRequest,
   opts: GateOptions = {},
 ): Promise<ConnectionRpcResult<{ sessionId: string; warn?: string }>> {
-  // 1 校验：只认 {kind?, name, prompt, mainBotId}；preset / connectors / cwd → 拒
-  if (typeof request !== 'object' || request === null) return invalid('create-bot request must be {kind, name, prompt, mainBotId}')
-  const extra = Object.keys(request).filter((key) => !['kind', 'requestId', 'name', 'prompt', 'mainBotId'].includes(key))
+  // 1 校验：只认 {kind?, name, prompt, mainBotId, subdir?}；preset / connectors / cwd → 拒
+  if (typeof request !== 'object' || request === null) return invalid('create-bot request must be {kind, name, prompt, mainBotId, subdir?}')
+  const extra = Object.keys(request).filter((key) => !['kind', 'requestId', 'name', 'prompt', 'mainBotId', 'subdir'].includes(key))
   if (extra.length > 0) {
     return invalid(`create-bot rejects unexpected fields: ${extra.join(', ')} (preset/connectors/cwd are main-owned, D9-1)`)
   }
-  const { name, prompt, mainBotId } = request
+  const { name, prompt, mainBotId, subdir } = request
   if (typeof name !== 'string' || name.trim() === '') return invalid('name must be a non-empty string')
   if (typeof prompt !== 'string' || prompt.trim() === '') return invalid('prompt must be a non-empty string')
   if (typeof mainBotId !== 'string' || mainBotId === '') return invalid('mainBotId is required')
+  const badSubdir = subdirProblem(subdir)
+  if (badSubdir !== undefined) return invalid(badSubdir)
   let meta: BotsMeta
   try {
     meta = store.read()
@@ -341,20 +403,33 @@ export async function createWorkerBot(
     return invalid(`mainBotId mismatch: request says ${JSON.stringify(mainBotId)}, authoritative is ${JSON.stringify(meta.mainBotId)}`)
   }
 
-  // 2 工作区（P5-25）：mint botId 并建目录
+  // 1.5 P6-24 工作区：数据根 + 主 bot cwd（fail closed；先于 createdBy 落盘与任何
+  //     会话创建——布局核对不过时不产生任何副作用）。
   const dataDir = resolveDataDir(opts)
   if (dataDir === undefined) {
     return { ok: false, error: { code: 'pbots/unavailable', message: 'workspace data dir unresolved (no dataDir option and PBOTS_DATA_DIR unset)', details: {} } }
   }
-  const ws = await mintWorkspace(dataDir)
-  if (!ws.ok) return { ok: false, error: { ...ws.error, details: {} } }
+  const mainWs = await resolveMainWorkspace(dsh, dataDir, mainBotId)
+  if (!mainWs.ok) return { ok: false, error: { ...mainWs.error } }
+  let workspace = mainWs.cwd
+  if (subdir !== undefined) {
+    workspace = join(mainWs.cwd, (subdir as string).trim())
+    try {
+      await mkdir(workspace, { recursive: true })
+    } catch (error) {
+      return { ok: false, error: { code: 'pbots/storage', message: `worker subdir mkdir failed for "${workspace}": ${String(error)}`, details: {} } }
+    }
+  }
 
-  // 3 createdBy 先于会话落盘（CONTRACT §3.1；验收 ①：写失败 → 0 次 dsh 调用）。
+  // 2 P6-24：只 mint botId（与上游 minted session 同形），不建独立工作区
+  const botId = mintBotId()
+
+  // 3 createdBy 先于会话落盘（CONTRACT §3.1；验收 ①：写失败 → 0 次 dsh 会话调用）。
   // P6-10.f2 B-3：第 1 步的 read() 可能落在换主 patch 的未提交窗口（写队列不
   // 隔离读者）；putBotIfMain 在写队列位重验 mainBotId，回滚后不再写入失权主。
   let committed: boolean
   try {
-    committed = await store.putBotIfMain(ws.botId, mainBotId)
+    committed = await store.putBotIfMain(botId, mainBotId)
   } catch (error) {
     return { ok: false, error: { code: 'pbots/storage', message: `bots.json write failed: ${String(error)}`, details: {} } }
   }
@@ -362,8 +437,9 @@ export async function createWorkerBot(
     return invalid(`mainBotId changed during creation: the authoritative main bot is no longer ${JSON.stringify(mainBotId)}`)
   }
 
-  // 4 #3：默认 preset、无连接器、cwd 强制（typert {request:…} 壳，同 createSessionForcedWorkspace）
-  const created = await dsh.rpc('session/create', { request: { sessionId: ws.botId, cwd: ws.workspace } })
+  // 4 #3：默认 preset、无连接器、cwd = 主 bot cwd[/<subdir>]（P6-24；typert {request:…} 壳，
+  //   同 createSessionForcedWorkspace）
+  const created = await dsh.rpc('session/create', { request: { sessionId: botId, cwd: workspace } })
   if (!created.ok) {
     return {
       ok: false,
@@ -377,7 +453,7 @@ export async function createWorkerBot(
 
   // 5 #6 rename（决策 32：失败 → 成功 + warn；改名失败不诱发重复 create）
   let warn: string | undefined
-  const renamed = await dsh.rpc('session/rename', { request: { sessionId: ws.botId, title: name } })
+  const renamed = await dsh.rpc('session/rename', { request: { sessionId: botId, title: name } })
   if (!renamed.ok) warn = `rename failed: ${renamed.error.code} ${renamed.error.message}`
-  return { ok: true, value: { sessionId: ws.botId, ...(warn !== undefined ? { warn } : {}) } }
+  return { ok: true, value: { sessionId: botId, ...(warn !== undefined ? { warn } : {}) } }
 }

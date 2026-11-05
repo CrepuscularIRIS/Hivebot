@@ -3,7 +3,9 @@
 // 失败回滚前的窗口里 store.read() 看到的是脏值。用 rename 注入门控复现窗口，
 // 验收修复：putBotIfMain 在同一队列位重验，回滚后不再为失权主写入 / 建 session。
 import { describe, expect, it, vi } from 'vitest'
+import { mkdirSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { tmkdir } from '../../support/tmp-sweep.ts'
 import { BotsMetaStore } from '../../../main/m3-meta/store'
 import { createWorkerBot } from '../../../main/m3-meta/orchestrate'
@@ -25,18 +27,25 @@ const defer = () => Promise.withResolvers<void>()
 
 async function rig() {
   const dir = tmkdir('bot-p610f2-b3-')
+  mkdirSync(join(dir, 'workspaces', 'A'), { recursive: true })
+  mkdirSync(join(dir, 'workspaces', 'B'), { recursive: true })
   const store = new BotsMetaStore(dir)
   await store.init()
   await store.patchMainBotId('A')
   return { dir, store }
 }
 const req = (mainBotId = 'A') => ({ requestId: 'stable-request', kind: 'create-bot', name: 'worker', prompt: 'task', mainBotId })
-const fakeDsh = () => {
+const fakeDsh = (dir: string) => {
   const calls: Array<{ method: string, args: any }> = []
   return {
     calls,
     rpc: async (method: string, args: any) => {
       calls.push({ method, args })
+      // P6-24：workspace 解析先到；A/B 都给合法布局 cwd（本测试焦点是 putBotIfMain 竞态）
+      if (method === 'session/list') {
+        const ids = ['A', 'B'].map((id) => ({ sessionId: id, cwd: join(dir, 'workspaces', id) }))
+        return { ok: true, value: { items: ids } }
+      }
       return { ok: true, value: { sessionId: args.request.sessionId } }
     },
   }
@@ -64,7 +73,7 @@ describe('createWorkerBot commit-time identity (P6-10.f2 B-3)', () => {
     // 未提交窗口：内存 B、盘上 A（store 写队列不隔离读者）
     expect(store.read().mainBotId).toBe('B')
     expect(JSON.parse(await readFile(store.file, 'utf8')).mainBotId).toBe('A')
-    const dsh = fakeDsh()
+    const dsh = fakeDsh(dir)
     const creation = createWorkerBot(dsh as never, store, delayedRequest as never, { dataDir: dir })
     await tick()
     await new Promise((r) => setTimeout(r, 10)) // 让 mintWorkspace 完成、putBot 入队（队列序已由先入队保证）

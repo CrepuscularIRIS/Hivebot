@@ -1,0 +1,34 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-taint-verify-red/app/sdk
+
+ ❯ tests/unit/orchestration-create-live.test.ts (12 tests | 1 failed | 11 skipped) 2801ms
+   ❯ P6-10.f1 live (taint guard + manual worker adoption) (4)
+     × ①′ T-taint：goal 来源回合 create_bot 不可见（visible 探针走真实 when）；0 次建 bot 请求 595ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/orchestration-create-live.test.ts > P6-10.f1 live (taint guard + manual worker adoption) > ①′ T-taint：goal 来源回合 create_bot 不可见（visible 探针走真实 when）；0 次建 bot 请求
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/orchestration-create-live.test.ts:571:23
+    569|       expect(requests).toBe(0) // 0 次建 bot 请求
+    570|       const visible = ((await rt.client.call('p610/control', { request…
+    571|       expect(visible).toBe(false) // 修复前：goal 不算污染 → visible=true（RED …
+       |                       ^
+    572|       expect(await slotsUsed()).toBe(0)
+    573|     } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 skipped (12)
+   Start at  12:05:24
+   Duration  3.13s (tests 93%, transform 6%, import 1%)
+

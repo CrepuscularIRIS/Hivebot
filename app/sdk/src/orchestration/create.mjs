@@ -8,7 +8,13 @@
 // 来源（R2-1 唯一污染源）即拒，不能只看 mainBotId（污染回合里 main 仍是 main）。
 // P6-10.f1 ②：registerCreateBot 一并挂 trackWorkerTurns，人工启动的 worker
 // 回合收养进共享容量；holds 里 'create' 标记本工具的占位，防双重计数。
+// P6-24（决策 36 / Q-024 A + 任务自适应）：create_bot 增可选 subdir（main 侧把
+// worker cwd 落到 <主 bot cwd>/<subdir>）与 artifacts（产物路径清单，SDK 侧按文件
+// 划分写入责任：同主 bot 下交叉 → pbots/busy，D-3-③）；两者都不声明 → 结果带
+// advisory 提醒分区（声明+警告档）。worker cwd 本身由 main 解析（P6-24 的 ui 侧
+// 改动），SDK 不参与 cwd 决策。
 import { orchDataDir, readMainBotId } from './identity.mjs'
+import { subdirProblem, artifactsProblem, claimDescriptors, claimsConflict, registerClaims, dropClaims } from './claims.mjs'
 import { orchError, redactInternalPaths, redactInternalDeep } from './main-channel.mjs'
 import { newAssignmentId, buildAssignMessage } from './assignment.mjs'
 import { TurnOrigin, TAINT_KIND } from './turn-origin.mjs'
@@ -30,6 +36,7 @@ export const CREATE_BOT_DESCRIPTION = [
   'Only call this when the user clearly wants a new task delegated (单派/并行), in your own turn, never in a turn that received worker reports.',
   'name: a short label for the worker. prompt: the task in the user\'s words plus at most 30 characters of routing context.',
   'The worker runs the prompt as its first message and reports back when its turn ends.',
+  'The worker works in your own workspace (same files as you). subdir: optional single path segment — the worker runs inside that subdirectory instead. artifacts: optional list of relative file paths the worker will write; a create whose artifacts overlap another running worker\'s is rejected, so declare them or use subdir to keep concurrent workers apart.',
   'Anything else (preset, connectors, cwd) is main-owned and rejected.',
   'On main-unavailable the outcome is unknown: do not retry automatically, tell the user to check the worker group instead.',
 ].join(' ')
@@ -44,6 +51,13 @@ export const CREATE_BOT_DESCRIPTION = [
 export function registerCreateBot(ctx, orch) {
   // P6-10.f1 ①：回合来源记账（P6-09 (c) 模式：execute 内同步可读的进程内账本）。
   orch.turns ??= new TurnOrigin()
+  // P6-24 D-3-③：写入责任声明账本（sessionId → {mainId, paths}）；该 worker 任一
+  // turn/end 释放（与容量占位同粒度——并发写窗口就是并发回合）。幂等删除。
+  orch.claims ??= new Map()
+  ctx.on('session/event', (session, event) => {
+    if (event?.type !== 'turn/end') return
+    dropClaims(orch.claims, String(session?.id ?? ''))
+  })
   ctx.on('agent/inbox/claimed', ({ agent, message, turn }) => {
     if (agent === undefined || agent === null || turn === undefined || turn === null) return
     orch.turns.record(String(agent.id), turn, String(message?.source?.kind ?? ''))
@@ -59,6 +73,8 @@ export function registerCreateBot(ctx, orch) {
       properties: {
         name: { type: 'string', description: 'short worker label' },
         prompt: { type: 'string', description: 'the task, in the user\'s words (plus ≤30 chars routing context)' },
+        subdir: { type: 'string', description: 'optional single path segment: run the worker inside this subdirectory of your workspace' },
+        artifacts: { type: 'array', items: { type: 'string' }, description: 'relative paths the worker will write; overlapping claims across running workers are rejected' },
       },
       required: ['name', 'prompt'],
     },
@@ -84,17 +100,23 @@ export function registerCreateBot(ctx, orch) {
  * @param {object} ctx @param {object} orch @param {unknown} rawArgs @param {{ agent?: { id: string } }} exec
  */
 async function executeCreateBot(ctx, orch, rawArgs, exec) {
-  // 1 D9①：只认 {name, prompt}；preset / connectors / cwd 等越权参数 → invalid-args
+  // 1 D9①：只认 {name, prompt, subdir?, artifacts?}；preset / connectors / cwd 等越权参数 → invalid-args
   if (typeof rawArgs !== 'object' || rawArgs === null) {
-    throw orchError('pbots/invalid-args', 'create_bot expects {name, prompt}')
+    throw orchError('pbots/invalid-args', 'create_bot expects {name, prompt, subdir?, artifacts?}')
   }
-  const extra = Object.keys(rawArgs).filter((k) => k !== 'name' && k !== 'prompt')
+  const extra = Object.keys(rawArgs).filter((k) => k !== 'name' && k !== 'prompt' && k !== 'subdir' && k !== 'artifacts')
   if (extra.length > 0) {
-    throw orchError('pbots/invalid-args', `create_bot accepts only {name, prompt}; rejected fields: ${extra.join(', ')}`, { fields: extra })
+    throw orchError('pbots/invalid-args', `create_bot accepts only {name, prompt, subdir?, artifacts?}; rejected fields: ${extra.join(', ')}`, { fields: extra })
   }
-  const { name, prompt } = rawArgs
+  const { name, prompt, subdir, artifacts } = rawArgs
   if (typeof name !== 'string' || name.trim() === '') throw orchError('pbots/invalid-args', 'name must be a non-empty string')
   if (typeof prompt !== 'string' || prompt.trim() === '') throw orchError('pbots/invalid-args', 'prompt must be a non-empty string')
+  // P6-24：subdir / artifacts 校验（claims.mjs 单源）
+  const badSubdir = subdirProblem(subdir)
+  if (badSubdir !== null) throw orchError('pbots/invalid-args', badSubdir)
+  const badArtifacts = artifactsProblem(artifacts)
+  if (badArtifacts !== null) throw orchError('pbots/invalid-args', badArtifacts)
+  const descriptors = claimDescriptors(subdir, artifacts)
 
   // 2 身份：execute 每次读权威 mainBotId（换主后旧主强 execute 拒；读取失败 fail closed）
   const mainId = await readMainBotId(orch.config.dataDir ?? orchDataDir())
@@ -109,6 +131,12 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
     throw orchError('pbots/forbidden', 'create_bot is rejected in a turn that received worker reports', { taintKind: TAINT_KIND })
   }
 
+  // 2.7 P6-24 D-3-③：声明产物与同主在跑 worker 交叉 → 拒（不占容量、不出通道）
+  const conflict = claimsConflict(orch.claims, mainId, descriptors)
+  if (conflict !== null) {
+    throw orchError('pbots/busy', `artifact "${conflict.descriptor}" is claimed by a running worker (${conflict.holder}); partition writes via subdir/artifacts, or create after it finishes`, { artifact: conflict.descriptor, holder: conflict.holder })
+  }
+
   // 3 容量（决策 9 / D9⑥：同 tick 查 + 占位）
   if (!orch.slots.reserve()) {
     throw orchError('pbots/capacity', `${orch.slots.limit} worker turns are already running`, { limit: orch.slots.limit })
@@ -118,13 +146,16 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
   const release = () => {
     if (released) return
     released = true
-    if (heldSession !== undefined) orch.slotHolds.delete(heldSession)
+    if (heldSession !== undefined) {
+      orch.slotHolds.delete(heldSession)
+      dropClaims(orch.claims, heldSession)
+    }
     orch.slots.release()
   }
 
   try {
     // 4 ⑤ 通道（超时 / 断流 / 无订阅者在 channel 内闭合，占位由外层 catch 释放）
-    const created = await orch.channel.request({ kind: 'create-bot', name, prompt, mainBotId: mainId })
+    const created = await orch.channel.request({ kind: 'create-bot', name, prompt, mainBotId: mainId, ...(subdir !== undefined ? { subdir } : {}) })
     // 登记 'create' 占位（同步，不插 await——v4.1 冷 session 窗口约束）：该
     // worker 的 turn/start 不再被 trackWorkerTurns 重复收养，释放走本函数的
     // 一shot turn/end 监听（off + release）。
@@ -133,6 +164,9 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
     // 另占一格（'turn'）——create 接管所有权，归并多占的一格（同步，仍无 await）。
     if (orch.slotHolds.get(heldSession) === 'turn') orch.slots.release()
     orch.slotHolds.set(heldSession, 'create')
+    // P6-24 D-3-③：登记写入责任（同步，先于任何 await——worker 回合要在 assign 投递
+    // 后才起跑，登记必先于可交叉的下一个 create）。
+    registerClaims(orch.claims, mainId, heldSession, descriptors)
 
     // 5 v4.1 冷 session 窗口（P6-09 附 1）：#3 刚返回的 session 尚零事件，
     //   SIGKILL 会丢——先 flush 再做别的，然后第一件事就是投 assign（其 splice
@@ -169,7 +203,15 @@ async function executeCreateBot(ctx, orch, rawArgs, exec) {
 
     // 7 决策 32：rename 失败时 main 仍回成功 + warn——原样透传（不重试），但
     // 文本按 C-1 同规则脱敏（warn 直达 tool/result，模型可见）。
-    return { sessionId: created.sessionId, name, assignmentId, ...(created.warn !== undefined ? { warn: redactInternalDeep(created.warn) } : {}) }
+    // P6-24：subdir / artifacts 都没声明 → advisory 提醒分区（声明+警告档，D-3-③）。
+    const advisory = subdir === undefined && artifacts === undefined
+      ? 'worker shares your workspace; concurrent workers can overwrite each other\'s files — pass subdir or artifacts on create_bot to partition writes (Q-024)'
+      : undefined
+    return {
+      sessionId: created.sessionId, name, assignmentId,
+      ...(advisory !== undefined ? { advisory } : {}),
+      ...(created.warn !== undefined ? { warn: redactInternalDeep(created.warn) } : {}),
+    }
   } catch (error) {
     release()
     throw error

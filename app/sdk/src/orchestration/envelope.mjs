@@ -24,6 +24,15 @@
 // registerWorkerRestriction）整体拒绝，执行层对 worker 子代同样按信封拦——名单
 // 只影响「工具表隐藏哪些名字」。
 // 主 bot 不受信封约束（委派与后台作业照常）。
+// P6-24（panels/D3-r1.md 必须回应 ①）：worker 的 write/edit 拒写 agent-instructions
+// 指令文件（AGENTS.md / CLAUDE.md 及 .local 变体 = 上游 dsh-agent-instructions
+// config.ts:12-13 的候选全集）。这些文件会被当作指令以 user-role 消息注入
+// （state.ts:85-90，来源 kind='agent-instructions' 不在污染白名单——turn-origin
+// 只认 pbots-worker），worker 写它们 = 绕过决策 29 给主 bot 下指令。P6-24 起
+// worker 与主 bot 共用工作区（决策 36），该面从理论变为可达，故在信封层一刀拒。
+// 按解析后（realpath）basename 判定，防「写 link.md（软链→AGENTS.md）」逃逸；
+// bash 写同名文件的残余风险堵不死（ponytail: bash 是通用解释器，文件名级拦截
+// 在 bash 侧无接缝；已写进 Q-024 给用户的告知），升级路径是 fs 层 veto。
 // f2 C-1（REVIEW-P6-14-C major ①）：身份不可判定（bots.json 缺失 / 损坏 /
 // version 不符）≠ 确认非 worker——fail closed 按 worker 处理（宁可误伤）。f3 起
 // 「合法 v1 文档省略 bots 键」是零 worker 的确认非 worker（CONTRACT v1.5 §3.1
@@ -153,6 +162,28 @@ export function judgeWorkerCall(name, rawArgs) {
   return null
 }
 
+/** P6-24 D-3-①：会被 agent-instructions 当指令加载的文件名（basename 级）。 */
+export const INSTRUCTION_FILES = new Set(['AGENTS.md', 'CLAUDE.md', 'AGENTS.local.md', 'CLAUDE.local.md'])
+
+/**
+ * P6-24 D-3-① 纯判定：write/edit 的目标是否为指令文件。优先用解析后（realpath）
+ * 的 basename（防软链逃逸：raw 名无害、resolve 后指向 AGENTS.md 也拒）；解析不可
+ * 用时退回 raw basename（fail closed 方向——同名即拒）。
+ * @param {unknown} rawPath 工具参数 file_path（write/edit）。
+ * @param {string | undefined} resolvedPath ctx.fs.resolve 后的 targetKey（可缺省）。
+ * @returns {{ kind: 'deny', reason: string } | null}
+ */
+export function instructionFileDenial(rawPath, resolvedPath) {
+  const candidate = typeof resolvedPath === 'string' && resolvedPath !== '' ? resolvedPath : rawPath
+  if (typeof candidate !== 'string' || candidate === '') return null
+  const base = candidate.split('/').pop() ?? ''
+  if (!INSTRUCTION_FILES.has(base)) return null
+  return {
+    kind: 'deny',
+    reason: `pbots/forbidden: worker sessions cannot write instruction files ("${base}"); agent-instructions would load it into the main bot as instructions, bypassing the worker-report taint guard (D-3-1)`,
+  }
+}
+
 /**
  * 入口清单 ∩ 已装注册表（「清单从已装 dsh 注册表枚举」；测试传入运行时
  * ctx.tools.definitions() 的名字集，报告与 P6-20 计分可复用）。
@@ -185,6 +216,23 @@ export function registerEnvelope(ctx, orch) {
       if (isEnveloped(exec.agent, orch.config?.dataDir ?? orchDataDir())) {
         const verdict = judgeWorkerCall(exec.name, exec.arguments)
         if (verdict !== null) return verdict
+        // P6-24 D-3-①：write/edit 拒写指令文件（解析后判定，防软链逃逸）
+        if (exec.name === 'write' || exec.name === 'edit') {
+          const raw = (exec.arguments ?? {})?.file_path
+          if (typeof raw === 'string' && raw !== '') {
+            let resolved
+            const fs = typeof ctx.get === 'function' ? ctx.get('fs') : null
+            if (fs !== null && typeof fs === 'object' && typeof fs.resolve === 'function') {
+              try {
+                resolved = (await fs.resolve(raw, { signal: exec.signal }))?.targetKey
+              } catch {
+                resolved = undefined // 解析失败 → 退回 raw basename 判定（fail closed 方向）
+              }
+            }
+            const denial = instructionFileDenial(raw, resolved)
+            if (denial !== null) return denial
+          }
+        }
       }
     }
     return next()

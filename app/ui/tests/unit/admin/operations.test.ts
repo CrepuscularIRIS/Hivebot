@@ -12,7 +12,9 @@ import { tmkdir } from '../../support/tmp-sweep.ts'
 
 // vi.mock 工厂被提升到模块体之前执行：flag 用函数读值，调用时模块体已初始化
 let failNextOpen = false
+let repairFailure: 'open' | 'sync' | 'rename' | undefined
 const shouldFailOpen = (): boolean => failNextOpen
+const repairFailureAt = (): typeof repairFailure => repairFailure
 
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:fs/promises')>()
@@ -26,9 +28,22 @@ vi.mock('node:fs/promises', async (importOriginal) => {
         close: () => Promise.resolve(),
       })
     }
-    return actual.open(args[0] as string, args[1] as string)
+    if (repairFailureAt() === 'open') return Promise.reject(new Error('simulated EIO open'))
+    return actual.open(args[0] as string, args[1] as string, args[2] as number | undefined).then((handle) => {
+      if (repairFailureAt() !== 'sync') return handle
+      return {
+        appendFile: (data: Buffer) => handle.appendFile(data),
+        sync: () => Promise.reject(new Error('simulated EIO sync')),
+        close: () => handle.close(),
+      }
+    })
   })
-  return { ...actual, open }
+  const rename = vi.fn((...args: unknown[]) => {
+    if (args.length < 2) return Promise.resolve()
+    if (repairFailureAt() === 'rename') return Promise.reject(new Error('simulated EIO rename'))
+    return actual.rename(args[0] as string, args[1] as string)
+  })
+  return { ...actual, open, rename }
 })
 
 const {
@@ -53,7 +68,7 @@ const baseRequest = (over: Partial<BeginRequest> = {}): BeginRequest => ({
 })
 const finishWith = (over: Partial<FinishResult> = {}): FinishResult => ({ outcome: 'completed', ...over })
 
-beforeEach(() => { failNextOpen = false })
+beforeEach(() => { failNextOpen = false; repairFailure = undefined })
 
 describe('P7-F1 · beginOperation 先落盘意图', () => {
   it('落盘 begin 行（version/operationId/去重键/generation/回合类别/actor/动作/目标/参数/授权依据/前投影）后才返回', async () => {
@@ -300,6 +315,75 @@ describe('P7-F1 · 崩溃截断恢复（行原子修复 + state unknown 不变�
     await third.init()
     expect(third.readOperations().inProgress).toHaveLength(2)
     third.close()
+  })
+})
+
+describe('P7-F1.f1 · 撕裂修复边界', () => {
+  it('中文完整行的字节与投影在修复和再次启动后保持不变', async () => {
+    const dir = dataDir()
+    const first = new OperationsLedger(dir)
+    await first.init()
+    const request = baseRequest({ actor: '主机器人', before: { name: '测试🙂' } })
+    const a = await first.beginOperation(request)
+    first.close()
+    const intact = readFileSync(ledgerFile(dir))
+    // 尾部连 UTF-8 字符自身也被撕裂，不能影响上一条完整记录。
+    const torn = Buffer.from('{"finish":"中文🙂')
+    appendFileSync(ledgerFile(dir), torn.subarray(0, torn.length - 1))
+    for (let restart = 0; restart < 2; restart += 1) {
+      const ledger = new OperationsLedger(dir)
+      try {
+        await ledger.init()
+        const view = ledger.readOperations()
+        expect(view.tailTruncated).toBe(true)
+        expect(view.inProgress[0]).toMatchObject({ operationId: a.operationId, actor: request.actor, before: request.before })
+        expect(readFileSync(ledgerFile(dir)).subarray(0, intact.length)).toEqual(intact)
+        const repair = rawLines(dir).map((line) => JSON.parse(line)).find((line) => line.type === 'repaired')
+        expect(repair.droppedBytes).toBe(torn.length - 1)
+      } finally { ledger.close() }
+    }
+  })
+
+  it.each([true, false])('完整未知版本不因缺换行被删除（已有正常行=%s）', async (hasPrefix) => {
+    const dir = dataDir()
+    const seed = new OperationsLedger(dir)
+    await seed.init()
+    if (hasPrefix) await seed.beginOperation(baseRequest())
+    seed.close()
+    appendFileSync(ledgerFile(dir), JSON.stringify({ version: 999, ts: 1, type: 'repaired', droppedBytes: 1 }))
+    const original = readFileSync(ledgerFile(dir))
+    const ledger = new OperationsLedger(dir)
+    try {
+      await ledger.init()
+      expect(() => ledger.readOperations()).toThrowError(/PBOTS_OPS_UNTRUSTED/)
+      await expect(ledger.beginOperation(baseRequest())).rejects.toMatchObject({ code: 'PBOTS_OPS_UNTRUSTED' })
+      expect(readFileSync(ledgerFile(dir))).toEqual(original)
+    } finally { ledger.close() }
+  })
+
+  it.each(['append', 'open', 'sync', 'rename'] as const)('修复记录 %s 失败后，重启仍能恢复永久撕裂标记', async (failure) => {
+    const dir = dataDir()
+    const first = new OperationsLedger(dir)
+    await first.init()
+    const a = await first.beginOperation(baseRequest())
+    first.close()
+    appendFileSync(ledgerFile(dir), '{torn')
+    const original = readFileSync(ledgerFile(dir))
+    const repairing = new OperationsLedger(dir)
+    try {
+      if (failure === 'append') failNextOpen = true
+      else repairFailure = failure
+      await repairing.init()
+      expect(() => repairing.readOperations()).toThrowError(/simulated EIO/)
+      expect(readFileSync(ledgerFile(dir))).toEqual(original)
+    } finally { repairing.close(); repairFailure = undefined }
+    const restarted = new OperationsLedger(dir)
+    try {
+      await restarted.init()
+      expect(restarted.readOperations().tailTruncated).toBe(true)
+      expect(restarted.readOperations().inProgress[0].operationId).toBe(a.operationId)
+      expect(rawLines(dir).some((line) => JSON.parse(line).type === 'repaired')).toBe(true)
+    } finally { restarted.close() }
   })
 })
 

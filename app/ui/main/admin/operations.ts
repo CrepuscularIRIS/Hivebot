@@ -14,10 +14,10 @@
 // 失败语义（验收行）：append/flush 失败 → 副作用 0（begin 抛错，调用方不得执行）；同 key
 // 并发仅 1 占位（去重检查在写队列位内做，无 TOCTOU）；丢文件/外部截短（append 前 stat 与
 // 记账 size 不符）拒收不重建；版本未知/中段坏行整册 fail closed（读写都拒）。尾行撕裂按
-// 行原子性修复：截到最后一个换行、追加持久 repaired 审计事件、readOperations 永久置
-// tailTruncated（跨重启可读，不静默）；若判据需更严（整册拒绝），改 init 的修复分支即可。
+// 行原子性修复：按字节保留完整 UTF-8 行，与持久 repaired 审计事件一并原子替换，失败则
+// 保留原撕裂供重启重试；readOperations 永久置 tailTruncated（跨重启可读，不静默）。
 import { randomUUID } from 'node:crypto'
-import { mkdir, open, readFile, stat, truncate } from 'node:fs/promises'
+import { mkdir, open, readFile, rename, stat, unlink } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
 /** 落盘文件名（$PBOTS_DATA_DIR/admin-operations.jsonl，PLAN §3.2）。 */
@@ -312,9 +312,9 @@ export class OperationsLedger {
 
   /** 启动读盘建内存镜像。ENOENT → 新账本；版本未知/中段坏行 → loadError（读写全拒）。 */
   async init(): Promise<void> {
-    let text: string
+    let bytes: Buffer
     try {
-      text = await readFile(this.file, 'utf8')
+      bytes = await readFile(this.file)
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         this.fileAbsent = true
@@ -324,16 +324,28 @@ export class OperationsLedger {
       return
     }
     this.fileAbsent = false
-    if (text === '') return // 0 字节（建后崩溃）：空账本
+    if (bytes.length === 0) return // 0 字节（建后崩溃）：空账本
+    // 换行位置与修复切片都按字节算；完整行必须是有效 UTF-8，不能用替换字符蒙混过关。
+    const dropFrom = bytes.lastIndexOf(0x0a) + 1
+    try {
+      new TextDecoder('utf-8', { fatal: true }).decode(bytes.subarray(0, dropFrom))
+    } catch {
+      this.loadError = opsError('PBOTS_OPS_UNTRUSTED', `invalid UTF-8 in ${this.file}`)
+      return
+    }
+    const text = bytes.toString('utf8')
     const chunks = text.split('\n')
     const endsWithNewline = text.endsWith('\n')
     if (endsWithNewline && chunks[chunks.length - 1] === '') chunks.pop()
     let torn: string | undefined
     if (!endsWithNewline) {
       // 末块缺换行：能解析即完整记录（写侧带换行原子追加，缺的只是框架字节）；否则撕裂
-      const last = chunks[chunks.length - 1]
       let parses = false
-      try { parses = isTrustedLine(JSON.parse(last)) } catch { parses = false }
+      try {
+        JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes.subarray(dropFrom)))
+        parses = true
+      } catch { parses = false }
+      // 可解析与可信是两回事；完整的未知版本/形状仍须交给下方硬拒绝，不能当撕裂删掉。
       if (!parses) torn = chunks.pop()
     }
     const parsed: LedgerLine[] = []
@@ -365,18 +377,28 @@ export class OperationsLedger {
       }
       return
     }
-    // 行原子修复：撕裂字节不属于任何完整记录（其操作视为未发生/未落盘），截到最后一个
-    // 换行并落持久 repaired 审计事件（保留现场：droppedBytes + 永久 tailTruncated 标记）。
-    const dropFrom = text.lastIndexOf('\n') + 1
-    const droppedBytes = Buffer.byteLength(text.slice(dropFrom), 'utf8')
+    // 复用 m3-meta/store.ts 的 tmp + rename：完整字节前缀与 repaired 一起原子替换。
+    // 追加/flush/rename 失败或中途崩溃时原撕裂仍在，下次 init 会重试；不留截断后无审计的窗口。
+    const repaired: LedgerLine = {
+      version: OPERATIONS_VERSION, ts: Date.now(), type: 'repaired', droppedBytes: bytes.length - dropFrom,
+    }
+    const replacement = Buffer.concat([bytes.subarray(0, dropFrom), Buffer.from(`${JSON.stringify(repaired)}\n`)])
+    const tmp = `${this.file}.${randomUUID()}.tmp`
     try {
-      await truncate(this.file, dropFrom)
-      this.size = dropFrom
-      const repaired: LedgerLine = { version: OPERATIONS_VERSION, ts: Date.now(), type: 'repaired', droppedBytes }
-      await this.appendLine(`${JSON.stringify(repaired)}\n`)
+      const handle = await open(tmp, 'wx', 0o600)
+      try {
+        await handle.appendFile(replacement)
+        await handle.sync()
+      } finally { await handle.close() }
+      await rename(tmp, this.file)
+      const directory = await open(resolve(this.file, '..'), 'r')
+      try { await directory.sync() } finally { await directory.close() }
+      this.size = replacement.length
       this.lines.push(repaired)
     } catch (error) {
-      this.loadError = error as Error // 修复失败：整册关闭（截断已发生，下次 init 重读定态）
+      this.loadError = error as Error // 修复失败仍整册关闭，不准执行副作用。
+    } finally {
+      await unlink(tmp).catch(() => undefined)
     }
   }
 

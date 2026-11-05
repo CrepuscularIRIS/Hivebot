@@ -30,3 +30,6 @@
 2026-11-05 08:17 P7-F2 验收 FAIL（3 条：create/restart 否定冲突放行、Mandate 授予否定冲突放行、空表命中 Object 原型；分层未实现按简化令交 v1.1 不判 FAIL）→ Sol 做 F2.f1
 2026-11-05 08:20 P7-F1.f1 回报 @20c31cb（三 HIGH 修、接口未变、28/28、探针 failures=0）→ 派终验
 2026-11-05 08:26 P7-F1 整体 PASS → 真三方合并 bd70059（记账随提交）。P7-F2.f1 回报 @c291933（三修先红后绿、SDK 62/UI 513/探针 0）→ 派终验
+2026-11-05 08:36 接替核对：F2 已真三方合并 713763c，记账提交 e5ff286；当前分支 docs/rebuild-p6-p5-plan，不是 main。F2 PASS 仅原模块/桥范围，v1.1 分层权限差距仍未实现，不宣称管理动作可用。派 Sol verifier 先复验 P6-26t.f1@1ffdce1，再在独立 detached worktree 串行做 e5ff286 的 F1/F2 合并后回测（报告绑定SHA、原始退出码）。派 Sol scout 执行 P7-R2 技能/恢复文本最小探针，以解锁 F3/L5。P6-24.f1 因 GLM 429 中断，Sol builder 在原 worktree 保留9个未提交文件接续。当前负载10.78/30CPU、iowait0；不并发全量。ready 未派 = 2（P7-R1/R3：本轮先限3个agent，优先恢复中断修复、欠验与F3关键前置；不重复派仍在工作的任务）。
+2026-11-05 08:53 P7-R2交付：e5ff286宿主两次启动/停止、14检查退出码0；SA/MIT固定文本与dsh技能接缝已核，F3调研前置解除；L5仍缺bundle默认接线白名单与P6旧§12.3执行者契约。登记REUSE.md，R2状态done（限定调研），派Sol builder P7-F3在独立worktree做恢复/代际最小接线，待独立验收；不提前做F4/L5，不以completed冒充业务verified。ready未派=2（R1/R3按本轮并发节流排队；L5另有明确技术前置未齐）。
+2026-11-05 08:55 F1/F2合并后补回测PASS绑定e5ff286：UI541、SDK单测569、UI build退出0，额外否定/伪授权15通过；UI首次缺SDK依赖失败保留，补齐依赖原命令重跑绿。证据evidence/merged-e5ff286/VERIFY.txt；未跑管理e2e/真模型/覆盖率/新版分层业务验收，不倒签历史合并点。F3仍独立开发中。

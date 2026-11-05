@@ -926,3 +926,9 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 01:07 公开模板仓建成：https://github.com/CrepuscularIRIS/agent-orchestration-template（五件交付齐：context.md/规则文件/29 文件目录结构/Projects 看板 https://github.com/users/CrepuscularIRIS/projects/2/空 PR #1 等确认合并）；红线扫描过（模型名/内网路径零残留）| L-7 仍在跑
 01:20 L-7 整分支 review 完成（38 分钟实跑/21 agent）：FAIL——6 major（shell-ask×2、shim entries×2、ProductionRenderer×2）+7 minor | 修复链 P5-W3.f1 立行
 01:58 p6 1b 设计输入全齐 → director 派出写 PLAN v3（1b 任务图：spike 前行+P6-10~16+双版设计仲裁）| 在途 2：P5-W3.f1、p6 PLAN v3
+2026-11-05 07:22 修复完成并验证：P6-26t 档位在、P6-26 fs-zone 在、routing 71 过、policy+write-outside 82 过（唯一红=已知的 26t.f1 待合）；DESCRIPTION/注册行已三方恢复（b138aad）。SKILL §7.3 升级为默认 git merge；LEARNINGS 记第三次事故
+2026-11-05 07:26 | 记账事故处置：QUESTIONS Q-021~026 已重录（答复保留）、LEARNINGS 重录+记账提交入规（SKILL §7.3/§8）；派 drafter 从 LOG/VERIFY/coverage 重建 p6/p5 PLAN。P6-22 产品增量已三方恢复（b138aad），安全面验证过（routing 71、policy+write-outside 82）
+2026-11-05 07:28 tick | 在跑：P6-24、26t.f1 复验、p7 PLAN、记账重建 | GLM 1/3 | open Q：Q-023、Q-026
+2026-11-05 08:00 tick | 在跑：P6-24.f1、p7 简化令、F1/F2、26t.f1 复验 | GLM 3/3 | open Q：Q-023、Q-026（按「原版即规格」Q-026 可自决：A 起步）
+2026-11-05 08:28 tick | 在跑：P6-24.f1、26t.f1 复验、F2.f1 终验 | GLM 2/3 | open Q：Q-023
+2026-11-05 09:04 tick | 集成分支docs/rebuild-p6-p5-plan，HEAD 0e831c6（非main）；P6-26t.f1合并后定向PASS；P6-24.f1独立终验与P7-F3仍在跑，不重复派。load 2.99/4.87/7.26，未追加全量。未答问题1（Q-023），Q-026旧自决不当作真桌面授权。ready未派：明确可启动P7-R1/R3共2，暂缓至F3阻塞发现回报后协调，避免重复探针；P5两条旧ready、P6 T-taint另有记账/前置核对欠账，不算已派或已解除。未新增review：本轮先收正在进行的P6-24独立终验，F1/F2补回测不冒充多方向review；后续遵Sol直派规则，不用mm-review脚本。PLAN异构/历史恢复行不机械汇总全项目百分比；P6-22正式48组未完成，P7分层权限与L5执行契约缺口仍在，无阶段完成判定。

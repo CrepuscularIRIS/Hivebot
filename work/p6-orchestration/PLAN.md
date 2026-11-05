@@ -67,8 +67,8 @@ v4.5 · 2026-11-05 记账重建（P6-22 事故后从 LOG/VERIFY/review-coverage 
 
 | id | 任务 | owner | 区域 / 派发条件 | status | evidence / deps |
 |---|---|---|---|---|---|
-| P6-24 | worker 继承发起者工作区（决策 36+D-3 五防护+Q-024 任务自适应子目录）| builder | orchestrate.ts/store.ts/契约 C-2 | running（Q-024 已答）| evidence 待 REPORT-P6-24 |
-| P6-26t.f1 | subagent-policy ③ workflow 分支先等卡→答 allowed-once→再等 child（测试适配，不放宽档位）| builder | tests/e2e/subagent-policy.test.ts | 验收中 @1ffdce1 |
+| P6-24 | worker 继承发起者工作区（决策 36+D-3 五防护+Q-024 任务自适应子目录）| builder | orchestrate.ts/store.ts/契约 C-2 | f1独立验收中 @71826d2（未合并） | `evidence/P6-24/REPORT-f1.txt`；删除只实测存储API，不冒称UI/RPC旅程 |
+| P6-26t.f1 | subagent-policy ③ workflow 分支先等卡→答 allowed-once→再等 child（测试适配，不放宽档位）| builder | tests/e2e/subagent-policy.test.ts | done（独立验收PASS @1ffdce1；合并0e831c6后定向回测PASS） | `evidence/P6-26tf1/VERIFY.txt`（3通过；档位8通过/1基线跳过） |
 | P6-27 | 写侧进 bwrap：S-7 已定集成 NodePtcRuntime（不自建 stdio）；文件操作在 guest 内执行不绑回宿主 | builder | 待 director 按 S-7 改写本行后派 | todo | 卡 P5-29（不卡 14b）|
 | P6-22 定案 | 48 组全量重跑（r2 文案 0ed1ed4；采集器等待条件 minor 先修）| builder | evidence/D3-orch | todo | 等 P6-24 等依赖合并后在 main 跑 |
 | P6-14b | 开放闸：start.ts 默认链加 orchestration.yml 一行 | builder | start.ts | blocked | 前置：Q-021✅ Q-024✅ P6-22 定案✅（28/30）+ goal/schedule 回合污染暴露修复（turn-origin 对 goal/schedule 回合隐藏协调者工具，D-1 定案前）+ 启动顺序核对（f4 遗留③）+ persona/section 在场断言 |

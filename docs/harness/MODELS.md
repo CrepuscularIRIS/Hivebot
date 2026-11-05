@@ -29,6 +29,7 @@ slot 与实际模型的对应：`fable`=Opus 5.5，`opus`=GLM 5.3 1M，`sonnet`=
 - `judge` 和 `ux-proposer` 的 frontmatter 里**故意不锁模型**。漏传 `model` 时会继承会话模型（GLM），两席就退化成同一个模型，panel 等于没开。所以必须传。
 - 其余 agent 一律**不传** `model`，以 frontmatter 为准。传了反而会覆盖掉。
 - 2026-11-05 用户指示：测试/验收类派发用 GLM 5.3 Flash（`verifier-flash`，frontmatter `glm-5.3-flash`，LiteLLM 已配该路由）；builder 照旧 GLM 5.3（额度已恢复），但「注意限额问题」——builder 并发保持 ≤2~3。安全/存储语义/结论存疑的验收仍用 `verifier`（GLM 5.3 全量）。
+- 观察（2026-11-05）：glm-5.3-flash 会出现 429「No deployments available」（无可用部署，非短时限流），flash 席验收可能中途死且不落任何 VERIFY——重派时回退 `verifier`（GLM 全量席），并先 pgrep+bot-reap 其遗留的测试子进程。
 - 默认前台派发。同一条消息里的多个前台 Agent 调用会并发执行，结果作为工具返回值回来，不会遗漏。
 - 前提：`CLAUDE_CODE_SUBAGENT_MODEL=inherit`（claude-kimi 默认就是）。如果它被设成某个具体模型，所有 `model` 参数都会被覆盖，panel 也会失效。
 

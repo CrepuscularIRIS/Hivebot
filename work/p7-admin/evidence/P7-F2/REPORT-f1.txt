@@ -1,0 +1,51 @@
+P7-F2.f1 builder 回报（不作自我验收）
+分支：feat/P7-F2
+worktree：/tmp/bot-wt/P7-F2
+基点：aa19bc6bf430f4561512da3f85c459f607a475be
+交付 commit：c29193368468e5934c992e5829cd94da8cf8548f
+
+改动文件（仅以下四个，已 commit）：
+/tmp/bot-wt/P7-F2/app/sdk/src/admin/authority.mjs
+/tmp/bot-wt/P7-F2/app/sdk/tests/unit/p7-authority.test.ts
+/tmp/bot-wt/P7-F2/app/ui/main/admin/consumer.ts
+/tmp/bot-wt/P7-F2/app/ui/tests/unit/admin/channel.test.ts
+
+根因与改动：
+1. humanPath 的 create/restart 特判先检查 positive，存在否定也提前 allow。改为先拒绝 negated，再返回肯定证据。新增中英及正负两种顺序、有效 Mandate 不能盖过人类否定的测试。
+2. mandatePath 仅查非否定共现，未检查授予的同动作同目标冲突。复用 clauseHasAction/clauseNegated/targetMatches 及 ACTION_SCOPE 检查授予中所有列明动作的对应范围桶；restart 无目标。纯否定授予仍按既有 handoff 行为处理；不误拒异动作/异精确目标，其他范围项冲突也不得把整份授予判有效。
+3. consumer 直接读取动作表原型链，且未检查 handler 类型。复用本仓 tools.mjs 已用的 Object.hasOwn 加 typeof function 守卫；继承属性与自有非函数均 unavailable，显式注册的同名自有函数保持可用。
+不改接口签名，不加依赖，不修改 p7-admin.yml/main/index.ts，不扩展分层与生产接线。
+复用依据：work/p7-admin/PLAN.md P7-F2、reuse/admin-reuse.md（主仓没有 REUSE.md，已读取对应 reuse 决策）、repos/MANIFEST.tsv；修复复用现有实现与标准库，不搬新上游文件。
+
+所有外层测试 HOME=/tmp/bot-p7f2-f1-home，SDK 覆盖率产物=/tmp/bot-p7f2-f1-coverage。
+证据路径前缀：/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2/
+
+先红后绿：
+开工先运行原 verify-bad-path.mjs，exit 1 / FAILED_CHECKS=7（终端输出）；修复前尚无产品代码修改。
+第一条：pnpm -C /tmp/bot-wt/P7-F2/app/sdk exec vitest run tests/unit/p7-authority.test.ts
+f1-red-human.log：6 failed | 34 passed (40)，预期 deny 实际 allow。
+f1-green-human.log：Test Files 1 passed (1)；Tests 40 passed (40)。
+第二条：同上命令。
+f1-red-mandate.log：6 failed | 41 passed (47)，预期 deny 实际 allow。
+f1-green-mandate.log：Test Files 1 passed (1)；Tests 47 passed (47)。
+第三条：pnpm -C /tmp/bot-wt/P7-F2/app/ui exec vitest run tests/unit/admin/channel.test.ts
+f1-red-consumer.log：5 failed | 18 passed (23)，原型属性返回原请求/抛错/误执行。
+f1-green-consumer.log：Test Files 1 passed (1)；Tests 23 passed (23)。
+
+最终回归命令与末尾输出：
+HOME=/tmp/bot-p7f2-f1-home pnpm -C /tmp/bot-wt/P7-F2/app/sdk exec node /home/lingxufeng/bot/work/p7-admin/evidence/P7-F2/verify-bad-path.mjs
+f1-probe-green.log：exit 0；FAILED_CHECKS=0。原正反控制、三条否定反例、空表原型成员、断流/迟到回应全部通过。
+HOME=/tmp/bot-p7f2-f1-home pnpm -C /tmp/bot-wt/P7-F2/app/sdk exec vitest run tests/unit/p7-authority.test.ts tests/unit/p7-admin-channel.test.ts --coverage --coverage.include='src/admin/**' --coverage.reportsDirectory=/tmp/bot-p7f2-f1-coverage
+f1-sdk.log：exit 0；Test Files 2 passed (2)；Tests 62 passed (62)，原49 + 新13。
+Statements 96.58% (226/234)；Branches 90.3% (177/196)；Functions 98.11% (52/53)；Lines 98.86% (174/176)。authority lines=100%、branches=90.62%。聚合表仍不包含 origin，不宣称该模块独立覆盖率。
+HOME=/tmp/bot-p7f2-f1-home pnpm -C /tmp/bot-wt/P7-F2/app/ui build
+f1-ui-build.log：exit 0；built in 2.95s；shim built in 37ms。保留上游 renderer 的动态/静态混合导入构建警告，未扩大范围处理。
+HOME=/tmp/bot-p7f2-f1-home pnpm -C /tmp/bot-wt/P7-F2/app/ui exec vitest run
+f1-ui-full.log：exit 0；Test Files 44 passed (44)；Tests 513 passed (513)，原507 + 新6；admin 定向原17 + 新6=23。
+git -C /tmp/bot-wt/P7-F2 diff --check：无输出；提交后 status --short 为空。
+
+边界/未完成项：
+本次未跑 SDK 全量及 Electron E2E；F2 仍未接生产入口，纯模块测试/桥 mock 不能宣称 live 管理旅程。按前次 UI 全量口径复跑 build+全量 vitest。既有 SDK 全量共享 HOME 污染、P6-26t.f1、UI 缺 coverage-v8 仍按 VERIFY.txt 范围外归口，不改动、不新增依赖、不宣称解决。此次未发现需扩展范围的新问题。
+安全与清理：未启动应用/SDK 子进程、未用手工 kill/pkill，未接触真实凭证/配置/桌面。回归前 vmstat iowait=0、CPU idle 74–77%，回归串行。结束前 scripts/bot-reap --dry-run --match p7f2 自查无输出（另存 f1-reap.log）。
+
+待 verifier 验收。

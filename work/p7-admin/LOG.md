@@ -26,3 +26,6 @@
 2026-11-05 08:09 P7-F2 回报 @aa19bc6（10 文件全新增零改既有：origin 三分、H1 四反例、管理桥照 P6⑤ 收紧走私口、动作表空零接线；SDK 49+UI 17、覆盖 96.5%）→ 派 Sol 验收（口径带简化令背景：H1 若全拒默认标差距不算 FAIL）
 2026-11-05 08:10 P7-F1 验收 FAIL（3 HIGH 全在撕裂修复路径：中文行截坏/无换行误删/标记丢失；主链 21/21、fsync 副作用 0、100 并发占位、undo 往返均过）→ Sol 做 F1.f1。P7-F2 验收进行中
 2026-11-05 08:15:14 -0500 | 用户简化令实际落盘：PLAN v1.1 + BRIEF v2.4（Sol代director）；原34条逐项23保留/9降级backlog/2删除，首批23条。删除独立Mandate引擎L1与独立OPEN（默认步骤/测试吸收WL）；SB重协议、既有会话preset替换、多次模型基准及7b/7c宽度降backlog。U-3①/U-3②/U-2共3旧子项清理，U-1自动合并外部授权保留；D-1推荐B方向person/background对照、D-2 B′ main owner、D-4②不变，按RE定，panel确认即可不再问用户。F1/F2不召回且保留主会话最新修复/验收状态；F2按原版always_allow/auto_review/needs_approval+blocked/适用standing grants与CLAUDE硬约束验收，H1仅档内校验，不能全拒假绿；跨回合正文隔离/投毒反例不删。锚点校正：RE78分层实在§2、standing grants在p5 RE-approval-model §2.2。机械校验PASS（34唯一id、23/9/2、9列、无被砍任务依赖、开发接线依赖无环、历史回应/安全反例保留），git diff --check绿；未跑产品测试/闸门、未宣称新版panel通过，待主会话传达F2口径并确认砍单。
+2026-11-05 08:17 p7 简化令落实完成：PLAN v1.1（保留 23/降级 9/删 2）+ BRIEF v2.4（U-* 清理，只留 U-1 自动合并授权）；D-1/D-2/D-4 按 RE 给推荐不再问用户 → 提交
+2026-11-05 08:17 P7-F2 验收 FAIL（3 条：create/restart 否定冲突放行、Mandate 授予否定冲突放行、空表命中 Object 原型；分层未实现按简化令交 v1.1 不判 FAIL）→ Sol 做 F2.f1
+2026-11-05 08:20 P7-F1.f1 回报 @20c31cb（三 HIGH 修、接口未变、28/28、探针 failures=0）→ 派终验

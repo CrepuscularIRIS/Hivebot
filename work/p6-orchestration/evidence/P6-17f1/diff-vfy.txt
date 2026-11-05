@@ -1,0 +1,1 @@
+6	0	app/ui/tests/e2e/p6-stuck.spec.ts

@@ -45,6 +45,12 @@ async function launchReal(capacity?: number): Promise<Real> {
   // 决策 15，mask 根不进模型侧 env），orch 插件 identity 会回落 $HOME/.config 读到
   // 真实 bots.json（SDK live 测试同款双变量）。
   const dataDir = join(home, 'data')
+  // P6-17.f1：零 worker 骨架必须先于 SDK 启动落 ORCH 目录——session/create 触发
+  // agent/created 时 identity 读该文件，缺失 → unknown → fail-closed 挂 restrict 藏
+  // create_bot（f3 sweep 首调只报一次 UNKNOWN_TOOL，fake 脚本不重试）。契约决策 31：
+  // 省略 bots 键 = 零 worker = 确认非 worker；mainBotId 仍由下方 shell 启动前的整写补。
+  mkdirSync(dataDir, { recursive: true })
+  writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1 }))
   const rt = await launchSdkRuntime({ patch, cwd: tmkdir('bot-p617-ws-'), dataDir, env: { P2SDK_ORCH_DATA_DIR: dataDir } })
   const main = randomUUID()
   await rt.client.call('session/create', { request: { sessionId: main } })

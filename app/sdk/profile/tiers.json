@@ -1,6 +1,8 @@
 {
   "default": "allow",
   "bash": "sandbox-allow",
+  "run_code": "sandbox-allow",
+  "workflow": "sandbox-allow",
   "read": "workspace-read",
   "read_image": "workspace-read",
   "glob": "workspace-read",

@@ -256,7 +256,14 @@ export function apply(ctx, config = {}) {
   }
 
   ctx.on('tools/pre-execute', async (exec, next) => {
-    const ask = (reason) => (approvalNever(ctx, exec) ? NEVER_DENY : { kind: 'ask', reason })
+    const ask = (reason) => {
+      // P6-26t: UI argText extracts command/path, not code/script. Keep the full
+      // program in the reason fallback so these process approvals are actionable.
+      const key = exec.name === 'run_code' ? 'code' : exec.name === 'workflow' ? 'script' : undefined
+      const program = key === undefined ? undefined : exec.arguments?.[key]
+      return approvalNever(ctx, exec) ? NEVER_DENY
+        : { kind: 'ask', reason: typeof program === 'string' ? `${reason}\n${program}` : reason }
+    }
 
     // P5-22（D-1 定稿 ⑤）：request_network 恒 ASK、无始终允许——硬分支在档位
     // 表判定之前，不经 tiers（后置 overlay 改表改不掉）；审批本身只有

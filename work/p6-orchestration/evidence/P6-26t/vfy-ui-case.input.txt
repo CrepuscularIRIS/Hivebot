@@ -1,0 +1,32 @@
+it('V4 real UI browser approval evidence', { timeout: 240000 }, async () => {
+  const { spawn, execFileSync } = await import('node:child_process')
+  const { createRequire } = await import('node:module')
+  const require = createRequire('/home/lingxufeng/bot/app/ui/package.json')
+  const electron = require('electron')
+  const rt = await launchWo()
+  const sessionId = ((await rt.client.call('session/create', { request: { cwd: WS, agentPreset: 'ptc' } })) as { sessionId: string }).sessionId
+  const code = "const fs = await import('node:fs/promises'); await fs.symlink('.', 'ui-denied-link'); return 'P626T-UI-PROGRAM'"
+  rt.writeScriptCalls(sessionId, [runCode(code), textCall('P626T-UI-DENIED')])
+  mkdirSync(DATA_DIR, { recursive: true })
+  writeFileSync(join(DATA_DIR, 'bots.json'), JSON.stringify({version:1, mainBotId:sessionId, recipes:{}, bots:{[sessionId]:{title:'P626T verifier',isMain:true}}}))
+  const uiHome = join(TEST_ROOT, 'ui-home')
+  mkdirSync(uiHome)
+  const child = spawn(electron, ['/tmp/bot-wt/P6-26t/app/ui/out/main/index.js', '--disable-gpu', '--remote-debugging-port=9326'], {
+    cwd: '/tmp/bot-wt/P6-26t/app/ui',
+    env: {PATH:process.env.PATH, DISPLAY:process.env.DISPLAY, XAUTHORITY:process.env.XAUTHORITY, HOME:uiHome, XDG_CONFIG_HOME:join(uiHome,'.config'), XDG_CACHE_HOME:join(uiHome,'.cache'), PBOTS_DATA_DIR:DATA_DIR, PBOTS_DSH_HANDOFF:rt.handoff},
+    stdio:'ignore'
+  })
+  try {
+    await new Promise(r => setTimeout(r, 4000))
+    if (child.exitCode !== null) throw new Error('Electron exited '+child.exitCode)
+    console.log('V4 UI_READY port=9326')
+    writeFileSync('/tmp/bot-p626t-ui-ready', 'ready')
+    const deadline = Date.now()+180000
+    while (!existsSync('/tmp/bot-p626t-ui-done') && Date.now()<deadline) await new Promise(r=>setTimeout(r,500))
+    expect(existsSync('/tmp/bot-p626t-ui-done')).toBe(true)
+    expect(existsSync(join(WS,'ui-denied-link'))).toBe(false)
+    console.log('V4 denied code did not execute (host symlink absent)')
+  } finally {
+    if (child.pid) execFileSync('/home/lingxufeng/bot/scripts/bot-reap',[String(child.pid)],{stdio:'inherit'})
+  }
+})

@@ -1,0 +1,16 @@
+# P6-10 编排插件（PLAN 决策 19：开放闸 = P6-14b，本文件不进 src/start.ts 默认链；
+# 开发/测试经 P2SDK_PATCH 显式叠加：P2SDK_PATCH=<本文件绝对路径>[:…]，后层同 id
+# 行可覆盖 config）。
+# config 项（app/sdk/src/orchestration/main-channel.mjs）：
+#   createTimeoutMs  ⑤ 通道超时（决策 30，缺省 30000；超时 → main-unavailable
+#                     + outcome:'unknown'，不自动重试，占位释放）
+#   capacity         并发 running worker 上限（D9⑥，缺省 3）
+#   crashAt          测试专用崩溃注入：'after-create' = #3 返回后、assign 投递前
+#                    process.exit（验收 ⑫ 冷 session 窗口）
+#   dataDir          bots.json 根；缺省 P2SDK_ORCH_DATA_DIR → PBOTS_DATA_DIR →
+#                    $HOME/.config/pbots-ui（identity.mjs；start.ts 不透传
+#                    PBOTS_DATA_DIR，故生产注入走 P2SDK_ORCH_DATA_DIR）
+- insert:
+    - id: pbots-orchestration
+      # 相对本 patch 文件目录（profile/patches/）。
+      name: ../../src/orchestration/main-channel.mjs

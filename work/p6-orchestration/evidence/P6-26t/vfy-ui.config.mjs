@@ -1,0 +1,1 @@
+export default {"root":"/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-26t/","test":{"include":["vfy-ui.test.ts"],"setupFiles":["/tmp/bot-wt/P6-26t/app/sdk/tests/support/tmp-sweep.setup.ts"],"testTimeout":240000,"hookTimeout":120000}}

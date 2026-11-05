@@ -1,0 +1,46 @@
+verdict: FAIL
+commit: 35efed90b25db5033f767fcda7a089f523f39da3
+任务：P6-26t；工作树 /tmp/bot-wt/P6-26t；基点 main@75267c6。
+结论：功能验收通过；仅用户验收项 6「diff 在 PLAN 区域列内」不通过，新增两份 tests/support 文件越出区域列。不能以功能绿代替全部验收通过。
+本报告按执行约束使用 evidence 下 TXT 落盘，未写 Markdown 报告。
+
+证据根 E=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-26t
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+| 1 复跑 builder 定向回归 | PASS | HOME=/tmp/bot-p626t-vfy-home P626T_INVENTORY=$E/vfy-inventory.json node /tmp/bot-wt/P6-26t/app/sdk/tests/support/p626t-regression.mjs；退出 0；$E/vfy-regression.log：7 files passed，116 passed / 1 skipped。跳过仅修前正对照，另以 V1 独立完成。 |
+| 2 第 0 步独立枚举 | PASS | 上述命令重新启动真实 launcher、agentPresets/list 去 p2temp-*，逐 preset 会话的 llm/stream 工具表写入 $E/vfy-inventory.json；$E/vfy-inventory-audit.txt 与 builder 清单逐项一致。standard 31 / ptc 1 / minimal 4 / cordis 34。已装包为 @deepseek-ai/dsh 0.2.2-alpha.2。 |
+| 3a 基点 run_code 无卡执行 | PASS | HOME=/tmp/bot-p626t-vfy-home /tmp/bot-wt/P6-26t/app/sdk/node_modules/.bin/vitest run --config $E/vfy-vitest.config.mjs --reporter=verbose；$E/vfy-probe-pass.log：V1 基点真实源码快照（git archive 75267c6 的 src/scripts/profile/sandbox，依赖复用已装版本），symlink=true、approval=0、result=baseline-linked。不是仅把当前表模拟为旧值。 |
+| 3b 修后缺状态出卡、正文可见、拒后不执行、批一次执行 | PASS | $E/vfy-regression.log 的 process-tiers ②；额外真实 Electron 浏览器链 $E/vfy-ui.log 1 passed。playwright-cli 连接本任务 CDP 9326，Prompt 输入后点 Send message，再点 Deny once。$E/vfy-run-code-card.png、$E/vfy-ui-denied.png、对应 yml；宿主 ui-denied-link 不存在。 |
+| 3c 有效状态免卡、暂停生效、恢复生效、坏 tiers 退 ASK | PASS | process-tiers ③ valid→paused→restored 同一会话逐调用验证；corrupt tier overlay 对 run_code 出卡拒绝，reason 含 tier table unavailable；均由本次 116 passed 覆盖。 |
+| 3d 嵌套文件工具不绕过 | PASS | process-tiers ④：外层有效实例免卡，tools.read /etc/hostname 产生 read 审批并拒绝；区外 tools.write 返回 write-outside-workspace、无新增卡、宿主无文件。 |
+| 3e bash / 文件工具原有行为 | PASS | 本次复跑 tiers-policy、w1ap0-matrix、guard-escalation、approval、write-outside、unit/policy 与 process-tiers ⑤均通过。w1ap0 的测试调整只批本根 workflow 调用，未替子会话审批。 |
+| 4 旧 runtime reload 边界 | PASS，非缺陷 | $E/vfy-probe-pass.log V3：同模块首次读旧表后修改探针表文件，loadTiers 仍旧值；新模块加载才读到 sandbox-allow。当前代码 shell-ask.mjs:145–178 / :193 为模块缓存 + apply 时取表。定向回归另验证旧表建成且已执行的持久 ptc session，经 runtime reload 后同 sessionId 出卡拒绝。 |
+| 5 shell-ask 修改不重叠 P6-26 | PASS | git diff --unified=0 75267c6..HEAD -- app/sdk/src/policy/shell-ask.mjs；$E/vfy-shell-hunk.txt：唯一改动旧行 259、新行 259–266 的 ask()，只给 run_code.code / workflow.script 添 reason 正文，approvalNever 原拒绝保留；不触及旧 321/360 附近。 |
+| 6 diff 在 PLAN 区域列内 | FAIL | 主仓 PLAN.md:129 区域仅 tiers.json、shell-ask.mjs、tests/e2e/；git diff --name-only 75267c6..HEAD 输出 $E/vfy-changed-files.txt，额外存在 app/sdk/tests/support/p626t-recorder.mjs、app/sdk/tests/support/p626t-regression.mjs。 |
+| 额外坏路径：跨 runtime 错误实例标识 | PASS | V2 写 version=1、paused=false、instance=wrong-instance，run_code 出 1 卡，reason 有完整 code；拒绝后 isError=true，宿主无 symlink。$E/vfy-probe-pass.log：3 tests passed（V1/V2/V3）。 |
+| 清理与 HEAD 稳定性 | PASS | 最后复核 HEAD 仍 35efed90b25db5033f767fcda7a089f523f39da3；git status --short 为空；/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p626t 和 --match P6-26t 均无输出。Electron 自己 spawn 的进程只经 bot-reap 清理，SDK 测试 helper teardown 只停止自己 spawn 的运行时；没有按名称批量杀进程或触及桌面/训练。 |
+
+枚举分类复核：
+- 可执行任意 shell / JS 的用户可见入口为 bash、run_code、workflow；新表对后三者全部 sandbox-allow（bash 原有，另外两者新增），未见其他漏配同类入口。
+- glob / grep 会固定启动 rg，但不是任意程序执行入口，既有 workspace-read 比泛化成 sandbox-allow 保留了更窄的区外读门；本任务纯收紧，保留该档合理。此例外 builder 已明确申报，不是遗漏。
+- request_network 维持既有恒 ASK 硬分支；subagent / subagent_fork 是委派，子工具继续过各自权限；skill 加载内容，cordis_inspect_query 调只读 provider，未发现直接代码执行入口。
+- 安装包虽有 pwsh / persistent-shell / terminal，但四个真实用户 preset 的模型可见表没有它们。PTC system 中还含 ToolArgsMap 嵌套工具声明，已随实际 system 消息落入 inventory 并核对。
+- 安装包执行入口扫描：$E/vfy-installed-exec-scan.txt。dsh-ptc-runtime-node/lib/index.js:1110–1120 confine→subprocess.spawn；dsh-tool-executor-ptc:627 runtime.run；dsh-workflow-ptc:428 runtime.run；dsh-tool-fs-search:171 固定 rg spawn。
+
+真实浏览器与截图亲眼复核：
+- 先执行 HOME=/tmp/bot-p626t-vfy-home pnpm -C /tmp/bot-wt/P6-26t/app/ui build，退出 0，日志 $E/vfy-ui-build.log；没有跑 UI 全套 e2e。
+- V4 启动本分支新构建 Electron + 本分支 SDK，预建真实 ptc session 作主会话，fake 仅替代 LLM，审批服务、UI、工具执行链均真实；命令 HOME=/tmp/bot-p626t-vfy-home /tmp/bot-wt/P6-26t/app/sdk/node_modules/.bin/vitest run --config $E/vfy-ui.config.mjs --reporter=verbose。
+- CLI：HOME=/tmp/bot-p626t-vfy-home playwright-cli -s=p626t-vfy attach --cdp=http://127.0.0.1:9326；fill Prompt；click Send message；screenshot；click Deny once (Esc)；screenshot；detach。只截目标页面 viewport，无桌面全屏。
+- 两图均已用 Read 打开确认：卡图是 Grok Bot 深色界面，左侧 1 个 New chat，中央 Run_code，底部 Computer 审批卡完整显示 fs.symlink 程序及 P626T-UI-PROGRAM，并有 Allow once / Deny once。拒绝图显示 user rejected tool "run_code" 与 P626T-UI-DENIED，卡消失。不是其他应用窗口。
+- 唯一浏览器 console error 是启动即有的 pbots-app://app/__reconstructed_health 返回 405；不在本任务 diff，未影响上述审批链路，不列本任务缺陷。
+
+reload 提示判断：
+- 属实且不是本任务新增回归。报告应明确「部署 tiers 变更需 reload SDK runtime；已有持久 session 无须重建；policy-state 暂停是逐调用重读，不需 reload」。builder REPORT.txt:49–50、:77 已覆盖，达到本次告知要求；可在后续统一部署文档沿用，无需为此立缺陷。
+
+探针自纠说明（不当作产品缺陷）：
+- vfy-probe.log 首次尝试用 name overlay 替换基点插件，基点正对照未完成，不能采信；改为真正 git archive 基点快照。
+- vfy-probe-final.log / vfy-probe-debug.log 暴露最初快照漏取 sandbox/bwrap-wrap.py 的验收夹具错误；补全基点 sandbox 后 vfy-probe-pass.log 三格全部通过。最终结论只引用这份通过日志，不隐藏失败尝试。
+- git diff --check 75267c6..HEAD 另提示 process-tiers.test.ts:361 EOF 多空行，仅格式问题；builder 所说 git diff --check 干净实际是已提交后工作树比较，不能证明提交范围无 whitespace 提示。不作为新增功能阻塞项。
+
+新问题（每条一行，可直接成为修复任务）：
+- [FIX] P6-26t 提交新增两份 tests/support 文件，超出 PLAN.md:129 的授权区域 | 复现：git -C /tmp/bot-wt/P6-26t diff --name-only 75267c6..35efed9，与主仓 PLAN.md:129 区域列比对 | 疑似位置：app/sdk/tests/support/p626t-recorder.mjs、app/sdk/tests/support/p626t-regression.mjs；work/p6-orchestration/PLAN.md:129 | 严重度：minor（验收范围硬条件；主会话确认授权区域或将辅助文件迁入已授权区域后重验，非审批功能缺陷）

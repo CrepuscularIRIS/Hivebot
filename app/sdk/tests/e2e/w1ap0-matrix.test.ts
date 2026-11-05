@@ -613,8 +613,18 @@ async function runDelegation(h: MatrixRuntime, kind: 'subagent' | 'subagent_fork
     request: { requestId: `p5-06-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'P5-06 委派探针' }] },
   })
   const deadline = Date.now() + 90_000
+  const answered = new Set<string>()
   let child = ''
   for (;;) {
+    // P6-26t: workflow is process execution, so approve only this root call.
+    // Child permissions remain untouched; their NEVER/ASK denies are the subject.
+    for (const f of h.feed.frames) {
+      if (kind === 'workflow' && f.type === 'waterfall' && f.event === 'approval/request'
+        && f.agentId === sessionId && f.request?.toolName === 'workflow' && !answered.has(f.eventId ?? '')) {
+        answered.add(f.eventId ?? '')
+        await h.feed.answer(f, 'allowed-once')
+      }
+    }
     const hit = h.readRequests()
       .slice(before)
       .find((q) => q.sessionId !== null && q.sessionId !== sessionId && (q.userTexts ?? []).some((t) => t.includes('P5-06 matrix probes')))

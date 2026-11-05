@@ -1,0 +1,48 @@
+// Independent verifier cases, using the existing real-runtime harness above.
+it('V1 actual main@75267c6 policy and tiers: symlink executes without approval', async () => {
+  const evidence = '/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-26t'
+  const baseline = JSON.parse(readFileSync(join(evidence, 'base-tiers.json'), 'utf8'))
+  const overlay = join(TEST_ROOT, 'actual-base.yml')
+  writeFileSync(overlay, `- id: p2sdk-shell-ask\n  name: '${pathToFileURL(join(evidence, 'base-shell-ask.mjs')).href}'\n  config:\n    tiers: ${JSON.stringify(baseline)}\n`)
+  const rt = await launchWo(overlay)
+  rmSync(join(DATA_DIR, 'policy-state.json'), { force: true })
+  const sess = await scriptedSession(rt, WS, [runCode("const fs = await import('node:fs/promises'); await fs.symlink('.', 'verifier-base-link'); return 'baseline-linked'")])
+  const results = toolResults(await sess.next('none'))
+  expect(results[0]?.isError).toBe(false)
+  expect(results[0]?.text).toContain('baseline-linked')
+  expect(existsSync(join(WS, 'verifier-base-link'))).toBe(true)
+  expect(cards(rt, sess.sessionId)).toHaveLength(0)
+  console.log('V1 baseline: symlink=true approval=0 result=baseline-linked')
+})
+
+it('V2 bad path: wrong runtime instance cannot execute run_code after rejection', async () => {
+  const rt = await launchWo()
+  writeFileSync(join(DATA_DIR, 'policy-state.json'), JSON.stringify({ version: 1, instance: 'wrong-instance', paused: false }))
+  const code = "const fs = await import('node:fs/promises'); await fs.symlink('.', 'verifier-denied-link'); return 'must-not-run'"
+  const sess = await scriptedSession(rt, WS, [runCode(code)])
+  const results = toolResults(await sess.next('rejected'))
+  expect(results[0]?.isError).toBe(true)
+  expect(cards(rt, sess.sessionId)).toHaveLength(1)
+  expect(cards(rt, sess.sessionId)[0]?.request?.reason).toContain(code)
+  expect(existsSync(join(WS, 'verifier-denied-link'))).toBe(false)
+  console.log('V2 wrong instance: rejected=true symlink=false approval=1 full-program-in-reason=true')
+})
+
+it('V3 tiers are cached until module/runtime reload, unlike per-call policy-state', async () => {
+  const evidence = '/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-26t'
+  const table = join(TEST_ROOT, 'dynamic-tiers.json')
+  const file = join(TEST_ROOT, 'cached-policy.mjs')
+  const baseline = JSON.parse(readFileSync(join(evidence, 'base-tiers.json'), 'utf8'))
+  writeFileSync(table, JSON.stringify(baseline))
+  let source = readFileSync(join(PKG_ROOT, 'src/policy/shell-ask.mjs'), 'utf8')
+  for (const name of ['containment', 'resolve', 'request-net']) source = source.replaceAll(`./${name}.mjs`, join(PKG_ROOT, 'src/policy', `${name}.mjs`))
+  source = source.replace("new URL('../../profile/tiers.json', import.meta.url)", JSON.stringify(table))
+  writeFileSync(file, source)
+  const oldModule = await import(pathToFileURL(file).href)
+  expect(oldModule.loadTiers({}).run_code).toBeUndefined()
+  writeFileSync(table, JSON.stringify({ ...baseline, run_code: 'sandbox-allow', workflow: 'sandbox-allow' }))
+  expect(oldModule.loadTiers({}).run_code).toBeUndefined()
+  const reloaded = await import(pathToFileURL(file).href + '?reload=1')
+  expect(reloaded.loadTiers({}).run_code).toBe('sandbox-allow')
+  console.log('V3 live old table remains default=allow; fresh module reads sandbox-allow; runtime reload required')
+})

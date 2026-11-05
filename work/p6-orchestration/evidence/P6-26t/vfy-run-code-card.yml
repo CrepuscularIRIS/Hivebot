@@ -1,0 +1,61 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - complementary "Agents" [ref=e7]:
+      - button "New" [ref=e10] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e11]: 
+      - button "Search" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]:
+          - generic [aria-hidden] [ref=e14]: 
+          - text: Search
+      - region "Agent list" [ref=e15]:
+        - generic "New chat chat preview" [ref=e19]:
+          - button "New chat" [ref=e20] [cursor=pointer]:
+            - generic [ref=e30]:
+              - strong [ref=e31]: New chat
+              - generic [ref=e63]: "Waiting for you: local-tool-permission"
+            - status "Needs attention" [ref=e65]
+      - separator "Resize sidebar" [ref=e32]
+    - button "Connect apps" [ref=e34] [cursor=pointer]
+    - button "Account" [ref=e37] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e38]: P
+  - generic [ref=e39]:
+    - main [ref=e40]:
+      - group "New chat" [ref=e41]:
+        - button "View agent settings" [ref=e42] [cursor=pointer]:
+          - generic [ref=e51]: New chat
+        - button "Stop" [ref=e68] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e69]: 
+      - log "Conversation transcript" [ref=e52]:
+        - separator [ref=e71]: Today 5:35 AM
+        - article "You 11/5/2026, 5:35:35 AM" [ref=e72]:
+          - generic [ref=e73]:
+            - group [ref=e74]:
+              - paragraph [ref=e76]: P626T UI 拒绝验证
+            - toolbar "Message actions for your message (9d53a338-20c1-4969-886a-717d69cd74ed)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - listitem [ref=e77]:
+          - 'button "Run_code {\"code\":\"const fs = await import(''node:fs/promises''); await fs.symlink(''.'', ''ui-denied-link''); return ''P626T-UI-PROGRAM''" [ref=e78] [cursor=pointer]':
+            - generic [aria-hidden] [ref=e79]: 
+            - generic [ref=e80]: Run_code
+            - generic [ref=e81]: "{\"code\":\"const fs = await import('node:fs/promises'); await fs.symlink('.', 'ui-denied-link'); return 'P626T-UI-PROGRAM'"
+    - generic [ref=e53]:
+      - region "Local tool permissions" [ref=e87]:
+        - generic "Local tool permission" [ref=e88]:
+          - generic [ref=e89]:
+            - generic [aria-hidden] [ref=e91]: 
+            - generic [ref=e92]: Computer
+            - button "Deny once" [ref=e93] [cursor=pointer]:
+              - generic [aria-hidden] [ref=e94]: 
+          - generic [ref=e95]:
+            - strong [ref=e96]: Allow Grok Bot to run this on your computer?
+            - generic [ref=e97]: Only this time. Grok Bot will ask again next time.
+            - generic [ref=e98]:
+              - generic [ref=e99]: "p2sdk policy: ordinary shell commands require user approval const fs = await import('node:fs/promises'); await fs.symlink('.', 'ui-denied-link'); return 'P626T-UI-PROGRAM'"
+              - button "Copy code" [ref=e100] [cursor=pointer]:
+                - generic [aria-hidden] [ref=e101]: 
+          - group [ref=e102]:
+            - button "Allow once" [ref=e103] [cursor=pointer]
+            - button "Deny once (Esc)" [ref=e104] [cursor=pointer]: Deny once
+      - textbox "Prompt" [active] [ref=e57]:
+        - paragraph [ref=e58]: Message New chat

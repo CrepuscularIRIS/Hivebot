@@ -1,0 +1,14 @@
+diff --git a/app/sdk/src/policy/shell-ask.mjs b/app/sdk/src/policy/shell-ask.mjs
+index 96a9761..0467ee9 100644
+--- a/app/sdk/src/policy/shell-ask.mjs
++++ b/app/sdk/src/policy/shell-ask.mjs
+@@ -259 +259,8 @@ export function apply(ctx, config = {}) {
+-    const ask = (reason) => (approvalNever(ctx, exec) ? NEVER_DENY : { kind: 'ask', reason })
++    const ask = (reason) => {
++      // P6-26t: UI argText extracts command/path, not code/script. Keep the full
++      // program in the reason fallback so these process approvals are actionable.
++      const key = exec.name === 'run_code' ? 'code' : exec.name === 'workflow' ? 'script' : undefined
++      const program = key === undefined ? undefined : exec.arguments?.[key]
++      return approvalNever(ctx, exec) ? NEVER_DENY
++        : { kind: 'ask', reason: typeof program === 'string' ? `${reason}\n${program}` : reason }
++    }

@@ -1031,3 +1031,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 16:1x T16b 三件完：残留红→绿（outside 移 root 下）；注释改；ui e2e 两套串行——基点 81 passed(9.9m) 全绿、rc.1 80+1(d1-real-model 真模型流式格单跑 11.6s 过=噪音非漂移)；§8 齐
 - 16:2x T16+T16b 第2次终验通过挪 done（合并前置=测试两文件已提交 feat/T16）；清理上会话 H7r 泄漏孤儿 30+（T8/T7c worktree 路径进程+H7 目录），H7r 全量日志归档 work/H7/evidence/（W1 15红/W2 3红=T7c 时代旧数据）；T7ce/T9ae 联合终验派出
 - 15:3x T16 主体完：rc.1 全量 69/777+1 全绿（基点 67/772+1；差=T16 新增5格）；揪出并修 2 失败——L5-a 真·rc.1 工具面漂移（rrule+target 枚举）与 sandbox⑧ 预存在探针路径已删（改 agents/manager.md）；guard-escalation 7 绿、ui unit 568 绿
+- 16:3x 合并链三连落地：T7ce（b349b066，回测 73/9/10）→ T9ae（ff095e57，回测 42/14/3/7）→ T16（0b219130，主仓切 rc.1 后定向回测 ⑨1+4+10+1、ui build+d1 12.2s 全绿）；LOG 冲突双侧保留。四孤儿（H7r/T7c 路径）已 reap

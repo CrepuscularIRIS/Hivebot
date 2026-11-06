@@ -42,3 +42,13 @@ shell-ask.mjs | 93.84% Stmts | 98.14% Lines | Uncovered: 176-177,357
 
 `git diff --stat 54b5b083..HEAD`：shell-ask.mjs + policy.test.ts 两文件
 （+回执本文件）。
+
+## 6. 经理终验（manager Opus 5.5，2026-11-06 16:3x，@ 4f20f067）—— **通过**
+
+经理亲自复跑（隔离 HOME/TMPDIR/DBus）：
+- `vitest run tests/unit/policy.test.ts` → **73 passed**
+- 变异 M1（注释 :399-404 解析循环）→ `-t 'T7ce'` 1 failed：`…/.dsh/skills/new/SKILL.md: expected Symbol(next) to match object { kind: 'ask' }`（与 §1 同形），`git checkout` 还原、status 干净
+- 串行 e2e：skill-write-card **9 passed**，write-outside **10 passed**；跑后 `pgrep bot-wt/T7ce` 无残留
+- 改动面 `git diff --stat 54b5b083..HEAD`：shell-ask.mjs / policy.test.ts / 本回执，三文件；diff 与工单第 1、2 步逐字一致
+- `fs`（:360）、`exec`（监听器参数）在 :387 分支作用域内，确认
+结论：T7ce 挪 done/，feat/T7ce 可合并。

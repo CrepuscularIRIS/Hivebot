@@ -4,7 +4,7 @@
 > 来源：Sol 审查 `work/tickets/review/T7c-T9a-security.md` C3、C4（经理核实均 CONFIRMED，见该文件「## 经理核实」）；T9a 链（已 done 并合并）的后续修复，不计 T9a 链失败次数
 > 分支 / 作业目录：feat/T9ae，从主线 `docs/rebuild-p6-p5-plan`（≥ 35a235c6）切；小改动，可不建 worktree
 > 排期：现在就做，与 T16 并行（T16 不碰 `start.ts` / `start.test.ts`），合并不必等 T16；须在 T9b 之前合并
-> claimed：
+> claimed：2026-11-06 15:4x main (GLM 5.3) @ /tmp/bot-wt/T9ae
 > accepted：
 
 ## 目标

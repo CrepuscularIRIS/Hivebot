@@ -1034,3 +1034,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 12:51 哨兵#13 | load9.7、无429。L5-a 挪 done。T7cb⑨ 用 Edit 工具重试插桩。
 2026-11-06 13:01 哨兵#14 | load3.9（H7窗口）、无429。T7c 派终验 + H7 双全量重跑。
 2026-11-06 13:05 H7重跑结果 | W1(T7c wt):737/763绿15红(6文件) 112s；W2(主仓):741/755绿3红(4文件) 93s。合计1478绿18红。完整verbose reporter 已落盘 /tmp/bot-H7r-{w1,w2}-full.log。W1 红含 policy.test×5（疑T7c worktree的shell-ask改动影响——单跑确认）；W2 红含已知超时族+security⑥。PBOTS_TEST_WORKERS=8。
+2026-11-06 13:06 H7重跑分析 | W2(主仓,干净):3红全在已知族=H7口径干净。W1(T7c wt):~10个policy.test快速失败(1-10ms)=T7c代码影响非并行。两套失败文件零交集=互踩签名0。结论：并行执行零额外红（排除代码问题后）。

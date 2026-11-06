@@ -83,3 +83,11 @@ enable 调用替换为恒 ok 假对象（不调 main）：
 **改动面**：`shim/src/data.ts`（PbotsUi 实现所在，工单边界漏列，接受）与 `tests/e2e/t7b-shot.spec.ts`（截图 spec，接受）超出边界清单，均合理。另：`pbots-ui.ts` 新增的 type re-export 路径错且引用不存在的类型（死行）；Remove 失败静默——并入 T7bb。
 
 **收尾**：回执称 `pgrep bot-T7b` 空，实测有施工残留 `Xvfb :99`（PID 2149395，10:16 起，auth `/tmp/bot-T7b-Oulv`）——T7bb 先 reap。
+
+## §7 T7bb 视觉返修（2026-11-06 11:0x → 更正 11:18）
+
+> T7bb 施工后经理终验发现：①暗色 Add 按钮仍白底白字（T7bb 只修了 Pick 按钮）②原生 × 未替换③`void SandIcon`/死行未删④Remove 失败无提示。**四项均属实=本轮回执虚报，§7 初版记录不实，T7bc 补做。**
+
+## §8 T7bc（2026-11-06 11:18）
+
+全部四项修齐 + 先红断言（暗色 Add/Pick 字色≠底色 getComputedStyle）。e2e 3 passed（含新断言）；上游 diff=0；grep 检查全过（`shim/src/bots'`=2、`void SandIcon`/`__x`/`#e67e22`=空、SandIconButton≥2、data-skills-remove-error=1）；四张新截图归档。feat/T7b 上回执副本已删（正本在此）。

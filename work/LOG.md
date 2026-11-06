@@ -1022,3 +1022,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 11:43 T8全量e2e完成+H7进行中 | T8全量e2e后台完成。H7双全量仍在跑（18个vitest进程）。L5-a schedule 工具API在 repos/deepseek-harness/packages/schedule/tool-schedule/ 下，未开单。HANDOFF快照已更新。
 2026-11-06 11:45 T8全量=147绿/2红(已知P5-H8) | T8全量e2e 147 passed / 2 failed（3个失败文件=guard-fs+w1ap0-matrix 超时族，P5-H8 已知，非 T8 引入）。T8 可派终验。H7 双全量仍在跑。
 2026-11-06 11:51 H7双全量完成 | W1(T8 worktree):733/752绿 8红 11skip 102s；W2(主仓):741/754绿 5红 8skip 145s。合计1474绿/13红。PBOTS_TEST_WORKERS=8。基点单跑约2-3红（超时族）→并行多出约10红=资源竞争仍致额外红。按P5-H3修订口径判：互踩签名=0（两套无交叉污染迹象——各自独立HOME/TMPDIR）+守护测试未跑（需另验）。结论待manager裁。
+2026-11-06 12:01 T8b修完 | interrupt import归位+w1ap0-scan 3处tmkdir；vitest list exit=0、两文件4绿残留0、递归残留=6处（预期保留）。H7重跑等load<8+T8合并后再做。下一手：T8b终验→L5-a或T7cb⑨插桩。

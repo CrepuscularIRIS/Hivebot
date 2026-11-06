@@ -14,7 +14,7 @@
 
 ## 3. 待办（按顺序）
 
-**当前快照**（2026-11-06 13:16）：T7cc 9/9 绿（⑦真造never子代理）→ 终验在跑；H7 重跑完成（互踩=0、W2干净、W1红=T7c代码）；T7b blocked（Q-030）；T9ab ⑨=SSH工具执行不通（需architect）；T8/L5-a 已合并。
+**当前快照**（2026-11-06 16:4x）：今日合并链全部落地——T7a/T7c/T9a（四单）/T16+T16b（**dsh 已升 0.2.2-rc.1**，主仓 pnpm install 已切）/T7ce/T9ae（Sol 审查 C1/C3/C4 修复）。Sol 审查 4 条 CONFIRMED 全部修复或终验中（C2=T9af 施工完等终验）。H7r 孤儿进程 30+ 已清、全量日志归档 work/H7/evidence/。剩余：T9af 终验→合并→**T9b 开工**（fs-zone-ssh 五入口，设计 D1/D2 已按 rc.1 更新）→T10-T12；T7b 等 Q-030（用户）；T13 等用户；H7 正式双全量等低负载窗口。L5-a 已随 T16 修绿（rc.1 rrule 形态）。
 
 0. **并行两线**（10:35 经理更新）：① **T7bb**（open/T7bb-skill-picker-visual.md：T7b 终验不通过第 1 次——功能链全过，截图破版：对话框无 css 文字粘连、暗色 Pick 按钮字不可见；先 `bot-reap 2149395` 残留 Xvfb）→ 经理验收 → feat/T7b 整枝合并 ② **T9a**（open/T9a-l8d-ssh-skeleton.md，与 T7b 不碰同文件可并行）。GLM 并发≤2、同一时刻 e2e 一套。
 1. **已完成链**：T1–T6、T5、T14(REFUTED)、T15、T7a+T7ab+T7ac（整枝合并，回测 e2e 2 passed + unit 114 绿）。BRIEF 验收②后端全通。

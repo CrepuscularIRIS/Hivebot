@@ -4,7 +4,7 @@
 > 来源：T15 EVAL §8 升级单草案（manager 已定稿）；queue.md 5a″ 行
 > 分支 / 作业目录：feat/T16 @ /tmp/bot-wt/T16
 > claimed：2026-11-06 15:0x @ cdae96a5
-> accepted：
+> accepted：2026-11-06 16:2x manager 任务 B @ feat/T16 f3919e17 + 工作区两测试文件（**合并前须先提交**，见 receipts/T16.md §9）
 
 ## 目标
 app/sdk 的 9 个 `@deepseek-ai/*` 依赖从 0.2.2-alpha.2 一次升到 0.2.2-rc.1，同步落三件 rc.1 安全修补（envelope 工具面 / apply_patch NEVER / 执行层五写入口证明格），重定锚点，全量回归对照基点。

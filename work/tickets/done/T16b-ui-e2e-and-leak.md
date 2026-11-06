@@ -4,7 +4,7 @@
 > 来源：T16 终验不通过（receipts/T16.md §7，验收 HEAD 74802b5f）
 > 分支 / 作业目录：feat/T16 @ /tmp/bot-wt/T16（续提交，不开新分支）
 > claimed：2026-11-06 15:5x main (GLM 5.3) @ feat/T16 续
-> accepted：
+> accepted：2026-11-06 16:2x manager 任务 B @ feat/T16 f3919e17 + 工作区两测试文件（**合并前须先提交**，见 receipts/T16.md §9）
 
 ## 目标
 补齐 T16 验收 5（app/ui e2e 对照）与验收 6（/tmp 残留归零）两个红项，顺手改一行陈旧注释。

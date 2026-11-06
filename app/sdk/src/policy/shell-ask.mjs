@@ -387,7 +387,9 @@ export function apply(ctx, config = {}) {
     if (kind === 'workspace-write' && workspaceRoot !== undefined) {
       // T7cb：workspaceRoot 可能是符号链接（session cwd 传入链接路径），targets 已被
       // fs.resolve 解析到真实树——先规范化 workspaceRoot 再拼 skill 根，否则跨树比不到
-      const realWs = realpathSync(workspaceRoot)
+      // T7cd：假路径（单测夹具）realpathSync 会抛 ENOENT——回退到原路径（单测里
+      // targets 也在同一假树上，不影响判定；真实运行时 ws 一定存在）
+      const realWs = (() => { try { return realpathSync(workspaceRoot) } catch { return workspaceRoot } })()
       const skillRoots = [join(realWs, '.dsh', 'skills'), join(realWs, '.agents', 'skills')]
       const inSkill = await Promise.all(targets.map(async (t) =>
         (await Promise.all(skillRoots.map((r) => isPathUnder(t, r)))).some(Boolean)))

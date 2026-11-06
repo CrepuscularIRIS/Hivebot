@@ -217,3 +217,21 @@ describe('apply 的 listener 行为', () => {
     await expect(bare({ name: 'bash', arguments: { command: 'x' } }, () => nextResult), '无服务不拦').resolves.toBe(nextResult)
   })
 })
+
+// T9a：extraNeverTools（ssh 模式 glob/grep 工具名拒）
+describe('T9a extraNeverTools', () => {
+  it('配了 grep → deny 原因含 not available in ssh mode', async () => {
+    const l = listener({ roots: configRoots(), extraNeverTools: ['grep'] })
+    const outcome = await l({ name: 'grep', arguments: { pattern: 'x' } }, async () => ({ kind: 'allow' })) as { kind: string; reason: string }
+    expect(outcome.kind).toBe('deny')
+    expect(outcome.reason).toContain('not available in ssh mode')
+  })
+  it('不配 → grep 不因 ssh mode 被拒（正对照；无 fs 服务时可能因别的原因 deny）', async () => {
+    const l = listener()
+    const outcome = await l({ name: 'grep', arguments: { pattern: 'x' } }, async () => ({ kind: 'allow' })) as { kind: string; reason?: string }
+    if (outcome.kind === 'deny') expect(outcome.reason).not.toContain('ssh mode')
+  })
+  it('非数组 → 加载抛错', () => {
+    expect(() => listener({ roots: configRoots(), extraNeverTools: 'grep' })).toThrow(/extraNeverTools/)
+  })
+})

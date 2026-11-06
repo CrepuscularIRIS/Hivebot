@@ -37,6 +37,9 @@ const REQUIRED_ROOT_KEYS = ['hardRoots', 'dataMaskRoots', 'homes', 'toolchainDir
  */
 const NEVER_TOOLS = new Set(['plugin_manager'])
 
+/** T9a：config.extraNeverTools（ssh 模式下如 glob/grep）与 NEVER_TOOLS 合并判定；加载时校验。 */
+let extraNeverTools = new Set()
+
 /**
  * P5-04（0d，G#5 前半，PLAN 决策 10）：拒绝裸升权。受控升权路径落地前，
  * 任何工具带 `sandbox_permissions === 'danger-full-access'` 的调用批准后都是
@@ -233,6 +236,15 @@ function requireRoots(config) {
 export function apply(ctx, config) {
   const roots = requireRoots(config)
   const resolved = resolveRoots(roots)
+  // T9a：extraNeverTools 校验与赋值（在 listener 注册前——闭包读到的是最新 Set）
+  if (config.extraNeverTools !== undefined) {
+    if (!Array.isArray(config.extraNeverTools) || !config.extraNeverTools.every((t) => typeof t === 'string' && t.length > 0)) {
+      throw new Error('p2sdk-fs-guard: config.extraNeverTools must be an array of non-empty tool names')
+    }
+    extraNeverTools = new Set(config.extraNeverTools)
+  } else {
+    extraNeverTools = new Set() // 未配置=空集（防上一次 apply 残留）
+  }
 
   // P5-04.f1 ⑤ 实测：insert 行的加载顺序不可靠（探针证据：guard 列首位时仍
   // 收不到 bash exec，shell-ask 先注册先拦截）。用 cordis ctx.on 的 prepend
@@ -241,6 +253,10 @@ export function apply(ctx, config) {
   ctx.on('tools/pre-execute', async (exec, next) => {
     if (NEVER_TOOLS.has(exec.name)) {
       return { kind: 'deny', reason: `p2sdk-fs-guard: tool "${exec.name}" is not available (plugin management is disabled by policy; overrides cannot re-enable it)` }
+    }
+    // T9a：ssh 模式工具名拒（glob/grep 在远端解析宿主 rg 路径——设计 D9）；改用 bash。
+    if (extraNeverTools.has(exec.name)) {
+      return { kind: 'deny', reason: `p2sdk-fs-guard: tool "${exec.name}" is not available in ssh mode (use bash instead)` }
     }
     // P5-04：裸升权一律拒（NEVER_TOOLS 之后、路径判定之前；对任何工具，含
     // 不在 known 表里的 bash）。不带该参数的调用行为不变（④ 一致性格）。

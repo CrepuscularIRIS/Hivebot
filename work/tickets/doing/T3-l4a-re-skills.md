@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main 派用户级 `reverse-engineer`（REA 只挂在它上面），main 收回执
 > 来源：work/p9-dsh-integration/BRIEF.md L4 与验收第 2 条；PLAN.md §1 L4 行、§5 第 5 条
 > 分支 / 作业目录：只写文档，直接在集成分支；RE 临时目录一律 `/tmp/bot-T3-*`（LEARNINGS 2026-11-03：不在白名单的目录残留进程清不掉）
-> claimed：
+> claimed：2026-11-06 00:51 main 派 reverse-engineer
 > accepted：
 
 ## 目标

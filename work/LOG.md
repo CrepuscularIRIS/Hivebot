@@ -1042,3 +1042,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 18:3x T10 ③a 诊断：read-only 档坐实（bash 直写被挡=档位预期）；write+bash读回形态仍卡沙箱内 ws 视图（ls 空）——遮蔽源待定位。④ 三格稳定绿
 - 18:4x T10 收口：③a 根因=sandbox-policy 覆盖行丢 mode（整键替换陷阱）→补 workspace-write；④/③/④e 全绿（5+2+42+5）。疑点：③c 变异不咬合（mode 后原版也挡）交终验裁
 - 18:5x T9b4 施工完（guard remoteHome 校验 dispose 即停：ⓑ先红/ⓒ等价形态/变异2红；29+51+②d 全绿）。T10 终验中（③c 疑点定位）
+- 19:0x T10b 施工完（探针出 /tmp 后三刀变异全咬合：直通/原版/只传远端根各红；③a 回直写；7+42 绿）。与 T9b4 同批待终验

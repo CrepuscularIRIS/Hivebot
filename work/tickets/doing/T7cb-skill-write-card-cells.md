@@ -4,7 +4,7 @@
 > 来源：T7c 终验（2026-11-06 @ b0ee442a，**不通过 第 1 次**）；receipts/T7c.md §4–§5
 > 分支 / 作业目录：feat/T7c 续提交 @ /tmp/bot-wt/T7c
 > 排期：与 T7bc 无文件交集，可并行；合并顺序仍是 feat/T7b 先、feat/T7c 后
-> claimed：
+> claimed：11:15 main (GLM 5.3)
 > accepted：
 
 ## 目标

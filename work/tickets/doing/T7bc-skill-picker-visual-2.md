@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T7bb 终验（2026-11-06 @ f0a14235，**T7b 链不通过 第 2 次**，走任务 C 重拆：本单每项都配 grep / 断言，不再只靠「回执说修了」）
 > 分支 / 作业目录：feat/T7b 续提交 @ /tmp/bot-wt/T7b
-> claimed：
+> claimed：11:15 main (GLM 5.3)
 > accepted：
 > 失败计数：T7b 链第 2 次。本单再不过 → T7b 挪 `blocked/`，交用户决定是否先降级合并功能链（功能已过）。
 

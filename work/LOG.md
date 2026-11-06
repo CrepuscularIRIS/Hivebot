@@ -1026,3 +1026,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 14:3x T9ad 照单施工完：⑪基线前置+防空集+退净、①缩进断言；unit 64+e2e 3 绿；变异四刀红（M-序 TDZ/M6 目录/M5 缩进/M-⑧，两刀红法与单预期略异已如实记§7）；改动行覆盖 100%；收尾进程 0、空目录 +2（⑪ 内 1+dispose cancel 1）
 - 14:2x T7c 合并前置落实：四段重跑（⑦绿/9绿/M1红/还原9绿）贴回执 §9；核实 feat/T7c 已并入主线（9ec0bf03）；主线回测 skill-write-card+skill-save 13 passed、write-outside 单跑 10 passed
 - 14:2x 上游巡查（用户交代）：npm @deepseek-ai/dsh latest 仍 0.2.2-rc.1（alpha 通道多 alpha.3，rc.1 更新）；deepseek-harness@ce7073d 与 superagent-prototype@6337fc8 fetch 无新提交——T15/T16 评估基线不变
+- 14:5x feat/T9a 合并落地（7771d822，--no-ff；回执冲突取 feat 侧新版、LOG 时间序交织）。回测全绿：unit 64、guard-plugin-manager 7、ssh-headless+ssh-host 14、ssh-product 3（残留0）、guard-fs+skill-save 13、write-outside 10。T9a 链四单 done

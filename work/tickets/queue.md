@@ -1,9 +1,9 @@
 # 工单队列
 
 顺序由 manager 维护；`open/` 只放现在就能做的单。下表是计划，状态以工单所在目录为准。
-更新：2026-11-06 03:20 manager 任务 B（T2/T2b/T2c、T3/T3b 验收通过挪 done；T2c 硬杀空目录残留裁决 A 豁免，见 p9 PLAN §3 第 10 条）。
+更新：2026-11-06 manager 任务 A（T4、T6 定稿进 `open/`；T2 系已合并 7679abc）。
 
-**主 agent 待办**：`feat/T2`（/dev/shm/bot-T2 @ 01b4dc6）→ 集成分支 `git merge --no-ff`（merge-tree 已核无冲突）；合并后定向回测（隔离 HOME/TMPDIR、DBus 指不存在路径）：`cd app/sdk && pnpm --config.verify-deps-before-run=false exec vitest run tests/e2e/ssh-host.test.ts tests/unit/start.test.ts` → 10 + 36 passed，`/tmp/dsh-ssh-*` 无新增。T3/T3b 已在集成分支，无需合并。下一步开单：T4、T6（manager 任务 A，见下表）。
+**主 agent 待办**：T4（/dev/shm/bot-T4）与 T6（/tmp/bot-wt/T6）互不依赖、改动文件无交集，可并行施工；两边都只跑各自工单写明的 2 个测试文件，不同时跑全量。施工完各写回执 → 攒批派 `reviewer`（T4 偏测试有效性 + 进程安全，T6 偏 env/泄漏面 + 测试有效性）→ manager 任务 B。
 
 ## 可做区（按序；三条链互不依赖，可并行施工，但同一时刻全量测试只跑一套）
 
@@ -15,10 +15,10 @@
 | 3 | T3b RE-skills.md Q6 投递方式降为推断，引 `agentSkills:` 0 次 / `.agentSkills=` 仅构造器两条反证，影响节第 6 条收窄 | test-validity 席第 6 条 + 经理核实 | — | **done**（accepted 2026-11-06 @ 316b6c9，已在集成分支） |
 | — | T2 L8-a 私有 sshd 测试夹具 + dsh ssh 族连接级验收 | p9 PLAN §1 L8、§3 | — | **done**（accepted 2026-11-06 @ 01b4dc6，含 T2b/T2c；**可合并** feat/T2 → 集成分支 --no-ff） |
 | — | T3 L4-a 0.78.1 skill 生命周期 RE | p9 PLAN §1 L4 | — | **done**（accepted 2026-11-06，含 T3b；已在集成分支） |
-| 4 | T4 L8-b headless 真组合：dsh headless profile + ssh patch（禁 `fs-sandbox`/`subprocess`/`sandbox` 行、插 ssh 四件）+ llm-replay；一轮对话里 bash 工具与写文件工具都经 ssh 落到远端 ws，用 T2 的 marker 证明执行位置；断开 sshd 后工具报结构化失败、不回落本机 | p9 PLAN §3 | T2（含 T2b/T2c）验收 | 计划（T2 已验收；合并回测绿后开） |
-| 5 | T5 L8-c 派 `architect` 出 `work/p9-dsh-integration/DESIGN-ssh-composition.md`：ssh 模式下 fs-zone / guard（NEVER 宿主路径）/ shell-ask 档位 / P6 worker cwd 怎么组合；进程级 vs preset `isolate`；断线「结果未知」在 UI 怎么表达。可能产出给用户的 Q | p9 PLAN §2 fs-zone 行、§5-1 | T4 验收 | 计划 |
-| 6 | T6 L4-b skill 根收口（skill-filesystem 的 `agentsHome`/`dshHome` 指到数据根内，关掉真实 `~/.agents` 泄漏）+ 真组合 e2e：bot A 在对话里把流程存成 `<cwd>/.dsh/skills/<name>/SKILL.md`（是否经审阅按 T3 定），下一轮 catalog 出现、`skill` 工具能 load | p9 PLAN §1 L4 | T3（含 T3b）验收 | 计划（T3 已验收，可开） |
-| 7 | T7 L4-c 账户库 + 按 bot 启用：main 侧 list/enable/disable（复制 or 引用按 T3 定）+ renderer-grok「Pick from your skills」，真实浏览器截图对 0.78.1；e2e：bot A 存的 skill 被 bot B 启用后 B 能 load | BRIEF 验收第 2 条 | T6 验收 | 计划 |
+| 4 | **T4** L8-b headless 真组合（`open/T4-l8b-ssh-headless.md`）：上游 headless profile + 测试生成的 ssh patch（禁 fs-sandbox/subprocess/sandbox/session-title-llm/PTC 行、插 ssh 四件、sandbox-policy 指远端 ws）+ llm-replay；① bash 写 sshd 独有 marker、write 落远端 ws；② 断连后 15s 内报错、不回落本机；M1–M3 变异各红一格；夹具拆出 `startSshServer()` | p9 PLAN §3 | T2 系（已合并） | **open** |
+| 5 | T5 L8-c 派 `architect` 出 `work/p9-dsh-integration/DESIGN-ssh-composition.md`：ssh 模式下 fs-zone / guard（NEVER 宿主路径）/ shell-ask 档位 / P6 worker cwd 怎么组合；进程级 vs preset `isolate`；断线「结果未知」在 UI 怎么表达（输入：T4 回执 ② 的实际形态）；PTC 接 `ctx.ssh.ptcLaunch`（T4 先禁用）；T4 回执列出的「ssh 模式下仍直连宿主的行」逐条定去留。可能产出给用户的 Q | p9 PLAN §2 fs-zone 行、§5-1 | T4 验收 | 计划 |
+| 6 | **T6** L4-b skill 根收口 + 存 skill 真组合（`open/T6-l4b-skill-save.md`）：`childEnv` 无条件设 `DSH_AGENTS_HOME=<cfg.home>/agents`（skill-filesystem 与 agent-instructions 一并收住）；e2e 四格：bot A 用 write 存 `.dsh/skills/t6-flow/SKILL.md` → A 新会话目录出现且 `skill` 加载全文 → bot B 看不到 → 隔离 HOME 的 `.agents` 探针不出现、新根正对照出现。审阅链不进本单（理由见工单） | p9 PLAN §1 L4、RE-skills | T3 系（已在集成分支） | **open** |
+| 7 | T7 L4-c 账户库 + 按 bot 启用：main 侧 list/enable/disable（**启用 = 复制快照**，RE Q2/Q7，不做引用；副本落点开单时定，首选 bot 工作区 `.dsh/skills`，T6 已证该根按 bot 私有）+ renderer-grok「Pick from your skills」（硬数字照 RE Q4：7 种扩展名、256,000 字符、每 bot 250 条、slug + -2 去重），真实浏览器截图对 0.78.1；e2e：bot A 存的 skill 被 bot B 启用后 B 能 load、改库后 B 的副本不变。**约束**：账户库不能放 `$DSH_HOME/skills` 或 `$DSH_HOME/agents/skills`（全员共扫 = 全员自动启用，见 T6「为什么」）。体量大，开单时按 main API / UI 拆两张 | BRIEF 验收第 2 条 | T6 验收 | 计划 |
 | 8 | T8 P5-H5b `tests/e2e/*.test.ts` 裸 mkdtemp → tmkdir（约 25 个文件）；验收用 `vitest list tests/e2e`（只收集不跑）抓 import 错 + 抽 3 个快文件跑残留计数 | HANDOFF §3-3 | T1 验收（已通过，可开；照 T1 的写法；已知残留源含 `tests/e2e/market.test.ts:108` 的 `p2sdk-t09-patch-`） | 计划 |
 | 9 | L5-a 定时投递 e2e：schedule 一次性任务按时投递到指定 bot 会话（BRIEF 验收第 3 条；`tool-schedule` 已在 preset，预计只要测试 + 少量胶水） | BRIEF 验收第 3 条 | — | 计划（T2–T4 后开，避免同时三条以上链） |
 | 10 | P5-H7 实证：`PBOTS_TEST_WORKERS` 下双全量并行一次（代码侧已完成 2c20a2c） | HANDOFF §3-2 | **load < 8 的窗口**（GPU 训练中不跑） | 等低负载 |
@@ -49,5 +49,7 @@
 ## 提议（未开单）
 
 - L1 人格编辑：每 bot preset 带 persona 行（复用 `p2temp` 的 `ctx.agentPresets.register`）+ 设置 UI。
+- L4 审阅链（T7 验收后再定）：原版 `ProposeSkills` → `GrokBotTeamReviewItem`（PENDING→APPROVE/REJECT，携 agent_id + action/name/description/content）+ 聊天内「Pick from your skills」挑选卡（RE-skills Q3）。批准后写 bot 副本 = 复用 T7 的 enable 路径；参数 schema 原版在服务端，自定义不违反原版即规格。
+- L4 project 根守卫（看 T6 回执）：bot cwd 祖先若有 `.git`，skill project 根会上移、多 bot 共享；产品数据根默认不在仓内，若 T6 回执认为需要再开单。
 - L7 Vault：dsh 不提供「能用不可见」，随 L9 浏览器一起设计。
 - L12 Room：无可用插件，p8 簇 8a 时自建；agent-team 任务板作参考。

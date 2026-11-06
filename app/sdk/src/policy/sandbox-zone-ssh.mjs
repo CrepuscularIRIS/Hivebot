@@ -41,15 +41,18 @@ export class ZoneCheckedSshSandboxProvider extends SshSandboxProvider {
     if (basename(plan.argv[0]) !== 'bwrap' || plan.enforcement !== 'full') {
       throw new SandboxUnavailableError(`p2sdk sandbox-zone-ssh: unexpected remote sandbox plan (argv0=${plan.argv[0]}, enforcement=${plan.enforcement}); refusing an unguarded run`)
     }
-    const sep = plan.argv.indexOf('--')
-    const tail = sep >= 0 ? plan.argv.slice(sep + 1) : []
+    // wrapper 调用形态（bwrap-wrap.py:287 实测）：wrap.py [wrapper 选项] <bwrap
+    // profile…> -- <命令>——选项后**直接**接 profile（无额外 --；optparse 遇非
+    // 选项 tok 即 break，rest 的第一个 -- 分 profile/命令）。plan.argv 去掉
+    // argv[0] 后整段透传（profile 含 --ro-bind / / 等，漏了它沙箱内无 bash）。
+    const remote = plan.argv.slice(1)
     const extra = []
     if (this.p2sdkRemoteHome !== undefined) extra.push('--home', this.p2sdkRemoteHome, '--mask', this.p2sdkRemoteHome)
     for (const r of this.p2sdkRemoteNever) extra.push('--never', r)
     if (this.p2sdkRemoteRuntimeDir !== undefined) extra.push('--policy', this.p2sdkRemoteRuntimeDir)
     // wrapper 形态 = 「python3 -I wrap.py …参数… -- 命令」（bwrap-wrap.py:6-9）：
     // wrapperArgv 已含 [python3, -I, wrap, …宿主参数]，远端根插在 -- 前。
-    return { ...plan, argv: [...this.p2sdkWrapperArgv, ...extra, '--', ...tail] }
+    return { ...plan, argv: [...this.p2sdkWrapperArgv, ...extra, ...remote] }
   }
 }
 

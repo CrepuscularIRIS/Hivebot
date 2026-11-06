@@ -4,7 +4,8 @@
 // ④b 远端哨兵同挡；④c endpoint 目录不露出 + helper 包目录写保护；
 // ③a 门开 0 卡 marker 落远端；③b 门关出卡；③c 变异换回原版 → ④a 红。
 // bash 默认出卡（shell-ask）——审批经 $events socket 应答（openFeed 模式）。
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -140,7 +141,52 @@ async function driveBash(command: string): Promise<{ toolResults: Array<{ isErro
   return { toolResults: results, asked: 0 }
 }
 
+/** 门开态（tiers-policy provision 同款）：instance = sha256(launch-token)。 */
+function provision(state: Record<string, unknown> = {}): void {
+  const token = readFileSync(join(rt!.handoff, 'launch-token'), 'utf8').trim()
+  const instance = createHash('sha256').update(token).digest('hex')
+  // resolveConfig 缺省 dataDirs = [HOME/.config/pbots-ui, …]（PBOTS_DATA_DIR 未设）
+  const dataDir = join(TEST_HOME, '.config', 'pbots-ui')
+  mkdirSync(dataDir, { recursive: true })
+  writeFileSync(join(dataDir, 'policy-state.json'), JSON.stringify({ version: 1, paused: false, instance, ...state }))
+}
+
 describe('T10 远端 bash wrapper', () => {
+  it('③a 门开：bash 写 $PBOTS_SSH_MARK → 0 卡、marker 落远端 ws', { timeout: 240_000 }, async () => {
+    provision()
+    const ws = join(server.workspace, 't10-3a')
+    mkdirSync(ws, { recursive: true })
+    const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: ws } })) as { sessionId: string }
+    const dir = join(rt!.home, 'fake', 'scripts')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({ calls: [toolCall('bash', { command: 'printf %s "$PBOTS_SSH_MARK" > mark.txt', description: 'T10 3a' }), textCall('T10')] }))
+    const stream = await rt!.client.follow(sessionId)
+    const frames: Frame[] = []
+    const drained = (async () => { for await (const f of stream) frames.push(f) })()
+    await rt!.client.call('session/prompt', { request: { requestId: `t10-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'T10' }] } })
+    const deadline = Date.now() + 120_000
+    for (;;) {
+      if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
+      if (Date.now() > deadline) throw new Error('turn/end 未到')
+      await new Promise((r) => setTimeout(r, 150))
+    }
+    stream.cancel(); void drained
+    const results = frames.filter((f) => f.type === 'event' && f.event?.type === 'tool/result')
+    expect(results.length, 'bash 有结果').toBeGreaterThanOrEqual(1)
+    const d0 = results[0]!.event!.data as { message?: { isError?: boolean } }
+    expect(d0.message?.isError, '门开 bash 零卡直跑').not.toBe(true)
+    expect(existsSync(join(ws, 'mark.txt')), 'marker 落远端 ws').toBe(true)
+    expect(readFileSync(join(ws, 'mark.txt'), 'utf8'), 'marker 内容 = 本轮 ssh mark').toBe(server.mark)
+  })
+
+  it('④c 沙箱内 /tmp/dsh-ssh-* 不可见；helper 包目录写保护', { timeout: 240_000 }, async () => {
+    provision()
+    const r = await driveBash('ls -d /tmp/dsh-ssh-* 2>/dev/null | wc -l')
+    expect(r.toolResults[0]!.text, 'endpoint 目录不露出（计数 0）').toContain('0')
+    const helperDir = join(PKG_ROOT, 'node_modules', '@deepseek-ai', 'dsh-ssh')
+    const r2 = await driveBash(`touch ${helperDir}/t10-x 2>/dev/null; echo rc=$?`)
+    expect(r2.toolResults[0]!.text, 'helper 包目录写保护（非零退出）').toContain('rc=1')
+  })
   it('④a bash 读宿主 ~/.ssh 哨兵 → 退出非零、正文不出现', { timeout: 240_000 }, async () => {
     const sentinel = join(TEST_HOME, '.ssh', 'id_sentinel')
     mkdirSync(join(TEST_HOME, '.ssh'), { recursive: true })

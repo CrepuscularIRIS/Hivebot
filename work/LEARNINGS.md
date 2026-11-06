@@ -122,3 +122,5 @@
 2026-11-06 「防漂移」白名单格要拿**全集**去比，不能在已知名单里找新名字（T9b ③）：`upstream.filter((m) => WRITES.includes(m) && …)` 只会在五个已知写入口里找，上游新增的 `appendText` 永远被过滤掉，格恒绿。正确写法 = 上游原型全部方法名减去 READS ∪ WRITES 必须为空；配一刀证伪（从 READS 删一个名字 → 红）。同单另一课：工单「目标」与「验收」要逐项对得上——转单时验收漏抄了 DESIGN 的 ssh-product ②，施工就照窄单做完，guard 远端根整段没落。
 
 2026-11-06 JS 块注释里写 glob 会被 `*/` 提前闭合（T9b never-roots：`.config/**/credentials*` → SyntaxError 裸 token）。注释里的通配路径用行注释 `//`，或写成 `.config/<任意层>/credentials*`。
+
+2026-11-06 T9b3 guard 的 remoteHome 校验写成 `void ssh.ready.then(...throw)` → cordis/Node 吞 fire-and-forget 拒绝态、进程照常服务；且 guard 先于 ssh 插件注册（apply 时 `ctx.get('ssh')` 为 null，校验整段被跳过）→ 启动期 fail-closed 必须显式（exit / 拒服务），并证明它在产品加载顺序下真的跑了（e2e 先红：配错照常启动）。

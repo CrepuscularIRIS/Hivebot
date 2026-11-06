@@ -3,8 +3,8 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T9b 终验不通过（第 1 次），`/tmp/bot-wt/T9b/work/tickets/receipts/T9b.md` §6；DESIGN-ssh-composition §D1
 > 分支 / 作业目录：feat/T9b @ /tmp/bot-wt/T9b（同分支续提交，起点 fefd99b3 + 经理 §6）
-> claimed：
-> accepted：
+> claimed：（施工方未填、未挪 doing/——施工 commit 02bad7da，回执 §7）
+> accepted：2026-11-06 @ 6556ac85（manager 终验通过，receipts/T9b.md §9）
 
 ## 目标
 把 T9b D1 半成品补成真闭环：每一刀拆掉保护都有一格红。

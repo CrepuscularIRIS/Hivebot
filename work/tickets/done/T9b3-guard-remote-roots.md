@@ -3,8 +3,8 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T9b 终验不通过（第 1 次）receipts/T9b.md §6；DESIGN-ssh-composition §D2（结论 + 验证 ②）；queue 5a′ 行「guard 远端根 + `ssh-product.test.ts` ②」
 > 分支 / 作业目录：feat/T9b @ /tmp/bot-wt/T9b（**T9b2 提交后**同分支接着做，两单都动 start.ts）
-> claimed：
-> accepted：
+> claimed：（施工方未填、未挪 doing/——施工 commit ea765cb4，回执 §8）
+> accepted：2026-11-06 @ 6556ac85（manager 终验通过，receipts/T9b.md §9；runtime.ts stderr 尾与 exit(86) 两处追认）
 
 ## 目标
 D2 剩下的一半：远端凭证根归 guard 管（读也拒），remoteHome 配错真的启动失败。

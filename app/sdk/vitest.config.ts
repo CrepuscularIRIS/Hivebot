@@ -1,7 +1,16 @@
 import { defineConfig } from 'vitest/config'
 
+// P5-H7: 双全量并行互压时用 PBOTS_TEST_WORKERS 给 maxWorkers 设上限。
+// 缺省不设（vitest 默认不变）；非法值 fail fast（与 P2SDK_PATCH 同规则）。
+const rawWorkers = process.env.PBOTS_TEST_WORKERS
+const workerCap = rawWorkers === undefined ? undefined : Number(rawWorkers)
+if (workerCap !== undefined && (!Number.isInteger(workerCap) || workerCap < 1)) {
+  throw new Error(`PBOTS_TEST_WORKERS must be a positive integer, got: ${rawWorkers}`)
+}
+
 export default defineConfig({
   test: {
+    ...(workerCap !== undefined ? { maxWorkers: workerCap } : {}),
     include: ['tests/unit/**/*.test.ts', 'tests/e2e/**/*.test.ts', 'tests/market/**/*.test.ts'],
     // P5-H1: 每个测试文件结束清扫其登记的 /tmp 目录（worker 不跑 exit 钩子，实测）
     setupFiles: ['tests/support/tmp-sweep.setup.ts'],

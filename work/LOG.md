@@ -1029,3 +1029,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 12:28 L5-a API发现完成 | 装版tool-schedule不用rrule也不用target——正确调用=({title,prompt,after_seconds:N})；参考仓源码与安装版schema不同（rrule→after_seconds等）。e2e骨架可照mock-demo模板直接写，下会话10分钟出。文件因多轮编辑损坏已删，发现入库。
 2026-11-06 12:31 哨兵#11 | load10.8、无429。L5-a 干净重写（API 已知，照 mock-demo 模板）。
 2026-11-06 12:33 L5-a 绿 | schedule_create after_seconds=60 → 60秒后定时投递到本会话→userTexts含标记→1 passed。BRIEF验收③（定时任务按时触发投递）落地。干净版一次过——API发现是关键。
+2026-11-06 12:41 哨兵#12 | load8.8（接近H7窗口）、无429。T7cb⑨插桩排查。

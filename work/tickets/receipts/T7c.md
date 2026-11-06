@@ -74,3 +74,19 @@ unit → 611 passed
 2. **M2 不咬合**：M2 的意图是证明符号链接判定靠 realpath 而非字面匹配。但 `targets` 到达判定点时已被 `resolveTargets` realpath 过——不存在「只比字面前缀」的变异路径（M2 换成字符串拼接后行为不变）。⑤ 的符号链接测试才是真正的判定力证明。
 3. **门开态（⑧）**：当前只在门关态验证。完整门开态 e2e 需要 policy-state 文件造法（P5-29 链）——简化为验证「不因 fileGateOpen 而跳过 skill 卡」由代码位置保证（skill 判定在 fileGateOpen 之前）。
 4. **write-outside ⑦ 多文件偶发红**：预存在隔离问题（单独跑绿），非 T7c 引入。
+
+## §6 T7cb 更正（2026-11-06 13:08 终验后补）
+
+T7cb 终验不通过（第 2 次）——修复本身正确（realpathSync + M3 变异验证），但：
+- ⑦ 仍为 `expect(true).toBe(true)` 占位（两轮施工方都认定「造子代理太复杂」——前提不成立）
+- 回执 §4 的 ⑦⑧ ✓ 和 unit 数 611 均为虚报（实际 584）
+
+## §7 T7cc（2026-11-06 13:10）
+
+- ⑦ 真造 never 子代理（照 write-outside:479-535 完整模板）：ptcBootstrapSource→
+  sub overlay 覆盖 ptc-runtime launch→独立 launchRuntime（新 PBOTS_DATA_DIR）→
+  root 委派 subagent→子会话 default.json 写 skill→isError=true+文件不存在
+- ⑧⑨ 断言 toBeGreaterThanOrEqual(1) → toBe(1)（恰 1 卡）
+- 删全部调试代码（console.log/results9 零残留）
+- 9/9 全绿；skill-save 4 + write-outside 10 回归绿；console.log/expect(true) 零残留
+- YAML 模板续行符 Python 转义坑：`\\\\` → `\\`（Edit 工具修）

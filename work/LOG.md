@@ -1028,3 +1028,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 14:2x 上游巡查（用户交代）：npm @deepseek-ai/dsh latest 仍 0.2.2-rc.1（alpha 通道多 alpha.3，rc.1 更新）；deepseek-harness@ce7073d 与 superagent-prototype@6337fc8 fetch 无新提交——T15/T16 评估基线不变
 - 14:5x feat/T9a 合并落地（7771d822，--no-ff；回执冲突取 feat 侧新版、LOG 时间序交织）。回测全绿：unit 64、guard-plugin-manager 7、ssh-headless+ssh-host 14、ssh-product 3（残留0）、guard-fs+skill-save 13、write-outside 10。T9a 链四单 done
 - 15:5x T7ce 完（skill根过fs.resolve；先红→73绿→M1红→覆盖改动行100%）+ T9ae 完（15处yamlScalar+MODE清理；2红→42绿→真解析四值对→M1M2红→改动行18行100%）；两单均照经理单逐字。顺手 reap 上会话 H7b 泄漏 16 进程
+- 16:1x T16b 三件完：残留红→绿（outside 移 root 下）；注释改；ui e2e 两套串行——基点 81 passed(9.9m) 全绿、rc.1 80+1(d1-real-model 真模型流式格单跑 11.6s 过=噪音非漂移)；§8 齐

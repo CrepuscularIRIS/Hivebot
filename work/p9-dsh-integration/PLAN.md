@@ -70,10 +70,10 @@
 | T2c | T2 夹具侧返修：单条 SetEnv 带 HOME + cd remote-home、setpriv --pdeathsig、setup 失败回滚、strace 0 次真实启动文件、三种中断后端口拒连 | **done**（accepted 2026-11-06 @ 01b4dc6；硬杀空目录残留豁免，见 §3 第 10 条） |
 | T3 | L4-a：0.78.1 skill 生命周期 RE（派 reverse-engineer） | **done**（accepted 2026-11-06，含 T3b） |
 | T3b | RE-skills.md Q6 投递方式降为推断 + 两条反证计数 + 影响节第 6 条收窄 | **done**（accepted 2026-11-06 @ 316b6c9，已在集成分支） |
-| T4 | L8-b：headless 真组合 + llm-replay，bash/写文件经 ssh 落到远端 | **open**（2026-11-06 开单，`tickets/open/T4-l8b-ssh-headless.md`） |
-| T5 | L8-c：architect 出 `DESIGN-ssh-composition.md`（与 fs-zone/guard/shell-ask/P6 cwd 的组合；进程级 vs preset isolate） | 计划（等 T4） |
-| T6 | L4-b：skill 根收口（关 `~/.agents` 泄漏）+ bot 在对话里存 skill 的真组合 e2e | **open**（2026-11-06 开单，`tickets/open/T6-l4b-skill-save.md`） |
-| T7 | L4-c：账户库 + 按 bot 启用（main API + UI，截图对 0.78.1） | 计划（等 T6） |
+| T4 | L8-b：headless 真组合 + llm-replay，bash/写文件经 ssh 落到远端 | **done**（accepted 2026-11-06 @ f8d1e00c，`tickets/done/T4-l8b-ssh-headless.md`；待合并） |
+| T5 | L8-c：architect 出 `DESIGN-ssh-composition.md`（与 fs-zone/guard/shell-ask/P6 cwd 的组合；进程级 vs preset isolate） | 计划（T4 已过，可开） |
+| T6 | L4-b：skill 根收口（关 `~/.agents` 泄漏）+ bot 在对话里存 skill 的真组合 e2e | **done**（accepted 2026-11-06 @ 80958ad0，`tickets/done/T6-l4b-skill-save.md`；待合并） |
+| T7 | L4-c：账户库 + 按 bot 启用（main API + UI，截图对 0.78.1） | 计划（T6 已过，可开） |
 | T8 | P5-H5b：e2e/*.test.ts 裸 mkdtemp | 计划（等 T1） |
 
 ## 5. 核实不了 / 存疑（单列）

@@ -4,7 +4,7 @@
 > 来源：work/p9-dsh-integration/BRIEF.md 目标 3、L8，验收第 1 条的「工程 bot 在 ssh 主机上改代码跑测试」前半段；PLAN.md §3（十条事实）、§5 第 1 条
 > 分支 / 作业目录：feat/T4 @ **/dev/shm/bot-T4**（不能放 /tmp/bot-wt：helper.js 在 node_modules 里，会落进 bwrap 私有 /tmp，PLAN §3 第 5 条）
 > claimed：2026-11-06 03:47 main (GLM 5.3) @ 7ef1240d（施工开始时由主 agent 填：日期、起点 SHA）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-06 feat/T4 @ f8d1e00c（manager 任务 B 终验；含复核轮修复）
 
 ## 目标
 T2 证明了「手搭的 dsh ssh 族能连上夹具 sshd」。本单证明**真实 dsh 进程**（`dsh headless` profile，不是测试进程里手搭的 Context）换上 ssh 族后，**模型发起的工具调用**（bash、write）确实经 ssh 在夹具主机上执行；ssh 断开后工具报错，不悄悄回落到本机。

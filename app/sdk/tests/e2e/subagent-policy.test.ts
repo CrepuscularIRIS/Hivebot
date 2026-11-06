@@ -19,6 +19,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { launchFakeRuntime, sendPrompt, waitFor, type Frame, type FakeRuntime } from '../support/fake/harness.ts'
 import type { Runtime } from '../support/runtime.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -163,10 +164,10 @@ function textCall(text: string): object {
  * delegation, and the approval policy under test are untouched.
  */
 async function launchSubagentRuntime(): Promise<FakeRuntime & { work: string }> {
-  const work = mkdtempSync(join(tmpdir(), 'p2sdk-p505-work-'))
+  const work = tmkdir('p2sdk-p505-work-')
   const bootstrap = join(work, '.p505-ptc-boot.mjs')
   copyFileSync(ptcBootstrapSource(), bootstrap)
-  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p505-patch-'))
+  const dir = tmkdir('p2sdk-p505-patch-')
   const overlay = join(dir, 'p505.yml')
   writeFileSync(
     overlay,

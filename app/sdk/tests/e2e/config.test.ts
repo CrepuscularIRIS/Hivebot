@@ -8,6 +8,7 @@
 // system/tools），两者都穿过真实 dsh runtime；只回显配置（session/projections
 // 各自返回自己的配置）仅作查询侧补充，不构成通过依据。
 import { expect, it } from 'vitest'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { createHash } from 'node:crypto'
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -88,7 +89,7 @@ function scriptedCall(pieces: string[]): object {
  * profile/patches/presets.yml through the launcher's P2SDK_PATCH passthrough.
  */
 function buildOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-d4-patch-'))
+  const dir = tmkdir('p2sdk-d4-patch-')
   const file = (p: string): string => pathToFileURL(join(PKG_ROOT, p)).href
   const overlay = join(dir, 'd4-overlay.yml')
   writeFileSync(

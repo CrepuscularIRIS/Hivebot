@@ -42,6 +42,7 @@ import {
   type Frame,
 } from '../support/fake/harness.ts'
 import { launchRuntime, launcherSpawnEnv } from '../support/runtime.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const SCAN = join(PKG_ROOT, 'tests', 'e2e', 'security', 'scan.mjs')
@@ -87,7 +88,7 @@ function childPids(pid: number | undefined): number[] {
 async function boot(home: string, env: Record<string, string>): Promise<Boot> {
   // T-01.f3 handoff semantics: base-url/launch-token land in a separate
   // P2SDK_HANDOFF dir (never inside P2SDK_HOME), so boot one per runtime.
-  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-t08-ho-'))
+  const handoff = tmkdir('p2sdk-t08-ho-')
   const child = spawn(process.execPath, [join(PKG_ROOT, 'scripts', 'start.mjs')], {
     env: { ...launcherSpawnEnv(), ...env, P2SDK_HOME: home, P2SDK_HANDOFF: handoff, P2SDK_PORT: '0', P2SDK_READY_TIMEOUT_MS: '60000' },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -123,7 +124,7 @@ async function killTree9(parent: ChildProcess): Promise<void> {
 
 /** Fake-provider overlay, copied from tests/e2e/restart.test.ts fakeOverlay() (same profile rows). */
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-t08-patch-'))
+  const dir = tmkdir('p2sdk-t08-patch-')
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
 # T-08 generated fake-provider overlay (tests/e2e/security.test.ts).
@@ -220,7 +221,7 @@ it('① ss process-tree criterion: every runtime listener is loopback', async ()
 
 it('② admission: no cookie 401, cross-site 403, /connect?token cookie works', async () => {
   clearRealKeys()
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-t08-auth-'))
+  const home = tmkdir('p2sdk-t08-auth-')
   const rt = await boot(home, { P2SDK_PROVIDER: 'mock' })
   const envelope = JSON.stringify({
     type: 'client-request', rpcId: 'p2sdk-t08-auth', method: 'session/list', payload: { args: {} },
@@ -257,7 +258,7 @@ it('② admission: no cookie 401, cross-site 403, /connect?token cookie works', 
 it('③ sentinel leak scan: fake run -> kill -9 -> restart -> 0 hits everywhere', async () => {
   clearRealKeys()
   const sentinel = newSentinel()
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-t08-scan-'))
+  const home = tmkdir('p2sdk-t08-scan-')
   const keyEnv = { P2SDK_PROVIDER: 'mock', P2SDK_PATCH: fakeOverlay(), P2SDK_LLM_API_KEY: sentinel }
 
   const rt1 = await boot(home, keyEnv)
@@ -284,7 +285,7 @@ it('③ sentinel leak scan: fake run -> kill -9 -> restart -> 0 hits everywhere'
   expect(sessionFiles.length, `session storage files exist (suffixes: ${suffixes.join(',') || 'none'})`).toBeGreaterThan(0)
   expect(suffixes, `session storage format probe: ${suffixes.join(',')}`).toContain('.zstd')
 
-  const logDir = mkdtempSync(join(tmpdir(), 'p2sdk-t08-logs-'))
+  const logDir = tmkdir('p2sdk-t08-logs-')
   const log1 = join(logDir, 'boot1.log')
   writeFileSync(log1, `${logs1.stdout}\n--stderr--\n${logs1.stderr}`)
   const l2 = rt2.logs()
@@ -304,7 +305,7 @@ it('③ sentinel leak scan: fake run -> kill -9 -> restart -> 0 hits everywhere'
 
 it('④ scanner positive control: sentinel in zstd frame 2 and in a plain log both FAIL the scan', async () => {
   const sentinel = newSentinel()
-  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-t08-pos-'))
+  const dir = tmkdir('p2sdk-t08-pos-')
   const sessionDir = join(dir, 'sessions', 'ws', 'session-00000000-0000-0000-0000-000000000000')
   mkdirSync(sessionDir, { recursive: true })
   const zstdFile = join(sessionDir, 'session.v4.jsonl.zstd')
@@ -325,7 +326,7 @@ it('④ scanner positive control: sentinel in zstd frame 2 and in a plain log bo
 
   // A compression the scanner does not recognize (gzip) inside a scanned home
   // must FAIL the scan rather than be skipped (③ rule: 认不出的格式判 FAIL).
-  const gzipDir = mkdtempSync(join(tmpdir(), 'p2sdk-t08-gzip-'))
+  const gzipDir = tmkdir('p2sdk-t08-gzip-')
   mkdirSync(join(gzipDir, 'sessions'), { recursive: true })
   writeFileSync(join(gzipDir, 'sessions', 'session.v5.jsonl.gz'), gzipSync('{"type":"user/message"}\n'))
   const gz = scan({ secret: sentinel, home: gzipDir })
@@ -335,7 +336,7 @@ it('④ scanner positive control: sentinel in zstd frame 2 and in a plain log bo
 }, 60_000)
 
 it('④b scanner guards: refuses non-pnpm invocation and Node <24.9', async () => {
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-t08-guard-'))
+  const home = tmkdir('p2sdk-t08-guard-')
   // Bare node (no pnpm markers in env): the pnpm guard must refuse.
   const bare = spawnSync(process.execPath, [SCAN, '--home', home], {
     env: { ...process.env, P2SCAN_SECRET: 'x', npm_config_user_agent: '' },
@@ -364,7 +365,7 @@ it('④b scanner guards: refuses non-pnpm invocation and Node <24.9', async () =
 // repo) must be skipped, not read as a file (EISDIR) into unrecognized.
 it('④c directory entry in the scan set is skipped, not UNRECOGNIZED', async () => {
   const sentinel = newSentinel()
-  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-t20-dir-'))
+  const dir = tmkdir('p2sdk-t20-dir-')
   const sub = join(dir, 'vendor-gitlink-like') // exists as a directory, empty like an uninitialized submodule
   mkdirSync(sub)
   const res = scan({ secret: sentinel, files: [sub] })
@@ -386,7 +387,7 @@ it.skipIf(!REAL_KEY)('⑤ real-key D2 smoke re-scan: same scanner, key from env,
     console.log('  ⑤ skipped: LiteLLM endpoint not reachable (offline netns or endpoint down)')
     return
   }
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-t08-real-'))
+  const home = tmkdir('p2sdk-t08-real-')
   const rt = await boot(home, { P2SDK_LLM_API_KEY: REAL_KEY }) // real provider mode
   const d2 = spawnSync('pnpm', ['-C', PKG_ROOT, 'exec', 'node', 'examples/min-client.mjs', '你好'], {
     env: {
@@ -403,7 +404,7 @@ it.skipIf(!REAL_KEY)('⑤ real-key D2 smoke re-scan: same scanner, key from env,
   })
   expect(d2.status, `D2 smoke must pass first (T-01④ scenario):\n${d2.stdout}\n${d2.stderr}`).toBe(0)
 
-  const logDir = mkdtempSync(join(tmpdir(), 'p2sdk-t08-real-logs-'))
+  const logDir = tmkdir('p2sdk-t08-real-logs-')
   const bootLog = join(logDir, 'boot.log')
   writeFileSync(bootLog, `${rt.logs().stdout}\n--stderr--\n${rt.logs().stderr}`)
   const d2Log = join(logDir, 'min-client.out')
@@ -450,7 +451,7 @@ it('⑥ real provider path sentinel: loopback stub receives the Bearer key, disk
   await new Promise<void>((resolve) => stub.listen(0, '127.0.0.1', () => resolve()))
   const port = (stub.address() as AddressInfo).port
   try {
-    const home = mkdtempSync(join(tmpdir(), 'p2sdk-t08-prov-'))
+    const home = tmkdir('p2sdk-t08-prov-')
     const rt = await boot(home, { P2SDK_LLM_API_KEY: sentinel, P2SDK_LLM_BASE_URL: `http://127.0.0.1:${port}` })
 
     const sid = await createSession(rt.client, home)
@@ -474,7 +475,7 @@ it('⑥ real provider path sentinel: loopback stub receives the Bearer key, disk
     stream.cancel()
     void drained
 
-    const logDir = mkdtempSync(join(tmpdir(), 'p2sdk-t08-prov-logs-'))
+    const logDir = tmkdir('p2sdk-t08-prov-logs-')
     const logFile = join(logDir, 'boot.log')
     writeFileSync(logFile, `${rt.logs().stdout}\n--stderr--\n${rt.logs().stderr}`)
     const res = scan({ secret: sentinel, prefix: CANARY_PREFIX, home, files: [logFile], pids: processTree(rt.child.pid!), tracked: true })

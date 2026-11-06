@@ -31,6 +31,7 @@ import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
 import { issuePermit } from '../../src/policy/request-net.mjs'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const TEST_HOME = join(PKG_ROOT, '.test-homes', 'p5-22')
@@ -105,7 +106,7 @@ function sentryCommand(): string {
 }
 
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-22-patch-'))
+  const dir = tmkdir('p5-22-patch-')
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
 - id: agent-default-model

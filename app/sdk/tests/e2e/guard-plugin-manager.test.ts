@@ -51,7 +51,7 @@ const runtimes: PmRuntime[] = []
 
 /** fake LLM + llm/stream 记录器（工具表断言用）。 */
 function recorderOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-03-patch-'))
+  const dir = tmkdir('p5-03-patch-')
   writeFileSync(join(dir, 'recorder.mjs'), `\
 // P5-03 request-side recorder: per-request tool names at llm/stream.
 import { appendFileSync } from 'node:fs'
@@ -96,7 +96,7 @@ export function apply(ctx) {
 
 /** stock 差分：禁用 p2sdk-fs-guard（guard-fs.test.ts 同款）。 */
 function stockOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-03-stock-'))
+  const dir = tmkdir('p5-03-stock-')
   const overlay = join(dir, 'stock.yml')
   writeFileSync(overlay, `\
 # P5-03 差分对照：恢复 stock（无 plugin_manager 名字 NEVER）
@@ -108,7 +108,7 @@ function stockOverlay(): string {
 
 /** 后层 patch 重新启用该行：preset-standard 的最小 config，只挂 tool-plugin-manager。 */
 function reenableOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-03-reenable-'))
+  const dir = tmkdir('p5-03-reenable-')
   const overlay = join(dir, 'reenable.yml')
   writeFileSync(overlay, `\
 # P5-03 ②/③ 前提：后层 --patch 按 id 覆盖 preset-standard 的 config.plugins，

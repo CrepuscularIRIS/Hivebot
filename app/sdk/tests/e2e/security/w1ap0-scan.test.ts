@@ -8,6 +8,7 @@
 //      /proc/<pid>/cmdline —— canary 值 0 命中（deny 原因只带路径不带值）。
 // ③b：正对照（T-08 ④ 同法）：canary 植入 zstd 第 2 帧与明文日志 → 扫描器必须
 //      FAIL 并只报路径 + 前缀，绝不回显值。
+import { tmkdir } from '../../support/tmp-sweep.ts'
 import { spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -34,7 +35,7 @@ const runtimes: Runtime[] = []
 const feeds: Feed[] = []
 
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-06-scan-patch-'))
+  const dir = tmkdir('p5-06-scan-patch-')
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
 - id: agent-default-model
@@ -191,7 +192,7 @@ it('③a 矩阵缩影运行后：会话存储 / 日志 / 进程 cmdline 全扫�
     expect(text, '结果不含 canary 值').not.toContain(canary)
   }
 
-  const logDir = mkdtempSync(join(tmpdir(), 'p5-06-scan-logs-'))
+  const logDir = tmkdir('p5-06-scan-logs-')
   const log = join(logDir, 'boot.log')
   writeFileSync(log, rt.readStderr())
   const res = scan({ secret: canary, prefix: CANARY_PREFIX, home: rt.home, files: [log], pids: processTree(rt.child.pid!), tracked: true })
@@ -201,7 +202,7 @@ it('③a 矩阵缩影运行后：会话存储 / 日志 / 进程 cmdline 全扫�
 })
 
 it('③b 扫描器正对照：zstd 第 2 帧与明文日志的 canary 都必须 FAIL 扫描', { timeout: 120_000 }, async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-06-scan-pos-'))
+  const dir = tmkdir('p5-06-scan-pos-')
   const sessionDir = join(dir, 'sessions', 'ws', 'session-00000000-0000-0000-0000-000000000000')
   mkdirSync(sessionDir, { recursive: true })
   const zstdFile = join(sessionDir, 'session.v4.jsonl.zstd')

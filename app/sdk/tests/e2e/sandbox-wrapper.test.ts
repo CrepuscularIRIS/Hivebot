@@ -71,10 +71,10 @@ describe('⑤ wrapper 内部错误（一切错误 bwrap: 前缀、非零、不 e
 
 describe('挂载序（dry-run，PLAN P5-01 挂载顺序逐段）', () => {
   it('base → --unshare-net → 遮蔽 → 工具链挂回 → 工作区重 bind → 策略根 → 再遮 → 命令', () => {
-    const ws = mkdtempSync(join(tmpdir(), 'p5-01-ws-'))
-    const maskDir = mkdtempSync(join(tmpdir(), 'p5-01-mask-'))
-    const tool = mkdtempSync(join(tmpdir(), 'p5-01-tool-'))
-    const policy = mkdtempSync(join(tmpdir(), 'p5-01-policy-'))
+    const ws = tmkdir('p5-01-ws-')
+    const maskDir = tmkdir('p5-01-mask-')
+    const tool = tmkdir('p5-01-tool-')
+    const policy = tmkdir('p5-01-policy-')
     const neverUnderTool = join(tool, '.condarc')
     writeFileSync(neverUnderTool, 'x')
     const argv = dryRun(['--home', '/tmp/p5-01-nohome', '--mask', maskDir, '--never', neverUnderTool, '--tool', tool, '--policy', policy,
@@ -109,7 +109,7 @@ describe('挂载序（dry-run，PLAN P5-01 挂载顺序逐段）', () => {
 
 describe('⑧④ 前置：HOME 祖先拒绝（决策 13 ④）与再遮闭合', () => {
   it('工作区等于/是任一 HOME 的祖先 → bwrap: 拒绝、不 exec；工作区在 HOME 之下放行', () => {
-    const home = mkdtempSync(join(tmpdir(), 'p5-01-home-'))
+    const home = tmkdir('p5-01-home-')
     const inside = join(home, 'ws')
     mkdirSync(inside)
     // 等值 → 拒
@@ -127,7 +127,7 @@ describe('⑧④ 前置：HOME 祖先拒绝（决策 13 ④）与再遮闭合', 
   })
 
   it('再遮：mask 根 == 工作区 → 整根 tmpfs 垫底（⑨ 的再遮一步）', () => {
-    const dataDir = mkdtempSync(join(tmpdir(), 'p5-01-data-'))
+    const dataDir = tmkdir('p5-01-data-')
     writeFileSync(join(dataDir, 'standing-grants.json'), '{}')
     const argv = dryRun(['--home', '/tmp/p5-01-nohome', '--mask', dataDir, '--never', join(dataDir, 'standing-grants.json'),
       ...profileArgs(dataDir), '--', '/bin/true'])
@@ -166,9 +166,9 @@ describe('真实 exec 冒烟（不经 dry-run）', () => {
   })
 
   it('遮蔽目录内哨兵不可见、命令退出码透传', () => {
-    const secret = mkdtempSync(join(tmpdir(), 'p5-01-secret-'))
+    const secret = tmkdir('p5-01-secret-')
     writeFileSync(join(secret, 'sentinel'), 'x')
-    const ws = mkdtempSync(join(tmpdir(), 'p5-01-ws-'))
+    const ws = tmkdir('p5-01-ws-')
     const res = runWrapper(['--home', '/tmp/p5-01-nohome', '--mask', secret, ...profileArgs(ws), '--',
       '/bin/sh', '-c', 'test -e ' + join(secret, 'sentinel')])
     expect(res.status, `遮蔽后哨兵不可见（stderr: ${res.stderr}）`).toBe(1)

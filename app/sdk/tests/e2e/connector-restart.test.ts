@@ -29,6 +29,7 @@ import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { sendPrompt, waitForDelta, waitForTurnEnd, type Frame } from '../support/fake/harness.ts'
 import { launcherSpawnEnv } from '../support/runtime.ts'
 import { BUNDLE_NAME, MARKET_YML, writeBundleFixture } from '../market/support.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -103,7 +104,7 @@ async function killTree9(parent: ChildProcess): Promise<void> {
 
 /** Fake overlay (restart.test.ts pattern): scripted p2fake provider. */
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-t15-patch-'))
+  const dir = tmkdir('p2sdk-t15-patch-')
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
 # T-15 generated fake-provider overlay (tests/e2e/connector-restart.test.ts).
@@ -172,9 +173,9 @@ async function runTurn(client: DshClient, sessionId: string, prompt: string, fir
 const errText = (e: unknown): string => (e instanceof Error ? `${e.message}` : String(e))
 
 it('T-15① connector bot across restart: list/events survive; follow+prompt on the old session recover (target semantics, expected red)', async () => {
-  const scratch = mkdtempSync(join(tmpdir(), 'p2sdk-t15-a-'))
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-t15-home-'))
-  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-t15-h-'))
+  const scratch = tmkdir('p2sdk-t15-a-')
+  const home = tmkdir('p2sdk-t15-home-')
+  const handoff = tmkdir('p2sdk-t15-h-')
   const patch = `${MARKET_YML}:${fakeOverlay()}`
   const cwd = join(home, 'workspace')
   mkdirSync(cwd, { recursive: true })

@@ -17,6 +17,7 @@ import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { uniqueTestHome } from '../support/sandbox-home.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const TEST_HOME = uniqueTestHome('p5-02') // P5-H3：运行级唯一（防并行全量互踩哨兵）
@@ -41,7 +42,7 @@ interface GuardRuntime extends Runtime {
 const runtimes: GuardRuntime[] = []
 
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-02-patch-'))
+  const dir = tmkdir('p5-02-patch-')
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
 - id: agent-default-model
@@ -64,7 +65,7 @@ function fakeOverlay(): string {
 
 /** stock 差分：禁用两层文件 guard 并恢复上游 fs（文件工具不走 shell wrapper）。 */
 function stockOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-02-stock-'))
+  const dir = tmkdir('p5-02-stock-')
   const overlay = join(dir, 'stock.yml')
   writeFileSync(overlay, `\
 # P5-02 差分对照：恢复 stock（无文件工具 guard，包括 P6-25.f1 执行层）
@@ -525,7 +526,7 @@ it('⑥ 例外：workspaceRoot 子树读写放行、同级与顶层 deny；工�
   expect(condarc.text).toContain('p2sdk-fs-guard')
 
   // /tmp 数据根（mkdtemp）：例外只取 header.cwd 子树
-  const tmpData = mkdtempSync(join(tmpdir(), 'p5-02-tmpdata-'))
+  const tmpData = tmkdir('p5-02-tmpdata-')
   mkdirSync(join(tmpData, 'workspaces', 'x'), { recursive: true })
   mkdirSync(join(tmpData, 'workspaces', 'other-bot'), { recursive: true })
   writeFileSync(join(tmpData, 'workspaces', 'x', 'f.txt'), 'p502-tmpx')
@@ -566,7 +567,7 @@ it('⑧ 正对照：read 普通工作区文件与 /etc/hostname 成功（不越�
 }, 120_000)
 
 it('⑨ runtime patch 缺 guard 行（config 覆盖为空）→ launcher 非零退出并报原因', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-02-noguard-'))
+  const dir = tmkdir('p5-02-noguard-')
   const overlay = join(dir, 'noguard.yml')
   writeFileSync(overlay, `\
 # P5-02 ⑨：模拟 guard 行缺失（approval.yml 的 insert 行无 roots）。

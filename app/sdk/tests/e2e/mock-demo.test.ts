@@ -50,7 +50,7 @@ it('boots in a mkdtemp home with a 0600 launch token and no token in output', as
 
 it('serves the session API over loopback to the connected client', async () => {
   // f3 R1: the session cwd is an independent work dir, not under P2SDK_HOME.
-  const work = mkdtempSync(join(tmpdir(), 'p2sdk-work-'))
+  const work = tmkdir('p2sdk-work-')
   const { sessionId } = await rt.client.call('session/create', { request: { cwd: work } })
   expect(typeof sessionId).toBe('string')
   // Parameterless typert methods take a `_request` placeholder field.
@@ -79,8 +79,8 @@ it('min-client self-assertions pass under the mock provider', async () => {
 }, 120_000)
 
 it('startRuntime boots in-process (coverage for src/start.ts runtime path)', async () => {
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-main-'))
-  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-main-ho-'))
+  const home = tmkdir('p2sdk-main-')
+  const handoff = tmkdir('p2sdk-main-ho-')
   const handle = startRuntime(resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: home, P2SDK_HANDOFF: handoff }))
   expect(await handle.ready).toBe(true)
   expect(existsSync(join(handoff, 'launch-token'))).toBe(true)
@@ -91,7 +91,7 @@ it('startRuntime boots in-process (coverage for src/start.ts runtime path)', asy
 }, 120_000)
 
 it('main returns non-zero when no ready line arrives within the timeout', async () => {
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-slow-'))
+  const home = tmkdir('p2sdk-slow-')
   // P5-H1: 显式传 handoff——省略会触发 src/start.ts:71 生产兜底在测试进程里建
   // p2sdk-handoff-*（登记簿看不到，成为唯一漏网的 handoff）
   const handoff = tmkdir('p2sdk-handoff-')

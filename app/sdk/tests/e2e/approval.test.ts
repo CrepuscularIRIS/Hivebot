@@ -30,6 +30,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, sendPrompt, waitFor, type Frame } from '../support/fake/harness.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -48,7 +49,7 @@ const PRESET_ONLY = process.env.P2SDK_T07_PRESET_ONLY === '1'
 
 /** Fake overlay: the scripted provider, T-02 pattern (tests/support/fake/plugin.mjs). */
 function buildFakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-t07-patch-'))
+  const dir = tmkdir('p2sdk-t07-patch-')
   const overlay = join(dir, 't07-overlay.yml')
   writeFileSync(
     overlay,
@@ -75,7 +76,7 @@ function buildFakeOverlay(): string {
 
 /** Preset-only probe overlay: disable the launcher's DEFAULT shell-ask row (T-12). */
 function buildNoAskOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-t12-noask-'))
+  const dir = tmkdir('p2sdk-t12-noask-')
   const overlay = join(dir, 'no-ask.yml')
   writeFileSync(overlay, `\
 # T-12 preset-only probe: turn the default-mounted approval policy off.

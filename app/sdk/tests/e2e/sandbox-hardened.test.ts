@@ -15,7 +15,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { uniqueTestHome } from '../support/sandbox-home.ts'
-import { trackTmpDir } from '../support/tmp-sweep.ts'
+import { trackTmpDir, tmkdir } from '../support/tmp-sweep.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
 
@@ -52,7 +52,7 @@ const runtimes: SandboxRuntime[] = []
 
 /** fake LLM overlay（approval.test.ts buildFakeOverlay 同款）。 */
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-01-patch-'))
+  const dir = tmkdir('p5-01-patch-')
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
 - id: agent-default-model
@@ -75,7 +75,7 @@ function fakeOverlay(): string {
 
 /** stock 差分 overlay：patch 行整体替换 config → runnerCommand 回缺省空表（上游默认 bwrap/探测链）。 */
 function stockOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-01-stock-'))
+  const dir = tmkdir('p5-01-stock-')
   const overlay = join(dir, 'stock.yml')
   writeFileSync(overlay, `\
 # P5-01 差分对照：恢复 stock 沙箱（无 runnerCommand）
@@ -88,7 +88,7 @@ function stockOverlay(): string {
 
 /** ⑤ 用：把 runnerCommand 整体换成给定 argv（缺 wrapper / 坏参数注入）。 */
 function runnerOverlay(runnerCommand: string[]): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-01-runner-'))
+  const dir = tmkdir('p5-01-runner-')
   const overlay = join(dir, 'runner.yml')
   const q = (s: string): string => `'${s.replaceAll("'", "''")}'`
   writeFileSync(overlay, `\
@@ -422,7 +422,7 @@ it('④ 宿主 /tmp 预置哨兵不可见（既有防护：--tmpfs /tmp，stock 
 }, 120_000)
 
 it('⑤ fail closed：wrapper 文件缺失（Errno 2 诊断）与内部错误（bwrap: 前缀），命令未执行、标记不存在', async () => {
-  const missingWrap = join(mkdtempSync(join(tmpdir(), 'p5-01-missing-')), 'bwrap-wrap.py')
+  const missingWrap = join(tmkdir('p5-01-missing-'), 'bwrap-wrap.py')
   const rtA = await launchSandbox({ extraPatch: runnerOverlay(['/usr/bin/python3', '-I', missingWrap]) })
   const wsA = join(TEST_HOME, 'ws5a')
   mkdirSync(wsA, { recursive: true })
@@ -565,7 +565,7 @@ it('⑨ 数据根：未设 PBOTS_DATA_DIR 恰 1 行 WARN、cwd=缺省数据根�
     ['PBOTS_DATA_DIR', { PBOTS_DATA_DIR: 'rel/data' }],
     ['P2SDK_SANDBOX_MASK', { P2SDK_SANDBOX_MASK: 'rel/mask' }],
   ] as const) {
-    const home = mkdtempSync(join(tmpdir(), 'p5-01-relerr-'))
+    const home = tmkdir('p5-01-relerr-')
     const res = spawnSync(process.execPath, [join(PKG_ROOT, 'scripts', 'start.mjs')], {
       env: { PATH: process.env.PATH!, HOME: TEST_HOME, P2SDK_PROVIDER: 'mock', P2SDK_HOME: home, P2SDK_HANDOFF: join(home, 'ho'), ...env },
       encoding: 'utf8',

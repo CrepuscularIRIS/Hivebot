@@ -25,6 +25,7 @@ import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { uniqueTestHome } from '../support/sandbox-home.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const TEST_HOME = uniqueTestHome('p5-21') // P5-H3：运行级唯一（防并行全量互踩哨兵）
@@ -54,7 +55,7 @@ interface TierRuntime extends Runtime {
 const runtimes: TierRuntime[] = []
 
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-21-patch-'))
+  const dir = tmkdir('p5-21-patch-')
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
 - id: agent-default-model
@@ -341,7 +342,7 @@ it('④ A3 后半: read 工作区外非凭证文件出卡，重复同一调用�
 it('③a A9 ①②③: 档位表坏 → ALWAYS/ASK 全退 ASK + 日志行；NEVER（guard）不降级、无卡可批、无副作用', { timeout: 300_000 }, async () => {
   // overlay 的 config 整键替换 runtime patch 行（同 id）。坏表分支在门控之前短路，
   // handoff 缺失（instance 算不出 → 门关）不影响「全退 ASK」的判定，无需重述。
-  const dir = mkdtempSync(join(tmpdir(), 'p5-21-corrupt-'))
+  const dir = tmkdir('p5-21-corrupt-')
   const overlay = join(dir, 'corrupt-tiers.yml')
   writeFileSync(overlay, `\
 # P5-21 ③：注入坏档位表（config.tiers 覆盖文件表；A9 ② 用非法值）
@@ -387,7 +388,7 @@ it('③b A9 ⑤: wrapper 不可执行 → 第 1 行不出卡（asked 0）且命�
   const broken = join(TEST_HOME, 'broken-wrap.py')
   copyFileSync(join(PKG_ROOT, 'sandbox', 'bwrap-wrap.py'), broken)
   chmodSync(broken, 0o000) // 不可读：python3 -I 在加载脚本前即失败（[Errno 13]）
-  const dir = mkdtempSync(join(tmpdir(), 'p5-21-runner-'))
+  const dir = tmkdir('p5-21-runner-')
   const overlay = join(dir, 'runner.yml')
   const q = (s: string): string => `'${s.replaceAll("'", "''")}'`
   writeFileSync(overlay, `\
@@ -421,7 +422,7 @@ function ptcBootstrapSource(): string {
 it('⑤ A9 ⑦: 子会话（never）ALWAYS 类照常执行且在 wrapper 内，ASK 类拒，NEVER 类拒', { timeout: 420_000 }, async () => {
   const bootstrap = join(WS, '.p521-ptc-boot.mjs')
   copyFileSync(ptcBootstrapSource(), bootstrap)
-  const dir = mkdtempSync(join(tmpdir(), 'p5-21-sub-'))
+  const dir = tmkdir('p5-21-sub-')
   const overlay = join(dir, 'sub.yml')
   writeFileSync(overlay, `\
 # P5-21 ⑤：fake provider + ptc worker 覆盖（subagent-policy.test.ts 同法）

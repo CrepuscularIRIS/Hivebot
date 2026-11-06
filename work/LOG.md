@@ -1006,3 +1006,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 10:12 T7a整枝合并落地 | 终验前置提交（⑥per-case真落盘+原样diff）→ feat/T7a 整枝 --no-ff → 主仓回测：e2e 2 passed（skills-enable+ws-write）、unit 114 绿（skills 11+m3 103）、worktree清、零残留。BRIEF验收②「存→启用→复用」后端全通（审阅卡=T7c待做）。T7b第2步解锁。下一步：T7b（对话框UI，第1步参照图早可做）∥T9a；之后T7c→T16→T9b。
 2026-11-06 10:23 T7b施工完 | R3止损降级（Context对话框入口仅在team设置面）→静态参照笔记（六文案键+sand骨架+容器差异口径）；shim透传pbots.skills、SkillsSection+SkillsDialog（候选带来源bot名、limit/too-large可读提示、离线禁用）；e2e两格磁盘断言全链绿+M1红（不调enable→磁盘断言红）；四张截图ours归档ref/；回测3 passed、上游diff=0。下一手：T9a∥T7c。
 2026-11-06 10:24 哨兵#1 | load11、无429。T7b施工完→派终验（并行）；开工T9a。
+2026-11-06 13:34 T7cd+T9ac 修完 | T7cd：realpathSync 假路径回退（try/catch）→policy 72绿+skill-card 9绿。T9ac：extraNeverTools 缩进 6→4 格（roots内→config级）→unit 64绿+e2e 3绿。两个都是 manager 任务C 诊断出的产品 bug。

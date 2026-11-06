@@ -4,7 +4,8 @@
 > 来源：`work/tickets/receipts/T7a.md`「附记：e2e 阻塞的完整诊断链」；T5 复审附带初判（`work/tickets/review/T5-design.md` 末节：像产品缺陷，建议单开、不并 T9）
 > 分支 / 作业目录：feat/T14 @ /tmp/bot-wt/T14
 > claimed：06:18 main (GLM 5.3) @ 5972d24d（施工开始时由主 agent 填：日期、起点 SHA）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-06 @ b8b243c5（feat/T14）——**结论 REFUTED：非产品缺陷**（测试装置两侧数据根分叉，guard 拒得对）；无产品改动，验收 1/2/4/5b 不适用，验收 6 由 T7a e2e 1 passed 兑现
+> 经理验收（任务 B）：亲跑 SDK `ws-write-claim.test.ts` 3 passed；UI `ws-write.spec.ts` 1 passed（write isError=false，文件落 `<home>/data/workspaces/<id>`）。抽核根因：`launchShell` 经 `shellChildEnv`（`tests/support/sdk-env.ts`）给 main 显式注入 `PBOTS_DATA_DIR=<shellHome>/data`，旧 spec 的 runtime 用另一个 dataDir → 两棵树；对齐版（`workspaces.spec.ts:19-25` launchAligned 同法）成立。生产两侧都落 `~/.config/pbots-ui`（app 名 `pbots-ui`，`sdk/src/start.ts:78-83`），默认布局一致；`XDG_CONFIG_HOME` 非缺省时的分叉风险记 queue 提议。遗留（不阻塞，记 queue）：`ws-write.spec.ts` 留着 `[T14-ins]` 插桩与「3 秒 follow + 一次性读 requests.jsonl」，违背 LEARNINGS「一律轮询」；注释「main 缺省 userData」说法不准。
 
 ## 目标
 T7a 的 e2e 里，bot 用 `write` 写 `<dataDir>/workspaces/<botId>/.dsh/...`（它自己的工作区）被 `p2sdk-fs-guard: masked area` 拒，三种数据根布局都复现。guard 的软遮蔽例外只认 `sandboxPolicy.resolve({session}).workspaceRoot`（`app/sdk/src/policy/guard.mjs:284-295`、例外判定 `guard.mjs:165`），拒 = 这里拿到的是 undefined。T6 用同一套 guard 却成功。如果这是产品组合的通病，**产品里所有 bot 都写不了自己的工作区**（现有 UI e2e 只测过 bash，`app/ui/tests/e2e/workspaces.spec.ts:1-6`，文件工具在 UI 组合下可能从没被测过）。本单：最小复现 → 找根因 → 在根因处修 → 回归。

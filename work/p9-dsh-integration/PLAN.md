@@ -55,6 +55,7 @@
 6. helper 用 pnpm 自带的 Node 24（系统 node 是 v22.23.4；`--disable-sigusr1` 等按 Node 24 测）。
 7. 连接不重连、不重放（`docs/subsystems/ssh.md` §Process lifetime）：断线后操作报「结果未知」——产品接入时 UI 要能表达。
 8. dsh 文档写明 Web workspace 视图假定宿主文件系统（`ssh/ssh/README.md` §Known Limitations），我们关掉了 web UI 行，影响面待 T4 实测。
+9. **AllowTcpForwarding 与 streamlocal 耦合（T2 实证，2026-11-06）**：OpenSSH 9.6p1 下 `AllowTcpForwarding no` 会拒绝 direct-streamlocal 的 connect（`channel_connect_to_path` 吃 `do_authenticated` 按 FORWARD_LOCAL 装配的许可集；`allow_streamlocal_forwarding yes` 只放行 channel-open）。私有 sshd 夹具必须 `AllowTcpForwarding local`（最小档：direct 方向放行、远端监听仍拒）。见 receipts/T2.md §5.1。
 
 ## 4. 工单计划
 
@@ -63,8 +64,8 @@
 | 工单 | 内容 | 状态 |
 |---|---|---|
 | T1 | P5-H5a：unit / support / market / examples 裸 mkdtemp → tmkdir，残留计数 RED | open |
-| T2 | L8-a：私有 sshd 测试夹具 + 装 dsh ssh 族 + 连接级验收 | open |
-| T3 | L4-a：0.78.1 skill 生命周期 RE（派 reverse-engineer） | open |
+| T2 | L8-a：私有 sshd 测试夹具 + 装 dsh ssh 族 + 连接级验收 | 施工完（feat/T2 @63f3f70，6/6 绿，待审+验收） |
+| T3 | L4-a：0.78.1 skill 生命周期 RE（派 reverse-engineer） | 施工完（RE-skills.md 七问全答，待验收抽查锚点） |
 | T4 | L8-b：headless 真组合 + llm-replay，bash/写文件经 ssh 落到远端 | 计划（等 T2） |
 | T5 | L8-c：architect 出 `DESIGN-ssh-composition.md`（与 fs-zone/guard/shell-ask/P6 cwd 的组合；进程级 vs preset isolate） | 计划（等 T4） |
 | T6 | L4-b：skill 根收口（关 `~/.agents` 泄漏）+ bot 在对话里存 skill 的真组合 e2e | 计划（等 T3） |
@@ -74,8 +75,8 @@
 ## 5. 核实不了 / 存疑（单列）
 
 1. **ssh 能否按 preset 隔离**（只给部分 bot 远端电脑）：Loader 支持 `isolate`（`docs/user/develop/framework/service.md` §Service isolation，preset 里也在用，`bundle/web-app/presets/standard.patch.yml:51`），但上游只文档化进程级 ssh 组合；`bash-sandbox`、`sandbox-policy`、`working-directory` 都在顶层，isolate 后是否全链跟着切未知。T4 只测进程级，T5 再决定。
-2. **subprocess-ssh 的 env 是否叠加在远端 helper 环境之上**：schema 写「Explicit child environment; null encodes an environment tombstone」（`ssh/ssh/src/schemas.ts:64`）、helper 侧按覆盖层处理（`helper-processes.ts:180-186`），看起来是叠加，但未实跑。T2 用远端专属环境变量做「确实在远端执行」的证明，若不成立按工单停下回报。
-3. **npm 版 dsh-ssh 的 helper.js 在 pnpm 布局下能否解析其 peer**（fs-local / sandbox-local 等）：peer 版本精确匹配，理论可行，未实装。
+2. **[已证 2026-11-06，T2]** subprocess-ssh 的 env 叠加在远端 helper 环境之上：PBOTS_SSH_MARK 经 sshd SetEnv/ForceCommand 注入 helper 会话，未显式传给 spawn 仍出现在子进程 stdout（receipts/T2.md §5.2）。
+3. **[已证 2026-11-06，T2]** npm 版 dsh-ssh 的 helper.js 在 pnpm 布局下 peer 解析正常（realpath 进 .pnpm store 有效，ready/fs/subprocess/sandbox 全通）。
 4. **真实远程主机怎么装 helper**：helper 可执行包不上 npm；GitHub release 是否附 `dsh-ssh-helper-*.tar.gz` 未核（`list_releases` 只看了标签）。本机测试不受影响。
 5. **原版「对话里存 skill」是否要用户审批**：看到 `ProposeSkills` 工具名与 `GrokBotTeamReviewSkillChange`，未看到调用链 → T3 定。
 6. **原版 bot 的电脑是每账户一台还是每 bot 一台**：BRIEF L8 写「bot 共用一台电脑」，与进程级 ssh 吻合；未在 0.78.1 里核。T5 设计前由 RE 补一句锚点即可，不必问用户。

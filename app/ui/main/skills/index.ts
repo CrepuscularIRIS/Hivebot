@@ -1,12 +1,16 @@
-// T7a（L4-c）：main 侧 skill 启用 API——list / enable / disable。
+// T7a（L4-c）+ T7ab：main 侧 skill 启用 API——list / enable / disable。
 // 语义（RE-skills Q2/Q4/Q7）：启用 = 复制快照到目标 bot 私有根
 // <dataDir>/workspaces/<botId>/.dsh/skills/<name>/（T6 已证按 bot 私有、dsh 下一请求即发现）；
 // 停用 = 删副本；改源不联动。「你的 skills」= 各 bot 私有根的并集（派生视图，本单不另建库目录；
 // ponytail: A 删源后该 skill 从并集消失——独立库等「Add new skill / 文件导入」时再建）。
-// 信任边界：这是渲染进程能调的写文件入口——botId/name 正则 + 工作区 lstat（拒符号链接）、
-// 源树只许常规文件与目录（符号链接会把「复制」变「引用」）、字符数上限、250 条上限、staging 原子落位。
+// 信任边界（T7ab 补全）：渲染进程能调、由不在沙箱里的 main 执行的写/删入口，而 bot 工作区
+// 内容 bot 自己能改（含 ln -s）——每层路径 lstat 拒链接：workspaces/<botId>（assertBotDir）、
+// 其下 .dsh 与 .dsh/skills（assertSkillLayers）、源树只许常规文件与目录（assertPlainTree）、
+// 复制不用 fs.cp（会跟目录链接）而逐项 lstat 后读写（copyPlainTree）。
+// ponytail: 检查与写入之间 bot 并发 ln -s 仍可竞争（TOCTOU）——Node 无 openat/O_NOFOLLOW
+// 逐层打开的现成 API；出现真实攻击面时再换底层。
 import { randomUUID } from 'node:crypto'
-import { cp, lstat, mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { lstat, mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 export type SkillsResult =
@@ -47,8 +51,39 @@ function parseFrontmatter(text: string): { name?: string; description?: string }
 
 const skillsRoot = (dataDir: string, botId: string): string => join(dataDir, 'workspaces', botId, '.dsh', 'skills')
 
+/** 工作区目录本身：必须 lstat 是真目录（符号链接=把写/删引到工作区外，拒）。 */
+async function assertBotDir(dataDir: string, botId: string): Promise<SkillsResult | null> {
+  if (!BOT_ID_RE.test(botId)) return invalidArgs(`bad botId: ${botId}`)
+  try {
+    const st = await lstat(join(dataDir, 'workspaces', botId))
+    if (!st.isDirectory()) return invalidArgs(`not a directory: ${botId}`)
+  } catch { return fail('not-found', `bot workspace not found: ${botId}`) }
+  return null
+}
+
+/** T7ab：工作区之下 .dsh 与 .dsh/skills 逐层——存在且不是真目录（含符号链接）→ 拒；
+ * 不存在则照旧（enable 由 mkdir 新建）。staging 在 .dsh 下，.dsh 过检即覆盖。 */
+async function assertSkillLayers(dataDir: string, botId: string): Promise<SkillsResult | null> {
+  for (const seg of ['.dsh', join('.dsh', 'skills')]) {
+    const p = join(dataDir, 'workspaces', botId, seg)
+    try {
+      const st = await lstat(p)
+      if (!st.isDirectory()) return invalidArgs(`not a real directory: ${seg} of bot ${botId}`)
+    } catch { /* 不存在=合法，enable 会建 */ }
+  }
+  return null
+}
+
+/** list 扫候选 bot 时用：链接化/异形工作区直接跳过该 bot（不读链接后的内容，不报错）。 */
+async function botRootIsRealDir(dataDir: string, botId: string): Promise<boolean> {
+  try {
+    const st = await lstat(join(dataDir, 'workspaces', botId))
+    return st.isDirectory()
+  } catch { return false }
+}
+
 /** 列某 bot 私有根里的 skill（目录形态；扁平 <name>.md 跳过——T6 存的是目录形态，
- * ponytail: dsh 也认扁平文件，等有写入口产出它时再支持）。 */
+ * ponytail: dsh 也认扁平文件，等有写入口产出它时再支持）。链接化的 skill 目录跳过。 */
 async function listBotSkills(dataDir: string, botId: string): Promise<Array<{ name: string; description?: string }>> {
   const root = skillsRoot(dataDir, botId)
   let entries
@@ -57,21 +92,14 @@ async function listBotSkills(dataDir: string, botId: string): Promise<Array<{ na
   for (const e of entries) {
     if (!e.isDirectory()) continue
     try {
+      const st = await lstat(join(root, e.name))
+      if (!st.isDirectory()) continue
       const text = await readFile(join(root, e.name, 'SKILL.md'), 'utf8')
       const fm = parseFrontmatter(text)
       out.push({ name: e.name, description: fm.description })
     } catch { /* 无 SKILL.md 或不可读 → 非法 skill，跳过 */ }
   }
   return out
-}
-
-async function assertBotDir(dataDir: string, botId: string): Promise<SkillsResult | null> {
-  if (!BOT_ID_RE.test(botId)) return invalidArgs(`bad botId: ${botId}`)
-  try {
-    const st = await lstat(join(dataDir, 'workspaces', botId))
-    if (!st.isDirectory()) return invalidArgs(`not a directory: ${botId}`)
-  } catch { return fail('not-found', `bot workspace not found: ${botId}`) }
-  return null
 }
 
 /** 源树只允许常规文件与目录（符号链接 = 把复制变引用，还能指到工作区外）。 */
@@ -92,7 +120,12 @@ async function assertPlainTree(dir: string): Promise<string | null> {
 async function countBotSkills(dataDir: string, botId: string): Promise<number> {
   try {
     const entries = await readdir(skillsRoot(dataDir, botId), { withFileTypes: true })
-    return entries.filter((e) => e.isDirectory()).length
+    let n = 0
+    for (const e of entries) {
+      if (!e.isDirectory()) continue
+      try { const st = await lstat(join(skillsRoot(dataDir, botId), e.name)); if (st.isDirectory()) n++ } catch { /* 跳过 */ }
+    }
+    return n
   } catch { return 0 }
 }
 
@@ -110,6 +143,8 @@ async function opList(dataDir: string, botId: string): Promise<SkillsResult> {
   const candidates: Array<{ fromBotId: string; name: string; description?: string }> = []
   for (const ws of workspaces) {
     if (!ws.isDirectory() || ws.name === botId) continue
+    if (!(await botRootIsRealDir(dataDir, ws.name))) continue // T7ab：链接化的候选 bot 跳过
+    if ((await assertSkillLayers(dataDir, ws.name)) !== null) continue // .dsh/skills 链接化的不读
     for (const s of await listBotSkills(dataDir, ws.name)) {
       const mine = onBot.find((o) => o.name === s.name)
       if (mine !== undefined) {
@@ -125,12 +160,26 @@ async function opList(dataDir: string, botId: string): Promise<SkillsResult> {
   return { ok: true, value: { onBot, candidates } }
 }
 
+/** 不用 fs.cp（会跟随目录符号链接）：逐项 walk，每项 lstat 核验后读写。 */
+async function copyPlainTree(src: string, dst: string): Promise<void> {
+  await mkdir(dst, { recursive: true })
+  for (const e of await readdir(src, { withFileTypes: true })) {
+    const s = join(src, e.name)
+    const st = await lstat(s)
+    if (st.isDirectory()) await copyPlainTree(s, join(dst, e.name))
+    else if (st.isFile()) await writeFile(join(dst, e.name), await readFile(s))
+    else throw new Error(`non-regular entry during copy: ${s}`)
+  }
+}
+
 async function opEnable(dataDir: string, botId: string, fromBotId: string, name: string): Promise<SkillsResult> {
   if (!NAME_RE.test(name)) return invalidArgs(`bad skill name: ${name}`)
   if (botId === fromBotId) return invalidArgs('botId === fromBotId')
   for (const id of [botId, fromBotId]) {
     const bad = await assertBotDir(dataDir, id)
     if (bad !== null) return bad
+    const badLayers = await assertSkillLayers(dataDir, id)
+    if (badLayers !== null) return badLayers
   }
   const srcDir = join(skillsRoot(dataDir, fromBotId), name)
   try {
@@ -162,12 +211,13 @@ async function opEnable(dataDir: string, botId: string, fromBotId: string, name:
   const staging = join(dataDir, 'workspaces', botId, '.dsh', '.skills-staging', randomUUID())
   await mkdir(staging, { recursive: true })
   try {
-    await cp(srcDir, join(staging, 'skill'), { recursive: true, verbatimSymlinks: false })
-    if (finalName !== name) {
+    await copyPlainTree(srcDir, join(staging, 'skill'))
+    const rewriteName = async (): Promise<void> => {
       const mdPath = join(staging, 'skill', 'SKILL.md')
       const rewritten = (await readFile(mdPath, 'utf8')).replace(/^(name:\s*)(.+)$/m, `$1${finalName}`)
       await writeFile(mdPath, rewritten)
     }
+    if (finalName !== name) await rewriteName()
     // rename 撞上并发创建 → 换下一个后缀（RE Q4 去重的并发面）
     for (let n = 2; ; n++) {
       try {
@@ -177,8 +227,7 @@ async function opEnable(dataDir: string, botId: string, fromBotId: string, name:
         const code = (error as NodeJS.ErrnoException).code
         if (code === 'EEXIST' || code === 'ENOTEMPTY') {
           finalName = `${name}-${n}`
-          const rewritten = (await readFile(join(staging, 'skill', 'SKILL.md'), 'utf8')).replace(/^(name:\s*)(.+)$/m, `$1${finalName}`)
-          await writeFile(join(staging, 'skill', 'SKILL.md'), rewritten)
+          await rewriteName()
           continue
         }
         throw error
@@ -198,6 +247,8 @@ async function opDisable(dataDir: string, botId: string, name: string): Promise<
   if (!NAME_RE.test(name)) return invalidArgs(`bad skill name: ${name}`)
   const bad = await assertBotDir(dataDir, botId)
   if (bad !== null) return bad
+  const badLayers = await assertSkillLayers(dataDir, botId)
+  if (badLayers !== null) return badLayers
   const target = join(skillsRoot(dataDir, botId), name)
   try {
     const st = await lstat(target)

@@ -1,11 +1,11 @@
 // T7a（L4-c）：pbots:skills list/enable/disable 的信任边界与复制快照语义。
 // 格名与工单验收 1 一一对应（① list ② 复制 ③ 快照 ④ 撞名 ⑤ 上限 ⑥ 拒绝 ⑦ disable ⑧ 不半截）。
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync, existsSync, readdirSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { registerSkills, type SkillsResult } from '../../../main/skills/index'
-import { tmkdir } from '../../support/tmp-sweep'
+import { tmkdir, trackTmpDir } from '../../support/tmp-sweep'
 
 const BOT_ID = /^[A-Za-z0-9_-]{1,128}$/
 
@@ -150,6 +150,66 @@ describe('T7a pbots:skills', () => {
     expect(existsSync(skill(dataDir, 'a', 'flow'))).toBe(true)
     expect(errCode(await h({ op: 'disable', botId: 't', name: '../x' }))).toBe('pbots/invalid-args')
     expect(errCode(await h({ op: 'disable', botId: 't', name: 'flow' }))).toBe('pbots/not-found')
+  })
+
+  it('⑨ 符号链接出界：目标/源/dis/list 经链接化层一律拒且外部目录不变', async () => {
+    const dataDir = makeData({ a: [['flow', 'A']] , t: [] })
+    const h = registerSkills({ dataDir }).handler
+    const wsT = join(dataDir, 'workspaces', 't')
+    const outside = mkdtempSync(join(tmpdir(), 'bot-T7ab-out-')); trackTmpDir(outside)
+    // ⑨a 目标 .dsh → 外部
+    symlinkSync(outside, join(wsT, '.dsh'))
+    expect(errCode(await h({ op: 'enable', botId: 't', fromBotId: 'a', name: 'flow' }))).toBe('pbots/invalid-args')
+    expect(readdirSync(outside).length, '外部无新文件').toBe(0)
+    rmSync(join(wsT, '.dsh'))
+    // ⑨b .dsh 真目录、.dsh/skills → 外部
+    mkdirSync(join(wsT, '.dsh'), { recursive: true })
+    symlinkSync(outside, join(wsT, '.dsh', 'skills'))
+    expect(errCode(await h({ op: 'enable', botId: 't', fromBotId: 'a', name: 'flow' }))).toBe('pbots/invalid-args')
+    expect(readdirSync(outside).length).toBe(0)
+    // ⑨c disable 经链接化 skills：先正常 enable 再换链
+    rmSync(join(wsT, '.dsh', 'skills'))
+    await h({ op: 'enable', botId: 't', fromBotId: 'a', name: 'flow' })
+    rmSync(join(wsT, '.dsh', 'skills'), { recursive: true, force: true })
+    const victim = mkdtempSync(join(tmpdir(), 'bot-T7ab-vic-')); trackTmpDir(victim)
+    mkdirSync(join(victim, 'keep'), { recursive: true })
+    writeFileSync(join(victim, 'keep', 'x.txt'), 'keep')
+    symlinkSync(victim, join(wsT, '.dsh', 'skills'))
+    expect(errCode(await h({ op: 'disable', botId: 't', name: 'keep' }))).toBe('pbots/invalid-args')
+    expect(existsSync(join(victim, 'keep', 'x.txt')), '外部目录原样').toBe(true)
+    // ⑨d 源侧 .dsh/skills 是链接：外部目录带 x/SKILL.md
+    const wsA = join(dataDir, 'workspaces', 'a')
+    const ext = mkdtempSync(join(tmpdir(), 'bot-T7ab-ext-')); trackTmpDir(ext)
+    mkdirSync(join(ext, 'x'), { recursive: true })
+    writeFileSync(join(ext, 'x', 'SKILL.md'), '---\nname: x\ndescription: d\n---\next\n')
+    rmSync(join(wsA, '.dsh', 'skills'), { recursive: true, force: true })
+    symlinkSync(ext, join(wsA, '.dsh', 'skills'))
+    expect(errCode(await h({ op: 'enable', botId: 't', fromBotId: 'a', name: 'x' }))).toBe('pbots/invalid-args')
+    expect(skillCount(dataDir, 't'), '目标无新增').toBe(1) // 只有此前 enable 的 flow
+    const lst = value<{ onBot: unknown[]; candidates: Array<{ name: string }> }>(await h({ op: 'list', botId: 't' }))
+    expect(lst.candidates.some((c) => c.name === 'x'), 'candidates 不含链接后的外部 skill').toBe(false)
+  })
+
+  it('⑩ 漏测分支：工作区本身是链接/路径穿越/不存在/op 校验', async () => {
+    const dataDir = makeData({ a: [['flow', 'A']] , t: [] })
+    const h = registerSkills({ dataDir }).handler
+    // ⑩a 工作区本身是指向目录的符号链接
+    const realWs = mkdtempSync(join(tmpdir(), 'bot-T7ab-ws-')); trackTmpDir(realWs)
+    rmSync(join(dataDir, 'workspaces', 't'), { recursive: true, force: true })
+    symlinkSync(realWs, join(dataDir, 'workspaces', 't'))
+    expect(errCode(await h({ op: 'list', botId: 't' }))).toBe('pbots/invalid-args')
+    expect(errCode(await h({ op: 'enable', botId: 't', fromBotId: 'a', name: 'flow' }))).toBe('pbots/invalid-args')
+    expect(errCode(await h({ op: 'enable', botId: 'a', fromBotId: 't', name: 'flow' }))).toBe('pbots/invalid-args') // 源侧
+    expect(errCode(await h({ op: 'disable', botId: 't', name: 'flow' }))).toBe('pbots/invalid-args')
+    rmSync(join(dataDir, 'workspaces', 't'))
+    mkdirSync(join(dataDir, 'workspaces', 't'), { recursive: true })
+    // ⑩b 穿越与不存在
+    expect(errCode(await h({ op: 'list', botId: '../x' }))).toBe('pbots/invalid-args')
+    expect(errCode(await h({ op: 'list', botId: 'no-such-bot' }))).toBe('pbots/not-found')
+    // ⑩c op/类型
+    expect(errCode(await h({ op: 'nope', botId: 't' }))).toBe('pbots/invalid-args')
+    expect(errCode(await h({ op: 'list', botId: 1 as unknown as string }))).toBe('pbots/invalid-args')
+    expect(errCode(await h({ op: 'disable', botId: 't', name: 1 as unknown as string }))).toBe('pbots/invalid-args')
   })
 
   it('⑧ 不半截：成功与失败后 staging 为空或不存在', async () => {

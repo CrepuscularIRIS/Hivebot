@@ -52,7 +52,7 @@ ls -d /tmp/dsh-ssh-* 2>/dev/null | sort > $T/dshssh.before
    - ⑪（D11）SIGKILL launcher → 新增 `/tmp/dsh-ssh-*` ≤ 1、该目录为空、夹具端口拒连（ECONNREFUSED）。
 4. 变异（各贴原样红，cp 备份还原，不提交）：M1 恢复 `ptc-runtime` 行 → ⑧ 红（若 ⑧ 先红未成立，回执写明 M1 不适用）；M2 `guardRow` 不写 `extraNeverTools` → ⑨ 红；M3 `sshRows` 照生成本机 `id: sandbox` config 行 → ① 红。
 5. 本机回归不坏：`$E $V tests/unit/start.test.ts tests/e2e/guard-fs.test.ts tests/e2e/write-outside.test.ts tests/e2e/skill-save.test.ts` → 与起点同数全绿（先在起点跑一次记数；guard-fs 若基点有 P5-H8 已知超时格，以基点同格同结果为准）。
-6. ssh 模式不外露：`grep -rn 'P2SDK_SSH_' /tmp/bot-wt/T9a/app/ui /tmp/bot-wt/T9a/app/sdk/profile` → 空。
+6. ssh 模式不外露：`grep -rn 'P2SDK_SSH_' /tmp/bot-wt/T9a/app/ui /tmp/bot-wt/T9a/app/sdk/profile | grep -v "disabled: !!js process.env.P2SDK_SSH_MODE === '1'"` → 空。（2026-11-06 经理改：T9ac 在 approval.yml 加了四行只读 `P2SDK_SSH_MODE` 的条件禁用。本条要防的是「产品里设置 P2SDK_SSH_*」，读它不算。）
 7. 覆盖：`$E $V tests/unit/start.test.ts tests/unit/guard.test.ts --coverage --coverage.include=src/start.ts --coverage.include=src/policy/guard.mjs` → 回执列出本单新增 / 改动行的未覆盖行号，改动行覆盖 ≥ 80%。
 8. 改动面：`git diff --stat <起点>..HEAD` 只含边界 1 的文件。
 9. 收尾：`ls -A $T/tmp | grep -v node-compile-cache | wc -l` → 0；独立 shell `pgrep -af 'bot-T9a' | grep -v pgrep` → 空；`ls -d /tmp/dsh-ssh-* | sort | comm -13 $T/dshssh.before -` → 至多 ⑪ 那 1 个空目录（已接受残留，PLAN §3-10）。

@@ -59,3 +59,14 @@ V="pnpm --config.verify-deps-before-run=false exec vitest run"
 
 ## 为什么这样验收
 T9a 要保住的是「ssh 模式会话可用，且 PTC / glob / grep 在其中不可用，强杀不留活物」。现在只有 glob/grep 那条真被证明了（M2 咬合）。⑧ 的断言对象装不下工具名，删光 PTC 禁行照样绿；⑪ 的基线取错、杀错了进程，绿的同时机器上挂着 7 套孤儿。MW 和 M6 两个变异就是用来证明这两格以后不会再是空的；`toolNames` 含 `bash` 的正对照防止「记了个空数组」恒绿。
+
+## 经理终验（2026-11-06，任务 B，@ e9a23794）——不通过（T9a 链第 3 次）
+- 重跑全绿：ssh-product 3 passed，连跑两轮；guard-plugin-manager 7 passed；skill-save + start 44 passed；guard + guard-fs + write-outside 43 passed。两轮后 `pgrep -af bot-T9a` 为空，`/tmp/dsh-ssh-*` 每轮多 1 个空目录。改动面 `git diff --stat ffeef65d..HEAD` 共 5 个文件，与派单说的一致。
+- 成立：⑧ 根因与修法，所有锚点逐一核过；变异 `!!js true` → ① 红 `本机含 workflow: expected [] to include 'workflow'`，已还原；删 `rt = undefined` 修好了泄漏。approval.yml 和 guard-plugin-manager.test.ts 超出了边界，经理补批（施工没按第 5 条停下来，这次不追究）。
+- 不成立：
+  ① ⑪ 目录断言是空的：dsh-ssh 在构造时就 mkdtemp（index.js:67,302），基线 `:185` 取在 rt3 启动之后。改成 `toBe(1)` 一跑就红，`expected +0 to be 1`。
+  ② ⑪ 孤儿 master 断言是空的：本机孤儿由 systemd --user（2050，subreaper）收养，`ppid===1` 恒为 0；去掉 pdeathsig 后 ⑪ 照样绿。回执 §5 关于它的说法不实。
+  ③ 第 5 步 T9a-① 层级断言没落地。
+  ④ 回执缺 M5/M6 原样和覆盖行号。
+  第 6 步（逐字对照）由经理静态核验后撤销。
+- 处理：开 `open/T9ad-ssh-cell11-literal.md`，要贴的代码直接写在单里，这是最后一轮。没有照本单头部写的「挪 blocked/ 交 architect」，理由写在 T9ad 头部。**feat/T9a 不合并。**

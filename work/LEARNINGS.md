@@ -116,3 +116,5 @@
 2026-11-06 回执对号表要从 diff 写，不从意图写（T7ab→T7ac 同一行 ⑥ 连续两次虚记「已补断言」，实际只改了消息串）：写「已补/已加」前先 `git diff <起点>..HEAD -- <测试文件> | grep -n '<断言片段>'` 贴原样输出；没有输出就不许写已补。
 
 2026-11-06 断言载体要装得下被断言的东西（T9ab ⑧/⑪）：⑧ 用 `requests.jsonl.userTexts` 断言「工具面不含 workflow」，可 fake 根本不记工具名——删光 PTC 禁行照绿；⑪ 用「kill 前」做 `/tmp/dsh-ssh-*` 基线，目录早在建会话时就有，`added` 恒空。验「不含 X」的格一律配正对照（同一载体里能看到一个**应该在**的东西，如 `bash`）和一个「把 X 放回来就红」的变异。另：launcher 的 dsh 是 `detached: true`（T-13，故意让 launcher 崩了 dsh 照活），SIGKILL launcher 不会带走 dsh/ssh master——要证强杀残留就杀 dsh 本身。
+
+2026-11-06 「孤儿 = ppid 1」在本机不成立（T9ac ⑪）：桌面会话里的孤儿进程会被 `systemd --user`（child subreaper，本机 pid 2050）收养，`ppid===1` 计数恒为 0，断言永远绿。查「某进程名下的子进程退净没有」要在 kill 前记下它们的 PID 集合（例如夹具的 `server.clientPids()` 差集），先断言集合非空，kill 后再断言这些 PID 都不在了。基线同样要取在被测对象创建之前：dsh-ssh 在构造时就 mkdtemp，所以 `/tmp/dsh-ssh-*` 的基线要在 launchRuntime 之前取。

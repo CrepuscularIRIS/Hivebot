@@ -4,7 +4,7 @@
 > 来源：T7cb 终验（2026-11-06 @ e4550650，**不通过；T7c 链第 2 次 → 任务 C 重拆**）
 > 分支 / 作业目录：feat/T7c 续提交 @ /tmp/bot-wt/T7c
 > 失败计数：T7c 链已 2 次（T7c、T7cb）。**本单再不过 → T7c/T7cb/T7cc 挪 blocked/，转 architect**，不再开 T7cd
-> claimed：
+> claimed：13:08 main (GLM 5.3)
 > accepted：
 
 ## 为什么重拆（根因）

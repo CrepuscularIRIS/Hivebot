@@ -11,11 +11,12 @@
 // turns that exact spec into an installable wrapper bundle.
 // Prints one JSON array of per-case results; exits non-zero if any failed.
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { rmSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+
   launchArgsFor,
   marketWrapperDirFor,
   parseExactNpmSpec,
@@ -23,6 +24,10 @@ import {
   serverNameOf,
   wrapperNameOf,
 } from '../../src/market/wrapper.mjs'
+// T1：自建临时目录登记，进程退出时删除（.proc.mjs import 不了 TS 登记簿）
+const __t1Dirs = []
+const regTmp = (d) => { __t1Dirs.push(d); return d }
+process.on('exit', () => { for (const d of __t1Dirs) { try { rmSync(d, { recursive: true, force: true }) } catch (e) { /* 删除失败不阻断退出 */ } } })
 
 /** Same npm-name rule src/p2temp/index.mjs enforces for connector bundle names. */
 const BUNDLE_NAME_RE = /^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/
@@ -35,7 +40,7 @@ const CONNECTOR_SPEC = `${CONNECTOR}@1.2.29`
 
 /** A fake preseed tree: one bare npm MCP package + the dsh-mcp-client entry. */
 function fakeSdkRoot({ name = 'fake-mcp', version = '1.0.0', bin = { 'fake-mcp': 'bin/mcp.cjs' }, dshBundle = false, withMcpClient = true, withBinFile = true } = {}) {
-  const root = mkdtempSync(join(tmpdir(), 'u25-sdk-'))
+  const root = regTmp(mkdtempSync(join(tmpdir(), 'u25-sdk-')))
   const pkgDir = join(root, 'node_modules', name)
   mkdirSync(pkgDir, { recursive: true })
   writeFileSync(join(pkgDir, 'package.json'), JSON.stringify({
@@ -100,7 +105,7 @@ await case_('launchArgsFor: filesystem needs its registry-required named arg; un
 
 await case_('marketWrapperDirFor writes a format-1 wrapper for a preseeded bare package', () => {
   const sdk = fakeSdkRoot()
-  const home = mkdtempSync(join(tmpdir(), 'u25-home-'))
+  const home = regTmp(mkdtempSync(join(tmpdir(), 'u25-home-')))
   const dir = marketWrapperDirFor({ spec: 'fake-mcp@1.0.0', sdkRoot: sdk, dshHome: home })
   assert.ok(typeof dir === 'string' && dir.startsWith(join(home, 'market-wrappers')), `wrapper dir under dsh home: ${dir}`)
   const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
@@ -120,7 +125,7 @@ await case_('marketWrapperDirFor writes a format-1 wrapper for a preseeded bare 
 
 await case_('marketWrapperDirFor is idempotent: identical bytes on regeneration', () => {
   const sdk = fakeSdkRoot()
-  const home = mkdtempSync(join(tmpdir(), 'u25-home-'))
+  const home = regTmp(mkdtempSync(join(tmpdir(), 'u25-home-')))
   const dir = marketWrapperDirFor({ spec: 'fake-mcp@1.0.0', sdkRoot: sdk, dshHome: home })
   const before = readFileSync(join(dir, 'cordis.patch.yml'), 'utf8')
   assert.equal(marketWrapperDirFor({ spec: 'fake-mcp@1.0.0', sdkRoot: sdk, dshHome: home }), dir)
@@ -129,7 +134,7 @@ await case_('marketWrapperDirFor is idempotent: identical bytes on regeneration'
 
 await case_('marketWrapperDirFor passes through (null): version mismatch, real dsh bundle, no bin, missing package, missing entry file, missing mcp-client', () => {
   const base = { spec: 'fake-mcp@1.0.0' }
-  const home = () => mkdtempSync(join(tmpdir(), 'u25-home-'))
+  const home = () => regTmp(mkdtempSync(join(tmpdir(), 'u25-home-')))
   assert.equal(marketWrapperDirFor({ ...base, sdkRoot: fakeSdkRoot({ version: '1.2.29' }), dshHome: home() }), null, 'version mismatch')
   assert.equal(marketWrapperDirFor({ ...base, sdkRoot: fakeSdkRoot({ dshBundle: true }), dshHome: home() }), null, 'declares dsh.bundle already')
   assert.equal(marketWrapperDirFor({ ...base, sdkRoot: fakeSdkRoot({ bin: null }), dshHome: home() }), null, 'no bin')
@@ -140,7 +145,7 @@ await case_('marketWrapperDirFor passes through (null): version mismatch, real d
 })
 
 await case_('marketWrapperDirFor wraps the REAL preseeded connector (T-19 ②b spec that main refused not-bundle)', () => {
-  const home = mkdtempSync(join(tmpdir(), 'u25-home-'))
+  const home = regTmp(mkdtempSync(join(tmpdir(), 'u25-home-')))
   const dir = marketWrapperDirFor({ spec: CONNECTOR_SPEC, sdkRoot: SDK_ROOT, dshHome: home })
   assert.ok(dir, `the T-19 listing spec wraps against the real preseed: ${dir}`)
   const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
@@ -155,7 +160,7 @@ await case_('patchPluginManagerInstall rewrites only wrappable specs and restore
     installBundle(spec, options) { return Promise.resolve({ spec, options }) }
   }
   const pm = new FakePM()
-  const home = mkdtempSync(join(tmpdir(), 'u25-home-'))
+  const home = regTmp(mkdtempSync(join(tmpdir(), 'u25-home-')))
   const restore = patchPluginManagerInstall(pm, { dshHome: home })
   assert.ok(restore, 'patched')
   // Double patch is a no-op.

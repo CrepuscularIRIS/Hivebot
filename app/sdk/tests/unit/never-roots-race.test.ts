@@ -6,10 +6,11 @@
 // 触发，故 mock node:fs.statSync 对目标目录**第二次**调用抛 ENOENT——精确复刻
 // 「pass 1 看见、pass 2 消失」的形状；修复（单次 stat + 容错）只调一次，不会踩中。
 // 独立文件：vi.mock 是文件级，不把其余 10 个 never-roots 用例卷进 mock。
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import { mkdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 vi.mock('node:fs', async (importOriginal) => {
   const real = await importOriginal<typeof import('node:fs')>()
@@ -35,13 +36,13 @@ vi.mock('node:fs', async (importOriginal) => {
 
 describe('computeRoots 并发容错（P5-H2 TOCTOU）', () => {
   it('handoff sibling 在 readdir 与 stat 之间被并发 teardown 删除时不抛 ENOENT，其余 sibling 照常入列', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'p5-h2-race-'))
+    const root = tmkdir('p5-h2-race-')
     const home = join(root, 'home')
     for (const d of ['.dsh-x', 'pkg', 'd']) mkdirSync(join(home, d), { recursive: true })
     // 竞争目标（含 magic 前缀 p2sdk-handoff-race → statSync 第 2 次起抛 ENOENT）
-    const target = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-race-'))
+    const target = tmkdir('p2sdk-handoff-race-')
     // 无 magic 前缀的存活 sibling：永远走真 stat
-    const survivor = mkdtempSync(join(tmpdir(), 'p2sdk-handoff-'))
+    const survivor = tmkdir('p2sdk-handoff-')
 
     const { computeRoots } = await import('../../src/policy/never-roots.mjs')
     let thrown: unknown = null

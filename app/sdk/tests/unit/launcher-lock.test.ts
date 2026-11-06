@@ -1,5 +1,5 @@
 import { spawn, type ChildProcess } from 'node:child_process'
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -165,7 +165,7 @@ describe('T-13 R2 ② — launcher death by uncaught EPIPE leaves the lock behin
 })
 
 const newHome = (): string => {
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-lock-'))
+  const home = tmkdir('p2sdk-lock-')
   homes.push(home)
   return home
 }
@@ -402,7 +402,7 @@ if (typeof r === 'function') {
     for (let round = 0; round < 5; round++) {
       const home = newHome()
       if (round % 2 === 1) writeFileSync(lockPathOf(home), `${DEAD_PID}\n`) // both children race through the stale-reclaim path
-      const ctl = mkdtempSync(join(tmpdir(), 'p2sdk-race-'))
+      const ctl = tmkdir('p2sdk-race-')
       homes.push(ctl)
       const children = ['a', 'b'].map((id) => {
         const child = spawn(process.execPath, ['--input-type=module', '-e', childScript], {
@@ -474,7 +474,7 @@ describe('T-13 R7/R8 ③ — three-racer strand: the pre-startRuntime gate admit
   it('B and C both acquire, yet only C (the lockPath owner) passes the gate; B aborts', async () => {
     const home = newHome()
     writeFileSync(lockPathOf(home), `${DEAD_PID}\n`)
-    const ctl = mkdtempSync(join(tmpdir(), 'p2sdk-r3-'))
+    const ctl = tmkdir('p2sdk-r3-')
     homes.push(ctl)
     const at = (name: string) => join(ctl, name)
 

@@ -7,7 +7,7 @@
 // same merged report); src/start.ts stays worker-side instead.
 // Prints one JSON array of per-case results; exits non-zero if any failed.
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { rmSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { createRequire } from 'node:module'
 import { realpathSync } from 'node:fs'
@@ -15,6 +15,12 @@ import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import P2TempService, { basePresetRows, normalizeConnectors, readConnectorRows } from '../../src/p2temp/index.mjs'
 import { presetIdOf } from '../../src/p2temp/preset-id.mjs'
+
+// T1：自建临时目录登记，进程退出时删除（.proc.mjs import 不了 TS 登记簿）
+const __t1Dirs = []
+const regTmp = (d) => { __t1Dirs.push(d); return d }
+process.on('exit', () => { for (const d of __t1Dirs) { try { rmSync(d, { recursive: true, force: true }) } catch (e) { /* 删除失败不阻断退出 */ } } })
+
 
 // T-18: the fake registry validates rows with the REAL entryListProblem from
 // the installed @deepseek-ai/dsh-agent-preset-registry (same createRequire
@@ -85,7 +91,7 @@ function fakeCtx(profileDir, over = {}) {
 }
 
 function fixture(name, manifest, patch) {
-  const profile = mkdtempSync(join(tmpdir(), 'p2temp-unit-'))
+  const profile = regTmp(mkdtempSync(join(tmpdir(), 'p2temp-unit-')))
   const dir = join(profile, 'node_modules', name)
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, 'package.json'), JSON.stringify(manifest))
@@ -123,7 +129,7 @@ await case_('readConnectorRows returns the insert rows of an installed JSON-patc
 
 await case_('readConnectorRows rejects uninstalled connectors / manifests without dsh.bundle.patch / non-JSON patches / empty patches', async () => {
   await assert.rejects(
-    () => readConnectorRows(mkdtempSync(join(tmpdir(), 'p2temp-unit-')), '@nope/missing'),
+    () => readConnectorRows(regTmp(mkdtempSync(join(tmpdir(), 'p2temp-unit-'))), '@nope/missing'),
     /is not installed under the profile/,
   )
   await assert.rejects(
@@ -160,7 +166,7 @@ await case_('R1: readConnectorRows rejects bundle names that could escape the pr
 })
 
 await case_('R14: readConnectorRows anchors relative and absolute insert names beside the patch', async () => {
-  const profile = mkdtempSync(join(tmpdir(), 'p2temp-unit-'))
+  const profile = regTmp(mkdtempSync(join(tmpdir(), 'p2temp-unit-')))
   const dir = join(profile, 'node_modules', '@p2sdk-fixture/rel')
   mkdirSync(join(dir, 'lib'), { recursive: true })
   writeFileSync(join(dir, 'package.json'), JSON.stringify({ dsh: { bundle: { patch: './cordis.patch.yml' } } }))
@@ -187,7 +193,7 @@ await case_('R14: readConnectorRows anchors relative and absolute insert names b
 })
 
 await case_('R14: readConnectorRows anchors names inside nested group rows too', async () => {
-  const profile = mkdtempSync(join(tmpdir(), 'p2temp-unit-'))
+  const profile = regTmp(mkdtempSync(join(tmpdir(), 'p2temp-unit-')))
   const dir = join(profile, 'node_modules', 'grouped')
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, 'package.json'), JSON.stringify({ dsh: { bundle: { patch: './cordis.patch.yml' } } }))
@@ -412,7 +418,7 @@ await case_('T-18①: duplicate connector names register one row set per connect
 })
 
 await case_('T-18②: broken activation throws p2temp/preset-broken, disposes the record; retry after fixing the patch re-registers under the same id', async () => {
-  const profile = mkdtempSync(join(tmpdir(), 'p2temp-unit-'))
+  const profile = regTmp(mkdtempSync(join(tmpdir(), 'p2temp-unit-')))
   const dir = join(profile, 'node_modules', 'broken-conn')
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, 'package.json'), JSON.stringify({ dsh: { bundle: { patch: './cordis.patch.yml' } } }))

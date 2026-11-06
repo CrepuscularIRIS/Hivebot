@@ -1,10 +1,11 @@
 // P6-26：真上游读取 + 确定性 resolve/open 后接缝，不启动并发换链进程。
 import { createRequire } from 'node:module'
-import { mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ZoneCheckedFileSystem, applyZoneRecheck } from '../../src/policy/fs-zone.mjs'
 import { noteZoneVerdict } from '../../src/policy/resolve.mjs'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const fromDsh = createRequire(createRequire(import.meta.url).resolve('@deepseek-ai/dsh/package.json'))
 const { default: LocalFs } = await import(fromDsh.resolve('@deepseek-ai/dsh-fs-local'))
@@ -12,7 +13,7 @@ const cleanup: Array<() => void> = []
 afterEach(() => { vi.restoreAllMocks(); while (cleanup.length) cleanup.pop()!() })
 
 function harness(aliasWorkspace = false) {
-  const root = mkdtempSync('/tmp/bot-p626f1-read-')
+  const root = tmkdir('bot-p626f1-read-')
   cleanup.push(() => rmSync(root, { recursive: true, force: true }))
   const ws = join(root, 'ws')
   const outside = join(root, 'outside')

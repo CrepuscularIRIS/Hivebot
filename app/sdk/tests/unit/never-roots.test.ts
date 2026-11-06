@@ -1,11 +1,11 @@
 // P5-01 单测：never-roots.mjs（决策 6/13/15）——凭证根单一清单模块。
 // 常量逐项对照 PLAN 决策 13 ① 的 v1 列表与本机扫描（evidence/P5-01/host-cred-paths.md），
 // 防止清单被顺手改动；computeRoots 只在测试自建目录树里断言，不读真实凭证内容。
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir, userInfo } from 'node:os'
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { userInfo } from 'node:os'
 import { join } from 'node:path'
-import { tmkdir } from '../support/tmp-sweep.ts'
 import { describe, expect, it } from 'vitest'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import {
   CREDENTIAL_HOME_ENTRIES,
   HOME_OUTSIDE_NEVER,
@@ -46,7 +46,7 @@ describe('常量（决策 13 ① v1 清单 + 本机扫描）', () => {
 
 /** 建一棵假 HOME/数据目录树；只创建路径不写敏感内容。 */
 function fakeTree(): { home: string; dataDir: string; passwdHome: string } {
-  const root = mkdtempSync(join(tmpdir(), 'p5-01-neverroots-'))
+  const root = tmkdir('p5-01-neverroots-')
   const home = join(root, 'env-home')
   const passwdHome = join(root, 'passwd-home')
   const dataDir = join(root, 'data')

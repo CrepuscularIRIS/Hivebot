@@ -5,12 +5,13 @@
 // ③ P5-58 起 market.yml 在默认链：锁定「默认 runtime 开箱含 pluginMarket/*，p2temp
 //    前缀恰 2 个方法」，market 挂载侧与默认侧方法表一致（原「差集恰 2」语义已随
 //    默认挂载失效——两侧同集，差集恒空）。
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { BUNDLE_NAME, CONNECTOR_TOOL, MARKET_YML, REL_BUNDLE_NAME, REL_TOOL, readMethods, writeBundleFixture, writeObserverPatch, writeRelativeBundleFixture } from './support.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const SIGNATURES = [
   // agentPreset is explicit at the SDK layer: main resolves the default
@@ -48,7 +49,7 @@ const requestToolNames = async (sessionId: string): Promise<string[]> => {
 }
 
 beforeAll(async () => {
-  const scratch = mkdtempSync(join(tmpdir(), 'p2sdk-t03b-'))
+  const scratch = tmkdir('p2sdk-t03b-')
   bundleDir = writeBundleFixture(join(scratch, 'demo-mcp'))
   const observerPatch = writeObserverPatch(scratch)
   rt = await launchRuntime({

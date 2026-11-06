@@ -2,13 +2,14 @@
 // 纯函数（resultTextFor / truncateResult）直接构造 projected 日志；Reporter 用
 // mocked orch（delivery / agentOf / ctx），fake timers 推进合批窗口；taint-guard
 // 用真 TurnOrigin + mocked ctx.on。真 Loader 用例在 orchestration-report-live.test.ts。
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TurnOrigin } from '../../src/orchestration/turn-origin.mjs'
 import { Reporter, resultTextFor, truncateResult, RESULT_LIMIT } from '../../src/orchestration/report.mjs'
 import { registerTaintGuard } from '../../src/orchestration/taint-guard.mjs'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 // 真实 timers + 注入缩短的合批窗口（fake timers 不等 libuv IO，flush 里的
 // readFile 会挂死；窗口值见 fixture 的 batchWindowMs）。
@@ -117,7 +118,7 @@ function fixture(opts: {
   config?: Record<string, unknown>
 } = {}) {
   const mainId = 'mainId' in opts ? opts.mainId : 'main-1'
-  const dir = mkdtempSync(join(tmpdir(), 'bot-p612-unit-'))
+  const dir = tmkdir('bot-p612-unit-')
   if (mainId !== null) {
     const bots = Object.fromEntries((opts.workers ?? []).map((w) => [w.workerId, { createdBy: mainId }]))
     writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: mainId, recipes: {}, bots }))

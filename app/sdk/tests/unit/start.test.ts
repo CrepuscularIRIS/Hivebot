@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { tmpdir, userInfo } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -219,7 +219,7 @@ describe('childEnv', () => {
 
 describe('writeRuntimePatch', () => {
   it('mock mode inserts llm-replay with a file:// specifier plus the handoff row', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-patch-'))
+    const dir = tmkdir('p2sdk-patch-')
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir })
     const path = writeRuntimePatch(cfg)
     const yaml = readFileSync(path, 'utf8')
@@ -232,7 +232,7 @@ describe('writeRuntimePatch', () => {
   })
 
   it('real mode inserts only the handoff row', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-patch-'))
+    const dir = tmkdir('p2sdk-patch-')
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'real', P2SDK_HOME: dir })
     const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
     expect(yaml).not.toContain('llm-replay')
@@ -351,7 +351,7 @@ describe('childEnv · launcher-only 丢弃 (P5-01 决策 15)', () => {
 
 describe('writeRuntimePatch · guard 行 (P5-02 决策 6/13)', () => {
   it('生成 id: p2sdk-fs-guard 行：roots 五组清单，全部来自 computeRoots 单源', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p5-patch-'))
+    const dir = tmkdir('p2sdk-p5-patch-')
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, PBOTS_DATA_DIR: join(dir, 'data') })
     mkdirSync(join(dir, 'data'), { recursive: true })
     const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
@@ -370,7 +370,7 @@ describe('writeRuntimePatch · guard 行 (P5-02 决策 6/13)', () => {
 
 describe('writeRuntimePatch · shell-ask 行 (P5-21 决策 16a)', () => {
   it('生成 id: p2sdk-shell-ask 行：handoff + 从数据根推导的 policyStatePaths（无独立 env）', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p521-patch-'))
+    const dir = tmkdir('p2sdk-p521-patch-')
     const data = join(dir, 'data')
     mkdirSync(data, { recursive: true })
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, PBOTS_DATA_DIR: data })
@@ -382,7 +382,7 @@ describe('writeRuntimePatch · shell-ask 行 (P5-21 决策 16a)', () => {
   })
 
   it('PBOTS_DATA_DIR 未设时 policyStatePaths 覆盖两个缺省数据根', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p521-def-'))
+    const dir = tmkdir('p2sdk-p521-def-')
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, HOME: dir })
     mkdirSync(join(dir, '.config', 'pbots-ui'), { recursive: true })
     const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
@@ -393,7 +393,7 @@ describe('writeRuntimePatch · shell-ask 行 (P5-21 决策 16a)', () => {
 
 describe('writeRuntimePatch · sandbox 行 (P5-01 决策 4)', () => {
   it('生成 id: sandbox 行：python3 -I wrapper、遮蔽/挂回清单、bwrap: 失败签名', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'p2sdk-p5-patch-'))
+    const dir = tmkdir('p2sdk-p5-patch-')
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, PBOTS_DATA_DIR: join(dir, 'data') })
     mkdirSync(join(dir, 'data'), { recursive: true })
     const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')

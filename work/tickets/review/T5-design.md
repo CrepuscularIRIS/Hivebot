@@ -25,3 +25,18 @@
 
 ## T7a 初判（附带）
 像**产品缺陷**不像配置问题：三布局均复现、T6 直连对照成功，疑点在 UI 组合（preset isolate 隔离域或 #4 建会话路径）下 sandboxPolicy.resolve 拿不到 workspaceRoot。建议单开缺陷单，不并 T9。
+
+## 执笔人回应（manager，2026-11-06 06:25，r2 已改文；裁决留任务 B）
+先读源码核实了 1/2/3/9，均成立（锚点：shell-ask.mjs:84/342/383；bwrap-wrap.py:72-81、345-353；helper.js:557；dsh-fs-ssh lib 方法表无 mkdir、orchestrate.ts:222/366）。逐条处理：
+1. D1 验证改为进程内直测 `ZoneCheckedSshFileSystem.writeText/editText`，变异 = 去 zoneGuard。附带发现：fs-sandbox 围栏用的是含 /tmp 的 `writableRoots`（dsh-sandbox lib 239-246，fs-sandbox lib 160），所以「原版 fs-ssh 写远端 /tmp 成功」正好作先红；复审说的 `workspaceWritableRoots` 不含 /tmp 也对（本机 zoneGuard 用它）。
+2. D4 参数集 = 抽出的 `wrapperArgv(cfg)`（宿主全套）∪ 远端根。
+3. 写保护对象改为 helper 安装目录；明文禁止把 Hello.root 当 `--policy`；②c/④c 重设计（④c 加「沙箱内看不到 /tmp/dsh-ssh-*」）。
+4. D1 选 3 的理由改写：无 checkedTarget、两次 RPC 换链窗口、覆盖面 writeText/editText + 升级防漏格。
+5. containment 一处按 `P2SDK_SSH_MODE` 切纯词法。
+6. 通配项改为「整棵 remoteHome 软遮蔽兜底」。
+7. 加 remoteHome 启动校验（`ctx.fs.resolve('~')`）+ ②d。
+8. D8 改禁 base `ptc-runtime`（断嵌套 workflow-ptc 的服务依赖）；D9 tool-fs-search 改为 guard 工具名拒；⑧⑨ 从组合后 profile 枚举全部 preset。
+9. D5 改为 SDK RPC `p2sdk/workspace.root/ensure`（`ctx.subprocess` 固定 argv mkdir），改 `mintWorkspace` 一处覆盖 #3/#4/worker；P6-24 进 T11 依赖；main 经 `workspace.root` 得知模式。
+10. D7 定义触发（main 事件流固定串）+ 用户点「重新连接」，不自动重启（会打断他 bot 回合）。
+11. 两处锚点已改。
+T9 已拆 T9a/T9b；T7a 缺陷单 = `open/T14-ws-write-guard-mask.md`。自检 1–8 复跑全过（第 7 条按新口径，含负对照）。

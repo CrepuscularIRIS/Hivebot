@@ -64,7 +64,10 @@ T4 证明了「上游 headless + ssh 族」能跑通；但产品组合里 fs / s
 4. 实测证据都在（输出为空）：`grep -oE 'evidence/T5/[A-Za-z0-9_.-]+' $D | sort -u | while read p; do test -s "work/tickets/$p" || echo "MISSING $p"; done`
 5. D10 有 release assets 的原样输出：`ls work/tickets/evidence/T5/ | grep -i release` 非空，且文件里有 asset 名列表（或「0 assets」原文）。
 6. 实现单进了 queue：`grep -c 'DESIGN-ssh-composition' work/tickets/queue.md` ≥ 2，其中标「可开」的恰 1 行；第一张实现单写明删 `ssh-headless.test.ts:111-122`。
-7. 文档引用的 Q 编号都在 QUESTIONS 且带推荐（输出为空）：`grep -oE 'Q-0[0-9]{2}' $D | sort -u | while read q; do sed -n "/^## $q /,/^## Q-/p" work/QUESTIONS.md | grep -q '推荐' || echo "NOQ $q"; done`
+7. 文档引用的 Q 编号都在 QUESTIONS：`[open]` 的段内带「推荐」，已答复的「答复：」行非空（输出为空）。r2（2026-11-06，复审建议）：原口径对已答复的引用（如 Q-024）字面误报，改为下式：
+   ```sh
+   grep -oE 'Q-0[0-9]{2}' $D | sort -u | while read q; do sec=$(awk -v q="$q" '$0 ~ "^## "q" "{f=1;print;next} /^## Q-/{f=0} f' work/QUESTIONS.md); [ -n "$sec" ] || { echo "NOQ $q"; continue; }; if printf '%s\n' "$sec" | head -1 | grep -q '\[open\]'; then printf '%s\n' "$sec" | grep -q '推荐' || echo "NOREC $q"; else printf '%s\n' "$sec" | grep -qE '^- 答复：.*[^[:space:]]' || echo "NOANS $q"; fi; done
+   ```
 8. 探针收尾：独立 shell `pgrep -af 'bot-T5' | grep -v pgrep` → 空；`/tmp/dsh-ssh-*` 相对执笔前无新增（执笔前先 `ls -d /tmp/dsh-ssh-* | sort > /dev/shm/bot-T5-dshssh.before`）。
 9. Sol 只读审：`work/tickets/review/T5-design.md` 存在；任务 B 时经理逐条写 CONFIRMED / REFUTED 理由，CONFIRMED 的改进文档后再验 1–7。
 

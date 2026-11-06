@@ -65,3 +65,21 @@ enable 调用替换为恒 ok 假对象（不调 main）：
 1. **参照降级**：像素级对照本轮没有（R3 染不出入口）；T16 升级 rc.1 后若 team 面可达，可补 R3 渲染重做 compare——列入 queue 提议。
 2. `-2` 后缀显示：enable 回 `{name}` 带 -2 时对话框关闭后列表按最终名显示（实测路径未构造撞名场景——T7a unit ④已锁该行为，UI 侧只透传）。
 3. 并发：两个 pane 同时对同一 bot enable 同名——T7a 的 rename 撞名并发分支兜底（staging+rename EEXIST→-N）。
+
+## 6. 经理终验（manager Opus 5.5，2026-11-06 10:35，feat/T7b @ 0c9bd212）——不通过（第 1 次）→ `open/T7bb-skill-picker-visual.md`
+
+**重跑（隔离 HOME/TMPDIR/DBus，load≈9）**：`pnpm check` → `upstream diff=0: 332 files`；`pnpm build` 后 e2e skills-picker → **2 passed (7.6s)**，与回执一致；M1（enable 换成 `{ ok: true, value: {} }`）→ 格 1 `Error: B 的磁盘副本存在 Expected: true Received: false`、格 2 notice 不出现，2 failed；已还原、重建，worktree 干净。功能链通过。
+
+**截图目检（Read 亲眼看）**：
+- `skills-added.light.png`：Skills 段、行内 名字+描述+Remove、Pick 按钮均正常——过。
+- `skills-added.dark.png`：Pick 按钮白底近白字，**看不见字**（回测产出 `test-output/P5-57/config-pane-dark.png` 同样）——破版。
+- `skills-pick.light.png`：对话框渲出（候选 + 来源 bot + 复选框 + Add），但 `pb-skills-dialog*` 无任何 css，候选行粘成 `t7b-flowT7b-AT7b ref flow`，标题挤原生 `×`；且是未勾选态——破版。
+- `skills-pick.dark.png`：同上，另原生 `×` 灰块——破版。
+
+**对照笔记文案**：按钮「Pick from your skills」= 76J7mZ 原文 ✓；标题用 pane 段名「Skills」而非 IYyHwi「Added skills」——容器差异下可接受；上限提示「this Bot already has 250 skills」与 WnW32b 语义一致 ✓。
+
+**降级参照裁决**：接受。理由：止损条款允许；入口只在 team 设置面、R3 无触发点是具体卡点；原版弹窗 vs 我们 pane 段本就不能像素对照。compare 拼版免做，维持「未验证」。补渲参照列 queue 提议（不开单）。
+
+**改动面**：`shim/src/data.ts`（PbotsUi 实现所在，工单边界漏列，接受）与 `tests/e2e/t7b-shot.spec.ts`（截图 spec，接受）超出边界清单，均合理。另：`pbots-ui.ts` 新增的 type re-export 路径错且引用不存在的类型（死行）；Remove 失败静默——并入 T7bb。
+
+**收尾**：回执称 `pgrep bot-T7b` 空，实测有施工残留 `Xvfb :99`（PID 2149395，10:16 起，auth `/tmp/bot-T7b-Oulv`）——T7bb 先 reap。

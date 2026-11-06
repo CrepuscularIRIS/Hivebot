@@ -14,7 +14,7 @@
 
 ## 3. 待办（按顺序）
 
-0. **并行两线**：① **T7b**（open/T7b-l4c-skill-picker-ui.md：bot 设置 Skills 区+Pick 对话框；第 1 步=0.78.1 参照图渲染，第 2 步已解锁——feat/T7a 已合并）② **T9a**（open/T9a-l8d-ssh-skeleton.md，与 T7b 不碰同文件可并行）。GLM 并发≤2、同一时刻 e2e 一套。
+0. **并行两线**（10:35 经理更新）：① **T7bb**（open/T7bb-skill-picker-visual.md：T7b 终验不通过第 1 次——功能链全过，截图破版：对话框无 css 文字粘连、暗色 Pick 按钮字不可见；先 `bot-reap 2149395` 残留 Xvfb）→ 经理验收 → feat/T7b 整枝合并 ② **T9a**（open/T9a-l8d-ssh-skeleton.md，与 T7b 不碰同文件可并行）。GLM 并发≤2、同一时刻 e2e 一套。
 1. **已完成链**：T1–T6、T5、T14(REFUTED)、T15、T7a+T7ab+T7ac（整枝合并，回测 e2e 2 passed + unit 114 绿）。BRIEF 验收②后端全通。
 2. **其后**：T7c（skill 写入审阅卡，Q-028=B）→ T16（升 rc.1+三安全件，等低负载跑全量）→ T9b（按 rc.1 五写路径）→ T10–T13/T7d/T8/L5-a 按序；H7 等窗。
 - T5：ssh × 安全层组合设计（原 architect 活）。输入：PLAN §2（fs-zone/guard/shell-ask 与 ssh 同挂点）、§3 十条、receipts/T4.md §5（断连形态/宿主直连清单：tool-fs-search、attachment-local、spill-local、agent-instructions、skill-filesystem）、§5-1（preset 隔离问题）。顺带删 queue 里记的 T4 死代码（ssh.patch.yml 重复 llm-replay insert）。

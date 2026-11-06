@@ -139,6 +139,7 @@ describe('T7a pbots:skills', () => {
     rmSync(skill(dataDir, 'a', 'flow') + '/SKILL.md')
     symlinkSync('/etc/hostname', skill(dataDir, 'a', 'flow') + '/SKILL.md')
     expect(errCode(await h({ op: 'enable', botId: 't', fromBotId: 'a', name: 'flow' }))).toBe('pbots/invalid-args')
+    expect(skillCount(dataDir, 't'), '每个拒绝后目标都无新增（终验补：per-case 落盘）').toBe(0)
   })
 
   it('⑦ disable：删目标副本、源不动；非法名拒；不存在 not-found', async () => {

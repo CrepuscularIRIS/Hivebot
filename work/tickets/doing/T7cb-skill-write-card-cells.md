@@ -6,6 +6,13 @@
 > 排期：与 T7bc 无文件交集，可并行；合并顺序仍是 feat/T7b 先、feat/T7c 后
 > claimed：11:15 main (GLM 5.3)
 > accepted：
+> 终验：2026-11-06 13:1x @ e4550650 **不通过（T7c 链第 2 次）→ 任务 C → `open/T7cc-skill-write-card-never-cell.md`**。
+> - 经理重跑（隔离 `/tmp/bot-T7cb-kj9U`）：skill-write-card **9 passed**、skill-save **4 passed**、write-outside 单跑 **10 passed**；tmp 残留 0、`pgrep bot-T7c` 空 → 验收 3（e2e 部分）、4 过。
+> - 成立：⑨ 修法 `realpathSync(workspaceRoot)`（`shell-ask.mjs:390`）正确——allInside 已要求候选在 workspaceRoot 下，到这一行 workspaceRoot 必存在，与 `canonicalPath` 在可达路径上同值（不吞异常的差别接受）。经理 M3（换回 `workspaceRoot`）→ 仅 ⑨ 红：`× ⑨ … expected 0 to be greater than or equal to 1`，dbg 显示 `isError:false … Created file`、`asked=0`；8 passed。还原后 `git status` 干净。
+> - 成立：⑧ 真进了有效门开态——`policy-state.json` 写在 `DATA_DIR`（= 本测 `PBOTS_DATA_DIR`），`drive` 默认 `'none'` 下 notes 写在 60s 内完成 = 0 卡，provision 后门开只能来自 `valid`（`shell-ask.mjs:229-241`）。
+> - **不过 1**：⑦ 仍是 `expect(true).toBe(true)`（`skill-write-card.test.ts:172`，注释写「TODO T7cc」）——验收 1 的 grep 非空，与第 1 次同一问题。
+> - **不过 2**：回执无 §6（主仓 `receipts/T7c.md` 仍只有 §1-5；§4 ⑦⑧ ✓ 与 611 未更正）——验收 6。
+> - 小项（并入 T7cc）：`:233` 调试 `console.log` 遗留；⑧ `:192`、⑨ `:234` 用 `≥1` 而工单要「恰 1」；⑧ 不在最后一格（⑨ 在其后跑于门开态，不影响 ⑨ 判定，接受）。
 
 ## 目标
 T7c 的判定本身方向对（位置在 `fileGateOpen()` 之前、复用 `isPathUnder`），老断言修订对照表与 diff 一致，T6 / T7a 回测经理重跑一致。不过的是：工单「为什么这样验收」里点名要保住的两格是假的，回执又把它们记成 ✓。

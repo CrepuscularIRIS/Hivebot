@@ -482,7 +482,11 @@ it('⑧ cwd=PKG_ROOT/仓根：策略代码只读 EROFS、sha 不变、PKG_ROOT/.
   writeFileSync(join(dshHome, 'session-log-sentinel'), 'p501')
   const rt = await launchSandbox({ env: { P2SDK_HOME: dshHome } })
   const wrapPath = join(PKG_ROOT, 'sandbox', 'bwrap-wrap.py')
-  const skillMd = join(REPO_ROOT, '.claude', 'skills', 'grok-orchestrate', 'SKILL.md')
+  // 探针目标原为 .claude/skills/grok-orchestrate/SKILL.md——2026-11-05 旧编排
+  // 归档时已删（51526b14），主仓布局走 fail-closed 分支侥幸不执行探针、worktree
+  // 布局下 ENOENT（T16 全量暴露）。改 .claude/agents/manager.md（git 跟踪，
+  // 主仓/worktree 两布局都在，同属 policyRoots 只读面）。T16 升级顺带修。
+  const skillMd = join(REPO_ROOT, '.claude', 'agents', 'manager.md')
   const hooksPy = join(REPO_ROOT, '.claude', 'hooks', 'process_guard.py')
   // worktree 下 .git 是指针文件：gitdir 指向主仓对象库（policyRoots 解析后只读挂载）
   let gitdirHead = join(REPO_ROOT, '.git', 'HEAD')

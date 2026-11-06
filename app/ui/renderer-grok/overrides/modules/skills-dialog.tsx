@@ -45,7 +45,7 @@ export function SkillsDialog({ botId, onClose, onChanged }: { botId: string; onC
       <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--sand-bg-elevated, #fff)', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,.3)' }}>
       <div className="pb-skills-dialog__head">
         <span className="pb-skills-dialog__title">Pick from your skills</span>
-        <button className="pb-skills-dialog__x" aria-label="Close" onClick={onClose}>×</button>
+        <SandIconButton aria-label="Close" icon="close" onClick={onClose} shape="circle" size="md" variant="ghost" />
       </div>
       <div className="pb-skills-dialog__list" role="list">
         {candidates === null && <div data-skills-loading>Loading…</div>}
@@ -68,7 +68,6 @@ export function SkillsDialog({ botId, onClose, onChanged }: { botId: string; onC
     </div>
   )
 }
-void SandIcon
 
 /** bot 设置里的 Skills 段：Added skills 列表（可移除）+「Pick from your skills」入口。 */
 export function SkillsSection({ id, online }: { id: string; online: boolean }) {
@@ -83,9 +82,12 @@ export function SkillsSection({ id, online }: { id: string; online: boolean }) {
       setOnBot(r.ok ? (r.value as { onBot: SkillEntry[] }).onBot : 'error')
     })
   }, [id, tick])
+  const [removeError, setRemoveError] = useState<string | null>(null)
   const remove = async (name: string): Promise<void> => {
     const u = ui(); if (u === null) return
-    await u.skills({ op: 'disable', botId: id, name })
+    setRemoveError(null)
+    const r = await u.skills({ op: 'disable', botId: id, name })
+    if (!r.ok) { setRemoveError(r.error.message); return }
     setTick(tick + 1)
   }
   return (
@@ -106,7 +108,8 @@ export function SkillsSection({ id, online }: { id: string; online: boolean }) {
       <SandButton data-action="skills-pick" leadingIcon="plus" onClick={() => { setOpen(true) }} shape="pill" size="sm" variant="secondary" disabled={!online}>
         Pick from your skills
       </SandButton>
-      {open && <SkillsDialog botId={id} onClose={() => { setOpen(false); setTick(tick + 1) }} onChanged={() => setTick(tick + 1)} />}
+      {open && <SkillsDialog botId={id} onClose={() => { setOpen(false); setTick(tick + 1) }} onChanged={() => setTick(tick + 1)} />
+      {removeError !== null && <div role="alert" data-skills-remove-error>{removeError}</div>}}
     </>
   )
 }

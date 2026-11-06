@@ -5,7 +5,6 @@ import type { ApiResult, BotConfig, PbotsUi } from '../../shim/src/bots'
 
 export type { ApiResult, BotConfig, NewBotInit, PbotsUi, PeerMeta } from '../../shim/src/bots'
 
-export type { SkillsApiResult, SkillsReq, SkillEntry, CandidateEntry } from './shim/src/bots'
 
 export const ui = (): PbotsUi | null => (typeof window === 'undefined' ? null : (window as unknown as { pbotsUi?: PbotsUi }).pbotsUi ?? null)
 

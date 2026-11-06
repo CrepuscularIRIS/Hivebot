@@ -39,6 +39,15 @@ test('截图四张', { timeout: 300_000 }, async ({ page }) => {
     await expect(dlg.locator('[data-skill-candidate="t7b-flow"]')).toBeVisible({ timeout: 15_000 })
     mkdirSync('test-output/T7b', { recursive: true })
     await dlg.locator('[data-skill-candidate="t7b-flow"] input[type="checkbox"]').check()
+    // T7bc 先红：暗色下按钮字色≠底色
+    await ui.emulateMedia({ colorScheme: 'dark' })
+    await ui.waitForTimeout(300)
+    for (const sel of ['[data-action="skills-add"]', '[data-action="skills-pick"]']) {
+      const el = ui.locator(sel).first()
+      const color = await el.evaluate((n) => getComputedStyle(n).color)
+      const bg = await el.evaluate((n) => getComputedStyle(n).backgroundColor)
+      expect(color, `暗色按钮字色≠底色 ${sel}: color=${color} bg=${bg}`).not.toBe(bg)
+    }
     for (const t of ['light', 'dark'] as const) {
       await ui.emulateMedia({ colorScheme: t })
       await ui.waitForTimeout(400)

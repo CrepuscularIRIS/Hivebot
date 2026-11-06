@@ -57,3 +57,9 @@ TypeError: registerSkills is not a function → 8 格全红
 ### 收尾（验收 7）
 三个施工残留（548446 dsh runtime 3h48m、两个 Xvfb）系此前多次失败快跑 e2e 的
 electron/Xvfb 未随进程树退出——已 bot-reap 清零；本轮收尾 pgrep 净。
+
+## 经理核实（任务 B，2026-11-06 @ d44ee165）
+- 复跑：unit 10/10；m3 9 files/103；`pnpm build` + e2e skills-enable 1 passed；M6（三处 assertSkillLayers 调用全去）→ 仅 ⑨ 红；M4 → ⑩ 红；还原后 10/10、worktree 干净；`pgrep bot-T7a|bot-T14` 空。
+- 探针（复制 index.ts 到隔离目录，node --experimental-strip-types）：P1 目标 `.dsh`→外部 enable 拒、外部空；P2/P2b disable 经链接化 skills（含 `.dsh`→vic→victim 链）拒、victim 原样；P3 源 `.dsh/skills`、源 `.dsh` 链接均不进 candidates、enable 拒、目标空。**成立。**
+- 残留（→ T7ac）：P4 list 目标 `.dsh/skills` 链接 → `onBot:[{"name":"secret","description":"OUTSIDE-FRONTMATTER"}]`；P5 `.skills-staging`→外部 enable ok（瞬时出界写）；P6 `.skills-staging` 悬空 → `ENOTDIR` 未捕获 reject。
+- 回执偏差：对号表「⑥（补断言）」不实（`index.test.ts:141` 后无断言）；变异只给表、无原样输出；M1 红格记 ②③④，上一任实测 ③⑤⑦（不影响结论，T7ac 回执按原样输出更正）。

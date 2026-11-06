@@ -5,6 +5,7 @@
 > 分支 / 作业目录：feat/T7a @ /tmp/bot-wt/T7a（在原分支上续提交，合并时连同 T7a 一起 --no-ff）
 > claimed：09:24 main (GLM 5.3) @ 064421dc（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
+> 经理验收（任务 B，2026-11-06 @ d44ee165）：**不通过（第 1 次）→ `open/T7ac-skills-list-staging-layers.md`**。亲跑：unit 10/10、m3 103/103、e2e 1 passed、M6 红 ⑨、M4 红 ⑩，零残留。三个原探针场景（目标 `.dsh`→外部 enable、disable 经链接化 skills、源侧链接不进 candidates）复跑全拒且外部不变——核心缺口已堵。不过的三条：① 边界 2 明写的「list 目标 bot 走逐层检查」没做，目标 `.dsh/skills` 链接时 list 回外部 frontmatter（探针 P4）；② `.dsh/.skills-staging` 链接未查（本单前提「.dsh 过检即覆盖」是经理写错，不算施工失误）：瞬时出界写 + 悬空链接 handler reject（P5/P6）；③ 验收 2 末条 ⑥ 补断言未落，回执却记为已补。
 
 ## 目标
 `main/skills/index.ts` 只 `lstat` 了 `<dataDir>/workspaces/<botId>` 这一层，其下的 `.dsh`、`.dsh/skills`、`.dsh/.skills-staging` 是否为符号链接没查。bot 自己能在工作区里 `ln -s`（bash），main 进程不在沙箱里，于是：

@@ -1012,3 +1012,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 10:51 哨兵#3 | load7.6、无429。T7b+T9a 终验在跑。开工 T7c（shell-ask.mjs 写入审阅卡，Q-028=B）。
 
 - 2026-11-06 11:05 manager 任务 B：T9a 终验**不通过**（第 1 次）@ 64bc35c9。unit 64/e2e 3/验收6/M3 复现成立；M1 实测证伪 D8 前提（禁 ptc-runtime → 默认 preset invalid，ssh 模式无会话）；⑨⑪ 空断言；runtime.ts 越界；施工残留进程 4 个。→ open/T9ab。feat/T9a 不合并。
+2026-11-06 11:04 T7c完+T7b/T9a返修 | T7c e2e 8/8+M1咬合（M2不咬合=设计前提不成立，targets已realpath）+T6修订4绿+T7a e2e修订1 passed+回归611绿。T7b终验不通过（三截图破版）→T7bb视觉返修。T9a终验不通过（⑧⑨降级不成立+⑪空断言）→T9ab。下一手：T7bb（快）∥T9ab（需重写e2e）。

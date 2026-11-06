@@ -180,7 +180,7 @@ describe('childEnv', () => {
     expect(yaml).toContain('dsh-fs-ssh')
     expect(yaml).toContain('dsh-subprocess-ssh')
     expect(yaml).toContain('dsh-sandbox-ssh')
-    expect(yaml).toContain('- id: ptc-runtime\n  disabled: true')
+    expect(yaml).not.toContain('- id: ptc-runtime') // T9ab: D8 变更
     expect(yaml).toContain('extraNeverTools')
     expect(yaml).not.toMatch(/id: sandbox\n\s+config:/) // 本机 wrapper 不生成
     expect(yaml).not.toContain('fs-zone') // T9b 才插

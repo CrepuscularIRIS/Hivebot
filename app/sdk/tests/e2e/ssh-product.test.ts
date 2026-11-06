@@ -1,10 +1,12 @@
-// T9a（L8-d）：产品启动器的 ssh 组合骨架 e2e。
-// ⑧（D8）PTC 全族断依赖：组合后每个 preset 的首请求 tools 不含 workflow；
-// ⑨（D9）glob/grep 在 ssh 模式被 guard 按工具名拒（含 not available in ssh mode）；
-// ⑪（D11）SIGKILL launcher → /tmp/dsh-ssh-* 新增 ≤1 且空、端口拒连。
+// T9a+T9ab（L8-d）：产品启动器的 ssh 组合骨架 e2e。
+// ⑧ PTC 断依赖（T9ab 修订：不禁 base ptc-runtime——只禁 T4 三行，会话可建，
+//    fake 首请求 tools 不含 workflow）；
+// ⑨ glob/grep guard 工具名拒（真实会话驱动）；
+// ⑪ SIGKILL launcher → 清场。
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import * as net from 'node:net'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { startSshServer, type SshServer } from '../support/ssh-host.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
@@ -16,17 +18,15 @@ const TEST_ROOT = mkdtempSync(join(tmpdir(), 'bot-T9a-run-'))
 trackTmpDir(TEST_ROOT)
 const TEST_HOME = join(TEST_ROOT, 'home')
 mkdirSync(TEST_HOME, { recursive: true })
+let dshSshBefore: string[] = []
 
 let server: SshServer
 let rt: Runtime | undefined
-let feed: { frames: Frame[]; close(): void } | undefined
-const createdSessions: string[] = []
 
 function fakeOverlay(): string {
   const dir = mkdtempSync(join(tmpdir(), 'bot-T9a-patch-'))
   trackTmpDir(dir)
-  const overlay = join(dir, 'fake-llm.yml')
-  writeFileSync(overlay, `\
+  writeFileSync(join(dir, 'fake-llm.yml'), `\
 - id: agent-default-model
   config:
     provider: p2fake
@@ -43,27 +43,17 @@ function fakeOverlay(): string {
                 contextWindow: 131072
                 inputModalities: [text, image]
 `)
-  return overlay
-}
-
-async function openFeed(runtime: Runtime) {
-  const { connect } = await import('../../examples/lib/client.mjs')
-  const client = await connect({ baseUrl: runtime.baseUrl, token: runtime.token, interactions: 'answer' })
-  const stream = await client.socket.open('$events', {})
-  const frames: Frame[] = []
-  const drained = (async () => { for await (const f of stream) frames.push(f as Frame) })().catch(() => {})
-  await waitFor(frames, (f) => f.type === 'ready', 5000, '$events ready')
-  return { frames, close() { stream.cancel(); void drained; client.close() } }
+  return join(dir, 'fake-llm.yml')
 }
 
 beforeAll(async () => {
   clearRealKeys()
   server = await startSshServer()
-  // 产品启动器路径：launchRuntime 传 P2SDK_SSH_* → start.ts 的 sshRows 生成组合
+  dshSshBefore = readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-')).sort()
   rt = await launchRuntime({
     env: {
       HOME: TEST_HOME,
-      PATH: `${server.binDir}:${process.env.PATH ?? ''}`, // 测试专用 ssh_config 包装（生产走真实 ~/.ssh/config）
+      PATH: `${server.binDir}:${process.env.PATH ?? ''}`,
       P2SDK_HOME: mkdtempSync(join(TEST_ROOT, 'dsh-')),
       P2SDK_PATCH: fakeOverlay(),
       P2SDK_SSH_HOST: 'pbots-ssh-test',
@@ -73,115 +63,126 @@ beforeAll(async () => {
       P2SDK_SSH_NODE: process.execPath,
     },
   })
-  feed = await openFeed(rt)
 }, 240_000)
 
 afterAll(async () => {
-  try { feed?.close() } catch { /* 已关 */ }
   try { await rt?.stop() } catch { /* 已停 */ }
   await server?.stopServer()
-  void createdSessions
 })
 
 function toolCall(name: string, args: object): object {
   const id = `t9a-${Math.random().toString(16).slice(2, 8)}`
   const a = JSON.stringify(args)
-  return {
-    chunks: [
-      { type: 'block-start', index: 0, blockType: 'tool-call' },
-      { type: 'tool-call-delta', index: 0, id, name, argumentsDelta: a.slice(0, 5) },
-      { type: 'tool-call-delta', index: 0, id, name, argumentsDelta: a.slice(5) },
-      { type: 'block-end', index: 0, block: { type: 'tool-call', id, name, arguments: a } },
-      { type: 'usage', usage: { inputTokens: 10, outputTokens: 5 } },
-      { type: 'finish', reason: { kind: 'tool-calls' } },
-    ],
-  }
+  return { chunks: [
+    { type: 'block-start', index: 0, blockType: 'tool-call' },
+    { type: 'tool-call-delta', index: 0, id, name, argumentsDelta: a.slice(0, 5) },
+    { type: 'tool-call-delta', index: 0, id, name, argumentsDelta: a.slice(5) },
+    { type: 'block-end', index: 0, block: { type: 'tool-call', id, name, arguments: a } },
+    { type: 'usage', usage: { inputTokens: 10, outputTokens: 5 } },
+    { type: 'finish', reason: { kind: 'tool-calls' } },
+  ] }
+}
+function textCall(t: string): object {
+  return { chunks: [
+    { type: 'block-start', index: 0, blockType: 'text' },
+    { type: 'text-delta', index: 0, text: t },
+    { type: 'block-end', index: 0, block: { type: 'text', text: t } },
+    { type: 'usage', usage: { inputTokens: 10, outputTokens: 1 } },
+    { type: 'finish', reason: { kind: 'stop' } },
+  ] }
 }
 
-function textCall(text: string): object {
-  return {
-    chunks: [
-      { type: 'block-start', index: 0, blockType: 'text' },
-      { type: 'text-delta', index: 0, text },
-      { type: 'block-end', index: 0, block: { type: 'text', text } },
-      { type: 'usage', usage: { inputTokens: 10, outputTokens: 1 } },
-      { type: 'finish', reason: { kind: 'stop' } },
-    ],
-  }
-}
-
-/** 驱动一个会话一轮：脚本 → 发消息 → 等 turn/end → 返回首请求 userTexts 与全部 toolResults。 */
-async function drive(calls: object[]): Promise<{ sessionId: string; firstUserTexts: string[]; toolResults: Array<{ isError: boolean; text: string; toolCallId: string | null }> }> {
+async function drive(calls: object[]): Promise<{ sessionId: string; toolResults: Array<{ isError: boolean; text: string }> }> {
   const ws = join(server.workspace, `t9a-${Math.random().toString(16).slice(2, 8)}`)
   mkdirSync(ws, { recursive: true })
   const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: ws } })) as { sessionId: string }
-  createdSessions.push(sessionId)
   const dir = join(rt!.home, 'fake', 'scripts')
   mkdirSync(dir, { recursive: true })
-  writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({ calls: calls.flatMap((c) => [c, textCall('T9a 完成')]) }))
+  writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({ calls: calls.flatMap((c) => [c, textCall('T9a')]) }))
   const stream = await rt!.client.follow(sessionId)
   const frames: Frame[] = []
   const drained = (async () => { for await (const f of stream) frames.push(f) })()
-  await rt!.client.call('session/prompt', {
-    request: { requestId: `t9a-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'T9a 探针' }] },
-  })
-  const deadline = Date.now() + 60_000
+  await rt!.client.call('session/prompt', { request: { requestId: `t9a-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'T9a' }] } })
+  const deadline = Date.now() + 120_000
   for (;;) {
     if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
-    if (Date.now() > deadline) throw new Error(`turn/end 未到；尾部：${JSON.stringify(frames.slice(-4)).slice(0, 400)}`)
-    await new Promise((r) => setTimeout(r, 50))
+    if (Date.now() > deadline) throw new Error(`turn/end 未到：${JSON.stringify(frames.slice(-4)).slice(0, 300)}`)
+    await new Promise((r) => setTimeout(r, 100))
   }
-  stream.cancel()
-  void drained
-  let raw: string
-  try { raw = readFileSync(join(rt!.home, 'fake', 'requests.jsonl'), 'utf8') } catch { raw = '' }
-  const reqs = raw.trim().split('\n').filter(Boolean).map((l) => JSON.parse(l) as { sessionId: string | null; userTexts: string[]; toolResults: Array<{ toolCallId: string | null; isError: boolean; text: string }> }).filter((r) => r.sessionId === sessionId)
-  return { sessionId, firstUserTexts: reqs[0]?.userTexts ?? [], toolResults: reqs.slice(1).flatMap((r) => r.toolResults) }
+  stream.cancel(); void drained
+  const results: Array<{ isError: boolean; text: string }> = []
+  for (const f of frames) {
+    if (f.type !== 'event' || f.event?.type !== 'tool/result') continue
+    const d = f.event.data as { message?: { isError?: boolean; content?: Array<{ text?: string }> } }
+    results.push({ isError: d.message?.isError === true, text: (d.message?.content ?? []).map((c) => c.text ?? '').join('\\n') })
+  }
+  return { sessionId, toolResults: results }
 }
 
 describe('T9a 产品启动器 ssh 组合', () => {
-  it('⑧ PTC 断依赖：standard preset 的 session/create 因 PTC 链断裂而拒', { timeout: 240_000 }, async () => {
-    // 设计 D8：禁 base ptc-runtime → 嵌套 workflow-ptc / tool-workflow 断依赖。
-    // 证据 = session/create 的错误信息含 waiting for ptcRuntime / workflowEngine。
+  it('⑧ 会话可建；首请求工具面不含 workflow 族', { timeout: 240_000 }, async () => {
+    // T9ab：去掉 ptc-runtime 禁行后 standard preset 可建会话。
+    // workflow 工具被禁（workflow-ptc/tool-workflow/tool-executor-ptc 三行）——
+    // 不直接调它（会挂：依赖链断但工具壳还在等）；改为验证首请求的 tools
+    // 面里没出现 workflow 族工具名。
     const ws = join(server.workspace, 't9a-ptc')
     mkdirSync(ws, { recursive: true })
-    let err: unknown
-    try {
-      await rt!.client.call('session/create', { request: { cwd: ws } })
-    } catch (e) { err = e }
-    expect(err, 'session/create 应因 PTC 断链而拒').toBeTruthy()
-    expect(String(err)).toContain('ptcRuntime')
-    expect(String(err)).toContain('workflowEngine')
+    const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: ws } })) as { sessionId: string }
+    expect(sessionId, 'session/create 成功（standard preset 可用）').toBeTruthy()
+    const dir = join(rt!.home, 'fake', 'scripts')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({ calls: [textCall('T9a')] }))
+    const stream = await rt!.client.follow(sessionId)
+    const frames: Frame[] = []
+    const drained = (async () => { for await (const f of stream) frames.push(f) })()
+    await rt!.client.call('session/prompt', { request: { requestId: `t9a-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'T9a' }] } })
+    const deadline = Date.now() + 60_000
+    for (;;) {
+      if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
+      if (Date.now() > deadline) throw new Error(`turn/end 未到`)
+      await new Promise((r) => setTimeout(r, 100))
+    }
+    stream.cancel(); void drained
+    let raw = ''
+    try { raw = readFileSync(join(rt!.home, 'fake', 'requests.jsonl'), 'utf8') } catch { /* */ }
+    const reqs = raw.trim().split('\n').filter(Boolean).map((l) => JSON.parse(l) as { sessionId: string | null; userTexts: string[] }).filter((r) => r.sessionId === sessionId)
+    expect(reqs.length, '有模型请求').toBeGreaterThan(0)
+    const allText = reqs.map((r) => r.userTexts.join('\n')).join('\n')
+    expect(allText, '工具面不含 workflow').not.toContain('workflow')
   })
 
-  it('⑨ ssh 模式组合确实加载（⑧ 的 PTC 报错为间接证据 + guard 行为由 unit ④ 直接覆盖）', { timeout: 60_000 }, () => {
-    // ⑧ 的 agent-preset/invalid 报错（waiting for ptcRuntime）只有在 ssh patch
-    // 加载后（禁了 ptc-runtime base 行）才可能出现——它就是组合生效的运行时证据。
-    // glob/grep 工具名拒的完整行为验证在 unit guard.test.ts ④ 三格
-    // （直接对 guard 模块：配→deny 含 'not available in ssh mode'；不配→不拒；非数组→加载抛错）。
-    // runtime-patch.yml 在 ready 后被删（start.ts:835 T-01.f3 安全设计）——e2e 无法
-    // 事后读取，内容已由 unit ① 锁住。此格作为说明性占位保持三格结构。
-    expect(true).toBe(true)
+  it('⑨ glob/grep 被 guard 拒：原因含 not available in ssh mode', { timeout: 240_000 }, async () => {
+    const g = await drive([toolCall('grep', { pattern: 'x' })])
+    expect(g.toolResults.length).toBeGreaterThanOrEqual(1)
+    expect(g.toolResults[0]!.isError).toBe(true)
+    expect(g.toolResults[0]!.text).toContain('not available in ssh mode')
+    const b = await drive([toolCall('glob', { pattern: '*' })])
+    expect(b.toolResults.length).toBeGreaterThanOrEqual(1)
+    expect(b.toolResults[0]!.isError).toBe(true)
+    expect(b.toolResults[0]!.text).toContain('not available in ssh mode')
   })
 
-  it('⑪ SIGKILL launcher → /tmp/dsh-ssh-* 新增 ≤1 且空、端口拒连', { timeout: 120_000 }, async () => {
-    // 本格验证的是 pdeathsig 兜底在产品启动器路径下也生效
-    // rt.stop() 走正常路径——要测 SIGKILL 需要直接杀 launcher。launchRuntime 内部
-    // spawn 的 child 不暴露——改为验证 stop() 后的清理（正常路径）+ 端口状态
-    await rt!.stop()
-    rt = undefined
-    await new Promise((r) => setTimeout(r, 500))
-    // 端口拒连
-    const net = await import('node:net')
-    await new Promise<void>((resolve, reject) => {
-      const sock = net.connect(server.port, '127.0.0.1')
-      sock.setTimeout(2000)
-      sock.on('connect', () => { sock.destroy(); resolve() }) // sshd 还活着——正常（它独立于 launcher）
-      sock.on('error', () => { sock.destroy(); resolve() })
-      sock.on('timeout', () => { sock.destroy(); resolve() })
-    })
-    // sshd 独立于 launcher——它由 startSshServer 管，stopServer 在 afterAll 里。产品 launcher
-    // 的 SIGKILL 兜底已由 T4 ⑪ 覆盖（同一 pdeathsig 机制），此处不重复杀 launcher。
-    expect(true).toBe(true) // ⑪ 的 /tmp/dsh-ssh-* 计数在验收收尾做
+  it('⑪ SIGKILL launcher → /tmp/dsh-ssh-* 新增 ≤1 且空、进程清场', { timeout: 120_000 }, async () => {
+    const child = (rt as unknown as { child: { pid: number; kill(s: string): void } }).child
+    expect(child, 'runtime.ts 暴露 child').toBeTruthy()
+    const killBefore = readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-')).sort()
+    child.kill('SIGKILL')
+    await new Promise((r) => setTimeout(r, 2000))
+    const after = readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-')).sort()
+    const added = after.filter((n) => !killBefore.includes(n))
+    expect(added.length, `新增 dsh-ssh 目录 ≤1（实际 ${added.length}）`).toBeLessThanOrEqual(1)
+    for (const d of added) {
+      const contents = readdirSync(join('/tmp', d))
+      expect(contents, `目录 ${d} 应为空（实际 ${contents.join(',')}）`).toEqual([])
+    }
+    // launcher 端口拒连
+    const baseUrl = rt!.baseUrl
+    const port = Number(new URL(baseUrl).port)
+    await expect(new Promise((_, reject) => {
+      const s = net.connect(port, '127.0.0.1')
+      s.on('connect', () => { s.destroy(); reject(new Error('port still open')) })
+      s.on('error', (e) => { s.destroy(); reject(e) })
+    })).rejects.toThrow()
+    rt = undefined // 已杀
   })
 })

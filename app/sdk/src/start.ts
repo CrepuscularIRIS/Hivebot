@@ -431,8 +431,6 @@ function sshRows(cfg: StartConfig): string {
   disabled: true
 - id: session-title-llm
   disabled: true
-- id: ptc-runtime
-  disabled: true
 - id: workflow-ptc
   disabled: true
 - id: tool-workflow

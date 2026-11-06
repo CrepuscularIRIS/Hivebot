@@ -11,7 +11,7 @@
 //   ③ 后台作业（D9⑤）：job_output / job_list / job_kill + schedule_create/
 //      list/view/edit + bash/pwsh 的 run_in_background（turn/end = 任务终态，
 //      不遗留跨回合工作）
-// 入口名单按已装 dsh（0.2.2-alpha.2）standard preset 的 delegation 组与 jobs/
+// 入口名单按已装 dsh（0.2.2-rc.1）standard preset 的 delegation 组与 jobs/
 // schedule 包源码逐一登记（ENTRY_ANNOTATIONS 锚点），enumerateInstalledEntries
 // 对运行时注册表取交集 = 「清单从已装 dsh 注册表枚举」的机械证明（未装的入口
 // 不枚举；判定本身按名走，后注册的入口同样被拒）。
@@ -43,11 +43,11 @@ export const DELEGATION_TOOLS = [
   'workflow',
 ]
 
-/** 后台作业入口（工具族；schedule 名单按已装 0.2.2-alpha.2 核对为
- *  create/list/update/delete——repos HEAD 的 view/edit 是后起改名，未装不拦）。 */
+/** 后台作业入口（工具族；schedule 名单按已装 0.2.2-rc.1 核对为
+ *  create/list/edit/view——T16 升级同步改名，旧 update/delete 已不存在）。 */
 export const JOB_TOOLS = [
   'job_output', 'job_list', 'job_kill',
-  'schedule_create', 'schedule_list', 'schedule_update', 'schedule_delete',
+  'schedule_create', 'schedule_list', 'schedule_edit', 'schedule_view',
 ]
 
 /** 后台作业入口（参数级）：run_in_background === true 才拒（前台同名工具照常）。 */
@@ -68,10 +68,10 @@ export const ENTRY_ANNOTATIONS = {
   job_output: 'packages/jobs/tool-jobs/src/index.ts:433',
   job_list: 'packages/jobs/tool-jobs/src/index.ts:541',
   job_kill: 'packages/jobs/tool-jobs/src/index.ts:561',
-  schedule_create: 'packages/schedule/tool-schedule/src/index.ts:372（已装 0.2.2-alpha.2 同名）',
-  schedule_list: 'packages/schedule/tool-schedule/src/index.ts:394（已装 0.2.2-alpha.2 同名）',
-  schedule_update: '已装 0.2.2-alpha.2 lib/index.js:603 注册（repos HEAD ce7073d 改名前为 schedule_edit :431）',
-  schedule_delete: '已装 0.2.2-alpha.2 lib/index.js:569 注册（repos HEAD ce7073d 改名前为 schedule_view :417）',
+  schedule_create: '已装 0.2.2-rc.1 dsh-tool-schedule lib/index.js（name: "schedule_create"）',
+  schedule_list: '已装 0.2.2-rc.1 dsh-tool-schedule lib/index.js（name: "schedule_list"）',
+  schedule_edit: '已装 0.2.2-rc.1 dsh-tool-schedule lib/index.js（name: "schedule_edit"；alpha.2 时代为 schedule_update）',
+  schedule_view: '已装 0.2.2-rc.1 dsh-tool-schedule lib/index.js（name: "schedule_view"；alpha.2 时代为 schedule_delete）',
   bash: 'packages/shell/tool-bash/src/index.ts:67,106-109（run_in_background 参数入口）',
   pwsh: 'packages/shell/tool-pwsh/src/index.ts:85（run_in_background 参数入口）',
 }
@@ -200,7 +200,7 @@ export function registerEnvelope(ctx, orch) {
 // （run_in_background 先于 shell-ask 出卡）不变，restrict 覆盖不了的（参数级
 // 后台、后续注册/改名）与 restrict 未及挂上的会话（见下）仍由守卫兜底。
 // API 形状对照 repos/deepseek-harness@ce7073d packages/core/tools/src/index.ts:160-190
-// （与已装 0.2.2-alpha.2 lib/index.js:453-467 语义一致）：需 scoped ctx、拒未知
+// （与已装 0.2.2-rc.1 lib/index.js:453-467 语义一致；rc.1 与 alpha.2 逐字同码）：需 scoped ctx、拒未知
 // 全局名、返回幂等 disposer——哨兵测试锁这三条（orchestration-envelope.test.ts）。
 // 已知上限（ponytail:）：agent 先于 createdBy 落盘变 live（生产不会——main 在
 // session/create 前写 bots.json，orchestrate.ts createWorkerBot 第 3/4 步；仅
@@ -211,7 +211,7 @@ export function registerEnvelope(ctx, orch) {
 export const RESTRICT_TOOLS = [...COORDINATOR_TOOLS, ...DELEGATION_TOOLS, ...JOB_TOOLS]
 
 /**
- * deny = RESTRICT_TOOLS ∩ 已装注册表。restrict 拒绝未知名（0.2.2-alpha.2 与
+ * deny = RESTRICT_TOOLS ∩ 已装注册表。restrict 拒绝未知名（0.2.2-rc.1 与
  * ce7073d 同一抛错），交集后再交；未装的入口本就 UNKNOWN_TOOL，不需要 restrict。
  * 注意注册表必须取 **agent 自己的可见面**（`tools.definitions(agent)`）：standard
  * preset 的再委派 / 后台作业工具不在插件 ctx 的全局注册表里（实测 agent/created

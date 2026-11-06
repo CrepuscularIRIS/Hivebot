@@ -71,7 +71,7 @@ export function normalizeConnectors(connectors) {
 }
 
 /** 基础 preset 的插件行。registry 未公开 definitions，此处运行时读取
- *  （P2-TEMP 限定：与 0.2.2-alpha.2 的 AgentPresetRegistry 实现耦合）。 */
+ *  （P2-TEMP 限定：与 0.2.2-rc.1 的 AgentPresetRegistry 实现耦合（rc.1 与 alpha.2 逐字同码））。 */
 export function basePresetRows(registry, agentPreset) {
   const record = registry.definitions?.get(agentPreset)
   if (record === undefined) throw new Error(`p2temp: unknown agentPreset ${JSON.stringify(agentPreset)}`)

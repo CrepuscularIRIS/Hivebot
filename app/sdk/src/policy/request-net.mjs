@@ -7,7 +7,7 @@
 //   argvHash = sha256(JSON(['bash','-c',command]))——与 sandbox/bwrap-wrap.py 侧
 //   json.dumps(…, separators=(',',':'), ensure_ascii=False) 跨语言同一规范
 //   （tests/unit/request-net.test.ts 对拍真实 python3；e2e 用 mjs 签发、python
-//   wrapper 命中双向证明）。bash-sandbox 0.2.2-alpha.2 confine 恒以
+//   wrapper 命中双向证明）。bash-sandbox 0.2.2-rc.1（与 alpha.2 逐字同码）confine 恒以
 //   ['bash','-c',command] 为沙箱内 argv（bash-sandbox/src/index.ts 私有 confine），
 //   wrapper 对 `--` 后收到的该 argv 算同一哈希。
 //   TTL≈60s（D1-r1；config.ttlMs 仅 runtime patch / 测试注入，生产 60000）。
@@ -49,7 +49,7 @@ export function hashArgv(argv) {
   return createHash('sha256').update(JSON.stringify(argv)).digest('hex')
 }
 
-/** bash-sandbox confine 的沙箱内 argv 形状（0.2.2-alpha.2 钉住）。 */
+/** bash-sandbox confine 的沙箱内 argv 形状（0.2.2-rc.1 钉住；与 alpha.2 逐字同码）。 */
 export function bashArgv(command) {
   return ['bash', '-c', command]
 }

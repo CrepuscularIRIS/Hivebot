@@ -1,6 +1,6 @@
 // L5-a：定时任务按时触发并把结果投递到指定会话（BRIEF 验收③）。
-// 安装版 API（node_modules 实测）：schedule_create({title, prompt, after_seconds})——
-// 不用 rrule/target（参考仓源码有但安装版删了）。MIN=60 秒。
+// 安装版 API（node_modules 实测，T16 升 rc.1）：schedule_create({title, prompt, rrule, target})——
+// 一次性 = RRULE:FREQ=DAILY;COUNT=1（RRULE_HELP 原文）；MIN=60 秒。
 // 模板：mock-demo.test.ts。
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -104,7 +104,12 @@ describe('L5-a 定时投递', () => {
   it('schedule_create 60 秒一次性 → 定时到达投递到本会话', { timeout: 180_000 }, async () => {
     const { sessionId } = (await rt.client.call('session/create', { request: { cwd: WS } })) as { sessionId: string }
     rt.writeScriptCalls(sessionId, [
-      toolCall('schedule_create', { title: 'L5a test', prompt: 'L5A_FOLLOWUP_DELIVERED', after_seconds: 60 }),
+      // rc.1 工具面（T16 实测）：{title, prompt, rrule, target 枚举}；一次性 =
+      // RRULE:FREQ=DAILY;COUNT=1（RRULE_HELP 原文，无 SECONDLY）；60s 后 = DTSTART
+      toolCall('schedule_create', {
+        title: 'L5a test', prompt: 'L5A_FOLLOWUP_DELIVERED', target: 'this_session',
+        rrule: `DTSTART:${new Date(Date.now() + 60_000).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}\nRRULE:FREQ=DAILY;COUNT=1`,
+      }),
       textCall('已调度'),
       textCall('定时任务收到并完成'),
     ])

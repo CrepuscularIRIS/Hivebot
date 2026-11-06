@@ -54,6 +54,8 @@ export interface StartConfig {
   extraMaskRoots: string[]
   /** T9a：ssh 模式五件套（全给=ssh 模式；全空=本机模式不变）。P2SDK_SSH_NODE=远端 node 绝对路径。 */
   ssh?: { host: string; remoteRoot: string; helper: string; helperHash: string; node: string }
+  /** T9a：P2SDK_SSH_* 给了但不齐（resolveConfig 时记录；validateStart 消费后不再用）。 */
+  sshMissing?: string[]
 }
 
 export function resolveConfig(env: NodeJS.ProcessEnv = process.env): StartConfig {
@@ -86,6 +88,7 @@ export function resolveConfig(env: NodeJS.ProcessEnv = process.env): StartConfig
     dataDirExplicit: Boolean(env.PBOTS_DATA_DIR),
     extraMaskRoots: (env.P2SDK_SANDBOX_MASK ?? '').split(':').filter(Boolean),
     ssh: readSshConfig(env),
+    sshMissing: sshMissingKeys(env),
   }
 }
 
@@ -95,7 +98,7 @@ function readSshConfig(env: NodeJS.ProcessEnv): StartConfig['ssh'] {
   const vals = keys.map((k) => env[k])
   const given = vals.filter((v) => v !== undefined && v !== '').length
   if (given === 0) return undefined
-  if (given !== keys.length) return undefined // 不齐——validateStart 里按原始 env 报具体缺谁
+  if (given !== keys.length) return undefined // 不齐——sshMissingKeys 单独记
   return { host: vals[0]!, remoteRoot: vals[1]!, helper: vals[2]!, helperHash: vals[3]!, node: vals[4]! }
 }
 
@@ -105,7 +108,6 @@ export function sshMissingKeys(env: NodeJS.ProcessEnv): string[] {
   const given = keys.filter((k) => env[k] !== undefined && env[k] !== '')
   if (given.length === 0 || given.length === keys.length) return []
   return keys.filter((k) => !given.includes(k))
-}
 }
 
 /** Pre-flight validation; a non-null string is the user-facing error. */
@@ -124,7 +126,7 @@ export function validateStart(cfg: StartConfig): string | null {
     if (!isAbsolute(m)) return `P2SDK_SANDBOX_MASK must be absolute colon-separated paths (got "${m}")`
   }
   // T9a：ssh 五件套给了但不齐 → fail loud（半配置是最危险的静默回落）
-  const missing = sshMissingKeys(process.env)
+  const missing = cfg.sshMissing ?? []
   if (missing.length > 0) {
     return `P2SDK_SSH_* is partially set: missing ${missing.join(', ')}. Set all five for ssh mode, or none for local mode.`
   }

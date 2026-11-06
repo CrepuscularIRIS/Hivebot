@@ -175,7 +175,8 @@ describe('childEnv', () => {
       P2SDK_SSH_HELPER: '/remote/helper.js', P2SDK_SSH_HELPER_HASH: 'a'.repeat(64), P2SDK_SSH_NODE: '/remote/node',
     })
     expect(validateStart(cfg)).toBeNull()
-    const yaml = writeRuntimePatch(cfg)
+    mkdirSync('/tmp/h', { recursive: true })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
     expect(yaml).toContain('dsh-fs-ssh')
     expect(yaml).toContain('dsh-subprocess-ssh')
     expect(yaml).toContain('dsh-sandbox-ssh')
@@ -196,7 +197,7 @@ describe('childEnv', () => {
     }
     const local = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h' })
     expect(validateStart(local)).toBeNull()
-    const yaml = writeRuntimePatch(local)
+    const yaml = readFileSync(writeRuntimePatch(local), 'utf8')
     expect(yaml).not.toContain('dsh-fs-ssh')
     expect(yaml).not.toContain('extraNeverTools')
   })

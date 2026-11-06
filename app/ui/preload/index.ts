@@ -19,6 +19,9 @@ if (isAppMainFrame) {
     /** M2：申请一个 mux 端口（端口经 postMessage 转交，见 mux-relay）。 */
     requestMuxPort: (requestId: string): void => { ipcRenderer.send('pbots:mux-port', { requestId }) },
     /** M3：本地 bots 元数据（CONTRACT M3 行：invoke({op:'get'}) / invoke({op:'patch',mainBotId})）。 */
+    /** T7a（L4-c）：skill 启用（list/enable/disable；启用=复制快照）。 */
+    skills: (req: { op: 'list'; botId: string } | { op: 'enable'; botId: string; fromBotId: string; name: string } | { op: 'disable'; botId: string; name: string }): Promise<PbotsApiResult> =>
+      ipcRenderer.invoke('pbots:skills', req) as Promise<PbotsApiResult>,
     botsMeta: (op: 'get' | { op: 'patch'; mainBotId: string }): Promise<PbotsApiResult> =>
       ipcRenderer.invoke('pbots:bots-meta', op === 'get' ? { op: 'get' } : { op: 'patch', mainBotId: op.mainBotId }) as Promise<PbotsApiResult>,
     /** P5-54：renderer-grok desktop 桥的窗口实底（shim desktop.ts 消费）。

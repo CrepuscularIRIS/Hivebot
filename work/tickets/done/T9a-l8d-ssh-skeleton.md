@@ -4,7 +4,7 @@
 > 来源：`work/p9-dsh-integration/DESIGN-ssh-composition.md` D8、D9（工具行）、D11、D13；实现单拆分表 T9a 行；T5 验收（`work/tickets/done/T5-l8c-ssh-composition-design.md`，accepted 2026-11-06 @ 10e9951b）
 > 分支 / 作业目录：feat/T9a @ /tmp/bot-wt/T9a
 > claimed：10:24 main (GLM 5.3) @ 03251ea2（施工开始时由主 agent 填：日期、起点 SHA）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-06 manager 终验 @ feat/T9a 6a16afea（T9a 链四单随 T9ad 一并通过，见 receipts/T9a.md §8）
 
 ## 目标
 把 T4 测试里手写的 ssh 组合搬进产品启动器：`P2SDK_SSH_*` 给齐时 `start.ts` 生成 ssh 行，并把设计里「骨架就要定死」的三件做掉——PTC 全族在 ssh 模式不可用（禁 base `ptc-runtime` 断嵌套依赖）、`glob`/`grep` 在 ssh 模式被 guard 按工具名拒、强杀只留空目录。文件写围栏（T9b）和远端 bash wrapper（T10）**不在本单**：本单 ssh 模式先插原版 `fs-ssh` / `sandbox-ssh`。

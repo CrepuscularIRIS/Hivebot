@@ -4,7 +4,7 @@
 > 来源：T9a 经理验收（2026-11-06 @ 64bc35c9，/dev/shm/bot-T9a feat/T9a）
 > 分支 / 作业目录：feat/T9a 续提交 @ /dev/shm/bot-T9a
 > claimed：11:06 main (GLM 5.3)
-> accepted：
+> accepted：2026-11-06 manager 终验 @ feat/T9a 6a16afea（T9a 链四单随 T9ad 一并通过，见 receipts/T9a.md §8）
 
 ## 经理实测（原样）
 - unit `start.test.ts + guard.test.ts` → 64 passed（start 40）；e2e `ssh-product.test.ts` → 3 passed；验收 6 grep → 空；M3 → `× T9a-① … 1 failed | 39 passed (40)`，成立。

@@ -4,7 +4,7 @@
 > 来源：T9ab 经理终验（2026-11-06 @ 1395281b，/dev/shm/bot-T9a feat/T9a）；DESIGN-ssh-composition.md r3（缩进修复，已落 387b1d6d）与 r4（D11 改定）
 > 分支 / 作业目录：feat/T9a 续提交 @ /dev/shm/bot-T9a
 > claimed：13:43 main (GLM 5.3)
-> accepted：
+> accepted：2026-11-06 manager 终验 @ feat/T9a 6a16afea（T9a 链四单随 T9ad 一并通过，见 receipts/T9a.md §8）
 > 失败计数：T9a 链第 2 次（T9a → T9ab → 本单）。本单再不过 → 三单挪 blocked/，交 architect。
 
 ## 经理实测（原样，2026-11-06 13:36–13:45）

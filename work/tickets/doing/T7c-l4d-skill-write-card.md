@@ -4,7 +4,7 @@
 > 来源：`work/QUESTIONS.md` Q-028 答复 B（2026-11-06 用户「要审阅」：写/改自己 skill 目录时弹确认卡，复用现有审批卡，不做待审列表）；原版形态 `work/p9-dsh-integration/RE-skills.md` Q3（PENDING→APPROVE/REJECT 审阅项——我们只取「改 skill 前要人点头」这一子集）
 > 分支 / 作业目录：feat/T7c @ /tmp/bot-wt/T7c
 > 排期：**T7b 之后**（同改 skill 链路的 e2e；T7a 的 `skills-enable.spec.ts` 也要随本单修订，见验收 4）
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：10:51 main (GLM 5.3) @ 37cd4ef1（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

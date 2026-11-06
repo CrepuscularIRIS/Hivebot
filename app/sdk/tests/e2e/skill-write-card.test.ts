@@ -1,6 +1,6 @@
 // T7c（Q-028=B）：write/edit 进 bot 自己的 skill 目录必出确认卡。
 // ①-⑧ 照工单；模板=write-outside.test.ts。
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -157,19 +157,82 @@ describe('T7c skill 写入审阅卡', () => {
     const { asked } = await drive([toolCall('write', { file_path: join(WS, 'notes/t7c.md'), content: 'x' })])
     expect(asked).toBe(0)
   })
-  it('⑦ never 子代理写 skill → deny 0卡 文件不存在', { timeout: 240_000 }, async () => {
-    // 照 write-outside.test.ts:479 造法：ptc worker 覆盖为 node-script bootstrap
-    // → 子代理 approvalPolicy=never → NEVER_DENY 路径
-    // 简化：不造 ptc（复杂度高），直接在当前 always-ask 会话用脚本写入。
-    // 但 never 子代理需要 dsh 侧配置——用 approvalPolicy: 'never' 的 session。
-    // 当前 shell-ask 的 NEVER_DENY 在「审批服务不可用」时触发——用 config 覆盖。
-    // 最小做法：读 write-outside 的 NEVER_DENY 路径（:80-88），直接测
-    // 「子代理写 skill 被拒」这一行为面。此处用 p2temp 的 worker 路径——
-    // 但 p2temp 需要额外插件。最简：跳过 ptc 造法，在当前会话用脚本断言
-    // NEVER_DENY 的行为已由 shell-ask 单测覆盖（ASK=never → deny 无卡）。
-    // 此格改为 e2e 级验证：写 skill 出卡后作答 rejected → 文件不存在（=② 的重复确认）
-    // TODO T7cc：用完整 ptc worker 造法替换（照 write-outside :479-535）
-    expect(true).toBe(true) // 占位：待 T7cc 用 ptc worker 真做
+  it('⑦ never 子代理写 skill → deny 0卡 文件不存在', { timeout: 420_000 }, async () => {
+    // T7cc：照 write-outside.test.ts:479 真造 ptc worker（不再占位）
+    const { copyFileSync } = await import('node:fs')
+    const store = join(PKG_ROOT, 'node_modules', '.pnpm')
+    const ptcHit = readdirSync(store).find((n) => n.startsWith('@deepseek-ai+dsh-ptc-runtime-node@'))
+    if (!ptcHit) throw new Error('dsh-ptc-runtime-node not found')
+    const ptcSrc = join(store, ptcHit, 'node_modules', '@deepseek-ai', 'dsh-ptc-runtime-node', 'lib', 'process.js')
+    const bootstrap = join(WS, '.t7cc-ptc-boot.mjs')
+    copyFileSync(ptcSrc, bootstrap)
+    // 独立 overlay 覆盖 ptc-runtime 的 bootstrap（子代理 approvalPolicy=never）
+    const subDir = mkdtempSync(join(tmpdir(), 'bot-T7cc-sub-')); trackTmpDir(subDir)
+    const subOverlay = join(subDir, 'sub.yml')
+    writeFileSync(subOverlay, `\
+- id: ptc-runtime
+  config:
+    launch:
+      kind: node-script
+      executable: /usr/bin/node
+      bootstrapPath: ${bootstrap}
+`)
+    // 独立 runtime（新数据目录——旧目录门已开过测不出）
+    const rt2 = await launchRuntime({ env: {
+      HOME: TEST_HOME, TMPDIR: join(TEST_ROOT, 't7cc-tmp'),
+      DBUS_SESSION_BUS_ADDRESS: 'unix:path=' + join(TEST_ROOT, 'no-dbus'),
+      P2SDK_HOME: mkdtempSync(join(TEST_ROOT, 'dsh7-')),
+      P2SDK_PATCH: `${fakeOverlay()}:${subOverlay}`,
+      PBOTS_DATA_DIR: join(TEST_HOME, 't7cc-data'),
+    } })
+    try {
+      const ws7 = join(TEST_HOME, 't7cc-data', 'workspaces', 'w7')
+      mkdirSync(ws7, { recursive: true })
+      // root 脚本：委派子代理
+      const { sessionId: root } = (await rt2.client.call('session/create', { request: { cwd: ws7 } })) as { sessionId: string }
+      const dir7 = join(rt2.home, 'fake', 'scripts'); mkdirSync(dir7, { recursive: true })
+      writeFileSync(join(dir7, `${root}.json`), JSON.stringify({ calls: [
+        toolCall('subagent', { description: 'T7cc skill write probe', prompt: 'run the T7cc child skill write probe' }),
+        textCall('已委派'),
+      ] }))
+      // 子会话脚本（default.json）：写 skill + 收尾
+      writeFileSync(join(dir7, 'default.json'), JSON.stringify({ calls: [
+        toolCall('write', { file_path: join(ws7, '.dsh/skills/t7c-g/SKILL.md'), content: 'x' }),
+        textCall('子会话完成'),
+      ] }))
+      await rt2.client.call('session/prompt', { request: { requestId: `t7cc-${Date.now()}`, sessionId: root, mode: 'queue', content: [{ type: 'text', text: 'T7cc 委派' }] } })
+      // 等子会话完成（新 sessionId 出现+≥2 轮请求）
+      const deadline = Date.now() + 180_000
+      let child = ''
+      for (;;) {
+        let raw = ''
+        try { raw = readFileSync(join(rt2.home, 'fake', 'requests.jsonl'), 'utf8') } catch { /* */ }
+        const reqs = raw.trim().split('\n').filter(Boolean).map((l) => JSON.parse(l) as { sessionId: string | null; toolResults: Array<{ isError: boolean; text: string }> })
+        const hit = reqs.find((r) => r.sessionId !== null && r.sessionId !== root)
+        if (hit) { child = hit.sessionId as string; break }
+        if (Date.now() > deadline) throw new Error('180s 内没观察到子会话')
+        await new Promise((r) => setTimeout(r, 100))
+      }
+      // 等子会话完成 2 轮
+      for (;;) {
+        let raw = ''
+        try { raw = readFileSync(join(rt2.home, 'fake', 'requests.jsonl'), 'utf8') } catch { /* */ }
+        const childReqs = raw.trim().split('\n').filter(Boolean).map((l) => JSON.parse(l) as { sessionId: string | null }).filter((r) => r.sessionId === child)
+        if (childReqs.length >= 2) break
+        if (Date.now() > deadline + 120_000) throw new Error(`子会话只完成 ${childReqs.length}/2`)
+        await new Promise((r) => setTimeout(r, 100))
+      }
+      // 子会话的 write 结果应为 deny（never 子代理无卡直接拒）
+      let raw = ''
+      try { raw = readFileSync(join(rt2.home, 'fake', 'requests.jsonl'), 'utf8') } catch { /* */ }
+      const childResults = raw.trim().split('\n').filter(Boolean).map((l) => JSON.parse(l) as { sessionId: string | null; toolResults: Array<{ isError: boolean; text: string }> })
+        .filter((r) => r.sessionId === child).flatMap((r) => r.toolResults ?? [])
+      expect(childResults.length, '子会话有 tool result').toBe(1)
+      expect(childResults[0]!.isError, 'never 子代理写 skill 被拒').toBe(true)
+      expect(existsSync(join(ws7, '.dsh/skills/t7c-g/SKILL.md')), '文件不存在').toBe(false)
+    } finally {
+      try { await rt2.stop() } catch { /* */ }
+    }
   })
 
   it('⑧ 自主门开（policy-state provision）→ 写 skill 仍出卡', { timeout: 240_000 }, async () => {
@@ -189,7 +252,7 @@ describe('T7c skill 写入审阅卡', () => {
     expect(g.results[0]!.isError, `门开态写非skill应成功: ${g.results[0]?.text.slice(0,100)}`).toBe(false)
     // 写 skill 仍出卡
     const { asked } = await drive([toolCall('write', { file_path: join(WS, '.dsh/skills/t7c-h/SKILL.md'), content: 'x' })], 'allowed-once')
-    expect(asked, '门开态写 skill 仍出卡').toBeGreaterThanOrEqual(1)
+    expect(asked, '门开态写 skill 仍出卡').toBe(1)
   })
 
   it('⑨ 符号链接工作区+skill根不存在 → 仍出卡', { timeout: 240_000 }, async () => {
@@ -222,16 +285,7 @@ describe('T7c skill 写入审阅卡', () => {
     }
     stream.cancel(); void drained
     const asked = rt.feed.frames.filter((f) => f.type === 'waterfall' && f.event === 'approval/request' && f.agentId === sessionId).length
-    // T7cb 调试：看走的哪条路
-    const results9: Array<{ isError: boolean; text: string }> = []
-    for (const f of frames) {
-      if (f.type === 'event' && f.event?.type === 'tool/result') {
-        const d = f.event.data as { message?: { isError?: boolean; content?: Array<{ text?: string }> } }
-        results9.push({ isError: d.message?.isError === true, text: (d.message?.content ?? []).map((c) => c.text ?? '').join('\n') })
-      }
-    }
-    console.log('[T7cb-⑨-dbg] results=', JSON.stringify(results9).slice(0, 300), ' asked=', asked)
-    expect(asked, '符号链接工作区+skill根不存在仍出卡').toBeGreaterThanOrEqual(1)
+    expect(asked, '符号链接工作区+skill根不存在仍出卡').toBe(1)
   })
 })
 import { afterAll } from 'vitest'

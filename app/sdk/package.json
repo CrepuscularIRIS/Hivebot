@@ -19,15 +19,22 @@
   },
   "dependencies": {
     "@deepseek-ai/dsh": "0.2.2-alpha.2",
+    "@deepseek-ai/dsh-fs-ssh": "0.2.2-alpha.2",
     "@deepseek-ai/dsh-llm-pi-ai": "0.2.2-alpha.2",
     "@deepseek-ai/dsh-mcp-client": "0.2.2-alpha.2",
     "@deepseek-ai/dsh-plugin-manager": "0.2.2-alpha.2",
     "@deepseek-ai/dsh-plugin-market": "0.2.2-alpha.2",
+    "@deepseek-ai/dsh-sandbox-ssh": "0.2.2-alpha.2",
+    "@deepseek-ai/dsh-ssh": "0.2.2-alpha.2",
+    "@deepseek-ai/dsh-subprocess-ssh": "0.2.2-alpha.2",
     "ws": "8.22.1"
   },
   "devDependencies": {
     "@agent-infra/mcp-server-filesystem": "1.2.29",
+    "@deepseek-ai/cordis": "4.0.6-alpha.1",
     "@deepseek-ai/dsh-llm-replay": "0.2.2-alpha.2",
+    "@deepseek-ai/dsh-sandbox-policy": "0.2.2-alpha.2",
+    "@deepseek-ai/dsh-session-projection": "0.2.2-alpha.2",
     "@vitest/coverage-v8": "5.0.5",
     "vitest": "5.0.5"
   },

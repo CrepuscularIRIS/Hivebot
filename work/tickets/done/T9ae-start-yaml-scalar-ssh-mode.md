@@ -5,7 +5,7 @@
 > 分支 / 作业目录：feat/T9ae，从主线 `docs/rebuild-p6-p5-plan`（≥ 35a235c6）切；小改动，可不建 worktree
 > 排期：现在就做，与 T16 并行（T16 不碰 `start.ts` / `start.test.ts`），合并不必等 T16；须在 T9b 之前合并
 > claimed：2026-11-06 15:4x main (GLM 5.3) @ /tmp/bot-wt/T9ae
-> accepted：
+> accepted：2026-11-06 16:3x manager (Opus 5.5) @ feat/T9ae 2a16dd62（终验通过：42 绿、js-yaml 四值原样、M1/M2 各红、e2e 4+10/3/7 绿；见 receipts/T9ae.md §7）
 
 ## 目标
 1. （C3）`start.ts` 生成 runtime patch 时，所有插进 YAML 的字符串都经 `yamlScalar`：路径含 `'` 不再让整份 patch 解析失败，`host: true` 之类不再被解析成 boolean/number。

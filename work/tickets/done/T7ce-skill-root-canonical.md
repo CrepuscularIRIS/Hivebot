@@ -5,7 +5,7 @@
 > 分支 / 作业目录：feat/T7ce，从主线 `docs/rebuild-p6-p5-plan`（≥ 35a235c6）切；小改动，可不建 worktree
 > 排期：现在就做，与 T16 并行（T16 不碰 `shell-ask.mjs` / `policy.test.ts`），合并不必等 T16
 > claimed：2026-11-06 15:3x main (GLM 5.3) @ /tmp/bot-wt/T7ce
-> accepted：
+> accepted：2026-11-06 16:3x manager (Opus 5.5) @ feat/T7ce 4f20f067（终验通过：73 绿、M1 红同形、e2e 9/10 绿；见 receipts/T7ce.md §6）
 
 ## 目标
 `<ws>/.dsh` 是指向 `<ws>/config` 的符号链接、`config/skills` 尚不存在时，write 到 `.dsh/skills/<x>/SKILL.md`（或直写 `config/skills/<x>/SKILL.md`）仍出 skill 卡，自主门开也一样。

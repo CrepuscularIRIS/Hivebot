@@ -70,6 +70,6 @@ git diff --stat 63f3f70..HEAD：
 2. ③b 依赖「杀 master 后 dsh-ssh 不重连、readText 以断连错误 reject」——实测如此（无自动重连，符合 ssh/README）；若上游行为变化此格会红，属预期敏感。
 3. `scanLeaks` 读不到的 /proc 项当不存在（其他用户进程）；本机单用户场景无影响。
 
-## 附记（修复复核轮，2026-11-06 03:24）
+## 附记（修复复核轮，2026-11-06 03:14）
 
 - ③b 存在调度竞态（复核席 kill-race 三连红）：杀后立即读可拿到断连完成前的 `write EPIPE`。已改轮询至明确传输错误，错误集纳入 EPIPE/ECONNRESET（@01b4dc6）；注入 20ms 抢占场景复验绿，M1（换本机 fs）仍红（sawSuccess 分支）。

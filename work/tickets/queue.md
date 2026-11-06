@@ -46,9 +46,10 @@
 | 7d′ | **T7cb** T7c 返修（`open/T7cb-skill-write-card-cells.md`）：⑦ 照 write-outside ⑦ 造 never 子代理；⑧ provision 后对照 0 卡 + skill 1 卡；⑨ 工作区经链接且根未建 → 先红再定是否 `canonicalPath`；M1/M3 | T7c 终验 | — | **open**（与 T7bc 并行；合并仍 T7b 先） |
 | 7e | T7d 补 bash 缺口：bot 工作区建出时预建 `.dsh/skills`、`.agents/skills`，bwrap wrapper 对会话工作区下这两个目录（或整个 `.dsh`/`.agents`）ro-bind，使 bash 写不进 skill 根（挂载点不可 rename/rm）；先红 = T7c 后 bash `cat > .dsh/skills/x/SKILL.md` 零卡写成 | T7c 回执 | T7c | 计划 |
 | 7f | **T15** 上游评估 dsh 0.2.2-alpha.2 → rc.1（`done/T15-dsh-rc1-upgrade-assessment.md`）→ `p9-dsh-integration/EVAL-dsh-rc1.md` | 主 agent 上游巡检 2026-11-06 | — | **done**（accepted 2026-11-06 @ 2ee87e18；§2 结论无关，T14 继续在 alpha.2 上查；升级单转正式计划 = 5a″ T16） |
-| 8 | T8 P5-H5b `tests/e2e/*.test.ts` 裸 mkdtemp → tmkdir（约 25 个文件）；验收用 `vitest list tests/e2e`（只收集不跑）抓 import 错 + 抽 3 个快文件跑残留计数 | HANDOFF §3-3 | T1 验收（已通过，可开；照 T1 的写法；已知残留源含 `tests/e2e/market.test.ts:108` 的 `p2sdk-t09-patch-`） | 计划 |
+| 8 | T8 P5-H5b `tests/e2e/*.test.ts` 裸 mkdtemp → tmkdir（约 25 个文件）；验收用 `vitest list tests/e2e`（只收集不跑）抓 import 错 + 抽 3 个快文件跑残留计数 | HANDOFF §3-3 | T1 验收（已通过，可开；照 T1 的写法；已知残留源含 `tests/e2e/market.test.ts:108` 的 `p2sdk-t09-patch-`） | **doing，不通过 第 1 次**（终验 2026-11-06 @ 883617d9：替换本身干净、抽验绿、6 处保留成立；但 `interrupt.test.ts:21` import 插歪致 PARSE_ERROR、`security/w1ap0-scan.test.ts` 3 处漏改 → **T8b** `open/T8b-e2e-mkdtemp-fix.md`；feat/T8 不合并） |
+| 8′ | **T8b** T8 返修（`open/T8b-e2e-mkdtemp-fix.md`）：interrupt.test.ts import 归位 + security/w1ap0-scan 3 处 → tmkdir；验收 `vitest list tests/e2e` rc=0 + 递归 grep 残留=6 | T8 终验 | — | **open**（过后 feat/T8 可合并，再做第 10 行 H7 重跑） |
 | 9 | L5-a 定时投递 e2e：schedule 一次性任务按时投递到指定 bot 会话（BRIEF 验收第 3 条；`tool-schedule` 已在 preset，预计只要测试 + 少量胶水） | BRIEF 验收第 3 条 | — | 计划（T2–T4 后开，避免同时三条以上链） |
-| 10 | P5-H7 实证：`PBOTS_TEST_WORKERS` 下双全量并行一次（代码侧已完成 2c20a2c） | HANDOFF §3-2 | **load < 8 的窗口**（GPU 训练中不跑） | 等低负载 |
+| 10 | P5-H7 实证：`PBOTS_TEST_WORKERS` 下双全量并行一次（代码侧已完成 2c20a2c） | HANDOFF §3-2 | **load < 8 的窗口**（GPU 训练中不跑） | **不通过**（2026-11-06 11:42 一轮 W1 8 红 / W2 5 红，manager 裁：①`/tmp/bot-H7-w{1,2}.log` 各只有 4 行汇总，13 红无一可归族，「互踩签名=0」无证据，LOG 自承守护测试未跑；②H7 自己的 DONE 口径是「非超时族红=0」，比基点多约 10 红本身就是不达标；③W1 跑在带 PARSE_ERROR 的 feat/T8 上。重跑要求：T8b 合并后、load<8，两套都用完整 reporter 落盘〔`--reporter=default --reporter=json --outputFile=…`，不 tail〕，同轮跑守护测试；先 `PBOTS_TEST_WORKERS=8`，若非超时族红仍>0 再试 4；逐条红列「文件>用例>错误首行>族」表） |
 
 ## 待排查（先查再拆，不开单）
 

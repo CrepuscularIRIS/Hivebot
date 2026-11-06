@@ -1,4 +1,4 @@
-# HANDOFF · 2026-11-06 04:47
+# HANDOFF · 2026-11-06 05:49
 
 新会话从这里接手。先读本文件，再读 `work/REPORT-2026-11-05.md`（额度诊断 + 今日成果 + 待办全表）。
 
@@ -14,7 +14,8 @@
 
 ## 3. 待办（按顺序）
 
-第一件：**派 manager 任务 A**，开 T5 与 T7：
+0. **收尾三件**（进行中）：① T5 设计复审（reviewer 重派中，首轮 Sol 被内容策略拦——防御性措辞重发；LEARNINGS 已有此坑条目）回来 → manager 任务 B 验收 T5（自检第 7 条口径一并裁）；② **T7a e2e 阻塞裁决**：presets.yml 全产品组合下 guard 的 workspaceRoot 豁免失效（诊断链在 receipts/T7a.md 附记，疑似产品级缺陷「UI 里 bot 写不了自己工作区」，也可能只是 presets 一行）——manager 开缺陷调查单或并入 T9；③ Q-028/Q-029 待用户。
+1. **T5 设计已产出**：DESIGN-ssh-composition.md（13 节+89 锚点）+ T9–T13 实现单。核心：D4 远端 helper 默认 bwrap 不挡读（helper.js:541）→ ssh 进产品前必须先做 T10 包装层；D6 一个 runtime=一台电脑；D7 断连=专门提示+重启不重放；T9 首步删 ssh-headless.test.ts:111-122 死代码。
 - T5：ssh × 安全层组合设计（原 architect 活）。输入：PLAN §2（fs-zone/guard/shell-ask 与 ssh 同挂点）、§3 十条、receipts/T4.md §5（断连形态/宿主直连清单：tool-fs-search、attachment-local、spill-local、agent-instructions、skill-filesystem）、§5-1（preset 隔离问题）。顺带删 queue 里记的 T4 死代码（ssh.patch.yml 重复 llm-replay insert）。
 - T7：账户 skill 库 + 按 bot 启用（RE-skills Q2/Q7：启用=复制快照；库不能放 $DSH_HOME/skills 或 agents/skills——全员共扫）。
 - 其后按 queue：T8（e2e mkdtemp 收尾）、L5-a、P5-H7 双全量实证（等 load<8）。

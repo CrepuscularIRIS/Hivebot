@@ -11,10 +11,10 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { connect } from '../../examples/lib/client.mjs'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
-import { trackTmpDir } from '../support/tmp-sweep.ts'
+import { trackTmpDir, tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(import.meta.dirname, '../..')
-const TEST_ROOT = mkdtempSync(join(tmpdir(), 'bot-T14-run-'))
+const TEST_ROOT = tmkdir('bot-T14-run-')
 trackTmpDir(TEST_ROOT)
 const TEST_HOME = join(TEST_ROOT, 'home')
 mkdirSync(TEST_HOME, { recursive: true })
@@ -27,7 +27,7 @@ interface Feed { frames: Frame[]; close(): void }
 interface Rt extends Runtime { feed: Feed; writeScriptCalls(sessionId: string, calls: object[]): void; readRequests(): Array<{ sessionId: string | null; toolResults: Array<{ toolCallId: string | null; isError: boolean; text: string }> }> }
 
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'bot-T14-patch-'))
+  const dir = tmkdir('bot-T14-patch-')
   trackTmpDir(dir)
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\

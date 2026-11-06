@@ -36,6 +36,7 @@ import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { uniqueTestHome } from '../support/sandbox-home.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const TEST_HOME = uniqueTestHome('p5-04') // P5-H3：运行级唯一（防并行全量互踩哨兵）
@@ -62,7 +63,7 @@ interface EscRuntime extends Runtime {
 const runtimes: EscRuntime[] = []
 
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-04-patch-'))
+  const dir = tmkdir('p5-04-patch-')
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
 - id: agent-default-model
@@ -85,7 +86,7 @@ function fakeOverlay(): string {
 
 /** stock 差分：禁用 p2sdk-fs-guard（guard-fs.test.ts 同款）。 */
 function stockOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-04-stock-'))
+  const dir = tmkdir('p5-04-stock-')
   const overlay = join(dir, 'stock.yml')
   writeFileSync(overlay, `\
 # P5-04 差分对照：恢复 stock（无 dfa 参数 guard）
@@ -105,7 +106,7 @@ function stockOverlay(): string {
  * sandbox/mode=dfa + approval/policy=ask 全靠这张表。stock=true 追加禁 guard 行。
  */
 function comboOverlay(stock: boolean): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-04-combo-'))
+  const dir = tmkdir('p5-04-combo-')
   const overlay = join(dir, 'combo.yml')
   writeFileSync(overlay, `\
 # P5-04 ⑤ 组合会话：mode=danger-full-access 且 approval=ask（≠ never）。

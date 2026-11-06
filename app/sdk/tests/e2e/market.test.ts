@@ -46,6 +46,7 @@ import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { connect } from '../../examples/lib/client.mjs'
 import type { Frame } from '../support/fake/harness.ts'
 import { sendPrompt } from '../support/fake/harness.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const MARKET_SOURCE_YML = join(PKG_ROOT, 'profile', 'patches', 'market-source.yml')
@@ -105,7 +106,7 @@ async function serveFixture(): Promise<{ url: string; close: () => Promise<void>
 
 /** Fake-provider overlay (approval.test.ts pattern): scripted p2fake turns. */
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-t09-patch-'))
+  const dir = tmkdir('p2sdk-t09-patch-')
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
 # T-09 generated fake-provider overlay (tests/e2e/market.test.ts).

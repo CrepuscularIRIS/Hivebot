@@ -128,7 +128,7 @@ function pmReenableInclude(): string {
     }
   }
   expect(flipped, 'tool-plugin-manager 恰一处 disabled 翻转').toBe(1)
-  const dir = mkdtempSync(join(tmpdir(), 'p5-06-pm-'))
+  const dir = tmkdir('p5-06-pm-')
   const include = join(dir, 'pm-enable.yml')
   writeFileSync(include, `# P5-06 ⑤：重新启用 plugin_manager（整块取自已装 preset，仅翻 disabled 一键）\n${dedented.join('\n')}\n`)
   return include
@@ -138,7 +138,7 @@ interface OverlayOpts { stock?: boolean; fake?: boolean }
 
 /** 矩阵 overlay：fake LLM + ptc worker 覆盖 +（差分）摘三层防线。 */
 function matrixOverlay(opts: OverlayOpts = {}): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-06-patch-'))
+  const dir = tmkdir('p5-06-patch-')
   const overlay = join(dir, 'matrix.yml')
   writeFileSync(overlay, `\
 # P5-06 generated overlay (tests/e2e/w1ap0-matrix.test.ts)
@@ -914,6 +914,7 @@ function netProbeScript(targets: Array<{ name: string; host: string; port: numbe
   const cases = targets.map((t) => `  (False, "${t.name}", "${t.host}", ${t.port})`).join(',\n')
   return `/usr/bin/python3 -I -c '
 import socket
+import { tmkdir } from '../support/tmp-sweep.ts'
 cases = [
 ${cases}
 ]

@@ -18,6 +18,7 @@ import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { uniqueTestHome } from '../support/sandbox-home.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import {
+import { tmkdir } from '../support/tmp-sweep.ts'
   clearRealKeys,
   processTree,
   runtimeDshPid,
@@ -61,7 +62,7 @@ const runtimes: InterruptRuntime[] = []
 
 /** fake LLM overlay（sandbox-hardened.test.ts 同款）。 */
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p5-27-patch-'))
+  const dir = tmkdir('p5-27-patch-')
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
 - id: agent-default-model

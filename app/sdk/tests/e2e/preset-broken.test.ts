@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url'
 import { expect, it } from 'vitest'
 import { launchRuntime } from '../support/runtime.ts'
 import { BUNDLE_NAME, MARKET_YML, writeBundleFixture } from '../market/support.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -28,7 +29,7 @@ const expectedId = (agentPreset: string, connectors: string[]): string =>
     .digest('hex').slice(0, 12)}`
 
 it('T-18②: broken preset is not cached — ensure fails loud, retry after fixing the patch re-registers the same id', async () => {
-  const scratch = mkdtempSync(join(tmpdir(), 'p2sdk-t18-'))
+  const scratch = tmkdir('p2sdk-t18-')
   // The healthy fixture first, so its generated (machine-absolute) patch
   // content can be written back later as "the fixed connector".
   const bundleDir = writeBundleFixture(join(scratch, 'demo-mcp'))

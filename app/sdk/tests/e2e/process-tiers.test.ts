@@ -9,11 +9,11 @@ import { afterAll, beforeAll, expect, it } from 'vitest'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
-import { trackTmpDir } from '../support/tmp-sweep.ts'
+import { trackTmpDir, tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 // HOME 与区外探针互为兄弟，避免 HOME mask 先于区域判定拦截探针。
-const TEST_ROOT = mkdtempSync(join(tmpdir(), 'bot-p626t-'))
+const TEST_ROOT = tmkdir('bot-p626t-')
 trackTmpDir(TEST_ROOT)
 const TEST_HOME = join(TEST_ROOT, 'home')
 mkdirSync(TEST_HOME)
@@ -47,7 +47,7 @@ interface WoRuntime extends Runtime {
 const runtimes: WoRuntime[] = []
 
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'bot-p626t-patch-'))
+  const dir = tmkdir('bot-p626t-patch-')
   trackTmpDir(dir)
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
@@ -92,7 +92,7 @@ async function openFeed(rt: Runtime): Promise<Feed> {
   }
 }
 
-async function launchWo(extraPatch?: string, home = mkdtempSync(join(tmpdir(), 'bot-p626t-dsh-'))): Promise<WoRuntime> {
+async function launchWo(extraPatch?: string, home = tmkdir('bot-p626t-dsh-')): Promise<WoRuntime> {
   clearRealKeys()
   trackTmpDir(home)
   const patches = [fakeOverlay(), ...(extraPatch ? [extraPatch] : [])]

@@ -21,6 +21,7 @@ import { afterAll, expect, it } from 'vitest'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { createSession, sendPrompt, waitForDelta, waitForTurnEnd, type Frame } from '../support/fake/harness.ts'
 import { launcherSpawnEnv } from '../support/runtime.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -135,7 +136,7 @@ const turnEndReasons = (page: EventsPage): string[] =>
 
 /** Fake overlay, copied from tests/support/fake/harness.ts overlayEnv() (same profile rows). */
 function fakeOverlay(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'p2sdk-t06-patch-'))
+  const dir = tmkdir('p2sdk-t06-patch-')
   const overlay = join(dir, 'fake-llm.yml')
   writeFileSync(overlay, `\
 # T-06 generated fake-provider overlay (tests/e2e/restart.test.ts).
@@ -189,8 +190,8 @@ async function runTurn(client: DshClient, sessionId: string, prompt: string, fir
 }
 
 it('① restart survival: kill -9 -> same start command + same P2SDK_HOME -> list returns both sessions, events reads history', async () => {
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-t06-r1-'))
-  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-t06-h1-'))
+  const home = tmkdir('p2sdk-t06-r1-')
+  const handoff = tmkdir('p2sdk-t06-h1-')
   const patch = fakeOverlay()
   const rt = await bootHome(home, patch, handoff)
   const s1 = await createSession(rt.client, home)
@@ -220,8 +221,8 @@ it('① restart survival: kill -9 -> same start command + same P2SDK_HOME -> lis
 }, 120_000)
 
 it('② kill -9 mid-stream: completed turns survive, the interrupted turn is closed by synthetic events after resume', async () => {
-  const home = mkdtempSync(join(tmpdir(), 'p2sdk-t06-r2-'))
-  const handoff = mkdtempSync(join(tmpdir(), 'p2sdk-t06-h2-'))
+  const home = tmkdir('p2sdk-t06-r2-')
+  const handoff = tmkdir('p2sdk-t06-h2-')
   const patch = fakeOverlay()
   const rt = await bootHome(home, patch, handoff)
   const sid = await createSession(rt.client, home)

@@ -9,3 +9,7 @@
 6. 影响：若确认 UI 组合下全部 bot 的 workspaceRoot 都解析失败，则**产品里所有 bot 都写不了自己工作区**（软遮蔽根覆盖 HOME/dataDir）——比 T7a 大得多的缺陷；若只是 presets.yml 某行遮住了 per-session 解析，改一行。
 
 结论：e2e 与其 M1 变异格挂起（unit 侧 M1/M2/M3 已全验），交 manager 任务 B 裁决（开缺陷调查单 or 指 T9/T5 范围内处理）。
+
+## 附记二：e2e 解阻与全链收口（2026-11-06 09:15）
+
+阻塞根因=T14 同款（spec 数据根分叉，见 receipts/T14.md 结案附记）。按 launchAligned 对齐 + 信封拆包 + B 请求轮询后：**e2e 1 passed 全链绿**（A 存无卡→list/enable→改源→B 目录发现+加载旧文不含 BODY_R2→disable）。M1 e2e 变异（cp→symlink）红（EISDIR 于内容断言，同保证）；还原后复绿。**T7a 全部验收项达成**（验收 2 的 e2e、验收 3 的 M1 双侧、其余见正文）。

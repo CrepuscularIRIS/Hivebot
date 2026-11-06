@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T7ab 任务 B 验收（2026-11-06 @ d44ee165，经理探针 P4/P5/P6）；T7ab 第 1 次不通过
 > 分支 / 作业目录：feat/T7a @ /tmp/bot-wt/T7a（续提交；过后 T7a+T7ab+T7ac 一起 --no-ff 合并）
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：10:00 main (GLM 5.3) @ 0e7fcd4e（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

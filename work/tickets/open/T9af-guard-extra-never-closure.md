@@ -4,7 +4,7 @@
 > 来源：Sol 审查 `work/tickets/review/T7c-T9a-security.md` C2（经理核实 CONFIRMED，见该文件「## 经理核实」）；T9ac「未配置重置空 Set」修法的副作用
 > **在等：feat/T16 合并到主线。** T16（/tmp/bot-wt/T16）正在改同一文件 `guard.mjs:38`（NEVER_TOOLS 加 apply_patch）与 `:255`（拒绝原因串），本单改 `:40-41`、`:239-247`，相距 1-2 行。T16 合并后从合并后的主线切 feat/T9af，挪回 `open/`。须在 T9b 之前合并（T9b 也改 guard）。
 > 分支 / 作业目录：feat/T9af（T16 合并后从主线切）；小改动，可不建 worktree
-> claimed：
+> claimed：2026-11-06 16:4x main (GLM 5.3) @ /tmp/bot-wt/T9af（T16 已合并）
 > accepted：
 
 ## 目标

@@ -35,7 +35,7 @@ const REQUIRED_ROOT_KEYS = ['hardRoots', 'dataMaskRoots', 'homes', 'toolchainDir
  * 可按 id 重新启用该行；重新启用也不放行：plugin_manager 能改 profile /
  * 装 bundle（宿主侧代码），在 pre-execute waterfall 最前直接 deny，不出卡。
  */
-const NEVER_TOOLS = new Set(['plugin_manager'])
+const NEVER_TOOLS = new Set(['plugin_manager', 'apply_patch'])
 
 /** T9a：config.extraNeverTools（ssh 模式下如 glob/grep）与 NEVER_TOOLS 合并判定；加载时校验。 */
 let extraNeverTools = new Set()
@@ -252,7 +252,7 @@ export function apply(ctx, config) {
   // guard 钉在最外层——deny 先于任何出卡，顺序证明在 P5-04 ⑤ 的 e2e。
   ctx.on('tools/pre-execute', async (exec, next) => {
     if (NEVER_TOOLS.has(exec.name)) {
-      return { kind: 'deny', reason: `p2sdk-fs-guard: tool "${exec.name}" is not available (plugin management is disabled by policy; overrides cannot re-enable it)` }
+      return { kind: 'deny', reason: `p2sdk-fs-guard: tool "${exec.name}" is not available (disabled by policy; overrides cannot re-enable it)` }
     }
     // T9a：ssh 模式工具名拒（glob/grep 在远端解析宿主 rg 路径——设计 D9）；改用 bash。
     if (extraNeverTools.has(exec.name)) {

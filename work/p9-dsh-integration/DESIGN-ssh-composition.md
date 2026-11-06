@@ -11,7 +11,7 @@
 
 | D# | 一句结论 | 落到 |
 |---|---|---|
-| D1 | fs-zone 不换不丢：新增 `fs-zone-ssh.mjs` 继承 `SshFileSystem`，覆盖它仅有的两个写入口 `writeText`/`editText`，先远端 resolve 再跑 zoneGuard 判定；可写根 = 远端会话 ws + 显式追加根（不用宿主 `canonicalPath`）；复用 `applyZoneRecheck` | T9b |
+| D1 | fs-zone 不换不丢：新增 `fs-zone-ssh.mjs` 继承 `SshFileSystem`，覆盖它的**五个**写入口 `writeText`/`editText`/`patchText`/`deleteFile`/`moveFile`（rc.1 `dsh-fs-ssh` lib/index.js:79-114；alpha.2 时代仅前两个，moveFile 源与目标都判），先远端 resolve 再跑 zoneGuard 判定；可写根 = 远端会话 ws + 显式追加根（不用宿主 `canonicalPath`）；复用 `applyZoneRecheck` | T9b |
 | D2 | guard 保留宿主根 + 加远端根（`remoteHome` 套凭证清单、整棵 remoteHome 软遮蔽、远端 helper **安装目录**写保护）；启动时用 `ctx.fs.resolve('~')` 校验 `remoteHome`，不一致启动失败；ssh 模式下 `isPathUnder` 一处切纯词法 | T9b |
 | D3 | shell-ask 代码不动；bash 免卡以 D4 wrapper 生效为前提，wrapper 不成立即 fail closed | T10 |
 | D4 | 远端 bash 必须套我们的 wrapper：`sandbox-zone-ssh.mjs` 继承 `SshSandboxProvider`，把远端 bwrap argv 改写为「wrapper + **宿主 computeRoots 全套参数 ∪ 远端根** + 原 profile」；非 bwrap / 非 full 拒 | T10 |
@@ -37,7 +37,7 @@
 3. **（选）继承 fs-ssh 的 provider 类**，与 `ZoneCheckedFileSystem extends SandboxedFileSystem` 同一写法（第 2 级集成）。r2 修正理由：`SshFileSystem` **没有** `checkedTarget` 这个统一收口，`writeText`/`editText` 直接把 target 与 policy 发给远端、由 helper 远端 resolve 并写（`app/sdk/node_modules/@deepseek-ai/dsh-fs-ssh/lib/index.js:93-110`）。所以子类做的是「先 `this.resolve()`（一次 RPC）→ zoneGuard → `super.writeText()`（远端再 resolve 一次）」，两次 RPC 之间有换链窗口——与本机已接受的写侧窗口同类（`app/sdk/src/policy/fs-zone.mjs:6-7`）。选 3 的真实收益是「provider 层兜底所有写入调用方」，不是消除 TOCTOU。
 
 **结论**：新增 `app/sdk/src/policy/fs-zone-ssh.mjs`：`class ZoneCheckedSshFileSystem extends SshFileSystem`（`app/sdk/node_modules/@deepseek-ai/dsh-fs-ssh/lib/index.js:25`）。
-- **覆盖面 = `writeText`、`editText`**——0.2.2-alpha.2 的 `SshFileSystem` 只有这两个写入口（同文件 :93、:102）；其余 mutation 不存在（基类行为）。T9b 加一格断言：若上游升级新增写入口而本类没覆盖，测试红（枚举原型上的方法名与白名单比对）。
+- **覆盖面 = 五入口**（`writeText`/`editText`/`patchText`/`deleteFile`/`moveFile`）——0.2.2-rc.1 的 `SshFileSystem` 有这五个写入口（同文件 :79、:88、:97、:106、:114；alpha.2 仅前两个，T16 升级时扩面）。本机侧同款证明格见 `tests/unit/fs-zone-write-entries.test.ts`（上游 `SandboxedFileSystem` 五入口全走 `checkedTarget`，`ZoneCheckedFileSystem` 覆盖一处全收）。T9b 加一格断言：若上游升级新增写入口而本类没覆盖，测试红（枚举原型上的方法名与白名单比对，白名单=五）。
 - 每个入口：`fresh = await this.resolve(target)` → zoneGuard（NEVER 根任意 mode 拒；可写档目标须在 `policy.workspaceRoot` 或 `policy.additionalWritableRoots` 下，否则 `WRITE_OUT`）→ `super.*`。**不调** `workspaceWritableRoots`：本机 zoneGuard 用它（只含 ws + 追加根、不含 /tmp，dsh-sandbox lib 225-228），语义正对，但它用宿主 `canonicalPath` 规范化根，远端拼写不能在宿主 realpath——ssh 版取 fs-ssh 远端 resolve 过的 ws 根做词法比较，语义保持「不含 /tmp」。写 `ponytail:` 注释：两次 RPC 间的换链窗口、升级路径（上游给 SshFileSystem 加 checkedTarget 时改为覆盖它）。
 - 构造器照样 `applyZoneRecheck(this.ctx, neverRoots)`（`app/sdk/src/policy/fs-zone.mjs:45-73`，只用 `ctx.get('fs').resolve`，fs-ssh 下自动远端规范化）；读侧不做 fd 绑定（`/proc/self/fd` 只对本机有效，`app/sdk/src/policy/fs-zone.mjs:103-121`）。
 - 包含判定的词法化统一在 D2 处理（containment 一处切换）。

@@ -1,7 +1,7 @@
 # PLAN · p9-dsh-integration
 
 > manager (Opus 5.5) · 2026-11-06 · 任务 A（立项拆单）。需求见 `BRIEF.md`。
-> 本地参考：`repos/deepseek-harness@ce7073d512`（MANIFEST 已记，2026-10-30），产品钉版 `@deepseek-ai/dsh@0.2.2-alpha.2`（`app/sdk/package.json:20`）。
+> 本地参考：`repos/deepseek-harness@ce7073d512`（MANIFEST 已记，2026-10-30），产品钉版 `@deepseek-ai/dsh@0.2.2-rc.1`（`app/sdk/package.json:20`；T16 自 alpha.2 升级，2026-11-06）。
 > 第三方检索：GitHub MCP `search_repositories`（dsh-plugin ssh remote / skill library / slack / vault secrets / group chat room），2026-11-06。
 
 ## 0. 一句话结论

@@ -368,6 +368,26 @@ describe('P6-14 live (real Loader)', () => {
     const after = ((await rt.client.call('session/list', { _request: {} })) as { items: unknown[] }).items.length
     expect(after, '新增子会话 0').toBe(before)
   })
+it('⑨ T16-a rc.1 schedule_edit/schedule_view 在 worker 被信封拒（JOB_TOOLS 同步 rc.1 改名）', { timeout: 240_000 }, async () => {
+    const M = await newSession(WS_MAIN)
+    const W = await newSession(WS_W)
+    writeBots(M, { [W]: { createdBy: M } })
+    // 正对照：rc.1 真注册了新名（主 bot 工具面可见）——防「工具不存在导致恒绿」
+    expect(await visible(M, 'schedule_edit'), '主 bot 可见 schedule_edit（rc.1 新名在册）').toBe(true)
+    expect(await visible(M, 'schedule_view'), '主 bot 可见 schedule_view（rc.1 新名在册）').toBe(true)
+    writeScript(W, [
+      batchCall([
+        { id: 'e1', name: 'schedule_edit', args: { id: 't16-probe', title: 't16' } },
+        { id: 'e2', name: 'schedule_view', args: { id: 't16-probe' } },
+      ]),
+      text('T16a done'),
+    ])
+    const turn = await runTurn(W, 'T16-a schedule 改名探针')
+    const errs = turn.filter((e) => e.type === 'tool/result' && e.isError)
+    expect(errs, '两个 rc.1 新名入口都被拒').toHaveLength(2)
+    for (const r of errs) expect(r.text).toContain('pbots/forbidden')
+    expect(turn.filter((e) => e.type === 'approval/asked'), '信封 deny 先于出卡').toHaveLength(0)
+  })
 })
 
 // ---------------------------------------------------------------------------

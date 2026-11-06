@@ -88,6 +88,9 @@
         disabled: !!js process.platform !== 'win32'
       - id: tool-fs
         name: '@deepseek-ai/dsh-tool-fs'
+        config:
+          # Set false to drop the apply_patch tool beside edit.
+          applyPatch: false
       - id: tool-fs-search
         name: '@deepseek-ai/dsh-tool-fs-search'
         config:
@@ -217,6 +220,9 @@
         disabled: !!js process.platform !== 'win32'
       - id: tool-fs
         name: '@deepseek-ai/dsh-tool-fs'
+        config:
+          # Set true to add the apply_patch tool beside edit.
+          applyPatch: false
       - id: tool-fs-search
         name: '@deepseek-ai/dsh-tool-fs-search'
         config:
@@ -348,6 +354,9 @@
         disabled: !!js process.platform !== 'win32'
       - id: tool-fs
         name: '@deepseek-ai/dsh-tool-fs'
+        config:
+          # Set true to add the apply_patch tool beside edit.
+          applyPatch: false
       - id: tool-fs-search
         name: '@deepseek-ai/dsh-tool-fs-search'
         config:

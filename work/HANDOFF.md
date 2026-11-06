@@ -1,4 +1,4 @@
-# HANDOFF · 2026-11-06 06:25
+# HANDOFF · 2026-11-06 10:12
 
 新会话从这里接手。先读本文件，再读 `work/REPORT-2026-11-05.md`（额度诊断 + 今日成果 + 待办全表）。
 
@@ -14,9 +14,9 @@
 
 ## 3. 待办（按顺序）
 
-0. **T14 插桩三步**（receipts/T14.md「卡点」节按序）：①spec 打印 rt.home/handoff/baseUrl + shell 连接目标；②diff T7a/T14 两 worktree 的 support/sdk-runtime.ts + launchSdkRuntime 单例性；③SDK 侧 start.mjs 落 started.log。复现装置修好 → 先红 → 根因 → 修 → T7a 解阻（验收 6）。
-1. **T5 r2 待任务 B 终验**（已派、进行中）：r2 已修完 11 条（109 锚点自检过、自检 7 口径改并加负对照）；T9 拆 a/b；复审记录 review/T5-design.md（Sol 两轮被内容策略拦→Opus 代席，LEARNINGS 已记「拦分析输出非派发词」）。通过后开 T9a。
-2. **T7a**：unit/接线/变异全过，e2e 等 T14（queue 已标）。
+0. **并行两线**：① **T7b**（open/T7b-l4c-skill-picker-ui.md：bot 设置 Skills 区+Pick 对话框；第 1 步=0.78.1 参照图渲染，第 2 步已解锁——feat/T7a 已合并）② **T9a**（open/T9a-l8d-ssh-skeleton.md，与 T7b 不碰同文件可并行）。GLM 并发≤2、同一时刻 e2e 一套。
+1. **已完成链**：T1–T6、T5、T14(REFUTED)、T15、T7a+T7ab+T7ac（整枝合并，回测 e2e 2 passed + unit 114 绿）。BRIEF 验收②后端全通。
+2. **其后**：T7c（skill 写入审阅卡，Q-028=B）→ T16（升 rc.1+三安全件，等低负载跑全量）→ T9b（按 rc.1 五写路径）→ T10–T13/T7d/T8/L5-a 按序；H7 等窗。
 - T5：ssh × 安全层组合设计（原 architect 活）。输入：PLAN §2（fs-zone/guard/shell-ask 与 ssh 同挂点）、§3 十条、receipts/T4.md §5（断连形态/宿主直连清单：tool-fs-search、attachment-local、spill-local、agent-instructions、skill-filesystem）、§5-1（preset 隔离问题）。顺带删 queue 里记的 T4 死代码（ssh.patch.yml 重复 llm-replay insert）。
 - T7：账户 skill 库 + 按 bot 启用（RE-skills Q2/Q7：启用=复制快照；库不能放 $DSH_HOME/skills 或 agents/skills——全员共扫）。
 - 其后按 queue：T8（e2e mkdtemp 收尾）、L5-a、P5-H7 双全量实证（等 load<8）。

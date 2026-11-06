@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：`work/p9-dsh-integration/DESIGN-ssh-composition.md` D8、D9（工具行）、D11、D13；实现单拆分表 T9a 行；T5 验收（`work/tickets/done/T5-l8c-ssh-composition-design.md`，accepted 2026-11-06 @ 10e9951b）
 > 分支 / 作业目录：feat/T9a @ /tmp/bot-wt/T9a
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：10:24 main (GLM 5.3) @ 03251ea2（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

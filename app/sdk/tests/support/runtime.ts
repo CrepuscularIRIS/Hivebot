@@ -91,7 +91,13 @@ export async function launchRuntime(opts: LaunchOptions = {}): Promise<Runtime> 
 
   const baseUrl = readFileSync(join(handoff, 'base-url'), 'utf8').trim()
   const token = readFileSync(join(handoff, 'launch-token'), 'utf8').trim()
-  const client = await connect({ baseUrl, token })
+  // T9a：ssh 模式下 dsh 加载 ssh 插件可能在 ready 输出后短暂不可用——连接重试
+  let client: Awaited<ReturnType<typeof connect>>
+  let lastErr: unknown
+  for (let i = 0; i < 30; i++) {
+    try { client = await connect({ baseUrl, token }); break } catch (e) { lastErr = e; await new Promise((r) => setTimeout(r, 500)) }
+  }
+  if (client === undefined) throw new Error(`runtime connect failed after 15s retry: ${String(lastErr)}`)
 
   return {
     home,

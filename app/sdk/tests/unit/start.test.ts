@@ -182,12 +182,13 @@ describe('childEnv', () => {
     expect(yaml).toContain('dsh-sandbox-ssh')
     expect(yaml).not.toContain('- id: ptc-runtime') // T9ab: D8 变更
     expect(yaml).toContain('extraNeverTools')
+    expect(yaml, 'extraNeverTools 在 guard config 级（4 格），不在 roots 内').toContain('\n    extraNeverTools:\n      - glob\n      - grep\n')
     expect(yaml).not.toMatch(/id: sandbox\n\s+config:/) // 本机 wrapper 不生成
     expect(yaml).not.toContain('fs-zone') // T9b 才插
     expect(yaml).not.toContain('IdentityFile') // 凭证不进生成行
   })
 
-  it('T9a-② 缺任一 → validateStart 报错；全空 → 本机模式 patch 与改前一致', () => {
+  it('T9a-② 缺任一 → validateStart 报错；全空 → 本机模式 patch 不含 ssh 行', () => {
     const full = { P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h', P2SDK_SSH_HOST: 'a', P2SDK_SSH_REMOTE_ROOT: 'b', P2SDK_SSH_HELPER: 'c', P2SDK_SSH_HELPER_HASH: 'd', P2SDK_SSH_NODE: 'e' }
     for (const k of Object.keys(full).filter((x) => x.startsWith('P2SDK_SSH_'))) {
       const partial = { ...full } as Record<string, string | undefined>

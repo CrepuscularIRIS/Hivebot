@@ -164,6 +164,15 @@ describe('T9a 产品启动器 ssh 组合', () => {
   })
 
   it('⑪ launcher 强杀→dsh 仍活；dsh 强杀→ssh 清场、端口 ECONNREFUSED', { timeout: 180_000 }, async () => {
+    // T9ad：基线必须在 rt3 创建**之前**取——dsh-ssh 构造函数里就 mkdtemp 出
+    // /tmp/dsh-ssh-* 目录（dsh-ssh lib/index.js:67,302），取晚了差集恒空。
+    const dshSshDirs = (): string[] => readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-')).sort()
+    const helperPids = (): number[] => readdirSync('/proc').filter((p) => /^\d+$/.test(p)).map(Number).filter((p) => {
+      try { return readFileSync(`/proc/${p}/cmdline`, 'utf8').includes(server.helper) } catch { return false }
+    })
+    const baseline = dshSshDirs()
+    const baseClients = server.clientPids().length
+    const baseHelpers = helperPids()
     // 独立 runtime（避免基线被 ⑧⑨ 污染）
     const rt3 = await launchRuntime({ env: {
       HOME: TEST_HOME, PATH: `${server.binDir}:${process.env.PATH ?? ''}`,
@@ -181,13 +190,18 @@ describe('T9a 产品启动器 ssh 组合', () => {
     child.kill('SIGKILL')
     await new Promise((r) => setTimeout(r, 2000))
     expect(existsSync(`/proc/${dshPid}`), 'dsh 仍活（detached 设计）').toBe(true)
-    // 后半：SIGKILL dsh → ssh master 清场
-    const baseline = readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-')).sort()
+    // 后半：SIGKILL dsh → ssh 清场。防空集断言先行——kill 前集合必须非空，
+    // 「kill 后为空」才有意义（T9ab/T9ac 两轮的毛病都是基线取晚了）。
+    expect(dshSshDirs().filter((n) => !baseline.includes(n)).length, 'rt3 建了自己的 dsh-ssh 目录（防空集）').toBeGreaterThanOrEqual(1)
+    const myClients = server.clientPids().slice(baseClients)
+    const myHelpers = helperPids().filter((p) => !baseHelpers.includes(p))
+    expect(myClients.length, 'rt3 经包装器起过 ssh 客户端（防空集）').toBeGreaterThan(0)
+    expect(myHelpers.length, 'rt3 的远端 helper 在跑（防空集）').toBeGreaterThan(0)
     process.kill(dshPid, 'SIGKILL')
     const alive = (p: number): boolean => { try { process.kill(p, 0); return true } catch { return false } }
     for (let i = 0; i < 75; i++) { if (!alive(dshPid)) break; await new Promise((r) => setTimeout(r, 200)) }
     await new Promise((r) => setTimeout(r, 2000))
-    const after = readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-')).sort()
+    const after = dshSshDirs()
     const added = after.filter((n) => !baseline.includes(n))
     expect(added.length, `新增 dsh-ssh ≤1`).toBeLessThanOrEqual(1)
     for (const d of added) { expect(readdirSync(join('/tmp', d)), `目录 ${d} 为空`).toEqual([]) }
@@ -199,26 +213,14 @@ describe('T9a 产品启动器 ssh 组合', () => {
     })
     expect((err as NodeJS.ErrnoException).code, '端口 ECONNREFUSED').toBe('ECONNREFUSED')
     try { await rt3.stop() } catch { /* 已杀 */ }
-    // T9ac：SIGKILL dsh 后其 ssh master（PATH 包装器挂 pdeathsig TERM）应随之退。
-    // 只数「孤儿 master」（命令行含夹具目录的 ssh 进程且 ppid==1）：基线 rt 的
-    // master 父进程是活着的基线 dsh，不算；rt3 的 dsh 已死 → 其 master 成为孤儿。
-    // 限界等零（≤6s 自然退出；不杀未知 PID）。泄漏回归证据：删 `rt = undefined`
-    // 前每轮另漏一组基线 launcher+dsh+master+helper（afterAll 跳过 rt.stop()）。
-    const orphanMasters = (): number => {
-      let hits = 0
-      for (const pid of readdirSync('/proc')) {
-        if (!/^\d+$/.test(pid)) continue
-        try {
-          const cmd = readFileSync(`/proc/${pid}/cmdline`, 'utf8')
-          if (!cmd.includes(server.dir) || !cmd.includes('/ssh')) continue
-          const stat = readFileSync(`/proc/${pid}/stat`, 'utf8')
-          const ppid = Number(stat.slice(stat.lastIndexOf(')') + 3).split(' ')[1])
-          if (ppid === 1) hits++
-        } catch { /* 已退/不可读 */ }
-      }
-      return hits
-    }
-    for (let i = 0; i < 30 && orphanMasters() > 0; i++) await new Promise((r) => setTimeout(r, 200))
-    expect(orphanMasters(), 'SIGKILL dsh 后其 ssh master 随之退净（无进程泄漏）').toBe(0)
+    // T9ad：kill 前防空集断言过的 myClients/myHelpers 必须在 15s 内退净。
+    // 不按 ppid 数孤儿——本机 systemd --user（child subreaper）收养孤儿，
+    // ppid 恒指向它而非 1；这里直接按登记 PID 等待。超时未退的补刀（全是本
+    // 夹具/本测试登记的自己人），补刀后仍活才断言失败。
+    const mine = [...myClients, ...myHelpers]
+    for (let i = 0; i < 75 && mine.some(alive); i++) await new Promise((r) => setTimeout(r, 200))
+    const left = mine.filter(alive)
+    for (const p of left) { try { process.kill(p, 'SIGKILL') } catch { /* 已退 */ } }
+    expect(left, 'SIGKILL dsh 后其 ssh 客户端与远端 helper 15s 内退净').toEqual([])
   })
 })

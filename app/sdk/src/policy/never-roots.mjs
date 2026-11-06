@@ -178,3 +178,18 @@ export function computeRoots(cfg) {
 
   return { homes, maskRoots, neverRoots, toolchainDirs, policyRoots, guardRoots: { hardRoots: guardHardRoots, dataMaskRoots } }
 }
+
+/**
+ * T9b（D2）：远端根（ssh 模式）——纯函数，宿主对远端路径不 stat（远端拼写在本机
+ * existsSync 恒 false，展开无意义）。硬 NEVER = CREDENTIAL_HOME_ENTRIES 的
+ * 非通配项拼到 remoteHome 下（远端 ~/.ssh 等是真钥匙——box 语义见 DESIGN D2）；
+ * 通配项（.claude 前缀、.config 下 credentials 形态）不进清单，由 guard 的 remoteHome
+ * 软遮蔽兜底（与宿主侧同一 ponytail）。policyRoots = 远端 helper 安装目录
+ * （写保护；真实远程=T13 推送的版本化目录，本机测试缺省不传——helper 在宿主
+ * PKG_ROOT 策略根内）。
+ */
+export function remoteRoots(remoteHome, remoteRuntimeDir) {
+  const hard = CREDENTIAL_HOME_ENTRIES.filter((e) => !e.includes('*')).map((e) => join(remoteHome, e))
+  const policy = typeof remoteRuntimeDir === 'string' && remoteRuntimeDir.length > 0 ? [remoteRuntimeDir] : []
+  return { hardRoots: [...new Set(hard)], policyRoots: policy }
+}

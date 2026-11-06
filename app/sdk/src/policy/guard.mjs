@@ -232,6 +232,43 @@ function requireRoots(config) {
 /** 宿主平面注册一次，作用于全部 session（与 p2sdk-shell-ask 同一形态）。 */
 export function apply(ctx, config) {
   const roots = requireRoots(config)
+  // T9b/T9b3（D2）：remoteHome 启动校验——ssh 模式的 guard 行带 remoteHome 时，等
+  // ssh ready 后用 fs.resolve('~')（fs-ssh 远端展开）与配置比对（两边去尾 /）。
+  // 不等 → fail closed 退出进程：远程凭证根布局不可信时拒跑整个运行时（T9b3 ②d
+  // 实测 fire-and-forget 的拒绝态被运行时吞掉、进程照常服务——所以显式
+  // process.exit(86)；stderr 先打固定串，launchRuntime 的输出透传给测试/运营）。
+  // 本机模式不带 remoteHome，零行为变化。
+  if (typeof config.remoteHome === 'string' && config.remoteHome.length > 0) {
+    // 加载顺序：guard（approval.yml insert）先于 ssh 插件（runtime-patch insert）
+    // 注册——apply 时 ctx.get('ssh') 还是 null（T9b3 ②d 实测）。轮询等服务出现
+    // （ssh 模式下必然出现；上限 60s 防挂死，超时按校验失败处理）。
+    const verify = async (ssh, fs_) => {
+        const actual = await fs_.resolve('~')
+        const norm = (p) => (p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p)
+        if (norm(actual.targetKey) !== norm(config.remoteHome)) {
+          const msg = `p2sdk-fs-guard: configured remoteHome ${config.remoteHome} does not match the remote home reported by the connection (${actual.targetKey}); refusing to run with an unverified credential-root layout`
+          try { console.error(msg) } catch { /* stderr 不可写也要退 */ }
+          process.exit(86)
+        }
+    }
+    const poll = (deadline) => {
+      const ssh = typeof ctx.get === 'function' ? ctx.get('ssh') : null
+      const fs_ = typeof ctx.get === 'function' ? ctx.get('fs') : null
+      if (ssh && typeof ssh.ready?.then === 'function' && fs_) {
+        void ssh.ready.then(() => verify(ssh, fs_)).catch((error) => {
+          try { console.error(`p2sdk-fs-guard: remoteHome verification failed: ${String(error?.message ?? error)}`) } catch { /* */ }
+          process.exit(86)
+        })
+        return
+      }
+      if (Date.now() > deadline) {
+        try { console.error('p2sdk-fs-guard: remoteHome verification timed out waiting for the ssh service; refusing to run') } catch { /* */ }
+        process.exit(86)
+      }
+      setTimeout(() => poll(deadline), 100)
+    }
+    poll(Date.now() + 60_000)
+  }
   const resolved = resolveRoots(roots)
   // T9a/T9af（审查 C2）：extraNeverTools 归本次 apply 的闭包——模块级 Set 会被后一次 apply
   // 整体改写，连带改掉先前实例的策略（热重载 / 同进程多上下文）。校验仍在监听器注册前。

@@ -5,7 +5,7 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmkdir } from '../support/tmp-sweep.ts'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import * as plugin from '../../src/policy/guard.mjs'
 
 /** 决策 13 的 resolved 骨架（guard 行 config.roots 经 resolveRoots 展开后的形态）。
@@ -247,5 +247,41 @@ describe('T9a extraNeverTools', () => {
     listener({ roots: configRoots(), extraNeverTools: ['grep'] })
     const oc = await c(grep, allow) as { kind: string; reason?: string }
     expect(oc.reason ?? '', '本机实例 C 不因 ssh 实例 D 的 apply 按 ssh 拒').not.toContain('ssh mode')
+  })
+})
+
+// T9b（D2 验收 7）/ T9b3：remoteHome 启动校验——T9b3 起配错走 process.exit(86)
+// fail-closed（单测 spy process.exit 防自杀）。
+describe('T9b remoteHome 启动校验', () => {
+  it('配置 ≠ 远端实际 → console.error 固定串 + exit(86)；相等 → 零动作；未配置 → 零动作', async () => {
+    const make = (actual: string, remoteHome?: string) => {
+      const services = {
+        sandboxPolicy: { resolve: () => ({ mode: 'workspace-write', workspaceRoot: '/tmp/ws' }) },
+        ssh: { ready: Promise.resolve() },
+        fs: { resolve: async () => ({ targetKey: actual }) },
+      }
+      const ctx = {
+        on: () => {},
+        get: (name: string) => (services as Record<string, unknown>)[name],
+      }
+      plugin.apply(ctx as never, { roots: configRoots(), ...(remoteHome !== undefined ? { remoteHome } : {}) } as never)
+    }
+    const exit = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never)
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      make('/actual/home', '/configured/home')
+      await new Promise((r) => setTimeout(r, 50))
+      expect(exit, '配错 → exit(86) fail-closed').toHaveBeenCalledWith(86)
+      expect(err.mock.calls.flat().join('\n')).toContain('does not match the remote home')
+      exit.mockClear(); err.mockClear()
+      make('/same/home', '/same/home')
+      await new Promise((r) => setTimeout(r, 50))
+      expect(exit, '相等 → 不退').not.toHaveBeenCalled()
+      make('/actual/home')
+      await new Promise((r) => setTimeout(r, 50))
+      expect(exit, '未配置 remoteHome → 零行为').not.toHaveBeenCalled()
+    } finally {
+      exit.mockRestore(); err.mockRestore()
+    }
   })
 })

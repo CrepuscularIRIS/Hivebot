@@ -97,7 +97,11 @@ export async function launchRuntime(opts: LaunchOptions = {}): Promise<Runtime> 
   for (let i = 0; i < 30; i++) {
     try { client = await connect({ baseUrl, token }); break } catch (e) { lastErr = e; await new Promise((r) => setTimeout(r, 500)) }
   }
-  if (client === undefined) throw new Error(`runtime connect failed after 15s retry: ${String(lastErr)}`)
+  // T9b3 ②d：dsh 在 ready 后被 guard fail-closed（exit 86）时，错误须带 stderr
+  // 尾部（固定串透传给断言/排错）。
+  if (client === undefined) throw new Error(`runtime connect failed after 15s retry: ${String(lastErr)}
+stderr tail:
+${stderr.slice(-600)}`)
 
   return {
     home,

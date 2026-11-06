@@ -210,14 +210,14 @@
 - 两项：①删掉落盘类型里 BotsMeta.bots[*].runtime?: 'superagent' 占位（与决策 31 的 {createdBy} 不相容，§5 本就写 runtime 不写盘）；②决策 10 ④（工具按权威 mainBotId 判定）不进契约，由 P6-10 验收承载。
 - 答复：（2026-11-05 用户：「接受吧」）→ 按默认执行
 
-## Q-023 [open] bot 可不弹卡改写 /tmp 下你的文件——按「直接拒绝」修了，请确认
+## Q-023 [answered] bot 可不弹卡改写 /tmp 下你的文件——按「直接拒绝」修了，请确认
 - slug：p6-orchestration ｜ 类型：高风险（审批语义）｜ 阻塞：无（已按纯收紧先做）｜ 提出：2026-11-04
 - 题干：bot 用「写文件」工具可以不弹审批卡，改写电脑 /tmp 目录里属于你的任何文件（实测：worker 在 /tmp/bot-wt/P6-22 留下文件）。根因：dsh fence 默认允许写宿主 /tmp，而 bash 在 bwrap 私有 /tmp——P5 合并以来生产即存在。凭证读不到，但这是无卡持久化 + 沙箱逃逸路径。
 - 选项：A 直接拒绝不弹卡（推荐，已按此修：P6-25 一律拒；P6-25.f1 执行时复判；P6-26 读侧 fd 绑定；P6-26t run_code 走 bash 档）；B 每次弹卡；C 维持现状。
 - 默认：A，已实施。若你在 /tmp 放了会被自动执行的东西，P5 合并以来的窗口期可留意陌生改动。
 - 补充（2026-11-05 review B 发现，P6-25.f1 已修）：判定与执行之间存在换链时序窗口，读写均可越界（含凭证目录），已按执行时复判修复，同属纯收紧先做后告知。
 - 补充 2（2026-11-05，P6-26t/26/26t.f1 已合并）：ptc 的 run_code 无卡换链入口已收进 bash 档位；残余更窄窗口（fresh resolve→syscall）由 P6-26 读侧 fd 绑定 + P6-27（写侧进 bwrap，卡 P5-29）跟进。
-- 答复：
+- 答复：（2026-11-06 用户：「其他的都按照要求去处理」→ **A 定稿**：直接拒绝，已实施的全部收窄维持）
 
 ## Q-024 [answered] 主 bot 派出去的 worker，改到主 bot 的目录里工作吗？（重签 Q-015 的 C2-②）
 - slug：p6-orchestration ｜ 类型：契约（修订已签约定）｜ 阻塞：P6-24、P6-14b ｜ 提出：2026-11-05
@@ -236,26 +236,26 @@
 - 默认：A 起步、B 渐进；护栏先过 panel + 用户签字才开工。
 - 答复：（2026-11-05 主会话按「原版即规格」自决：**A 起步**——RE 证据支持：云 box 驱动即 native_x11/xdotool、原版有 desktop_lease 挂起语义；B 的按应用白名单留作后续按 RE standing grants 分层渐进，届时属法外授权再问用户）
 
-## Q-027 [open] P7-F3 修复收窄：是否批准「逐 report-key 先存尝试、未知不重放」的最小存储契约
+## Q-027 [answered] P7-F3 修复收窄：是否批准「逐 report-key 先存尝试、未知不重放」的最小存储契约
 - slug：p7-admin ｜ 类型：契约（存储语义）｜ 阻塞：P7-F3.f3 ｜ 提出：2026-11-05 11:30
 - 背景：F3 修复两轮耗尽后 Sol 代 director REDUCE 重规划（`work/p7-admin/evidence/P7-F3/REPLAN.txt`）：V2 与混批两反例源码依据成立；「只修 timer」与「超白名单自行加存储」两个停止依据都成立，但「必须第二账本」**不成立**——既有 session 日志/writer 底座可承载（dsh jsonl persistence 单 writer + flush 汇总不吞失败）。
 - 选项：
   - A（推荐）：批准最小契约——Report 每次投递前，先由现有 session writer 持久「尝试事实」（只存目标 mainId、精确 report key 集、版本/尝试关联；不存正文/凭证/Assignment 状态/重试队列）；记录持久成功才 followup，写失败则本次副作用 0；unknown 旧键不得自动重放或唤醒；恢复先过滤 old 再算 fresh batch id。白名单六文件（report.mjs/delivery.mjs/pending.mjs + 三测试文件），pending 与两测试超原 F3 13 文件范围须显式增补；若需新记录类型只批一个本地类型文件。**代价：at-most-once**（尝试已持久、followup 前崩溃 → 保守漏发一次，不是恰一次）；历史无尝试记录的 unknown 不能凭空补造，需可信切换边界（旧范围继续待核实）。验收（含跨重启故障注入）REPLAN §6 已列。
   - B：复用 F1 逐键 begin/dedupe 经受限 SDK→main 桥——不新账本，但要新增可信 RPC/键绑定/断链语义；F2 自身 blocked，范围更大。
   - C：不批准，F3 维持 blocked（新代恢复窗口的未知重投缺陷继续存在，依赖 F3 的 F4/L2/M1/M3/U1 排队不动）。
-- 答复：
+- 答复：（2026-11-06 用户：「其他的都按照要求去处理」→ **A 定稿**：最小存储契约批准，at-most-once 代价接受；P7-F3.f3 解锁）
 
 
-## Q-028 [open] skill「审阅链」要不要进这一期（bot 存 skill / 改 skill 要不要你点批准）
+## Q-028 [answered] skill「审阅链」要不要进这一期（bot 存 skill / 改 skill 要不要你点批准）
 - slug：p9-dsh-integration ｜ 类型：需求范围 ｜ 阻塞：不阻塞（T7a/T7b 按 A 施工，答 B/C 再追加单）｜ 提出：2026-11-06 05:20
 - 背景：原版有一条审阅链——bot 用 `ProposeSkills` 提议新增 / 修改 / 删除 skill，生成「待审项」（PENDING→你点 APPROVE/REJECT），聊天里还有「Pick from your skills」挑选卡（RE-skills Q3）。现在我们的做法（T6 已落地）：bot 在对话里直接把 skill 写进**它自己的** skill 目录，不出卡；别的 bot 要用，必须你在 B 的设置里「Pick from your skills」手动启用（T7a/T7b）——跨 bot 扩散这一步本来就要你点。你的验收原话（BRIEF 验收第 2 条）只要求「存下来、另一个 bot 能启用复用」，没提审批。
 - 选项：
   - A（推荐）：这一期不做审阅链。理由：跨 bot 启用已经要你手动点；bot 写自己目录里的 skill 与它写自己工作区里任何别的文件（比如说明文档）是同一类风险，单独为 skill 加卡收益小。以后要再加。
   - B（轻量版）：bot 往自己的 skill 目录写入 / 改写时弹一张确认卡（复用现有审批卡，Allow once / Deny），不做待审列表。约 1 张单。
   - C（完整版，对齐原版）：`ProposeSkills` 工具 + 待审项列表（PENDING→APPROVE/REJECT，带 bot、动作、名字、描述、正文）+ 聊天内挑选卡；批准后写进 bot 副本（复用 T7a 的 enable 路径）。约 3 张单，排在 T7 之后。
-- 答复：
+- 答复：（2026-11-06 用户：「要审阅」→ **B 定稿**：bot 写/改自己 skill 目录时弹确认卡（复用现有审批卡），约 1 张单，排 T7b 后。落实：manager 开 T7c；T6 已落地的「直接写」行为在本单里改为出卡）
 
-## Q-029 [open] 开启「远程电脑」（ssh）后，已有的本机 bot 怎么办
+## Q-029 [answered] 开启「远程电脑」（ssh）后，已有的本机 bot 怎么办
 - slug：p9-dsh-integration ｜ 类型：需求范围 ｜ 阻塞：T11（T9/T10 只用新建 bot 测，不阻塞）｜ 提出：2026-11-06 05:50
 - 背景：T5 设计（`p9-dsh-integration/DESIGN-ssh-composition.md` D6）定为「一个运行时一台电脑」：开了远程电脑，所有 bot 都在那台电脑上干活（和你说的「bot 共用一台电脑」一致；只让部分 bot 用远程，上游插件做不到，要拆成两套运行时，是很大的一块）。问题在已有的 bot：它们的工作目录在本机，而且建好后改不了。
 - 选项：

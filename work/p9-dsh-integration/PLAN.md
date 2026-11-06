@@ -63,9 +63,12 @@
 
 | 工单 | 内容 | 状态 |
 |---|---|---|
-| T1 | P5-H5a：unit / support / market / examples 裸 mkdtemp → tmkdir，残留计数 RED | 施工完（feat/T1 @d9cd458，591/591 绿残留 0，待审+验收） |
-| T2 | L8-a：私有 sshd 测试夹具 + 装 dsh ssh 族 + 连接级验收 | 施工完（feat/T2 @63f3f70，6/6 绿，待审+验收） |
-| T3 | L4-a：0.78.1 skill 生命周期 RE（派 reverse-engineer） | 施工完（RE-skills.md 七问全答，待验收抽查锚点） |
+| T1 | P5-H5a：unit / support / market / examples 裸 mkdtemp → tmkdir，残留计数 RED | **done**（accepted 2026-11-06 @ d9cd458，经理重跑 start 36 绿残留 0；可合并） |
+| T2 | L8-a：私有 sshd 测试夹具 + 装 dsh ssh 族 + 连接级验收 | doing（6/6 绿，但端口/fs/helper/快照断言有空洞、夹具读真实 .bashrc 且中断不收 sshd；等 T2b+T2c） |
+| T2b | T2 测试侧返修：端口只认 ECONNREFUSED、③b 断连后 fs 报传输错、⑥ stop 前必见 helper/master、快照加 mode/ctime/ino、⑤ 注释、三变异各红一格 | open |
+| T2c | T2 夹具侧返修：单条 SetEnv 带 HOME + cd remote-home、setpriv --pdeathsig、setup 失败回滚、strace 0 次真实启动文件、三种中断后端口拒连 | open（等 T2b 提交） |
+| T3 | L4-a：0.78.1 skill 生命周期 RE（派 reverse-engineer） | doing（Q2/Q3/Q6 锚点抽查通过；Q6 投递结论越读，等 T3b） |
+| T3b | RE-skills.md Q6 投递方式降为推断 + 两条反证计数 + 影响节第 6 条收窄 | open |
 | T4 | L8-b：headless 真组合 + llm-replay，bash/写文件经 ssh 落到远端 | 计划（等 T2） |
 | T5 | L8-c：architect 出 `DESIGN-ssh-composition.md`（与 fs-zone/guard/shell-ask/P6 cwd 的组合；进程级 vs preset isolate） | 计划（等 T4） |
 | T6 | L4-b：skill 根收口（关 `~/.agents` 泄漏）+ bot 在对话里存 skill 的真组合 e2e | 计划（等 T3） |

@@ -16,3 +16,18 @@
 | T1 自清理与登记簿 | REFUTED | `/tmp/bot-wt/T1/app/sdk/tests/unit/market-wrapper.proc.mjs`、`/tmp/bot-wt/T1/app/sdk/tests/unit/p2temp.proc.mjs`、`/tmp/bot-wt/T1/app/sdk/tests/support/p626t-regression.mjs` 的 regTmp 调用只接本地 mkdtemp 返回值；`/tmp/bot-wt/T1/app/sdk/examples/min-client.mjs:28–30` 只删自建 work。实跑 tmp-sweep **4 passed**（含未登记兄弟目录幸存断言）、p2temp **27项成功且残留0**、min-client **1 passed且工作目录残留0**；默认 SIGTERM 不清理属已披露限制，未发现误删非自建路径。 |
 | T3 文档泄露 | REFUTED | 全文检查 `/home/lingxufeng/bot/work/p9-dsh-integration/RE-skills.md`：内容为产物路径、代码锚点、协议字段和结论；未发现实际凭证值或个人信息泄露。 |
 | T2 清理测试有效性 | **CONFIRMED／minor，发现3** | `/dev/shm/bot-T2/app/sdk/tests/e2e/ssh-host.test.ts:128–133` 的成功连接、连接错误和超时均 reject，随后 `.rejects.toThrow()` 全部接受。运行 `pnpm --dir /dev/shm/bot-T2/app/sdk --config.verify-deps-before-run=false exec vitest run --config /tmp/bot-rvS.config.mjs`，探针 `/tmp/bot-rvS-assertion.test.ts` 明确确认端口开放，原断言仍 **1 passed**。应只接受 `ECONNREFUSED`，开放与超时必须失败；原六格独立复跑 **6 passed**，不能证明上述安全边界成立。 |
+
+## 经理核实（任务 B，manager Opus 5.5，2026-11-06）
+
+| # | 条目 | 经理结论 | 依据 |
+|---|---|---|---|
+| 发现1 | 启动后无中断兜底（SIGTERM / exit 留监听与密钥） | **CONFIRMED 维持 major** | 读码：`ssh-host.ts` 无任何进程级钩子，Node 退出不杀非 detached 子进程。新事实：dsh-ssh `index.ts:299-302` ssh master 是 node 直接子进程（`-M`、`ControlPersist=no`），本机 `setpriv --pdeathsig` 可用 → T2c 用内核级 pdeathsig 收 sshd 与 master，不加信号钩子 |
+| 发现2 | ForceCommand 前读真实 `.bashrc`、cwd 为真实家目录 | **CONFIRMED 维持 major，亲自复现** | 经理在隔离环境 `strace -f -e trace=openat,chdir` 跑审查探针 `normal`：真实 `~/.bashrc` 打开 **2** 次、`SHELL ... cwd=<真实家目录>`；真实 `~/.ssh` 打开 0 次。新事实：sshd_config 的 `SetEnv` **只认第一行**（`sshd -T` 实测两行只输出第一行），所以 `ssh-host.ts:114` 的 `SetEnv PBOTS_REMOTE_HOME=…` 实际无效；HOME 必须并进同一条 SetEnv。sshd 会先 chdir 到 passwd 家目录（无法配置），故 cwd 在包装脚本里 `cd` 收口 → T2c 第 1 处 |
+| 审点④ | 异常路径 PATH 不还原、sshd 存活 | **CONFIRMED（归入发现1，T2c 单列第 2 处）** | 经理复跑 `setup-failure`：`PATH_RESTORED false`、`CHILDREN_ALIVE [sshd pid]`，探针自身用 bot-reap 收掉。原因：`:159-163` 改 PATH 与解析 helper 在 `:204` 的 try 之前 |
+| 发现3 | 端口断言恒绿 | **CONFIRMED，与有效性席第 1 条重复** | 合并进 T2b 第 1 处 |
+| 审点② | TCP 转发 / 跨用户猜端口 | REFUTED 维持（PLAUSIBLE 不立项） | 持钥者只有测试本身；有效性席 R7 已证 local 是必需最小档 |
+| 审点⑤ | 私钥与权限 | REFUTED 维持 | 经理复跑：根目录 700、私钥/authorized_keys/known_hosts 600 |
+| 审点⑥ | 新依赖来源 | REFUTED 维持 | 未复核 integrity，按审查席证据链接受 |
+| T1 / T3 | 自清理、文档泄露 | REFUTED 维持 | 与经理重跑一致 |
+
+探针原件已拷入 `work/tickets/evidence/T2b/probes/`（`/tmp` 可能被清）。

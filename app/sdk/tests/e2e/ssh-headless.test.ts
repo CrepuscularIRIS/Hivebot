@@ -108,18 +108,6 @@ beforeAll(async () => {
       name: '${pkgLib('dsh-subprocess-ssh')}'
     - id: sandbox-ssh
       name: '${pkgLib('dsh-sandbox-ssh')}'
-    - id: llm-replay
-      name: '${pkgLib('dsh-llm-replay')}'
-      config:
-        file: /p2sdk/unused-session-fixture.jsonl
-        overrideFile: '${join(server.dir, 'replay-override.json')}'
-        paceMs: 25
-        providers:
-          - id: mock
-            name: Mock Replay
-            models:
-              - id: mock
-                contextWindow: 131072
 # 覆盖 sandbox-policy：workspaceRoot 指夹具 ws（不是 process.cwd()），保留 headless 的
 # inject 与 CLI 追加根（缺 inject: [headlessStartup] 会被 runner 拒跑）
 - id: sandbox-policy

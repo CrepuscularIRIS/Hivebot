@@ -124,3 +124,5 @@
 2026-11-06 JS 块注释里写 glob 会被 `*/` 提前闭合（T9b never-roots：`.config/**/credentials*` → SyntaxError 裸 token）。注释里的通配路径用行注释 `//`，或写成 `.config/<任意层>/credentials*`。
 
 2026-11-06 T9b3 guard 的 remoteHome 校验写成 `void ssh.ready.then(...throw)` → cordis/Node 吞 fire-and-forget 拒绝态、进程照常服务；且 guard 先于 ssh 插件注册（apply 时 `ctx.get('ssh')` 为 null，校验整段被跳过）→ 启动期 fail-closed 必须显式（exit / 拒服务），并证明它在产品加载顺序下真的跑了（e2e 先红：配错照常启动）。
+
+- （2026-11-06 T9b 链审查 C1）插件里任何 `setTimeout`/挂起的 Promise 回调都要登记 cordis 释放（`ctx.effect` 或 `ctx.on(dispose)`，先例 request-net.mjs:194、routing-prompt.mjs:74），回调入口判 disposed——已发出的 `.then` 撤不回。手搓 `{on,get}` 假 ctx 没有 dispose 语义，测生命周期必须用真 `new Context()` + `fiber.dispose()`。

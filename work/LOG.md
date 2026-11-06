@@ -1014,3 +1014,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 12:55 T7cb⑨修复 | 插桩（Edit工具+ESM import）实锤根因：workspaceRoot=符号链接路径 vs targets=真实树→跨树isPathUnder=false。修法=realpathSync(workspaceRoot)先规范化。9/9全绿。
 2026-11-06 13:23 T7c整枝合并落地 | 回测 13+10 全绿。BRIEF 验收② skill 链全部落地（含审阅卡 Q-028=B）。下一步：T9ab⑨需architect。
 2026-11-06 13:24 哨兵#16 | load8.9、无429。T9ab⑨派architect+H7结果派manager裁。清worktree。
+2026-11-06 13:31 哨兵#17 | load5.9、无429。T9ab⑨+H7 分析在跑。全部待办都在等通知（architect/Q-030）。

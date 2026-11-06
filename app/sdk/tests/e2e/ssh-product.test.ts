@@ -199,6 +199,26 @@ describe('T9a 产品启动器 ssh 组合', () => {
     })
     expect((err as NodeJS.ErrnoException).code, '端口 ECONNREFUSED').toBe('ECONNREFUSED')
     try { await rt3.stop() } catch { /* 已杀 */ }
-    rt = undefined
+    // T9ac：SIGKILL dsh 后其 ssh master（PATH 包装器挂 pdeathsig TERM）应随之退。
+    // 只数「孤儿 master」（命令行含夹具目录的 ssh 进程且 ppid==1）：基线 rt 的
+    // master 父进程是活着的基线 dsh，不算；rt3 的 dsh 已死 → 其 master 成为孤儿。
+    // 限界等零（≤6s 自然退出；不杀未知 PID）。泄漏回归证据：删 `rt = undefined`
+    // 前每轮另漏一组基线 launcher+dsh+master+helper（afterAll 跳过 rt.stop()）。
+    const orphanMasters = (): number => {
+      let hits = 0
+      for (const pid of readdirSync('/proc')) {
+        if (!/^\d+$/.test(pid)) continue
+        try {
+          const cmd = readFileSync(`/proc/${pid}/cmdline`, 'utf8')
+          if (!cmd.includes(server.dir) || !cmd.includes('/ssh')) continue
+          const stat = readFileSync(`/proc/${pid}/stat`, 'utf8')
+          const ppid = Number(stat.slice(stat.lastIndexOf(')') + 3).split(' ')[1])
+          if (ppid === 1) hits++
+        } catch { /* 已退/不可读 */ }
+      }
+      return hits
+    }
+    for (let i = 0; i < 30 && orphanMasters() > 0; i++) await new Promise((r) => setTimeout(r, 200))
+    expect(orphanMasters(), 'SIGKILL dsh 后其 ssh master 随之退净（无进程泄漏）').toBe(0)
   })
 })

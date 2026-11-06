@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：`work/tickets/receipts/T7a.md`「附记：e2e 阻塞的完整诊断链」；T5 复审附带初判（`work/tickets/review/T5-design.md` 末节：像产品缺陷，建议单开、不并 T9）
 > 分支 / 作业目录：feat/T14 @ /tmp/bot-wt/T14
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：06:18 main (GLM 5.3) @ 5972d24d（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

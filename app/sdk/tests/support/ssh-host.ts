@@ -140,6 +140,8 @@ export async function startSshHost(): Promise<SshHost> {
 
   writeFileSync(join(binDir, 'ssh'), [
     '#!/bin/sh',
+    // T2b 观测点：登记经此包装的 ssh 客户端 PID（含 dsh-ssh 的 master 与 -O 控制调用）
+    `echo $$ >> '${join(dir, 'ssh-client.pids')}'`,
     `exec /usr/bin/ssh -F '${join(dir, 'ssh_config')}' "$@"`,
     '',
   ].join('\n'), { mode: 0o755 })
@@ -205,7 +207,7 @@ export async function startSshHost(): Promise<SshHost> {
     await Promise.all(fibers)
     const hello = await ctx.ssh.ready
     return {
-      dir, port, mark, remoteHome, workspace, ctx,
+      dir, port, mark, remoteHome, workspace, ctx, sshdPid: sshdChild.pid!,
       hello: { workspace: hello.workspace, executable: hello.executable, root: hello.root },
       connectionConfig, stop,
     }

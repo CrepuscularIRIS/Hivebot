@@ -390,7 +390,18 @@ export function apply(ctx, config = {}) {
       // T7cd：假路径（单测夹具）realpathSync 会抛 ENOENT——回退到原路径（单测里
       // targets 也在同一假树上，不影响判定；真实运行时 ws 一定存在）
       const realWs = (() => { try { return realpathSync(workspaceRoot) } catch { return workspaceRoot } })()
-      const skillRoots = [join(realWs, '.dsh', 'skills'), join(realWs, '.agents', 'skills')]
+      const rawSkillRoots = [join(realWs, '.dsh', 'skills'), join(realWs, '.agents', 'skills')]
+      // T7ce（审查 C1）：skill 根自己也过 fs.resolve——`.dsh` 可能是链接（.dsh → config）且
+      // skills 还没建，字面拼的根 stat 不到，isPathUnder 的 inode 回退救不回，首次写入漏卡。
+      // fs.resolve 与 targets 同一口径（解析链接、保留缺失后缀；ssh 模式下是 fs-ssh 的远端口径）。
+      // 只增不减：原根保留，解析失败不影响原判定。
+      const skillRoots = [...rawSkillRoots]
+      for (const r of rawSkillRoots) {
+        try {
+          const k = (await fs.resolve(r, { signal: exec.signal }))?.targetKey
+          if (typeof k === 'string') skillRoots.push(k)
+        } catch { /* 解析失败 → 只用原根 */ }
+      }
       const inSkill = await Promise.all(targets.map(async (t) =>
         (await Promise.all(skillRoots.map((r) => isPathUnder(t, r)))).some(Boolean)))
       if (inSkill.some(Boolean)) return ask(ASK.skillWrite)

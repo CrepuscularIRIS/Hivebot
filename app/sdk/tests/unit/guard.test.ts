@@ -5,7 +5,7 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmkdir } from '../support/tmp-sweep.ts'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import * as plugin from '../../src/policy/guard.mjs'
 
 /** 决策 13 的 resolved 骨架（guard 行 config.roots 经 resolveRoots 展开后的形态）。
@@ -250,11 +250,11 @@ describe('T9a extraNeverTools', () => {
   })
 })
 
-// T9b（D2 验收 7）：remoteHome 启动校验——配置与远端 resolve('~') 不等 → fail loud。
+// T9b（D2 验收 7）/ T9b3：remoteHome 启动校验——T9b3 起配错走 process.exit(86)
+// fail-closed（单测 spy process.exit 防自杀）。
 describe('T9b remoteHome 启动校验', () => {
-  it('配置 ≠ 远端实际 → 校验 promise 拒；相等 → 不拒；未配置 → 零行为', async () => {
+  it('配置 ≠ 远端实际 → console.error 固定串 + exit(86)；相等 → 零动作；未配置 → 零动作', async () => {
     const make = (actual: string, remoteHome?: string) => {
-      const errors: unknown[] = []
       const services = {
         sandboxPolicy: { resolve: () => ({ mode: 'workspace-write', workspaceRoot: '/tmp/ws' }) },
         ssh: { ready: Promise.resolve() },
@@ -264,30 +264,24 @@ describe('T9b remoteHome 启动校验', () => {
         on: () => {},
         get: (name: string) => (services as Record<string, unknown>)[name],
       }
-      void plugin.apply(ctx as never, { roots: configRoots(), ...(remoteHome !== undefined ? { remoteHome } : {}) } as never)
-      return errors
+      plugin.apply(ctx as never, { roots: configRoots(), ...(remoteHome !== undefined ? { remoteHome } : {}) } as never)
     }
-    // 拒绝态以 unhandled 捕捉：直接调内部逻辑不可行（fire-and-forget）——用
-    // process 级 unhandledRejection 捕捉，或改断言法：等一拍后 process 无崩溃
-    // 且相等/未配置路径无异常。这里测「等/不等」由 apply 内 then 链行为决定：
-    // 不等 → throw（promise 拒）；用 process.once 捕获。
-    const caught: unknown[] = []
-    const handler = (e: unknown) => caught.push(e)
-    process.on('unhandledRejection', handler)
+    const exit = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never)
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
       make('/actual/home', '/configured/home')
       await new Promise((r) => setTimeout(r, 50))
-      expect(caught.length, '配置不等 → 校验拒（fail loud）').toBeGreaterThanOrEqual(1)
-      expect(String(caught[0])).toContain('does not match the remote home')
-      caught.length = 0
+      expect(exit, '配错 → exit(86) fail-closed').toHaveBeenCalledWith(86)
+      expect(err.mock.calls.flat().join('\n')).toContain('does not match the remote home')
+      exit.mockClear(); err.mockClear()
       make('/same/home', '/same/home')
       await new Promise((r) => setTimeout(r, 50))
-      expect(caught, '相等 → 不拒').toEqual([])
+      expect(exit, '相等 → 不退').not.toHaveBeenCalled()
       make('/actual/home')
       await new Promise((r) => setTimeout(r, 50))
-      expect(caught, '未配置 remoteHome → 零行为').toEqual([])
+      expect(exit, '未配置 remoteHome → 零行为').not.toHaveBeenCalled()
     } finally {
-      process.off('unhandledRejection', handler)
+      exit.mockRestore(); err.mockRestore()
     }
   })
 })

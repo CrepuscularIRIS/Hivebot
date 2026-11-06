@@ -286,15 +286,17 @@ function guardRow(cfg: StartConfig): string {
     extraMaskRoots: cfg.extraMaskRoots,
     pkgRoot: PKG_ROOT,
   })
-  const g = roots.guardRoots
+  const g = mergedGuardRoots(cfg, roots)
+  const homes = mergedHomes(cfg, roots)
   const list = (xs: readonly string[]): string => (xs.length === 0 ? ' []' : `\n${xs.flatMap((p) => [`        - ${yamlScalar(p)}`]).join('\n')}`)
   return `\
 - id: p2sdk-fs-guard
   config:
-    roots:
+${cfg.ssh?.remoteHome !== undefined && cfg.ssh.remoteHome.length > 0 ? `    remoteHome: ${yamlScalar(cfg.ssh.remoteHome)}
+` : ''}    roots:
       hardRoots:${list(g.hardRoots)}
       dataMaskRoots:${list(g.dataMaskRoots)}
-      homes:${list(roots.homes)}
+      homes:${list(homes)}
       toolchainDirs:${list(roots.toolchainDirs)}
       policyRoots:${list(roots.policyRoots)}${
         cfg.ssh !== undefined
@@ -418,14 +420,32 @@ export function writeRuntimePatch(cfg: StartConfig): string {
   return path
 }
 
+/** T9b3（D2）：ssh 模式给了 remoteHome → guard 管远端凭证根（hardRoots 并
+ * remoteRoots 非通配凭证项；一个清单多个消费者——guardRow 与 fs-zone-ssh 行
+ * 都取 mergedGuardRoots）。 */
+function mergedGuardRoots(cfg: StartConfig, roots: ReturnType<typeof computeRoots>) {
+  if (cfg.ssh?.remoteHome === undefined || cfg.ssh.remoteHome.length === 0) return roots.guardRoots
+  const remote = remoteRoots(cfg.ssh.remoteHome, undefined)
+  return { hardRoots: [...roots.guardRoots.hardRoots, ...remote.hardRoots], dataMaskRoots: roots.guardRoots.dataMaskRoots }
+}
+
+/** remoteHome 进 homes 软遮蔽（整棵遮、例外=会话 cwd 子树，guard.mjs:13-15 同款）。 */
+function mergedHomes(cfg: StartConfig, roots: ReturnType<typeof computeRoots>): string[] {
+  if (cfg.ssh?.remoteHome === undefined || cfg.ssh.remoteHome.length === 0) return roots.homes
+  return [...roots.homes, cfg.ssh.remoteHome]
+}
+
 /**
  * T9a（L8-d）：ssh 组合骨架（DESIGN-ssh-composition.md D13）。凭证（私钥、known_hosts）
  * 不进任何生成行——只有 OpenSSH 别名；远端路径由 dsh 侧 OpenSSH 配置解析。
  * PTC 全族禁 base `ptc-runtime` 断嵌套依赖（D8）；sandbox-policy 只覆盖回落 workspaceRoot（D5）。
  */
-/** T9b（D2）：fs-zone-ssh 行的远端 NEVER 根列表（remoteRoots 纯函数的非通配项）。 */
-function sshNeverList(remoteHome: string): string {
-  return remoteRoots(remoteHome, undefined).hardRoots.map((r) => `\n          - ${yamlScalar(r)}`).join('')
+/**
+ * T9b/T9b3（D2）：fs-zone-ssh 行的 NEVER 根——与 guard hardRoots 同一份（merged
+ * guardRoots：宿主根 ∪ 远端非通配凭证项；远端=本机时宿主根即远端可达根）。
+ */
+function sshNeverList(cfg: StartConfig, roots: ReturnType<typeof computeRoots>): string {
+  return mergedGuardRoots(cfg, roots).hardRoots.map((r) => `\n          - ${yamlScalar(r)}`).join('')
 }
 
 function sshRows(cfg: StartConfig): string {
@@ -458,7 +478,13 @@ function sshRows(cfg: StartConfig): string {
     - id: p2sdk-fs-zone-ssh
       name: ${yamlScalar(fileUrl(join(PKG_ROOT, 'src', 'policy', 'fs-zone-ssh.mjs')))}
       config:
-        neverRoots:${ssh.remoteHome === undefined ? ' []' : sshNeverList(ssh.remoteHome)}
+        neverRoots:${ssh.remoteHome === undefined
+    ? ' []'
+    : // 与 guard 同一份（T9b3）；roots 由 writeRuntimePatch 算好传入——这里重算成本可忽略（纯函数+小清单）
+      sshNeverList(cfg, computeRoots({
+        envHome: cfg.envHome, home: cfg.home, handoff: cfg.handoff,
+        dataDirs: cfg.dataDirs, extraMaskRoots: cfg.extraMaskRoots, pkgRoot: PKG_ROOT,
+      }))}
     - id: fs-ssh
       name: ${yamlScalar(lib('dsh-fs-ssh'))}
       disabled: true

@@ -61,6 +61,7 @@ beforeAll(async () => {
       P2SDK_SSH_HELPER: server.helper,
       P2SDK_SSH_HELPER_HASH: server.helperHash,
       P2SDK_SSH_NODE: process.execPath,
+      P2SDK_SSH_REMOTE_HOME: server.remoteHome,
     },
   })
 }, 240_000)
@@ -92,7 +93,7 @@ function textCall(t: string): object {
   ] }
 }
 
-async function drive(calls: object[]): Promise<{ sessionId: string; toolResults: Array<{ isError: boolean; text: string }> }> {
+async function drive(calls: object[]): Promise<{ sessionId: string; toolResults: Array<{ isError: boolean; text: string }>; asked: number }> {
   const ws = join(server.workspace, `t9a-${Math.random().toString(16).slice(2, 8)}`)
   mkdirSync(ws, { recursive: true })
   const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: ws } })) as { sessionId: string }
@@ -110,13 +111,14 @@ async function drive(calls: object[]): Promise<{ sessionId: string; toolResults:
     await new Promise((r) => setTimeout(r, 100))
   }
   stream.cancel(); void drained
+  const asked = 0 // approval 走 $events socket 不进 follow 流（T9b3 实测）；终态由 isError+never-root 判
   const results: Array<{ isError: boolean; text: string }> = []
   for (const f of frames) {
     if (f.type !== 'event' || f.event?.type !== 'tool/result') continue
     const d = f.event.data as { message?: { isError?: boolean; content?: Array<{ text?: string }> } }
     results.push({ isError: d.message?.isError === true, text: (d.message?.content ?? []).map((c) => c.text ?? '').join('\\n') })
   }
-  return { sessionId, toolResults: results }
+  return { sessionId, toolResults: results, asked }
 }
 
 describe('T9a 产品启动器 ssh 组合', () => {
@@ -161,6 +163,32 @@ describe('T9a 产品启动器 ssh 组合', () => {
     expect(b.toolResults.length).toBeGreaterThanOrEqual(1)
     expect(b.toolResults[0]!.isError).toBe(true)
     expect(b.toolResults[0]!.text).toContain('not available in ssh mode')
+  })
+
+  it('②b（T9b3 先红）远端 ~/.ssh 哨兵 read：guard 远端根未接 → 现在能读到正文（先红）', { timeout: 240_000 }, async () => {
+    const { writeFileSync: wfs, mkdirSync: mks } = await import('node:fs')
+    mks(join(server.remoteHome, '.ssh'), { recursive: true })
+    wfs(join(server.remoteHome, '.ssh', 'id_sentinel'), 'REMOTE-KEY-SENTINEL-T9B3')
+    const r = await drive([toolCall('read', { file_path: join(server.remoteHome, '.ssh', 'id_sentinel') })])
+    // 终态断言（T9b3 接远端根后）：guard NEVER 拒——isError、never-root、零卡。
+    // 先红态（guard 未接远端根）：出审批卡（asked≥1）或读出正文——下方两断言在先红态红。
+    expect(r.toolResults[0]!.isError, '远端凭证 read 被拒').toBe(true)
+    expect(r.toolResults[0]!.text, 'guard hardRoots 拒串').toContain('touches a hard-denied area')
+  })
+
+  it('②d remoteHome 配错 → 起不来：launchRuntime reject 且错误含校验固定串（guard exit 86）', { timeout: 240_000 }, async () => {
+    // 先红（T9b3 前）= guardRow 不带 remoteHome → 校验不跑、照常启动（resolve）。
+    // 终态：校验在 ssh.ready 后 exit(86)，dsh 死于 connect 窗口——错误带 stderr 尾。
+    await expect(
+      launchRuntime({ env: {
+        HOME: TEST_HOME, PATH: `${server.binDir}:${process.env.PATH ?? ''}`,
+        P2SDK_HOME: mkdtempSync(join(TEST_ROOT, 'dsh2d-')), P2SDK_PATCH: fakeOverlay(),
+        P2SDK_SSH_HOST: 'pbots-ssh-test', P2SDK_SSH_REMOTE_ROOT: server.workspace,
+        P2SDK_SSH_HELPER: server.helper, P2SDK_SSH_HELPER_HASH: server.helperHash, P2SDK_SSH_NODE: process.execPath,
+        P2SDK_SSH_REMOTE_HOME: server.workspace, // 配错：远端 ~ 不是 ws
+      } }),
+      '配错 remoteHome 起不来',
+    ).rejects.toThrow(/does not match the remote home/)
   })
 
   it('⑪ launcher 强杀→dsh 仍活；dsh 强杀→ssh 清场、端口 ECONNREFUSED', { timeout: 180_000 }, async () => {

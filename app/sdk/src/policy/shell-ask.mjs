@@ -1,4 +1,6 @@
 // p2sdk 档位策略（T-07/T-12/P5-05 历史见下；P5-21 泛化为查表）。
+// T7c（Q-028=B）：write/edit 落在 <workspaceRoot>/.dsh/skills 或 .agents/skills
+// 下 → 必出卡（改 skill=改 bot 行为，不随自主门放行）。bash 路径=T7d。
 //
 // P5-21（PLAN p5-parity，Q-013 全表确认 2026-11-03）：由「普通 shell 必问」泛化
 // 为按 profile/tiers.json 查档位表（REUSE 行：改造现有 shell-ask 为查表）。表是
@@ -85,6 +87,7 @@ const ASK = {
   mcp: 'p2sdk policy: connector tools require user approval (metadata bridge pending)',
   fallback: 'p2sdk policy: tier table unavailable; failing closed to per-call approval',
   net: 'p2sdk policy: network access requested',
+  skillWrite: 'p2sdk policy: writing to a skill folder requires user approval (this changes what this bot can do)',
 }
 const NEVER_DENY = { kind: 'deny', reason: 'approval unavailable in this session' }
 
@@ -378,6 +381,15 @@ export function apply(ctx, config = {}) {
     //（含 .. 逃逸与符号链接——resolve 先 realpath 再判，绕法归一到同一分支）、
     // 候选解析失败（targets < total）、workspaceRoot 拿不到。
     if (!allInside) return { kind: 'deny', reason: ASK.writeOut }
+    // T7c（Q-028=B）：写/改 bot 自己的 skill 目录 → 必须出卡（不随自主门放行）。
+    // 判定=realpath 后的候选任一落在 <workspaceRoot>/.dsh/skills 或 .agents/skills 下。
+    // bash 路径挡不住——已知缺口，T7d 预种目录+沙箱只读挂载收口。
+    if (kind === 'workspace-write' && workspaceRoot !== undefined) {
+      const skillRoots = [join(workspaceRoot, '.dsh', 'skills'), join(workspaceRoot, '.agents', 'skills')]
+      const inSkill = await Promise.all(targets.map(async (t) =>
+        (await Promise.all(skillRoots.map((r) => isPathUnder(t, r)))).some(Boolean)))
+      if (inSkill.some(Boolean)) return ask(ASK.skillWrite)
+    }
     return fileGateOpen() ? next() : ask(ASK.writeGate)
   })
 }

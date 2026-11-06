@@ -1027,3 +1027,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 12:06 T8合并落地+L5-a测试跑中 | T8b 过验→feat/T8 合并（23 文件 97+82-）→回测 list=0+mock-demo 9绿+残留 0。L5-a schedule-delivery.test.ts 写好并后台跑（65s 定时+等待≈3 分钟）。BRIEF 验收③的第一步。
 2026-11-06 12:23 L5-a WIP+API发现 | schedule_create 用 rrule 参数（非 after_seconds/at——那些是服务端内部种类）；无效 rrule 报 invalid_selector 在 result body 不报 tool error；骨架完整只差 rrule 格式精确匹配。下会话读 node_modules 的 dsh-schedule 源码或单测找 rrule 字面量。
 2026-11-06 12:28 L5-a API发现完成 | 装版tool-schedule不用rrule也不用target——正确调用=({title,prompt,after_seconds:N})；参考仓源码与安装版schema不同（rrule→after_seconds等）。e2e骨架可照mock-demo模板直接写，下会话10分钟出。文件因多轮编辑损坏已删，发现入库。
+2026-11-06 12:31 哨兵#11 | load10.8、无429。L5-a 干净重写（API 已知，照 mock-demo 模板）。

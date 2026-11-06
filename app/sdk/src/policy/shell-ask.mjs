@@ -59,7 +59,7 @@
 export const name = 'p2sdk-shell-ask'
 
 import { createHash } from 'node:crypto'
-import { readFileSync, statSync, writeFileSync } from 'node:fs'
+import { readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { isPathUnder } from './containment.mjs'
 import { noteZoneVerdict, resolveTargets } from './resolve.mjs'
@@ -385,7 +385,10 @@ export function apply(ctx, config = {}) {
     // 判定=realpath 后的候选任一落在 <workspaceRoot>/.dsh/skills 或 .agents/skills 下。
     // bash 路径挡不住——已知缺口，T7d 预种目录+沙箱只读挂载收口。
     if (kind === 'workspace-write' && workspaceRoot !== undefined) {
-      const skillRoots = [join(workspaceRoot, '.dsh', 'skills'), join(workspaceRoot, '.agents', 'skills')]
+      // T7cb：workspaceRoot 可能是符号链接（session cwd 传入链接路径），targets 已被
+      // fs.resolve 解析到真实树——先规范化 workspaceRoot 再拼 skill 根，否则跨树比不到
+      const realWs = realpathSync(workspaceRoot)
+      const skillRoots = [join(realWs, '.dsh', 'skills'), join(realWs, '.agents', 'skills')]
       const inSkill = await Promise.all(targets.map(async (t) =>
         (await Promise.all(skillRoots.map((r) => isPathUnder(t, r)))).some(Boolean)))
       if (inSkill.some(Boolean)) return ask(ASK.skillWrite)

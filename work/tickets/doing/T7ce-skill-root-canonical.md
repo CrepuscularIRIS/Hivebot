@@ -4,7 +4,7 @@
 > 来源：Sol 审查 `work/tickets/review/T7c-T9a-security.md` C1（经理核实 CONFIRMED，见该文件「## 经理核实」）；T7c 链（T7c/T7cb/T7cc 已 done）的边界缺口
 > 分支 / 作业目录：feat/T7ce，从主线 `docs/rebuild-p6-p5-plan`（≥ 35a235c6）切；小改动，可不建 worktree
 > 排期：现在就做，与 T16 并行（T16 不碰 `shell-ask.mjs` / `policy.test.ts`），合并不必等 T16
-> claimed：
+> claimed：2026-11-06 15:3x main (GLM 5.3) @ /tmp/bot-wt/T7ce
 > accepted：
 
 ## 目标

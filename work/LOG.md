@@ -1020,5 +1020,9 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 13:42 T8c修完 | w1ap0-matrix import 从 Python 字符串模板内移到模块头；vitest list rc=0。等 T9a 终验+load<8 重跑 H7。
 2026-11-06 13:47 T9ac WIP | fake plugin toolNames 已加（dsh options.tools 数组取 name）；⑧⑪ 重写因 Python heredoc 替换损坏 e2e 文件（40万行）已 git checkout 还原。下会话用 Edit 工具逐段改。extraNeverTools 缩进修复已验证。
 2026-11-06 13:51 哨兵#19 | load4.7、无429。T9ac e2e ⑧⑪ 用 Edit 工具重写。
+2026-11-06 13:34 T7cd+T9ac 修完 | T7cd：realpathSync 假路径回退（try/catch）→policy 72绿+skill-card 9绿。T9ac：extraNeverTools 缩进 6→4 格（roots内→config级）→unit 64绿+e2e 3绿。两个都是 manager 任务C 诊断出的产品 bug。
+2026-11-06 13:57 T9ac 2/3绿 | ⑨⑪绿（grep拒+dsh清场）。⑧真实发现：workflow 工具仍在首请求工具面——三个禁行只断依赖链没从注册表移除工具本身。fake toolNames 字段工作正常（含 bash 正对照）。下会话：加 workflow 到禁行或 extraNeverTools 补 workflow → ⑧ 绿 → 全链终验。
+- 14:1x T9ac ⑧根因=preset嵌套行裸-id够不到（同P5-03机制）；approval.yml workflow两行 !!js P2SDK_SSH_MODE 条件禁用（4行）+drift豁免+①本机在场断言；变异两刀红；⑪泄漏修复（删rt=undefined+孤儿master断言）；3/3+7/7+4/4+40/40；两轮连跑进程0。回执 receipts/T9a.md
+- 14:3x T9ad 照单施工完：⑪基线前置+防空集+退净、①缩进断言；unit 64+e2e 3 绿；变异四刀红（M-序 TDZ/M6 目录/M5 缩进/M-⑧，两刀红法与单预期略异已如实记§7）；改动行覆盖 100%；收尾进程 0、空目录 +2（⑪ 内 1+dispose cancel 1）
 - 14:2x T7c 合并前置落实：四段重跑（⑦绿/9绿/M1红/还原9绿）贴回执 §9；核实 feat/T7c 已并入主线（9ec0bf03）；主线回测 skill-write-card+skill-save 13 passed、write-outside 单跑 10 passed
 - 14:2x 上游巡查（用户交代）：npm @deepseek-ai/dsh latest 仍 0.2.2-rc.1（alpha 通道多 alpha.3，rc.1 更新）；deepseek-harness@ce7073d 与 superagent-prototype@6337fc8 fetch 无新提交——T15/T16 评估基线不变

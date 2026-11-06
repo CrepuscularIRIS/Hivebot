@@ -288,7 +288,7 @@ afterAll(async () => {
   }
 })
 
-it('① 每个会加载的 preset 的模型工具表不含 plugin_manager', { timeout: 240_000 }, async () => {
+it('① 每个会加载的 preset 的模型工具表不含 plugin_manager；本机 workflow 族在场', { timeout: 240_000 }, async () => {
   const h = await launchPm()
   const cases: Array<{ label: string; preset?: string }> = [
     { label: 'standard（默认会话，不带 agentPreset）' },
@@ -304,11 +304,21 @@ it('① 每个会加载的 preset 的模型工具表不含 plugin_manager', { ti
   }
   const records = h.readToolNames()
   expect(records.size, '四个会话都驱动了 llm 请求').toBeGreaterThanOrEqual(4)
-  for (const sessionId of sessionIds) {
+  for (const [i, sessionId] of sessionIds.entries()) {
     const requests = records.get(sessionId)
     expect(requests, `会话 ${sessionId} 有 llm 请求记录`).toBeDefined()
     for (const tools of requests!) {
       expect(tools, `会话 ${sessionId} 工具表不含 plugin_manager`).not.toContain('plugin_manager')
+      // T9ac ⑧ 本机对照：approval.yml workflow 两行的 !!js 条件禁用仅 ssh 生效
+      // （P2SDK_SSH_MODE 未设 → false）。本机 standard/cordis 的 workflow 必须在
+      // 场——表达式若误成恒真，此断言红；ptc 上游本就 disabled、minimal 无该行。
+      const workflow = tools.filter((t) => /workflow/i.test(t))
+      const expectsWorkflow = cases[i]!.preset === undefined || cases[i]!.preset === 'cordis'
+      if (expectsWorkflow) {
+        expect(workflow, `会话 ${sessionId}（${cases[i]!.label}）本机含 workflow`).toContain('workflow')
+      } else {
+        expect(workflow, `会话 ${sessionId}（${cases[i]!.label}）不含 workflow`).toEqual([])
+      }
     }
   }
 })
@@ -424,9 +434,30 @@ function assertPresetDrift(approval: string): void {
       while (valueEnd < end && (lines[valueEnd] === '' || lines[valueEnd].startsWith('           '))) valueEnd++
       return [...lines.slice(0, prefix), '          prefix: <P6-05 追加段落，值豁免逐字比对>', ...lines.slice(valueEnd)]
     }
-    const oursCmp = preset === 'standard' ? cutPersonaPrefix(ours) : ours
-    const expCmp = preset === 'standard' ? cutPersonaPrefix(exp) : exp
-    expect(oursCmp.join('\n'), `approval.yml 的 preset-${preset} 覆盖块与上游一致（仅 disabled 翻转；standard persona prefix 为 P6-05 偏差）`).toBe(expCmp.join('\n'))
+    // T9a（L8-d / T9ac ⑧）：standard/cordis 的 workflow-ptc/tool-workflow 两行加
+    // `disabled: !!js process.env.P2SDK_SSH_MODE === '1'`——preset 嵌套行裸
+    // `- id:` 够不到（只能整树覆盖），workflow 族在 ssh 模式从工具面移除靠这两行
+    // 条件禁用；本机模式求值 false，行为与上游一致。对这两行的 disabled 值豁免
+    // 逐字比对：ours 侧表达式行换占位，exp 侧（上游无此行）在两行 name 后补占位；
+    // ptc 树两侧本就 disabled: true（name 后已有 disabled 行），两侧都不动。
+    const workflowDisabledPlaceholder = '            disabled: <T9a ssh 条件禁用，值豁免逐字比对>'
+    const cutWorkflowDisabled = (lines: string[]): string[] => {
+      const out: string[] = []
+      for (let i = 0; i < lines.length; i++) {
+        const l = lines[i]!
+        if (l === "            disabled: !!js process.env.P2SDK_SSH_MODE === '1'") {
+          out.push(workflowDisabledPlaceholder)
+          continue
+        }
+        out.push(l)
+        const isWorkflowName = l === "            name: '@deepseek-ai/dsh-workflow-ptc'" || l === "            name: '@deepseek-ai/dsh-tool-workflow'"
+        if (isWorkflowName && !(lines[i + 1] ?? '').startsWith('            disabled:')) out.push(workflowDisabledPlaceholder)
+      }
+      return out
+    }
+    const oursCmp = cutWorkflowDisabled(preset === 'standard' ? cutPersonaPrefix(ours) : ours)
+    const expCmp = cutWorkflowDisabled(preset === 'standard' ? cutPersonaPrefix(exp) : exp)
+    expect(oursCmp.join('\n'), `approval.yml 的 preset-${preset} 覆盖块与上游一致（仅 disabled 翻转；standard persona prefix / workflow 两行条件禁用为已知偏差）`).toBe(expCmp.join('\n'))
   }
 }
 

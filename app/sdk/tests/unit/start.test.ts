@@ -168,6 +168,52 @@ describe('childEnv', () => {
     expect(env.DSH_TELEMETRY_MODE).toBe('DISABLED')
   })
 
+  it('T9a-① ssh 五件套给齐 → runtime patch 含 ssh 族/PTC 禁/guard extraNeverTools，不含本机 wrapper 与 fs-zone', () => {
+    const cfg = resolveConfig({
+      P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h',
+      P2SDK_SSH_HOST: 'pbots-ssh-test', P2SDK_SSH_REMOTE_ROOT: '/remote/root',
+      P2SDK_SSH_HELPER: '/remote/helper.js', P2SDK_SSH_HELPER_HASH: 'a'.repeat(64), P2SDK_SSH_NODE: '/remote/node',
+    })
+    expect(validateStart(cfg)).toBeNull()
+    mkdirSync('/tmp/h', { recursive: true })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yaml).toContain('dsh-fs-ssh')
+    expect(yaml).toContain('dsh-subprocess-ssh')
+    expect(yaml).toContain('dsh-sandbox-ssh')
+    expect(yaml).not.toContain('- id: ptc-runtime') // T9ab: D8 变更
+    expect(yaml).toContain('extraNeverTools')
+    expect(yaml, 'extraNeverTools 在 guard config 级（4 格），不在 roots 内').toContain('\n    extraNeverTools:\n      - glob\n      - grep\n')
+    expect(yaml).not.toMatch(/id: sandbox\n\s+config:/) // 本机 wrapper 不生成
+    expect(yaml).not.toContain('fs-zone') // T9b 才插
+    expect(yaml).not.toContain('IdentityFile') // 凭证不进生成行
+  })
+
+  it('T9a-② 缺任一 → validateStart 报错；全空 → 本机模式 patch 不含 ssh 行', () => {
+    const full = { P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h', P2SDK_SSH_HOST: 'a', P2SDK_SSH_REMOTE_ROOT: 'b', P2SDK_SSH_HELPER: 'c', P2SDK_SSH_HELPER_HASH: 'd', P2SDK_SSH_NODE: 'e' }
+    for (const k of Object.keys(full).filter((x) => x.startsWith('P2SDK_SSH_'))) {
+      const partial = { ...full } as Record<string, string | undefined>
+      delete partial[k]
+      const cfg = resolveConfig(partial)
+      expect(validateStart(cfg)).toContain('P2SDK_SSH_')
+    }
+    const local = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h' })
+    expect(validateStart(local)).toBeNull()
+    const yaml = readFileSync(writeRuntimePatch(local), 'utf8')
+    expect(yaml).not.toContain('dsh-fs-ssh')
+    expect(yaml).not.toContain('extraNeverTools')
+  })
+
+  it('T9a-③ childEnv：P2SDK_SSH_* 不进子进程；ssh 模式设 P2SDK_SSH_MODE=1', () => {
+    const sshEnv = { P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h', P2SDK_SSH_HOST: 'a', P2SDK_SSH_REMOTE_ROOT: 'b', P2SDK_SSH_HELPER: 'c', P2SDK_SSH_HELPER_HASH: 'd', P2SDK_SSH_NODE: 'e' }
+    const sshCfg = resolveConfig(sshEnv)
+    const env1 = childEnv(sshCfg, { ...sshEnv, PATH: '/bin' })
+    expect(env1.P2SDK_SSH_HOST).toBeUndefined()
+    expect(env1.P2SDK_SSH_MODE).toBe('1')
+    const localCfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h' })
+    const env0 = childEnv(localCfg, { PATH: '/bin' })
+    expect(env0.P2SDK_SSH_MODE).toBeUndefined()
+  })
+
   it('T6: DSH_AGENTS_HOME 恒指运行时 home 下的 agents（覆盖父进程同名变量，关真实 ~/.agents 泄漏）', () => {
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h' })
     const env = childEnv(cfg, { HOME: '/home/x', DSH_AGENTS_HOME: '/home/x/.agents' })

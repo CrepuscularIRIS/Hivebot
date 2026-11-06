@@ -52,6 +52,10 @@ export interface StartConfig {
   dataDirExplicit: boolean
   /** Extra mask roots from P2SDK_SANDBOX_MASK (launcher-only, decision 15). */
   extraMaskRoots: string[]
+  /** T9a：ssh 模式五件套（全给=ssh 模式；全空=本机模式不变）。P2SDK_SSH_NODE=远端 node 绝对路径。 */
+  ssh?: { host: string; remoteRoot: string; helper: string; helperHash: string; node: string }
+  /** T9a：P2SDK_SSH_* 给了但不齐（resolveConfig 时记录；validateStart 消费后不再用）。 */
+  sshMissing?: string[]
 }
 
 export function resolveConfig(env: NodeJS.ProcessEnv = process.env): StartConfig {
@@ -83,7 +87,27 @@ export function resolveConfig(env: NodeJS.ProcessEnv = process.env): StartConfig
       : [...new Set([env.HOME, userInfo().homedir].filter(Boolean).map((h) => join(h, '.config', 'pbots-ui')))],
     dataDirExplicit: Boolean(env.PBOTS_DATA_DIR),
     extraMaskRoots: (env.P2SDK_SANDBOX_MASK ?? '').split(':').filter(Boolean),
+    ssh: readSshConfig(env),
+    sshMissing: sshMissingKeys(env),
   }
+}
+
+/** T9a：五个全给=ssh 模式；全空=undefined（本机模式）；给了但不齐=配置错误（validateStart 拒）。 */
+function readSshConfig(env: NodeJS.ProcessEnv): StartConfig['ssh'] {
+  const keys = ['P2SDK_SSH_HOST', 'P2SDK_SSH_REMOTE_ROOT', 'P2SDK_SSH_HELPER', 'P2SDK_SSH_HELPER_HASH', 'P2SDK_SSH_NODE'] as const
+  const vals = keys.map((k) => env[k])
+  const given = vals.filter((v) => v !== undefined && v !== '').length
+  if (given === 0) return undefined
+  if (given !== keys.length) return undefined // 不齐——sshMissingKeys 单独记
+  return { host: vals[0]!, remoteRoot: vals[1]!, helper: vals[2]!, helperHash: vals[3]!, node: vals[4]! }
+}
+
+/** T9a：给了但不齐 → 返回缺的变量名（调用点拼完整报错）。 */
+export function sshMissingKeys(env: NodeJS.ProcessEnv): string[] {
+  const keys = ['P2SDK_SSH_HOST', 'P2SDK_SSH_REMOTE_ROOT', 'P2SDK_SSH_HELPER', 'P2SDK_SSH_HELPER_HASH', 'P2SDK_SSH_NODE']
+  const given = keys.filter((k) => env[k] !== undefined && env[k] !== '')
+  if (given.length === 0 || given.length === keys.length) return []
+  return keys.filter((k) => !given.includes(k))
 }
 
 /** Pre-flight validation; a non-null string is the user-facing error. */
@@ -100,6 +124,11 @@ export function validateStart(cfg: StartConfig): string | null {
   }
   for (const m of cfg.extraMaskRoots) {
     if (!isAbsolute(m)) return `P2SDK_SANDBOX_MASK must be absolute colon-separated paths (got "${m}")`
+  }
+  // T9a：ssh 五件套给了但不齐 → fail loud（半配置是最危险的静默回落）
+  const missing = cfg.sshMissing ?? []
+  if (missing.length > 0) {
+    return `P2SDK_SSH_* is partially set: missing ${missing.join(', ')}. Set all five for ssh mode, or none for local mode.`
   }
   return null
 }
@@ -176,6 +205,11 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
   child.P2SDK_LLM_MODEL = cfg.model
   child.P2SDK_LLM_API_BASE = normalizeApiBase(cfg.llmBaseUrl)
   child.DSH_TELEMETRY_MODE = env.DSH_TELEMETRY_MODE ?? 'DISABLED'
+  // T9a：launcher-only 变量不进 dsh 子进程（照 PBOTS_DATA_DIR 的做法）；
+  // ssh 模式标记（T9b containment 读它；本单只设不读）
+  const sshKeys = ['P2SDK_SSH_HOST', 'P2SDK_SSH_REMOTE_ROOT', 'P2SDK_SSH_HELPER', 'P2SDK_SSH_HELPER_HASH', 'P2SDK_SSH_NODE']
+  for (const k of sshKeys) delete child[k]
+  if (cfg.ssh !== undefined) child.P2SDK_SSH_MODE = '1'
   if (cfg.provider === 'mock') delete child.P2SDK_LLM_API_KEY
   // T-11 coverage bypass (test harness only): the harness disables coverage
   // writing in the launcher (tests/support/runtime.ts launcherSpawnEnv — node
@@ -258,7 +292,11 @@ function guardRow(cfg: StartConfig): string {
       dataMaskRoots:${list(g.dataMaskRoots)}
       homes:${list(roots.homes)}
       toolchainDirs:${list(roots.toolchainDirs)}
-      policyRoots:${list(roots.policyRoots)}
+      policyRoots:${list(roots.policyRoots)}${
+        cfg.ssh !== undefined
+          ? `\n    extraNeverTools:\n      - glob\n      - grep`
+          : ''
+      }
 `
 }
 
@@ -360,13 +398,64 @@ export function writeRuntimePatch(cfg: StartConfig): string {
       config:
         dir: '${cfg.handoff}'
 `)
-  rows.push(sandboxRow(cfg))
-  rows.push(fsSandboxRow(cfg))
-  rows.push(guardRow(cfg))
+  if (cfg.ssh === undefined) {
+    // 本机模式：行为与改前逐字相同（T9a 验收 2-② 钉住）
+    rows.push(sandboxRow(cfg))
+    rows.push(fsSandboxRow(cfg))
+    rows.push(guardRow(cfg))
+  } else {
+    // T9a ssh 模式：禁本机 wrapper 行与 fs-zone（T9b 插 fs-zone-ssh）
+    rows.push(guardRow(cfg))
+    rows.push(sshRows(cfg))
+  }
   rows.push(shellAskRow(cfg))
   rows.push(requestNetRow(cfg))
   writeFileSync(path, rows.join(''))
   return path
+}
+
+/**
+ * T9a（L8-d）：ssh 组合骨架（DESIGN-ssh-composition.md D13）。凭证（私钥、known_hosts）
+ * 不进任何生成行——只有 OpenSSH 别名；远端路径由 dsh 侧 OpenSSH 配置解析。
+ * PTC 全族禁 base `ptc-runtime` 断嵌套依赖（D8）；sandbox-policy 只覆盖回落 workspaceRoot（D5）。
+ */
+function sshRows(cfg: StartConfig): string {
+  const ssh = cfg.ssh!
+  const lib = (name: string): string => fileUrl(join(PKG_ROOT, 'node_modules', '@deepseek-ai', name, 'lib', 'index.js'))
+  return `\
+- id: fs-sandbox
+  disabled: true
+- id: subprocess
+  disabled: true
+- id: sandbox
+  disabled: true
+- id: session-title-llm
+  disabled: true
+- id: workflow-ptc
+  disabled: true
+- id: tool-workflow
+  disabled: true
+- id: tool-executor-ptc
+  disabled: true
+- insert:
+    - id: ssh
+      name: '${lib('dsh-ssh')}'
+      config:
+        host: ${ssh.host}
+        launch: { kind: node-script, node: '${ssh.node}' }
+        helper: '${ssh.helper}'
+        helperHash: '${ssh.helperHash}'
+        workspace: '${ssh.remoteRoot}'
+    - id: fs-ssh
+      name: '${lib('dsh-fs-ssh')}'
+    - id: subprocess-ssh
+      name: '${lib('dsh-subprocess-ssh')}'
+    - id: sandbox-ssh
+      name: '${lib('dsh-sandbox-ssh')}'
+- id: sandbox-policy
+  config:
+    workspaceRoot: '${ssh.remoteRoot}'
+`
 }
 
 /** Whole-script ReplayEntry[] replayed per model call in mock mode (llm-replay override sidecar).

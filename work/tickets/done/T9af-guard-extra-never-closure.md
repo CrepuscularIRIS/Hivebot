@@ -5,7 +5,7 @@
 > **在等：feat/T16 合并到主线。** T16（/tmp/bot-wt/T16）正在改同一文件 `guard.mjs:38`（NEVER_TOOLS 加 apply_patch）与 `:255`（拒绝原因串），本单改 `:40-41`、`:239-247`，相距 1-2 行。T16 合并后从合并后的主线切 feat/T9af，挪回 `open/`。须在 T9b 之前合并（T9b 也改 guard）。
 > 分支 / 作业目录：feat/T9af（T16 合并后从主线切）；小改动，可不建 worktree
 > claimed：2026-11-06 16:4x main (GLM 5.3) @ /tmp/bot-wt/T9af（T16 已合并）
-> accepted：
+> accepted：2026-11-06 manager (Opus 5.5) @ feat/T9af 253f14dd（轨迹 blocked→open→〔施工未挪 doing，open 内认领〕→done）
 
 ## 目标
 同一进程里 `apply` 多次（热重载、测试里多个上下文）时，每个监听器只按自己那次 `apply` 的 `config.extraNeverTools` 判定。

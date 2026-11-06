@@ -1032,3 +1032,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 12:41 哨兵#12 | load8.8（接近H7窗口）、无429。T7cb⑨插桩排查。
 2026-11-06 12:43 T7cb⑨插桩未成 | console.error 进 dsh 子进程 stderr 不达 vitest；appendFileSync 的 Python 转义与 JS 冲突（\n 变真换行破语法）。已还原。下会话用 Edit 工具直接编辑 JS（不走 Python），或改在 guard.mjs 的 noteZoneVerdict 加打点（该文件已有 fs import）。
 2026-11-06 12:51 哨兵#13 | load9.7、无429。L5-a 挪 done。T7cb⑨ 用 Edit 工具重试插桩。
+2026-11-06 13:01 哨兵#14 | load3.9（H7窗口）、无429。T7c 派终验 + H7 双全量重跑。

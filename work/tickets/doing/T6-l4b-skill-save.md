@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：work/p9-dsh-integration/BRIEF.md L4、验收第 2 条前半；PLAN.md §1 L4 行（泄漏点）、§5 第 5 条；RE-skills.md Q1/Q3/Q6 与「对 T6/T7 的影响」第 3、6 条
 > 分支 / 作业目录：feat/T6 @ /tmp/bot-wt/T6（不涉 ssh，/tmp 可用）
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：2026-11-06 03:28 main (GLM 5.3) @ 973124d6（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

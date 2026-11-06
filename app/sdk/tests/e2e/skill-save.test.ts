@@ -9,7 +9,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { beforeAll, expect, it } from 'vitest'
+import { afterAll, beforeAll, expect, it } from 'vitest'
 import { connect } from '../../examples/lib/client.mjs'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
@@ -117,6 +117,12 @@ beforeAll(async () => {
     },
   }
 }, 240_000)
+
+afterAll(async () => {
+  // 不停 runtime 会漏 dsh 子进程（施工期三次运行漏了三个，已 bot-reap——回执存疑 1）
+  try { rt.feed.close() } catch { /* 已关 */ }
+  try { await rt.stop() } catch { /* 已停 */ }
+})
 
 /** 一次性写全整段脚本（fake 游标按会话持有，二次覆盖会脱同步——P5-03 实测）。 */
 async function scriptedSession(cwd: string, calls: object[]): Promise<{

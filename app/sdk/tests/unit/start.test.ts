@@ -168,6 +168,12 @@ describe('childEnv', () => {
     expect(env.DSH_TELEMETRY_MODE).toBe('DISABLED')
   })
 
+  it('T6: DSH_AGENTS_HOME 恒指运行时 home 下的 agents（覆盖父进程同名变量，关真实 ~/.agents 泄漏）', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h' })
+    const env = childEnv(cfg, { HOME: '/home/x', DSH_AGENTS_HOME: '/home/x/.agents' })
+    expect(env.DSH_AGENTS_HOME).toBe('/tmp/h/agents')
+  })
+
   it('drops a parent P2SDK_HOME/P2SDK_HANDOFF instead of passing them through', () => {
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock' })
     const env = childEnv(cfg, { P2SDK_HOME: '/tmp/leak', P2SDK_HANDOFF: '/tmp/leak-ho' })

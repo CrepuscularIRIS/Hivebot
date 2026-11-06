@@ -168,6 +168,10 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
     ) child[name] = value
   }
   child.DSH_HOME = cfg.home
+  // T6（L4-b）：agents 根无条件收进运行时 home——dsh-home-paths 在 $DSH_AGENTS_HOME 未设时
+  // 取 homedir()/.agents，会把真实/测试 HOME 的 ~/.agents（skill-filesystem 与
+  // agent-instructions 两个消费者、所有 preset 共扫）泄给每个 bot；覆盖父进程同名变量。
+  child.DSH_AGENTS_HOME = join(cfg.home, 'agents')
   child.P2SDK_PROVIDER = cfg.provider
   child.P2SDK_LLM_MODEL = cfg.model
   child.P2SDK_LLM_API_BASE = normalizeApiBase(cfg.llmBaseUrl)

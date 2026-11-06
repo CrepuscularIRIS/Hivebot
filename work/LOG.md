@@ -1009,3 +1009,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 13:34 T7cd+T9ac 修完 | T7cd：realpathSync 假路径回退（try/catch）→policy 72绿+skill-card 9绿。T9ac：extraNeverTools 缩进 6→4 格（roots内→config级）→unit 64绿+e2e 3绿。两个都是 manager 任务C 诊断出的产品 bug。
 2026-11-06 13:57 T9ac 2/3绿 | ⑨⑪绿（grep拒+dsh清场）。⑧真实发现：workflow 工具仍在首请求工具面——三个禁行只断依赖链没从注册表移除工具本身。fake toolNames 字段工作正常（含 bash 正对照）。下会话：加 workflow 到禁行或 extraNeverTools 补 workflow → ⑧ 绿 → 全链终验。
 - 14:1x T9ac ⑧根因=preset嵌套行裸-id够不到（同P5-03机制）；approval.yml workflow两行 !!js P2SDK_SSH_MODE 条件禁用（4行）+drift豁免+①本机在场断言；变异两刀红；⑪泄漏修复（删rt=undefined+孤儿master断言）；3/3+7/7+4/4+40/40；两轮连跑进程0。回执 receipts/T9a.md
+- 14:3x T9ad 照单施工完：⑪基线前置+防空集+退净、①缩进断言；unit 64+e2e 3 绿；变异四刀红（M-序 TDZ/M6 目录/M5 缩进/M-⑧，两刀红法与单预期略异已如实记§7）；改动行覆盖 100%；收尾进程 0、空目录 +2（⑪ 内 1+dispose cancel 1）

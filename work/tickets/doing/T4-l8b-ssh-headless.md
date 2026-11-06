@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：work/p9-dsh-integration/BRIEF.md 目标 3、L8，验收第 1 条的「工程 bot 在 ssh 主机上改代码跑测试」前半段；PLAN.md §3（十条事实）、§5 第 1 条
 > 分支 / 作业目录：feat/T4 @ **/dev/shm/bot-T4**（不能放 /tmp/bot-wt：helper.js 在 node_modules 里，会落进 bwrap 私有 /tmp，PLAN §3 第 5 条）
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：2026-11-06 03:47 main (GLM 5.3) @ 7ef1240d（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

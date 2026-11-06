@@ -6,6 +6,7 @@ import { MARKET_YML, readMethods, serveMarketIndex, writeObserverPatch } from '.
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 let rt: Runtime
 let indexUrl: string
@@ -15,7 +16,7 @@ beforeAll(async () => {
   const index = await serveMarketIndex()
   indexUrl = index.url
   closeIndex = index.close
-  const observerPatch = writeObserverPatch(mkdtempSync(join(tmpdir(), 'p2sdk-t03a-')))
+  const observerPatch = writeObserverPatch(tmkdir('p2sdk-t03a-'))
   rt = await launchRuntime({
     env: {
       P2SDK_PATCH: `${MARKET_YML}:${observerPatch}`,

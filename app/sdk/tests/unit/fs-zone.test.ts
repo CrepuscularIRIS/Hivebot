@@ -9,13 +9,14 @@
 // 既有语义保持格（验收③）：区内读写照常；区外读走完出卡批准后照常读到
 // （write-outside ② 的单测对照——执行层不得把已批准的区外读静默改拒）。
 import { createRequire } from 'node:module'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
 import * as shellAsk from '../../src/policy/shell-ask.mjs'
 import { applyZoneRecheck, ZoneCheckedFileSystem } from '../../src/policy/fs-zone.mjs'
 import { noteZoneVerdict } from '../../src/policy/resolve.mjs'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 // 与生产模块（src/policy/fs-zone.mjs）同一条解析链：经 @deepseek-ai/dsh（本仓
 // 直接依赖）的 node_modules 取上游件，与 dsh-base 运行时加载的是同一 store 实例。
@@ -48,7 +49,7 @@ function harness(opts: { neverRoots?: string[]; tiers?: unknown } = {}): {
   swapTo(target: string): void
   breakResolve(): void
 } {
-  const root = mkdtempSync(join(tmpdir(), 'bot-p625f1-unit-'))
+  const root = tmkdir('bot-p625f1-unit-')
   cleanups.push(() => rmSync(root, { recursive: true, force: true }))
   const ws = join(root, 'ws')
   const outside = join(root, 'outside') // 区外 + 宿主 /tmp 下 = fence 可写根（B1 语义）
@@ -174,7 +175,7 @@ it('对照：区外读出卡批准后照常读到（Q-013 语义保持——执�
 })
 
 it.each(['outside', 'credential'])('P6-26 inner 接缝读 %s：复判之后换链仍拒，不能返回区外内容', async (destination) => {
-  const home = mkdtempSync(join(tmpdir(), 'bot-p626-home-'))
+  const home = tmkdir('bot-p626-home-')
   cleanups.push(() => rmSync(home, { recursive: true, force: true }))
   const credential = join(home, '.ssh')
   mkdirSync(credential)
@@ -235,7 +236,7 @@ it('旁支 read：判定后换链到非 fence 相关区外目录 → 执行层�
 // ── 验收②（review 未测）：同一窗口换链指向 NEVER 根（假凭证目录）→ 读写都拒 ──
 
 it('NEVER 根（验收②）：判定后换链到假凭证目录 → read 拒（不读出内容）且 write 拒（不落文件）', async () => {
-  const neverRoot = mkdtempSync(join(tmpdir(), 'bot-p625f1-home-'))
+  const neverRoot = tmkdir('bot-p625f1-home-')
   cleanups.push(() => rmSync(neverRoot, { recursive: true, force: true }))
   const fakeCred = join(neverRoot, '.ssh')
   mkdirSync(fakeCred)
@@ -258,7 +259,7 @@ it('NEVER 根（验收②）：判定后换链到假凭证目录 → read 拒（
 })
 
 it.each([undefined, 'garbage'])('区外读获批后换链到假凭证目录仍拒（tiers=%s）', async (tiers) => {
-  const home = mkdtempSync(join(tmpdir(), 'bot-p625f1-home-'))
+  const home = tmkdir('bot-p625f1-home-')
   cleanups.push(() => rmSync(home, { recursive: true, force: true }))
   const fakeCred = join(home, '.ssh')
   mkdirSync(fakeCred)
@@ -338,7 +339,7 @@ it('后端拒绝向模型保留 code 前缀和准确原因，不泄漏宿主路�
 //    包装——管线格里包装层先拒，本组证明第二层独立成立）──
 
 it('后端直打：checkedTarget 对区外/NEVER 目标抛 FS_PERMISSION_DENIED，区内照常写入', async () => {
-  const root = mkdtempSync(join(tmpdir(), 'p625f1-backend-'))
+  const root = tmkdir('p625f1-backend-')
   cleanups.push(() => rmSync(root, { recursive: true, force: true }))
   const ws = join(root, 'ws')
   const outside = join(root, 'outside')

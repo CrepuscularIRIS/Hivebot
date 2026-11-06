@@ -5,14 +5,14 @@
 // 联网执行面（wrapper supervisor、slirp、探针差分）在 e2e
 // tests/e2e/request-network.test.ts。
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
+import { readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { claimLivePermit, hashArgv, issuePermit, validateRequest, PERMIT_VERSION } from '../../src/policy/request-net.mjs'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
-const tmkdir = () => mkdtempSync(join(tmpdir(), 'p5-22-unit-'))
 
 describe('hashArgv（与 bwrap-wrap.py 的 json 规范跨语言一致）', () => {
   it('对真实 python3 json.dumps 的值对拍一致（含 unicode 与转义）', () => {
@@ -37,7 +37,7 @@ describe('hashArgv（与 bwrap-wrap.py 的 json 规范跨语言一致）', () =>
 
 describe('issuePermit', () => {
   it('自动创建目录、0600、字段齐全、TTL = ttlMs', () => {
-    const dir = join(tmkdir(), 'network-permits')
+    const dir = join(tmkdir('p5-22-unit-'), 'network-permits')
     const p = issuePermit({ dir, session: 'sess-a', command: 'curl example.com', ttlMs: 60_000 })
     expect(readdirSync(dir)).toEqual([p.name])
     const st = statSync(p.file)
@@ -51,7 +51,7 @@ describe('issuePermit', () => {
   })
 
   it('随机文件名不碰撞（同参数两次签发两个文件）', () => {
-    const dir = join(tmkdir(), 'network-permits')
+    const dir = join(tmkdir('p5-22-unit-'), 'network-permits')
     const a = issuePermit({ dir, session: 's', command: 'c', ttlMs: 1000 })
     const b = issuePermit({ dir, session: 's', command: 'c', ttlMs: 1000 })
     expect(a.name).not.toBe(b.name)
@@ -84,7 +84,7 @@ describe('apply fail loud（缺 permitDir 不加载，fail closed）', () => {
 // argvHash 认领（联网授权不失）。
 describe('claimLivePermit（L-8 R4：原子抢占，单次授权语义）', () => {
   it('命中即抢占（permit-* 改名消失）；同一许可只赢一次；非本会话/非本命令不消耗', () => {
-    const dir = tmkdir()
+    const dir = tmkdir('p5-22-unit-')
     try {
       issuePermit({ dir, session: 's1', command: 'curl a.example' })
       issuePermit({ dir, session: 's2', command: 'curl b.example' })
@@ -101,7 +101,7 @@ describe('claimLivePermit（L-8 R4：原子抢占，单次授权语义）', () =
   })
 
   it('抢占产物可被 wrapper 的 claim_permit 认领联网（真 python3 dry-run 对拍）', () => {
-    const dir = tmkdir()
+    const dir = tmkdir('p5-22-unit-')
     try {
       issuePermit({ dir, session: 'sw', command: 'curl w.example' })
       expect(claimLivePermit(dir, 'sw', 'curl w.example')).toBe(true)

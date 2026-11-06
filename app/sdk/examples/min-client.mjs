@@ -4,7 +4,7 @@
 // Exit code 0 only when both assertions hold.
 //
 // Run (G2-r2 wording): pnpm -C app/sdk exec node examples/min-client.mjs "你好"
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { connect, snapshotFrames } from './lib/client.mjs'
@@ -26,6 +26,8 @@ const prompt = process.argv[2] ?? '你好'
 
 const client = await connect({ baseUrl, token })
 const work = mkdtempSync(join(tmpdir(), 'p2sdk-work-'))
+// T1：正常/异常退出都删自己建的 work 目录（只删这一个路径）
+process.on('exit', () => { try { rmSync(work, { recursive: true, force: true }) } catch (e) { /* 删除失败不阻断退出 */ } })
 const { sessionId } = await client.call('session/create', { request: { cwd: work } })
 console.log(`session ${sessionId}`)
 

@@ -5,8 +5,14 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
+
+// T1：自建临时目录登记，进程退出时删除（.proc.mjs import 不了 TS 登记簿）
+const __t1Dirs = []
+const regTmp = (d) => { __t1Dirs.push(d); return d }
+process.on('exit', () => { for (const d of __t1Dirs) { try { rmSync(d, { recursive: true, force: true }) } catch (e) { /* 删除失败不阻断退出 */ } } })
+
 const sdk = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const root = mkdtempSync(join(tmpdir(), 'bot-p626t-regression-'))
+const root = regTmp(mkdtempSync(join(tmpdir(), 'bot-p626t-regression-')))
 const names = ['tiers-policy', 'w1ap0-matrix', 'guard-escalation']
 const copies = []
 try {

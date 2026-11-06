@@ -6,12 +6,13 @@
 // 的 bash 语义（必问/严格更宽委托/never 拒绝）逐条保留。
 // The plugin's in-runtime wiring (loader row, approval round-trip over $events)
 // is covered end-to-end by tests/e2e/approval.test.ts + tiers-policy.test.ts.
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as plugin from '../../src/policy/shell-ask.mjs'
 import { issuePermit } from '../../src/policy/request-net.mjs'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 interface RecordedListener {
   event: string
@@ -80,7 +81,7 @@ const writeOutDeny = { kind: 'deny', reason: 'p2sdk policy: write-outside-worksp
 
 /** A temp handoff dir + policy-state dir wired as the plugin config would be. */
 function provisionedConfig(state: Record<string, unknown> | 'missing' | 'invalid-json'): { config: object; statePath: string; cleanup: () => void } {
-  const root = mkdtempSync(join(tmpdir(), 'p5-21-unit-'))
+  const root = tmkdir('p5-21-unit-')
   const handoff = join(root, 'handoff')
   const data = join(root, 'data')
   mkdirSync(handoff)
@@ -539,7 +540,7 @@ describe('L-7 O3: request_network pre-execute rejects what execute would reject 
 describe('L-7 O5: a live network permit for this exact command satisfies the bash tier (one card, not two)', () => {
   const SESSION = { header: { id: 'sess-net-1' } }
   const mkPermitDir = (): string => {
-    const dir = mkdtempSync(join(tmpdir(), 'p5w3f1-permit-'))
+    const dir = tmkdir('p5w3f1-permit-')
     cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
     return dir
   }
@@ -622,7 +623,7 @@ describe('L-8 R4: a network permit authorizes exactly one bash pre-execute (atom
   const SESSION = { header: { id: 'sess-r4' } }
   const COMMAND = 'printf x >> log.txt; curl https://example.com'
   const mkPermitDir = (): string => {
-    const dir = mkdtempSync(join(tmpdir(), 'p5w3f3-permit-'))
+    const dir = tmkdir('p5w3f3-permit-')
     cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
     return dir
   }

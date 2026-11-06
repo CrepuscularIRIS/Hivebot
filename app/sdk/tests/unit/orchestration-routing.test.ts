@@ -1,11 +1,12 @@
 import { createRequire } from 'node:module'
 import { createHash } from 'node:crypto'
-import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { registerRoutingPrompt, ROUTING_PROMPT, ROUTING_SECTION } from '../../src/orchestration/routing-prompt.mjs'
+import { tmkdir } from '../support/tmp-sweep.ts'
 
 const require = createRequire(realpathSync(new URL('../../node_modules/@deepseek-ai/dsh-plugin-market/lib/index.js', import.meta.url)))
 const { Context } = await import(pathToFileURL(require.resolve('@deepseek-ai/cordis')).href)
@@ -23,7 +24,7 @@ describe('orchestration routing section on installed SystemPrompt', () => {
   const prompt = async (agent?: { ctx: any }) => renderPrompt(await ctx.systemPrompt.assemble(agent ? { scope: scopeOf(agent.ctx) } : {}))
 
   beforeEach(async () => {
-    dir = mkdtempSync(join(tmpdir(), 'bot-p622-routing-'))
+    dir = tmkdir('bot-p622-routing-')
     ctx = new Context()
     await ctx.plugin(SystemPrompt, {})
     agents = []

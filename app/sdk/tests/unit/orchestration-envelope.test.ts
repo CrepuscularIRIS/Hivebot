@@ -4,10 +4,11 @@
 // tools/pre-execute 且 prepend（顺序由 live 差分格证，这里只钉旗标）。
 // live 用例（真 Loader + P5-06 矩阵子集复跑）在 orchestration-envelope-live.test.ts。
 import { createRequire } from 'node:module'
-import { mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { tmkdir } from '../support/tmp-sweep.ts'
 import {
   COORDINATOR_TOOLS,
   DELEGATION_TOOLS,
@@ -103,7 +104,7 @@ describe('P6-14 enumerateInstalledEntries（清单从已装注册表枚举）', 
 
 describe('P6-14 registerEnvelope（接线）', () => {
   const bootGuard = (bots?: Record<string, { createdBy: string }>) => {
-    const dir = mkdtempSync(join(tmpdir(), 'bot-p614-unit-'))
+    const dir = tmkdir('bot-p614-unit-')
     if (bots) writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots }))
     let listener: { fn: (exec: any, next: () => any) => Promise<any>, prepend?: boolean } | undefined
     const ctx = {
@@ -146,7 +147,7 @@ describe('P6-14 registerEnvelope（接线）', () => {
   })
 
   it('④ 回合中 worker 被写进 bots.json 后立即生效（每次 execute 重读，不加缓存窗口）', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'bot-p614-unit-'))
+    const dir = tmkdir('bot-p614-unit-')
     let listener: ((exec: any, next: () => any) => Promise<any>) | undefined
     const ctx = { on: (_n: string, fn: any) => { listener = fn; return () => {} } }
     registerEnvelope(ctx as any, { config: { dataDir: dir } })
@@ -160,7 +161,7 @@ describe('P6-14 registerEnvelope（接线）', () => {
   // 省略 bots 键 = 合法零 worker（确认非 worker），unknown 仅剩缺失 / 损坏 /
   // version 不符。
   it('⑤ C-1 fail closed：bots.json 缺失 / 损坏 / version 不符时，任意会话（含陌生 id）的 subagent / 后台入口全拒；合法零 worker 文档（省略 bots 键）主 bot 放行', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-unit-'))
+    const dir = tmkdir('bot-p614f2-unit-')
     let listener: ((exec: any, next: () => any) => Promise<any>) | undefined
     const ctx = { on: (_n: string, fn: any) => { listener = fn; return () => {} } }
     registerEnvelope(ctx as any, { config: { dataDir: dir } })
@@ -248,7 +249,7 @@ describe('P6-14.f1 workerRestrictDeny / applyWorkerRestriction（restrict 拒绝
 describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', () => {
   /** fake ctx：agents.list 引导 + agent/created / agent/disposed 监听 + 全局工具表。 */
   const boot = (bots: Record<string, { createdBy: string }>, liveAgentIds: string[] = [], registry: string[] = [...RESTRICT_TOOLS, 'bash']) => {
-    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f1-unit-'))
+    const dir = tmkdir('bot-p614f1-unit-')
     writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots }))
     const listeners = new Map<string, Array<(payload: any) => void>>()
     const warns: string[] = []
@@ -301,7 +302,7 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', () 
   })
 
   it('④ restrict 抛错不外抛（agent/created 是 serial listener，失败会杀会话创建），logger.warn 记一行', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f1-unit-'))
+    const dir = tmkdir('bot-p614f1-unit-')
     writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: { w1: { createdBy: 'm1' } } }))
     const listeners = new Map<string, Array<(payload: any) => void>>()
     const warns: string[] = []
@@ -319,7 +320,7 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', () 
   })
 
   it('⑤ f2 C-1 fail closed：bots.json 不可读 → 所有会话按 worker 挂 restrict（身份不可判定 ≠ 非 worker）', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f1-unit-')) // 无 bots.json
+    const dir = tmkdir('bot-p614f1-unit-') // 无 bots.json
     const listeners = new Map<string, Array<(payload: any) => void>>()
     const restricted: string[] = []
     const ctx = {
@@ -345,7 +346,7 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', () 
     // 普通（非 subagent）session 创建不受影响
     expect(() => w.emit('session/created', { header: {} })).not.toThrow()
     // 身份不可判定（文件坏）→ fail closed：任何 subagent 创建都拒（宁可误伤）
-    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-unit-')) // 无 bots.json
+    const dir = tmkdir('bot-p614f2-unit-') // 无 bots.json
     const listeners = new Map<string, Array<(payload: any) => void>>()
     const ctx = {
       agents: { list: () => [] },
@@ -358,7 +359,7 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', () 
   })
 
   it('⑧ f2 C-2 谱系纵深：bootstrap list 里已 live 的 worker 子代理挂 restrict（历史残留不 fail 引导，工具表仍收窄）', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-unit-'))
+    const dir = tmkdir('bot-p614f2-unit-')
     writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {}, bots: { w1: { createdBy: 'm1' } } }))
     const restricted: string[] = []
     const mkAgent = (id: string, parent?: string) => ({
@@ -380,7 +381,7 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', () 
   // （CONTRACT v1.5 §3.1 决策 31），冷启动在 healthy 文档下建会话不再有 unknown
   // 窗口——bootstrap / agent/created 都不挂 restrict。
   it('⑨ f3 合法零 worker 文档（省略 bots 键）→ bootstrap 与 agent/created 均不挂 restrict（主 bot 工具表不受影响）', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f3-unit-'))
+    const dir = tmkdir('bot-p614f3-unit-')
     writeFileSync(join(dir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: 'm1', recipes: {} }))
     const restricted: string[] = []
     const mkAgent = (id: string) => ({ id, ctx: { tools: { restrict: () => { restricted.push(id); return () => {} } } } })
@@ -401,7 +402,7 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', () 
   // 恢复为确认非 worker 后撤销（sweep 挂 session/created / agent/created /
   // tools/pre-execute 三个已有事件点，SDK 观察不到 main 的写盘）。真 worker 不误撤。
   it('⑩ f3 恢复撤销：unknown 窗口挂的 restrict 在文件恢复健康后撤销（agent/created / tools/pre-execute 两个触发点）；真 worker 不撤', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f3-unit-')) // 无 bots.json → unknown
+    const dir = tmkdir('bot-p614f3-unit-') // 无 bots.json → unknown
     const restricted: string[] = []
     const lifted: string[] = []
     const mkAgent = (id: string) => ({ id, ctx: { tools: { restrict: () => { restricted.push(id); return () => lifted.push(id) } } } })
@@ -458,7 +459,7 @@ describe('P6-14.f1 registerWorkerRestriction（agent 生命周期接线）', () 
 
 describe('P6-14.f2 resolveWorkerStatus（三态身份，fail closed）', () => {
   const mkDir = (content?: string) => {
-    const dir = mkdtempSync(join(tmpdir(), 'bot-p614f2-st-'))
+    const dir = tmkdir('bot-p614f2-st-')
     if (content !== undefined) writeFileSync(join(dir, 'bots.json'), content)
     return dir
   }

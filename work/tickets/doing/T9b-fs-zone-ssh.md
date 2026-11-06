@@ -5,6 +5,7 @@
 > 分支 / 作业目录：feat/T9b @ /tmp/bot-wt/T9b
 > claimed：2026-11-06 16:5x @ f01eb580+（T9af 合并后主线）
 > accepted：
+> 终验：2026-11-06 17:1x manager **不通过（第 1 次）** @ fefd99b3——M3/M4/M5 三刀存活、③ 白名单空断言、每调用 policy 与 applyZoneRecheck 偏设计、D2 guard 远端根与 ssh-product ② 未交付（转单时验收漏抄）。返修 open/T9b2 → open/T9b3（同分支顺序施工），见 receipts/T9b.md §6
 
 ## 目标
 ssh 模式的文件工具安全闭环：远端五写入口经 zoneGuard 拒区外/NEVER（P6-25 决策 37 的 ssh 版）；guard 拥有远端根（remoteHome 硬 NEVER + 软遮蔽 + helper 安装目录写保护）；containment 在 ssh 模式纯词法（宿主 stat 对远端路径无意义）；remoteHome 启动校验 fail loud。

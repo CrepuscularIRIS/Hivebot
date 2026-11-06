@@ -118,3 +118,7 @@
 2026-11-06 断言载体要装得下被断言的东西（T9ab ⑧/⑪）：⑧ 用 `requests.jsonl.userTexts` 断言「工具面不含 workflow」，可 fake 根本不记工具名——删光 PTC 禁行照绿；⑪ 用「kill 前」做 `/tmp/dsh-ssh-*` 基线，目录早在建会话时就有，`added` 恒空。验「不含 X」的格一律配正对照（同一载体里能看到一个**应该在**的东西，如 `bash`）和一个「把 X 放回来就红」的变异。另：launcher 的 dsh 是 `detached: true`（T-13，故意让 launcher 崩了 dsh 照活），SIGKILL launcher 不会带走 dsh/ssh master——要证强杀残留就杀 dsh 本身。
 
 2026-11-06 「孤儿 = ppid 1」在本机不成立（T9ac ⑪）：桌面会话里的孤儿进程会被 `systemd --user`（child subreaper，本机 pid 2050）收养，`ppid===1` 计数恒为 0，断言永远绿。查「某进程名下的子进程退净没有」要在 kill 前记下它们的 PID 集合（例如夹具的 `server.clientPids()` 差集），先断言集合非空，kill 后再断言这些 PID 都不在了。基线同样要取在被测对象创建之前：dsh-ssh 在构造时就 mkdtemp，所以 `/tmp/dsh-ssh-*` 的基线要在 launchRuntime 之前取。
+
+2026-11-06 「防漂移」白名单格要拿**全集**去比，不能在已知名单里找新名字（T9b ③）：`upstream.filter((m) => WRITES.includes(m) && …)` 只会在五个已知写入口里找，上游新增的 `appendText` 永远被过滤掉，格恒绿。正确写法 = 上游原型全部方法名减去 READS ∪ WRITES 必须为空；配一刀证伪（从 READS 删一个名字 → 红）。同单另一课：工单「目标」与「验收」要逐项对得上——转单时验收漏抄了 DESIGN 的 ssh-product ②，施工就照窄单做完，guard 远端根整段没落。
+
+2026-11-06 JS 块注释里写 glob 会被 `*/` 提前闭合（T9b never-roots：`.config/**/credentials*` → SyntaxError 裸 token）。注释里的通配路径用行注释 `//`，或写成 `.config/<任意层>/credentials*`。

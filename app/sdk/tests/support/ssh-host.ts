@@ -166,8 +166,6 @@ export async function startSshHost(): Promise<SshHost> {
     }
   }
 
-  const dshDirsBefore = readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-'))
-
   try {
     writeFileSync(join(binDir, 'ssh'), [
       '#!/bin/sh',
@@ -216,10 +214,16 @@ export async function startSshHost(): Promise<SshHost> {
     )
     await Promise.all(fibers)
     const hello = await ctx.ssh.ready
-    // T2c：dsh-ssh 写死 /tmp/dsh-ssh-*（清理只挂在 dispose 上）——ready 后把本轮新建的
-    // 收进 H1 登记簿，正常退出/exit 钩子可清；SIGKILL 类硬杀仍会留一个空 socket 目录（已记回执存疑）
-    for (const name of readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-') && !dshDirsBefore.includes(n))) {
-      trackTmpDir(join('/tmp', name))
+    // T2c：dsh-ssh 写死 /tmp/dsh-ssh-*（清理只挂在 dispose 上）——把能归属到本实例的
+    // 目录收进 H1 登记簿（exit 钩子可清）。归属判据＝本夹具 bin/ssh 登记的客户端 PID
+    // 命令行里的 -S 控制套接字路径；不能用全局 /tmp 差集（会把并发实例的目录误删，复核轮 CONFIRMED/高）
+    const clientPids = readFileSync(join(dir, 'ssh-client.pids'), 'utf8')
+      .split('\n').map((x) => Number(x.trim())).filter((x) => Number.isInteger(x) && x > 0)
+    for (const pid of [...new Set(clientPids)]) {
+      try {
+        const m = readFileSync(`/proc/${pid}/cmdline`, 'utf8').match(/-S\u0000(\/tmp\/dsh-ssh-[^\u0000/]+)\//)
+        if (m) trackTmpDir(m[1])
+      } catch { /* 进程已退出 */ }
     }
     return {
       dir, port, mark, remoteHome, workspace, ctx, sshdPid: sshdChild.pid!,

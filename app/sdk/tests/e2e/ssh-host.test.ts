@@ -136,11 +136,23 @@ describe('T2 L8-a 私有 sshd 夹具 + dsh ssh 族', () => {
         .split('\n').map((x) => Number(x.trim())).filter((x) => Number.isInteger(x) && x > 0))]
       expect(pids.length).toBeGreaterThan(0)
       for (const pid of pids) { try { process.kill(pid, 'SIGKILL') } catch { /* 已退出 */ } }
-      // 传输断开后同一路径读取必须报 dsh-ssh 的断连错误——不得成功、不得 TypeError
-      const error = await host2.ctx.fs.readText(p).then(() => null, (e: unknown) => e)
+      // 传输断开后同一路径读取必须以传输类错误拒绝——不得成功、不得 TypeError。
+      // 杀完立刻读可能落在断连完成前（拿到调度期 EPIPE，复核轮 CONFIRMED/中），轮询至明确断连错
+      const transportError = /SSH helper disconnected|SSH .*(closed|disconnect)|EPIPE|ECONNRESET/i
+      let sawSuccess = false
+      let error: unknown = null
+      const deadline = Date.now() + 5000
+      while (Date.now() < deadline) {
+        const outcome = await host2.ctx.fs.readText(p).then(() => 'ok' as const, (e: unknown) => e)
+        if (outcome === 'ok') { sawSuccess = true; break }
+        error = outcome
+        if (transportError.test(String((outcome as Error)?.message ?? outcome))) break
+        await new Promise((r) => setTimeout(r, 100))
+      }
+      expect(sawSuccess).toBe(false) // 本地 fs（M1 变异）在这里永远读成功
       expect(error).toBeTruthy()
       expect(error).not.toBeInstanceOf(TypeError)
-      expect(String((error as Error)?.message ?? error)).toMatch(/SSH helper disconnected|SSH .*(closed|disconnect)/)
+      expect(String((error as Error)?.message ?? error)).toMatch(transportError)
     } finally {
       await host2.stop()
     }

@@ -56,6 +56,7 @@
 7. 连接不重连、不重放（`docs/subsystems/ssh.md` §Process lifetime）：断线后操作报「结果未知」——产品接入时 UI 要能表达。
 8. dsh 文档写明 Web workspace 视图假定宿主文件系统（`ssh/ssh/README.md` §Known Limitations），我们关掉了 web UI 行，影响面待 T4 实测。
 9. **AllowTcpForwarding 与 streamlocal 耦合（T2 实证，2026-11-06）**：OpenSSH 9.6p1 下 `AllowTcpForwarding no` 会拒绝 direct-streamlocal 的 connect（`channel_connect_to_path` 吃 `do_authenticated` 按 FORWARD_LOCAL 装配的许可集；`allow_streamlocal_forwarding yes` 只放行 channel-open）。私有 sshd 夹具必须 `AllowTcpForwarding local`（最小档：direct 方向放行、远端监听仍拒）。见 receipts/T2.md §5.1。
+10. **硬杀留空 `/tmp/dsh-ssh-*` 目录是已接受残留（T2c 裁决，2026-11-06）**：测试进程被 SIGTERM/SIGKILL 时，`setpriv --pdeathsig` 收走 sshd 与 ssh master（端口拒连、无进程），但第 4 条的控制套接字目录无人删，每次留 1 个空 0700 目录。不做启动期清扫：`/tmp/dsh-ssh-*` 不按进程归属命名，扫陈年目录会碰别的测试或将来产品连接的目录。夹具只登记「本实例 ssh 客户端命令行 `-S` 指向的目录」（@01b4dc6），exit 路径清零。产品侧同样存在（宿主被强杀时），T5 设计时一并看。
 
 ## 4. 工单计划
 
@@ -64,14 +65,14 @@
 | 工单 | 内容 | 状态 |
 |---|---|---|
 | T1 | P5-H5a：unit / support / market / examples 裸 mkdtemp → tmkdir，残留计数 RED | **done**（accepted 2026-11-06 @ d9cd458，经理重跑 start 36 绿残留 0；可合并） |
-| T2 | L8-a：私有 sshd 测试夹具 + 装 dsh ssh 族 + 连接级验收 | doing（6/6 绿，但端口/fs/helper/快照断言有空洞、夹具读真实 .bashrc 且中断不收 sshd；等 T2b+T2c） |
-| T2b | T2 测试侧返修：端口只认 ECONNREFUSED、③b 断连后 fs 报传输错、⑥ stop 前必见 helper/master、快照加 mode/ctime/ino、⑤ 注释、三变异各红一格 | open |
-| T2c | T2 夹具侧返修：单条 SetEnv 带 HOME + cd remote-home、setpriv --pdeathsig、setup 失败回滚、strace 0 次真实启动文件、三种中断后端口拒连 | open（等 T2b 提交） |
-| T3 | L4-a：0.78.1 skill 生命周期 RE（派 reverse-engineer） | doing（Q2/Q3/Q6 锚点抽查通过；Q6 投递结论越读，等 T3b） |
-| T3b | RE-skills.md Q6 投递方式降为推断 + 两条反证计数 + 影响节第 6 条收窄 | open |
-| T4 | L8-b：headless 真组合 + llm-replay，bash/写文件经 ssh 落到远端 | 计划（等 T2） |
+| T2 | L8-a：私有 sshd 测试夹具 + 装 dsh ssh 族 + 连接级验收 | **done**（accepted 2026-11-06 @ 01b4dc6，含 T2b/T2c；ssh-host 10/10、M1/M2 各红一格、strace 0、三种中断端口拒连；可合并 feat/T2 → 集成分支） |
+| T2b | T2 测试侧返修：端口只认 ECONNREFUSED、③b 断连后 fs 报传输错、⑥ stop 前必见 helper/master、快照加 mode/ctime/ino、⑤ 注释、三变异各红一格 | **done**（accepted 2026-11-06 @ 01b4dc6） |
+| T2c | T2 夹具侧返修：单条 SetEnv 带 HOME + cd remote-home、setpriv --pdeathsig、setup 失败回滚、strace 0 次真实启动文件、三种中断后端口拒连 | **done**（accepted 2026-11-06 @ 01b4dc6；硬杀空目录残留豁免，见 §3 第 10 条） |
+| T3 | L4-a：0.78.1 skill 生命周期 RE（派 reverse-engineer） | **done**（accepted 2026-11-06，含 T3b） |
+| T3b | RE-skills.md Q6 投递方式降为推断 + 两条反证计数 + 影响节第 6 条收窄 | **done**（accepted 2026-11-06 @ 316b6c9，已在集成分支） |
+| T4 | L8-b：headless 真组合 + llm-replay，bash/写文件经 ssh 落到远端 | 计划（T2 已验收，合并后可开） |
 | T5 | L8-c：architect 出 `DESIGN-ssh-composition.md`（与 fs-zone/guard/shell-ask/P6 cwd 的组合；进程级 vs preset isolate） | 计划（等 T4） |
-| T6 | L4-b：skill 根收口（关 `~/.agents` 泄漏）+ bot 在对话里存 skill 的真组合 e2e | 计划（等 T3） |
+| T6 | L4-b：skill 根收口（关 `~/.agents` 泄漏）+ bot 在对话里存 skill 的真组合 e2e | 计划（T3 已验收，可开） |
 | T7 | L4-c：账户库 + 按 bot 启用（main API + UI，截图对 0.78.1） | 计划（等 T6） |
 | T8 | P5-H5b：e2e/*.test.ts 裸 mkdtemp | 计划（等 T1） |
 

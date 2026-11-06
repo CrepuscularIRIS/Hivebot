@@ -1,0 +1,11 @@
+{
+  "removed_own_disposable_inputs": [
+    "f1-verify-source",
+    "f1-verify-home",
+    "f1-verify-tmp",
+    "f1-verify-coverage-sdk-child/tmp"
+  ],
+  "head": "de36bbc587d604c2672ede53c32d4554973082ec",
+  "status": "",
+  "official_json_and_logs_preserved": true
+}

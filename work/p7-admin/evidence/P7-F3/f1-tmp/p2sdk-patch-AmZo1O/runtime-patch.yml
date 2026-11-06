@@ -1,0 +1,143 @@
+- insert:
+    - id: p2sdk-handoff
+      name: 'file:///tmp/bot-wt/P7-F3/app/sdk/profile/plugins/handoff.mjs'
+      config:
+        dir: '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-Gei6ex'
+- id: sandbox
+  config:
+    runnerCommand: ['/usr/bin/python3', '-I', '/tmp/bot-wt/P7-F3/app/sdk/sandbox/bwrap-wrap.py', '--home', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-home', '--home', '/home/lingxufeng', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-home', '--mask', '/home/lingxufeng', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-patch-AmZo1O', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-Gei6ex', '--mask', '/run/user/1000', '--mask', '/etc/ppp/chap-secrets', '--mask', '/etc/ppp/pap-secrets', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-TiMLG4', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-2UjAVd', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-YZYKzH', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-l9rAVB', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-sJY6De', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-5AWhBE', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-TRAyq7', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-vDpIDI', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-0qYDX9', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-3hJIa1', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JImr1d', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-8ggr43', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-n2uLWl', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-1e9BfB', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-7v65qd', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-CuW95w', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-VnaS6f', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JUYizR', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-SqDNjX', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-RYdgqT', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-teVBww', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-G0Unzs', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-xDaCFr', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-FLWwfd', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JXlWZ2', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-Kvz6MK', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-WS2YL6', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-nndgcr', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-3fs2qF', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-FvpvoA', '--mask', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-klWkzr', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-home', '--never', '/home/lingxufeng', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-patch-AmZo1O', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-Gei6ex', '--never', '/run/user/1000', '--never', '/etc/ppp/chap-secrets', '--never', '/etc/ppp/pap-secrets', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-TiMLG4', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-2UjAVd', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-YZYKzH', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-l9rAVB', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-sJY6De', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-5AWhBE', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-TRAyq7', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-vDpIDI', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-0qYDX9', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-3hJIa1', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JImr1d', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-8ggr43', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-n2uLWl', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-1e9BfB', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-7v65qd', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-CuW95w', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-VnaS6f', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JUYizR', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-SqDNjX', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-RYdgqT', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-teVBww', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-G0Unzs', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-xDaCFr', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-FLWwfd', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JXlWZ2', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-Kvz6MK', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-WS2YL6', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-nndgcr', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-3fs2qF', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-FvpvoA', '--never', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-klWkzr', '--never', '/home/lingxufeng/.ssh', '--never', '/home/lingxufeng/.gnupg', '--never', '/home/lingxufeng/.npmrc', '--never', '/home/lingxufeng/.config/gh', '--never', '/home/lingxufeng/.grokbot', '--never', '/home/lingxufeng/.claude', '--never', '/home/lingxufeng/.claude-kimi', '--never', '/home/lingxufeng/.claude.json', '--never', '/home/lingxufeng/miniconda3/.condarc', '--never', '/home/lingxufeng/miniconda3/etc/aau_token', '--tool', '/home/lingxufeng/miniconda3', '--tool', '/home/lingxufeng/.local/bin', '--tool', '/home/lingxufeng/.npm-global', '--policy', '/tmp/bot-wt/P7-F3/app/sdk', '--policy', '/tmp/bot-wt/P7-F3/.claude', '--policy', '/home/lingxufeng/bot/.git/worktrees/P7-F3', '--permit-root', '/home/lingxufeng/.config/pbots-ui/network-permits', '--slirp', '/tmp/bot-wt/P7-F3/app/sdk/sandbox/bin/slirp4netns']
+    runnerFailureSignatures: ['bwrap: ']
+- id: fs-sandbox
+  disabled: true
+- insert:
+    - id: p2sdk-fs-zone
+      name: 'file:///tmp/bot-wt/P7-F3/app/sdk/src/policy/fs-zone.mjs'
+      config:
+        neverRoots:
+        - '/home/lingxufeng/.ssh'
+        - '/home/lingxufeng/.gnupg'
+        - '/home/lingxufeng/.npmrc'
+        - '/home/lingxufeng/.config/gh'
+        - '/home/lingxufeng/.grokbot'
+        - '/home/lingxufeng/.claude'
+        - '/home/lingxufeng/.claude-kimi'
+        - '/home/lingxufeng/.claude.json'
+        - '/home/lingxufeng/miniconda3/.condarc'
+        - '/home/lingxufeng/miniconda3/etc/aau_token'
+        - '/proc'
+        - '/run/user/1000'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-patch-AmZo1O'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-Gei6ex'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-TiMLG4'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-2UjAVd'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-YZYKzH'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-l9rAVB'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-sJY6De'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-5AWhBE'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-TRAyq7'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-vDpIDI'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-0qYDX9'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-3hJIa1'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JImr1d'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-8ggr43'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-n2uLWl'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-1e9BfB'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-7v65qd'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-CuW95w'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-VnaS6f'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JUYizR'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-SqDNjX'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-RYdgqT'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-teVBww'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-G0Unzs'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-xDaCFr'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-FLWwfd'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JXlWZ2'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-Kvz6MK'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-WS2YL6'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-nndgcr'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-3fs2qF'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-FvpvoA'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-klWkzr'
+        - '/etc/ppp/chap-secrets'
+        - '/etc/ppp/pap-secrets'
+        - '/home/lingxufeng/.config/pbots-ui/policy-state.json'
+        - '/home/lingxufeng/.config/pbots-ui/standing-grants.json'
+- id: p2sdk-fs-guard
+  config:
+    roots:
+      hardRoots:
+        - '/home/lingxufeng/.ssh'
+        - '/home/lingxufeng/.gnupg'
+        - '/home/lingxufeng/.npmrc'
+        - '/home/lingxufeng/.config/gh'
+        - '/home/lingxufeng/.grokbot'
+        - '/home/lingxufeng/.claude'
+        - '/home/lingxufeng/.claude-kimi'
+        - '/home/lingxufeng/.claude.json'
+        - '/home/lingxufeng/miniconda3/.condarc'
+        - '/home/lingxufeng/miniconda3/etc/aau_token'
+        - '/proc'
+        - '/run/user/1000'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-patch-AmZo1O'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-Gei6ex'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-TiMLG4'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-2UjAVd'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-YZYKzH'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-l9rAVB'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-sJY6De'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-5AWhBE'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-TRAyq7'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-vDpIDI'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-0qYDX9'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-3hJIa1'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JImr1d'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-8ggr43'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-n2uLWl'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-1e9BfB'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-7v65qd'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-CuW95w'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-VnaS6f'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JUYizR'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-SqDNjX'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-RYdgqT'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-teVBww'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-G0Unzs'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-xDaCFr'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-FLWwfd'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-JXlWZ2'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-Kvz6MK'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-WS2YL6'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-nndgcr'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-3fs2qF'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-FvpvoA'
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-klWkzr'
+        - '/etc/ppp/chap-secrets'
+        - '/etc/ppp/pap-secrets'
+        - '/home/lingxufeng/.config/pbots-ui/policy-state.json'
+        - '/home/lingxufeng/.config/pbots-ui/standing-grants.json'
+      dataMaskRoots:
+        - '/run/user/1000'
+        - '/etc/ppp/chap-secrets'
+        - '/etc/ppp/pap-secrets'
+      homes:
+        - '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-home'
+        - '/home/lingxufeng'
+      toolchainDirs:
+        - '/home/lingxufeng/miniconda3'
+        - '/home/lingxufeng/.local/bin'
+        - '/home/lingxufeng/.npm-global'
+      policyRoots:
+        - '/tmp/bot-wt/P7-F3/app/sdk'
+        - '/tmp/bot-wt/P7-F3/.claude'
+        - '/home/lingxufeng/bot/.git/worktrees/P7-F3'
+- id: p2sdk-shell-ask
+  config:
+    handoff: '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp/p2sdk-handoff-Gei6ex'
+    permitDir: '/home/lingxufeng/.config/pbots-ui/network-permits'
+    policyStatePaths:
+        - '/home/lingxufeng/.config/pbots-ui/policy-state.json'
+- id: p2sdk-request-net
+  config:
+    permitDir: '/home/lingxufeng/.config/pbots-ui/network-permits'
+    ttlMs: 60000

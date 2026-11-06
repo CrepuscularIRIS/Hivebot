@@ -1,0 +1,36 @@
+ENV {'HOME': '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-home', 'TMPDIR': '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp', 'PATH': '/home/lingxufeng/.npm-global/bin:/usr/bin:/bin', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/tmp/bot-P7-F3-no-dbus'}
+COMMAND ['/home/lingxufeng/.npm-global/bin/pnpm', '-C', '/tmp/bot-wt/P7-F3/app/sdk', '--config.verify-deps-before-run=false', 'exec', 'vitest', 'run', '--config', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-sdk-child.config.mjs', '--maxWorkers=1', '--no-file-parallelism', 'tests/unit/p7-host-recovery.test.ts', '-t', 'P7-F3 real Loader control stream']
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F3/app/sdk[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m tests/unit/p7-host-recovery.test.ts [2m([22m[2m21 tests[22m[2m | [22m[33m19 skipped[39m[2m)[22m[33m 4118[2mms[22m[39m
+   [32m✓[39m P7-F3 real Loader control stream [2m(2)[22m
+     [33m[2m✓[22m[39m standalone P6 exposes no recovery control without launcher opt-in[33m 2065[2mms[22m[39m
+     [33m[2m✓[22m[39m binds native stream and unary RPC to the same Peer; reconnect is not process restart[33m 2050[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[2m | [22m[33m19 skipped[39m[90m (21)[39m
+[2m   Start at [22m 10:51:57
+[2m   Duration [22m 4.67s[2m (tests 97%, transform 1%, import 1%)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|----------------------------------------------------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                              
+-------------------|---------|----------|---------|---------|----------------------------------------------------------------
+All files          |   20.34 |    11.98 |   22.07 |   20.85 |                                                                
+ src               |    2.06 |        0 |       0 |     2.4 |                                                                
+  start.ts         |    2.06 |        0 |       0 |     2.4 | 60-186,202-393,420-859                                         
+ src/admin         |   48.91 |     27.5 |   76.92 |   50.63 |                                                                
+  host.mjs         |   48.91 |     27.5 |   76.92 |   50.63 | 40,42-78,84,112,122-123,137-140                                
+ src/orchestration |   26.55 |     17.2 |      30 |   27.29 |                                                                
+  delivery.mjs     |   17.58 |     6.84 |      15 |   18.66 | 37-82,116-121,126-143,146-213,218                              
+  main-channel.mjs |   38.66 |    28.39 |      40 |    38.7 | 60-86,111-193,272-314                                          
+  report.mjs       |   21.35 |    16.23 |      30 |   22.14 | 22,39-42,56-99,108,120-152,164-177,189,192-196,201-256,270-319 
+-------------------|---------|----------|---------|---------|----------------------------------------------------------------
+ERROR: Coverage for lines (20.85%) does not meet global threshold (80%)
+ERROR: Coverage for functions (22.07%) does not meet global threshold (80%)
+ERROR: Coverage for statements (20.34%) does not meet global threshold (80%)
+ERROR: Coverage for branches (11.98%) does not meet global threshold (80%)
+
+EXIT 1

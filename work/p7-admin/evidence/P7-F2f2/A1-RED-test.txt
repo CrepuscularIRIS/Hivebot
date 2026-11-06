@@ -1,0 +1,120 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F2f2/app/sdk[39m
+
+ [31m❯[39m tests/unit/p7-authority.test.ts [2m([22m[2m57 tests[22m[2m | [22m[31m9 failed[39m[2m | [22m[33m47 skipped[39m[2m)[22m[32m 12[2mms[22m[39m
+   [2m[90m↓[39m[22m classifyOrigin [2m(5)[22m
+     [2m[90m↓[39m[22m user kind → user（人类回合，唯一自主来源；H3 / D-1 子题① 前不给别名）
+     [2m[90m↓[39m[22m goal / schedule → delegated（委托）
+     [2m[90m↓[39m[22m 人类来源别名与未知 kind → delegated：不污染（R2-1 不变）但无自主权（H3）
+     [2m[90m↓[39m[22m 认领过 pbots-worker → tainted（污染优先于一切）
+     [2m[90m↓[39m[22m 无 claim 的回合 → delegated（自主权轴 fail-closed：无来源即无授权）
+   [2m[90m↓[39m[22m AdminTurnOrigin（沿用 P6 TurnOrigin 实例模式） [2m(2)[22m
+     [2m[90m↓[39m[22m 按 agent/回合记录 claim 并分类，默认分类最新回合
+     [2m[90m↓[39m[22m 同回合多来源合并；污染单调；无记录的 agent 是 delegated 不是 tainted
+   [2m[90m↓[39m[22m authorize：词表正例与反例（§3.3） [2m(7)[22m
+     [2m[90m↓[39m[22m 「装 X」正例：动作词 + token 相等目标 → allow，证据指向人类原文
+     [2m[90m↓[39m[22m 词表覆盖七类规范动作名（§3.3 常量不靠模型）
+     [2m[90m↓[39m[22m 同目标异动作：只授权了装，删同目标不获授权 → handoff
+     [2m[90m↓[39m[22m 只提到目标不授权动作：「看看 X 的 issue」不装 X → handoff
+     [2m[90m↓[39m[22m 英文动作词与否定缩写：install 允许 / don't install 拒绝
+     [2m[90m↓[39m[22m 新建人类回合只核动作（新对象无名可对），但否定照样拒
+     [2m[90m↓[39m[22m 重启无目标：动作词由人类原文授权即可
+   [31m❯[39m A1：H1 受限参数不随动作和目标放行 [2m(10)[22m
+     [32m✓[39m 明确批准的改名成功，参数对象不变[32m 2[2mms[22m[39m
+[31m     [31m×[31m 批准 Alice 不批准参数 {"name":"Mallory"}[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m 批准 Alice 不批准参数 {"name":"ALICE"}[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m 批准 Alice 不批准参数 {"name":"Ali"}[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m 批准 Alice 不批准参数 {"name":"Alice","model":"other-model"}[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m 批准 Alice 不批准参数 {"name":"Alice","prompt":"unrequested instructions"}[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m 批准 Alice 不批准参数 {"name":"Alice","cwd":"/unrequested"}[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m 批准 Alice 不批准参数 {"name":"Mallory","model":"other-model","prompt":"unrequested instructions","cwd":"/unrequested"}[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m 另一目标或另一子句里的参数值不能借用[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m 现有 grant 路径同样校验受限参数，合法改名仍成功[39m[32m 1[2mms[22m[39m
+   [2m[90m↓[39m[22m authorize：否定词（§3.3 否定优先） [2m(10)[22m
+     [2m[90m↓[39m[22m 「不要装X，装Y」：X 拒 Y 允许（逗号切分并列指令，目标不跨子句借用）
+     [2m[90m↓[39m[22m 否定在动作前 / 后都拒；换行同样是子句边界
+     [2m[90m↓[39m[22m 同动作同目标正负冲突按否定优先；双重否定不反推肯定
+     [2m[90m↓[39m[22m create 正负冲突不受子句顺序影响，否定压过有效 Mandate
+     [2m[90m↓[39m[22m create 正负冲突不受子句顺序影响，否定压过有效 Mandate
+     [2m[90m↓[39m[22m restart 正负冲突不受子句顺序影响，否定压过有效 Mandate
+     [2m[90m↓[39m[22m restart 正负冲突不受子句顺序影响，否定压过有效 Mandate
+     [2m[90m↓[39m[22m create 正负冲突不受子句顺序影响，否定压过有效 Mandate
+     [2m[90m↓[39m[22m restart 正负冲突不受子句顺序影响，否定压过有效 Mandate
+     [2m[90m↓[39m[22m 引号 / 代码块里的动作指令不授权；引号里的目标值仍是完整值
+   [2m[90m↓[39m[22m authorize：目标匹配（token 相等，非子串） [2m(3)[22m
+     [2m[90m↓[39m[22m 拉丁/数字目标整 token 相等：github 不授权 github-connectors，反之亦然
+     [2m[90m↓[39m[22m 规范化：大小写 / 全半角 / 零宽字符 / 空白归一后仍相等
+     [2m[90m↓[39m[22m CJK 目标在动作子句内匹配；MIN_BOT_NAME_CODEPOINTS 之下一律拒
+   [2m[90m↓[39m[22m authorize：来源与禁区 [2m(4)[22m
+     [2m[90m↓[39m[22m 污染回合一律 deny（已认领 pbots-worker 仍 0 放行）
+     [2m[90m↓[39m[22m 工具结果 / worker 回报不是授权证据：delegated 回合即使传来同词原文也 handoff
+     [2m[90m↓[39m[22m 未知动作名 deny（含 stop——文字停止是 L4 的单独入口，只收紧不授权）
+     [2m[90m↓[39m[22m 禁区参数键（凭证 / 权限 / 审批档位）即便有授权原文也 deny
+   [2m[90m↓[39m[22m authorize：Mandate 路径（单 Mandate 原则） [2m(16)[22m
+     [2m[90m↓[39m[22m 委托回合凭有效 Mandate 放行，证据指向该 Mandate
+     [2m[90m↓[39m[22m 同目标异动作 / 目标不在范围 → handoff（覆盖不完整）
+     [2m[90m↓[39m[22m 单 Mandate 原则：A 有动作无目标 / B 有目标无动作，各自都不放行（无并集入口）
+     [2m[90m↓[39m[22m Mandate 授予本身受 H1：范围项 / 动作不在授予回合人类原文 → handoff（不写入）
+     [2m[90m↓[39m[22m Mandate install 授予同动作同目标正负冲突必须拒绝
+     [2m[90m↓[39m[22m Mandate install 授予同动作同目标正负冲突必须拒绝
+     [2m[90m↓[39m[22m Mandate install 授予同动作同目标正负冲突必须拒绝
+     [2m[90m↓[39m[22m Mandate create 授予同动作同目标正负冲突必须拒绝
+     [2m[90m↓[39m[22m Mandate restart 授予同动作同目标正负冲突必须拒绝
+     [2m[90m↓[39m[22m Mandate 的否定只约束同动作同精确目标，不误拒其他动作或目标
+     [2m[90m↓[39m[22m Mandate 中其他已列范围项有冲突也不能把整份授予当作有效
+     [2m[90m↓[39m[22m 过期 / 撤销 / 形状坏的 Mandate → deny
+     [2m[90m↓[39m[22m Mandate 目标桶随动作走（install→plugins，modify→bots，dispatch→workspaces）
+     [2m[90m↓[39m[22m 人类原文的显式否定压过 Mandate 放行
+     [2m[90m↓[39m[22m 无 Mandate 的委托回合 → handoff（不 deny：普通工具不受连坐，管理转需要你处理）
+     [2m[90m↓[39m[22m 无原文无 Mandate 的人类回合 → handoff（fail-closed）
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 9 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/unit/p7-authority.test.ts[2m > [22mA1：H1 受限参数不随动作和目标放行[2m > [22m批准 Alice 不批准参数 {"name":"Mallory"}
+[41m[1m FAIL [22m[49m tests/unit/p7-authority.test.ts[2m > [22mA1：H1 受限参数不随动作和目标放行[2m > [22m批准 Alice 不批准参数 {"name":"ALICE"}
+[41m[1m FAIL [22m[49m tests/unit/p7-authority.test.ts[2m > [22mA1：H1 受限参数不随动作和目标放行[2m > [22m批准 Alice 不批准参数 {"name":"Ali"}
+[41m[1m FAIL [22m[49m tests/unit/p7-authority.test.ts[2m > [22mA1：H1 受限参数不随动作和目标放行[2m > [22m批准 Alice 不批准参数 {"name":"Alice","model":"other-model"}
+[41m[1m FAIL [22m[49m tests/unit/p7-authority.test.ts[2m > [22mA1：H1 受限参数不随动作和目标放行[2m > [22m批准 Alice 不批准参数 {"name":"Alice","prompt":"unrequested instructions"}
+[41m[1m FAIL [22m[49m tests/unit/p7-authority.test.ts[2m > [22mA1：H1 受限参数不随动作和目标放行[2m > [22m批准 Alice 不批准参数 {"name":"Alice","cwd":"/unrequested"}
+[41m[1m FAIL [22m[49m tests/unit/p7-authority.test.ts[2m > [22mA1：H1 受限参数不随动作和目标放行[2m > [22m批准 Alice 不批准参数 {"name":"Mallory","model":"other-model","prompt":"unrequested instructions","cwd":"/unrequested"}
+[31m[1mAssertionError[22m: expected 'allow' not to be 'allow' // Object.is equality[39m
+[36m [2m❯[22m tests/unit/p7-authority.test.ts:[2m136:60[22m[39m
+    [90m134|[39m     { name: 'Mallory', model: 'other-model', prompt: 'unrequested inst…
+    [90m135|[39m   ])('批准 Alice 不批准参数 %j', (params) => {
+    [90m136|[39m     expect(humanAuth({ ...request, params }).decision).not.toBe('allow…
+    [90m   |[39m                                                            [31m^[39m
+    [90m137|[39m   })
+    [90m138|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/unit/p7-authority.test.ts[2m > [22mA1：H1 受限参数不随动作和目标放行[2m > [22m另一目标或另一子句里的参数值不能借用
+[31m[1mAssertionError[22m: expected 'allow' not to be 'allow' // Object.is equality[39m
+[36m [2m❯[22m tests/unit/p7-authority.test.ts:[2m140:156[22m[39m
+    [90m138|[39m
+    [90m139|[39m   it('另一目标或另一子句里的参数值不能借用', () => {
+    [90m140|[39m     expect(humanAuth({ ...request, humanUtteranceOfGrant: 'rename bot-…
+    [90m   |[39m                                                                                                                                                            [31m^[39m
+    [90m141|[39m   })
+    [90m142|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/unit/p7-authority.test.ts[2m > [22mA1：H1 受限参数不随动作和目标放行[2m > [22m现有 grant 路径同样校验受限参数，合法改名仍成功
+[31m[1mAssertionError[22m: expected 'allow' not to be 'allow' // Object.is equality[39m
+[36m [2m❯[22m tests/unit/p7-authority.test.ts:[2m146:138[22m[39m
+    [90m144|[39m     const mandate = { actions: ['modify'], scopes: { bots: ['bot-22'] …
+    [90m145|[39m     expect(authorize({ turnClass: 'delegated', mandate, action: 'modif…
+    [90m146|[39m     expect(authorize({ turnClass: 'delegated', mandate, action: 'modif…
+    [90m   |[39m                                                                                                                                          [31m^[39m
+    [90m147|[39m   })
+    [90m148|[39m })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m9 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[2m | [22m[33m47 skipped[39m[90m (57)[39m
+[2m   Start at [22m 09:53:02
+[2m   Duration [22m 218ms[2m (transform 60%, tests 15%, setup 10%, import 10%, worker 4%)[22m
+

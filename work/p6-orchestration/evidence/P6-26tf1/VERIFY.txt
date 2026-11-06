@@ -1,0 +1,26 @@
+verdict: PASS
+commit: 1ffdce19a0c16f909002a6fbc988e3819fa56db6
+范围：P6-26t.f1 独立定向验收，非 SDK 全量/产品整体验收。2026-11-05 实跑。
+工作树：/tmp/bot-wt/P6-26tf1；验收前后 HEAD 相同，git status --porcelain 为空。
+先读主仓 work/LEARNINGS.md、docs/harness/PROTOCOL.md；读分支 PLAN 和主仓恢复版 PLAN 第 71 行。
+
+验收项 | 结果 | 证据
+仅适配旧 workflow 测试，不改产品/档位 | PASS | source-check.log：HEAD^..HEAD 仅 app/sdk/tests/e2e/subagent-policy.test.ts，10 插入/2 删除；diff --check exit=0。
+workflow 根调用先等 approval/request，断言 toolName=workflow，allowed-once 后才等 child | PASS | 差异及 subagent-policy.log；workflow 用例 2607ms。
+子代理安全断言未删除/放宽 | PASS | 文件 280-284 行保留：子代理写文件不存在、child 审批请求数=0；三种委派均实跑通过。
+根 bash 仍出审批卡，拒绝后不落盘 | PASS | 文件 294-299 行断言保留；三种委派用例每次均执行 assertRootStillAsks。
+额外坏路径 | PASS | process-tiers.log：missing state 拒绝不执行；corrupt tier fail closed；paused/restored 与旧会话 runtime reload 均通过。
+
+命令（共同前缀：env -i PATH="$PATH" HOME=/tmp/bot-P6-26tf1/home TMPDIR=/tmp/bot-P6-26tf1/tmp CI=1）：
+1. pnpm -C /tmp/bot-wt/P6-26tf1/app/sdk install --frozen-lockfile
+   exit=0；完整输出 install.log。
+2. /usr/bin/time -v pnpm -C /tmp/bot-wt/P6-26tf1/app/sdk test tests/e2e/subagent-policy.test.ts --maxWorkers=1 --no-file-parallelism
+   exit=0；1 file / 3 passed；wall 8.78s，max RSS 344168KB；完整输出 subagent-policy.log。
+3. /usr/bin/time -v pnpm -C /tmp/bot-wt/P6-26tf1/app/sdk test tests/e2e/process-tiers.test.ts --maxWorkers=1 --no-file-parallelism
+   exit=0；1 file / 8 passed / 1 skipped；wall 13.60s，max RSS 357816KB；完整输出 process-tiers.log。
+   skip 是仅 P626T_BASELINE=1 才启用的未修复基线阳性对照，不计本次通过项。
+
+以上为 fake/scripted provider + 真实 launcher/审批服务/PTC 子进程测试，不是真模型评测，不使用 GLM API。
+本任务只改测试，无独立 build 脚本；未声称全量测试/覆盖率/UI 验收通过。
+全程隔离 HOME/TMPDIR，env -i 未继承真实凭证；清理由测试框架管理自身 spawn 子进程。未触碰 P6-24 工作树。
+新问题：无（定向范围内）。

@@ -1,0 +1,13 @@
+Already up to date
+Done in 310ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/P7-F3/app/sdk
+
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  09:30:59
+   Duration  264ms (tests 51%, transform 27%, import 16%, setup 5%, worker 2%)
+
+
+EXIT_CODE=0

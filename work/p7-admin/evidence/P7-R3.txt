@@ -1,0 +1,1103 @@
+{
+  "task": "P7-R3",
+  "base": "fb1517a6c5785f01d556d6324313b904a083f8c0",
+  "scope": "installed host RPC; native sessions + createdBy fixture, NOT M3/UI deletion",
+  "sourceMirrorDigest": "be51f12be121905f603e2438f362fbe4fa08d9f62427424c7c3061c52b63307c",
+  "checks": [
+    "both ordinary-session worker fixtures have native persisted history",
+    "session/not-found refusal",
+    "root and subdir native sessions archived",
+    "archive retains root history byte projection",
+    "archive retains subdir history byte projection",
+    "installed-launcher SDK source mirror unchanged through probe"
+  ],
+  "observations": [],
+  "stages": [
+    {
+      "label": "first",
+      "ready": true,
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "inventoryBefore": [
+    {
+      "path": ".",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden/keep",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "e83e0ca964304979aba0d46a9ce6d38222d3623931b0e8a53afa9df7c8411bbd"
+    },
+    {
+      "path": "binary.bin",
+      "type": "file",
+      "bytes": 7,
+      "sha256": "02c34e9c438089b59c3c005c49f76b87555a574215b190d4d05723e24abf34e5"
+    },
+    {
+      "path": "empty",
+      "type": "directory"
+    },
+    {
+      "path": "link",
+      "type": "symlink",
+      "target": "subdir/中文.txt"
+    },
+    {
+      "path": "subdir",
+      "type": "directory"
+    },
+    {
+      "path": "subdir/中文.txt",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "4678af99c78964f0580907ff659e3869ce298e04ac3feed828f96928b584cb7d"
+    }
+  ],
+  "completed": false,
+  "error": "Error: session/list failed: {\"code\":\"gateway/arguments-invalid\",\"message\":\"typert gateway: session/list: args fields do not match the descriptor: missing \\\"_request\\\"\",\"details\":{\"endpoint\":\"session/list\"}}",
+  "cleanup": "only owned launcher stopped; only unique probe root removed"
+}
+
+PROBE_EXIT=1
+{
+  "task": "P7-R3",
+  "base": "fb1517a6c5785f01d556d6324313b904a083f8c0",
+  "scope": "installed host RPC; native sessions + createdBy fixture, NOT M3/UI deletion",
+  "sourceMirrorDigest": "be51f12be121905f603e2438f362fbe4fa08d9f62427424c7c3061c52b63307c",
+  "checks": [
+    "both ordinary-session worker fixtures have native persisted history",
+    "session/not-found refusal",
+    "root and subdir native sessions archived",
+    "archive retains root history byte projection",
+    "archive retains subdir history byte projection",
+    "archived late followup invokes zero model requests",
+    "unarchive retains history",
+    "workspace/session-active refusal",
+    "refused active archive leaves archive ids unchanged",
+    "stop provider observes archive already committed",
+    "stopped archived session late followup has zero model requests",
+    "installed-launcher SDK source mirror unchanged through probe"
+  ],
+  "observations": [
+    {
+      "kind": "session-list-shape",
+      "keys": [
+        "items"
+      ],
+      "archivedVisible": true
+    }
+  ],
+  "stages": [
+    {
+      "label": "first",
+      "ready": true,
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "inventoryBefore": [
+    {
+      "path": ".",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden/keep",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "e83e0ca964304979aba0d46a9ce6d38222d3623931b0e8a53afa9df7c8411bbd"
+    },
+    {
+      "path": "binary.bin",
+      "type": "file",
+      "bytes": 7,
+      "sha256": "02c34e9c438089b59c3c005c49f76b87555a574215b190d4d05723e24abf34e5"
+    },
+    {
+      "path": "empty",
+      "type": "directory"
+    },
+    {
+      "path": "link",
+      "type": "symlink",
+      "target": "subdir/中文.txt"
+    },
+    {
+      "path": "subdir",
+      "type": "directory"
+    },
+    {
+      "path": "subdir/中文.txt",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "4678af99c78964f0580907ff659e3869ce298e04ac3feed828f96928b584cb7d"
+    }
+  ],
+  "completed": false,
+  "error": "Error: timeout: stop failure warning",
+  "cleanup": "only owned launcher stopped; only unique probe root removed"
+}
+
+PROBE_ATTEMPT_2_EXIT=1
+{
+  "task": "P7-R3",
+  "base": "fb1517a6c5785f01d556d6324313b904a083f8c0",
+  "scope": "installed host RPC; native sessions + createdBy fixture, NOT M3/UI deletion",
+  "sourceMirrorDigest": "be51f12be121905f603e2438f362fbe4fa08d9f62427424c7c3061c52b63307c",
+  "checks": [
+    "both ordinary-session worker fixtures have native persisted history",
+    "session/not-found refusal",
+    "root and subdir native sessions archived",
+    "archive retains root history byte projection",
+    "archive retains subdir history byte projection",
+    "archived late followup invokes zero model requests",
+    "unarchive retains history",
+    "workspace/session-active refusal",
+    "refused active archive leaves archive ids unchanged",
+    "stop provider observes archive already committed",
+    "stopped archived session late followup has zero model requests",
+    "repeat archive does NOT retry failed stop provider",
+    "archive main does not archive ordinary createdBy worker fixture",
+    "installed-launcher SDK source mirror unchanged through probe"
+  ],
+  "observations": [
+    {
+      "kind": "session-list-shape",
+      "keys": [
+        "items"
+      ],
+      "archivedVisible": true
+    },
+    {
+      "kind": "stop-failure",
+      "rpcResolved": true,
+      "archiveReturned": true,
+      "warningObserved": false,
+      "requirement": "FAIL: upstream RPC resolve does not certify complete stop; wrapper must verify settlement and mark partial/unknown"
+    }
+  ],
+  "stages": [
+    {
+      "label": "first",
+      "ready": true,
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "inventoryBefore": [
+    {
+      "path": ".",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden/keep",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "e83e0ca964304979aba0d46a9ce6d38222d3623931b0e8a53afa9df7c8411bbd"
+    },
+    {
+      "path": "binary.bin",
+      "type": "file",
+      "bytes": 7,
+      "sha256": "02c34e9c438089b59c3c005c49f76b87555a574215b190d4d05723e24abf34e5"
+    },
+    {
+      "path": "empty",
+      "type": "directory"
+    },
+    {
+      "path": "link",
+      "type": "symlink",
+      "target": "subdir/中文.txt"
+    },
+    {
+      "path": "subdir",
+      "type": "directory"
+    },
+    {
+      "path": "subdir/中文.txt",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "4678af99c78964f0580907ff659e3869ce298e04ac3feed828f96928b584cb7d"
+    }
+  ],
+  "completed": false,
+  "error": "Error: timeout: independent worker after parent archive",
+  "cleanup": "only owned launcher stopped; only unique probe root removed"
+}
+
+PROBE_ATTEMPT_3_EXIT=1
+{
+  "task": "P7-R3",
+  "base": "fb1517a6c5785f01d556d6324313b904a083f8c0",
+  "scope": "installed host RPC; native sessions + createdBy fixture, NOT M3/UI deletion",
+  "sourceMirrorDigest": "be51f12be121905f603e2438f362fbe4fa08d9f62427424c7c3061c52b63307c",
+  "checks": [
+    "both ordinary-session worker fixtures have native persisted history",
+    "session/not-found refusal",
+    "root and subdir native sessions archived",
+    "archive retains root history byte projection",
+    "archive retains subdir history byte projection",
+    "archived late followup invokes zero model requests",
+    "unarchive retains history",
+    "workspace/session-active refusal",
+    "refused active archive leaves archive ids unchanged",
+    "stop provider observes archive already committed",
+    "stopped archived session late followup has zero model requests",
+    "repeat archive does NOT retry failed stop provider",
+    "archive main does not archive ordinary createdBy worker fixture",
+    "ordinary worker still reaches model after parent archive (createdBy is NOT subagent lineage)",
+    "plugin inventory exposes fixture row",
+    "plugin query exposes management-required protections",
+    "full workspace inventory unchanged before restart",
+    "archive ids persist through owned SDK restart",
+    "history survives restart for archived subdir fixture",
+    "unarchive after restart restores same history",
+    "complete SHA256/directories/readlink/binary inventory unchanged",
+    "no-HMR returns restart-required/no-hmr",
+    "installed-launcher SDK source mirror unchanged through probe"
+  ],
+  "observations": [
+    {
+      "kind": "session-list-shape",
+      "keys": [
+        "items"
+      ],
+      "archivedVisible": true
+    },
+    {
+      "kind": "archived-followup-turn-reasons",
+      "reasons": [
+        "completed",
+        "blocked"
+      ]
+    },
+    {
+      "kind": "stop-failure",
+      "rpcResolved": true,
+      "archiveReturned": true,
+      "warningObserved": false,
+      "requirement": "FAIL: upstream RPC resolve does not certify complete stop; wrapper must verify settlement and mark partial/unknown"
+    },
+    {
+      "kind": "host-hmr",
+      "present": true
+    },
+    {
+      "kind": "fixture-plugin",
+      "row": {
+        "entryId": "include:p7-r3-hot",
+        "moduleName": "file:///tmp/bot-P7-R3-phRITl/hot.mjs",
+        "enabled": true,
+        "fiberPhase": "active",
+        "patchId": "p7-r3-hot"
+      }
+    },
+    {
+      "kind": "hmr-toggle",
+      "result": {
+        "stage": "enable",
+        "target": "include:p7-r3-hot",
+        "enabled": false,
+        "changed": true,
+        "application": "overridden",
+        "warnings": []
+      },
+      "hotLifecycle": [
+        {
+          "kind": "apply"
+        }
+      ]
+    },
+    {
+      "kind": "protected-disable",
+      "application": "failed",
+      "error": {
+        "code": "management-required"
+      }
+    },
+    {
+      "kind": "no-hmr-stage",
+      "present": false
+    },
+    {
+      "kind": "restart-required",
+      "result": {
+        "stage": "enable",
+        "target": "include:p7-r3-hot",
+        "enabled": true,
+        "changed": true,
+        "application": "restart-required",
+        "restartReason": "no-hmr",
+        "warnings": []
+      }
+    }
+  ],
+  "stages": [
+    {
+      "label": "first",
+      "ready": true,
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "label": "restored",
+      "ready": true,
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "label": "no-hmr",
+      "ready": true,
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "inventoryBefore": [
+    {
+      "path": ".",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden/keep",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "e83e0ca964304979aba0d46a9ce6d38222d3623931b0e8a53afa9df7c8411bbd"
+    },
+    {
+      "path": "binary.bin",
+      "type": "file",
+      "bytes": 7,
+      "sha256": "02c34e9c438089b59c3c005c49f76b87555a574215b190d4d05723e24abf34e5"
+    },
+    {
+      "path": "empty",
+      "type": "directory"
+    },
+    {
+      "path": "link",
+      "type": "symlink",
+      "target": "subdir/中文.txt"
+    },
+    {
+      "path": "subdir",
+      "type": "directory"
+    },
+    {
+      "path": "subdir/中文.txt",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "4678af99c78964f0580907ff659e3869ce298e04ac3feed828f96928b584cb7d"
+    }
+  ],
+  "inventoryAfter": [
+    {
+      "path": ".",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden/keep",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "e83e0ca964304979aba0d46a9ce6d38222d3623931b0e8a53afa9df7c8411bbd"
+    },
+    {
+      "path": "binary.bin",
+      "type": "file",
+      "bytes": 7,
+      "sha256": "02c34e9c438089b59c3c005c49f76b87555a574215b190d4d05723e24abf34e5"
+    },
+    {
+      "path": "empty",
+      "type": "directory"
+    },
+    {
+      "path": "link",
+      "type": "symlink",
+      "target": "subdir/中文.txt"
+    },
+    {
+      "path": "subdir",
+      "type": "directory"
+    },
+    {
+      "path": "subdir/中文.txt",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "4678af99c78964f0580907ff659e3869ce298e04ac3feed828f96928b584cb7d"
+    }
+  ],
+  "completed": true,
+  "cleanup": "only owned launcher stopped; only unique probe root removed"
+}
+
+PROBE_ATTEMPT_4_EXIT=0
+SYNTAX_R5_EXIT=0
+{
+  "task": "P7-R3",
+  "base": "fb1517a6c5785f01d556d6324313b904a083f8c0",
+  "scope": "installed host RPC; native sessions + createdBy fixture, NOT M3/UI deletion",
+  "sourceMirrorDigest": "be51f12be121905f603e2438f362fbe4fa08d9f62427424c7c3061c52b63307c",
+  "checks": [
+    "both ordinary-session worker fixtures have native persisted history",
+    "session/not-found refusal",
+    "workspace/follow publishes archived roster projection",
+    "full raw persisted history digests retained on archive",
+    "root and subdir native sessions archived",
+    "archive retains root history byte projection",
+    "archive retains subdir history byte projection",
+    "archived late followup invokes zero model requests",
+    "unarchive retains history",
+    "workspace/session-active refusal",
+    "refused active archive leaves archive ids unchanged",
+    "stop provider observes archive already committed",
+    "stopped archived session late followup has zero model requests",
+    "repeat archive does NOT retry failed stop provider",
+    "archive main does not archive ordinary createdBy worker fixture",
+    "ordinary worker still reaches model after parent archive (createdBy is NOT subagent lineage)",
+    "plugin inventory exposes fixture row",
+    "installed-launcher SDK source mirror unchanged through probe"
+  ],
+  "observations": [
+    {
+      "kind": "full-persistence-digests",
+      "root": {
+        "events": 17,
+        "sha256": "a9bf5a476fbe0a9acbb87d5fd9f7e524b72b39f350b62b62ba65898f6f5113d2"
+      },
+      "subdir": {
+        "events": 17,
+        "sha256": "b5de1a0d351655b1723ac13145f7d55f1e20aa584c06a7f94478a78c72f1f8b6"
+      }
+    },
+    {
+      "kind": "session-list-shape",
+      "keys": [
+        "items"
+      ],
+      "archivedVisible": true
+    },
+    {
+      "kind": "archived-followup-turn-reasons",
+      "reasons": [
+        "completed",
+        "blocked"
+      ]
+    },
+    {
+      "kind": "stop-failure",
+      "rpcResolved": true,
+      "archiveReturned": true,
+      "warningObserved": false,
+      "requirement": "FAIL: upstream RPC resolve does not certify complete stop; wrapper must verify settlement and mark partial/unknown"
+    },
+    {
+      "kind": "host-hmr",
+      "present": true
+    },
+    {
+      "kind": "fixture-plugin",
+      "row": {
+        "entryId": "include:p7-r3-hot",
+        "moduleName": "file:///tmp/bot-P7-R3-YBNELh/hot.mjs",
+        "enabled": true,
+        "fiberPhase": "active",
+        "patchId": "p7-r3-hot"
+      }
+    },
+    {
+      "kind": "hmr-toggle",
+      "result": {
+        "stage": "enable",
+        "target": "include:p7-r3-hot",
+        "enabled": false,
+        "changed": true,
+        "application": "overridden",
+        "warnings": []
+      },
+      "hotLifecycle": [
+        {
+          "kind": "apply"
+        }
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "label": "first",
+      "ready": true,
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "inventoryBefore": [
+    {
+      "path": ".",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden/keep",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "e83e0ca964304979aba0d46a9ce6d38222d3623931b0e8a53afa9df7c8411bbd"
+    },
+    {
+      "path": "binary.bin",
+      "type": "file",
+      "bytes": 7,
+      "sha256": "02c34e9c438089b59c3c005c49f76b87555a574215b190d4d05723e24abf34e5"
+    },
+    {
+      "path": "empty",
+      "type": "directory"
+    },
+    {
+      "path": "link",
+      "type": "symlink",
+      "target": "subdir/中文.txt"
+    },
+    {
+      "path": "subdir",
+      "type": "directory"
+    },
+    {
+      "path": "subdir/中文.txt",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "4678af99c78964f0580907ff659e3869ce298e04ac3feed828f96928b584cb7d"
+    }
+  ],
+  "completed": false,
+  "error": "AssertionError [ERR_ASSERTION]: Error: HMR profile reconciliation must run inside runExclusive",
+  "cleanup": "only owned launcher stopped; only unique probe root removed"
+}
+
+PROBE_ATTEMPT_5_EXIT=1
+{
+  "task": "P7-R3",
+  "base": "fb1517a6c5785f01d556d6324313b904a083f8c0",
+  "scope": "installed host RPC; native sessions + createdBy fixture, NOT M3/UI deletion",
+  "sourceMirrorDigest": "be51f12be121905f603e2438f362fbe4fa08d9f62427424c7c3061c52b63307c",
+  "checks": [
+    "both ordinary-session worker fixtures have native persisted history",
+    "session/not-found refusal",
+    "workspace/follow publishes archived roster projection",
+    "full raw persisted history digests retained on archive",
+    "root and subdir native sessions archived",
+    "archive retains root history byte projection",
+    "archive retains subdir history byte projection",
+    "archived late followup invokes zero model requests",
+    "unarchive retains history",
+    "workspace/session-active refusal",
+    "refused active archive leaves archive ids unchanged",
+    "stop provider observes archive already committed",
+    "stopped archived session late followup has zero model requests",
+    "repeat archive does NOT retry failed stop provider",
+    "archive main does not archive ordinary createdBy worker fixture",
+    "ordinary worker still reaches model after parent archive (createdBy is NOT subagent lineage)",
+    "plugin inventory exposes fixture row",
+    "installed-launcher SDK source mirror unchanged through probe"
+  ],
+  "observations": [
+    {
+      "kind": "full-persistence-digests",
+      "root": {
+        "events": 17,
+        "sha256": "d282b4d618b43f65225e7768593a06b63ffb82a5b875e53c4a327ccad3a074c2"
+      },
+      "subdir": {
+        "events": 17,
+        "sha256": "25d6301c4203ffb76480c0ac76abf7400ed7ea93456f80d132b7dc1a21bed40a"
+      }
+    },
+    {
+      "kind": "session-list-shape",
+      "keys": [
+        "items"
+      ],
+      "archivedVisible": true
+    },
+    {
+      "kind": "archived-followup-turn-reasons",
+      "reasons": [
+        "completed",
+        "blocked"
+      ]
+    },
+    {
+      "kind": "stop-failure",
+      "rpcResolved": true,
+      "archiveReturned": true,
+      "warningObserved": false,
+      "requirement": "FAIL: upstream RPC resolve does not certify complete stop; wrapper must verify settlement and mark partial/unknown"
+    },
+    {
+      "kind": "host-hmr",
+      "present": true
+    },
+    {
+      "kind": "fixture-plugin",
+      "row": {
+        "entryId": "include:p7-r3-hot",
+        "moduleName": "file:///tmp/bot-P7-R3-kcPybw/hot.mjs",
+        "enabled": true,
+        "fiberPhase": "active",
+        "patchId": "p7-r3-hot"
+      }
+    },
+    {
+      "kind": "hmr-toggle",
+      "result": {
+        "stage": "enable",
+        "target": "include:p7-r3-hot",
+        "enabled": false,
+        "changed": true,
+        "application": "overridden",
+        "warnings": []
+      },
+      "hotLifecycle": [
+        {
+          "kind": "apply"
+        }
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "label": "first",
+      "ready": true,
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "inventoryBefore": [
+    {
+      "path": ".",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden/keep",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "e83e0ca964304979aba0d46a9ce6d38222d3623931b0e8a53afa9df7c8411bbd"
+    },
+    {
+      "path": "binary.bin",
+      "type": "file",
+      "bytes": 7,
+      "sha256": "02c34e9c438089b59c3c005c49f76b87555a574215b190d4d05723e24abf34e5"
+    },
+    {
+      "path": "empty",
+      "type": "directory"
+    },
+    {
+      "path": "link",
+      "type": "symlink",
+      "target": "subdir/中文.txt"
+    },
+    {
+      "path": "subdir",
+      "type": "directory"
+    },
+    {
+      "path": "subdir/中文.txt",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "4678af99c78964f0580907ff659e3869ce298e04ac3feed828f96928b584cb7d"
+    }
+  ],
+  "completed": false,
+  "error": "Error: timeout: hot plugin disposed",
+  "cleanup": "only owned launcher stopped; only unique probe root removed"
+}
+
+PROBE_ATTEMPT_6_EXIT=1
+SYNTAX_R7_EXIT=0
+{
+  "task": "P7-R3",
+  "base": "fb1517a6c5785f01d556d6324313b904a083f8c0",
+  "scope": "installed host RPC; native sessions + createdBy fixture, NOT M3/UI deletion",
+  "sourceMirrorDigest": "be51f12be121905f603e2438f362fbe4fa08d9f62427424c7c3061c52b63307c",
+  "checks": [
+    "both ordinary-session worker fixtures have native persisted history",
+    "session/not-found refusal",
+    "workspace/follow publishes archived roster projection",
+    "full raw persisted history digests retained on archive",
+    "root and subdir native sessions archived",
+    "archive retains root history byte projection",
+    "archive retains subdir history byte projection",
+    "archived late followup invokes zero model requests",
+    "unarchive retains history",
+    "workspace/session-active refusal",
+    "refused active archive leaves archive ids unchanged",
+    "stop provider observes archive already committed",
+    "stopped archived session late followup has zero model requests",
+    "repeat archive does NOT retry failed stop provider",
+    "archive main does not archive ordinary createdBy worker fixture",
+    "ordinary worker still reaches model after parent archive (createdBy is NOT subagent lineage)",
+    "plugin inventory exposes fixture row",
+    "real HMR disposes and activates changed module without SDK restart",
+    "plugin query exposes management-required protections",
+    "full workspace inventory unchanged before restart",
+    "archive ids persist through owned SDK restart",
+    "full raw subdir history digest survives restart",
+    "history survives restart for archived subdir fixture",
+    "unarchive after restart restores same history",
+    "complete SHA256/directories/readlink/binary inventory unchanged",
+    "no-HMR returns restart-required/no-hmr",
+    "installed-launcher SDK source mirror unchanged through probe"
+  ],
+  "observations": [
+    {
+      "kind": "full-persistence-digests",
+      "root": {
+        "events": 17,
+        "sha256": "1ec9d1e9b2b2c53cf9ba298cdd9d080ac1f1f78d1f6d085d5881edb371329f1c"
+      },
+      "subdir": {
+        "events": 17,
+        "sha256": "f256a82bc2b1c24df8e5e67ad2f82a5faef46a6daa5cf6f07c92f23c63d17648"
+      }
+    },
+    {
+      "kind": "session-list-shape",
+      "keys": [
+        "items"
+      ],
+      "archivedVisible": true
+    },
+    {
+      "kind": "archived-followup-turn-reasons",
+      "reasons": [
+        "completed",
+        "blocked"
+      ]
+    },
+    {
+      "kind": "stop-failure",
+      "rpcResolved": true,
+      "archiveReturned": true,
+      "warningObserved": false,
+      "requirement": "FAIL: upstream RPC resolve does not certify complete stop; wrapper must verify settlement and mark partial/unknown"
+    },
+    {
+      "kind": "host-hmr",
+      "present": true
+    },
+    {
+      "kind": "fixture-plugin",
+      "row": {
+        "entryId": "include:p7-r3-hot",
+        "moduleName": "file:///tmp/bot-P7-R3-ZcdZzZ/hot.mjs",
+        "enabled": true,
+        "fiberPhase": "active",
+        "patchId": "p7-r3-hot"
+      }
+    },
+    {
+      "kind": "hmr-toggle",
+      "result": {
+        "stage": "enable",
+        "target": "include:p7-r3-hot",
+        "enabled": false,
+        "changed": true,
+        "application": "overridden",
+        "warnings": []
+      },
+      "hotLifecycle": [
+        {
+          "kind": "apply"
+        }
+      ]
+    },
+    {
+      "kind": "real-module-hmr",
+      "watchRoot": "probe fixture module only",
+      "lifecycle": [
+        {
+          "kind": "apply"
+        },
+        {
+          "kind": "dispose"
+        },
+        {
+          "kind": "apply-v2"
+        }
+      ]
+    },
+    {
+      "kind": "protected-disable",
+      "application": "failed",
+      "error": {
+        "code": "management-required"
+      }
+    },
+    {
+      "kind": "no-hmr-stage",
+      "present": false
+    },
+    {
+      "kind": "restart-required",
+      "result": {
+        "stage": "enable",
+        "target": "include:p7-r3-hot",
+        "enabled": true,
+        "changed": true,
+        "application": "restart-required",
+        "restartReason": "no-hmr",
+        "warnings": []
+      }
+    }
+  ],
+  "stages": [
+    {
+      "label": "first",
+      "ready": true,
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "label": "restored",
+      "ready": true,
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "label": "no-hmr",
+      "ready": true,
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "inventoryBefore": [
+    {
+      "path": ".",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden/keep",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "e83e0ca964304979aba0d46a9ce6d38222d3623931b0e8a53afa9df7c8411bbd"
+    },
+    {
+      "path": "binary.bin",
+      "type": "file",
+      "bytes": 7,
+      "sha256": "02c34e9c438089b59c3c005c49f76b87555a574215b190d4d05723e24abf34e5"
+    },
+    {
+      "path": "empty",
+      "type": "directory"
+    },
+    {
+      "path": "link",
+      "type": "symlink",
+      "target": "subdir/中文.txt"
+    },
+    {
+      "path": "subdir",
+      "type": "directory"
+    },
+    {
+      "path": "subdir/中文.txt",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "4678af99c78964f0580907ff659e3869ce298e04ac3feed828f96928b584cb7d"
+    }
+  ],
+  "inventoryAfter": [
+    {
+      "path": ".",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden",
+      "type": "directory"
+    },
+    {
+      "path": ".hidden/keep",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "e83e0ca964304979aba0d46a9ce6d38222d3623931b0e8a53afa9df7c8411bbd"
+    },
+    {
+      "path": "binary.bin",
+      "type": "file",
+      "bytes": 7,
+      "sha256": "02c34e9c438089b59c3c005c49f76b87555a574215b190d4d05723e24abf34e5"
+    },
+    {
+      "path": "empty",
+      "type": "directory"
+    },
+    {
+      "path": "link",
+      "type": "symlink",
+      "target": "subdir/中文.txt"
+    },
+    {
+      "path": "subdir",
+      "type": "directory"
+    },
+    {
+      "path": "subdir/中文.txt",
+      "type": "file",
+      "bytes": 15,
+      "sha256": "4678af99c78964f0580907ff659e3869ce298e04ac3feed828f96928b584cb7d"
+    }
+  ],
+  "completed": true,
+  "cleanup": "only owned launcher stopped; only unique probe root removed"
+}
+
+PROBE_ATTEMPT_7_EXIT=0
+
+
+=== P7-R3 固定基线与结论补记（2026-11-05；不是产品删除验收） ===
+任务树 /tmp/bot-wt/P7-R3；detached SHA fb1517a6c5785f01d556d6324313b904a083f8c0。
+上游 https://github.com/deepseek-ai/deepseek-harness @ ce7073d51254c26cd63b22a60835b8f948deb447；MIT；本地最后 commit 2026-10-30T00:13:15+08:00。
+注意：这是参考源码 SHA，不宣称 npm 制品恰由此 SHA 构建。下面另记已装制品版本与文件 SHA256；issue 回应未核验，完整“在维护”标准仍标未验证。用户要求本地已足，不额外搜索/安装/clone。
+产物格式限制：未生成 work/p7-admin/reuse/host-management-probes.md（角色最后约束禁止报告型 Markdown）；保留唯一允许的探针和 TXT 原始证据，不另造路径。
+负载预检 uptime load 2.73/2.49/4.21；vmstat iowait 0。仅一个 launcher 串行运行，first/restored/no-hmr 三阶段；未全量、未真模型、未桌面、未重复已绿 P6 测试。
+
+[执行记录与失败保留]
+实际入口：/home/lingxufeng/bot/app/sdk/node_modules/.bin/node /home/lingxufeng/bot/work/p7-admin/evidence/P7-R3-probe.mjs >> /home/lingxufeng/bot/work/p7-admin/evidence/P7-R3.txt 2>&1
+语法入口：/home/lingxufeng/bot/app/sdk/node_modules/.bin/node --check /home/lingxufeng/bot/work/p7-admin/evidence/P7-R3-probe.mjs
+7 次迭代真实退出依次为 1,1,1,0,1,1,0（前文 PROBE_EXIT / PROBE_ATTEMPT_N_EXIT）；不是删掉失败后挑一次绿。
+1 参数壳错误 session/list 缺 _request；2 把 stop 错误日志当观测，超时；3 fake calls 耗尽导致模型请求未记，超时；4 早期观测完成但 manager toggle 仅 overridden；5 reconcile 未持 runExclusive 锁；6 冻结 CLI patch 未触发预期配置 dispose；7 改为唯一临时 hot.mjs 模块 watch，真实 dispose/reapply。
+前 1–6 次是当时探针修订版，当前 MJS 是第 7 次版本，不声称当前文件能重现旧版错误。第7次原始记录 TXT:764–1012；checks:769–796，共27项；真实退出0。第7次及最后只读语法检查均退出0。
+最后只读核对：git -C /tmp/bot-wt/P7-R3 status --short 空；git -C /tmp/bot-wt/P7-R3 diff --exit-code 退出0；主仓 git diff --name-only -- app repos 空。未 commit；产品/测试/PLAN/LOG/依赖/参考仓未由本任务改动。
+
+[A 删除证据缺口：保持 P6-24@71826d2 完整验收 FAIL]
+已有 RE-admin-078.md:35–40 的三层删除只证明 box dispatch / server deleteAgent / server成功后mirror 的请求拓扑、独立 failed/refused；:63–73 证明乐观 roster 移除/异常恢复，isTemporal 和 HYn/VYn 不是存储终端语义；:114–117 明示静态且未追全调用。
+因此不能判原版临时 worker 删除是 archive、物理删或仅隐藏。RE78“没有删除 agent 工具”的客户端字典证据，也不能代替云端/box 终端实现。
+P6-24/VERIFY.txt:19,113 与 REPORT-f1.txt:33–34,116 已明确：直接写 bots.json 或 BotsMetaStore.removeBot 只删元数据且无生产删除入口调用，不能当产品旅程。本次也没有跑该产品入口，更不解除完整 FAIL。
+建议 REA 窄题（只交派发者，本任务未派发、未逆向）：
+1. 追 box deleteAgents 的终端处理，分别临时/长期 bot：写 archive/hidden/tombstone 还是删除会话日志/索引？给存储调用与成功点。
+2. 追 server deleteAgent 成功与 box mirror deferred：历史、附件、cwd 实际保留/删除范围与两侧状态是什么？不可仅据 RPC 名称推断。
+3. main/createdBy worker 的目标保护、活动停止与晚到消息拒绝落在哪个终端分支？普通 worker 和 subagent 分别回答；给失败/未知回执。
+
+[B 已装宿主实测及可复用最小接缝]
+普通 session/create 分别使用同一 fixture workspace 根与其 subdir；另写隔离 createdBy fixture，不冒称 M3生产创建或真实 worker 删除入口。
+归档前 root/subdir 各有17条完整持久事件；归档后完整原始事件摘要不变。subdir跨自身SDK重启及unarchive仍保持完整摘要/历史（TXT:799–808；checks:790–793）。
+workspace/follow 确实产生 archived 帧；session/list 仍返回 archivedVisible:true（TXT:810–816）。产品 roster 必须消费 workspace archived 投影，不能把原 session/list 当自动隐藏结果。
+unknown id -> session/not-found；active 不传stopActivity -> workspace/session-active，拒绝不写archive；stopActivity:true 的provider观察到 archivedAtDispatch=true，即先持久化归档再停止。
+晚到 followup 复用 Delivery.send -> agent.followup；归档 gate 阻止新增模型请求，日志 turn/end含 blocked。活动fixture收到turn/end后晚到followup也无新增模型请求。未额外断言全部jobs/schedules/subagent provider停止，未证明每个活动源完成settlement。
+合成 stop provider throw 时 RPC仍resolve并返回已归档 id；重复archive不再调用该stop provider；warningObserved=false（TXT:825–829），不能假造日志已报错。这里是“完整停止成功”要求的明确反例，不是成功项。
+main归档不归档普通createdBy worker；该worker之后仍真实请求假模型。createdBy外部元数据不等于origin=subagent的父链。不要把归档main解释为整个worker族已停止。
+workspace完整inventory包括根/空目录/隐藏文件/二进制SHA256/原始readlink，前后相同（TXT:926–1006）；没有删cwd或共享workspace，也没有建立purge/retention服务。
+上游源码根 S=/home/lingxufeng/bot/repos/deepseek-harness（固定上述完整SHA）：
+S/packages/workspace/workspace/src/index.ts:365–385 archive；:399起 unarchive；workspace/session-activity与session-stop见:129,147。
+S/packages/api/workspace-controller/src/index.ts:159–171 RPC；:205–254 follow（含archived投影）。
+S/packages/api/session-controller/src/archived-session-gate.ts:23–55 pre-step gate和仅subagent父链；session-controller/src/index.ts:216安装gate。
+已装 workspace lib/index.js:526–541 archive早返回/持久化/stop；:553–561 unarchive；:621–628 stop catch不回滚。
+已装 api-workspace-controller lib/index.js:297–308 映射unknown/active错误并返回集合；:317–319 unarchive。制品绝对路径见下方元数据。
+
+[C 最小包装白名单（建议，不修改PLAN、不实现）]
+PLAN.md:74 M1明确写长期bot，:79 WM只写泛化真实管理链，没有显式覆盖“临时worker真实删除入口 + authoritative createdBy目标保护 + main普通worker不级联”全套验收；不能由任务名推成已覆盖。
+复用现有M1管理handler/WM分发器，在同一归档动作接临时worker，不建立第二删除服务/第二archive集合。执行时重验权威mainBotId和bots[id].createdBy及当前代/原权限来源；保护主bot；不信任模型传来的creator；不可借普通session id越权。
+先核活动再调现成archive(stopActivity)，归档回执和停止settlement分开；拒绝/部分/未知明确返回。重试stop须走已有活动停止能力并复查，不能重复archive冒充重试。恢复走unarchive，保留shared recipe与工作区/历史。
+现有BotsMetaStore.read + M3 get投影提供mainBotId/recipes/bots，不新建全局引用库；session/list与workspace/follow补原生会话/归档状态，agentPresets/list补live preset。
+本仓基线证据 U=/tmp/bot-wt/P7-R3/app/ui/main：m3-meta/index.ts:88–96 recipe/live/bots查询；:113–124 session存在与worker禁提升main；m3-meta/orchestrate.ts:261–295 roster由session推导（尚未过滤archived），:318–382 createWorker权威身份/工作区/createdBy先落盘；m3-meta/store.ts:164–190 createdBy队列重验。
+admin/consumer.ts:49–76 是代码注册action缝，默认空表unavailable；m1-api/index.ts:12–43 现有allow与禁区，不能为管理把任意RPC透传开放。
+
+[D 插件HMR、restart-required、引用保护]
+真实模块hot.mjs发生apply -> dispose -> apply-v2，同一SDK进程未重启（TXT:861–874）；watch root只在唯一临时模块，不扫主仓。
+管理器setPluginEnabled(false)却返回changed:true/application:overridden，fixture仍active（TXT:846–859）。CLI高优先冻结覆盖不等于禁用成功；读取application/error/restartReason和重查inventory，不能只读changed。
+无HMR阶段明确restart-required/no-hmr（TXT:887–896），不擅自重启；已装management-required行可查，禁用返回failed/management-required（TXT:876–881）。
+S/packages/boot/plugin-manager/src/index.ts:465–480 listPlugins可查entryId/moduleName/enabled/fiberPhase/patchId/readOnlyReason；:488–576 listBundles可查rows/overrides/removable/保护；:833–855启停；:1047–1078 remove中的stop-profile/bundle-in-use；:1199–1214保护/串行；:1248–1280 reload与no-hmr。
+已装plugin-manager lib/index.js:2090–2115 query；:2660–2667启停与overridden；:2888–2896 remove保护；:3042 management-required；:3149 no-hmr。
+HMR源码 S/packages/boot/hmr/src/index.ts:215–225 watch配置；:270起runExclusive；:429–491模块watch；:927 reconcile必须持锁。
+引用最小检查：由既有M3 recipes/connectors + session preset/header + agentPresets/list，与listBundles.rows/overrides、listPlugins活fiber做临时关联。现成接口不是跨所有业务对象的引用计数器，无法解析的间接引用标unknown，不推断refcount=0；保留上游bundle-in-use拒绝。
+management-required只保护上游管理必需插件，不等于本仓shell审批/fs guard/身份桥全部受保护；包装层复用现有禁区显式拒这些目标。卸载首选setBundleEnabled(false)的可恢复路径，保留版本/来源，物理remove另需无引用确认；不自建包安装器/全局引用数据库。
+未测完整市场安装卸载、真实工具出现/消失、跨preset间接引用全矩阵；上述引用聚合和本仓安全目标保护只是最小适配建议，不冒称已实现/已验收。
+
+[E B′ main -> launcher -> SDK：不重开选型、不实现F4]
+固定基线 U/index.ts:205–219 main仅从PBOTS_DSH_HANDOFF读取base-url/launch-token并构造DshConnection，未拥有launcher child；:156–172 onConnected后串行m3.init/ensureThenReady。
+U/dsh/connect.ts:13–39 /connect换cookie和RPC；:59–64 baseUrl/opts固定；:123–145 每次连接同一地址/token再递增socket generation；:148–157是连接重试，不是SDK child重拉；:188–192只stop自身socket/timer。
+U/ready.ts:32–52 当前基线一次性布尔ready/restore，无重置代际屏障。这里仅报告fb1517a基线，不覆盖并行F3后续修改。
+SDK=/tmp/bot-wt/P7-R3/app/sdk：scripts/start.mjs:1–5调用src/start.ts.main；src/start.ts:57–85解析HOME/runtime/data/handoff；:114–132 buildArgs走dsh web profile/patch/port；:147–183 child env白名单且剥handoff/data控制变量/mock key；:684已装dsh入口；:716–787 spawn与ready/guard。
+start.ts:791–856 运行时锁/记录自身child/信号转发/ready timeout和guard失败退出，非自动重启监督器；不应另建SDK supervisor。
+profile/plugins/handoff.mjs:16–26由config.dir获得私有目录（不是模型env），写0600 launch-token/base-url，仅输出无token ready。
+B′最小改动仅现有main owner适配：持有launcher child；显式env白名单；每代独立不可推导handoff，ready后重新读取新地址/token并替换连接；旧socket generation不是SDK代，restore完成前维持当前代屏障；stop只管owned child；restart-required接既定F4或明确pending。仍按既定250ms×2封顶10s/until-signal，不把连接300ms重试直接当产品owner策略。
+本探针仅在单个测试owner串行boot/stop/reboot并复查持久状态，未验收Electron owner、崩溃退避、端口/token跨代变化、旧代拒绝或F4生产恢复链。
+
+[供派发者合并的搬运阶梯决策，不修改REUSE]
+能力 | 候选 | 阶梯 | 许可证/维护 | 决策 | 最小工作量/边界
+归档恢复 | 已装@deepseek-ai/dsh-workspace + dsh-api-workspace-controller 0.2.2-alpha.2 | 1 | MIT；commit见首段，issue未验证 | 集成 | 同一M1/WM handler补身份/createdBy/归档投影与停止结果核实，不另建删除服务。
+插件启停reload | 已装@deepseek-ai/dsh-plugin-manager + dsh-hmr 0.2.2-alpha.2 | 1 | MIT；同上 | 集成 | 使用结果union/已有query/串行能力，关联现有recipe，不造全局库或包管理器。
+B′启动 | 本仓src/start.ts + handoff插件 + main DshConnection | 1（已有接缝） | 本仓；底座MIT | 集成 | main最小owner包装，代际握手/restore联动留F4；本次未实现。
+原版worker删除终端语义 | RE78只有拓扑/UI，终端源码不可用 | 4 | 闭源 | 逆向 | 仅上述3窄题；先补证据，不用native archive成功代替原版规格。
+本任务是已定本地依赖的宿主行为核实，不是新能力候选搜集；不声称已完成新一轮GitHub双候选/npm检索。
+
+[已装制品元数据与内容锚点]
+{"packageJson": "/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh@0.2.2-alpha.2_11b17376800101e23f02c3e681f1ae2d/node_modules/@deepseek-ai/dsh/package.json", "name": "@deepseek-ai/dsh", "version": "0.2.2-alpha.2", "license": "MIT", "repository": {"type": "git", "url": "git+https://github.com/deepseek-ai/deepseek-harness.git", "directory": "apps/cli"}, "packageJsonSHA256": "fcfbff65bc9a7beae1d5bd56af6eb166b61dcd22bd20234653d2b8d56d09aa63"}
+{"packageJson": "/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-workspace@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1_@deepseek-ai_a673a7173f976b9bacbd9c44f0d39f3e/node_modules/@deepseek-ai/dsh-workspace/package.json", "name": "@deepseek-ai/dsh-workspace", "version": "0.2.2-alpha.2", "license": "MIT", "repository": {"type": "git", "url": "git+https://github.com/deepseek-ai/deepseek-harness.git", "directory": "packages/workspace/workspace"}, "packageJsonSHA256": "42be73751445110f554cebff04e609fedc811250b1bddcedcc3674cc13ca362f"}
+{"artifact": "/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-workspace@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1_@deepseek-ai_a673a7173f976b9bacbd9c44f0d39f3e/node_modules/@deepseek-ai/dsh-workspace/lib/index.js", "sha256": "931ca0cb10c5102066c7723690a887f0e6e8e7ab0ffdee1a782686745b0b934f"}
+{"packageJson": "/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-api-workspace-controller@0.2.2-alpha.2_718d8167ff846d06045ffde835c1b326/node_modules/@deepseek-ai/dsh-api-workspace-controller/package.json", "name": "@deepseek-ai/dsh-api-workspace-controller", "version": "0.2.2-alpha.2", "license": "MIT", "repository": {"type": "git", "url": "git+https://github.com/deepseek-ai/deepseek-harness.git", "directory": "packages/api/workspace-controller"}, "packageJsonSHA256": "f46a3fb180ecebf12e690476c3b0d3a2914e0f54486b42532d61f05ac0f6aed2"}
+{"artifact": "/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-api-workspace-controller@0.2.2-alpha.2_718d8167ff846d06045ffde835c1b326/node_modules/@deepseek-ai/dsh-api-workspace-controller/lib/index.js", "sha256": "257848af0e4bacb15265660a3750c7909bb4002ab02a1c2a3188045f882ee39e"}
+{"packageJson": "/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-hmr@0.2.2-alpha.2_@deepseek-ai+cordis-plugin-include@1.0.11-alpha.1_@d_adc1d649e5a248cde9b6bb0d67b519fc/node_modules/@deepseek-ai/dsh-hmr/package.json", "name": "@deepseek-ai/dsh-hmr", "version": "0.2.2-alpha.2", "license": "MIT", "repository": {"type": "git", "url": "git+https://github.com/deepseek-ai/deepseek-harness.git", "directory": "packages/boot/hmr"}, "packageJsonSHA256": "5189aa681543f52244974189269bafe39407c7f45a0abce679ed107494685936"}
+{"artifact": "/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-hmr@0.2.2-alpha.2_@deepseek-ai+cordis-plugin-include@1.0.11-alpha.1_@d_adc1d649e5a248cde9b6bb0d67b519fc/node_modules/@deepseek-ai/dsh-hmr/lib/index.js", "sha256": "78e745d243e7c41206dfc750ed55d64f8a895f43158367242e78b77535e9b187"}
+{"packageJson": "/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-plugin-manager@0.2.2-alpha.2_5468dec338b18b9a16e50b42d1483da2/node_modules/@deepseek-ai/dsh-plugin-manager/package.json", "name": "@deepseek-ai/dsh-plugin-manager", "version": "0.2.2-alpha.2", "license": "MIT", "repository": {"type": "git", "url": "git+https://github.com/deepseek-ai/deepseek-harness.git", "directory": "packages/boot/plugin-manager"}, "packageJsonSHA256": "7f315081eb7815a23a7d4f8f88a5352685c2148c4162a74c11ddc8e821263982"}
+{"artifact": "/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-plugin-manager@0.2.2-alpha.2_5468dec338b18b9a16e50b42d1483da2/node_modules/@deepseek-ai/dsh-plugin-manager/lib/index.js", "sha256": "2aa5aa509376fb4cf1fb344a19076b61c8eb30c0f836c1f3dd1729ed23f7464e"}
+FINAL_SYNTAX_EXIT=0
+P7-R3结论：底座探针完成；产品删除/完整停止与F4生产owner不在本次通过范围。P6-24完整验收保持FAIL。

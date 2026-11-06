@@ -1,0 +1,15 @@
+{
+  "source": "/home/lingxufeng/bot/work/p7-admin/evidence/review-e5ff286/A-bridge-probe.mjs",
+  "adaptation": "Only replace fixture import prefix with absolute worktree file URL",
+  "command": [
+    "node",
+    "--experimental-strip-types",
+    "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/A-bridge-probe-current.mjs"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "HOME": "/tmp/bot-P7-F2f2/home",
+    "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+  },
+  "cwd": "/tmp/bot-wt/P7-F2f2"
+}

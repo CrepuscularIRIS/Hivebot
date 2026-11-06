@@ -1,0 +1,3 @@
+{"total": {"lines":{"total":109,"covered":109,"skipped":0,"pct":100},"statements":{"total":157,"covered":151,"skipped":0,"pct":96.17},"functions":{"total":39,"covered":38,"skipped":0,"pct":97.43},"branches":{"total":152,"covered":140,"skipped":0,"pct":92.1},"branchesTrue":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"}}
+,"/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/verify-runtime/project/app/sdk/src/admin/authority.mjs": {"lines":{"total":109,"covered":109,"skipped":0,"pct":100},"functions":{"total":39,"covered":38,"skipped":0,"pct":97.43},"statements":{"total":157,"covered":151,"skipped":0,"pct":96.17},"branches":{"total":152,"covered":140,"skipped":0,"pct":92.1}}
+}

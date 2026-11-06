@@ -1,0 +1,36 @@
+Already up to date
+Done in 301ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/P7-F3/app/sdk
+
+ ❯ tests/unit/p7-host-recovery.test.ts (14 tests | 1 failed) 91ms
+   ❯ P7-F3 peer-bound process recovery (4)
+     × launcher explicitly enables host recovery without changing standalone P6 defaults 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 peer-bound process recovery > launcher explicitly enables host recovery without changing standalone P6 defaults
+AssertionError: expected undefined to be '1' // Object.is equality
+
+- Expected:
+"1"
+
++ Received:
+undefined
+
+ ❯ tests/unit/p7-host-recovery.test.ts:134:43
+    132|     expect(childEnv(config, env).DSH_PBOTS_HOST_RECOVERY).toBeUndefine…
+    133|     const child = childEnv(config, { ...env, P2SDK_HOST_RECOVERY: '1' …
+    134|     expect(child.DSH_PBOTS_HOST_RECOVERY).toBe('1')
+       |                                           ^
+    135|     expect(child.P2SDK_HOST_RECOVERY).toBeUndefined()
+    136|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed (14)
+   Start at  09:44:41
+   Duration  280ms (tests 50%, transform 25%, import 19%, setup 4%, worker 2%)
+

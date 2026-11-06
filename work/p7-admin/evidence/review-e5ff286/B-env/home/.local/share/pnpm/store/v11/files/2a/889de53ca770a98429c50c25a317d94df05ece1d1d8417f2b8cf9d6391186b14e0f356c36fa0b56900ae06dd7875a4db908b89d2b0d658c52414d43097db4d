@@ -1,0 +1,1758 @@
+window.__ModuleLoader__.load({
+	id: "@deepseek-ai/dsh-cua",
+	factory: (require) => {
+		var module = { exports: {} };
+		var exports = module.exports;
+		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+		let zod = require("zod");
+		let _deepseek_ai_dsh_client_store = require("@deepseek-ai/dsh-client-store");
+		let react_jsx_runtime = require("react/jsx-runtime");
+		let react = require("react");
+		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
+		//#region ../../typert/protocol/lib/types/remote-info.js
+		/** Lazy assembly of generated Remote definitions using caller-supplied Zod; no runtime imports. */
+		/**
+		* Retain one generated definition per endpoint without constructing parsers or projections.
+		* The class instance builds its shared descriptor/method index on first access;
+		* input schemas and JSON Schema projections are cached only when requested.
+		* @param spec - compiler-produced method facts and Zod factories.
+		* @param zod - the generated artifact's Zod runtime for named-input parsers.
+		* @returns a lazy, mountable info instance with no registration or transport effects.
+		*/
+		function createTypertRemoteInfo(spec, zod) {
+			return new RemoteInfo(spec, zod);
+		}
+		var RemoteInfo = class {
+			spec;
+			zod;
+			index;
+			constructor(spec, zod) {
+				this.spec = spec;
+				this.zod = zod;
+			}
+			get package() {
+				return this.spec.package;
+			}
+			get descriptors() {
+				return this.resolve().descriptors;
+			}
+			get methods() {
+				return this.resolve().methods;
+			}
+			resolve() {
+				if (this.index !== void 0) return this.index;
+				const zod = this.zod;
+				const descriptors = [];
+				const methods = Object.create(null);
+				for (const [endpoint, definition] of Object.entries(this.spec.methods)) {
+					const separator = endpoint.indexOf("/");
+					const namespace = endpoint.slice(0, separator);
+					const method = endpoint.slice(separator + 1);
+					const parameters = definition.parameters.map((parameter) => ({
+						...parameter,
+						wire: parameter.wire ?? parameter.name
+					}));
+					const descriptor = {
+						...definition,
+						id: `${this.spec.package}#${endpoint}`,
+						namespace,
+						method,
+						parameters,
+						result: definition.result.description === void 0 ? definition.result : new ResultValue(definition.result)
+					};
+					if (definition.invocation.kind === "direct") {
+						const inputs = [];
+						methods[endpoint] = Object.assign(descriptor, {
+							input(options) {
+								const strict = options?.strict === true;
+								return inputs[strict ? 1 : 0] ??= new NamedInput(parameters, strict, zod);
+							},
+							invoke(remote, input, signal) {
+								const named = input;
+								const values = parameters.map((parameter) => named[parameter.wire]);
+								if (definition.cancellation !== void 0) values.push(signal);
+								const receiver = Reflect.get(remote, namespace);
+								return Reflect.get(receiver, method).apply(receiver, values);
+							}
+						});
+					}
+					descriptors.push(descriptor);
+				}
+				return this.index = {
+					descriptors,
+					methods
+				};
+			}
+		};
+		function optional(parameter) {
+			return parameter.source === "json" && parameter.acceptsUndefined === true;
+		}
+		var NamedInput = class {
+			parameters;
+			strict;
+			zod;
+			schema;
+			projection;
+			constructor(parameters, strict, zod) {
+				this.parameters = parameters;
+				this.strict = strict;
+				this.zod = zod;
+			}
+			codec(parameter) {
+				return this.strict ? parameter.strictCodec : parameter.codec;
+			}
+			create = () => this.schema ??= this.zod.strictObject(Object.fromEntries(this.parameters.map((parameter) => {
+				const value = this.codec(parameter).create();
+				return [parameter.wire, optional(parameter) ? value.optional() : value.nonoptional()];
+			})));
+			get jsonSchema() {
+				return this.project().jsonSchema;
+			}
+			get jsonSchemaError() {
+				return this.project().jsonSchemaError;
+			}
+			project() {
+				if (this.projection !== void 0) return this.projection;
+				const unavailable = this.parameters.find((parameter) => this.codec(parameter).jsonSchema === void 0);
+				if (unavailable !== void 0) return this.projection = { jsonSchemaError: this.codec(unavailable).jsonSchemaError ?? `No JSON Schema for parameter ${unavailable.wire}` };
+				return this.projection = { jsonSchema: {
+					type: "object",
+					properties: Object.fromEntries(this.parameters.map((parameter) => [parameter.wire, {
+						...this.codec(parameter).jsonSchema,
+						...parameter.description === void 0 ? {} : { description: parameter.description }
+					}])),
+					required: this.parameters.filter((parameter) => !optional(parameter)).map((parameter) => parameter.wire),
+					additionalProperties: false
+				} };
+			}
+		};
+		var ResultValue = class {
+			spec;
+			projection;
+			constructor(spec) {
+				this.spec = spec;
+			}
+			get mode() {
+				return this.spec.mode;
+			}
+			get typeSymbol() {
+				return this.spec.typeSymbol;
+			}
+			get create() {
+				return this.spec.create;
+			}
+			get decode() {
+				return this.spec.decode;
+			}
+			get encode() {
+				return this.spec.encode;
+			}
+			get description() {
+				return this.spec.description;
+			}
+			get jsonSchemaError() {
+				return this.spec.jsonSchemaError;
+			}
+			get jsonSchema() {
+				if (this.projection === void 0) {
+					const schema = this.spec.jsonSchema;
+					this.projection = { value: schema === void 0 ? void 0 : {
+						...schema,
+						description: this.spec.description
+					} };
+				}
+				return this.projection.value;
+			}
+		};
+		//#endregion
+		//#region lib/typert.remote-client.js
+		let _deepseek_ai_dsh_cua_cuaAccess_applicationIcons_result$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_applicationIcons_result$schema = () => _deepseek_ai_dsh_cua_cuaAccess_applicationIcons_result$schema$value ??= zod.z.record(zod.z.string(), zod.z.string());
+		let _deepseek_ai_dsh_cua_cuaAccess_applications_result$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_applications_result$schema = () => _deepseek_ai_dsh_cua_cuaAccess_applications_result$schema$value ??= zod.z.object({
+			"allowedApps": zod.z.array(zod.z.object({
+				"id": zod.z.string().describe("Native identity digest admitted from the helper or validated profile configuration."),
+				"name": zod.z.string().describe("Application label presented when the decision was made."),
+				"executablePath": zod.z.union([zod.z.undefined(), zod.z.string()]).optional().describe("Canonical executable path for display and icons; absent when the operating system cannot provide it.")
+			})),
+			"blockedApps": zod.z.array(zod.z.object({
+				"id": zod.z.string().describe("Native identity digest admitted from the helper or validated profile configuration."),
+				"name": zod.z.string().describe("Application label presented when the decision was made."),
+				"executablePath": zod.z.union([zod.z.undefined(), zod.z.string()]).optional().describe("Canonical executable path for display and icons; absent when the operating system cannot provide it.")
+			})).describe("Refusals from any session, excluding saved grants; other sessions may still hold session access."),
+			"persistentAvailable": zod.z.boolean()
+		});
+		let _deepseek_ai_dsh_cua_cuaAccess_enablePersistentPtc_result$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_enablePersistentPtc_result$schema = () => _deepseek_ai_dsh_cua_cuaAccess_enablePersistentPtc_result$schema$value ??= zod.z.void();
+		let _deepseek_ai_dsh_cua_cuaAccess_openSettings_parameter_0$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_openSettings_parameter_0$schema = () => _deepseek_ai_dsh_cua_cuaAccess_openSettings_parameter_0$schema$value ??= zod.z.union([zod.z.literal("accessibility"), zod.z.literal("screenRecording")]);
+		let _deepseek_ai_dsh_cua_cuaAccess_openSettings_result$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_openSettings_result$schema = () => _deepseek_ai_dsh_cua_cuaAccess_openSettings_result$schema$value ??= zod.z.void();
+		let _deepseek_ai_dsh_cua_cuaAccess_ptcConfiguration_result$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_ptcConfiguration_result$schema = () => _deepseek_ai_dsh_cua_cuaAccess_ptcConfiguration_result$schema$value ??= zod.z.object({
+			"persistent": zod.z.boolean(),
+			"writable": zod.z.boolean()
+		});
+		let _deepseek_ai_dsh_cua_cuaAccess_requestPermission_parameter_0$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_requestPermission_parameter_0$schema = () => _deepseek_ai_dsh_cua_cuaAccess_requestPermission_parameter_0$schema$value ??= zod.z.union([zod.z.literal("accessibility"), zod.z.literal("screenRecording")]);
+		let _deepseek_ai_dsh_cua_cuaAccess_requestPermission_result$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_requestPermission_result$schema = () => _deepseek_ai_dsh_cua_cuaAccess_requestPermission_result$schema$value ??= zod.z.object({
+			"accessibility": zod.z.boolean(),
+			"screenRecording": zod.z.boolean(),
+			"helper": zod.z.object({
+				"pid": zod.z.number(),
+				"path": zod.z.union([zod.z.undefined(), zod.z.string()]).optional(),
+				"name": zod.z.union([zod.z.undefined(), zod.z.string()]).optional()
+			}),
+			"parent": zod.z.object({
+				"pid": zod.z.number(),
+				"path": zod.z.union([zod.z.undefined(), zod.z.string()]).optional(),
+				"name": zod.z.union([zod.z.undefined(), zod.z.string()]).optional()
+			}),
+			"launchApplication": zod.z.union([zod.z.undefined(), zod.z.object({
+				"name": zod.z.string(),
+				"path": zod.z.string(),
+				"icon": zod.z.union([zod.z.undefined(), zod.z.string()]).optional()
+			})]).optional().describe("Application macOS reports as responsible for the helper, captured at startup; absent when it cannot be identified.")
+		});
+		let _deepseek_ai_dsh_cua_cuaAccess_retryApproval_parameter_0$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_retryApproval_parameter_0$schema = () => _deepseek_ai_dsh_cua_cuaAccess_retryApproval_parameter_0$schema$value ??= zod.z.string();
+		let _deepseek_ai_dsh_cua_cuaAccess_retryApproval_result$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_retryApproval_result$schema = () => _deepseek_ai_dsh_cua_cuaAccess_retryApproval_result$schema$value ??= zod.z.void();
+		let _deepseek_ai_dsh_cua_cuaAccess_revoke_parameter_0$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_revoke_parameter_0$schema = () => _deepseek_ai_dsh_cua_cuaAccess_revoke_parameter_0$schema$value ??= zod.z.string();
+		let _deepseek_ai_dsh_cua_cuaAccess_revoke_result$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_revoke_result$schema = () => _deepseek_ai_dsh_cua_cuaAccess_revoke_result$schema$value ??= zod.z.void();
+		let _deepseek_ai_dsh_cua_cuaAccess_systemStatus_result$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_systemStatus_result$schema = () => _deepseek_ai_dsh_cua_cuaAccess_systemStatus_result$schema$value ??= zod.z.object({
+			"accessibility": zod.z.boolean(),
+			"screenRecording": zod.z.boolean(),
+			"helper": zod.z.object({
+				"pid": zod.z.number(),
+				"path": zod.z.union([zod.z.undefined(), zod.z.string()]).optional(),
+				"name": zod.z.union([zod.z.undefined(), zod.z.string()]).optional()
+			}),
+			"parent": zod.z.object({
+				"pid": zod.z.number(),
+				"path": zod.z.union([zod.z.undefined(), zod.z.string()]).optional(),
+				"name": zod.z.union([zod.z.undefined(), zod.z.string()]).optional()
+			}),
+			"launchApplication": zod.z.union([zod.z.undefined(), zod.z.object({
+				"name": zod.z.string(),
+				"path": zod.z.string(),
+				"icon": zod.z.union([zod.z.undefined(), zod.z.string()]).optional()
+			})]).optional().describe("Application macOS reports as responsible for the helper, captured at startup; absent when it cannot be identified.")
+		});
+		let _deepseek_ai_dsh_cua_cuaAccess_openSettings_parameter_0_strict$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_openSettings_parameter_0_strict$schema = () => _deepseek_ai_dsh_cua_cuaAccess_openSettings_parameter_0_strict$schema$value ??= zod.z.union([zod.z.literal("accessibility"), zod.z.literal("screenRecording")]);
+		let _deepseek_ai_dsh_cua_cuaAccess_requestPermission_parameter_0_strict$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_requestPermission_parameter_0_strict$schema = () => _deepseek_ai_dsh_cua_cuaAccess_requestPermission_parameter_0_strict$schema$value ??= zod.z.union([zod.z.literal("accessibility"), zod.z.literal("screenRecording")]);
+		let _deepseek_ai_dsh_cua_cuaAccess_retryApproval_parameter_0_strict$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_retryApproval_parameter_0_strict$schema = () => _deepseek_ai_dsh_cua_cuaAccess_retryApproval_parameter_0_strict$schema$value ??= zod.z.string();
+		let _deepseek_ai_dsh_cua_cuaAccess_revoke_parameter_0_strict$schema$value;
+		const _deepseek_ai_dsh_cua_cuaAccess_revoke_parameter_0_strict$schema = () => _deepseek_ai_dsh_cua_cuaAccess_revoke_parameter_0_strict$schema$value ??= zod.z.string();
+		const TYPERT_REMOTE = createTypertRemoteInfo({
+			package: "@deepseek-ai/dsh-cua",
+			methods: {
+				"cuaAccess/applicationIcons": {
+					service: "cuaAccess",
+					description: "Load presentation icons separately from application decisions.",
+					invocation: { kind: "direct" },
+					parameters: [],
+					result: {
+						mode: "strict",
+						typeSymbol: "@deepseek-ai/dsh-cua#cuaAccess/applicationIcons:result",
+						create: _deepseek_ai_dsh_cua_cuaAccess_applicationIcons_result$schema,
+						description: "Optional native PNG icons keyed by executable path; applications without paths are skipped.",
+						jsonSchemaError: "typert tool schema: selected dictionaries require string keys and unconstrained JSON values"
+					},
+					sourceLocation: {
+						"file": "packages/experimental/cua/src/access.ts",
+						"line": 89,
+						"column": 9
+					}
+				},
+				"cuaAccess/applications": {
+					service: "cuaAccess",
+					description: "Read fresh stored application decisions without issuing a native request.",
+					invocation: { kind: "direct" },
+					parameters: [],
+					result: {
+						mode: "strict",
+						typeSymbol: "@deepseek-ai/dsh-cua/types#CuaApplicationState",
+						create: _deepseek_ai_dsh_cua_cuaAccess_applications_result$schema,
+						description: "Saved grants, refused applications and durable-storage availability.",
+						jsonSchema: {
+							"type": "object",
+							"properties": {
+								"allowedApps": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"id": {
+												"type": "string",
+												"description": "Native identity digest admitted from the helper or validated profile configuration."
+											},
+											"name": {
+												"type": "string",
+												"description": "Application label presented when the decision was made."
+											},
+											"executablePath": {
+												"type": "string",
+												"description": "Canonical executable path for display and icons; absent when the operating system cannot provide it."
+											}
+										},
+										"required": ["id", "name"],
+										"additionalProperties": true
+									}
+								},
+								"blockedApps": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"id": {
+												"type": "string",
+												"description": "Native identity digest admitted from the helper or validated profile configuration."
+											},
+											"name": {
+												"type": "string",
+												"description": "Application label presented when the decision was made."
+											},
+											"executablePath": {
+												"type": "string",
+												"description": "Canonical executable path for display and icons; absent when the operating system cannot provide it."
+											}
+										},
+										"required": ["id", "name"],
+										"additionalProperties": true
+									},
+									"description": "Refusals from any session, excluding saved grants; other sessions may still hold session access."
+								},
+								"persistentAvailable": { "type": "boolean" }
+							},
+							"required": [
+								"allowedApps",
+								"blockedApps",
+								"persistentAvailable"
+							],
+							"additionalProperties": true
+						}
+					},
+					sourceLocation: {
+						"file": "packages/experimental/cua/src/access.ts",
+						"line": 73,
+						"column": 3
+					}
+				},
+				"cuaAccess/enablePersistentPtc": {
+					service: "cuaAccess",
+					description: "Persist in-memory PTC execution through the existing profile editor and Loader lifecycle.",
+					invocation: { kind: "direct" },
+					parameters: [],
+					result: {
+						mode: "strict",
+						typeSymbol: "@deepseek-ai/dsh-cua#cuaAccess/enablePersistentPtc:result",
+						create: _deepseek_ai_dsh_cua_cuaAccess_enablePersistentPtc_result$schema,
+						description: "Completion after the shared runtime reload; already-persistent runtimes are left intact.",
+						jsonSchemaError: "typert tool schema: unsupported void value"
+					},
+					sourceLocation: {
+						"file": "packages/experimental/cua/src/access.ts",
+						"line": 60,
+						"column": 9
+					}
+				},
+				"cuaAccess/openSettings": {
+					service: "cuaAccess",
+					description: "Open the macOS privacy pane selected by the user.",
+					invocation: { kind: "direct" },
+					parameters: [{
+						name: "permission",
+						description: "Corresponding system privilege.",
+						source: "json",
+						codec: {
+							mode: "strict",
+							typeSymbol: "@deepseek-ai/dsh-cua/types#CuaSystemPermission",
+							create: _deepseek_ai_dsh_cua_cuaAccess_openSettings_parameter_0$schema,
+							jsonSchema: {
+								"type": "string",
+								"enum": ["accessibility", "screenRecording"]
+							}
+						},
+						strictCodec: {
+							mode: "strict",
+							typeSymbol: "@deepseek-ai/dsh-cua/types#CuaSystemPermission",
+							create: _deepseek_ai_dsh_cua_cuaAccess_openSettings_parameter_0_strict$schema,
+							jsonSchema: {
+								"type": "string",
+								"enum": ["accessibility", "screenRecording"]
+							}
+						}
+					}],
+					result: {
+						mode: "strict",
+						typeSymbol: "@deepseek-ai/dsh-cua#cuaAccess/openSettings:result",
+						create: _deepseek_ai_dsh_cua_cuaAccess_openSettings_result$schema,
+						description: "Completion after macOS accepted the open request.",
+						jsonSchemaError: "typert tool schema: unsupported void value"
+					},
+					sourceLocation: {
+						"file": "packages/experimental/cua/src/access.ts",
+						"line": 112,
+						"column": 9
+					}
+				},
+				"cuaAccess/ptcConfiguration": {
+					service: "cuaAccess",
+					description: "Read PTC execution state separately from native permission checks.",
+					invocation: { kind: "direct" },
+					parameters: [],
+					result: {
+						mode: "strict",
+						typeSymbol: "@deepseek-ai/dsh-cua#cuaAccess/ptcConfiguration:result",
+						create: _deepseek_ai_dsh_cua_cuaAccess_ptcConfiguration_result$schema,
+						description: "Whether the shared runtime retains memory and has an editable profile entry.",
+						jsonSchema: {
+							"type": "object",
+							"properties": {
+								"persistent": { "type": "boolean" },
+								"writable": { "type": "boolean" }
+							},
+							"required": ["persistent", "writable"],
+							"additionalProperties": true
+						}
+					},
+					sourceLocation: {
+						"file": "packages/experimental/cua/src/access.ts",
+						"line": 48,
+						"column": 3
+					}
+				},
+				"cuaAccess/requestPermission": {
+					service: "cuaAccess",
+					description: "Request a system privilege explicitly selected by the user.",
+					invocation: { kind: "direct" },
+					parameters: [{
+						name: "permission",
+						description: "macOS privilege to request.",
+						source: "json",
+						codec: {
+							mode: "strict",
+							typeSymbol: "@deepseek-ai/dsh-cua/types#CuaSystemPermission",
+							create: _deepseek_ai_dsh_cua_cuaAccess_requestPermission_parameter_0$schema,
+							jsonSchema: {
+								"type": "string",
+								"enum": ["accessibility", "screenRecording"]
+							}
+						},
+						strictCodec: {
+							mode: "strict",
+							typeSymbol: "@deepseek-ai/dsh-cua/types#CuaSystemPermission",
+							create: _deepseek_ai_dsh_cua_cuaAccess_requestPermission_parameter_0_strict$schema,
+							jsonSchema: {
+								"type": "string",
+								"enum": ["accessibility", "screenRecording"]
+							}
+						}
+					}],
+					result: {
+						mode: "strict",
+						typeSymbol: "@deepseek-ai/dsh-cua/types#CuaSystemPermissionState",
+						create: _deepseek_ai_dsh_cua_cuaAccess_requestPermission_result$schema,
+						description: "Preflight state after requesting; a false value never implies consent.",
+						jsonSchema: {
+							"type": "object",
+							"properties": {
+								"accessibility": { "type": "boolean" },
+								"screenRecording": { "type": "boolean" },
+								"helper": {
+									"type": "object",
+									"properties": {
+										"pid": { "type": "number" },
+										"path": { "type": "string" },
+										"name": { "type": "string" }
+									},
+									"required": ["pid"],
+									"additionalProperties": true
+								},
+								"parent": {
+									"type": "object",
+									"properties": {
+										"pid": { "type": "number" },
+										"path": { "type": "string" },
+										"name": { "type": "string" }
+									},
+									"required": ["pid"],
+									"additionalProperties": true
+								},
+								"launchApplication": {
+									"type": "object",
+									"properties": {
+										"name": { "type": "string" },
+										"path": { "type": "string" },
+										"icon": { "type": "string" }
+									},
+									"required": ["name", "path"],
+									"additionalProperties": true,
+									"description": "Application macOS reports as responsible for the helper, captured at startup; absent when it cannot be identified."
+								}
+							},
+							"required": [
+								"accessibility",
+								"screenRecording",
+								"helper",
+								"parent"
+							],
+							"additionalProperties": true
+						}
+					},
+					sourceLocation: {
+						"file": "packages/experimental/cua/src/access.ts",
+						"line": 102,
+						"column": 9
+					}
+				},
+				"cuaAccess/retryApproval": {
+					service: "cuaAccess",
+					description: "Clear this application's refusals across sessions so each session may ask for access again.",
+					invocation: { kind: "direct" },
+					parameters: [{
+						name: "id",
+						description: "Refused or revoked application displayed on the permission page.",
+						source: "json",
+						codec: {
+							mode: "strict",
+							typeSymbol: "@deepseek-ai/dsh-cua/types#CuaApplicationId",
+							create: _deepseek_ai_dsh_cua_cuaAccess_retryApproval_parameter_0$schema,
+							jsonSchema: { "type": "string" }
+						},
+						strictCodec: {
+							mode: "strict",
+							typeSymbol: "@deepseek-ai/dsh-cua/types#CuaApplicationId",
+							create: _deepseek_ai_dsh_cua_cuaAccess_retryApproval_parameter_0_strict$schema,
+							jsonSchema: { "type": "string" }
+						}
+					}],
+					result: {
+						mode: "strict",
+						typeSymbol: "@deepseek-ai/dsh-cua#cuaAccess/retryApproval:result",
+						create: _deepseek_ai_dsh_cua_cuaAccess_retryApproval_result$schema,
+						description: "Completion after clearing refusals; no permission is granted and no action is replayed.",
+						jsonSchemaError: "typert tool schema: unsupported void value"
+					},
+					sourceLocation: {
+						"file": "packages/experimental/cua/src/access.ts",
+						"line": 130,
+						"column": 9
+					}
+				},
+				"cuaAccess/revoke": {
+					service: "cuaAccess",
+					description: "Remove saved and session access and join affected operations.",
+					invocation: { kind: "direct" },
+					parameters: [{
+						name: "id",
+						description: "Application identity displayed on the permission page.",
+						source: "json",
+						codec: {
+							mode: "strict",
+							typeSymbol: "@deepseek-ai/dsh-cua/types#CuaApplicationId",
+							create: _deepseek_ai_dsh_cua_cuaAccess_revoke_parameter_0$schema,
+							jsonSchema: { "type": "string" }
+						},
+						strictCodec: {
+							mode: "strict",
+							typeSymbol: "@deepseek-ai/dsh-cua/types#CuaApplicationId",
+							create: _deepseek_ai_dsh_cua_cuaAccess_revoke_parameter_0_strict$schema,
+							jsonSchema: { "type": "string" }
+						}
+					}],
+					result: {
+						mode: "strict",
+						typeSymbol: "@deepseek-ai/dsh-cua#cuaAccess/revoke:result",
+						create: _deepseek_ai_dsh_cua_cuaAccess_revoke_result$schema,
+						description: "Completion after persistence and cancellation; dispatched input cannot be undone.",
+						jsonSchemaError: "typert tool schema: unsupported void value"
+					},
+					sourceLocation: {
+						"file": "packages/experimental/cua/src/access.ts",
+						"line": 122,
+						"column": 3
+					}
+				},
+				"cuaAccess/systemStatus": {
+					service: "cuaAccess",
+					description: "Inspect system privileges independently of application decisions and icons.",
+					invocation: { kind: "direct" },
+					parameters: [],
+					result: {
+						mode: "strict",
+						typeSymbol: "@deepseek-ai/dsh-cua/types#CuaSystemPermissionState",
+						create: _deepseek_ai_dsh_cua_cuaAccess_systemStatus_result$schema,
+						description: "Fresh native preflight and launch metadata.",
+						jsonSchema: {
+							"type": "object",
+							"properties": {
+								"accessibility": { "type": "boolean" },
+								"screenRecording": { "type": "boolean" },
+								"helper": {
+									"type": "object",
+									"properties": {
+										"pid": { "type": "number" },
+										"path": { "type": "string" },
+										"name": { "type": "string" }
+									},
+									"required": ["pid"],
+									"additionalProperties": true
+								},
+								"parent": {
+									"type": "object",
+									"properties": {
+										"pid": { "type": "number" },
+										"path": { "type": "string" },
+										"name": { "type": "string" }
+									},
+									"required": ["pid"],
+									"additionalProperties": true
+								},
+								"launchApplication": {
+									"type": "object",
+									"properties": {
+										"name": { "type": "string" },
+										"path": { "type": "string" },
+										"icon": { "type": "string" }
+									},
+									"required": ["name", "path"],
+									"additionalProperties": true,
+									"description": "Application macOS reports as responsible for the helper, captured at startup; absent when it cannot be identified."
+								}
+							},
+							"required": [
+								"accessibility",
+								"screenRecording",
+								"helper",
+								"parent"
+							],
+							"additionalProperties": true
+						}
+					},
+					sourceLocation: {
+						"file": "packages/experimental/cua/src/access.ts",
+						"line": 80,
+						"column": 9
+					}
+				}
+			}
+		}, zod.z);
+		//#endregion
+		//#region lib/types/client/ApplicationApproval.js
+		/**
+		* Select only the provider's fixed application question; other interactions keep their renderer.
+		* @param pending The session's currently elected interaction.
+		* @returns Its application decision, or null for another interaction.
+		*/
+		function selectApplicationApproval(pending) {
+			if (pending?.kind !== "question" || pending.questions.length !== 1) return null;
+			const item = pending.questions[0];
+			if (item.id !== "cua-app-access" || item.intent?.kind !== "approval") return null;
+			return {
+				pending,
+				item,
+				intent: item.intent
+			};
+		}
+		/**
+		* Render the shared approval card without creating another request or answer lifetime.
+		* @param props The existing pending question and renderer bindings.
+		* @returns Fixed actions with the provider's original answer labels.
+		*/
+		function ApplicationApproval({ matched: { pending, item, intent }, resolveText, renderFactorySlot }) {
+			const always = intent.always;
+			const answer = (label) => pending.answer({ answers: [{
+				id: item.id,
+				selected: [label]
+			}] });
+			return renderFactorySlot("conversation.approval.card", {
+				requestKey: pending.key,
+				title: intent.display === void 0 ? item.question : resolveText(intent.display.question),
+				...item.detail === void 0 ? {} : { description: intent.display?.detail === void 0 ? item.detail : resolveText(intent.display.detail) },
+				...intent.subject === void 0 ? {} : { subject: intent.subject },
+				allowLabel: intent.display?.approve === void 0 ? intent.approve : resolveText(intent.display.approve),
+				canAnswer: () => pending.snapshot().channel !== "none" && !pending.snapshot().closed,
+				onAllow: () => answer(intent.approve),
+				onReject: () => answer(intent.reject),
+				...always === void 0 ? {} : { onAlways: () => answer(always) }
+			});
+		}
+		//#endregion
+		//#region lib/types/client/controller.js
+		/** Serializes actions, pauses reads during management operations, and drops superseded or disposed results. */
+		var PermissionController = class {
+			remote;
+			/** Last observed permissions and the lifetime of the current refresh/action. */
+			state = (0, _deepseek_ai_dsh_client_store.createSnapshotStore)({
+				runtime: {
+					value: null,
+					busy: false,
+					error: null
+				},
+				system: {
+					value: null,
+					busy: false,
+					error: null
+				},
+				applications: {
+					value: null,
+					busy: false,
+					error: null
+				},
+				icons: {
+					value: null,
+					busy: false,
+					error: null
+				},
+				busy: false,
+				changing: false,
+				toast: null
+			});
+			tail = Promise.resolve();
+			reads = Promise.resolve();
+			closed = false;
+			epoch = 0;
+			sequence = 0;
+			/** @param remote Generated CUA Remote namespace; failed results are handled with query and action failures. */
+			constructor(remote) {
+				this.remote = remote;
+			}
+			/**
+			* Bind the permission projection to its user actions.
+			* @returns Reactive state and controls shared by the page, prompt, and toast host.
+			*/
+			face() {
+				return {
+					hooks: { cuaPermissions: this.state },
+					refresh: () => {
+						this.enqueue();
+					},
+					request: (permission) => {
+						this.enqueue(() => this.remote.requestPermission(permission), "requested");
+					},
+					openSettings: (permission) => {
+						this.enqueue(() => this.remote.openSettings(permission), "opened");
+					},
+					revoke: (id) => {
+						this.enqueue(() => this.remote.revoke(id), "revoked");
+					},
+					retryApproval: (id) => {
+						this.enqueue(() => this.remote.retryApproval(id), "retryAllowed");
+					},
+					dismissToast: () => {
+						if (!this.closed) this.state.update((state) => {
+							state.toast = null;
+						});
+					}
+				};
+			}
+			/**
+			* Update query admission from the management operation's synchronous notification.
+			* @param changing Whether a bundle or row operation is pending; settlement refreshes observations.
+			*/
+			setChanging(changing) {
+				if (this.closed || changing === this.state.getSnapshot().changing) return;
+				this.epoch++;
+				this.state.update((state) => {
+					state.changing = changing;
+					state.busy = true;
+					for (const key of [
+						"runtime",
+						"system",
+						"applications",
+						"icons"
+					]) state[key].busy = true;
+				});
+				if (!changing) this.enqueue();
+			}
+			/** Prevent publication after UI withdrawal and join the accepted Remote work. */
+			async dispose() {
+				this.closed = true;
+				await this.tail;
+				await this.reads;
+			}
+			enqueue(action, kind) {
+				if (this.closed || this.state.getSnapshot().changing) return;
+				const epoch = this.epoch;
+				const current = () => !this.closed && epoch === this.epoch;
+				const sequence = ++this.sequence;
+				this.state.update((state) => {
+					state.busy = true;
+					for (const key of [
+						"runtime",
+						"system",
+						"applications",
+						"icons"
+					]) state[key].busy = true;
+				});
+				this.tail = this.tail.then(async () => {
+					if (!current()) return;
+					try {
+						if (action) {
+							const result = await action();
+							if (!result.ok) throw result.error;
+						}
+						if (!current()) return;
+						if (kind) this.state.update((state) => {
+							state.toast = {
+								id: sequence,
+								kind
+							};
+						});
+					} catch (error) {
+						if (!current()) return;
+						const message = error instanceof Error ? error.message : String(error);
+						this.state.update((state) => {
+							state.toast = {
+								id: sequence,
+								kind: "failed",
+								message
+							};
+						});
+					}
+					const latest = () => current() && this.sequence === sequence;
+					const refresh = Promise.all([
+						this.read("runtime", this.remote.ptcConfiguration, latest),
+						this.read("system", this.remote.systemStatus, latest),
+						this.read("applications", this.remote.applications, latest),
+						this.read("icons", this.remote.applicationIcons, latest)
+					]).then(() => {
+						if (latest()) this.state.update((state) => {
+							state.busy = false;
+						});
+					});
+					this.reads = Promise.all([this.reads, refresh]).then(() => {});
+				});
+			}
+			async read(key, read, current) {
+				if (!current()) return;
+				try {
+					const result = await read();
+					if (!current()) return;
+					if (!result.ok) throw result.error;
+					this.state.update((state) => {
+						state[key].value = result.value;
+						state[key].error = null;
+						state[key].busy = false;
+					});
+				} catch (error) {
+					if (!current()) return;
+					this.state.update((state) => {
+						state[key].error = error instanceof Error ? error.message : String(error);
+						state[key].busy = false;
+					});
+				}
+			}
+		};
+		//#endregion
+		//#region \0dsh-css:/home/runner/work/deepseek-harness/deepseek-harness/packages/experimental/cua/src/client/PermissionPanel.module.css.mjs
+		const css = ".QWBnEW_panels{gap:32px;margin:0;font-size:13px;display:grid}.QWBnEW_panel{gap:12px;min-width:0;display:grid}.QWBnEW_card{border:.5px solid var(--dsw-alias-border-l3);border-radius:var(--dsw-radius-md);min-width:0}.QWBnEW_card>*+*{border-top:.5px solid var(--dsw-alias-border-l3)}.QWBnEW_panel p{color:var(--dsw-alias-label-secondary);margin:0;line-height:1.6}.QWBnEW_panel h3{margin:0;font-size:14px;font-weight:500}.QWBnEW_panel h4{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px;font-weight:500}.QWBnEW_permission,.QWBnEW_apps li{flex-wrap:wrap;align-items:center;gap:12px;display:flex}.QWBnEW_permission,.QWBnEW_group,.QWBnEW_emptyState,.QWBnEW_notice{padding:16px}.QWBnEW_permission{box-sizing:border-box;min-height:80px}.QWBnEW_defaultSetting>p{margin:0 16px 16px}.QWBnEW_permission>div:first-child,.QWBnEW_apps li>div{flex:1;min-width:140px}.QWBnEW_notice{flex-wrap:wrap;align-items:center;gap:8px;display:flex}.QWBnEW_group{gap:4px;display:grid}.QWBnEW_apps{margin:0;padding:0;list-style:none;display:grid}.QWBnEW_apps li{padding:12px 0}.QWBnEW_apps li:last-child{padding-bottom:0}.QWBnEW_panel strong{font-weight:500}.QWBnEW_panel .QWBnEW_error{color:var(--dsw-alias-state-error-primary);overflow-wrap:anywhere}.QWBnEW_application{align-items:center;gap:10px;display:flex}.QWBnEW_application strong{overflow-wrap:anywhere;min-width:0}.QWBnEW_application img{object-fit:contain;flex-shrink:0}.QWBnEW_applicationBadge{border:.5px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-sm);max-width:100%;color:var(--dsw-alias-label-primary);vertical-align:middle;align-items:center;gap:6px;padding:2px 6px;display:inline-flex}.QWBnEW_applicationBadge img{object-fit:contain;flex-shrink:0}.QWBnEW_applicationBadge>span{overflow-wrap:anywhere;min-width:0}.QWBnEW_permissionAction,.QWBnEW_buttonPlaceholder{flex-shrink:0;width:168px}.QWBnEW_permissionAction[data-configured]:disabled{opacity:1;color:var(--dsw-alias-label-primary);cursor:default}.QWBnEW_buttonPlaceholder,.QWBnEW_appPlaceholder,.QWBnEW_appsPlaceholder{border-radius:var(--dsw-radius-xs);background:var(--dsw-alias-bg-skeleton);max-width:100%;display:inline-block}.QWBnEW_buttonPlaceholder{height:28px}.QWBnEW_appPlaceholder{width:160px;height:1.6em}.QWBnEW_appsPlaceholder{color:#0000;display:block}.QWBnEW_iconPlaceholder{flex-shrink:0;width:32px;height:32px;display:inline-block}";
+		const tagId = "@deepseek-ai/dsh-cua/PermissionPanel.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+			const tag = document.createElement("style");
+			tag.dataset.plugin = "@deepseek-ai/dsh-cua";
+			tag.dataset.pluginCss = tagId;
+			tag.textContent = css;
+			document.head.appendChild(tag);
+		}
+		var PermissionPanel_module_css_default = {
+			"appPlaceholder": "QWBnEW_appPlaceholder",
+			"application": "QWBnEW_application",
+			"applicationBadge": "QWBnEW_applicationBadge",
+			"apps": "QWBnEW_apps",
+			"appsPlaceholder": "QWBnEW_appsPlaceholder",
+			"buttonPlaceholder": "QWBnEW_buttonPlaceholder",
+			"card": "QWBnEW_card",
+			"defaultSetting": "QWBnEW_defaultSetting",
+			"emptyState": "QWBnEW_emptyState",
+			"error": "QWBnEW_error",
+			"group": "QWBnEW_group",
+			"iconPlaceholder": "QWBnEW_iconPlaceholder",
+			"notice": "QWBnEW_notice",
+			"panel": "QWBnEW_panel",
+			"panels": "QWBnEW_panels",
+			"permission": "QWBnEW_permission",
+			"permissionAction": "QWBnEW_permissionAction"
+		};
+		//#endregion
+		//#region lib/types/client/PermissionPanel.js
+		/** Native permission status and revocable application consent on the existing plugin page. */
+		function DefaultPresetSetting(props) {
+			const preset = props.useCuaDefaultPreset((value) => value);
+			const changing = props.useCuaPermissions((value) => value.changing);
+			return (0, react_jsx_runtime.jsx)(ConfigurationSetting, {
+				kind: "default",
+				status: preset.value !== void 0 && preset.status === "loading" ? "ready" : preset.status,
+				loading: preset.value === void 0 && preset.status === "loading",
+				writable: preset.writable,
+				t: props.t,
+				busy: changing,
+				save: props.setPtcDefault,
+				configured: (preset.value?.selectedDefault ?? preset.value?.default) === "ptc"
+			});
+		}
+		function PersistentPtcSetting(props) {
+			const runtime = props.useCuaPermissions((value) => value.runtime);
+			const changing = props.useCuaPermissions((value) => value.changing);
+			return (0, react_jsx_runtime.jsx)(ConfigurationSetting, {
+				kind: "persistent",
+				loading: runtime.value === null && runtime.error === null,
+				status: runtime.error !== null ? "unavailable" : runtime.value !== null ? "ready" : "loading",
+				writable: runtime.value?.writable === true,
+				t: props.t,
+				busy: changing || runtime.busy,
+				save: props.setPersistentPtc,
+				configured: runtime.value?.persistent === true
+			});
+		}
+		function ConfigurationSetting({ kind, status, loading, writable, configured, save, t, busy }) {
+			const [saving, setSaving] = (0, react.useState)(false);
+			const [error, setError] = (0, react.useState)(null);
+			const submit = async () => {
+				setSaving(true);
+				setError(null);
+				try {
+					if (!await save()) setError(t(`${kind}NotSaved`));
+				} catch (error) {
+					setError(t(`${kind}Failed`, { message: error instanceof Error ? error.message : String(error) }));
+				} finally {
+					setSaving(false);
+				}
+			};
+			return (0, react_jsx_runtime.jsxs)("div", {
+				className: PermissionPanel_module_css_default.defaultSetting,
+				role: "group",
+				"aria-label": t(`${kind}Title`),
+				children: [
+					(0, react_jsx_runtime.jsxs)("div", {
+						className: PermissionPanel_module_css_default.permission,
+						children: [(0, react_jsx_runtime.jsxs)("div", { children: [(0, react_jsx_runtime.jsx)("strong", { children: t(`${kind}Title`) }), (0, react_jsx_runtime.jsx)("p", { children: t(`${kind}Body`) })] }), loading ? (0, react_jsx_runtime.jsx)("span", {
+							className: PermissionPanel_module_css_default.buttonPlaceholder,
+							"aria-hidden": true
+						}) : (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+							size: "sm",
+							className: PermissionPanel_module_css_default.permissionAction,
+							"data-configured": configured || void 0,
+							variant: configured ? "outline" : "primary",
+							disabled: busy || saving || configured || !writable || status !== "ready",
+							onClick: () => {
+								submit();
+							},
+							children: t(configured ? `${kind}Set` : `${kind}Confirm`)
+						})]
+					}),
+					!configured && (status === "unavailable" ? (0, react_jsx_runtime.jsx)("p", {
+						className: PermissionPanel_module_css_default.error,
+						role: "alert",
+						children: t(`${kind}Unavailable`)
+					}) : status === "ready" && !writable && (0, react_jsx_runtime.jsx)("p", {
+						className: PermissionPanel_module_css_default.error,
+						role: "alert",
+						children: t(`${kind}ReadOnly`)
+					})),
+					error !== null && (0, react_jsx_runtime.jsx)("p", {
+						className: PermissionPanel_module_css_default.error,
+						role: "alert",
+						children: error
+					})
+				]
+			});
+		}
+		function Applications({ title, apps, icons, onAction, label, disabled }) {
+			return (0, react_jsx_runtime.jsxs)("section", {
+				className: PermissionPanel_module_css_default.group,
+				children: [(0, react_jsx_runtime.jsx)("h4", { children: title }), (0, react_jsx_runtime.jsx)("ul", {
+					className: PermissionPanel_module_css_default.apps,
+					children: apps.map((app) => (0, react_jsx_runtime.jsxs)("li", { children: [(0, react_jsx_runtime.jsxs)("div", {
+						className: PermissionPanel_module_css_default.application,
+						title: app.executablePath,
+						children: [app.executablePath !== void 0 && icons?.[app.executablePath] !== void 0 ? (0, react_jsx_runtime.jsx)("img", {
+							src: icons[app.executablePath],
+							alt: "",
+							width: 32,
+							height: 32,
+							draggable: false
+						}) : (0, react_jsx_runtime.jsx)("span", {
+							className: PermissionPanel_module_css_default.iconPlaceholder,
+							"aria-hidden": true
+						}), (0, react_jsx_runtime.jsx)("strong", { children: app.name })]
+					}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+						size: "sm",
+						variant: "outline",
+						disabled,
+						onClick: () => {
+							onAction(app.id);
+						},
+						children: label
+					})] }, app.id))
+				})]
+			});
+		}
+		function PermissionDescription({ application, permission, loading, t }) {
+			if (!loading && application === void 0) return (0, react_jsx_runtime.jsx)("p", { children: t(permission === "accessibility" ? "accessibilityUse" : "screenRecordingUse") });
+			const [before, after] = t(permission === "accessibility" ? "accessibilityPermission" : "screenRecordingPermission").split("{application}");
+			return (0, react_jsx_runtime.jsxs)("p", { children: [
+				before,
+				(0, react_jsx_runtime.jsx)("span", {
+					className: PermissionPanel_module_css_default.applicationBadge,
+					children: application === void 0 ? (0, react_jsx_runtime.jsx)("span", {
+						className: PermissionPanel_module_css_default.appPlaceholder,
+						"aria-hidden": true
+					}) : (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [application.icon !== void 0 && (0, react_jsx_runtime.jsx)("img", {
+						src: application.icon,
+						alt: "",
+						width: 20,
+						height: 20,
+						draggable: false
+					}), (0, react_jsx_runtime.jsx)("span", { children: application.name })] })
+				}),
+				after
+			] });
+		}
+		function PermissionAction({ permission, granted, loading, busy, request, openSettings, t }) {
+			if (loading) return (0, react_jsx_runtime.jsx)("span", {
+				className: PermissionPanel_module_css_default.buttonPlaceholder,
+				"aria-hidden": true
+			});
+			if (granted === false) return (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+				size: "sm",
+				variant: "primary",
+				className: PermissionPanel_module_css_default.permissionAction,
+				disabled: busy,
+				onClick: () => {
+					request(permission);
+				},
+				children: t("request")
+			});
+			return (0, react_jsx_runtime.jsxs)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+				size: "sm",
+				variant: "outline",
+				className: PermissionPanel_module_css_default.permissionAction,
+				disabled: busy,
+				title: t("settings"),
+				onClick: () => {
+					openSettings(permission);
+				},
+				children: [t(granted === true ? "granted" : "unknown"), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconSettingsOutlineRegular, {
+					size: 14,
+					"aria-hidden": "true"
+				})]
+			});
+		}
+		/** @param props Host observation and explicit user actions. @returns Permission controls without automatic system prompts. */
+		function PermissionPanel(props) {
+			const { t, refresh } = props;
+			const state = props.useCuaPermissions((value) => value);
+			const observed = state.system.value;
+			const apps = state.applications.value;
+			const transitioning = state.changing;
+			const busy = transitioning || state.system.busy;
+			const appsBusy = transitioning || state.applications.busy;
+			const loading = observed === null && state.system.error === null;
+			const application = state.system.error !== null ? void 0 : observed?.launchApplication;
+			(0, react.useEffect)(() => {
+				refresh();
+				window.addEventListener("focus", refresh);
+				return () => {
+					window.removeEventListener("focus", refresh);
+				};
+			}, [refresh]);
+			return (0, react_jsx_runtime.jsxs)("div", {
+				className: PermissionPanel_module_css_default.panels,
+				"data-cua-settings": true,
+				"aria-busy": transitioning || state.busy || loading,
+				children: [(0, react_jsx_runtime.jsxs)("section", {
+					className: PermissionPanel_module_css_default.panel,
+					"aria-label": t("title"),
+					children: [
+						(0, react_jsx_runtime.jsx)("h3", { children: t("title") }),
+						(0, react_jsx_runtime.jsxs)("div", {
+							className: PermissionPanel_module_css_default.card,
+							children: [
+								(0, react_jsx_runtime.jsx)(DefaultPresetSetting, { ...props }),
+								(0, react_jsx_runtime.jsx)(PersistentPtcSetting, { ...props }),
+								state.system.error !== null && (0, react_jsx_runtime.jsxs)("div", {
+									className: PermissionPanel_module_css_default.notice,
+									role: "alert",
+									children: [(0, react_jsx_runtime.jsx)("span", {
+										className: PermissionPanel_module_css_default.error,
+										children: t("queryFailed", { message: state.system.error })
+									}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+										size: "sm",
+										variant: "outline",
+										disabled: busy,
+										onClick: refresh,
+										children: t("retry")
+									})]
+								}),
+								["accessibility", "screenRecording"].map((permission) => (0, react_jsx_runtime.jsxs)("div", {
+									className: PermissionPanel_module_css_default.permission,
+									role: "group",
+									"aria-label": t(permission),
+									children: [(0, react_jsx_runtime.jsxs)("div", { children: [(0, react_jsx_runtime.jsx)("strong", { children: t(permission) }), (0, react_jsx_runtime.jsx)(PermissionDescription, {
+										application,
+										permission,
+										loading,
+										t
+									})] }), (0, react_jsx_runtime.jsx)(PermissionAction, {
+										permission,
+										granted: observed === null || state.system.error !== null ? null : observed[permission],
+										loading,
+										busy,
+										request: props.request,
+										openSettings: props.openSettings,
+										t
+									})]
+								}, permission))
+							]
+						}),
+						(0, react_jsx_runtime.jsx)("p", { children: t("permissionHint") })
+					]
+				}), (0, react_jsx_runtime.jsxs)("section", {
+					className: PermissionPanel_module_css_default.panel,
+					"aria-label": t("applicationsTitle"),
+					children: [(0, react_jsx_runtime.jsx)("h3", { children: t("applicationsTitle") }), (0, react_jsx_runtime.jsxs)("div", {
+						className: PermissionPanel_module_css_default.card,
+						children: [["applications", "icons"].map((key) => state[key].error !== null && (0, react_jsx_runtime.jsxs)("div", {
+							className: PermissionPanel_module_css_default.notice,
+							role: "alert",
+							children: [(0, react_jsx_runtime.jsx)("span", {
+								className: PermissionPanel_module_css_default.error,
+								children: t(key === "applications" ? "applicationsFailed" : "iconsFailed", { message: state[key].error })
+							}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+								size: "sm",
+								variant: "outline",
+								disabled: transitioning || state[key].busy,
+								onClick: refresh,
+								children: t("retry")
+							})]
+						}, key)), apps === null ? (0, react_jsx_runtime.jsx)("p", {
+							className: PermissionPanel_module_css_default.emptyState,
+							children: (0, react_jsx_runtime.jsx)("span", {
+								className: PermissionPanel_module_css_default.appsPlaceholder,
+								"aria-hidden": true,
+								children: t("noApps")
+							})
+						}) : (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+							apps.allowedApps.length === 0 && apps.blockedApps.length === 0 && (0, react_jsx_runtime.jsx)("p", {
+								className: PermissionPanel_module_css_default.emptyState,
+								children: t("noApps")
+							}),
+							apps.allowedApps.length > 0 && (0, react_jsx_runtime.jsx)(Applications, {
+								title: t("allowedApps"),
+								apps: apps.allowedApps,
+								icons: state.icons.value,
+								onAction: props.revoke,
+								label: t("revoke"),
+								disabled: appsBusy || !apps.persistentAvailable
+							}),
+							apps.blockedApps.length > 0 && (0, react_jsx_runtime.jsx)(Applications, {
+								title: t("blockedApps"),
+								apps: apps.blockedApps,
+								icons: state.icons.value,
+								onAction: props.retryApproval,
+								label: t("retryApproval"),
+								disabled: appsBusy
+							})
+						] })]
+					})]
+				})]
+			});
+		}
+		/**
+		* @param props Permission observation and activation navigation callbacks.
+		* @returns Setup guidance when system permissions need attention.
+		*/
+		function PermissionSetup({ t, refresh, useCuaPermissions, onDismiss, onOpenDetails }) {
+			const state = useCuaPermissions((value) => value.system);
+			(0, react.useEffect)(() => {
+				refresh();
+			}, [refresh]);
+			const ready = state.value !== null && state.error === null && state.value.accessibility && state.value.screenRecording;
+			(0, react.useEffect)(() => {
+				if (ready && !state.busy) onDismiss();
+			}, [
+				ready,
+				state.busy,
+				onDismiss
+			]);
+			return (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Modal, {
+				open: !ready && (state.value !== null || !state.busy && state.error !== null),
+				title: t("setupTitle"),
+				closeLabel: t("close"),
+				onClose: onDismiss,
+				footer: (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+					variant: "ghost",
+					onClick: onDismiss,
+					children: t("later")
+				}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+					variant: "primary",
+					"data-modal-autofocus": true,
+					onClick: onOpenDetails,
+					children: t("openSetup")
+				})] }),
+				children: (0, react_jsx_runtime.jsx)("p", { children: t(state.error === null ? "setupBody" : "setupQueryFailed") })
+			});
+		}
+		/** @param props Shared operation outcome, independent of page lifetime. @returns The existing global toast presentation. */
+		function PermissionToast(props) {
+			const toast = props.useCuaPermissions((value) => value.toast);
+			if (!toast) return null;
+			return (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Toast, {
+				text: toast.kind === "failed" ? props.t("failed", { message: toast.message }) : props.t(toast.kind),
+				...toast.kind === "revoked" ? { tone: "success" } : {},
+				onDone: props.dismissToast
+			}, toast.id);
+		}
+		//#endregion
+		//#region lib/types/client/locales.js
+		/** Product copy for native permission onboarding and application revocation. */
+		const NS = "cuaPermissions";
+		/** English permission-page dictionary. */
+		const en = {
+			title: "Authorize computer use",
+			applicationsTitle: "Manage applications computer use can access",
+			setupTitle: "Set up computer use before use",
+			setupBody: "Computer use is enabled. Before using it, switch to PTC mode and grant Accessibility and Screen Recording permissions. Open the plugin details to complete setup.",
+			setupQueryFailed: "Computer use is enabled, but system permissions could not be checked. Open the plugin details to see the error and retry.",
+			defaultTitle: "Default mode for new sessions",
+			defaultBody: "Computer use is available only in PTC mode.",
+			defaultConfirm: "Set to PTC",
+			defaultSet: "PTC is the default",
+			defaultUnavailable: "Could not read the default mode. Check it in Settings.",
+			defaultReadOnly: "Default-mode settings are read-only.",
+			defaultNotSaved: "The default mode was not saved. Try again.",
+			defaultFailed: "Could not change the default mode: {message}",
+			persistentTitle: "PTC execution mode",
+			persistentBody: "Keep variables and application objects across tool calls. Switching restarts the PTC runtime.",
+			persistentConfirm: "Use persistent mode",
+			persistentSet: "Persistent mode enabled",
+			persistentUnavailable: "Could not read the PTC execution mode. Check it in Settings.",
+			persistentReadOnly: "PTC execution settings are read-only.",
+			persistentNotSaved: "The PTC execution mode was not saved. Try again.",
+			persistentFailed: "Could not change the PTC execution mode: {message}",
+			openSetup: "Open settings",
+			later: "Later",
+			close: "Close",
+			accessibility: "Accessibility",
+			screenRecording: "Screen Recording",
+			accessibilityUse: "Read interface controls, click, and type.",
+			screenRecordingUse: "Capture the selected application window.",
+			accessibilityPermission: "In System Settings, allow {application} to read interface controls, click, and type.",
+			screenRecordingPermission: "In System Settings, allow {application} to capture application windows.",
+			permissionHint: "Manage permissions in System Settings for the application named by macOS.",
+			granted: "Allowed",
+			unknown: "Unknown",
+			request: "Request permission",
+			settings: "Open System Settings",
+			retry: "Retry",
+			allowedApps: "Always-allowed applications",
+			blockedApps: "Applications not allowed",
+			retryApproval: "Allow asking again",
+			retryAllowed: "The next application selection will ask again; access has not been granted",
+			noApps: "No always-allowed or blocked applications.",
+			revoke: "Revoke",
+			revoked: "Application access revoked",
+			requested: "Review the macOS prompt, or open System Settings if no prompt appears",
+			opened: "System Settings opened",
+			applicationsFailed: "Could not load application access: {message}",
+			iconsFailed: "Could not load application icons: {message}",
+			failed: "Could not update permissions: {message}",
+			queryFailed: "Could not check permissions: {message}"
+		};
+		/** Chinese permission-page dictionary. */
+		const zh = {
+			title: "给 Computer Use 授权",
+			applicationsTitle: "管理 Computer Use 可访问的应用",
+			setupTitle: "使用 Computer Use 前需要设置",
+			setupBody: "Computer Use 插件已开启。使用前请切换到 PTC 模式，并授予辅助功能和屏幕录制权限。请前往插件详情页完成设置。",
+			setupQueryFailed: "Computer Use 插件已开启，但暂时无法检测系统权限。请前往插件详情页查看原因并重试。",
+			defaultTitle: "新会话默认模式",
+			defaultBody: "Computer Use 仅在 PTC 模式中可用。",
+			defaultConfirm: "设为 PTC",
+			defaultSet: "已设为 PTC",
+			defaultUnavailable: "无法读取默认模式，请在设置中检查",
+			defaultReadOnly: "默认模式设置为只读",
+			defaultNotSaved: "默认模式未保存，请重试",
+			defaultFailed: "无法切换默认模式：{message}",
+			persistentTitle: "PTC 执行方式",
+			persistentBody: "跨工具调用保留变量和应用对象。切换会重启 PTC 执行器。",
+			persistentConfirm: "设为持久化",
+			persistentSet: "已设为持久化",
+			persistentUnavailable: "无法读取 PTC 执行方式，请在设置中检查",
+			persistentReadOnly: "PTC 执行方式设置为只读",
+			persistentNotSaved: "PTC 执行方式未保存，请重试",
+			persistentFailed: "无法切换 PTC 执行方式：{message}",
+			openSetup: "前往设置",
+			later: "稍后",
+			close: "关闭",
+			accessibility: "辅助功能",
+			screenRecording: "屏幕录制",
+			accessibilityUse: "读取界面控件、点击和输入文字",
+			screenRecordingUse: "截取所选应用的窗口",
+			accessibilityPermission: "在系统设置中允许 {application} 读取界面、点击和输入。",
+			screenRecordingPermission: "在系统设置中允许 {application} 截取应用窗口。",
+			permissionHint: "在系统设置中管理 macOS 提示的应用权限",
+			granted: "已允许",
+			unknown: "未确认",
+			request: "申请权限",
+			settings: "打开系统设置",
+			retry: "重试",
+			allowedApps: "始终允许的应用",
+			blockedApps: "不允许访问的应用",
+			retryApproval: "允许再次询问",
+			retryAllowed: "下次选择此应用时将重新询问，当前尚未授权",
+			noApps: "暂无始终允许或不允许访问的应用。",
+			revoke: "撤销",
+			revoked: "已撤销应用访问权限",
+			requested: "请查看 macOS 提示；若未出现，请打开系统设置",
+			opened: "已打开系统设置",
+			applicationsFailed: "无法读取应用授权：{message}",
+			iconsFailed: "无法读取应用图标：{message}",
+			failed: "无法更新权限：{message}",
+			queryFailed: "无法检测权限：{message}"
+		};
+		/** Japanese copy, checked against the English keys. */
+		const ja = {
+			"title": "コンピュータ操作を承認",
+			"applicationsTitle": "Computer Useがアクセスできるアプリを管理",
+			"setupTitle": "使用前にComputer Useを設定",
+			"setupBody": "Computer Useは有効です。使用する前にPTCモードに切り替え、アクセシビリティと画面収録の権限を許可してください。セットアップを完了するにはプラグインの詳細を開いてください。",
+			"setupQueryFailed": "Computer Useは有効ですが、システム権限を確認できませんでした。プラグインの詳細を開いてエラーを確認し、再試行してください。",
+			"defaultTitle": "新規セッションのデフォルトモード",
+			"defaultBody": "Computer UseはPTCモードでのみ利用できます。",
+			"defaultConfirm": "PTCに設定",
+			"defaultSet": "PTCがデフォルトです",
+			"defaultUnavailable": "デフォルトモードを読み取れませんでした。設定で確認してください。",
+			"defaultReadOnly": "デフォルトモードの設定は読み取り専用です。",
+			"defaultNotSaved": "デフォルトモードは保存されませんでした。もう一度お試しください。",
+			"defaultFailed": "デフォルトモードを変更できませんでした: {message}",
+			"persistentTitle": "PTC実行モード",
+			"persistentBody": "ツール呼び出し間で変数とアプリケーションオブジェクトを保持します。切り替えるとPTCランタイムが再起動します。",
+			"persistentConfirm": "永続モードを使用",
+			"persistentSet": "永続モードが有効になりました",
+			"persistentUnavailable": "PTC実行モードを読み取れませんでした。設定で確認してください。",
+			"persistentReadOnly": "PTC実行設定は読み取り専用です。",
+			"persistentNotSaved": "PTC実行モードは保存されませんでした。もう一度お試しください。",
+			"persistentFailed": "PTC実行モードを変更できませんでした: {message}",
+			"openSetup": "設定を開く",
+			"later": "後で",
+			"close": "閉じる",
+			"accessibility": "アクセシビリティ",
+			"screenRecording": "画面収録",
+			"accessibilityUse": "インターフェースのコントロールを読み取り、クリックし、入力します。",
+			"screenRecordingUse": "選択したアプリケーションのウィンドウをキャプチャします。",
+			"accessibilityPermission": "システム設定で、{application}にインターフェースのコントロールの読み取り、クリック、入力を許可してください。",
+			"screenRecordingPermission": "システム設定で、{application}にアプリケーションウィンドウのキャプチャを許可してください。",
+			"permissionHint": "macOS が示すアプリの権限をシステム設定で管理してください。",
+			"granted": "許可済み",
+			"unknown": "不明",
+			"request": "権限をリクエスト",
+			"settings": "システム設定を開く",
+			"retry": "再試行",
+			"allowedApps": "常に許可するアプリケーション",
+			"blockedApps": "許可されていないアプリケーション",
+			"retryApproval": "再度確認を許可",
+			"retryAllowed": "次回アプリケーションを選択するときに再度確認します。アクセスは許可されていません",
+			"noApps": "常に許可またはブロックされたアプリケーションはありません。",
+			"revoke": "取り消し",
+			"revoked": "アプリケーションのアクセスを取り消しました",
+			"requested": "macOSのプロンプトを確認するか、プロンプトが表示されない場合はシステム設定を開いてください",
+			"opened": "システム設定を開きました",
+			"applicationsFailed": "アプリケーションのアクセスを読み込めませんでした: {message}",
+			"iconsFailed": "アプリケーションのアイコンを読み込めませんでした: {message}",
+			"failed": "権限を更新できませんでした: {message}",
+			"queryFailed": "権限を確認できませんでした: {message}"
+		};
+		/** Spanish dictionary, checked against the English keys. */
+		const es = {
+			title: "Autorizar el uso de la computadora",
+			applicationsTitle: "Administrar aplicaciones a las que puede acceder el uso de la computadora",
+			setupTitle: "Configurar el uso de la computadora antes de usarla",
+			setupBody: "El uso de la computadora está habilitado. Antes de usarlo, cambie al modo PTC y otorgue permisos de Accesibilidad y Grabación de pantalla. Abra los detalles del complemento para completar la configuración.",
+			setupQueryFailed: "El uso de la computadora está habilitado, pero no se pudieron verificar los permisos del sistema. Abra los detalles del complemento para ver el error y vuelva a intentarlo.",
+			defaultTitle: "Modo predeterminado para nuevas sesiones",
+			defaultBody: "El uso de la computadora está disponible solo en el modo PTC.",
+			defaultConfirm: "Establecer en PTC",
+			defaultSet: "PTC es el valor predeterminado",
+			defaultUnavailable: "No se pudo leer el modo predeterminado. Compruébalo en Configuración.",
+			defaultReadOnly: "La configuración del modo predeterminado es de sólo lectura.",
+			defaultNotSaved: "El modo predeterminado no se guardó. Intentar otra vez.",
+			defaultFailed: "No se pudo cambiar el modo predeterminado: {message}",
+			persistentTitle: "Modo de ejecución PTC",
+			persistentBody: "Mantenga variables y objetos de aplicación en todas las llamadas a herramientas. El cambio reinicia el tiempo de ejecución PTC.",
+			persistentConfirm: "Usar modo persistente",
+			persistentSet: "Modo persistente habilitado",
+			persistentUnavailable: "No se pudo leer el modo de ejecución PTC. Compruébalo en Configuración.",
+			persistentReadOnly: "La configuración de ejecución de PTC es de solo lectura.",
+			persistentNotSaved: "El modo de ejecución PTC no se guardó. Intentar otra vez.",
+			persistentFailed: "No se pudo cambiar el modo de ejecución de PTC: {message}",
+			openSetup: "Abrir configuración",
+			later: "Más tarde",
+			close: "Cerrar",
+			accessibility: "Accesibilidad",
+			screenRecording: "Grabación de pantalla",
+			accessibilityUse: "Lea los controles de la interfaz, haga clic y escriba.",
+			screenRecordingUse: "Capture la ventana de la aplicación seleccionada.",
+			accessibilityPermission: "En Configuración del sistema, permita que {application} lea los controles de la interfaz, haga clic y escriba.",
+			screenRecordingPermission: "En Configuración del sistema, permita que {application} capture ventanas de aplicaciones.",
+			permissionHint: "Administre los permisos en Configuración del sistema para la aplicación nombrada por macOS.",
+			granted: "Permitido",
+			unknown: "Desconocido",
+			request: "Solicitar permiso",
+			settings: "Abrir configuración del sistema",
+			retry: "Reintentar",
+			allowedApps: "Aplicaciones siempre permitidas",
+			blockedApps: "Aplicaciones no permitidas",
+			retryApproval: "Permitir preguntar de nuevo",
+			retryAllowed: "La siguiente selección de aplicación le preguntará nuevamente; el acceso no ha sido concedido",
+			noApps: "No hay aplicaciones siempre permitidas o bloqueadas.",
+			revoke: "Revocar",
+			revoked: "Acceso a la aplicación revocado",
+			requested: "Revise el mensaje macOS o abra Configuración del sistema si no aparece ningún mensaje",
+			opened: "Configuración del sistema abierta",
+			applicationsFailed: "No se pudo cargar el acceso a la aplicación: {message}",
+			iconsFailed: "No se pudieron cargar los íconos de la aplicación: {message}",
+			failed: "No se pudieron actualizar los permisos: {message}",
+			queryFailed: "No se pudieron verificar los permisos: {message}"
+		};
+		/** French dictionary, checked against the English keys. */
+		const fr = {
+			title: "Autoriser l'utilisation de l'ordinateur",
+			applicationsTitle: "Gérer les applications auxquelles l'ordinateur peut accéder",
+			setupTitle: "Configurer l'utilisation de l'ordinateur avant utilisation",
+			setupBody: "L'utilisation de l'ordinateur est autorisée. Avant de l'utiliser, passez en mode PTC et accordez les autorisations d'accessibilité et d'enregistrement d'écran. Ouvrez les détails du plugin pour terminer la configuration.",
+			setupQueryFailed: "L'utilisation de l'ordinateur est activée, mais les autorisations système n'ont pas pu être vérifiées. Ouvrez les détails du plugin pour voir l'erreur et réessayez.",
+			defaultTitle: "Mode par défaut pour les nouvelles sessions",
+			defaultBody: "L'utilisation de l'ordinateur est disponible uniquement en mode PTC.",
+			defaultConfirm: "Réglé sur PTC",
+			defaultSet: "PTC est la valeur par défaut",
+			defaultUnavailable: "Impossible de lire le mode par défaut. Vérifiez-le dans Paramètres.",
+			defaultReadOnly: "Les paramètres du mode par défaut sont en lecture seule.",
+			defaultNotSaved: "Le mode par défaut n'a pas été enregistré. Essayer à nouveau.",
+			defaultFailed: "Impossible de modifier le mode par défaut\xA0: {message}",
+			persistentTitle: "Mode d'exécution PTC",
+			persistentBody: "Conservez les variables et les objets d’application lors des appels d’outils. La commutation redémarre le runtime PTC.",
+			persistentConfirm: "Utiliser le mode persistant",
+			persistentSet: "Mode persistant activé",
+			persistentUnavailable: "Impossible de lire le mode d'exécution PTC. Vérifiez-le dans Paramètres.",
+			persistentReadOnly: "Les paramètres d'exécution PTC sont en lecture seule.",
+			persistentNotSaved: "Le mode d'exécution PTC n'a pas été enregistré. Essayer à nouveau.",
+			persistentFailed: "Impossible de modifier le mode d'exécution de PTC\xA0: {message}",
+			openSetup: "Ouvrir les paramètres",
+			later: "Plus tard",
+			close: "Fermer",
+			accessibility: "Accessibilité",
+			screenRecording: "Enregistrement d'écran",
+			accessibilityUse: "Lisez les commandes de l’interface, cliquez et tapez.",
+			screenRecordingUse: "Capturez la fenêtre de l'application sélectionnée.",
+			accessibilityPermission: "Dans Paramètres système, autorisez {application} à lire les commandes de l'interface, à cliquer et à taper.",
+			screenRecordingPermission: "Dans Paramètres système, autorisez {application} à capturer les fenêtres d'application.",
+			permissionHint: "Gérez les autorisations dans les paramètres système pour l'application nommée par macOS.",
+			granted: "Autorisé",
+			unknown: "Inconnu",
+			request: "Demander l'autorisation",
+			settings: "Ouvrir les paramètres système",
+			retry: "Réessayer",
+			allowedApps: "Applications toujours autorisées",
+			blockedApps: "Applications non autorisées",
+			retryApproval: "Autoriser la demande à nouveau",
+			retryAllowed: "La prochaine sélection de candidatures demandera à nouveau\xA0; l'accès n'a pas été accordé",
+			noApps: "Aucune application toujours autorisée ou bloquée.",
+			revoke: "Révoquer",
+			revoked: "Accès à l'application révoqué",
+			requested: "Consultez l'invite macOS ou ouvrez les paramètres système si aucune invite n'apparaît.",
+			opened: "Paramètres système ouverts",
+			applicationsFailed: "Impossible de charger l'accès à l'application\xA0: {message}",
+			iconsFailed: "Impossible de charger les icônes d'application\xA0: {message}",
+			failed: "Impossible de mettre à jour les autorisations\xA0: {message}",
+			queryFailed: "Impossible de vérifier les autorisations\xA0: {message}"
+		};
+		/** German dictionary, checked against the English keys. */
+		const de = {
+			title: "Autorisieren Sie die Computernutzung",
+			applicationsTitle: "Verwalten Sie Anwendungen, auf die der Computer zugreifen kann",
+			setupTitle: "Richten Sie die Computernutzung vor der Nutzung ein",
+			setupBody: "Die Computernutzung ist aktiviert. Wechseln Sie vor der Verwendung in den PTC-Modus und erteilen Sie die Berechtigungen für Barrierefreiheit und Bildschirmaufzeichnung. Öffnen Sie die Plugin-Details, um die Einrichtung abzuschließen.",
+			setupQueryFailed: "Die Computernutzung ist aktiviert, aber die Systemberechtigungen konnten nicht überprüft werden. Öffnen Sie die Plugin-Details, um den Fehler anzuzeigen, und versuchen Sie es erneut.",
+			defaultTitle: "Standardmodus für neue Sitzungen",
+			defaultBody: "Die Computernutzung ist nur im PTC-Modus verfügbar.",
+			defaultConfirm: "Auf PTC setzen",
+			defaultSet: "PTC ist die Standardeinstellung",
+			defaultUnavailable: "Der Standardmodus konnte nicht gelesen werden. Überprüfen Sie es in den Einstellungen.",
+			defaultReadOnly: "Die Standardmoduseinstellungen sind schreibgeschützt.",
+			defaultNotSaved: "Der Standardmodus wurde nicht gespeichert. Versuchen Sie es erneut.",
+			defaultFailed: "Der Standardmodus konnte nicht geändert werden: {message}",
+			persistentTitle: "PTC Ausführungsmodus",
+			persistentBody: "Behalten Sie Variablen und Anwendungsobjekte über Werkzeugaufrufe hinweg bei. Durch den Wechsel wird die PTC-Laufzeit neu gestartet.",
+			persistentConfirm: "Verwenden Sie den persistenten Modus",
+			persistentSet: "Persistenter Modus aktiviert",
+			persistentUnavailable: "Der PTC-Ausführungsmodus konnte nicht gelesen werden. Überprüfen Sie es in den Einstellungen.",
+			persistentReadOnly: "Die Ausführungseinstellungen von PTC sind schreibgeschützt.",
+			persistentNotSaved: "Der PTC-Ausführungsmodus wurde nicht gespeichert. Versuchen Sie es erneut.",
+			persistentFailed: "Der PTC-Ausführungsmodus konnte nicht geändert werden: {message}",
+			openSetup: "Einstellungen öffnen",
+			later: "Später",
+			close: "Schließen",
+			accessibility: "Barrierefreiheit",
+			screenRecording: "Bildschirmaufzeichnung",
+			accessibilityUse: "Lesen Sie die Steuerelemente der Benutzeroberfläche, klicken Sie und geben Sie ein.",
+			screenRecordingUse: "Erfassen Sie das ausgewählte Anwendungsfenster.",
+			accessibilityPermission: "Erlauben Sie {application} in den Systemeinstellungen, Schnittstellensteuerelemente zu lesen, zu klicken und zu tippen.",
+			screenRecordingPermission: "Erlauben Sie {application} in den Systemeinstellungen, Anwendungsfenster zu erfassen.",
+			permissionHint: "Verwalten Sie Berechtigungen in den Systemeinstellungen für die Anwendung mit dem Namen macOS.",
+			granted: "Erlaubt",
+			unknown: "Unbekannt",
+			request: "Bitte um Erlaubnis",
+			settings: "Öffnen Sie die Systemeinstellungen",
+			retry: "Erneut versuchen",
+			allowedApps: "Immer zulässige Anwendungen",
+			blockedApps: "Nicht erlaubte Anwendungen",
+			retryApproval: "Erlaube noch einmal nachzufragen",
+			retryAllowed: "Bei der nächsten Anwendungsauswahl werden Sie erneut gefragt; Der Zugriff wurde nicht gewährt",
+			noApps: "Keine immer erlaubten oder blockierten Anwendungen.",
+			revoke: "Widerrufen",
+			revoked: "Anwendungszugriff widerrufen",
+			requested: "Überprüfen Sie die macOS-Eingabeaufforderung oder öffnen Sie die Systemeinstellungen, wenn keine Eingabeaufforderung angezeigt wird",
+			opened: "Systemeinstellungen geöffnet",
+			applicationsFailed: "Anwendungszugriff konnte nicht geladen werden: {message}",
+			iconsFailed: "Anwendungssymbole konnten nicht geladen werden: {message}",
+			failed: "Berechtigungen konnten nicht aktualisiert werden: {message}",
+			queryFailed: "Berechtigungen konnten nicht überprüft werden: {message}"
+		};
+		/** Russian dictionary, checked against the English keys. */
+		const ru = {
+			title: "Разрешить использование компьютера",
+			applicationsTitle: "Управление приложениями, к которым может иметь доступ компьютер",
+			setupTitle: "Настройте использование компьютера перед использованием",
+			setupBody: "Использование компьютера разрешено. Прежде чем использовать его, переключитесь в режим PTC и предоставьте разрешения на доступность и запись экрана. Откройте сведения о плагине, чтобы завершить настройку.",
+			setupQueryFailed: "Использование компьютера разрешено, но системные разрешения проверить не удалось. Откройте сведения о плагине, чтобы увидеть ошибку, и повторите попытку.",
+			defaultTitle: "Режим по умолчанию для новых сеансов",
+			defaultBody: "Использование компьютера доступно только в режиме PTC.",
+			defaultConfirm: "Установить на PTC",
+			defaultSet: "PTC — значение по умолчанию.",
+			defaultUnavailable: "Не удалось прочитать режим по умолчанию. Проверьте это в настройках.",
+			defaultReadOnly: "Настройки режима по умолчанию доступны только для чтения.",
+			defaultNotSaved: "Режим по умолчанию не сохранился. Попробуйте еще раз.",
+			defaultFailed: "Не удалось изменить режим по умолчанию: {message}.",
+			persistentTitle: "Режим выполнения PTC",
+			persistentBody: "Сохраняйте переменные и объекты приложения при вызовах инструментов. Переключение перезапускает среду выполнения PTC.",
+			persistentConfirm: "Использовать постоянный режим",
+			persistentSet: "Постоянный режим включен",
+			persistentUnavailable: "Не удалось прочитать режим выполнения PTC. Проверьте это в настройках.",
+			persistentReadOnly: "Настройки выполнения PTC доступны только для чтения.",
+			persistentNotSaved: "Режим выполнения PTC не был сохранен. Попробуйте еще раз.",
+			persistentFailed: "Не удалось изменить режим выполнения PTC: {message}.",
+			openSetup: "Открыть настройки",
+			later: "Позже",
+			close: "Закрыть",
+			accessibility: "Доступность",
+			screenRecording: "Запись экрана",
+			accessibilityUse: "Прочтите элементы управления интерфейсом, щелкните и введите текст.",
+			screenRecordingUse: "Захват выбранного окна приложения.",
+			accessibilityPermission: "В настройках системы разрешите {application} читать элементы управления интерфейсом, щелкать и печатать.",
+			screenRecordingPermission: "В настройках системы разрешите {application} захватывать окна приложений.",
+			permissionHint: "Управляйте разрешениями в настройках системы для приложения с именем macOS.",
+			granted: "Разрешено",
+			unknown: "Неизвестно",
+			request: "Запросить разрешение",
+			settings: "Открыть настройки системы",
+			retry: "Повторить",
+			allowedApps: "Всегда разрешенные приложения",
+			blockedApps: "Приложения не разрешены",
+			retryApproval: "Разрешить спросить еще раз",
+			retryAllowed: "При следующем выборе приложения запрос будет повторен; доступ не предоставлен",
+			noApps: "Никаких всегда разрешенных или заблокированных приложений.",
+			revoke: "Отозвать",
+			revoked: "Доступ к приложению отозван",
+			requested: "Просмотрите подсказку macOS или откройте «Системные настройки», если подсказка не появляется.",
+			opened: "Системные настройки открыты",
+			applicationsFailed: "Не удалось загрузить доступ к приложению: {message}.",
+			iconsFailed: "Не удалось загрузить значки приложений: {message}.",
+			failed: "Не удалось обновить разрешения: {message}.",
+			queryFailed: "Не удалось проверить разрешения: {message}"
+		};
+		/** Portuguese dictionary, checked against the English keys. */
+		const pt = {
+			title: "Autorizar o uso do computador",
+			applicationsTitle: "Gerenciar aplicativos que o computador pode acessar",
+			setupTitle: "Configure o uso do computador antes de usar",
+			setupBody: "O uso do computador está habilitado. Antes de usá-lo, alterne para o modo PTC e conceda permissões de acessibilidade e gravação de tela. Abra os detalhes do plugin para concluir a configuração.",
+			setupQueryFailed: "O uso do computador está ativado, mas não foi possível verificar as permissões do sistema. Abra os detalhes do plugin para ver o erro e tente novamente.",
+			defaultTitle: "Modo padrão para novas sessões",
+			defaultBody: "O uso do computador está disponível somente no modo PTC.",
+			defaultConfirm: "Definir como PTC",
+			defaultSet: "PTC é o padrão",
+			defaultUnavailable: "Não foi possível ler o modo padrão. Verifique em Configurações.",
+			defaultReadOnly: "As configurações do modo padrão são somente leitura.",
+			defaultNotSaved: "O modo padrão não foi salvo. Tente novamente.",
+			defaultFailed: "Não foi possível alterar o modo padrão: {message}",
+			persistentTitle: "PTC modo de execução",
+			persistentBody: "Mantenha variáveis e objetos de aplicação em todas as chamadas de ferramenta. A alternância reinicia o tempo de execução PTC.",
+			persistentConfirm: "Usar modo persistente",
+			persistentSet: "Modo persistente ativado",
+			persistentUnavailable: "Não foi possível ler o modo de execução PTC. Verifique em Configurações.",
+			persistentReadOnly: "PTC configurações de execução são somente leitura.",
+			persistentNotSaved: "O modo de execução PTC não foi salvo. Tente novamente.",
+			persistentFailed: "Não foi possível alterar o modo de execução PTC: {message}",
+			openSetup: "Abrir configurações",
+			later: "Mais tarde",
+			close: "Fechar",
+			accessibility: "Acessibilidade",
+			screenRecording: "Gravação de tela",
+			accessibilityUse: "Leia os controles da interface, clique e digite.",
+			screenRecordingUse: "Capture a janela do aplicativo selecionado.",
+			accessibilityPermission: "Nas configurações do sistema, permita que {application} leia os controles da interface, clique e digite.",
+			screenRecordingPermission: "Nas configurações do sistema, permita que {application} capture janelas de aplicativos.",
+			permissionHint: "Gerencie as permissões nas Configurações do sistema para o aplicativo nomeado por macOS.",
+			granted: "Permitido",
+			unknown: "Desconhecido",
+			request: "Solicitar permissão",
+			settings: "Abra as configurações do sistema",
+			retry: "Tentar novamente",
+			allowedApps: "Aplicativos sempre permitidos",
+			blockedApps: "Aplicativos não permitidos",
+			retryApproval: "Permitir perguntar novamente",
+			retryAllowed: "A próxima seleção de aplicativos perguntará novamente; o acesso não foi concedido",
+			noApps: "Nenhum aplicativo sempre permitido ou bloqueado.",
+			revoke: "Revogar",
+			revoked: "Acesso ao aplicativo revogado",
+			requested: "Revise o prompt macOS ou abra as Configurações do sistema se nenhum prompt aparecer",
+			opened: "Configurações do sistema abertas",
+			applicationsFailed: "Não foi possível carregar o acesso ao aplicativo: {message}",
+			iconsFailed: "Não foi possível carregar os ícones do aplicativo: {message}",
+			failed: "Não foi possível atualizar as permissões: {message}",
+			queryFailed: "Não foi possível verificar as permissões: {message}"
+		};
+		//#endregion
+		//#region lib/types/client/mount.js
+		/** Existing browser registries needed by the optional permission UI. */
+		const inject = [
+			"remote",
+			"slots",
+			"locale",
+			"configForms"
+		];
+		/**
+		* Mount the optional permission Remote and its browser controls.
+		* @param ctx Browser plugin context.
+		* @param contribution Generated permission Remote definitions.
+		* @returns Cleanup for the optional Remote and UI registrations.
+		*/
+		async function mountCuaPermissions(ctx, contribution) {
+			const transport = ctx.plugin(async (owner) => {
+				await owner.remote.$mount(contribution);
+			});
+			const ui = ctx.inject([
+				"remote.cuaAccess",
+				"slots",
+				"locale"
+			], (ctx) => {
+				ctx.effect(() => ctx.locale.register(NS, {
+					en,
+					zh,
+					ja,
+					es,
+					fr,
+					de,
+					ru,
+					pt
+				}));
+				const controller = new PermissionController(ctx.remote.cuaAccess);
+				const face = controller.face();
+				ctx.slots.inject("conversation.composer", () => ctx.slots.register({
+					name: "conversation.composer",
+					priority: -1,
+					locale: NS,
+					select: ({ pendingInteraction }) => selectApplicationApproval(pendingInteraction),
+					inject: () => ({ resolveText: (text) => ctx.locale.resolveText(text) })
+				}, ApplicationApproval));
+				ctx.inject(["pluginChanges"], (scope) => {
+					const changes = scope.pluginChanges.bundle("@deepseek-ai/dsh-cua-bundle");
+					const synchronize = () => {
+						controller.setChanging(changes.getSnapshot());
+					};
+					synchronize();
+					scope.effect(() => {
+						const unsubscribe = changes.subscribe(synchronize);
+						return () => {
+							unsubscribe();
+							controller.setChanging(false);
+						};
+					});
+				});
+				const preset = ctx.configForms.get("agent-preset-registry");
+				const settings = {
+					...face,
+					hooks: {
+						...face.hooks,
+						cuaDefaultPreset: preset
+					},
+					setPtcDefault: () => preset.set("selectedDefault", "ptc"),
+					setPersistentPtc: async () => {
+						const result = await ctx.remote.cuaAccess.enablePersistentPtc();
+						if (!result.ok) throw result.error;
+						face.refresh();
+						return true;
+					}
+				};
+				ctx.effect(() => () => controller.dispose());
+				ctx.on("connection/reset", face.refresh);
+				ctx.slots.inject("plugins.bundle.config", () => ctx.slots.register({
+					name: "plugins.bundle.config",
+					key: "@deepseek-ai/dsh-cua-bundle",
+					locale: NS,
+					inject: () => settings
+				}, PermissionPanel));
+				ctx.slots.inject("plugins.bundle.activation", () => ctx.slots.register({
+					name: "plugins.bundle.activation",
+					key: "@deepseek-ai/dsh-cua-bundle",
+					locale: NS,
+					inject: () => face
+				}, PermissionSetup));
+				ctx.slots.inject("shell.overlay", () => ctx.slots.register({
+					name: "shell.overlay",
+					id: "cua-permission-outcome",
+					locale: NS,
+					inject: () => face
+				}, PermissionToast));
+			});
+			const dispose = ctx.effect(function* () {
+				yield transport.dispose;
+				yield ui.dispose;
+			}, "cua-permissions.mount");
+			try {
+				await Promise.all([transport, ui]);
+			} catch (error) {
+				await dispose();
+				throw error;
+			}
+			return dispose;
+		}
+		//#endregion
+		//#region lib/types/client/index.js
+		/**
+		* Activate the optional Computer Use permission controls.
+		* @param ctx Browser plugin context.
+		* @returns Cleanup of the UI and Remote contribution.
+		*/
+		async function apply(ctx) {
+			return mountCuaPermissions(ctx, TYPERT_REMOTE);
+		}
+		//#endregion
+		exports.apply = apply;
+		exports.inject = inject;
+		return module.exports;
+	}
+});
+
+//# sourceMappingURL=client.js.map

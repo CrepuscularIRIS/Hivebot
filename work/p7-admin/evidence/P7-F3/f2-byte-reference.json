@@ -1,0 +1,286 @@
+{
+  "f1_sha": "de36bbc587d604c2672ede53c32d4554973082ec",
+  "files": {
+    "app/sdk/src/start.ts": {
+      "sha256": "48a3d4eaab78f162645e906320cbd6b9a29337f1dbf3acf09e4fef24de17ed73",
+      "same_as_fixed_f1_and_f2_test_input": true,
+      "official_json": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-coverage-sdk-worker/coverage-final.json",
+      "official_json_sha256": "9afbdde32673581c529db05c7266de418fc49f6259c810e235ac65763c6fa96d",
+      "f1_changed_metrics_only_not_new_f2_collection": {
+        "statement": {
+          "covered": 4,
+          "total": 4,
+          "pct": 100.0
+        },
+        "branch": {
+          "covered": 13,
+          "total": 13,
+          "pct": 100.0
+        },
+        "function": {
+          "covered": 1,
+          "total": 1,
+          "pct": 100.0
+        },
+        "line": {
+          "covered": 1,
+          "total": 1,
+          "pct": 100.0
+        }
+      }
+    },
+    "app/sdk/src/admin/host.mjs": {
+      "sha256": "df5b29671ade2ca6a609c34818eeed5c34583851ff26b5d83e1e77a19c5162b8",
+      "same_as_fixed_f1_and_f2_test_input": true,
+      "official_json": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-coverage-sdk-worker/coverage-final.json",
+      "official_json_sha256": "9afbdde32673581c529db05c7266de418fc49f6259c810e235ac65763c6fa96d",
+      "f1_changed_metrics_only_not_new_f2_collection": {
+        "statement": {
+          "covered": 91,
+          "total": 92,
+          "pct": 98.91
+        },
+        "branch": {
+          "covered": 37,
+          "total": 40,
+          "pct": 92.5
+        },
+        "function": {
+          "covered": 13,
+          "total": 13,
+          "pct": 100.0
+        },
+        "line": {
+          "covered": 79,
+          "total": 79,
+          "pct": 100.0
+        }
+      }
+    },
+    "app/sdk/src/orchestration/delivery.mjs": {
+      "sha256": "dd6e6b7b33fb5f39ca8b9061bf5245411a972e8a83368c729306e42b48cea780",
+      "same_as_fixed_f1_and_f2_test_input": true,
+      "official_json": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-coverage-sdk-worker/coverage-final.json",
+      "official_json_sha256": "9afbdde32673581c529db05c7266de418fc49f6259c810e235ac65763c6fa96d",
+      "f1_changed_metrics_only_not_new_f2_collection": {
+        "statement": {
+          "covered": 20,
+          "total": 22,
+          "pct": 90.91
+        },
+        "branch": {
+          "covered": 9,
+          "total": 11,
+          "pct": 81.82
+        },
+        "function": {
+          "covered": 5,
+          "total": 5,
+          "pct": 100.0
+        },
+        "line": {
+          "covered": 15,
+          "total": 15,
+          "pct": 100.0
+        }
+      }
+    },
+    "app/sdk/src/orchestration/main-channel.mjs": {
+      "sha256": "83151bbe24f90ce6b756c50606d38dc5bc1300e0959576a6e45d17e8743a0df6",
+      "same_as_fixed_f1_and_f2_test_input": true,
+      "official_json": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-coverage-sdk-child/coverage-final.json",
+      "official_json_sha256": "6337f891be4dccb1a3d68fd6763e0fe97053d38de33df3d8b59f67f3606439e5",
+      "f1_changed_metrics_only_not_new_f2_collection": {
+        "statement": {
+          "covered": 36,
+          "total": 37,
+          "pct": 97.3
+        },
+        "branch": {
+          "covered": 17,
+          "total": 18,
+          "pct": 94.44
+        },
+        "function": {
+          "covered": 10,
+          "total": 11,
+          "pct": 90.91
+        },
+        "line": {
+          "covered": 25,
+          "total": 25,
+          "pct": 100.0
+        }
+      }
+    },
+    "app/sdk/src/orchestration/report.mjs": {
+      "sha256": "94f2301cab9d338cac9aeea4ff6092c417e46d061c6678d67c793853dba1e349",
+      "same_as_fixed_f1_and_f2_test_input": true,
+      "official_json": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-coverage-sdk-worker/coverage-final.json",
+      "official_json_sha256": "9afbdde32673581c529db05c7266de418fc49f6259c810e235ac65763c6fa96d",
+      "f1_changed_metrics_only_not_new_f2_collection": {
+        "statement": {
+          "covered": 55,
+          "total": 62,
+          "pct": 88.71
+        },
+        "branch": {
+          "covered": 50,
+          "total": 56,
+          "pct": 89.29
+        },
+        "function": {
+          "covered": 10,
+          "total": 12,
+          "pct": 83.33
+        },
+        "line": {
+          "covered": 40,
+          "total": 42,
+          "pct": 95.24
+        }
+      }
+    },
+    "app/ui/main/index.ts": {
+      "sha256": "cec193da38293af13cbaabd3615cf9454f3514811987cdc75306843f3d766833",
+      "same_as_fixed_f1_and_f2_test_input": true,
+      "official_json": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-coverage-ui/coverage-final.json",
+      "official_json_sha256": "9f518ac044e299bccd1c6c48a6296a982ae78bc607329ea4c8d677ccee62c899",
+      "f1_changed_metrics_only_not_new_f2_collection": {
+        "statement": {
+          "covered": 30,
+          "total": 31,
+          "pct": 96.77
+        },
+        "branch": {
+          "covered": 12,
+          "total": 15,
+          "pct": 80.0
+        },
+        "function": {
+          "covered": 10,
+          "total": 10,
+          "pct": 100.0
+        },
+        "line": {
+          "covered": 20,
+          "total": 20,
+          "pct": 100.0
+        }
+      }
+    },
+    "app/ui/main/ready.ts": {
+      "sha256": "5be41df1a82d1b2f7bf44e29b200f454ef0120e9f3d378b5e3a02f8364170011",
+      "same_as_fixed_f1_and_f2_test_input": true,
+      "official_json": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-coverage-ui/coverage-final.json",
+      "official_json_sha256": "9f518ac044e299bccd1c6c48a6296a982ae78bc607329ea4c8d677ccee62c899",
+      "f1_changed_metrics_only_not_new_f2_collection": {
+        "statement": {
+          "covered": 14,
+          "total": 15,
+          "pct": 93.33
+        },
+        "branch": {
+          "covered": 8,
+          "total": 10,
+          "pct": 80.0
+        },
+        "function": {
+          "covered": 3,
+          "total": 3,
+          "pct": 100.0
+        },
+        "line": {
+          "covered": 11,
+          "total": 11,
+          "pct": 100.0
+        }
+      }
+    },
+    "app/ui/main/admin/recovery.ts": {
+      "sha256": "90f653571b42b7f592d467fcdd48ed9dae38f3a2363bd6ed1c5f0e908d3b2f46",
+      "same_as_fixed_f1_and_f2_test_input": true,
+      "official_json": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-coverage-ui/coverage-final.json",
+      "official_json_sha256": "9f518ac044e299bccd1c6c48a6296a982ae78bc607329ea4c8d677ccee62c899",
+      "f1_changed_metrics_only_not_new_f2_collection": {
+        "statement": {
+          "covered": 90,
+          "total": 95,
+          "pct": 94.74
+        },
+        "branch": {
+          "covered": 59,
+          "total": 66,
+          "pct": 89.39
+        },
+        "function": {
+          "covered": 16,
+          "total": 17,
+          "pct": 94.12
+        },
+        "line": {
+          "covered": 69,
+          "total": 70,
+          "pct": 98.57
+        }
+      }
+    },
+    "app/ui/main/admin/restart.ts": {
+      "sha256": "7cdf7f1df707339204a1f769fb9a660e4d0b43eb6f85cbe8aced46617637bf85",
+      "same_as_fixed_f1_and_f2_test_input": true,
+      "official_json": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-coverage-ui/coverage-final.json",
+      "official_json_sha256": "9f518ac044e299bccd1c6c48a6296a982ae78bc607329ea4c8d677ccee62c899",
+      "f1_changed_metrics_only_not_new_f2_collection": {
+        "statement": {
+          "covered": 1,
+          "total": 1,
+          "pct": 100.0
+        },
+        "branch": {
+          "covered": 0,
+          "total": 0,
+          "pct": null
+        },
+        "function": {
+          "covered": 1,
+          "total": 1,
+          "pct": 100.0
+        },
+        "line": {
+          "covered": 1,
+          "total": 1,
+          "pct": 100.0
+        }
+      }
+    },
+    "app/ui/main/dsh/connect.ts": {
+      "sha256": "21f1a9198224504b2c0fc38ef7d602acc96d83b91da7162147ce090c5553507a",
+      "same_as_fixed_f1_and_f2_test_input": true,
+      "official_json": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-coverage-ui/coverage-final.json",
+      "official_json_sha256": "9f518ac044e299bccd1c6c48a6296a982ae78bc607329ea4c8d677ccee62c899",
+      "f1_changed_metrics_only_not_new_f2_collection": {
+        "statement": {
+          "covered": 9,
+          "total": 9,
+          "pct": 100.0
+        },
+        "branch": {
+          "covered": 0,
+          "total": 0,
+          "pct": null
+        },
+        "function": {
+          "covered": 5,
+          "total": 5,
+          "pct": 100.0
+        },
+        "line": {
+          "covered": 6,
+          "total": 6,
+          "pct": 100.0
+        }
+      }
+    }
+  },
+  "scope": "All ten production files unchanged. Reuse byte-identical f1 evidence only; no new production implementation or f2 coverage success claimed."
+}

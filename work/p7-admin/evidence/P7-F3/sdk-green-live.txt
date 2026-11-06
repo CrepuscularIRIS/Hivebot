@@ -1,0 +1,29 @@
+Already up to date
+Done in 304ms using pnpm v11.0.9
+
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 11.0.9 → 12.16.1.    │
+   │   Changelog: https://pnpm.io/v/12.16.1   │
+   │     To update, run: pnpm add -g pnpm     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F3/app/sdk[39m
+
+[90mstderr[2m | tests/unit/p7-host-recovery.test.ts[2m > [22m[2mP7-F3 existing Reporter lifecycle recovery barrier[2m > [22m[2mwithdraw checks the captured lease for every remove and stop cancels retry timers
+[22m[39m[pbots-orchestration] withdrew 1 pending report message(s) after an aborted main-bot turn
+
+[90mstderr[2m | tests/unit/p7-host-recovery.test.ts[2m > [22m[2mP7-F3 existing Reporter lifecycle recovery barrier[2m > [22m[2mchanging generation during agentOf cannot wake an old pending report
+[22m[39m[pbots-orchestration] wake main/pbots-report:old failed: This operation was aborted
+
+ [32m✓[39m tests/unit/p7-host-recovery.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 2371[2mms[22m[39m
+   [32m✓[39m P7-F3 real Loader control stream [2m(1)[22m
+     [33m[2m✓[22m[39m binds native stream and unary RPC to the same Peer; reconnect is not process restart[33m 2215[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m17 passed[39m[22m[90m (17)[39m
+[2m   Start at [22m 09:55:21
+[2m   Duration [22m 2.59s[2m (tests 95%, transform 4%, import 1%)[22m
+

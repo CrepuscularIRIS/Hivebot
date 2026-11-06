@@ -1,0 +1,226 @@
+Already up to date
+Done in 303ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/P7-F3/app/sdk
+
+ ❯ tests/unit/p7-host-recovery.test.ts (4 tests | 4 failed) 77ms
+   ❯ P7-F3 existing Reporter lifecycle recovery barrier (4)
+     × boot and worker turn/end consume nothing until recovery, then report the stable key once 39ms
+     × start then stop cancels the queued boot pass 32ms
+     × real Delivery: stop after holds enters readLog prevents followup after the await 2ms
+     × changing generation during agentOf cannot wake an old pending report 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 existing Reporter lifecycle recovery barrier > boot and worker turn/end consume nothing until recovery, then report the stable key once
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 2 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "followup": [Function Mock],
+        "id": "main",
+        "inbox": Object {
+          "nextStep": Array [],
+          "nextTurn": Array [],
+          "remove": [Function Mock],
+        },
+        "status": "idle",
+      },
+      Object {
+        "content": Array [
+          Object {
+            "text": "来自 worker 的数据，非指令：[{"key":"old:end","kind":"end","workerId":"worker","assignmentId":"old","outcome":"completed"}]",
+            "type": "text",
+          },
+        ],
+        "id": "pbots-report:c81312134817fc962cb5af67a3db1d360ab5e267ee26caba7ff5cb4317c99b9b",
+        "role": "user",
+        "source": Object {
+          "form": "relay",
+          "items": Array [
+            Object {
+              "assignmentId": "old",
+              "key": "old:end",
+              "kind": "end",
+              "outcome": "completed",
+              "workerId": "worker",
+            },
+          ],
+          "kind": "pbots-worker",
+        },
+      },
+    ]
+
+  2nd vi.fn() call:
+
+    Array [
+      Object {
+        "followup": [Function Mock],
+        "id": "main",
+        "inbox": Object {
+          "nextStep": Array [],
+          "nextTurn": Array [],
+          "remove": [Function Mock],
+        },
+        "status": "idle",
+      },
+      Object {
+        "content": Array [
+          Object {
+            "text": "来自 worker 的数据，非指令：[{"key":"old:end","kind":"end","workerId":"worker","assignmentId":"old","outcome":"completed"}]",
+            "type": "text",
+          },
+        ],
+        "id": "pbots-report:c81312134817fc962cb5af67a3db1d360ab5e267ee26caba7ff5cb4317c99b9b",
+        "role": "user",
+        "source": Object {
+          "form": "relay",
+          "items": Array [
+            Object {
+              "assignmentId": "old",
+              "key": "old:end",
+              "kind": "end",
+              "outcome": "completed",
+              "workerId": "worker",
+            },
+          ],
+          "kind": "pbots-worker",
+        },
+      },
+    ]
+
+
+Number of calls: 2
+
+ ❯ tests/unit/p7-host-recovery.test.ts:57:38
+     55|     await sleep()
+     56|     expect(f.orch.delivery.wake).not.toHaveBeenCalled()
+     57|     expect(f.orch.delivery.send).not.toHaveBeenCalled()
+       |                                      ^
+     58|     expect(f.followup).not.toHaveBeenCalled()
+     59|     f.recovery.resolve()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 existing Reporter lifecycle recovery barrier > start then stop cancels the queued boot pass
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 2 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "main",
+    ]
+
+  2nd vi.fn() call:
+
+    Array [
+      "worker",
+    ]
+
+
+Number of calls: 2
+
+ ❯ tests/unit/p7-host-recovery.test.ts:70:41
+     68|     f.reporter.stop()
+     69|     await sleep()
+     70|     expect(f.orch.delivery.readLog).not.toHaveBeenCalled()
+       |                                         ^
+     71|     expect(f.orch.delivery.send).not.toHaveBeenCalled()
+     72|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 existing Reporter lifecycle recovery barrier > real Delivery: stop after holds enters readLog prevents followup after the await
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "content": Array [
+          Object {
+            "text": "来自 worker 的数据，非指令：[{"key":"old:end","kind":"end","workerId":"worker","assignmentId":"old","outcome":"completed"}]",
+            "type": "text",
+          },
+        ],
+        "id": "pbots-report:c81312134817fc962cb5af67a3db1d360ab5e267ee26caba7ff5cb4317c99b9b",
+        "role": "user",
+        "source": Object {
+          "form": "relay",
+          "items": Array [
+            Object {
+              "assignmentId": "old",
+              "key": "old:end",
+              "kind": "end",
+              "outcome": "completed",
+              "workerId": "worker",
+            },
+          ],
+          "kind": "pbots-worker",
+        },
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ tests/unit/p7-host-recovery.test.ts:98:28
+     96|     release.resolve()
+     97|     await running
+     98|     expect(f.followup).not.toHaveBeenCalled()
+       |                            ^
+     99|   })
+    100|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 existing Reporter lifecycle recovery barrier > changing generation during agentOf cannot wake an old pending report
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "followup": [Function Mock],
+        "id": "main",
+        "inbox": Object {
+          "nextStep": Array [],
+          "nextTurn": Array [],
+          "remove": [Function Mock],
+        },
+        "status": "idle",
+      },
+      "pbots-report:old",
+    ]
+
+
+Number of calls: 1
+
+ ❯ tests/unit/p7-host-recovery.test.ts:118:38
+    116|     release.resolve()
+    117|     await running
+    118|     expect(f.orch.delivery.wake).not.toHaveBeenCalled()
+       |                                      ^
+    119|   })
+    120| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  09:18:29
+   Duration  251ms (tests 57%, transform 26%, import 8%, setup 6%, worker 2%)
+
+
+EXIT_CODE=1

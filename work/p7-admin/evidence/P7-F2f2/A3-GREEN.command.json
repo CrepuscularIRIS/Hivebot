@@ -1,0 +1,19 @@
+{
+  "cwd": "/tmp/bot-wt/P7-F2f2/app/ui",
+  "env": {
+    "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+    "HOME": "/tmp/bot-P7-F2f2/home",
+    "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+  },
+  "command": [
+    "/bin/bash",
+    "--noprofile",
+    "--norc",
+    "-c",
+    "exec ./node_modules/.bin/vitest run \"$@\" --maxWorkers=1",
+    "vitest",
+    "tests/unit/admin/channel.test.ts",
+    "-t",
+    "A3"
+  ]
+}

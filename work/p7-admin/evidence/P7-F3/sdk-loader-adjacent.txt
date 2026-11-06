@@ -1,0 +1,23 @@
+Already up to date
+Done in 301ms using pnpm v11.0.9
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F3/app/sdk[39m
+
+ [32m✓[39m tests/unit/orchestration-report-live.test.ts [2m([22m[2m14 tests[22m[2m | [22m[33m5 skipped[39m[2m)[22m[33m 47836[2mms[22m[39m
+   [32m✓[39m P6-12 live (real Loader) [2m(9)[22m
+     [33m[2m✓[22m[39m ① 合批：主 bot 回合中 3 worker 结束 → 回合结束后恰 1 条通知含 3 项、恰 1 个消费回合（D6：主 bot 回合不等 worker）[33m 13384[2mms[22m[39m
+     [33m[2m✓[22m[39m ② 用户在 worker 内自发的回合结束 → 通知数 === 0（决策 14）[33m 3709[2mms[22m[39m
+     [33m[2m✓[22m[39m ③ 污染回合：bash / write / 连接器写 / create_bot 全拒、副作用 0；下一纯用户回合工具恢复（D9⑨）[33m 536[2mms[22m[39m
+     [33m[2m✓[22m[39m R2-1 反向：审批档位切换 / 提问迟到答复 / schedule 触发的回合不得拒工具[33m 548[2mms[22m[39m
+     [33m[2m✓[22m[39m ④ 待人工：真审批挂起 → 5s 内 1 项 ask（eventId=asked.id）→ 作答 → 完成 → 1 项 end；作答后不重发[33m 5876[2mms[22m[39m
+     [33m[2m✓[22m[39m ⑩ 回报与用户消息同时待处理 → 用户消息的回合先跑（决策 16）[33m 5319[2mms[22m[39m
+     [33m[2m✓[22m[39m ⑦ 用户停止：aborted 撤回 inbox 待处理回报、5s 不起新回合；用户下一回合纯 user 来源且工具可用；结束后补投恰 1[33m 11613[2mms[22m[39m
+     [33m[2m✓[22m[39m ⑦b 主 bot 回合以 blocked / max-tokens 结束 → 照常触发投递（决策 27③）[33m 4150[2mms[22m[39m
+ [32m✓[39m tests/unit/orchestration-foundation-delivery.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2619[2mms[22m[39m
+   [33m[2m✓[22m[39m delivers each stable id exactly once; user-authored messages never count as delivered[33m 459[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m11 passed[39m[22m[2m | [22m[33m5 skipped[39m[90m (16)[39m
+[2m   Start at [22m 09:57:13
+[2m   Duration [22m 50.76s[2m (tests 100%)[22m
+

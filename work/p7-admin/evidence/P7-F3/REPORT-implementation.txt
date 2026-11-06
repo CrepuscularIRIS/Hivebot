@@ -1,0 +1,50 @@
+P7-F3 续作收口：BLOCKED（覆盖率闸门未过，不自评通过）
+工作树 /tmp/bot-wt/P7-F3；分支 feat/P7-F3；交接快照 SHA 4da62902c7a9c26452eafc4e98cf40c6d6a6d452（chore(P7-F3): WIP blocked恢复屏障交接快照），父提交 e5ff286e686994b489766ea7d3bd1f74614a342b。按派发者要求仅固定独立verifier审测基点，不表示完成；BLOCKED不变。提交精确12个白名单文件，无work日志/证据，无attribution；提交前diff --check与暂存清单校验通过，提交后工作树干净。未重跑测试/coverage/build，未合入F1/F2，不合并、不push。
+仅批准13文件中的12文件改动；不创建无消费者sdk-owner，不做F4，不合入F1/F2其他树修复。
+
+改动文件清单
+/tmp/bot-wt/P7-F3/app/sdk/src/start.ts
+/tmp/bot-wt/P7-F3/app/sdk/src/admin/host.mjs
+/tmp/bot-wt/P7-F3/app/sdk/tests/unit/p7-host-recovery.test.ts
+/tmp/bot-wt/P7-F3/app/sdk/src/orchestration/main-channel.mjs
+/tmp/bot-wt/P7-F3/app/sdk/src/orchestration/report.mjs
+/tmp/bot-wt/P7-F3/app/sdk/src/orchestration/delivery.mjs
+/tmp/bot-wt/P7-F3/app/ui/main/index.ts
+/tmp/bot-wt/P7-F3/app/ui/main/ready.ts
+/tmp/bot-wt/P7-F3/app/ui/main/dsh/connect.ts
+/tmp/bot-wt/P7-F3/app/ui/main/admin/recovery.ts
+/tmp/bot-wt/P7-F3/app/ui/main/admin/restart.ts
+/tmp/bot-wt/P7-F3/app/ui/tests/unit/admin/recovery.test.ts
+
+TDD与行为证据（以下日志位于本报告同目录）
+sdk-red-corrected.txt：退出1，4/4实际断言失败：恢复前提前send两次、start-stop仍读日志、真实Delivery holds期间stop后仍followup、agentOf后旧代wake。最初错误fixture造成的超时不算此RED。
+ui-wiring-red.txt：退出1，真实main旧代restore完成误开新gate；ui-wiring-green.txt退出0。
+sdk-launch-red.txt、sdk-withdraw-red.txt、sdk-empty-meta-red.txt、sdk-bad-summary-red.txt：各退出1，分别验证显式opt-in映射、逐remove取消、原生空M3元数据、坏关联拒开门。
+sdk-coverage.txt最终输出：Test Files 7 passed (7)；Tests 233 passed (233)，包含本任务18项；命令最终退出1仅因coverage threshold。
+sdk-adjacent.txt：退出0，6文件193项；sdk-loader-adjacent.txt：退出0，11 passed / 5 skipped（旧crash跳过）。
+ui-coverage-sdk-runner.txt最终输出：Test Files 13 passed (13)；Tests 108 passed (108)，包含本任务9项及实际tests/unit/m3/restore.test.ts六项、orch-channel.test.ts十项；命令最终退出1仅因coverage threshold。
+先前ui-adjacent.txt的m3-meta路径未匹配，不能当作M3覆盖；以上108项已使用正确路径补跑。
+ui-coverage.txt是首次UI runner缺coverage provider导致未运行测试，不作为产品失败或真实覆盖数据；改用已安装provider的SDK runner后测试正常运行，未新增依赖。
+ui-build.txt：pnpm -C /tmp/bot-wt/P7-F3/app/ui build，退出0；未启动Electron桌面。
+
+最终覆盖率（statements / branches / functions / lines）
+SDK五个改动生产文件整体：63.05 / 58.47 / 64.47 / 64.61%，未达80%。
+host.mjs：98.91 / 92.5 / 100 / 100%；delivery.mjs分支68.49%，report.mjs分支75.86%，仍不足。
+start.ts既有launcher大量路径未覆盖；main-channel.mjs真实Loader子进程执行未计入该临时coverage配置，不能把运行通过当覆盖收集通过。
+UI五个改动生产文件整体：69 / 67.9 / 71.27 / 73.2%，未达80%。
+recovery.ts：93.68 / 87.87 / 94.11 / 98.57%；restart.ts四项100%；connect.ts：90.65 / 82.92 / 96.15 / 97.72%；ready.ts：95.45 / 85.71 / 100 / 100%；index.ts：30.71 / 37.5 / 34.21 / 33.61%。
+不缩小统计范围宣称达标，不继续全量或扩功能凑覆盖。
+
+复测命令
+所有执行使用 env -i HOME=/tmp/bot-P7-F3-test-home PATH="$PATH" DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-P7-F3-no-dbus 前缀。
+SDK：pnpm -C /tmp/bot-wt/P7-F3/app/sdk exec vitest run --config /tmp/bot-P7-F3-sdk-coverage.config.mjs tests/unit/p7-host-recovery.test.ts tests/unit/orchestration-report.test.ts tests/unit/orchestration-foundation.test.ts tests/unit/orchestration-create.test.ts tests/unit/p7-admin-channel.test.ts tests/unit/p7-authority.test.ts tests/unit/start.test.ts
+UI：pnpm -C /tmp/bot-wt/P7-F3/app/sdk exec vitest run --config /tmp/bot-P7-F3-ui-coverage.config.mjs tests/unit/admin/recovery.test.ts tests/unit/admin/operations.test.ts tests/unit/admin/channel.test.ts tests/unit/shell/restore-wiring.test.ts tests/unit/shell/ready.test.ts tests/unit/shell/connect.test.ts tests/unit/shell/startup-gate.test.ts tests/unit/shell/wire.test.ts tests/unit/shell/document-path.test.ts tests/unit/shell/single-instance.test.ts tests/unit/shell/load-abort.test.ts tests/unit/m3/restore.test.ts tests/unit/m3/orch-channel.test.ts
+Loader邻接：pnpm -C /tmp/bot-wt/P7-F3/app/sdk exec vitest run tests/unit/orchestration-report-live.test.ts tests/unit/orchestration-foundation-delivery.test.ts --maxWorkers=1 -t 'P6-12 live \(real Loader\)|delivers each stable|two concurrent same-id'
+
+边界与未完成项
+沿原生interruptedTurnClosers和sessionPersistence冷写入并读回，不造第二Assignment状态机/ledger；真实closer配fake persistence已验，真实存储冷孤儿repair全链E2E未验。真实Loader目前验证空metadata的控制流、Peer绑定、重连processId保持与旧challenge拒绝。
+F1：恢复前后readOperations健康检查；不认为本基点close已验证写隔离。独立F1修复未合入本树，合并后须定向回归。F2另一树修复也未合入。
+未做真owner重启/receipt、WM管理动作接线、目标/定时/L5；无owner restart明确unavailable，不签restart receipt。
+最终git diff --check退出0，状态仅以上12文件。未进行完整安全review或独立verifier验收，未宣称通过。未操作真实桌面、机器重启或外部进程。
+复用说明来源：https://github.com/deepseek-ai/dsh-superagent-prototype@6337fc823ce20251c8de8085948165c81aaa701e:src/core/assignments.ts（MIT）；实际原生终结API复用当前已装dsh-session。
+按收口要求停止；需派发者决定如何补覆盖收集/定向测试及真实存储恢复E2E。原REPORT.txt保留。待 verifier 验收。

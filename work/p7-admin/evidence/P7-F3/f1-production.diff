@@ -1,0 +1,580 @@
+diff --git a/app/sdk/src/admin/host.mjs b/app/sdk/src/admin/host.mjs
+new file mode 100644
+index 0000000..a15bc47
+--- /dev/null
++++ b/app/sdk/src/admin/host.mjs
+@@ -0,0 +1,141 @@
++// P7-F3: one process-owned recovery lease; no Assignment or operation state is stored here.
++import { randomUUID } from 'node:crypto'
++import { realpathSync } from 'node:fs'
++import { readFile as readText } from 'node:fs/promises'
++import { join } from 'node:path'
++import { createRequire } from 'node:module'
++import { pathToFileURL } from 'node:url'
++import { foldAssignments } from '../orchestration/assignment.mjs'
++
++// Module lifetime is the SDK process, not a socket or plugin mount.
++const PROCESS_ID = randomUUID()
++
++const require = createRequire(realpathSync(new URL('../../node_modules/@deepseek-ai/dsh-plugin-market/lib/index.js', import.meta.url)))
++const { interruptedTurnClosers } = await import(pathToFileURL(require.resolve('@deepseek-ai/dsh-session')))
++
++// 来源: https://github.com/deepseek-ai/dsh-superagent-prototype@6337fc823ce20251c8de8085948165c81aaa701e:src/core/assignments.ts (MIT); local-only adaptation.
++export const RECOVERY_NOTE = 'The host restarted during this assignment. Inspect the current worktree, operation records and existing results first. Do not repeat an already completed external operation. Unknown side effects must not be replayed automatically. Report the interrupted assignment status.'
++
++/** Await readiness without allowing cancellation to be undone by a late resolve. */
++export async function waitForRecovery(permit) {
++  if (!permit) return
++  permit.signal.throwIfAborted()
++  let onAbort
++  try {
++    await Promise.race([
++      permit.ready,
++      new Promise((_, reject) => {
++        onAbort = () => reject(permit.signal.reason)
++        permit.signal.addEventListener('abort', onAbort, { once: true })
++      }),
++    ])
++    permit.signal.throwIfAborted()
++  } finally {
++    if (onAbort) permit.signal.removeEventListener('abort', onAbort)
++  }
++}
++
++/** Re-read the original logs, use native interrupted closers, then flush before acknowledgement. */
++export async function recoverAssignments(orch, signal) {
++  signal.throwIfAborted()
++  const meta = JSON.parse(await readText(join(orch.config.dataDir, 'bots.json'), 'utf8'))
++  if (!meta || meta.version !== 1 || (meta.mainBotId !== null && (typeof meta.mainBotId !== 'string' || meta.mainBotId === '')) ||
++      (meta.bots !== undefined && (!meta.bots || typeof meta.bots !== 'object' || Array.isArray(meta.bots)))) {
++    throw new Error('untrusted bot relationships; recovery stays closed')
++  }
++  const interrupted = []
++  const held = []
++  const issues = []
++  for (const [id, bot] of Object.entries(meta.bots ?? {})) {
++    if (id === meta.mainBotId) continue
++    if (meta.mainBotId === null || bot?.createdBy !== meta.mainBotId) {
++      issues.push({ sessionId: id, reason: 'unmatched-main' })
++      continue
++    }
++    signal.throwIfAborted()
++    let events = await orch.delivery.readLog(id)
++    signal.throwIfAborted()
++    const before = foldAssignments(events)
++    const open = [...before.assignments].filter(([, assignment]) => assignment.ended === undefined)
++    if (open.length) {
++      // Do not resolveAgent/followup: that could release a restored inbox or goal driver.
++      if (orch.ctx.agents.get(id) !== undefined) throw new Error('live unclosed assignment; recovery stays closed')
++      const handle = await orch.ctx.sessionPersistence.open(id, 'write', { signal })
++      try {
++        signal.throwIfAborted()
++        const { events: raw } = await handle.read(0, undefined, { signal })
++        const closers = interruptedTurnClosers(raw)
++        signal.throwIfAborted()
++        if (closers.length) await handle.append(closers)
++      } finally { await handle.close() }
++      await orch.ctx.sessionPersistence.flush()
++      signal.throwIfAborted()
++      // Persisted termination, not computeDue's in-memory stopped projection.
++      events = await orch.delivery.readLog(id)
++      signal.throwIfAborted()
++      const after = foldAssignments(events)
++      for (const [assignmentId] of open) {
++        if (after.assignments.get(assignmentId)?.ended !== 'interrupted') throw new Error('assignment termination not durable')
++        interrupted.push({ sessionId: id, assignmentId })
++      }
++    }
++    for (const pending of foldAssignments(events).pendingAssigns) held.push({ sessionId: id, assignmentId: pending.assignmentId })
++  }
++  signal.throwIfAborted()
++  return { interrupted, held, issues, note: RECOVERY_NOTE }
++}
++
++/** Lifecycle owned by OrchestrationPlugin; peer identity comes only from the current invocation. */
++export class HostRecovery {
++  constructor(recover) {
++    this.processId = PROCESS_ID
++    this.lifetime = new AbortController()
++    this.recover = recover
++    this.current = this.makeLease(null)
++    this.prepared = undefined
++  }
++
++  makeLease(peer) {
++    const controller = new AbortController()
++    const { promise, resolve } = Promise.withResolvers()
++    return { peer, controller, signal: controller.signal, ready: promise, resolve, open: false, challenge: randomUUID(), prepared: false }
++  }
++
++  attach(peer) {
++    this.lifetime.signal.throwIfAborted()
++    this.current.controller.abort()
++    this.current = this.makeLease(peer)
++    return { processId: this.processId, challenge: this.current.challenge }
++  }
++
++  assert(peer, challenge) {
++    const lease = this.current
++    lease.signal.throwIfAborted()
++    if (peer === null || lease.peer !== peer || lease.challenge !== challenge) throw new Error('stale or foreign recovery handoff')
++    return lease
++  }
++
++  async prepare(peer, challenge) {
++    const lease = this.assert(peer, challenge)
++    // A reconnect is not an SDK restart. Native log repair is single-flight per process.
++    this.prepared ??= this.recover(this.lifetime.signal)
++    const summary = await this.prepared
++    this.assert(peer, challenge)
++    lease.prepared = !summary.issues?.length
++    return { processId: this.processId, ...summary }
++  }
++
++  complete(peer, challenge) {
++    const lease = this.assert(peer, challenge)
++    if (!lease.prepared) throw new Error('assignments not restored')
++    lease.open = true
++    lease.resolve()
++    return { processId: this.processId, ready: true }
++  }
++
++  detach(peer) {
++    if (this.current.peer === peer) this.current.controller.abort()
++  }
++
++  stop() { this.lifetime.abort(); this.current.controller.abort() }
++}
+diff --git a/app/sdk/src/orchestration/delivery.mjs b/app/sdk/src/orchestration/delivery.mjs
+index 1aeaf0a..bfb47d0 100644
+--- a/app/sdk/src/orchestration/delivery.mjs
++++ b/app/sdk/src/orchestration/delivery.mjs
+@@ -13,0 +14 @@
++import { waitForRecovery } from '../admin/host.mjs'
+@@ -96 +97 @@ export class Delivery {
+-  constructor(ctx) {
++  constructor(ctx, recovery = () => undefined) {
+@@ -97,0 +99 @@ export class Delivery {
++    this.recovery = recovery
+@@ -156 +158,2 @@ export class Delivery {
+-  async send(agent, message) {
++  async send(agent, message, permit = this.recovery()) {
++    await waitForRecovery(permit)
+@@ -163,0 +167 @@ export class Delivery {
++        permit?.signal.throwIfAborted()
+@@ -165,2 +169,4 @@ export class Delivery {
+-      } catch {
+-        return this.send(agent, message) // it failed undelivered — take over
++      } catch (error) {
++        permit?.signal.throwIfAborted()
++        if (error?.unconfirmedStart) throw error // followup may already have started; never replay it
++        return this.send(agent, message, permit) // retry only a confirmed pre-followup failure
+@@ -170 +176,3 @@ export class Delivery {
+-      if (await this.holds(agent, id)) return { skipped: true }
++      const held = await this.holds(agent, id)
++      permit?.signal.throwIfAborted()
++      if (held) return { skipped: true }
+@@ -174,0 +183 @@ export class Delivery {
++        permit?.signal.throwIfAborted()
+@@ -199 +208,3 @@ export class Delivery {
+-  wake(agent, id) {
++  wake(agent, id, permit = this.recovery()) {
++    permit?.signal.throwIfAborted()
++    if (permit?.open === false) return false
+@@ -201,0 +213 @@ export class Delivery {
++    permit?.signal.throwIfAborted()
+@@ -202,0 +215,2 @@ export class Delivery {
++    // remove may synchronously publish an event which invalidates the lease.
++    permit?.signal.throwIfAborted()
+diff --git a/app/sdk/src/orchestration/main-channel.mjs b/app/sdk/src/orchestration/main-channel.mjs
+index 65c1210..f626b83 100644
+--- a/app/sdk/src/orchestration/main-channel.mjs
++++ b/app/sdk/src/orchestration/main-channel.mjs
+@@ -24,0 +25,2 @@ import { registerRoutingPrompt } from './routing-prompt.mjs'
++import { HostRecovery, recoverAssignments } from '../admin/host.mjs'
++import { orchDataDir } from './identity.mjs'
+@@ -209 +211,5 @@ export default class OrchestrationPlugin extends TypertRemoteService {
+-    this.config = config
++    this.config = { ...config, dataDir: config.dataDir ?? orchDataDir() }
++    // Opt-in at the current launcher/overlay; standalone P6 retains its original lifecycle.
++    if (config.hostRecovery === true || process.env.DSH_PBOTS_HOST_RECOVERY === '1') {
++      this.host = new HostRecovery((signal) => recoverAssignments(this, signal))
++    }
+@@ -212 +218 @@ export default class OrchestrationPlugin extends TypertRemoteService {
+-    this.delivery = new Delivery(ctx)
++    this.delivery = new Delivery(ctx, () => this.recovery)
+@@ -227 +233,35 @@ export default class OrchestrationPlugin extends TypertRemoteService {
+-    this.report.start()
++    ctx.effect(() => {
++      const stop = this.report.start()
++      return () => { this.host?.stop(); stop() }
++    })
++  }
++
++  get recovery() { return this.host?.current }
++
++  /** Separate control stream: connection, metadata restore and repair RPCs never wait on SDK readiness. */
++  async *recoveryRequests() {
++    if (!this.host) throw orchError('pbots/unavailable', 'host recovery is not enabled')
++    const { peer, signal } = this.ctx.invocation
++    if (this.host.current.peer !== null && !this.host.current.signal.aborted) throw orchError('pbots/forbidden', 'recovery already has a subscriber')
++    const handoff = this.host.attach(peer)
++    const detach = () => this.host.detach(peer)
++    signal.addEventListener('abort', detach, { once: true })
++    try {
++      yield handoff
++      if (!signal.aborted) await new Promise((resolve) => signal.addEventListener('abort', resolve, { once: true }))
++    } finally {
++      signal.removeEventListener('abort', detach)
++      detach()
++    }
++  }
++
++  async recoveryPrepare(request) {
++    if (!this.host) throw orchError('pbots/unavailable', 'host recovery is not enabled')
++    return this.host.prepare(this.ctx.invocation.peer, request?.challenge)
++  }
++
++  recoveryComplete(request) {
++    if (!this.host) throw orchError('pbots/unavailable', 'host recovery is not enabled')
++    const result = this.host.complete(this.ctx.invocation.peer, request?.challenge)
++    this.report.scheduleFlush()
++    return result
+@@ -280,0 +321,3 @@ Object.defineProperty(OrchestrationPlugin.prototype, REMOTE_METHOD_DESCRIPTOR, {
++  { method: 'recoveryRequests', exportName: 'orchestration.recovery', mode: 'stream', invocation: { kind: 'direct' } },
++  { method: 'recoveryPrepare', exportName: 'orchestration.recoveryPrepare', invocation: { kind: 'direct' } },
++  { method: 'recoveryComplete', exportName: 'orchestration.recoveryComplete', invocation: { kind: 'direct' } },
+diff --git a/app/sdk/src/orchestration/report.mjs b/app/sdk/src/orchestration/report.mjs
+index 8148aca..75197cd 100644
+--- a/app/sdk/src/orchestration/report.mjs
++++ b/app/sdk/src/orchestration/report.mjs
+@@ -18,0 +19 @@ import { foldAssignments, QUESTION_TOOL } from './assignment.mjs'
++import { waitForRecovery, RECOVERY_NOTE } from '../admin/host.mjs'
+@@ -95,0 +97 @@ export class Reporter {
++    this.reconcilePending = false
+@@ -104,0 +107,2 @@ export class Reporter {
++    this.lifetime = new AbortController()
++    this.withdrawTimers = new Set()
+@@ -114,0 +119,3 @@ export class Reporter {
++    this.lifetime.abort()
++    for (const timer of this.withdrawTimers) clearTimeout(timer)
++    this.withdrawTimers.clear()
+@@ -124 +131 @@ export class Reporter {
+-    if (!event || typeof event.type !== 'string') return
++    if (this.lifetime.signal.aborted || !event || typeof event.type !== 'string') return
+@@ -155 +162 @@ export class Reporter {
+-    if (this.timer !== null) return
++    if (this.lifetime.signal.aborted || this.timer !== null) return
+@@ -180 +187,11 @@ export class Reporter {
+-    if (this.flushing) return
++    if (this.lifetime.signal.aborted) return
++    if (this.flushing) {
++      this.reconcilePending = true
++      return
++    }
++    const recovery = this.orch.recovery
++    const permit = {
++      ready: recovery?.ready ?? Promise.resolve(),
++      signal: AbortSignal.any([this.lifetime.signal, ...(recovery ? [recovery.signal] : [])]),
++      get open() { return recovery?.open !== false },
++    }
+@@ -182,0 +200 @@ export class Reporter {
++      await waitForRecovery(permit)
+@@ -184,0 +203 @@ export class Reporter {
++      permit.signal.throwIfAborted()
+@@ -193,0 +213 @@ export class Reporter {
++      permit.signal.throwIfAborted()
+@@ -196,0 +217 @@ export class Reporter {
++      permit.signal.throwIfAborted()
+@@ -200,0 +222 @@ export class Reporter {
++        permit.signal.throwIfAborted()
+@@ -201,0 +224 @@ export class Reporter {
++        permit.signal.throwIfAborted()
+@@ -214 +237,5 @@ export class Reporter {
+-          this.orch.delivery.wake(await this.orch.agentOf(nw.sessionId), nw.messageId)
++          // F3 never resumes a held/paused worker assignment automatically.
++          if (recovery && nw.sessionId !== mainId) continue
++          const agent = await this.orch.agentOf(nw.sessionId)
++          permit.signal.throwIfAborted()
++          this.orch.delivery.wake(agent, nw.messageId, permit)
+@@ -223,0 +251 @@ export class Reporter {
++        if (recovery && item.reason === 'interrupted') return { ...item, result: RECOVERY_NOTE }
+@@ -229 +257,2 @@ export class Reporter {
+-      await this.orch.delivery.send(mainAgent, buildReportMessage(items))
++      permit.signal.throwIfAborted()
++      await this.orch.delivery.send(mainAgent, buildReportMessage(items), permit)
+@@ -230,0 +260,4 @@ export class Reporter {
++    } catch (error) {
++      // An already-issued followup is unknown, not a canceled pre-delivery pass.
++      if (error?.unconfirmedStart) this.reconcilePending = false
++      if (!permit.signal.aborted || error?.unconfirmedStart) throw error
+@@ -232,0 +266,7 @@ export class Reporter {
++      const reconcile = this.reconcilePending && permit.signal.aborted && !this.lifetime.signal.aborted
++      this.reconcilePending = false
++      // A completed new lease's window can expire behind the canceled old pass.
++      // Consume that one trigger after releasing single-flight; no polling/retry.
++      if (reconcile) queueMicrotask(() => {
++        this.flush('recovery').catch((error) => warn(`recovery reconcile failed: ${String(error instanceof Error ? error.message : error)}`))
++      })
+@@ -244 +284,2 @@ export class Reporter {
+-  withdrawWithRetry(mainId, attempt = 0) {
++  withdrawWithRetry(mainId, attempt = 0, recovery = this.orch.recovery) {
++    if (this.lifetime.signal.aborted || recovery?.signal.aborted || recovery?.open === false) return
+@@ -246 +287 @@ export class Reporter {
+-      this.withdrawPendingReports(mainId)
++      this.withdrawPendingReports(mainId, recovery)
+@@ -252 +293,5 @@ export class Reporter {
+-      setTimeout(() => this.withdrawWithRetry(mainId, attempt + 1), 50)
++      const timer = setTimeout(() => {
++        this.withdrawTimers.delete(timer)
++        this.withdrawWithRetry(mainId, attempt + 1, recovery)
++      }, 50)
++      this.withdrawTimers.add(timer)
+@@ -262 +307,2 @@ export class Reporter {
+-  withdrawPendingReports(mainId) {
++  withdrawPendingReports(mainId, recovery = this.orch.recovery) {
++    if (this.lifetime.signal.aborted || recovery?.signal.aborted || recovery?.open === false) return
+@@ -266,0 +313 @@ export class Reporter {
++      if (this.lifetime.signal.aborted || recovery?.signal.aborted || recovery?.open === false) break
+diff --git a/app/sdk/src/start.ts b/app/sdk/src/start.ts
+index e80ebd4..082e102 100644
+--- a/app/sdk/src/start.ts
++++ b/app/sdk/src/start.ts
+@@ -21,0 +22,2 @@
++ *   P2SDK_HOST_RECOVERY  '1' enables the main-confirmed F3 recovery barrier for orchestration;
++ *                        requires a connected main; standalone P6 is unchanged when unset.
+@@ -166 +168 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
+-      name !== 'PBOTS_DATA_DIR' && name !== 'P2SDK_SANDBOX_MASK' &&
++      name !== 'PBOTS_DATA_DIR' && name !== 'P2SDK_SANDBOX_MASK' && name !== 'P2SDK_HOST_RECOVERY' &&
+@@ -169,0 +172 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
++  if (env.P2SDK_HOST_RECOVERY === '1') child.DSH_PBOTS_HOST_RECOVERY = '1'
+diff --git a/app/ui/main/admin/recovery.ts b/app/ui/main/admin/recovery.ts
+new file mode 100644
+index 0000000..92382e5
+--- /dev/null
++++ b/app/ui/main/admin/recovery.ts
+@@ -0,0 +1,117 @@
++// P7-F3: main owns F1; SDK owns native Assignment repair. A socket epoch only cancels work,
++// never establishes a new SDK process generation or grants a management permission.
++import type { OperationsLedger, OperationsView } from './operations'
++
++interface Frame { type: string; value?: unknown }
++interface RecoveryDsh {
++  currentGeneration?: number
++  onConnected(fn: (generation: number) => void): unknown
++  onDisconnected(fn: () => void): unknown
++  ready(): Promise<{ openStream(endpoint: string, args: unknown, cb: (frame: Frame) => void): { cancel(): void } }>
++  rpc(method: string, args: unknown): Promise<{ ok: boolean; value?: unknown }>
++}
++interface Handoff { processId: string; challenge: string }
++interface Summary { processId: string; interrupted: unknown[]; held: unknown[]; issues: Array<{ sessionId: string; reason: string }> }
++const object = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value)
++const handoffOf = (value: unknown): value is Handoff => object(value) && typeof value.processId === 'string' && value.processId !== '' && typeof value.challenge === 'string' && value.challenge !== ''
++const summaryOf = (value: unknown): value is Summary => object(value) && typeof value.processId === 'string' && Array.isArray(value.interrupted) && Array.isArray(value.held) && Array.isArray(value.issues) && value.issues.every((issue) => object(issue) && typeof issue.sessionId === 'string' && typeof issue.reason === 'string')
++const operations = (view: OperationsView) => [...view.inProgress, ...view.completed, ...view.failed, ...view.undone]
++
++/** Wire the recovery control stream on main's own Peer. Never replay an in-progress operation. */
++export function wireAdminRecovery(deps: {
++  dsh: RecoveryDsh
++  ledger: OperationsLedger
++  restore: (connectionGeneration: number) => Promise<void>
++  log?: (message: string) => void
++}) {
++  const log = deps.log ?? ((message: string) => console.warn(message))
++  const initialized = deps.ledger.init()
++  let closed = false
++  let epoch = 0
++  let ready = false
++  let current: { cancel(): void } | undefined
++  let ticket: Handoff | undefined
++  let hostProcess: string | undefined
++  let hostGeneration = 0
++  let connectionGeneration = deps.dsh.currentGeneration ?? 0
++  const invalidate = () => { ++epoch; ready = false; ticket = undefined }
++  const check = (expected: number) => {
++    if (closed || expected !== epoch) throw new Error('obsolete recovery connection')
++  }
++
++  const restore = async (handoff: Handoff, expected: number, connection: number) => {
++    try {
++      await initialized
++      check(expected)
++      const view = deps.ledger.readOperations() // throws for an unhealthy ledger
++      await deps.restore(connection)
++      check(expected)
++      const result = await deps.dsh.rpc('pbots/orchestration.recoveryPrepare', { request: { challenge: handoff.challenge } })
++      check(expected)
++      if (!result.ok || !summaryOf(result.value) || result.value.processId !== handoff.processId) throw new Error('untrusted Assignment recovery response')
++      if (hostProcess !== handoff.processId) {
++        hostGeneration = Math.max(hostGeneration, ...operations(view).flatMap((operation) => [operation.generation, operation.receipt?.generation ?? 0])) + 1
++        hostProcess = handoff.processId
++      }
++      for (const issue of result.value.issues) {
++        check(expected)
++        const audit = await deps.ledger.beginOperation({ action: 'recovery', actor: 'host', turnCategory: 'delegated', generation: hostGeneration, target: issue.sessionId, dedupeKey: `recovery:${handoff.processId}:${issue.sessionId}:${issue.reason}` })
++        if (audit.created) await deps.ledger.finishOperation(audit.operationId, { outcome: 'failed', error: issue.reason })
++      }
++      if (result.value.issues.length) throw new Error('unmatched Assignment relationships; audit recorded')
++      check(expected)
++      deps.ledger.readOperations() // health recheck immediately before release
++      const completed = await deps.dsh.rpc('pbots/orchestration.recoveryComplete', { request: { challenge: handoff.challenge } })
++      check(expected)
++      if (!completed.ok || !object(completed.value) || completed.value.processId !== handoff.processId || completed.value.ready !== true) throw new Error('recovery completion not confirmed')
++      ticket = handoff
++      ready = true
++    } catch (error) {
++      if (expected === epoch && !closed) { ready = false; log(`[admin] recovery stays closed: ${String(error)}`) }
++    }
++  }
++
++  const subscribe = async () => {
++    invalidate()
++    const expected = epoch
++    const connection = connectionGeneration
++    try {
++      const socket = await deps.dsh.ready()
++      check(expected)
++      current = socket.openStream('pbots/orchestration.recovery', {}, (frame) => {
++        if (closed || expected !== epoch) return
++        if (frame.type !== 'item') {
++          invalidate()
++          return
++        }
++        if (!handoffOf(frame.value) || ticket !== undefined) { invalidate(); log('[admin] invalid recovery handoff'); return }
++        // Mark the frame consumed now, not after asynchronous repair (duplicate frames cannot race).
++        ticket = frame.value
++        void restore(frame.value, expected, connection)
++      })
++    } catch (error) {
++      if (expected === epoch && !closed) { invalidate(); log(`[admin] recovery subscription failed: ${String(error)}`) }
++    }
++  }
++  deps.dsh.onDisconnected(invalidate)
++  deps.dsh.onConnected((generation) => {
++    connectionGeneration = generation
++    invalidate()
++    try { current?.cancel() } catch { /* dead socket already invalidated its SDK lease */ }
++    current = undefined
++    void subscribe()
++  })
++  void subscribe()
++
++  return {
++    initialized,
++    isReady: () => ready && !closed,
++    generation: () => ready ? hostGeneration : undefined,
++    // F4 owns restart receipts. A client of an external SDK cannot issue one.
++    close() {
++      closed = true
++      invalidate()
++      try { current?.cancel() } catch { /* connection already closed */ }
++    },
++  }
++}
+diff --git a/app/ui/main/admin/restart.ts b/app/ui/main/admin/restart.ts
+new file mode 100644
+index 0000000..eb1a466
+--- /dev/null
++++ b/app/ui/main/admin/restart.ts
+@@ -0,0 +1,4 @@
++// F4 owns spawning/relaunch. Main is currently a client of an externally started SDK.
++export async function restartSdk(): Promise<{ ok: false; error: { code: string; message: string } }> {
++  return { ok: false, error: { code: 'pbots/unavailable', message: 'SDK restart is unavailable: this main process does not own the SDK.' } }
++}
+diff --git a/app/ui/main/dsh/connect.ts b/app/ui/main/dsh/connect.ts
+index 12f560b..a79ba61 100644
+--- a/app/ui/main/dsh/connect.ts
++++ b/app/ui/main/dsh/connect.ts
+@@ -70,0 +71 @@ export class DshConnection {
++  private disconnectedListeners: Array<() => void> = []
+@@ -87,0 +89,9 @@ export class DshConnection {
++  /** F3 invalidates main's management permission as soon as the current socket dies. */
++  onDisconnected(listener: () => void): void { this.disconnectedListeners.push(listener) }
++
++  private notifyDisconnected(): void {
++    for (const listener of [...this.disconnectedListeners]) {
++      try { listener() } catch (error) { console.warn(`[dsh] onDisconnected listener failed: ${String(error)}`) }
++    }
++  }
++
+@@ -134,0 +145 @@ export class DshConnection {
++      this.notifyDisconnected()
+@@ -189,0 +201 @@ export class DshConnection {
++    this.notifyDisconnected()
+diff --git a/app/ui/main/index.ts b/app/ui/main/index.ts
+index 708bb24..1c717b2 100644
+--- a/app/ui/main/index.ts
++++ b/app/ui/main/index.ts
+@@ -20,0 +21,2 @@ import { wireWorkerNotify } from './notify/worker-notify'
++import { OperationsLedger } from './admin/operations'
++import { wireAdminRecovery } from './admin/recovery'
+@@ -161 +163 @@ export function wireRestoreOnReconnect(
+-): void {
++): (generation: number) => Promise<void> {
+@@ -162,0 +165,3 @@ export function wireRestoreOnReconnect(
++  let currentGeneration = 0
++  let current: Promise<void> = Promise.reject(new Error('M3 connection not restored'))
++  void current.catch(() => {})
+@@ -164 +169,2 @@ export function wireRestoreOnReconnect(
+-    ready.setDshReady()
++    currentGeneration = generation
++    ready.setDshReady(generation)
+@@ -166,6 +172,9 @@ export function wireRestoreOnReconnect(
+-    run = run
+-      .then(async () => {
+-        await m3.init
+-        await ensureThenReady({ dsh, store: m3.store, failed: m3.failed, ready })
+-      })
+-      .catch((error) => log(`[m3] restore rerun failed: ${String(error)}`))
++    current = run.then(async () => {
++      await m3.init
++      const outcomes = await ensureThenReady({ dsh, store: m3.store, failed: m3.failed,
++        ready: { ...ready, setRestoreSettled: (failed) => ready.setRestoreSettled(failed, generation) } })
++      // Shell availability permits settled failures; management recovery never does.
++      m3.store.read()
++      if (generation !== currentGeneration || m3.failed.size || outcomes.some((outcome) => !outcome.ok)) throw new Error('M3 recovery not successful for current connection')
++    })
++    run = current.catch((error) => log(`[m3] restore rerun failed: ${String(error)}`))
+@@ -172,0 +182,5 @@ export function wireRestoreOnReconnect(
++  return async (generation) => {
++    if (generation !== currentGeneration || generation === 0) throw new Error('obsolete M3 recovery connection')
++    await current
++    if (generation !== currentGeneration) throw new Error('obsolete M3 recovery completion')
++  }
+@@ -279 +293,5 @@ async function main(): Promise<void> {
+-      wireRestoreOnReconnect(dsh, m3, ready)
++      const restored = wireRestoreOnReconnect(dsh, m3, ready)
++      const operations = new OperationsLedger(dataDir)
++      const recovery = wireAdminRecovery({ dsh, ledger: operations, restore: restored })
++      // F1 close durability/terminal semantics are independently repaired; do not reuse this instance.
++      app.once('before-quit', () => { recovery.close(); dsh?.stop(); operations.close() })
+diff --git a/app/ui/main/ready.ts b/app/ui/main/ready.ts
+index 5ad0238..7681085 100644
+--- a/app/ui/main/ready.ts
++++ b/app/ui/main/ready.ts
+@@ -22 +22 @@ export interface ReadyGate {
+-  setDshReady(): void
++  setDshReady(generation?: number): void
+@@ -24 +24 @@ export interface ReadyGate {
+-  setRestoreSettled(failed: string[]): void
++  setRestoreSettled(failed: string[], generation?: number): void
+@@ -33,0 +34 @@ export function createReadyGate(opts: ReadyGateOptions = {}): ReadyGate {
++  let generation = 0
+@@ -48,2 +49,15 @@ export function createReadyGate(opts: ReadyGateOptions = {}): ReadyGate {
+-    setDshReady() { dshReady = true; flush() },
+-    setRestoreSettled(failed: string[]) { restoreReady = true; failedPresets = [...failed]; flush() },
++    setDshReady(next?: number) {
++      if (next !== undefined) {
++        if (next < generation) return
++        if (next !== generation) restoreReady = false
++        generation = next
++      }
++      dshReady = true
++      flush()
++    },
++    setRestoreSettled(failed: string[], restoredGeneration?: number) {
++      if (generation !== (restoredGeneration ?? 0)) return
++      restoreReady = true
++      failedPresets = [...failed]
++      flush()
++    },

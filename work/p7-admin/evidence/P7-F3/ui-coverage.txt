@@ -1,0 +1,246 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F3/app/ui[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Errors [49m[22m[31m⎯⎯⎯⎯⎯⎯[39m
+[31m[1m
+Vitest caught 13 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Test Run Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Cannot find package '@vitest/coverage-v8' imported from /tmp/bot-wt/P7-F3/app/ui/node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/coverage.cTDc4uSS.js[39m
+[90m [2m❯[22m Object.getPackageJSONURL node:internal/modules/package_json_reader:[2m331:9[22m[39m
+[90m [2m❯[22m packageResolve node:internal/modules/esm/resolve:[2m784:25[22m[39m
+[90m [2m❯[22m moduleResolve node:internal/modules/esm/resolve:[2m873:18[22m[39m
+[90m [2m❯[22m defaultResolve node:internal/modules/esm/resolve:[2m1006:11[22m[39m
+[90m [2m❯[22m ModuleLoader.#cachedDefaultResolve node:internal/modules/esm/loader:[2m705:20[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolveAndMaybeBlockOnLoaderThread node:internal/modules/esm/loader:[2m725:38[22m[39m
+[90m [2m❯[22m ModuleLoader.resolveSync node:internal/modules/esm/loader:[2m763:56[22m[39m
+[90m [2m❯[22m ModuleLoader.#resolve node:internal/modules/esm/loader:[2m687:17[22m[39m
+[90m [2m❯[22m ModuleLoader.getOrCreateModuleJob node:internal/modules/esm/loader:[2m607:35[22m[39m
+[90m [2m❯[22m node:internal/modules/esm/loader:[2m636:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_MODULE_NOT_FOUND' }[39m
+[31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39m
+
+
+[2m Test Files [22m [2mno tests[22m
+[2m      Tests [22m [2mno tests[22m
+[2m     Errors [22m [1m[31m13 errors[39m[22m
+[2m   Start at [22m 10:03:28
+[2m   Duration [22m 1.41s
+
+[2m    Isolate [22m [33m13 workers spawned[39m[2m · ~79ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~949ms faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+--------------|---------|----------|---------|---------|-------------------
+File          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+--------------|---------|----------|---------|---------|-------------------
+All files     |       0 |        0 |       0 |       0 |                   
+ main         |       0 |        0 |       0 |       0 |                   
+  index.ts    |       0 |        0 |       0 |       0 | 24-329            
+  ready.ts    |       0 |        0 |       0 |       0 | 33-66             
+ main/admin   |       0 |        0 |       0 |       0 |                   
+  recovery.ts |       0 |        0 |       0 |       0 | 15-114            
+  restart.ts  |       0 |      100 |       0 |       0 | 3                 
+ main/dsh     |       0 |        0 |       0 |       0 |                   
+  connect.ts  |       0 |        0 |       0 |       0 | 14-203            
+--------------|---------|----------|---------|---------|-------------------
+ERROR: Coverage for lines (0%) does not meet global threshold (80%)
+ERROR: Coverage for functions (0%) does not meet global threshold (80%)
+ERROR: Coverage for statements (0%) does not meet global threshold (80%)
+ERROR: Coverage for branches (0%) does not meet global threshold (80%)

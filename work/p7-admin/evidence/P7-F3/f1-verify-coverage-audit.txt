@@ -1,0 +1,15 @@
+Author map: all ten complete records independently reconstructed from official JSON and fixed SHA diff; exact match.
+No count merging between transformed worker and bare Loader source; main-channel child record only. Enclosing legacy spans retained.
+app/sdk/src/start.ts {"statement": {"covered": 4, "total": 4, "pct": 100.0}, "branch": {"covered": 13, "total": 13, "pct": 100.0}, "function": {"covered": 1, "total": 1, "pct": 100.0}, "line": {"covered": 1, "total": 1, "pct": 100.0}}
+app/sdk/src/admin/host.mjs {"statement": {"covered": 91, "total": 92, "pct": 98.91}, "branch": {"covered": 37, "total": 40, "pct": 92.5}, "function": {"covered": 13, "total": 13, "pct": 100.0}, "line": {"covered": 79, "total": 79, "pct": 100.0}}
+app/sdk/src/orchestration/delivery.mjs {"statement": {"covered": 20, "total": 22, "pct": 90.91}, "branch": {"covered": 9, "total": 11, "pct": 81.82}, "function": {"covered": 5, "total": 5, "pct": 100.0}, "line": {"covered": 15, "total": 15, "pct": 100.0}}
+app/sdk/src/orchestration/report.mjs {"statement": {"covered": 55, "total": 62, "pct": 88.71}, "branch": {"covered": 50, "total": 56, "pct": 89.29}, "function": {"covered": 10, "total": 12, "pct": 83.33}, "line": {"covered": 40, "total": 42, "pct": 95.24}}
+app/sdk/src/orchestration/main-channel.mjs {"statement": {"covered": 36, "total": 37, "pct": 97.3}, "branch": {"covered": 17, "total": 18, "pct": 94.44}, "function": {"covered": 10, "total": 11, "pct": 90.91}, "line": {"covered": 25, "total": 25, "pct": 100.0}}
+app/ui/main/index.ts {"statement": {"covered": 30, "total": 31, "pct": 96.77}, "branch": {"covered": 12, "total": 15, "pct": 80.0}, "function": {"covered": 10, "total": 10, "pct": 100.0}, "line": {"covered": 20, "total": 20, "pct": 100.0}}
+app/ui/main/ready.ts {"statement": {"covered": 14, "total": 15, "pct": 93.33}, "branch": {"covered": 8, "total": 10, "pct": 80.0}, "function": {"covered": 3, "total": 3, "pct": 100.0}, "line": {"covered": 11, "total": 11, "pct": 100.0}}
+app/ui/main/admin/recovery.ts {"statement": {"covered": 90, "total": 95, "pct": 94.74}, "branch": {"covered": 59, "total": 66, "pct": 89.39}, "function": {"covered": 16, "total": 17, "pct": 94.12}, "line": {"covered": 69, "total": 70, "pct": 98.57}}
+app/ui/main/admin/restart.ts {"statement": {"covered": 1, "total": 1, "pct": 100.0}, "branch": {"covered": 0, "total": 0, "pct": null}, "function": {"covered": 1, "total": 1, "pct": 100.0}, "line": {"covered": 1, "total": 1, "pct": 100.0}}
+app/ui/main/dsh/connect.ts {"statement": {"covered": 9, "total": 9, "pct": 100.0}, "branch": {"covered": 0, "total": 0, "pct": null}, "function": {"covered": 5, "total": 5, "pct": 100.0}, "line": {"covered": 6, "total": 6, "pct": 100.0}}
+INDEPENDENT_CHANGED_GATE PASS (each applicable per-file S/B/F/L >=80%; zero denominator N.A.)
+
+EXIT 0

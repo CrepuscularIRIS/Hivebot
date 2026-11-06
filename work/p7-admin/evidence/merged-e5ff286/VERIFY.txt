@@ -1,0 +1,54 @@
+verdict: PASS（限定本次要求的“合并后 UI 全单测 + build + SDK 单测”回测范围）
+commit: e5ff286e686994b489766ea7d3bd1f74614a342b
+日期：2026-11-05 08:43–08:54（主机本地时间）。
+独立 detached 工作树：/tmp/bot-wt/P7-merged-regression
+报告与所有完整日志目录：/home/lingxufeng/bot/work/p7-admin/evidence/merged-e5ff286/
+
+这是合并后当前 HEAD 一次性覆盖 P7-F1/F2 的补回测，不是两个历史合并点当时已分别回测的证明；不把本报告倒签为历史验收。
+开始与结束核对主仓 HEAD 均为 e5ff286e686994b489766ea7d3bd1f74614a342b；工作树固定 detached 原 SHA，未漂移。F1 bd70059、F2 713763c 均为该 SHA 祖先（exit=0）。工作树最终 git status --porcelain 为空。
+
+首次失败（保留，不抹掉）
+UI 首跑 exit=1：tests/unit/m3/ensure.test.ts:23 在加载阶段 lstat app/sdk/node_modules 得 ENOENT，1 failed suite / 44 passed / 536 passed tests；完整 ui-unit.log。
+原因是新工作树当时只安装 UI，还没安装 SDK；已先报告具体项，再仅安装 SDK 依赖，原命令原样重跑。没有改产品代码/测试。后续 45 files / 541 tests 全通过，不将首轮失败写成通过。
+
+验收项 | 结果 | 证据
+独立干净 SHA、F1/F2 合并覆盖 | PASS | source-and-resource-check.log：HEAD、空 status、两个 merge-base --is-ancestor exit=0。
+UI 全部配置内单测 | PASS（安装前置补齐后的重跑） | ui-unit-after-sdk-setup.log：45 files、541 tests、exit=0。
+UI build | PASS | ui-build.log：main/preload + renderer-grok/shim/stage 完成，exit=0。保留 renderer config missing、chunk size、dynamic import 等 warning；不把 build 当 TypeScript 全量检查或运行时验收。
+SDK tests/unit 全部 | PASS | sdk-unit.log：29 files、569 tests、exit=0。
+F1 相关覆盖 | PASS（现有测试） | UI operations.test.ts 28 项通过，含意图落盘失败、并发去重、坏账本、截断恢复、unknown、undo、旧代回执等；不外推为真实管理副作用已接线。
+F2 相关覆盖 | PASS（现有测试） | UI channel.test.ts 23 项、SDK p7-authority.test.ts 47 项、p7-admin-channel.test.ts 15 项通过。
+额外坏路径 | PASS | p7-negative-path.log：同动作目标正负冲突、其他范围冲突、显式否定、工具结果/worker 不授予权限，共 15 passed；32 skipped 是 -t 未选中项，之前全单测 47 项已全部通过。
+
+实测命令与退出码
+共同隔离前缀 E = env -i PATH="$PATH" HOME=/tmp/bot-P7-merged-regression/home TMPDIR=/tmp/bot-P7-merged-regression/tmp CI=1
+测试/build 另带 PBOTS_DATA_DIR=/tmp/bot-P7-merged-regression/data；未继承宿主真实模型配置或凭证。耗时/RSS来自 /usr/bin/time -v，不是估算。
+1. git -C /home/lingxufeng/bot worktree add --detach /tmp/bot-wt/P7-merged-regression e5ff286e686994b489766ea7d3bd1f74614a342b
+   exit=0（后续创建命令输出及 source-and-resource-check.log 交叉核对）。
+2. E pnpm -C /tmp/bot-wt/P7-merged-regression/app/ui setup
+   exit=0；ui-setup.log。
+3. E PBOTS_DATA_DIR=... /usr/bin/time -v pnpm -C /tmp/bot-wt/P7-merged-regression/app/ui test --maxWorkers=1 --no-file-parallelism
+   首次 exit=1；ui-unit.log；18.62s / max RSS 198736KB。错误见上。
+4. E pnpm -C /tmp/bot-wt/P7-merged-regression/app/sdk install --frozen-lockfile
+   exit=0；sdk-setup.log。
+5. 同第3项原命令重跑
+   exit=0；ui-unit-after-sdk-setup.log；17.94s / max RSS 123436KB。
+6. E PBOTS_DATA_DIR=... /usr/bin/time -v pnpm -C /tmp/bot-wt/P7-merged-regression/app/ui build
+   exit=0；ui-build.log；2.84s / max RSS 1438716KB。
+7. E PBOTS_DATA_DIR=... /usr/bin/time -v pnpm -C /tmp/bot-wt/P7-merged-regression/app/sdk test tests/unit --maxWorkers=1 --no-file-parallelism
+   exit=0；sdk-unit.log；212.47s / max RSS 387320KB；第200秒工具转后台后等待同一进程结束，没有重启/重复跑。耗时主体为现有 real Loader 的定时/恢复集成用例，非真模型等待。
+8. E PBOTS_DATA_DIR=... /usr/bin/time -v pnpm -C /tmp/bot-wt/P7-merged-regression/app/sdk test tests/unit/p7-authority.test.ts --maxWorkers=1 --no-file-parallelism --reporter=verbose -t '正负冲突|其他已列范围项有冲突|显式否定压过|工具结果 / worker'
+   exit=0；p7-negative-path.log；1.06s / max RSS 173868KB。
+此处 PBOTS_DATA_DIR=... 的完整值统一是 /tmp/bot-P7-merged-regression/data。
+
+网络/未验边界（不发明 PASS）
+- 只跑 SDK tests/unit，不运行 SDK tests/e2e、tests/market、D3 等真模型或外网评测；没有调用 GLM API。unit 目录中的 real Loader 指真实本地 SDK/假模型，不等于 real provider。
+- UI connect 单测中的 HTTP 500 是本地故障注入，不是把外网或限流失败当成功；本次没有真实模型限流结果可裁定。
+- 管理相关 e2e 未验：p7-admin.spec.ts / p7-management-matrix.spec.ts 文件不存在，main/index.ts、SDK start.ts、preload/index.ts 无管理模块接线命中，见 source-and-resource-check.log。P7-WM/U1 后续任务仍需接线和真实管理旅程；本次未启动 Electron、未操作真桌面、无 UI 截图，不声称管理功能端到端可用。
+- 未跑覆盖率、全 SDK e2e/market、UI e2e 或新版 PLAN 的原版分层业务验收；本次测试绿不能替代这些验收，也不代表 P7 整阶段完成。
+
+资源与安全边界
+两段完全串行，无 Agent 再派。P7 起始 load 6.16/8.84/12.14，执行 SDK 前 8.03/8.92/11.19，SDK 长任务核对时 9.72/8.63/10.53，末次 8.63/8.77/10.49；所查 vmstat iowait 均0。单 worker，无叠加全量任务；不继续扩跑 e2e。末次原始资源记录见 source-and-resource-check.log。
+运行时 HOME/TMPDIR/数据目录和构建产物均在独立 /tmp 树；主仓仅写指定 evidence。无 sudo、无 pkill/killall、无重启注销；测试故障恢复仅操作自身 spawn SDK 子进程；未触碰 P6-24 工作树。无产品修改、合并、提交。
+
+新问题：无新的产品断言失败。需保留的执行前置：新工作树 UI ensure 单测依赖 app/sdk/node_modules，须先装 SDK；首轮安装缺失失败已留完整证据。

@@ -1,0 +1,128 @@
+import type { Context } from '@deepseek-ai/cordis';
+import Schema from '@deepseek-ai/schemastery';
+import { type NativeChannelFactory } from './native-client.ts';
+import type { CuaApplicationGrant } from './access-types.ts';
+export { CuaAccess } from './access.ts';
+/** Native executable and per-operation resource bounds. */
+export interface CuaConfig {
+    /** Register tools for Agents using this preset; defaults to ptc. False enables global registration. */
+    agentPreset: string | false;
+    /** Legacy grants imported once into profile-scoped storage; later edits are ignored. */
+    allowedApps: Array<Omit<CuaApplicationGrant, 'id'> & {
+        /** Unbranded digest at the profile configuration boundary; admitted by the Config schema. */
+        id: string;
+    }>;
+    /** Absolute native helper override; omission prepares the package-owned executable. */
+    helperPath?: string;
+    /** Maximum time in milliseconds for native component preparation. */
+    buildTimeoutMs: number;
+    /** Deadline for one native operation, including capture and AX traversal. */
+    timeoutMs: number;
+    /** Maximum time to connect to or start the shared native helper. */
+    connectTimeoutMs: number;
+    /** Screenshot deadline including time queued behind other native operations. */
+    screenshotTimeoutMs: number;
+    /** Deadline for each individual Accessibility system call. */
+    axTimeoutMs: number;
+    /** Maximum bytes retained for one helper response frame. */
+    maxResponseBytes: number;
+    /** Maximum installed application matches returned for one discovery query. */
+    maxAppMatches: number;
+    /** Maximum bytes preserved from the system clipboard during one paste. */
+    maxClipboardBytes: number;
+    /** Maximum wait for clipboard data consumption after the Paste command returns. */
+    pasteReadTimeoutMs: number;
+    /** Maximum UTF-8 bytes admitted for one helper request frame. */
+    maxRequestBytes: number;
+    /** Duration in milliseconds of one same-window drag. */
+    dragDurationMs: number;
+    /** Maximum explicitly requested mouse-button hold in milliseconds; zero allows immediate release only. */
+    maxClickHoldMs: number;
+    /** Number of movement segments dispatched during a drag. */
+    dragSteps: number;
+    /** Delay in milliseconds after each Unicode key-down or key-up event. */
+    textEventIntervalMs: number;
+    /** Native connection cleanup, socket-write and launcher termination budget in milliseconds. */
+    graceMs: number;
+    /** Maximum nodes admitted by a native accessibility snapshot. */
+    maxElements: number;
+    /** Maximum depth traversed by a native accessibility snapshot. */
+    maxDepth: number;
+}
+/** Validated host configuration; no driver is downloaded at runtime. */
+export declare const CuaConfig: Schema<Schemastery.ObjectS<NoInfer<{
+    agentPreset: Schema<string | false, string | false, "defined">;
+    allowedApps: Schema<({
+        id?: string | null;
+        name?: string | null;
+        executablePath?: string | null;
+    } & import("@deepseek-ai/cosmokit").Dict)[], Schemastery.ObjectT<NoInfer<{
+        id: Schema<string, string, "defined">;
+        name: Schema<string, string, "defined">;
+        executablePath: Schema<string, string, "plain">;
+    }>>[], "defined">;
+    helperPath: Schema<string, string, "plain">;
+    buildTimeoutMs: Schema<number, number, "defined">;
+    timeoutMs: Schema<number, number, "defined">;
+    connectTimeoutMs: Schema<number, number, "defined">;
+    screenshotTimeoutMs: Schema<number, number, "defined">;
+    axTimeoutMs: Schema<number, number, "defined">;
+    maxAppMatches: Schema<number, number, "defined">;
+    maxClipboardBytes: Schema<number, number, "defined">;
+    pasteReadTimeoutMs: Schema<number, number, "defined">;
+    maxRequestBytes: Schema<number, number, "defined">;
+    dragDurationMs: Schema<number, number, "defined">;
+    maxClickHoldMs: Schema<number, number, "defined">;
+    dragSteps: Schema<number, number, "defined">;
+    maxResponseBytes: Schema<number, number, "defined">;
+    textEventIntervalMs: Schema<number, number, "defined">;
+    graceMs: Schema<number, number, "defined">;
+    maxElements: Schema<number, number, "defined">;
+    maxDepth: Schema<number, number, "defined">;
+}>>, Schemastery.ObjectT<NoInfer<{
+    agentPreset: Schema<string | false, string | false, "defined">;
+    allowedApps: Schema<({
+        id?: string | null;
+        name?: string | null;
+        executablePath?: string | null;
+    } & import("@deepseek-ai/cosmokit").Dict)[], Schemastery.ObjectT<NoInfer<{
+        id: Schema<string, string, "defined">;
+        name: Schema<string, string, "defined">;
+        executablePath: Schema<string, string, "plain">;
+    }>>[], "defined">;
+    helperPath: Schema<string, string, "plain">;
+    buildTimeoutMs: Schema<number, number, "defined">;
+    timeoutMs: Schema<number, number, "defined">;
+    connectTimeoutMs: Schema<number, number, "defined">;
+    screenshotTimeoutMs: Schema<number, number, "defined">;
+    axTimeoutMs: Schema<number, number, "defined">;
+    maxAppMatches: Schema<number, number, "defined">;
+    maxClipboardBytes: Schema<number, number, "defined">;
+    pasteReadTimeoutMs: Schema<number, number, "defined">;
+    maxRequestBytes: Schema<number, number, "defined">;
+    dragDurationMs: Schema<number, number, "defined">;
+    maxClickHoldMs: Schema<number, number, "defined">;
+    dragSteps: Schema<number, number, "defined">;
+    maxResponseBytes: Schema<number, number, "defined">;
+    textEventIntervalMs: Schema<number, number, "defined">;
+    graceMs: Schema<number, number, "defined">;
+    maxElements: Schema<number, number, "defined">;
+    maxDepth: Schema<number, number, "defined">;
+}>>, "plain">;
+/** Prepared platform executable, transport, and platform-specific operating instructions. */
+export interface CuaBackend {
+    helperPath: string;
+    createChannel: NativeChannelFactory;
+    guidance: string;
+    description: string;
+}
+/**
+ * Install authorized CUA calls and Agent-owned native connections.
+ * @param ctx - Provider context with computer-use, subprocess, tools, prompt, and Agent services.
+ * @param config - Validated resource limits and live application grants.
+ * @param backend - Platform-owned executable, connection factory, and instructions.
+ */
+export declare function installCua(ctx: Context, config: CuaConfig, backend: CuaBackend): void;
+/** Host marker for the optional Client contribution; platform providers install native execution separately. */
+export declare function apply(): void;
+//# sourceMappingURL=index.d.ts.map

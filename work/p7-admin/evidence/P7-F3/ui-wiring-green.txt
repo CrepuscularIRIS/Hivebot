@@ -1,0 +1,9 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/P7-F3/app/ui
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  09:43:48
+   Duration  396ms (tests 66%, transform 19%, import 11%, setup 3%, worker 1%)
+

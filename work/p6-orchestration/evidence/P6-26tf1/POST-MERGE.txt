@@ -1,0 +1,26 @@
+verdict: PASS
+commit: 0e831c623f626579958f00609f9d95cc3b2e095c
+日期：2026-11-05；实跑开始 08:57:05 / 08:57:24（主机本地时间）。
+范围：P6-26t.f1 真三方合并后的两个指定 SDK 定向 e2e；不外推为当前 HEAD 的 UI/SDK 全量回测。
+复用工作树：/tmp/bot-wt/P7-merged-regression。先确认 git status --porcelain 为空，再 git switch --detach 0e831c623f626579958f00609f9d95cc3b2e095c（exit=0）。旧 HEAD e5ff286；完成后目标 HEAD 与主仓 HEAD 均为上述 0e831c6，工作树仍干净；见 post-merge-source-check.log。
+
+验收项 | 结果 | 证据
+subagent-policy 三种委派 + workflow 根审批适配 | PASS | post-merge-subagent-policy.log：1 file / 3 passed / exit=0。
+process-tiers 真实审批/PTC 分层 | PASS | post-merge-process-tiers.log：1 file / 8 passed / 1 skipped / exit=0。
+坏路径不放宽 | PASS | 两文件包含根 bash rejected 不落盘、子代理 never 拒绝且无 child 卡、missing state 拒执行、corrupt tier fail closed、区外写拒等；process-tiers 的暂停/恢复、旧会话 runtime reload 均通过。
+SHA 与现场稳定 | PASS | post-merge-source-check.log：工作树/主仓 0e831c623f626579958f00609f9d95cc3b2e095c；status 空。
+
+完整命令（按顺序串行，无重复任务）：
+1. env -i PATH="$PATH" HOME=/tmp/bot-P6-26tf1-postmerge/home TMPDIR=/tmp/bot-P6-26tf1-postmerge/tmp PBOTS_DATA_DIR=/tmp/bot-P6-26tf1-postmerge/data CI=1 /usr/bin/time -v pnpm -C /tmp/bot-wt/P7-merged-regression/app/sdk test tests/e2e/subagent-policy.test.ts --maxWorkers=1 --no-file-parallelism
+   exit=0；wall 7.93s，max RSS 387900KB；完整 stdout/stderr 与 time 输出：post-merge-subagent-policy.log。
+   结果尾部：Test Files 1 passed (1)；Tests 3 passed (3)；Exit status: 0。
+2. env -i PATH="$PATH" HOME=/tmp/bot-P6-26tf1-postmerge/home TMPDIR=/tmp/bot-P6-26tf1-postmerge/tmp PBOTS_DATA_DIR=/tmp/bot-P6-26tf1-postmerge/data CI=1 /usr/bin/time -v pnpm -C /tmp/bot-wt/P7-merged-regression/app/sdk test tests/e2e/process-tiers.test.ts --maxWorkers=1 --no-file-parallelism
+   exit=0；wall 12.37s，max RSS 390744KB；完整 stdout/stderr 与 time 输出：post-merge-process-tiers.log。
+   结果尾部：Test Files 1 passed (1)；Tests 8 passed | 1 skipped (9)；Exit status: 0。
+   skipped 为仅 P626T_BASELINE=1 时运行的未修复基线阳性对照，不计作 PASS。
+
+均为 scripted/fake provider + 真实本地 launcher/审批服务/PTC，不是 GLM 或其他真实模型网络评测。复用已安装依赖，两次 pnpm 均显示 Already up to date。
+所有运行时 HOME/TMPDIR/数据独立于主仓及真实用户配置；env -i 不继承真实凭证。无 Electron/真桌面，无 sudo、pkill/killall、重启/注销，进程停止仅由测试框架处理自己 spawn 的子进程。
+开始 load 2.35/5.33/8.74、结束 2.29/4.61/8.20，vmstat iowait 均0，单 worker 串行完成。未重复 UI 全量/build 或 SDK 全单测；e5ff286 上的旧报告仍仅绑定原 SHA，不能当成 0e831c6 全量证据。
+未改代码/测试，未提交/合并，未触碰 P6-24。旧日志（含旧失败 ui-unit.log）均保留。本次报告后停止。
+新问题：无（本次两个定向用例范围内）。

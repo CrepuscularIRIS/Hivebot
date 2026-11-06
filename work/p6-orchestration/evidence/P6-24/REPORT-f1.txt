@@ -1,0 +1,123 @@
+P6-24.f1 续跑交付（待独立 verifier 验收，不自评 PASS）
+时间：2026-11-05T08:53:37-05:00（date -Iseconds 实测）
+分支：feat/P6-24
+工作树：/tmp/bot-wt/P6-24
+续跑基点：ba4ec3c6f55e0c7c6dace4f9efd310d157196659
+交付 SHA：71826d2aff6ded077893a30de4f7c44a4c4c4fd5
+
+一、现场与范围
+接续已有九文件未提交成果，没有 reset/clean/stash/切分支，没有重做原任务。
+本工作树与主仓均未发现 .codegraph，按要求直接追踪源码与所有调用点。
+已读主仓 LEARNINGS、PLAN 的 P6-24、feature CONTRACT v1.6、VERIFY.txt、adversarial.test.ts、inverse-symlink 的实际断言、前任临时诊断 /tmp/bot-p624-f1-home/dbg.mjs 及既有日志。
+主仓 CONTRACT 仍为 v1.4；本轮没有变更两边契约或任务记账，也不宣称恢复了已丢 C-1 原稿。
+没有新增依赖、框架或 claims 文件。沿用 envelope / claims、标准库 realpath、M3 enqueue/flush 原子写与回滚。
+仅提交下列原九文件；未合并、未 push；依用户禁用规则未加 attribution。
+
+改动文件（完整清单）
+/tmp/bot-wt/P6-24/app/sdk/src/orchestration/create.mjs
+/tmp/bot-wt/P6-24/app/sdk/src/orchestration/envelope.mjs
+/tmp/bot-wt/P6-24/app/sdk/tests/e2e/p624-worker-cwd.test.ts
+/tmp/bot-wt/P6-24/app/sdk/tests/unit/orchestration-p624.test.ts
+/tmp/bot-wt/P6-24/app/ui/main/m3-meta/orchestrate.ts
+/tmp/bot-wt/P6-24/app/ui/main/m3-meta/store.ts
+/tmp/bot-wt/P6-24/app/ui/tests/unit/m3/p624.test.ts
+/tmp/bot-wt/P6-24/app/ui/tests/unit/m3/store-lock-flush.test.ts
+/tmp/bot-wt/P6-24/app/ui/tests/unit/m3/store.test.ts
+
+二、修复与证据对应
+HIGH#1：instructionFileDenial 同时判断 raw 与 resolved 两端 basename。正向 link→AGENTS 与反向 CLAUDE.local→innocent 都拒，read 与主 bot 不受限。真实 Loader 用 read 满足上游前置后再 edit，结果 isError=true，innocent 字节不变。
+前任补丁误把中间目录段也当 basename；新增红测试后收回到两端 basename，普通文件位于同名目录下不误拒。
+HIGH#2：保留前任同步 pending claim 占位；检查、容量预留、声明登记之间无 await；main 返回后在同一同步段换成 sessionId 键。失败、turn/end 清理声明。补通道断流、delivery 失败的释放/再次同文件创建测试。
+前任并发测试超时的根因是 setTimeout(() => 'pending', 50) 从未调用 Promise resolve；不是产品仍 busy。改为等待真实队列状态，立即接住两任务的拒绝，不再假定异步身份读取后 w1 一定先赢。红基点也应答全部请求，避免悬挂 30s timer 掩盖断言。
+HIGH#3：mkdir 后 realpath 两侧核对发起者实际 cwd 子树，区外软链在 session/create 与 createdBy 写入前拒绝。传入 session/create 的是检查后的 canonical cwd，而不是原软链路径。补 inner/out→同主根下 sibling 的拒绝、区内软链正常放行及 canonical 参数测试。
+删除补测：保留并使用前任新增的 BotsMetaStore.removeBot 真实存储 API（M3 同队列、原子写、失败回滚），SDK Loader 用例不再手改 bots.json；删除两 worker 后重新打开 store 核对持久化。清单覆盖文件原始字节 SHA256、空目录、软链原文，不解码 UTF8、不排除名字。另测 putBot/removeBot 同队列顺序、保留其他条目/配方/主 bot、空 bots 键省略与幂等。
+重要边界：这是真实存储 API 删除测试，不是已完成 session/delete RPC / UI 用户删除旅程。该分支不存在该入口，removeBot 当前生产调用点尚未接入；本轮不越九文件白名单新增接口或接线。
+
+三、TDD 红证据（均保留，不覆盖原 verifier 的红日志）
+1. 初始前任测试诊断
+HOME=/tmp/bot-p624-f1-resume-home DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-p624-f1-resume-home/no-dbus pnpm -C /tmp/bot-wt/P6-24/app/sdk exec vitest run tests/unit/orchestration-p624.test.ts --maxWorkers=1
+真实退出码：1。
+日志：/tmp/bot-p624-f1-resume-sdk-initial.log
+尾部：Tests 1 failed | 14 passed；expected 'rejected' to be 'pending'；P3_DEBUG 显示 main-unavailable timeout。已依据上述未 resolve 定时器根因修正测试。
+
+2. 新 subdir 边界测试先红（产品修正前运行）
+HOME=/tmp/bot-p624-f1-resume-home DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-p624-f1-resume-home/no-dbus pnpm -C /tmp/bot-wt/P6-24/app/ui exec vitest run tests/unit/m3/p624.test.ts --maxWorkers=1
+真实退出码：1。
+日志：/tmp/bot-p624-f1-resume-ui-red.log
+尾部：Tests 2 failed | 9 passed。
+失败一：inner/out→sibling 预期 ok:false，实际 ok:true。
+失败二：预期 session/create.cwd = .../target，实际 .../out。
+随后只修包含根与传下去的 canonical cwd；最终见下方绿测试。
+
+3. 原 HEAD 的独立临时源码红证据（不动工作树已有改动）
+临时根：/tmp/bot-p624-f1-red-source
+准备：git -C /tmp/bot-wt/P6-24 archive HEAD app/sdk/src app/ui/main/m3-meta/store.ts | tar -x -C /tmp/bot-p624-f1-red-source（此时 HEAD 仍为 ba4ec3c）。
+将续跑的 orchestration-p624.test.ts、store.test.ts 按原相对目录复制到该临时根，并链接原包 node_modules 与 tests/support；配置 red.config.mjs 只 include 这两测试文件，maxWorkers=1。没有复制真实运行时或凭证文件。
+HOME=/tmp/bot-p624-f1-resume-home DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-p624-f1-resume-home/no-dbus pnpm -C /tmp/bot-wt/P6-24/app/sdk exec vitest run --config /tmp/bot-p624-f1-red-source/red.config.mjs -t 'f1 HIGH#1|f1 HIGH#2|removeBot'
+真实退出码：1。
+日志：/tmp/bot-p624-f1-resume-baseline-red.log
+尾部：Test Files 2 failed；Tests 3 failed | 23 skipped。
+真实失败：同文件并发请求数 expected 1 received 2；反向指令软链 expected deny received undefined；store.removeBot is not a function。
+该临时源码与配置仍保留，可直接重跑；不得将其当交付代码。
+
+4. basename 不误伤测试先红
+HOME=/tmp/bot-p624-f1-resume-home pnpm -C /tmp/bot-wt/P6-24/app/sdk exec vitest run tests/unit/orchestration-p624.test.ts -t 'basename 级拒绝不误伤' --maxWorkers=1
+真实退出码：1。
+日志：/tmp/bot-p624-f1-resume-basename-red.log
+尾部：Tests 1 failed | 15 skipped；'/ws/AGENTS.md/notes.md' 预期 null，实际 deny。随后将逐段判断收窄为两端 basename，最终测试通过。
+
+四、最终定向验证命令与真实退出码
+以下 E 环境前缀均为实际使用：
+env -i PATH="$PATH" HOME=/tmp/bot-p624-f1-resume-home DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-p624-f1-resume-home/no-dbus
+没有读取真实凭证，没有操作真实桌面；SDK runtime 的 HOME 还会从测试自身临时根派生。只由测试框架停止其自己 spawn 的子进程；没有 shell kill/pkill/killall、sudo、重启或注销。
+
+A. E pnpm -C /tmp/bot-wt/P6-24/app/sdk exec vitest run tests/unit/orchestration-p624.test.ts --maxWorkers=1
+真实退出码：0。
+日志：/tmp/bot-p624-f1-resume-sdk-final.log
+尾部：Test Files 1 passed (1)；Tests 18 passed (18)；Duration 2.71s。
+
+B. E pnpm -C /tmp/bot-wt/P6-24/app/ui exec vitest run tests/unit/m3/p624.test.ts tests/unit/m3/store.test.ts tests/unit/m3/store-lock-flush.test.ts tests/unit/m3/p610.test.ts tests/unit/m3/p610f2.test.ts --maxWorkers=1
+真实退出码：0。
+日志：/tmp/bot-p624-f1-resume-ui-final.log
+尾部：p610 14、store 12、p624 11、p610f2 2、store-lock-flush 5；Test Files 5 passed；Tests 44 passed；Duration 754ms。
+
+C. E pnpm -C /tmp/bot-wt/P6-24/app/ui build
+真实退出码：0。
+日志：/tmp/bot-p624-f1-resume-ui-build.log
+尾部：renderer built in 1.10s；shim 15 modules transformed；built in 37ms。
+有现存 INEFFECTIVE_DYNAMIC_IMPORT 警告；不宣称无警告，也不宣称该命令做过独立 tsc 全量类型检查。构建在最终源码上执行，没有启动 Electron。
+
+D. E xvfb-run -a pnpm -C /tmp/bot-wt/P6-24/app/sdk exec vitest run tests/e2e/p624-worker-cwd.test.ts --maxWorkers=1
+真实退出码：0。
+日志：/tmp/bot-p624-f1-resume-sdk-e2e-final.log
+尾部：Test Files 1 passed；Tests 5 passed；Duration 5.36s。
+包含真实 Loader 的双向软链拒绝、共用目录、普通 bot 隔离、subdir 写入、真实 removeBot 存储 API 后完整清单与重开持久化检查。
+
+E. E xvfb-run -a pnpm -C /tmp/bot-wt/P6-24/app/sdk exec vitest run --config /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-24/probes.config.mjs
+真实退出码：0。
+日志：/tmp/bot-p624-f1-resume-adversarial.log
+尾部：Test Files 2 passed；Tests 7 passed；Duration 6.46s。
+原探针原样输出：INVERSE_SYMLINK_RESULT 的 edit isError=true，BYTES innocent；CONCURRENT_SAME_FILE mainRequests=1 slots=1，outcomes=['pbots/busy','created']；SUBDIR_SYMLINK ok=false，sessionCreate=0。
+注意该旧探针里的 deletion 仍是手改 meta，其绿不能充当新删除 API 证据；删除 API 证据只引用 B/D。
+
+F. 较早执行的邻接 SDK 回归
+HOME=/tmp/bot-p624-f1-resume-home DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-p624-f1-resume-home/no-dbus pnpm -C /tmp/bot-wt/P6-24/app/sdk exec vitest run tests/unit/orchestration-p624.test.ts tests/unit/orchestration-create.test.ts tests/unit/orchestration-create-live.test.ts tests/unit/orchestration-envelope.test.ts --maxWorkers=1
+真实退出码：0。
+日志：/tmp/bot-p624-f1-resume-sdk-green.log
+尾部：Test Files 4 passed；Tests 100 passed；Duration 60.63s。
+该轮早于 basename 误伤收窄与新增失败释放测试；最终针对修改函数的结果以 A/D/E 为准，不把 100 当作最终整包回归数。
+
+G. git -C /tmp/bot-wt/P6-24 diff --check HEAD^ HEAD
+真实退出码：0，无输出。
+git -C /tmp/bot-wt/P6-24 status --porcelain
+真实退出码：0，无输出（交付工作树干净）。
+
+五、未完成项 / 已知边界
+1. 无 session/delete RPC 或 UI 删除入口；仅落地并验证真实 M3 存储 API。若验收要求从用户点击到会话销毁完整旅程，需派发者明确入口与额外文件白名单后另做接线；本轮不冒称已经完成。
+2. 原 VERIFY 所列 PLAN 区域缺记、C-1 原稿缺失、契约记账标签问题均未修改（不在九文件白名单）。
+3. artifacts 仍是进程内声明级冲突保护，未声明写入、跨重启恢复、实际任意文件写所有权不在本次修复范围。
+4. subdir 采用 realpath 静态包含检查，并传 canonical cwd；不宣称抵御检查后并发替换整棵目录树。原 resolveMainWorkspace 的无 subdir 主 cwd 布局判断仍为词面判断；没有扩写新权限模型。
+5. bash 写指令文件的既知残余风险仍保留，未放宽审批或沙箱。
+6. 仅跑上述定向测试与构建；没有与另一 verifier 并发争跑全量，没有新覆盖率或 UI Electron 旅程结论。未修已知 P5-05③基线失败。
+
+待独立 verifier 验收。

@@ -1,0 +1,23 @@
+{
+  "cwd": "/tmp/bot-wt/P7-F2f2/app/sdk",
+  "env": {
+    "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+    "HOME": "/tmp/bot-P7-F2f2/home",
+    "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+  },
+  "command": [
+    "/bin/bash",
+    "--noprofile",
+    "--norc",
+    "-c",
+    "exec ./node_modules/.bin/vitest run \"$@\" --maxWorkers=1",
+    "vitest",
+    "tests/unit/p7-authority.test.ts",
+    "tests/unit/p7-admin-channel.test.ts",
+    "--coverage",
+    "--coverage.include=src/admin/authority.mjs",
+    "--coverage.reporter=text",
+    "--coverage.reporter=json-summary",
+    "--coverage.reportsDirectory=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/sdk-final-coverage"
+  ]
+}

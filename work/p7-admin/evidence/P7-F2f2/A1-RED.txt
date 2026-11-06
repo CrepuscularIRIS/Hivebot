@@ -1,0 +1,16 @@
+[ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY] Aborted removal of modules directory due to no TTY
+
+If you are running pnpm in CI, set the CI environment variable to "true", or set "confirmModulesPurge" to "false".
+[ERROR] Command failed with exit code 1: pnpm install
+
+pnpm: Command failed with exit code 1: pnpm install
+    at getFinalError (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:28547:14)
+    at makeError (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:30854:21)
+    at getSyncResult (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:32698:10)
+    at spawnSubprocessSync (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:32658:14)
+    at execaCoreSync (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:32588:23)
+    at callBoundExeca (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:35116:23)
+    at boundExeca (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:35093:49)
+    at sync (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:35248:14)
+    at runPnpmCli (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:210245:5)
+    at runDepsStatusCheck (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:211947:7)

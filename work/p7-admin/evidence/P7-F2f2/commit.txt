@@ -1,0 +1,19 @@
+commit ed336c9a39660a30f23f415debc9e07f22b026ea
+Author:     CrepuscularIRIS <serenitygp@qq.com>
+AuthorDate: Thu Nov 5 10:01:42 2026 -0500
+Commit:     CrepuscularIRIS <serenitygp@qq.com>
+CommitDate: Thu Nov 5 10:01:42 2026 -0500
+
+    fix(P7-F2f2): 收紧H1参数与grant配对并过滤错误详情
+    
+    依据：主仓 PLAN §4.1 P7-F2.f2、BRIEF v2.4 §6、方向A三项确定性反例。复用本仓既有词表、子句/目标匹配及 sanitizeAdminValue，无新增依赖或授权格式。
+    
+    取舍：H1只对明确 rename <target> to <name> 精确核对单个name，其余非空参数无法核验时handoff现有审批；不新增原版权限分层或通用原文引擎。现有grant校验请求动作与目标同子句，不再仅凭独立动作/目标桶放行。错误details与value等价过滤，实际main→同Peer→SDK路径用合成数据复验。
+    
+    复测：证据 /home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/run.py 与 *.command.json 记录精确exec vitest run命令及隔离env；A1/A2/A3各先RED后GREEN。SDK-final 76测试、UI-final 25测试exit0；authority覆盖行100/分支92.1，consumer行96/分支85.71。replay.py重放原两探针exit0。未跑全量/build/真实账户或模型，独立verifier待验。
+
+ app/sdk/src/admin/authority.mjs         | 43 +++++++++++++++++-------
+ app/sdk/tests/unit/p7-authority.test.ts | 42 ++++++++++++++++++++++++
+ app/ui/main/admin/consumer.ts           |  2 +-
+ app/ui/tests/unit/admin/channel.test.ts | 58 +++++++++++++++++++++++++++++++++
+ 4 files changed, 133 insertions(+), 12 deletions(-)

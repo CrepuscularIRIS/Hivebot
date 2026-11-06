@@ -1,0 +1,32 @@
+{
+  "head": "e5ff286e686994b489766ea7d3bd1f74614a342b",
+  "status": "",
+  "deps_manifest_comparison": [
+    {
+      "file": "app/sdk/package.json",
+      "snapshot_sha256": "b60848fbc0e52c220fd8bb8d2a85b391b214188a7bf86556233238c66f1f34cd",
+      "dependency_owner_sha256": "b60848fbc0e52c220fd8bb8d2a85b391b214188a7bf86556233238c66f1f34cd",
+      "equal": true
+    },
+    {
+      "file": "app/sdk/pnpm-lock.yaml",
+      "snapshot_sha256": "f4b84e7261b7903bb44e08e97464b10488abe85c89035ec1199156aee4050d71",
+      "dependency_owner_sha256": "f4b84e7261b7903bb44e08e97464b10488abe85c89035ec1199156aee4050d71",
+      "equal": true
+    },
+    {
+      "file": "app/ui/package.json",
+      "snapshot_sha256": "f1785170f15c8d4daca8d78a8da7e750d7ef0e819d3a914362b7262e8566b611",
+      "dependency_owner_sha256": "f1785170f15c8d4daca8d78a8da7e750d7ef0e819d3a914362b7262e8566b611",
+      "equal": true
+    },
+    {
+      "file": "app/ui/pnpm-lock.yaml",
+      "snapshot_sha256": "e61feb30648f83c614f515326c2f57cc77046212fdf7c7f2b141966dafceafd4",
+      "dependency_owner_sha256": "e61feb30648f83c614f515326c2f57cc77046212fdf7c7f2b141966dafceafd4",
+      "equal": true
+    }
+  ],
+  "isolation": "env -i PATH=/usr/bin:/bin HOME=<evidence>/A-runtime/home TMPDIR=<evidence>/A-runtime/tmp",
+  "cleanup": "Removed only our evidence A-runtime (copied sources/cache/dependency symlinks); recreate with A-prepare.py."
+}

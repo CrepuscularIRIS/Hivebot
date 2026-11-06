@@ -1,0 +1,19 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F2f2/app/sdk[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m tests/unit/p7-admin-channel.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m tests/unit/p7-authority.test.ts [2m([22m[2m61 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m76 passed[39m[22m[90m (76)[39m
+[2m   Start at [22m 10:01:19
+[2m   Duration [22m 391ms[2m (tests 39%, transform 20%, worker 19%, import 12%, setup 11%)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+---------------|---------|----------|---------|---------|-----------------------
+File           | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s     
+---------------|---------|----------|---------|---------|-----------------------
+All files      |   96.17 |     92.1 |   97.43 |     100 |                       
+ authority.mjs |   96.17 |     92.1 |   97.43 |     100 | ...69,198,232,244-245 
+---------------|---------|----------|---------|---------|-----------------------

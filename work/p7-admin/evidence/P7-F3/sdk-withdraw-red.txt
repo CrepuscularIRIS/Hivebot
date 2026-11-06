@@ -1,0 +1,46 @@
+Already up to date
+Done in 299ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/P7-F3/app/sdk
+
+stderr | tests/unit/p7-host-recovery.test.ts > P7-F3 existing Reporter lifecycle recovery barrier > withdraw checks the captured lease for every remove and stop cancels retry timers
+[pbots-orchestration] withdrew 2 pending report message(s) after an aborted main-bot turn
+
+ ❯ tests/unit/p7-host-recovery.test.ts (15 tests | 2 failed) 92ms
+   ❯ P7-F3 existing Reporter lifecycle recovery barrier (5)
+     × withdraw checks the captured lease for every remove and stop cancels retry timers 5ms
+   ❯ P7-F3 peer-bound process recovery (4)
+     × rejects self-reported generations and foreign peers; stopped wait settles without resolving readiness 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 existing Reporter lifecycle recovery barrier > withdraw checks the captured lease for every remove and stop cancels retry timers
+AssertionError: expected "vi.fn()" to be called 1 times, but got 2 times
+ ❯ tests/unit/p7-host-recovery.test.ts:74:22
+     72|     f.remove.mockImplementationOnce(() => f.recovery.abort())
+     73|     f.reporter.withdrawPendingReports('main')
+     74|     expect(f.remove).toHaveBeenCalledTimes(1)
+       |                      ^
+     75|     f.orch.recovery = permit(); f.orch.recovery.resolve()
+     76|     f.remove.mockImplementation(() => { throw new Error('append public…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 peer-bound process recovery > rejects self-reported generations and foreign peers; stopped wait settles without resolving readiness
+AssertionError: expected [Function] to throw an error
+ ❯ tests/unit/p7-host-recovery.test.ts:192:35
+    190|     expect(await waiting).toBeInstanceOf(Error)
+    191|     await expect(host.prepare(peer, handoff.challenge)).rejects.toThro…
+    192|     expect(() => host.attach({})).toThrow()
+       |                                   ^
+    193|   })
+    194|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 13 passed (15)
+   Start at  09:48:02
+   Duration  321ms (tests 43%, transform 35%, import 17%, setup 4%, worker 1%)
+

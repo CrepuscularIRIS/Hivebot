@@ -1,0 +1,77 @@
+Already up to date
+Done in 299ms using pnpm v11.0.9
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F3/app/sdk[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[90mstderr[2m | tests/unit/p7-host-recovery.test.ts[2m > [22m[2mP7-F3 existing Reporter lifecycle recovery barrier[2m > [22m[2mwithdraw checks the captured lease for every remove and stop cancels retry timers
+[22m[39m[pbots-orchestration] withdrew 1 pending report message(s) after an aborted main-bot turn
+
+[90mstderr[2m | tests/unit/p7-host-recovery.test.ts[2m > [22m[2mP7-F3 existing Reporter lifecycle recovery barrier[2m > [22m[2mchanging generation during agentOf cannot wake an old pending report
+[22m[39m[pbots-orchestration] wake main/pbots-report:old failed: This operation was aborted
+
+ [32m✓[39m tests/unit/p7-host-recovery.test.ts [2m([22m[2m18 tests[22m[2m)[22m[33m 2547[2mms[22m[39m
+   [32m✓[39m P7-F3 real Loader control stream [2m(1)[22m
+     [33m[2m✓[22m[39m binds native stream and unary RPC to the same Peer; reconnect is not process restart[33m 2393[2mms[22m[39m
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · batching & triggers (决策 15/27③)[2m > [22m[2mmain bot turn/end aborted withdraws pending pbots-report messages and does NOT flush
+[22m[39m[pbots-orchestration] withdrew 1 pending report message(s) after an aborted main-bot turn
+
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · guards[2m > [22m[2mcrashAt exits at the three injected points (P6-09 f5 同法)
+[22m[39m[pbots-orchestration] boot reconcile failed: exit
+
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · guards[2m > [22m[2mcrashAt exits at the three injected points (P6-09 f5 同法)
+[22m[39m[pbots-orchestration] boot reconcile failed: exit
+
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · guards[2m > [22m[2mcrashAt exits at the three injected points (P6-09 f5 同法)
+[22m[39m[pbots-orchestration] boot reconcile failed: exit
+
+ [32m✓[39m tests/unit/orchestration-report.test.ts [2m([22m[2m20 tests[22m[2m)[22m[33m 2851[2mms[22m[39m
+   [32m✓[39m Reporter · batching & triggers (决策 15/27③) [2m(6)[22m
+     [33m[2m✓[22m[39m busy main bot holds reports; its turn/end flushes them as ONE batched message[33m 620[2mms[22m[39m
+     [33m[2m✓[22m[39m idle main bot: first item opens a ≤2s window that collects the second (决策 15)[33m 302[2mms[22m[39m
+     [33m[2m✓[22m[39m decision 16: a pending user message holds delivery; the report goes after that turn ends[33m 618[2mms[22m[39m
+     [33m[2m✓[22m[39m main bot turn/end aborted withdraws pending pbots-report messages and does NOT flush[33m 754[2mms[22m[39m
+   [32m✓[39m Reporter · guards [2m(3)[22m
+     [33m[2m✓[22m[39m no main bot / unreadable identity → nothing is ever sent (fail closed)[33m 451[2mms[22m[39m
+ [32m✓[39m tests/unit/start.test.ts [2m([22m[2m36 tests[22m[2m)[22m[33m 2822[2mms[22m[39m
+   [32m✓[39m writeRuntimePatch [2m(2)[22m
+     [33m[2m✓[22m[39m mock mode inserts llm-replay with a file:// specifier plus the handoff row[33m 485[2mms[22m[39m
+     [33m[2m✓[22m[39m real mode inserts only the handoff row[33m 457[2mms[22m[39m
+   [32m✓[39m writeRuntimePatch · guard 行 (P5-02 决策 6/13) [2m(1)[22m
+     [33m[2m✓[22m[39m 生成 id: p2sdk-fs-guard 行：roots 五组清单，全部来自 computeRoots 单源[33m 477[2mms[22m[39m
+   [32m✓[39m writeRuntimePatch · shell-ask 行 (P5-21 决策 16a) [2m(2)[22m
+     [33m[2m✓[22m[39m 生成 id: p2sdk-shell-ask 行：handoff + 从数据根推导的 policyStatePaths（无独立 env）[33m 470[2mms[22m[39m
+     [33m[2m✓[22m[39m PBOTS_DATA_DIR 未设时 policyStatePaths 覆盖两个缺省数据根[33m 463[2mms[22m[39m
+   [32m✓[39m writeRuntimePatch · sandbox 行 (P5-01 决策 4) [2m(1)[22m
+     [33m[2m✓[22m[39m 生成 id: sandbox 行：python3 -I wrapper、遮蔽/挂回清单、bwrap: 失败签名[33m 454[2mms[22m[39m
+ [32m✓[39m tests/unit/orchestration-create.test.ts [2m([22m[2m39 tests[22m[2m)[22m[32m 70[2mms[22m[39m
+ [32m✓[39m tests/unit/orchestration-foundation.test.ts [2m([22m[2m58 tests[22m[2m)[22m[32m 97[2mms[22m[39m
+ [32m✓[39m tests/unit/p7-admin-channel.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m tests/unit/p7-authority.test.ts [2m([22m[2m47 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[32m233 passed[39m[22m[90m (233)[39m
+[2m   Start at [22m 10:02:13
+[2m   Duration [22m 9.96s[2m (tests 94%, transform 2%, import 2%, worker 1%, setup 1%)[22m
+
+[2m    Isolate [22m [33m7 workers spawned[39m[2m · ~84ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~502ms faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------------------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                         
+-------------------|---------|----------|---------|---------|-------------------------------------------
+All files          |   63.05 |    58.47 |   64.47 |   64.61 |                                           
+ src               |   36.08 |    39.78 |   49.18 |   35.74 |                                           
+  start.ts         |   36.08 |    39.78 |   49.18 |   35.74 | 420-789,802-825,835-837,842-859           
+ src/admin         |   98.91 |     92.5 |     100 |     100 |                                           
+  host.mjs         |   98.91 |     92.5 |     100 |     100 | 34,50,69                                  
+ src/orchestration |   73.87 |    65.55 |   70.51 |   77.58 |                                           
+  delivery.mjs     |    92.3 |    68.49 |      90 |   94.66 | 82,123-124,143                            
+  main-channel.mjs |      46 |    44.44 |   43.33 |    50.8 | 86,111,210-314                            
+  report.mjs       |   87.77 |    75.86 |   85.71 |   92.14 | 66,74,154-155,191,205-206,276-277,280-281 
+-------------------|---------|----------|---------|---------|-------------------------------------------
+ERROR: Coverage for lines (64.61%) does not meet global threshold (80%)
+ERROR: Coverage for functions (64.47%) does not meet global threshold (80%)
+ERROR: Coverage for statements (63.05%) does not meet global threshold (80%)
+ERROR: Coverage for branches (58.47%) does not meet global threshold (80%)

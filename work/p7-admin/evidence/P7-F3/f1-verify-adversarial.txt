@@ -1,0 +1,7 @@
+PASS real Delivery old followup=1, unconfirmedStart propagated; 100 concurrent triggers and pending window cause no replay/no busy loop
+PASS stop pending reconcile: followup=0; no autonomous repeat; flushing=false
+PASS dispose pending reconcile: followup=0; no autonomous repeat; flushing=false
+PASS third-generation pending reconcile: followup=1; no autonomous repeat; flushing=false
+PASS concurrent pending reconcile: followup=1; no autonomous repeat; flushing=false
+
+EXIT 0

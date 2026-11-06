@@ -1039,3 +1039,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 17:5x T9b 链三单终验通过（第2次，九刀全红）合并落地；回测 77+9+5+7+14+9+10 全绿。ssh 安全链（T9a 组合→T9b 文件工具）完成，T10 bash wrapper 开工；T9b 链攒批 reviewer
 - 18:1x T10 主体落地（wrapperArgv 抽取/sandbox-zone-ssh 类/sshRows 接线，start 42 绿）；测试面（④/③格+变异）待下窗口。T9b 链 reviewer 审查中
 - 18:2x T10 进展：confine 形态两修（选项后直接 profile+透传），④a④b④c 3 绿（宿主/远端哨兵挡、endpoint 不露、helper 写保护）；③a bash 零卡通但 marker 未落 ws（下窗口诊断）。T9b4（guard dispose 定时器）已开单可与 T10 并行
+- 18:3x T10 ③a 诊断：read-only 档坐实（bash 直写被挡=档位预期）；write+bash读回形态仍卡沙箱内 ws 视图（ls 空）——遮蔽源待定位。④ 三格稳定绿

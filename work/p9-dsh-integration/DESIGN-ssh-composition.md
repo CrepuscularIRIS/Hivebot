@@ -2,6 +2,7 @@
 
 > manager (Opus 5.5) 执笔 · 2026-11-06 · 起点 HEAD b3983512 · 工单 `work/tickets/open/T5-l8c-ssh-composition-design.md`
 > **r2（2026-11-06 06:20）**：按复审 `work/tickets/review/T5-design.md` 11 条 CONFIRMED 修订（D1/D2/D4/D5/D7/D8/D9 改动最大）；经理先逐条读源码核实了第 1、2、3、9 条（证据锚点已并入各节），再改文。
+> **r3（2026-11-06 13:3x，T9ab ⑨ 转来）**：「web profile 下工具执行不通」**不成立**，见文末「r3 · T9ab ⑨ 诊断」；D8 结论按 T9ab 实测改（表中 D8 行）。
 > 输入：p9 `PLAN.md` §2/§3/§5、`work/tickets/receipts/T4.md` §5 与经理核实、上游 `repos/deepseek-harness@ce7073d`（与产品钉版 0.2.2-alpha.2 语义一致处引源码，行号以 repos 为准；装包实物另引 `app/sdk/node_modules/@deepseek-ai/*`）。
 > 原版锚点：0.78.1 解包树 `/dev/shm/grok-re/0.78.1/app/dist/`，用 `LC_ALL=C grep -a -c -F '<字面串>' <文件>` 复核。
 > 当前消费者只有一个：BRIEF 验收第 1 条「工程 bot 在 ssh 主机（先是本机）上改代码跑测试，结果回到对话」（`work/p9-dsh-integration/BRIEF.md:37`）。真实远程主机不是当前消费者，凡只为它的结论都标「真实远程」并落到最后一张实现单。
@@ -17,7 +18,7 @@
 | D5 | ssh 模式下工作区 = `<remoteRoot>/workspaces/<botId>`；main 开机问 SDK 拿模式与 `remoteRoot`，`mintWorkspace`（#3/#4/worker 三条建会话路径的共同入口）改调 SDK 新 RPC `p2sdk/workspace.ensure`（SDK 侧经 `ctx.subprocess` 跑固定 argv `mkdir -p`，FileSystem 没有 mkdir） | T11 |
 | D6 | 进程级：一个 dsh 运行时 = 一台电脑；preset `isolate` 做不到。旧 bot 怎么办 → Q-029 | 全部；Q-029 |
 | D7 | 断连专用通知「可能已执行」；**重启触发 = main 在事件流里看到固定串 `SSH connection is closed`**（dsh 进程还活着，launcher 看不到）→ 通知里给「重新连接」按钮，用户点才重启（会打断其他 bot 在跑的回合，所以不自动）；不重放 | T12 |
-| D8 | PTC 全族在 ssh 模式禁用：禁 base `ptc-runtime` 即断掉所有 preset 嵌套 `workflow-ptc` 的服务依赖；测试**从组合后 profile 枚举全部 preset** 断言无 `workflow` 工具，不写死清单 | T9a |
+| D8 | ~~禁 base `ptc-runtime`~~（r3：实测禁它 → standard preset 整个 `agent-preset/invalid`，会话建不出，T9ab M1）。改为只禁 T4 三行（`workflow-ptc`/`tool-workflow`/`tool-executor-ptc`），首请求工具面无 `workflow`（T9ab ⑧ 绿）；测试**从组合后 profile 枚举全部 preset** 断言，不写死清单 | T9a |
 | D9 | `tool-fs-search` 在 ssh 模式由 guard 的工具名拒绝挡住（它嵌在 5 个 preset 里，禁 base 行不够）；其余行去留同 r1；**ssh bot 的 skill 副本落远端 `<remoteRoot>/workspaces/<botId>/.dsh/skills/<name>/`，T7a 本机复制在 ssh 模式下拒** | T9a（工具拒）、T11（skill） |
 | D10 | 37 个 release 全部 0 asset、npm 无 helper-runtime 包 → 真实远程用 node-script 闭包推送 | T13 |
 | D11 | 维持不扫；加回归格证明强杀只留空目录 | T9a |
@@ -324,3 +325,23 @@
 2. D8 嵌套 `workflow-ptc` 在 `ptc-runtime` 禁用后是否真不激活，依据是 agent-preset-registry README 的等待语义，T9a ⑧ 实测定。
 3. D7 原版「Connection lost」在 APP 里的使用点没追到；T12 的 launcher 重启路径未定位。
 4. D9 bash 传给远端 spawn 的 env 是否带宿主 PATH（T13 核对）；D4 ForceCommand 改写的 HOME 对 wrapper 无影响（wrapper 只认显式参数，T10 实测确认）。
+
+---
+
+## r3 · T9ab ⑨ 诊断（2026-11-06，manager 执笔，作业目录 `/dev/shm/bot-T9a` @ 8b4c2a2d）
+
+**问题原话**：「session 能建但工具执行不通（bash 120 秒超时），headless 通、web 不通，为什么」。
+
+**结论：问题问错了。ssh 链在 web profile 下是通的；红的是两个与 ssh 无关的原因。**
+
+1. **ssh 执行链通——证据已在施工日志里**：`/tmp/bot-T9ab-e4.log:11/17`，⑨ 的 grep 331ms 返回 `Error: grep search failed (exit 2): rg: No files were searched…`——rg 经 `subprocess-ssh` 在远端 ws（空目录）里真跑了并退出。执行链断的话应是挂起或连接错误，不会拿到 rg 自己的退出码。
+2. **grep 没被拒 = guard 配置缩进错（产品代码 bug）**：`/dev/shm/bot-T9a/app/sdk/src/start.ts:297` 写的是 `\n      extraNeverTools:`（6 格），与 `hardRoots` 同级，落在 `config.roots` 下面，不是 `config` 下面。guard 读 `config.extraNeverTools`（`src/policy/guard.mjs:240`）→ `undefined` → 空集；`requireRoots` 只检查必填键，多出的 `roots.extraNeverTools` 被静默忽略。python yaml 解析同形片段实测：`config keys ['roots']`、`roots keys [..., 'extraNeverTools']`。单测 `tests/unit/start.test.ts:184` 只做 `toContain('extraNeverTools')` 字符串匹配，所以没抓到。headless 无关：T4 的 patch 根本不挂 guard。
+3. **bash 120s = 审批卡没人答（预期行为，不是故障）**：web 组合挂 `approval.yml` 的 shell-ask，bash 第 1 行免卡的前提是 policy-state 实例校验通过（`src/policy/shell-ask.mjs:7-14`）；ssh-product 测试不写 policy-state → bash 退 ASK → 出卡 → `drive()` 只等 turn/end、不答卡 → 120s 超时。T4 headless 不挂 approval.yml（只有 ssh + replay 两个 patch），所以没有这张卡。这就是「headless 通 / web 不通」的全部差异。e7 日志截断（`slice(0,300)`）没看到 approval 帧，此条由代码推出；修复单第 3 步顺手实证。
+
+**修复方向（T9ac，一张小单）**：
+- `start.ts:297` 改成 4 格（`\n    extraNeverTools:`），与 `roots:` 同级。
+- `start.test.ts` T9a-① 改为解析 YAML 后断言 `guard 行.config.extraNeverTools` 等于 `['glob','grep']`、`config.roots` 不含该键（字符串匹配删掉）。先红：现代码下这条断言红。
+- `ssh-product.test.ts` ⑨ 删调试 bash（:155-157）；若要留 bash 格，就断言「出卡」（帧里有 approval 请求事件），不要等 turn/end。**不要**为让 bash 免卡而写 policy-state：T10 之前 ssh 模式没有我们的 wrapper，免卡 bash 正是 D3 要求 fail closed 的情形。
+- 变异 M2（guardRow 不写 extraNeverTools）→ ⑨ 红，照 T9ab 原验收。
+
+**连带约束（写进 T10 前置）**：T9a/T9b 合并后、T10 落地前，ssh 模式只给测试用，不在产品 UI 打开；理由同上——policy-state 门一开，bash 在原版 sandbox-ssh（读不设防，D4 备选 1）里免卡执行。

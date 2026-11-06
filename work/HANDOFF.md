@@ -14,7 +14,7 @@
 
 ## 3. 待办（按顺序）
 
-**当前快照**（2026-11-06 11:45）：T7b 链 blocked（Q-030 等用户）；T8 全量 e2e 后台跑中；H7 双全量后台跑中（load 4.8 窗口）；T9ab ⑨ 根因=SSH 组合 web profile 下工具执行不通（需 architect）；T7cb ⑨=符号链接 skill 根判定不触发（需插桩）；L5-a 未开（schedule 工具 API 在 repos/deepseek-harness/packages/schedule/tool-schedule/）。
+**当前快照**（2026-11-06 13:16）：T7cc 9/9 绿（⑦真造never子代理）→ 终验在跑；H7 重跑完成（互踩=0、W2干净、W1红=T7c代码）；T7b blocked（Q-030）；T9ab ⑨=SSH工具执行不通（需architect）；T8/L5-a 已合并。
 
 0. **并行两线**（10:35 经理更新）：① **T7bb**（open/T7bb-skill-picker-visual.md：T7b 终验不通过第 1 次——功能链全过，截图破版：对话框无 css 文字粘连、暗色 Pick 按钮字不可见；先 `bot-reap 2149395` 残留 Xvfb）→ 经理验收 → feat/T7b 整枝合并 ② **T9a**（open/T9a-l8d-ssh-skeleton.md，与 T7b 不碰同文件可并行）。GLM 并发≤2、同一时刻 e2e 一套。
 1. **已完成链**：T1–T6、T5、T14(REFUTED)、T15、T7a+T7ab+T7ac（整枝合并，回测 e2e 2 passed + unit 114 绿）。BRIEF 验收②后端全通。

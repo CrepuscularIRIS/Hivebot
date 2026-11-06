@@ -81,7 +81,7 @@ describe('T9b fs-zone-ssh（五写入口 provider 层）', () => {
     } finally { await dispose() }
   })
 
-  it("①b′ remoteHome 根拒（远端围栏本就拒——回归格）；①c ws 内指向 remoteHome 的链接拒", { timeout: 120_000 }, async () => {
+  it("①b′ remoteHome 根拒（先红格：夹具 remoteHome 在 TMPDIR=/tmp 下，原版远端围栏同样放行——M1 变异下写成功已证）；①c ws 内指向 remoteHome 的链接拒", { timeout: 120_000 }, async () => {
     const { ctx, dispose } = await composeZoned()
     try {
       const homeFile = await resolves(ctx.fs, join(server.remoteHome, 't9b-home-x'))
@@ -122,13 +122,61 @@ describe('T9b fs-zone-ssh（五写入口 provider 层）', () => {
     } finally { await dispose() }
   })
 
-  it('③ 白名单防漂移：ZoneCheckedSshFileSystem 覆盖的写入口恰为五（上游新增即红）', () => {
+  it('②b moveFile 源区外 → 拒且源文件仍在、目标不存在（M3 专用格）', { timeout: 120_000 }, async () => {
+    const { writeFileSync, existsSync } = await import('node:fs')
+    const { ctx, dispose } = await composeZoned()
+    try {
+      const srcPath = `/tmp/t9b-src-${Math.random().toString(16).slice(2, 8)}`
+      writeFileSync(srcPath, 'SRC') // 夹具远端=本机，直接落盘即「远端 /tmp 上的文件」
+      const dest = await resolves(ctx.fs, join(server.workspace, 't9b-moved-in.txt'))
+      await expect(ctx.fs.moveFile(await resolves(ctx.fs, srcPath), dest, {}), '源区外拒').rejects.toThrow(OUT_MARK)
+      expect(existsSync(srcPath), '源文件仍在（拒在写入前）').toBe(true)
+      await expect(ctx.fs.readText(dest), '目标不存在').rejects.toThrow()
+    } finally { await dispose() }
+  })
+
+  it('②c 每调用 policy：per-call workspaceRoot=<ws>/a 时写 <ws>/b/x 拒（T11 一 bot 一 ws 的前提）', { timeout: 120_000 }, async () => {
+    const { ctx, dispose } = await composeZoned()
+    try {
+      const target = await resolves(ctx.fs, join(server.workspace, 'b', 'x'))
+      const perCall = { mode: 'workspace-write', workspaceRoot: join(server.workspace, 'a') }
+      // expected 给合法值（createIfAbsent 形态）——helper schema 拒 undefined
+      await expect(ctx.fs.writeText(target, 'x', { kind: 'createIfAbsent' } as never, undefined, perCall as never), 'per-call 根外的目标拒').rejects.toThrow(OUT_MARK)
+    } finally { await dispose() }
+  })
+
+  it('②d 读侧执行期 NEVER 复判（构造器挂 applyZoneRecheck）：审批后换链到 NEVER 路径 → never-root denied', { timeout: 120_000 }, async () => {
+    const { Context: Ctx } = await import('@deepseek-ai/cordis')
+    const { noteZoneVerdict } = await import('../../src/policy/resolve.mjs')
+    const ctx = new Ctx()
+    const captured: Array<{ ev: string; fn: (t: unknown, e: unknown, n: () => Promise<unknown>) => Promise<unknown> }> = []
+    const origOn = ctx.on.bind(ctx)
+    ;(ctx as unknown as Record<string, unknown>).on = (ev: string, fn: never) => { captured.push({ ev, fn: fn as never }); return origOn(ev, fn) }
+    new ZoneCheckedSshFileSystem(ctx, { neverRoots: [join(server.remoteHome, '.ssh')] }) // 构造器自动挂复判
+    const reg = captured.filter((c) => c.ev === 'tools/execute')
+    expect(reg.length, '构造器注册了 tools/execute 复判').toBeGreaterThanOrEqual(1)
+    const wrapper = reg[reg.length - 1]!.fn
+    // 换链模拟：ctx.get('fs').resolve 恒回 NEVER 路径（审批时是 ws 内、执行时被换）
+    ;(ctx as unknown as Record<string, unknown>).get = (n: string) => n === 'fs'
+      ? { resolve: async () => ({ targetKey: join(server.remoteHome, '.ssh', 'stolen') }) }
+      : null
+    const e = { name: 'read', arguments: { file_path: 'probe' }, agent: { session: { header: { id: 't9b2z' } } } }
+    noteZoneVerdict(e, { kind: 'workspace-read', allInside: true, targets: [join(server.workspace, 'probe')] })
+    const out = await wrapper(e, async () => ({ kind: 'allow' })) as { isError?: boolean; content?: Array<{ text?: string }> }
+    expect(out.isError, '换链后执行期拒').toBe(true)
+    expect((out.content ?? []).map((c) => c.text ?? '').join('')).toContain('never-root denied')
+  })
+
+  it('③ 白名单全量分类：上游每个原型方法须归 READS 或 WRITES，且 WRITES 全被覆盖（上游新增写入口即红）', () => {
     const WRITES = ['writeText', 'editText', 'patchText', 'deleteFile', 'moveFile']
+    const READS = ['constructor', 'sandboxMode', 'resolve', 'processPath', 'fileUrl', 'contains', 'stat', 'lstat',
+      'readText', 'streamText', 'readBytes', 'readByteRange', 'listDir', 'call']
     const proto = ZoneCheckedSshFileSystem.prototype as Record<string, unknown>
     for (const m of WRITES) expect(proto[m], `${m} 被覆盖`).toBeDefined()
-    // SshFileSystem 原型上出现任何本类没覆盖的 *Text/*File/写形态方法 → 上游扩面
     const upstream = Object.getOwnPropertyNames(SshFileSystem.prototype)
-    const uncovered = upstream.filter((m) => WRITES.includes(m) && !Object.getOwnPropertyNames(proto).includes(m))
-    expect(uncovered, `上游写入口未被覆盖：${uncovered}`).toEqual([])
+    const unknown = upstream.filter((m) => !READS.includes(m) && !WRITES.includes(m))
+    expect(unknown, `上游新增方法未分类（写入口须进 WRITES 并在本类覆盖）：${unknown}`).toEqual([])
+    const uncovered = WRITES.filter((m) => !Object.getOwnPropertyNames(proto).includes(m))
+    expect(uncovered, `写入口未被覆盖：${uncovered}`).toEqual([])
   })
 })

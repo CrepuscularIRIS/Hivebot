@@ -187,6 +187,18 @@ describe('childEnv', () => {
     expect(yaml).not.toContain('fs-zone.mjs') // 本机 fs-zone 不插（T9b 起 ssh 模式插 fs-zone-ssh）
     expect(yaml).toContain('fs-zone-ssh.mjs') // T9b：ssh 模式 provider 层收口
     expect(yaml).toContain('neverRoots: []') // T9b：remoteHome 未给 → 远端根缺省空
+    // T9b2（终验 M4/M5 欠账）：第六变量与原版行禁用都要有格看
+    const env6 = {
+      P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h',
+      P2SDK_SSH_HOST: 'pbots-ssh-test', P2SDK_SSH_REMOTE_ROOT: '/remote/root',
+      P2SDK_SSH_HELPER: '/remote/helper.js', P2SDK_SSH_HELPER_HASH: 'a'.repeat(64), P2SDK_SSH_NODE: '/remote/node',
+      P2SDK_SSH_REMOTE_HOME: '/r/home',
+    }
+    const yaml6 = readFileSync(writeRuntimePatch(resolveConfig(env6)), 'utf8')
+    expect(yaml6, '六变量齐：fs-zone-ssh 带远端硬 NEVER 根').toContain(`- '/r/home/.ssh'`)
+    expect(yaml6, '原版 fs-ssh 行被禁（fs-zone-ssh 才是生效后端）').toMatch(/ {4}- id: fs-ssh\n {6}name: 'file:\/\/[^']*dsh-fs-ssh[^']*'\n {6}disabled: true\n/)
+    const envOut = childEnv(resolveConfig(env6), { ...env6, PATH: '/bin' })
+    expect(envOut.P2SDK_SSH_REMOTE_HOME, 'REMOTE_HOME 进删除表（不泄漏给子进程）').toBeUndefined()
     expect(yaml).not.toContain('IdentityFile') // 凭证不进生成行
   })
 

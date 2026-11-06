@@ -5,6 +5,7 @@
 > 分支 / 作业目录：feat/T7b 续提交 @ /tmp/bot-wt/T7b
 > claimed：11:05 main (GLM 5.3)（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
+> 终验：2026-11-06 @ f0a14235 **不通过（T7b 链第 2 次，任务 C 重拆）** → `open/T7bc-skill-picker-visual-2.md`：pick.dark Add 白底白字；回执称删的 pbots-ui.ts:8 未删；×/void SandIcon/Remove 失败可见三项漏做；回执文件撞合并。e2e 2 passed + check diff=0 经理重跑一致。
 
 ## 目标
 T7b 的功能链已过（e2e 2 passed、M1 磁盘断言红、pnpm check diff=0，经理重跑一致）。只差界面：四张截图里两处破版，修到经理目检过。

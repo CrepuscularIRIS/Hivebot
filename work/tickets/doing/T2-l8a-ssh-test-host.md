@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：work/p9-dsh-integration/BRIEF.md 目标 3、L8；PLAN.md §1 L8 行、§3（必读）
 > 分支 / 作业目录：feat/T2 @ **/dev/shm/bot-T2**（不要放 /tmp/bot-wt：helper.js 会落进 bwrap 私有 /tmp，PLAN §3 第 5 条）
-> claimed：
+> claimed：2026-11-06 00:51 main (GLM 5.3)
 > accepted：
 
 ## 目标

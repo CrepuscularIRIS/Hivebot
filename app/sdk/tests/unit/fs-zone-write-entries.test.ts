@@ -24,7 +24,10 @@ function harness() {
   const root = tmkdir('bot-t16-we-')
   cleanup.push(() => rmSync(root, { recursive: true, force: true }))
   const ws = join(root, 'ws')
-  const outside = join(tmpdir(), 'bot-t16-we-outside') // 真 /tmp（区外）
+  // T16b：原写死 join(tmpdir(), 'bot-t16-we-outside')——每跑在 TMPDIR 留一份
+  // （终验红项）。改 root 下的区外子目录：root 是 tmkdir 受管目录，afterEach
+  // 自清；zone 判定只要求在 workspaceRoot（ws）之外，语义不变。
+  const outside = join(root, 'outside')
   const never = join(root, 'home', '.ssh') // NEVER 根（凭证形态）
   for (const dir of [ws, outside, never]) mkdirSync(dir, { recursive: true })
   for (const dir of [ws, outside, never]) writeFileSync(join(dir, 'a.txt'), dir === ws ? 'INSIDE' : 'OUTSIDE-MARKER')

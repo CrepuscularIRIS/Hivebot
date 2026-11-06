@@ -1,6 +1,6 @@
 // L5-a：定时任务按时触发并把结果投递到指定会话（BRIEF 验收③）。
 // 安装版 API（node_modules 实测，T16 升 rc.1）：schedule_create({title, prompt, rrule, target})——
-// 不用 rrule/target（参考仓源码有但安装版删了）。MIN=60 秒。
+// 一次性 = RRULE:FREQ=DAILY;COUNT=1（RRULE_HELP 原文）；MIN=60 秒。
 // 模板：mock-demo.test.ts。
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'

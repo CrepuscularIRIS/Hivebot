@@ -1020,3 +1020,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 11:36 T7bc终验blocked+T8施工完 | T7bc第3次不过（HEAD编译不过=JSX语法错+虚报SandIconButton导入+截图在旧build上跑）→T7b/T7bb/T7bc三单blocked、Q-030等用户定合并策略。T8：22文件~74处机械替换完成（config.test.ts的import曾被误插进模板串→修正到模块头）；抽验mock-demo 9绿残留0、config+preset-broken 3绿；全量e2e待低负载。下一步：T7cb/T9ab两⑨转architect+T8全量+HANDOFF更新。
 2026-11-06 11:41 哨兵#6 | load4.8（好窗口！）、无429。T8全量验证+H7双全量（load<8窗口就是现在）+L5-a 三线推进。
 2026-11-06 11:43 T8全量e2e完成+H7进行中 | T8全量e2e后台完成。H7双全量仍在跑（18个vitest进程）。L5-a schedule 工具API在 repos/deepseek-harness/packages/schedule/tool-schedule/ 下，未开单。HANDOFF快照已更新。
+2026-11-06 11:45 T8全量=147绿/2红(已知P5-H8) | T8全量e2e 147 passed / 2 failed（3个失败文件=guard-fs+w1ap0-matrix 超时族，P5-H8 已知，非 T8 引入）。T8 可派终验。H7 双全量仍在跑。

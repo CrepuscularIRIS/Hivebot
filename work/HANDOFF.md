@@ -18,13 +18,7 @@
 
 ## 3. 待办（按顺序）
 
-第一件：**派 `manager`（任务 A）**，把下面 1–3 写成工单（1 是机械小改，也可以主 agent 自己按模板写单）。
-
-1. **H1 补漏 `f2831a8`**：`git cherry-pick f2831a8`（mock-demo.test.ts + start.test.ts，+18/−1），之前误判为已合并；验收跑这两个文件。
-2. **P5-H7**：`app/sdk/vitest.config.ts` 读 `PBOTS_TEST_WORKERS` 给 maxWorkers 设上限（默认不变）。
-3. **P5-H5**：`app/sdk/tests/e2e/*.test.ts` 约 60 处裸 `mkdtempSync` + 各文件 fakeOverlay 本地副本 10 处 + `mock-demo.test.ts:52` + `examples/min-client.mjs:28` 改用 `tests/support/tmp-sweep.ts` 的 `tmkdir`；先做残留计数 RED。
-4. 1–3 施工完 → `reviewer` 审一次 → `manager`（任务 B）验收 → 合并 + 回测。这是新流程的第一轮，顺便检验流程本身。
-5. 之后：P6-14b 剩余前置（48 组定案、启动顺序核对、persona/section 断言）、P5-H6 / P5-H8 排查——交 `manager` 排队。
+工单队列在 `work/tickets/queue.md`（manager 维护，状态以工单所在目录为准）。当前第一批：**T2（L8-a ssh 测试夹具）→ T3（L4-a RE skills，派 reverse-engineer）→ T1（P5-H5a tmkdir）**；其后 T4（ssh 真组合）、T5（architect 组合设计）。P5-H7 双全量实证等 load<8 窗口。
 
 阻塞（不要动）：P7-F3 等 **Q-027**；P7-F2 冻结；P6-24 等原版删除语义；Q-023 等用户确认。
 

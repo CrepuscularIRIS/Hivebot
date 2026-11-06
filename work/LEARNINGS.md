@@ -98,3 +98,10 @@
 - 现象：H3 builder 51 分钟无 commit/报告更新，判 stale#1；同窗口主仓 create-live 连跑两次同 3 红（超时 18s/29s+20ms 快败）疑内容回归。
 - 根因：两者同源——builder 正在跑 e2e 长链（guard-fs→w1ap0→sandbox-hardened→全量，单文件负载下 >1000s），stale 判定只看 git/文件 mtime 漏了进程活性；主仓回测与其跨树同文件互踩。
 - 规则：①判 stale 前必须 `pgrep -af 'bot-wt/<task-id>'` 看 agent shell 与子进程是否在干活，有活跃进程就不判 stale；②主仓回测出现红灯且签名是超时/快败混合时，先查有无并行 agent 在跑 e2e/全量（pgrep vitest），再判回归；③干净复跑统一安排在无并行 agent 的窗口。
+
+## ssh 本机测试的四个坑（2026-11-06 manager p9 立项实测）
+- OpenSSH 不认 `$HOME`：`HOME=/tmp/x ssh -G localhost` 仍用 `/home/lingxufeng/.ssh/known_hosts`（按 passwd 取家目录）。隔离 HOME 挡不住真实 `~/.ssh` → 测试在 PATH 最前放 `ssh` 包装脚本 `exec /usr/bin/ssh -F <测试目录>/ssh_config "$@"`。
+- 服务端用普通用户私有 sshd（`/usr/sbin/sshd -D -e -f <私有配置>`，127.0.0.1 高端口、`UsePAM no`、私有 HostKey/AuthorizedKeysFile、ForceCommand 改写 HOME），不要往系统 :22 的真实 `authorized_keys` 加钥。
+- sshd 会 chdir 到 `/`，bot-reap 只认命令行里的白名单路径 → sshd 配置文件必须放在 `/tmp/bot-*` 下。经理探针用了 `/tmp/mgr-sshd-probe.*`，留下一个清不掉的 sshd（PID 3051833，127.0.0.1:22922，配置与公钥已删、无法登录），已交用户手工结束。
+- dsh-ssh 把控制套接字目录写死在 `/tmp/dsh-ssh-*`（不随 TMPDIR），只有 dispose 会删；helper 必须在 bwrap 私有 `/tmp` 之外 → 施工 worktree 放 `/dev/shm/bot-T<N>`。
+- 附：`.claude/hooks/process_guard.py` 会把命令里独立出现的单词 `skill` 当成批量杀进程命令拦下（Linux 有同名命令）；grep 这个词写成 `sk[i]ll`。

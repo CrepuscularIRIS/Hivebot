@@ -1018,3 +1018,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 11:31 哨兵#5 | load17.6（高）、无429。T7bc 派终验；开 T8（机械替换，低负载可做）。
 2026-11-06 11:40 manager 任务 B：T7bc 终验**不通过**（T7b 链第 3 次）@ b2facacf。HEAD 编译失败（skills-dialog.tsx:112 JSX）；SandIconButton 未导入，回执称≥2 是虚报；e2e 和截图早于提交（11:16/11:17 vs 11:18）；pick.dark Add 仍是白底看不见字。check diff=0、其余 grep 过。T7b/T7bb/T7bc → blocked/，新开 Q-030（推荐 A：只合并 fda457c2 功能链）。
 2026-11-06 11:36 T7bc终验blocked+T8施工完 | T7bc第3次不过（HEAD编译不过=JSX语法错+虚报SandIconButton导入+截图在旧build上跑）→T7b/T7bb/T7bc三单blocked、Q-030等用户定合并策略。T8：22文件~74处机械替换完成（config.test.ts的import曾被误插进模板串→修正到模块头）；抽验mock-demo 9绿残留0、config+preset-broken 3绿；全量e2e待低负载。下一步：T7cb/T9ab两⑨转architect+T8全量+HANDOFF更新。
+2026-11-06 11:41 哨兵#6 | load4.8（好窗口！）、无429。T8全量验证+H7双全量（load<8窗口就是现在）+L5-a 三线推进。

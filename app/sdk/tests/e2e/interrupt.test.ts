@@ -9,6 +9,7 @@
 // pkill；teardown 只结束自己 spawn 的子进程（launchRuntime.stop 自管）。
 // ② 取消后 0 新工具调用（tool/call 恒 2、该会话模型请求恒 2）；③ 同一 session
 // 续发收到回复（fake 游标第 3 条文本）。测试 HOME 按决策 8 = 主仓 .test-homes/p5-27。
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -18,7 +19,6 @@ import { connect, type DshClient } from '../../examples/lib/client.mjs'
 import { uniqueTestHome } from '../support/sandbox-home.ts'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import {
-import { tmkdir } from '../support/tmp-sweep.ts'
   clearRealKeys,
   processTree,
   runtimeDshPid,

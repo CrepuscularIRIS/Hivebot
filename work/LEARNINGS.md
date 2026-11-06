@@ -126,3 +126,5 @@
 2026-11-06 T9b3 guard 的 remoteHome 校验写成 `void ssh.ready.then(...throw)` → cordis/Node 吞 fire-and-forget 拒绝态、进程照常服务；且 guard 先于 ssh 插件注册（apply 时 `ctx.get('ssh')` 为 null，校验整段被跳过）→ 启动期 fail-closed 必须显式（exit / 拒服务），并证明它在产品加载顺序下真的跑了（e2e 先红：配错照常启动）。
 
 - （2026-11-06 T9b 链审查 C1）插件里任何 `setTimeout`/挂起的 Promise 回调都要登记 cordis 释放（`ctx.effect` 或 `ctx.on(dispose)`，先例 request-net.mjs:194、routing-prompt.mjs:74），回调入口判 disposed——已发出的 `.then` 撤不回。手搓 `{on,get}` 假 ctx 没有 dispose 语义，测生命周期必须用真 `new Context()` + `fiber.dispose()`。
+
+- （2026-11-06 T10 终验）沙箱读遮蔽的哨兵**不能放在 /tmp 下**：上游 dsh-sandbox-local 的 workspace-write profile 自带 `--tmpfs /tmp`（lib/index.js:34-35），`mkdtemp(tmpdir())` 出来的哨兵 HOME 在原版沙箱里本来就看不见——「删掉防线」的变异照样绿，测试成了空测。真实 HOME 在 /home/<user>。探针根放 /var/tmp 等 /tmp 之外，并在 beforeAll 断言它不在 /tmp 下；变异要在默认 TMPDIR 下跑。另：先红如果只出现在「某个 bug 还没修」的状态（这里是 mode 丢失落 read-only），修完那个 bug 要重新确认先红还在。

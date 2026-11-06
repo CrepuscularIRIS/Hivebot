@@ -90,3 +90,9 @@ T7cb 终验不通过（第 2 次）——修复本身正确（realpathSync + M3 
 - 删全部调试代码（console.log/results9 零残留）
 - 9/9 全绿；skill-save 4 + write-outside 10 回归绿；console.log/expect(true) 零残留
 - YAML 模板续行符 Python 转义坑：`\\\\` → `\\`（Edit 工具修）
+
+## §8 经理终验核实（2026-11-06 13:2x @ a0bf57b0，manager Opus 5.5）
+
+- 重跑：skill-write-card 9 passed、skill-save 4 passed；`expect(true)` / `console.log` 零残留——与 §7 一致。
+- M1（删 `shell-ask.mjs:387-395`）下 `-t '⑦'`：`× ⑦ … AssertionError: never 子代理写 skill 被拒: expected false to be true`——⑦ 真测到子代理链路。M1 全文件 8 红（⑥ 绿）。
+- 与 §7 不符：§7 称「照完整模板」，但模板的 DENY 原文断言与子会话 0 卡断言（`write-outside.test.ts:527-532`）没搬，rt2 也没挂 feed；§7 未贴 M1/终跑原样；§4 ⑦⑧ ✓ 与 611 未改。→ 合并前置（见 queue.md 13:2x 待办 ①），补后在本节下追加原样。

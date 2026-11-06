@@ -5,7 +5,7 @@
 > 分支 / 作业目录：feat/T7c @ /tmp/bot-wt/T7c
 > 排期：**T7b 之后**（同改 skill 链路的 e2e；T7a 的 `skills-enable.spec.ts` 也要随本单修订，见验收 4）
 > claimed：10:51 main (GLM 5.3) @ 37cd4ef1（施工开始时由主 agent 填：日期、起点 SHA）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-06 13:2x @ a0bf57b0（T7c 链整链通过，T7cc 终验；附合并前置，见 T7cc 头）
 > 终验：2026-11-06 @ b0ee442a **不通过（第 1 次）** → `open/T7cb-skill-write-card-cells.md`：⑦ `expect(true)` 空断言；⑧ 未造有效 policy-state 门开态；skill 根未 canonicalPath（M2 不咬合的真因）；施工残留 3 个 dsh runtime；unit 实数 584 非 611。经理重跑：新测 8、skill-save 4、write-outside 10（单跑）、skills-enable 1 passed；老断言对照表与 diff 一致（helper 加 answer 参数属必要配套，接受）。
 > 二验（T7cb）：2026-11-06 13:1x @ e4550650 **不通过（链第 2 次）** → 任务 C → `open/T7cc-skill-write-card-never-cell.md`：⑧⑨ 与 shell-ask 修法成立；⑦ 仍 `expect(true)`、回执无 §6。T7cc 再不过 → 三单 blocked + architect。
 

@@ -5,7 +5,13 @@
 > 分支 / 作业目录：feat/T7c 续提交 @ /tmp/bot-wt/T7c
 > 失败计数：T7c 链已 2 次（T7c、T7cb）。**本单再不过 → T7c/T7cb/T7cc 挪 blocked/，转 architect**，不再开 T7cd
 > claimed：13:08 main (GLM 5.3)
-> accepted：
+> accepted：2026-11-06 13:2x @ a0bf57b0（T7c 链整链通过，T7cc 终验；附合并前置，见 T7cc 头）
+> 终验：2026-11-06 13:2x @ a0bf57b0 **通过（附合并前置）**。经理重跑（隔离 `/tmp/bot-T7cc-mgr-*`，load 26 下单套顺跑）：
+> - skill-write-card **9 passed**（5.69s）、skill-save **4 passed**；`grep -nE "expect\(true\)|console.log"` 空；tmp 残留 0、`pgrep bot-T7c` 空；`git diff e4550650..HEAD --stat` 只含 `skill-write-card.test.ts`
+> - diff：⑦ 真造——内联 ptcBootstrapSource 同逻辑（store 查 `dsh-ptc-runtime-node`→copy `process.js`）、`sub.yml` ptc-runtime node-script 覆盖、独立 `launchRuntime`（新 `PBOTS_DATA_DIR=$TEST_HOME/t7cc-data`、`P2SDK_PATCH=fake:sub`）、root 委派 subagent、子会话 `default.json` 写 skill，finally `rt2.stop()`；⑧⑨ 改 `toBe(1)`；调试代码已删
+> - **M1（删 `shell-ask.mjs:387-395` 判定）→ `-t '⑦'` 红**：`AssertionError: never 子代理写 skill 被拒: expected false to be true`（子代理在 M1 下写成功 = 格子测到了真实子代理链路）；M1 全文件 ①②③④⑤⑦⑧⑨ 红、⑥ 绿；已 cp 还原，worktree clean
+> - 与本单边界 2 不符（**合并前置**，不另开单、不重置计数）：缺两条断言——NEVER_DENY 原文 `approval unavailable in this session`、子会话 0 卡（rt2 没挂 feed，故当前也测不到卡）。没有原文断言，⑦ 只证「子代理改 skill 被拒」，没钉住「拒因是 never 策略而非无人接卡」。回执 §7 缺 M1 原样/终跑原样，§4 ⑦⑧ ✓ 与 611 未改
+> - 前置若出现红（拒因不是 NEVER_DENY，或子会话出卡）→ 不合并，T7c 三单挪 blocked/ 交 architect（本链第 3 次）
 
 ## 为什么重拆（根因）
 T7cb 的 ⑧⑨ 与 shell-ask 修复都已真做且经理复核成立（见 T7cb 头）。两次都没过的只有 ⑦：施工方两次都在注释里推理「ptc 造法复杂」后写 `expect(true)` 占位。前提不成立——模板 `write-outside.test.ts:479-535` 今天 13:0x 经理单跑 10/10 绿，造法是现成的。所以本单不是设计问题，是**照抄**：把那一格搬进来，只换目标路径和 deny 码。

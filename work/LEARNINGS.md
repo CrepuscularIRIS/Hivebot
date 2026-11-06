@@ -107,4 +107,4 @@
 - 附：`.claude/hooks/process_guard.py` 会把命令里独立出现的单词 `skill` 当成批量杀进程命令拦下（Linux 有同名命令）；grep 这个词写成 `sk[i]ll`。
 
 2026-11-06 app/ui e2e 两个环境坑：① 项目 playwright 1.64.1 的 chromium 此前未装过——隔离 HOME 跑 e2e 需先 `pnpm -C app/ui exec playwright install chromium`（装到真实缓存）再 `PLAYWRIGHT_BROWSERS_PATH=/home/lingxufeng/.cache/ms-playwright` 指过去；② 裸 `sh scripts/run-e2e.sh` 被截胡（已有条目）的完整规避=一律 `pnpm -C app/ui --config.verify-deps-before-run=false test:e2e <file>`。
-2026-11-06 review 席内容策略第二例：T5 设计复审的 D4 措辞（「ssh bash 能读真实 ~/.ssh」类）被 Sol 服务商拦——防御性重述（「自家产品防护层完备性评审」+锚点核验框架）后重派即可，与既有条目「确定性测试接缝表述」同源。
+2026-11-06 review 席内容策略第二、三例（T5 设计复审两轮被拦，防御性重述无效）：分类器拦的是**分析输出**——agent 一开始推理「凭证可达性」就被断，不是派发词的问题；凡审查对象本身涉及凭证路径推理，Sol 席都过不去。可靠出路=换模型席（新鲜 Opus 实例代审，记录替代原因），或把该部分降级为纯锚点核验。Sol 补审留 queue 提议。

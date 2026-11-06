@@ -234,4 +234,18 @@ describe('T9a extraNeverTools', () => {
   it('非数组 → 加载抛错', () => {
     expect(() => listener({ roots: configRoots(), extraNeverTools: 'grep' })).toThrow(/extraNeverTools/)
   })
+
+  it('T9af 后一次 apply 不改写先前实例（两个方向）', async () => {
+    const grep = { name: 'grep', arguments: { pattern: 'x' } }
+    const allow = async () => ({ kind: 'allow' })
+    const a = listener({ roots: configRoots(), extraNeverTools: ['grep'] })
+    listener({ roots: configRoots() })
+    const oa = await a(grep, allow) as { kind: string; reason?: string }
+    expect(oa.kind, 'ssh 实例 A 在本机实例 B apply 之后仍拒 grep').toBe('deny')
+    expect(oa.reason).toContain('not available in ssh mode')
+    const c = listener({ roots: configRoots() })
+    listener({ roots: configRoots(), extraNeverTools: ['grep'] })
+    const oc = await c(grep, allow) as { kind: string; reason?: string }
+    expect(oc.reason ?? '', '本机实例 C 不因 ssh 实例 D 的 apply 按 ssh 拒').not.toContain('ssh mode')
+  })
 })

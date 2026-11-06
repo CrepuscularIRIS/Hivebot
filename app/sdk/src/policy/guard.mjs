@@ -37,9 +37,6 @@ const REQUIRED_ROOT_KEYS = ['hardRoots', 'dataMaskRoots', 'homes', 'toolchainDir
  */
 const NEVER_TOOLS = new Set(['plugin_manager', 'apply_patch'])
 
-/** T9a：config.extraNeverTools（ssh 模式下如 glob/grep）与 NEVER_TOOLS 合并判定；加载时校验。 */
-let extraNeverTools = new Set()
-
 /**
  * P5-04（0d，G#5 前半，PLAN 决策 10）：拒绝裸升权。受控升权路径落地前，
  * 任何工具带 `sandbox_permissions === 'danger-full-access'` 的调用批准后都是
@@ -236,15 +233,13 @@ function requireRoots(config) {
 export function apply(ctx, config) {
   const roots = requireRoots(config)
   const resolved = resolveRoots(roots)
-  // T9a：extraNeverTools 校验与赋值（在 listener 注册前——闭包读到的是最新 Set）
-  if (config.extraNeverTools !== undefined) {
-    if (!Array.isArray(config.extraNeverTools) || !config.extraNeverTools.every((t) => typeof t === 'string' && t.length > 0)) {
-      throw new Error('p2sdk-fs-guard: config.extraNeverTools must be an array of non-empty tool names')
-    }
-    extraNeverTools = new Set(config.extraNeverTools)
-  } else {
-    extraNeverTools = new Set() // 未配置=空集（防上一次 apply 残留）
+  // T9a/T9af（审查 C2）：extraNeverTools 归本次 apply 的闭包——模块级 Set 会被后一次 apply
+  // 整体改写，连带改掉先前实例的策略（热重载 / 同进程多上下文）。校验仍在监听器注册前。
+  if (config.extraNeverTools !== undefined
+    && (!Array.isArray(config.extraNeverTools) || !config.extraNeverTools.every((t) => typeof t === 'string' && t.length > 0))) {
+    throw new Error('p2sdk-fs-guard: config.extraNeverTools must be an array of non-empty tool names')
   }
+  const extraNeverTools = new Set(config.extraNeverTools ?? [])
 
   // P5-04.f1 ⑤ 实测：insert 行的加载顺序不可靠（探针证据：guard 列首位时仍
   // 收不到 bash exec，shell-ask 先注册先拦截）。用 cordis ctx.on 的 prepend

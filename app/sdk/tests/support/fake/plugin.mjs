@@ -135,6 +135,7 @@ class FakeAdapter {
         provider: options.provider,
         model: options.model,
         purpose: options.purpose ?? null,
+        toolNames: (options.tools ?? []).map((t) => t.name),
         userTexts: options.messages
           .filter((m) => m.role === 'user')
           .map((m) => (m.content ?? []).filter((b) => b?.type === 'text').map((b) => b.text).join('')),

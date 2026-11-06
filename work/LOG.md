@@ -1030,3 +1030,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 12:31 哨兵#11 | load10.8、无429。L5-a 干净重写（API 已知，照 mock-demo 模板）。
 2026-11-06 12:33 L5-a 绿 | schedule_create after_seconds=60 → 60秒后定时投递到本会话→userTexts含标记→1 passed。BRIEF验收③（定时任务按时触发投递）落地。干净版一次过——API发现是关键。
 2026-11-06 12:41 哨兵#12 | load8.8（接近H7窗口）、无429。T7cb⑨插桩排查。
+2026-11-06 12:43 T7cb⑨插桩未成 | console.error 进 dsh 子进程 stderr 不达 vitest；appendFileSync 的 Python 转义与 JS 冲突（\n 变真换行破语法）。已还原。下会话用 Edit 工具直接编辑 JS（不走 Python），或改在 guard.mjs 的 noteZoneVerdict 加打点（该文件已有 fs import）。

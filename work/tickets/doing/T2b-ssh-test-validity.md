@@ -4,7 +4,7 @@
 > 来源：T2 验收不通过（review/T1-T3-test-validity.md + T1-T3-security.md 末尾「经理核实」节）。T2 留 doing/，T2b 与 T2c 都验收后一起挪 done。
 > 分支 / 作业目录：feat/T2 @ /dev/shm/bot-T2（在 63f3f70 上继续提交）
 > 顺序：先做 T2b，再做 T2c（两单都改 `ssh-host.ts`，不并行）
-> claimed：
+> claimed：2026-11-06 02:39 main (GLM 5.3)
 > accepted：
 
 ## 目标

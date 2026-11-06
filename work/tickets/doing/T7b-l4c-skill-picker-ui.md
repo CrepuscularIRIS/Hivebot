@@ -4,7 +4,7 @@
 > 来源：p9 BRIEF 验收第 2 条（「另一个 bot 能启用」的用户入口）、验收第 4 条（UI 截图对照 0.78.1）；RE-skills Q4、Q7
 > 分支 / 作业目录：feat/T7b @ /tmp/bot-wt/T7b
 > 依赖：**第 1 步（参照图）现在就能做；第 2 步起要 T7a 已合并**（接 `window.pbots.skills`，接口见 `open/T7a-l4c-skill-enable-api.md`「接口」表）
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：10:10 main (GLM 5.3) @ d4c3a33a（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

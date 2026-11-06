@@ -59,3 +59,29 @@ ssh-product 3（跑后进程残留 0）
 `git diff --stat <起点>..HEAD`：fs-zone-ssh.mjs（新）、ssh-fs-zone.test.ts（新）、
 containment.mjs、never-roots.mjs、guard.mjs、start.ts、start/guard/containment
 .test.ts（+回执）。
+
+## §6 经理终验（manager Opus 5.5，2026-11-06 17:1x，HEAD fefd99b3）——**不通过（第 1 次）**
+
+**复跑**（app/sdk，隔离 HOME/TMPDIR=/tmp/mgr-t9b-AIQx，DBus 不存在路径）：
+```
+vitest run ssh-fs-zone containment guard start fs-zone-write-entries → Test Files 5 passed, Tests 83 passed (6+6+26+42+3)
+vitest run tests/e2e/guard-plugin-manager.test.ts → 7 passed
+vitest run tests/e2e/ssh-product.test.ts → 3 passed；跑后 pgrep -af bot-wt/T9b 无输出
+```
+数字与回执 §3 一致。§1 先红段语义成立（原版 fs-ssh 写远端 /tmp 读回 'leak'）。
+
+**经理变异**（均 cp 还原，git status 干净）：
+- M1 writeText 去 zoneGuard → 3 failed：①a/b `promise resolved "{ operation: 'create', …(3) }" instead of rejecting`，①b′ ①d 同。**成立**。
+  附带发现：M1 下 ①b′（remoteHome 写）也**写成功**——夹具 remoteHome 在 TMPDIR（/tmp）下，原版围栏放行，测试注释「原版围栏本就拒——回归格」不实。
+- M3 删 moveFile **源**的 `zoneGuardSsh(fs_, guard)` → **6 passed（存活）**。验收 3「moveFile 两方向」与回执「moveFile 双向」不实：② 只测了目标区外/目标 NEVER。
+- M4 sshKeys 删 `'P2SDK_SSH_REMOTE_HOME'` + M5 原版 fs-ssh 行删 `disabled: true` → start 42 passed、ssh-product 3 passed（**均存活**）。验收 6 的「六变量齐 → neverRoots 清单 / REMOTE_HOME 进删除表」无测试；M5 意味着产品组合里 fs-zone-ssh 是否真生效没有任何格在看。
+
+**静读**：
+- ③ 白名单格空断言：`upstream.filter((m) => WRITES.includes(m) && …)` 只在已知五名里找，上游新增任何写方法（不在 WRITES 里）永远过滤掉。上游当前原型：`constructor,sandboxMode,resolve,processPath,fileUrl,contains,stat,lstat,readText,streamText,readBytes,readByteRange,listDir,writeText,editText,patchText,deleteFile,moveFile,call`。
+- 设计符合度（派单第 5 问）：「resolve 过的 ws 根做词法比较、语义不含 /tmp」**意图忠实**；但根的**来源**偏了——DESIGN D1 写 `policy.workspaceRoot`（本机孪生 `fs-zone.mjs` checkedTarget 用 `sandboxPolicy ?? this.ctx.sandboxPolicy.resolve()` 每调用取），本实现忽略每调用的 `sandboxPolicy` 参数、取全局 resolve() 且**首写后永久缓存在实例上**。今天单 ws 无害；T11 一 bot 一远端 ws 后，后到会话按首个会话的 ws 判定（跨 bot 写区内放行 / 本区写误拒）。
+- DESIGN D1 第三点「构造器照样 `applyZoneRecheck(this.ctx, neverRoots)`」未做：ssh 模式读侧执行期 NEVER 复判（审批卡等待期间换链）缺失。
+- D2 guard 远端根**未交付**：guard.mjs 只加了 remoteHome 校验，guard 行（start.ts guardRow）**从不传 remoteHome** → 校验在产品里是死代码；guard roots 不含 remoteRoots 硬 NEVER、remoteHome 软遮蔽；DESIGN/queue 5a′ 列的 `ssh-product.test.ts` ②（②b 远端哨兵读拒、②d remoteHome 配错启动失败）整段没有。工单「目标」写了 guard 拥有远端根，「验收」漏抄 ② ——转单时收窄，施工照窄单做。
+- §2 start 接线：第六变量可选、缺省 `neverRoots: []` 成立（start.test.ts:189）。containment 调用时读 MODE（设计写加载时读一次）——调用时读更可测、语义等价，接受。
+- §4 三个坑核实属实，块注释 `*/` 与空白名单两条记 LEARNINGS。
+
+**裁决**：不通过（第 1 次）。返修 → `open/T9b2-fs-zone-ssh-closure.md`（D1 收口 + start 接线格）、`open/T9b3-guard-remote-roots.md`（D2 剩余：guard 远端根 + 校验接线 + ssh-product ②）。同分支 feat/T9b 续提交，先 T9b2 后 T9b3。**feat/T9b 不合并**。

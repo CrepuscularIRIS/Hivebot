@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T16 终验不通过（receipts/T16.md §7，验收 HEAD 74802b5f）
 > 分支 / 作业目录：feat/T16 @ /tmp/bot-wt/T16（续提交，不开新分支）
-> claimed：
+> claimed：2026-11-06 15:5x main (GLM 5.3) @ feat/T16 续
 > accepted：
 
 ## 目标

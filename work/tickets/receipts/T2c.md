@@ -73,3 +73,7 @@ git diff --stat dd63eed..HEAD：
 1. **SIGTERM/SIGKILL 模式各留 1 个空 `/tmp/dsh-ssh-*` socket 目录**：dsh-ssh 模块的清理只挂在连接 dispose 上，宿主进程被硬杀时无任何用户态路径可跑（工单同时禁止信号钩子）。安全属性（端口/进程）不受影响；目录为 0700 空 socket 壳。已在夹具侧做到：exit 模式残留 0（登记簿）。硬杀残留属 dsh-ssh 模块级限制（PLAN §3-4 类），请经理裁决口径（接受 / 立小任务在下次全量前做陈年空目录清扫）。
 2. `setpriv --pdeathsig` 绑定 spawn 所在线程：vitest forks 池在主线程 spawn，无影响（工单已注）；若未来换 threads 池，worker 线程结束时也会被收，语义可接受。
 3. pdeathsig 需 util-linux 的 setpriv（本机有）；若换机器跑此测试需确认存在（可加检测，未加——YAGNI）。
+
+## 附记（修复复核轮，2026-11-06 03:24）
+
+- §1 附加项的 dsh-ssh 目录登记有并发误删（复核席 CONFIRMED/高：全局 /tmp 差集会把并发实例的目录收进本进程 sweeper）。已改为归属式：只登记本夹具 ssh 客户端 PID 命令行 `-S` 套接字路径指向的目录（@01b4dc6）；ownership.mjs 复验外部哨兵幸存（REGISTERED_FOREIGN_DIR false / SENTINEL_AFTER_SWEEP true）。

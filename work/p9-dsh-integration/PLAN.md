@@ -71,9 +71,10 @@
 | T3 | L4-a：0.78.1 skill 生命周期 RE（派 reverse-engineer） | **done**（accepted 2026-11-06，含 T3b） |
 | T3b | RE-skills.md Q6 投递方式降为推断 + 两条反证计数 + 影响节第 6 条收窄 | **done**（accepted 2026-11-06 @ 316b6c9，已在集成分支） |
 | T4 | L8-b：headless 真组合 + llm-replay，bash/写文件经 ssh 落到远端 | **done**（accepted 2026-11-06 @ f8d1e00c，`tickets/done/T4-l8b-ssh-headless.md`；待合并） |
-| T5 | L8-c：architect 出 `DESIGN-ssh-composition.md`（与 fs-zone/guard/shell-ask/P6 cwd 的组合；进程级 vs preset isolate） | 计划（T4 已过，可开） |
+| T5 | L8-c：设计单，**manager 执笔** `DESIGN-ssh-composition.md`（D1–D13：fs-zone/guard/shell-ask/bwrap/P6 cwd/isolate/断连 UI/PTC/宿主直连行/helper 安装/残留/每账户或每 bot/产品化 patch + 删 T4 死代码） | **open**（`tickets/open/T5-l8c-ssh-composition-design.md`） |
 | T6 | L4-b：skill 根收口（关 `~/.agents` 泄漏）+ bot 在对话里存 skill 的真组合 e2e | **done**（accepted 2026-11-06 @ 80958ad0，`tickets/done/T6-l4b-skill-save.md`；待合并） |
-| T7 | L4-c：账户库 + 按 bot 启用（main API + UI，截图对 0.78.1） | 计划（T6 已过，可开） |
+| T7a | L4-c：main IPC `pbots:skills` list/enable/disable，启用 = 复制快照到 bot 私有根；库 = 全 bot 并集派生视图 | **open**（`tickets/open/T7a-l4c-skill-enable-api.md`） |
+| T7b | L4-c：info pane Skills 段 +「Pick from your skills」，R3 参照图对 0.78.1 | **open**（第 2 步起等 T7a；`tickets/open/T7b-l4c-skill-picker-ui.md`） |
 | T8 | P5-H5b：e2e/*.test.ts 裸 mkdtemp | 计划（等 T1） |
 
 ## 5. 核实不了 / 存疑（单列）

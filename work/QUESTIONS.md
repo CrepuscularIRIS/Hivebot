@@ -245,3 +245,12 @@
   - C：不批准，F3 维持 blocked（新代恢复窗口的未知重投缺陷继续存在，依赖 F3 的 F4/L2/M1/M3/U1 排队不动）。
 - 答复：
 
+
+## Q-028 [open] skill「审阅链」要不要进这一期（bot 存 skill / 改 skill 要不要你点批准）
+- slug：p9-dsh-integration ｜ 类型：需求范围 ｜ 阻塞：不阻塞（T7a/T7b 按 A 施工，答 B/C 再追加单）｜ 提出：2026-11-06 05:20
+- 背景：原版有一条审阅链——bot 用 `ProposeSkills` 提议新增 / 修改 / 删除 skill，生成「待审项」（PENDING→你点 APPROVE/REJECT），聊天里还有「Pick from your skills」挑选卡（RE-skills Q3）。现在我们的做法（T6 已落地）：bot 在对话里直接把 skill 写进**它自己的** skill 目录，不出卡；别的 bot 要用，必须你在 B 的设置里「Pick from your skills」手动启用（T7a/T7b）——跨 bot 扩散这一步本来就要你点。你的验收原话（BRIEF 验收第 2 条）只要求「存下来、另一个 bot 能启用复用」，没提审批。
+- 选项：
+  - A（推荐）：这一期不做审阅链。理由：跨 bot 启用已经要你手动点；bot 写自己目录里的 skill 与它写自己工作区里任何别的文件（比如说明文档）是同一类风险，单独为 skill 加卡收益小。以后要再加。
+  - B（轻量版）：bot 往自己的 skill 目录写入 / 改写时弹一张确认卡（复用现有审批卡，Allow once / Deny），不做待审列表。约 1 张单。
+  - C（完整版，对齐原版）：`ProposeSkills` 工具 + 待审项列表（PENDING→APPROVE/REJECT，带 bot、动作、名字、描述、正文）+ 聊天内挑选卡；批准后写进 bot 副本（复用 T7a 的 enable 路径）。约 3 张单，排在 T7 之后。
+- 答复：

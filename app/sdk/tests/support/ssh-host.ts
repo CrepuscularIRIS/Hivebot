@@ -1,12 +1,14 @@
-// T2（L8-a）：完全隔离的本机 ssh 测试夹具。
+// T2（L8-a）+ T2b/T2c：完全隔离的本机 ssh 测试夹具。
 // 关键事实（work/p9-dsh-integration/PLAN.md §3）：OpenSSH 不看 $HOME → 必须用 PATH 里的
-// ssh 包装脚本注入 -F；服务端用私有 sshd（随机高端口 + 一次性密钥 + ForceCommand 改写
-// HOME/TMPDIR/DBus），绝不碰真实 ~/.ssh 与系统 :22。
-// 目录布局全在 tmkdir('bot-T2-ssh-') 下（bot-reap 白名单前缀），sshd 命令行里带配置路径。
+// ssh 包装脚本注入 -F；服务端用私有 sshd（随机高端口 + 一次性密钥），绝不碰真实 ~/.ssh
+// 与系统 :22。T2c 补四件：SetEnv 单行带 HOME（会话 shell 不读真实启动文件）、
+// ForceCommand cd 进 remote-home（cwd 不落真实家目录）、setpriv --pdeathsig 兜底
+// （测试进程任何死法下内核收走 sshd 与 ssh 客户端）、setup 失败全量回滚。
+// 目录布局全在 tmkdir('bot-T2-ssh-') 下（bot-reap 白名单前缀），sshd 命令行带配置路径。
 import { execFile, spawn, type ChildProcess } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
 import { createWriteStream } from 'node:fs'
-import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import * as net from 'node:net'
 import { join } from 'node:path'
@@ -18,7 +20,7 @@ import { SshConnection } from '@deepseek-ai/dsh-ssh'
 import { SshFileSystem } from '@deepseek-ai/dsh-fs-ssh'
 import { SshSubprocessRuntime } from '@deepseek-ai/dsh-subprocess-ssh'
 import { SshSandboxProvider } from '@deepseek-ai/dsh-sandbox-ssh'
-import { tmkdir } from './tmp-sweep.ts'
+import { tmkdir, trackTmpDir } from './tmp-sweep.ts'
 
 const execFileAsync = promisify(execFile)
 export const SSH_ALIAS = 'pbots-ssh-test'
@@ -51,6 +53,7 @@ export interface SshHost {
   remoteHome: string
   workspace: string
   ctx: Context
+  sshdPid: number
   hello: { workspace: string; executable: string; root: string }
   /** SshConnection 的 Config 字面（⑤ 用来复制并改 helperHash）。 */
   connectionConfig(): Record<string, unknown>
@@ -87,6 +90,8 @@ export async function startSshHost(): Promise<SshHost> {
       `TMPDIR='${remoteTmp}'`,
       `DBUS_SESSION_BUS_ADDRESS='unix:path=${join(dir, 'no-dbus')}'`,
       'export HOME TMPDIR DBUS_SESSION_BUS_ADDRESS',
+      // T2c：远端 cwd 收进 remote-home（sshd 默认落在真实家目录）
+      `cd '${remoteHome}' || exit 97`,
       'exec /bin/sh -c "$SSH_ORIGINAL_COMMAND"',
       '',
     ].join('\n'), { mode: 0o755 })
@@ -110,15 +115,15 @@ export async function startSshHost(): Promise<SshHost> {
       // local 是最小档：允许 direct 连接（含 streamlocal），拒绝远端监听方向。
       'AllowTcpForwarding local',
       'X11Forwarding no',
-      `SetEnv PBOTS_SSH_MARK=${mark}`,
-      `SetEnv PBOTS_REMOTE_HOME=${remoteHome}`,
+      // T2c：SetEnv 只认第一行（sshd -T 实测）——mark/HOME 一行带走，会话 shell 一开始就拿到隔离 HOME
+      `SetEnv PBOTS_SSH_MARK=${mark} HOME=${remoteHome} PBOTS_REMOTE_HOME=${remoteHome}`,
       `ForceCommand ${join(dir, 'force-command.sh')}`,
       '',
     ].join('\n'))
-    const child = spawn('/usr/sbin/sshd', ['-D', '-e', '-f', sshdConfig], {
+    // T2c：pdeathsig 兜底——测试进程以任何方式死掉（含 SIGKILL），内核对 sshd 发 TERM
+    const child = spawn('setpriv', ['--pdeathsig', 'TERM', '/usr/sbin/sshd', '-D', '-e', '-f', sshdConfig], {
       stdio: ['ignore', 'ignore', 'pipe'],
     })
-    // 排障期：sshd -e 的 stderr 落盘
     child.stderr?.pipe(createWriteStream(join(dir, 'sshd.log')))
     return { child, port, sshdConfig }
   }
@@ -138,51 +143,9 @@ export async function startSshHost(): Promise<SshHost> {
   }
   const { child: sshdChild, port } = attempt
 
-  writeFileSync(join(binDir, 'ssh'), [
-    '#!/bin/sh',
-    // T2b 观测点：登记经此包装的 ssh 客户端 PID（含 dsh-ssh 的 master 与 -O 控制调用）
-    `echo $$ >> '${join(dir, 'ssh-client.pids')}'`,
-    `exec /usr/bin/ssh -F '${join(dir, 'ssh_config')}' "$@"`,
-    '',
-  ].join('\n'), { mode: 0o755 })
-  writeProtected(join(dir, 'ssh_config'), [
-    `Host ${SSH_ALIAS}`,
-    '  HostName 127.0.0.1',
-    `  Port ${port}`,
-    `  User ${process.env.USER ?? 'nobody'}`,
-    `  IdentityFile ${clientKey}`,
-    '  IdentitiesOnly yes',
-    `  UserKnownHostsFile ${join(dir, 'known_hosts')}`,
-    '  GlobalKnownHostsFile /dev/null',
-    '',
-  ].join('\n'))
-
-  // dsh-ssh 用 execFile('ssh') 走 PATH（不传 -F）→ PATH 最前放包装目录，结束还原
+  // T2c：sshd 已起——此后任何一步失败都必须回滚（还原 PATH、收 sshd）再抛
   const oldPath = process.env.PATH
-  process.env.PATH = `${binDir}:${oldPath ?? ''}`
-
-  const require = createRequire(import.meta.url)
-  const helper = realpathSync(require.resolve('@deepseek-ai/dsh-ssh/helper'))
-  const helperHash = createHash('sha256').update(readFileSync(helper)).digest('hex')
-  const connectionConfig = (): Record<string, unknown> => ({
-    host: SSH_ALIAS,
-    launch: { kind: 'node-script', node: process.execPath },
-    helper,
-    helperHash,
-    workspace,
-  })
-
-  // 手搭组合照上游 live.e2e.ts setup()：projection → policy → connection → fs/subprocess/sandbox
-  // 来源: https://github.com/deepseek-ai/deepseek-harness@ce7073d512:packages/ssh/ssh/tests/live.e2e.ts
-  const ctx = new Context()
-  const fibers = [
-    ctx.plugin(SessionProjectionRegistry),
-    ctx.plugin(SandboxPolicyService, { mode: 'workspace-write', workspaceRoot: workspace }),
-    ctx.plugin(SshConnection, connectionConfig()),
-    ctx.plugin(SshFileSystem),
-    ctx.plugin(SshSubprocessRuntime),
-    ctx.plugin(SshSandboxProvider),
-  ]
+  const fibers: Array<Promise<unknown> & { dispose(): Promise<void> }> = []
   const disposeFibers = async (): Promise<void> => {
     for (const fiber of [...fibers].reverse()) await fiber.dispose()
   }
@@ -203,9 +166,61 @@ export async function startSshHost(): Promise<SshHost> {
     }
   }
 
+  const dshDirsBefore = readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-'))
+
   try {
+    writeFileSync(join(binDir, 'ssh'), [
+      '#!/bin/sh',
+      // T2b 观测点：登记经此包装的 ssh 客户端 PID（含 dsh-ssh 的 master 与 -O 控制调用）
+      `echo $$ >> '${join(dir, 'ssh-client.pids')}'`,
+      // T2c：ssh 客户端（含 dsh-ssh master）同样挂 pdeathsig
+      `exec setpriv --pdeathsig TERM /usr/bin/ssh -F '${join(dir, 'ssh_config')}' "$@"`,
+      '',
+    ].join('\n'), { mode: 0o755 })
+    writeProtected(join(dir, 'ssh_config'), [
+      `Host ${SSH_ALIAS}`,
+      '  HostName 127.0.0.1',
+      `  Port ${port}`,
+      `  User ${process.env.USER ?? 'nobody'}`,
+      `  IdentityFile ${clientKey}`,
+      '  IdentitiesOnly yes',
+      `  UserKnownHostsFile ${join(dir, 'known_hosts')}`,
+      '  GlobalKnownHostsFile /dev/null',
+      '',
+    ].join('\n'))
+
+    // dsh-ssh 用 execFile('ssh') 走 PATH（不传 -F）→ PATH 最前放包装目录，结束还原
+    process.env.PATH = `${binDir}:${oldPath ?? ''}`
+
+    const require = createRequire(import.meta.url)
+    const helper = realpathSync(require.resolve('@deepseek-ai/dsh-ssh/helper'))
+    const helperHash = createHash('sha256').update(readFileSync(helper)).digest('hex')
+    const connectionConfig = (): Record<string, unknown> => ({
+      host: SSH_ALIAS,
+      launch: { kind: 'node-script', node: process.execPath },
+      helper,
+      helperHash,
+      workspace,
+    })
+
+    // 手搭组合照上游 live.e2e.ts setup()：projection → policy → connection → fs/subprocess/sandbox
+    // 来源: https://github.com/deepseek-ai/deepseek-harness@ce7073d512:packages/ssh/ssh/tests/live.e2e.ts
+    const ctx = new Context()
+    fibers.push(
+      ctx.plugin(SessionProjectionRegistry),
+      ctx.plugin(SandboxPolicyService, { mode: 'workspace-write', workspaceRoot: workspace }),
+      ctx.plugin(SshConnection, connectionConfig()),
+      ctx.plugin(SshFileSystem),
+      ctx.plugin(SshSubprocessRuntime),
+      ctx.plugin(SshSandboxProvider),
+    )
     await Promise.all(fibers)
     const hello = await ctx.ssh.ready
+    // T2c：dsh-ssh 写死 /tmp/dsh-ssh-*（清理只挂在 dispose 上）——ready 后把本轮新建的
+    // 收进 H1 登记簿，正常退出/exit 钩子可清；SIGKILL 类硬杀仍会留一个空 socket 目录（已记回执存疑）
+    for (const name of readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-') && !dshDirsBefore.includes(n))) {
+      trackTmpDir(join('/tmp', name))
+    }
     return {
       dir, port, mark, remoteHome, workspace, ctx, sshdPid: sshdChild.pid!,
       hello: { workspace: hello.workspace, executable: hello.executable, root: hello.root },

@@ -86,6 +86,11 @@ describe('T2 L8-a 私有 sshd 夹具 + dsh ssh 族', () => {
     expect(stdout).toBe('')
   }, 60_000)
 
+  it('①b 远端会话 HOME 与 cwd 都收在夹具 remote-home（不落真实家目录）', async () => {
+    const { stdout } = await execFileAsync('ssh', ['pbots-ssh-test', 'printf "%s;%s" "$HOME" "$PWD"'])
+    expect(stdout).toBe(`${host!.remoteHome};${host!.remoteHome}`)
+  }, 60_000)
+
   it('② 真实 ~/.ssh 递归元数据（含 mode）未被改动（stat 快照，不读内容）', () => {
     expect(snapshotRealSsh()).toEqual(realSshBefore)
   })

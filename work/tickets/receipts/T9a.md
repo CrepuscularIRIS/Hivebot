@@ -82,7 +82,21 @@ launcher → dsh 从 `/proc/<pid>/task/<pid>/children` 证明仍活；SIGKILL ds
 
 还原核验：`grep -c "P2SDK_SSH_MODE === '1'" approval.yml` → `4`。
 
-## 5. 风险与边界
+## 5. ⑪ 泄漏修复（第 4 步，验收 9 触发）
+
+收尾检查发现 30 个 bot-T9a 进程 + 17 个 dsh-ssh 目录累积泄漏。根因：⑪ 结尾
+`rt = undefined` 让 afterAll 跳过基线 `rt.stop()`，每轮漏一组
+launcher+dsh+ssh master+helper。修复：
+
+- 删 `rt = undefined`；
+- ⑪ 加孤儿 master 断言：SIGKILL dsh 后，命令行含夹具目录且 `ppid==1` 的 ssh
+  master 限界等零（基线 master 的父是活着的基线 dsh，不算——只数真孤儿）。
+
+两轮连跑实证：进程残留 0；dsh-ssh 目录每轮恰 +1 个空目录（PLAN §3-10 已接受
+残留，⑪ 断言即「新增 ≤1 且为空」）。变异等价物：删 `rt = undefined` 复原即
+回到泄漏态（本轮修复前实测即红态证据，30 进程清单见 LOG）。
+
+## 6. 风险与边界
 
 1. preset-cordis 也禁了 workflow（ssh 模式切 cordis preset 同样无 workflow）——
    预期行为；minimal 本无 workflow 行。

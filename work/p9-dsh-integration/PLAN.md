@@ -63,7 +63,7 @@
 
 | 工单 | 内容 | 状态 |
 |---|---|---|
-| T1 | P5-H5a：unit / support / market / examples 裸 mkdtemp → tmkdir，残留计数 RED | open |
+| T1 | P5-H5a：unit / support / market / examples 裸 mkdtemp → tmkdir，残留计数 RED | 施工完（feat/T1 @d9cd458，591/591 绿残留 0，待审+验收） |
 | T2 | L8-a：私有 sshd 测试夹具 + 装 dsh ssh 族 + 连接级验收 | 施工完（feat/T2 @63f3f70，6/6 绿，待审+验收） |
 | T3 | L4-a：0.78.1 skill 生命周期 RE（派 reverse-engineer） | 施工完（RE-skills.md 七问全答，待验收抽查锚点） |
 | T4 | L8-b：headless 真组合 + llm-replay，bash/写文件经 ssh 落到远端 | 计划（等 T2） |

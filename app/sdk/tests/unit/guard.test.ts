@@ -285,3 +285,74 @@ describe('T9b remoteHome 启动校验', () => {
     }
   })
 })
+
+// T9b4（审查 C1）：guard 释放后 remoteHome 校验停——真 cordis Context（手搓 ctx
+// 没有 dispose 语义，终验漏网正因如此）。ⓐ轮询路径 / ⓑready 晚到路径 / ⓒ不释放对照。
+describe('T9b4 remoteHome 校验随插件释放而停', () => {
+  it('ⓐ 轮询路径：dispose 后前移 61s 不退出', async () => {
+    const { Context } = await import('@deepseek-ai/cordis')
+    const root = new Context()
+    const exit = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never)
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const fiber = root.plugin({ name: 'g', apply: plugin.apply } as never, { roots: configRoots(), remoteHome: '/configured' } as never)
+      await fiber
+      await fiber.dispose()
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      await vi.advanceTimersByTimeAsync(61_000)
+      expect(exit, 'dispose 后轮询超时不再 exit(86)').not.toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers(); exit.mockRestore(); err.mockRestore()
+      void root
+    }
+  })
+
+  it('ⓑ ready 路径：dispose 后 ssh.ready 才 resolve → 不校验不退出', async () => {
+    const { Context } = await import('@deepseek-ai/cordis')
+    const root = new Context()
+    const exit = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never)
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    let releaseReady: ((v: unknown) => void) | undefined
+    const ready = new Promise((r) => { releaseReady = r })
+    try {
+      root.provide('ssh', null as never); root.provide('fs', null as never)
+      root.set('ssh', { ready } as never)
+      root.set('fs', { resolve: async () => ({ targetKey: '/actual' }) } as never)
+      const fiber = root.plugin({ name: 'g', apply: plugin.apply } as never, { roots: configRoots(), remoteHome: '/configured' } as never)
+      await fiber
+      await fiber.dispose()
+      releaseReady!(undefined)
+      await new Promise((r) => setImmediate(r))
+      await new Promise((r) => setImmediate(r))
+      expect(exit, 'dispose 后 ready 回调不再校验/退出').not.toHaveBeenCalled()
+    } finally {
+      exit.mockRestore(); err.mockRestore()
+      void root
+    }
+  })
+
+  it('ⓒ 对照：不释放 + ssh 就绪 + 配错 → 仍 exit(86)（fail closed 保住）', async () => {
+    // 原「前移 61s 超时」形态的 fakeTimers 触不到 fiber 加载时建的真 timer（先红
+    // 实测假红）——改为等价的未释放校验路径：ready 已就绪 + 配错 → verify 退出。
+    // 60s 超时分支由变异与 e2e ②d 兜底。
+    const { Context } = await import('@deepseek-ai/cordis')
+    const root = new Context()
+    const exit = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never)
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      root.provide('ssh', null as never); root.provide('fs', null as never)
+      root.set('ssh', { ready: Promise.resolve() } as never)
+      root.set('fs', { resolve: async () => ({ targetKey: '/actual' }) } as never)
+      const fiber = root.plugin({ name: 'g', apply: plugin.apply } as never, { roots: configRoots(), remoteHome: '/configured' } as never)
+      await fiber
+      await new Promise((r) => setImmediate(r))
+      await new Promise((r) => setImmediate(r))
+      expect(exit, '未释放时配错仍 exit(86)').toHaveBeenCalledWith(86)
+      expect(err.mock.calls.flat().join('\n')).toContain('does not match the remote home')
+      await fiber.dispose()
+    } finally {
+      exit.mockRestore(); err.mockRestore()
+      void root
+    }
+  })
+})

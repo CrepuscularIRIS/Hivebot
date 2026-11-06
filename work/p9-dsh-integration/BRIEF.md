@@ -1,20 +1,46 @@
-# BRIEF · p9-dsh-integration（目标调整，草稿）
+# BRIEF · p9-dsh-integration
 
-## 用户原话（2026-11-06）
-> 这一次我们稍微修改一下项目的目标. 我们希望是Grok Bot的所有功能, DSH+SUperAgent去完成. 可行吗? 比如Grok Bot的功能, 其实REA出来后, 还不太一样……里面有很多, 是我们一开始没有考虑到的, 比如还可以控制远程的服务器. 现在我们要把远程连接灵魂, 还有一个之前cursor 员工的要求作为目标产物去做. 我们会鼓励glm用github mcp多去检索dsh的插件. 这块其实有很现成的, 可以集成到我们的Grok Bot中……dsh本来就是plugins为核心的. 难道我们一开始就搞错了? 复刻一个grok bot其实还是很简单的.现在可能是一个superagent+dsh的集成.
+## 用户原话
+- 2026-11-06：「我们希望是Grok Bot的所有功能, DSH+SUperAgent去完成……比如还可以控制远程的服务器. 现在我们要把远程连接灵魂, 还有一个之前cursor 员工的要求作为目标产物去做. 我们会鼓励glm用github mcp多去检索dsh的插件……dsh本来就是plugins为核心的……现在可能是一个superagent+dsh的集成.」
+- 2026-11-06（澄清）：「都是需要的. 就是lauren tan说的grok bot的使用方法. 我们希望一开始, grok bot至少需要具备这些功能. 尤其是使用体验上. 我们会把这个grok bot打造为这种level……然后可以对照到dsh的一些插件集成进去. ssh可以先做本机测试. 后续其实就是一个ssh的问题.」
 
-## 新目标
-Grok Bot（0.78.1，以 RE 为准）的全部功能，用 **dsh 插件 + SuperAgent** 实现。项目性质从「复刻」改为「集成」：每个能力先找现成 dsh 插件（本地 `repos/deepseek-harness` 533 个包 + GitHub 上的第三方插件），再决定是否需要胶水代码。
+## 目标
+1. 项目性质从「复刻」改为「集成」：Grok Bot 全部功能用 **dsh 插件 + SuperAgent** 实现。每个能力先找现成 dsh 插件（本地 `repos/deepseek-harness` 533 个包 + GitHub MCP 检索第三方插件），再写胶水。
+2. **第一个目标产物**：Lauren Tan（Grok Bot 核心成员）展示的 Grok Bot 用法要能在我们的产品里跑通，**使用体验优先**。
+3. **远程连接**：bot 能操作远程服务器。原版是 bot 跑在 xAI 云电脑上；我们用 dsh `ssh` 插件组，把一台 ssh 主机当作 bot 的电脑。先 ssh 到本机（sshd 已在 :22 运行）测试，之后换真实远程主机只是换 ssh 目标。
+4. **灵魂**：每个 bot 有自己的人格（职责、语气、不做什么）和持续上下文。
 
-## 已有证据（2026-11-06 主会话核对）
-- dsh @ce7073d 已有与 Grok Bot 能力直接对应的插件组：`ssh`（ssh / fs-ssh / subprocess-ssh / sandbox-ssh / ssh-helper-runtime：远程文件、进程、终端、沙箱）、`computer-use`（+ cua-driver 两个实验 provider）、`browser-use`（Playwright MCP / Chrome DevTools MCP / Stagehand）、`api/gateway` + `remote-access` + `remotes`（多 Peer 远程接入与权限）、`plugin-market` / `plugin-manager`、`schedule`、`goal`、`subagent`、`webhook`、`voice-input`、`session-search`、`credentials`。
-- RE 结论：Grok Bot 远程能力走云 box（SandBoxService）+ 本机 computer use，**没有 ssh 端点**（`RE-cloud-deps.md` #23–24）。所以「控制远程服务器」用 dsh `ssh` 插件做是超出原版的增强，不是 1:1。
-- `work/p8-parity-full/SCOPE.md`：RE 缺口 153 面 / 16 簇，§0.4 已指出 computer-use / browser-use / ssh 上游有现成件。
-- 已自建代码：`app/sdk/src`（policy / orchestration / admin / market）约 5.7k 行，`app/ui` main + shim + overrides 约 7.3k 行。
+## Lauren Tan 的用法 → 要具备的功能 → dsh 对应
 
-## 待用户澄清
-1. 「远程连接灵魂」指什么？（a）远程连接是这次的核心目标；（b）「远程连接」+「灵魂 / soul」两项（soul = bot 人格与长期记忆？）；（c）其他。
-2. 「之前 cursor 员工的要求」原文是什么？仓库文档里没有找到这条记录。
+来源：[Lauren Tan 七条建议](https://www.bit.fan/en/news/list/lauren-tan-grok-bot-skills-vault-voice-guide-2a03fdcc-en-keyName-7f9957c6)、[pstack 工作流](https://aiidelist.com/blog/lauren-tan-grok-bot-pstack-workflow)、[14 个 bot（公开部分）](https://creatoreconomy.so/p/grok-bot-team-14-best-bots-peng-zheng-lauren-tan)、[演讲摘要](https://youtubesummary.com/summary/Cmoh-yR-usA)。
 
-## 下一步（待澄清后）
-派 `manager`（任务 A）：做「Grok Bot 能力 × dsh 插件」映射表（RE-COVERAGE 153 面 × 本地 533 包 + GitHub 检索第三方 dsh 插件），每行给出：直接用插件 / 插件 + 胶水 / 需自建 / 不做；并标出现有自建模块中哪些可被插件替代、哪些继续保留；据此重排 p5–p8 剩余任务。
+| # | 用法 | 需要的功能 | dsh / 现有 | 现状 |
+|---|---|---|---|---|
+| L1 | 少量常驻 bot，每个只做一件事、一种语气、写明不做什么 | 多 bot 名册、每 bot 人格（灵魂）、持续会话 | session-controller、preset/persona；我们的 M3 名册 | 名册已有；人格编辑待做 |
+| L2 | Chief of Staff 收需求、分派给专职 bot；工程主管 bot（Matcha）拆项目交给工程 bot | 主 bot 委派、跨 bot 发消息与交接 | SuperAgent 编排（P6 已做大部分）、`subagent` | 大部分已做；P6-14b 开闸未完 |
+| L3 | dr eggbot：用 bot 创建 / 审计 bot | bot 能建 bot（CreateAgent） | 我们的 P7-M1 | 卡在 P7-F2/F3 |
+| L4 | 把可重复流程存成命名 Skill；同账户 bot 共用 Skill 库，按 bot 启用；Teach a Task | Skill 库、对话中「把刚才的流程存成 skill」 | `skill` 包 | 待对接 |
+| L5 | 定时收集 Slack bug、X 投诉，分派给负责人 | 定时任务、外部事件触发 | `schedule`、`experimental/webhook`、`webhook-github` | 待对接（P7-L3 相关） |
+| L6 | Connect apps（Figma MCP、Slack 等），凭据留在连接器后端 | 连接器市场、MCP | `mcp`、`plugin-market`；我们的市场 UI | 市场已有，连接器授权部分做了 |
+| L7 | Vault 存账号密码 / 卡，bot 能用但看不到明文 | 凭据库 + 填充时脱敏 | `credentials`、`client/ui-secret-mask` | 待对接 |
+| L8 | bot 共用一台电脑（浏览器登录态、文件、命令行） | bot 的电脑：远程执行、文件、终端 | **`ssh` 组**（ssh / fs-ssh / subprocess-ssh / sandbox-ssh / ssh-helper-runtime） | **新，本机 ssh 先测** |
+| L9 | 复现 bug：操作真实 UI、截图、取 trace | 浏览器操作、电脑操控 | `browser-use`（Playwright MCP / Chrome DevTools MCP / Stagehand）、`computer-use` | 待对接（p8 范围） |
+| L10 | 工程 bot：隔离 worktree、测试、出 PR、独立审查者复验后才合并、过夜跑 | 长期目标循环、子 agent、验证 | `goal`、`subagent`、`workflow`；我们的 P7-L2 | 部分 |
+| L11 | 语音一次讲完任务再让 bot 复述；Cmd/Ctrl+D 语音输入 | 语音输入 / 转写 | `experimental/voice-input-bundle`、`speech-to-text-sensevoice` | 待对接 |
+| L12 | PM、设计、工程 bot 在同一个 Room 协作 | 群聊 Room | 无现成（待检索） | p8 簇 8a |
+| L13 | 像 iMessage 的界面，非工程师也能派活、审批 | Grok UI 外壳、审批卡、通知 | 我们的 renderer-grok 移植；`client/ui-approval` | 已有，继续打磨 |
+| L14 | 离开电脑后继续跑、回来看结果；跨设备 | 后台常驻、远程客户端接入 | `api/gateway`、`remote-access`、`remotes` | 待评估 |
+
+不做：mail.grokbot.com 独立邮箱、xAI 云电脑本身、Cursor Cloud Agents 后端（用 ssh 主机 + 本地 subagent 替代）。
+
+## 验收（第一版，由 manager 细化成工单）
+- 能按 Lauren Tan 的方式搭一个 3 bot 小队（Chief of Staff + 工程 bot + 审查 bot），通过界面派一个真实小任务，主 bot 分派、工程 bot 在 ssh 主机（先是本机）上改代码跑测试、审查 bot 复验，结果回到对话。
+- 在对话里说「把刚才的流程存成 skill」，之后另一个 bot 能启用并复用它。
+- 一条定时任务按时触发并把结果投递到指定会话。
+- 每个功能有真实 e2e 证据；UI 截图对照 0.78.1。
+
+## 下一步
+派 `manager`（任务 A）：
+1. 按上表逐行核对 dsh 插件能力（读包 README / 源码；用 GitHub MCP 检索第三方 dsh 插件，记入 `repos/MANIFEST.tsv` 或 reuse 文件），给出「直接用 / 插件+胶水 / 需自建 / 不做」。
+2. 标出现有自建模块（`app/sdk/src` policy / orchestration / admin / market）中能被插件替代的部分。
+3. 定第一批工单：建议从 L8（ssh 本机）和 L4（skill）开始，二者独立、插件现成、能最快跑出一条端到端体验；重排 p5–p8 剩余任务。

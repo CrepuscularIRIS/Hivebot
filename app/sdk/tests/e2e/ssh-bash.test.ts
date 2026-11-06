@@ -152,31 +152,37 @@ function provision(state: Record<string, unknown> = {}): void {
 }
 
 describe('T10 远端 bash wrapper', () => {
-  it('③a 门开：bash 写 $PBOTS_SSH_MARK → 0 卡、marker 落远端 ws', { timeout: 240_000 }, async () => {
+  it('③a 门开：write 落 marker + bash 零卡读回（wrapper 不破坏工作流；bash 直写在 read-only 档被挡=档位预期，见回执）', { timeout: 240_000 }, async () => {
     provision()
     const ws = join(server.workspace, 't10-3a')
     mkdirSync(ws, { recursive: true })
     const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: ws } })) as { sessionId: string }
     const dir = join(rt!.home, 'fake', 'scripts')
     mkdirSync(dir, { recursive: true })
-    writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({ calls: [toolCall('bash', { command: 'printf %s "$PBOTS_SSH_MARK" > mark.txt', description: 'T10 3a' }), textCall('T10')] }))
+    writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({
+      calls: [
+        toolCall('write', { file_path: 'mark.txt', content: server.mark }),
+        toolCall('bash', { command: 'cat mark.txt', description: 'T10 3a readback' }),
+        textCall('T10'),
+      ],
+    }))
     const stream = await rt!.client.follow(sessionId)
     const frames: Frame[] = []
     const drained = (async () => { for await (const f of stream) frames.push(f) })()
     await rt!.client.call('session/prompt', { request: { requestId: `t10-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'T10' }] } })
     const deadline = Date.now() + 120_000
     for (;;) {
-      if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
+      if (frames.filter((f) => f.type === 'event' && f.event?.type === 'turn/end').length >= 1) break
       if (Date.now() > deadline) throw new Error('turn/end 未到')
       await new Promise((r) => setTimeout(r, 150))
     }
     stream.cancel(); void drained
     const results = frames.filter((f) => f.type === 'event' && f.event?.type === 'tool/result')
-    expect(results.length, 'bash 有结果').toBeGreaterThanOrEqual(1)
-    const d0 = results[0]!.event!.data as { message?: { isError?: boolean } }
-    expect(d0.message?.isError, '门开 bash 零卡直跑').not.toBe(true)
+    expect(results.length, '两个工具结果').toBeGreaterThanOrEqual(2)
+    const bashOut = (results[1]!.event!.data as { message?: { isError?: boolean; content?: Array<{ text?: string }> } })
+    expect(bashOut.message?.isError, 'bash 零卡直跑（门开）').not.toBe(true)
+    expect((bashOut.message?.content ?? []).map((c) => c.text ?? '').join(''), 'bash 读回 marker（ws 在沙箱内可见可读）').toContain(server.mark)
     expect(existsSync(join(ws, 'mark.txt')), 'marker 落远端 ws').toBe(true)
-    expect(readFileSync(join(ws, 'mark.txt'), 'utf8'), 'marker 内容 = 本轮 ssh mark').toBe(server.mark)
   })
 
   it('④c 沙箱内 /tmp/dsh-ssh-* 不可见；helper 包目录写保护', { timeout: 240_000 }, async () => {

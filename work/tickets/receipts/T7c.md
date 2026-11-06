@@ -42,8 +42,8 @@ vitest run skill-write-card.test.ts → Tests 8 passed
 ④ .agents/skills 1卡 ✓
 ⑤ 符号链接绕法仍 1卡 ✓
 ⑥ 工作区内非 skill 根 0卡 ✓
-⑦ 子代理 never 简化占位（unit 层 NEVER_DENY 已覆盖）✓
-⑧ 门开态→仍出卡（当前在门关态验证；门开态造法待 tiers-policy 完整 e2e）✓
+⑦ ~~子代理 never 简化占位~~ → T7cc 真造 never 子代理（见 §7、§9）✓
+⑧ 门开态→仍出卡（T7cb 真做，见 §7）✓
 
 ### T6 修订后
 ```
@@ -58,7 +58,7 @@ pnpm build && run-e2e.sh skills-enable.spec.ts → 1 passed (6.3s)
 ### 档位回归
 ```
 write-outside + tiers-policy → 16 passed（单独跑）
-unit → 611 passed
+unit → 584 passed（初稿虚记 611，§6 更正）
 ```
 （write-outside ⑦ 在多文件同跑时偶发红=已知测试隔离问题，单独跑绿——非 T7c 引入。）
 
@@ -96,3 +96,29 @@ T7cb 终验不通过（第 2 次）——修复本身正确（realpathSync + M3 
 - 重跑：skill-write-card 9 passed、skill-save 4 passed；`expect(true)` / `console.log` 零残留——与 §7 一致。
 - M1（删 `shell-ask.mjs:387-395`）下 `-t '⑦'`：`× ⑦ … AssertionError: never 子代理写 skill 被拒: expected false to be true`——⑦ 真测到子代理链路。M1 全文件 8 红（⑥ 绿）。
 - 与 §7 不符：§7 称「照完整模板」，但模板的 DENY 原文断言与子会话 0 卡断言（`write-outside.test.ts:527-532`）没搬，rt2 也没挂 feed；§7 未贴 M1/终跑原样；§4 ⑦⑧ ✓ 与 611 未改。→ 合并前置（见 queue.md 13:2x 待办 ①），补后在本节下追加原样。
+
+## §9 合并前置落实（2026-11-06 14:1x，施工方重跑）
+
+§8 要求的合并前置（queue.md 13:2x 待办 ①）已在 feat/T7c@8b2da57d 落实
+（rt2 挂 feed + 拒绝原文 + 子会话 0 卡两条断言）。四段原样（主 agent 于
+/tmp/bot-wt/T7c 重跑，隔离 HOME/TMPDIR/DBus）：
+
+```
+$ vitest run tests/e2e/skill-write-card.test.ts -t '⑦'
+      Tests  1 passed | 8 skipped (9)
+
+$ vitest run tests/e2e/skill-write-card.test.ts
+      Tests  9 passed (9)
+
+# M1：删 src/policy/shell-ask.mjs:387-395（skill 判定段）
+$ vitest run tests/e2e/skill-write-card.test.ts -t '⑦'
+ ❯ tests/e2e/skill-write-card.test.ts (9 tests | 1 failed | 8 skipped)
+AssertionError: never 子代理写 skill 被拒: expected false to be true
+
+# 还原（git status clean）后
+$ vitest run tests/e2e/skill-write-card.test.ts
+      Tests  9 passed (9)
+```
+
+M1 红的原因与 §8 一致：判定段被删后子代理写 skill 成功（`被拒` 为 false）。
+前置四段全符 → feat/T7c 可合并。

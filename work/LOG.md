@@ -1015,3 +1015,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 13:23 T7c整枝合并落地 | 回测 13+10 全绿。BRIEF 验收② skill 链全部落地（含审阅卡 Q-028=B）。下一步：T9ab⑨需architect。
 2026-11-06 13:24 哨兵#16 | load8.9、无429。T9ab⑨派architect+H7结果派manager裁。清worktree。
 2026-11-06 13:31 哨兵#17 | load5.9、无429。T9ab⑨+H7 分析在跑。全部待办都在等通知（architect/Q-030）。
+2026-11-06 13:32 任务C结论 | T9ab⑨=①执行链通（rg真跑了）②extraNeverTools缩进6格掉进roots=config下=产品bug（T9ac）③bash 120s=审批卡没人答（预期）。H7=不达标但全是代码故障（T8c w1ap0 import坏+T7c realpathSync回归），互踩证据仍=0。主线回归：policy.test 12红=T7cd（realpathSync在假路径ENOENT）。三张新单：T7cd→T8c→T9ac。

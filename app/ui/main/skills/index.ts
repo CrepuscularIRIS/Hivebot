@@ -64,7 +64,8 @@ async function assertBotDir(dataDir: string, botId: string): Promise<SkillsResul
 /** T7ab：工作区之下 .dsh 与 .dsh/skills 逐层——存在且不是真目录（含符号链接）→ 拒；
  * 不存在则照旧（enable 由 mkdir 新建）。staging 在 .dsh 下，.dsh 过检即覆盖。 */
 async function assertSkillLayers(dataDir: string, botId: string): Promise<SkillsResult | null> {
-  for (const seg of ['.dsh', join('.dsh', 'skills')]) {
+  // T7ac：staging 也在检查内（悬空链接 lstat 成功、非目录 → 拒，同时解决 ENOTDIR 逃逸）
+  for (const seg of ['.dsh', join('.dsh', 'skills'), join('.dsh', '.skills-staging')]) {
     const p = join(dataDir, 'workspaces', botId, seg)
     try {
       const st = await lstat(p)
@@ -269,6 +270,9 @@ export function registerSkills(deps: SkillsDeps): SkillsHandle {
       if (op === 'list') {
         const bad = await assertBotDir(deps.dataDir, botId)
         if (bad !== null) return bad
+        // T7ac：list 的目标 bot 同样过逐层检查（onBot 不读链接化层后的外部内容）
+        const badLayers = await assertSkillLayers(deps.dataDir, botId)
+        if (badLayers !== null) return badLayers
         return opList(deps.dataDir, botId)
       }
       if (op === 'enable') {

@@ -132,7 +132,7 @@ describe('T7a pbots:skills', () => {
     ]) {
       expect(errCode(await h(req)), JSON.stringify(req)).toBe('pbots/invalid-args')
     }
-    expect(skillCount(dataDir, 't')).toBe(0)
+    expect(skillCount(dataDir, 't'), '每个拒绝后目标都无新增').toBe(0)
     expect(errCode(await h({ op: 'enable', botId: 't', fromBotId: 'a', name: 'nope' }))).toBe('pbots/not-found')
     // SKILL.md 本身是符号链接
     rmSync(skill(dataDir, 'a', 'flow') + '/evil')
@@ -186,6 +186,7 @@ describe('T7a pbots:skills', () => {
     symlinkSync(ext, join(wsA, '.dsh', 'skills'))
     expect(errCode(await h({ op: 'enable', botId: 't', fromBotId: 'a', name: 'x' }))).toBe('pbots/invalid-args')
     expect(skillCount(dataDir, 't'), '目标无新增').toBe(1) // 只有此前 enable 的 flow
+    rmSync(join(wsT, '.dsh', 'skills')) // ⑨c 留下的 victim 链接清掉——t 自身过检后再 list
     const lst = value<{ onBot: unknown[]; candidates: Array<{ name: string }> }>(await h({ op: 'list', botId: 't' }))
     expect(lst.candidates.some((c) => c.name === 'x'), 'candidates 不含链接后的外部 skill').toBe(false)
   })
@@ -210,6 +211,35 @@ describe('T7a pbots:skills', () => {
     expect(errCode(await h({ op: 'nope', botId: 't' }))).toBe('pbots/invalid-args')
     expect(errCode(await h({ op: 'list', botId: 1 as unknown as string }))).toBe('pbots/invalid-args')
     expect(errCode(await h({ op: 'disable', botId: 't', name: 1 as unknown as string }))).toBe('pbots/invalid-args')
+  })
+
+  it('⑪ list 目标侧与 staging 层：链接化即拒、悬空链接不 reject', async () => {
+    const dataDir = makeData({ a: [['flow', 'A']] , t: [] })
+    const h = registerSkills({ dataDir }).handler
+    const wsT = join(dataDir, 'workspaces', 't')
+    // ⑪a 目标 .dsh/skills → 外部（含 secret/SKILL.md）：list 必须 invalid-args，不吐外部 frontmatter
+    const ext = mkdtempSync(join(tmpdir(), 'bot-T7ac-ext-')); trackTmpDir(ext)
+    mkdirSync(join(wsT, '.dsh'), { recursive: true })
+    mkdirSync(join(ext, 'secret'), { recursive: true })
+    writeFileSync(join(ext, 'secret', 'SKILL.md'), '---\nname: secret\ndescription: OUTSIDE-FRONTMATTER\n---\nx\n')
+    symlinkSync(ext, join(wsT, '.dsh', 'skills'))
+    const r11a = await h({ op: 'list', botId: 't' })
+    expect(errCode(r11a)).toBe('pbots/invalid-args')
+    expect(JSON.stringify(r11a)).not.toContain('secret')
+    rmSync(join(wsT, '.dsh', 'skills'))
+    // ⑪b staging → 外部空目录：enable 拒且外部仍空、目标无新增
+    const stg = mkdtempSync(join(tmpdir(), 'bot-T7ac-stg-')); trackTmpDir(stg)
+    symlinkSync(stg, join(wsT, '.dsh', '.skills-staging'))
+    expect(errCode(await h({ op: 'enable', botId: 't', fromBotId: 'a', name: 'flow' }))).toBe('pbots/invalid-args')
+    expect(readdirSync(stg).length, '外部目录仍空').toBe(0)
+    expect(skillCount(dataDir, 't'), '目标无新增').toBe(0)
+    rmSync(join(wsT, '.dsh', '.skills-staging'))
+    // ⑪c staging → 不存在路径（悬空链接）：enable 必须 resolve 成 SkillsResult，不得 reject
+    symlinkSync(join(tmpdir(), 'no-such-t7ac-target'), join(wsT, '.dsh', '.skills-staging'))
+    const r11c = await h({ op: 'enable', botId: 't', fromBotId: 'a', name: 'flow' })
+    expect(r11c.ok).toBe(false)
+    expect((r11c as { error: { code: string } }).error.code).toBe('pbots/invalid-args')
+    rmSync(join(wsT, '.dsh', '.skills-staging'))
   })
 
   it('⑧ 不半截：成功与失败后 staging 为空或不存在', async () => {

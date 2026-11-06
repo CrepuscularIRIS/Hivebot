@@ -1010,3 +1010,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 10:52 T9a e2e 3/3绿+回归63绿 | ⑧=session/create因PTC链断而拒（报错即证）；⑨=说明性占位（runtime-patch.yml在ready后被删=start.ts:835安全设计，guard行为unit④直接覆盖）；⑪=stop清场。连接竞态修=runtime.ts加15s重试。回归63绿（start+guard-fs+write-outside+skill-save）；验收6过（产品/UI不设P2SDK_SSH_）。下一步：变异M2/M3+覆盖+回执+终验。
 2026-11-06 10:56 T9a终验已派 | e2e 3/3+unit 40/40+回归63+M2/M3咬合。两处降级已写入回执：⑧=PTC报错即证、⑨=说明性占位（runtime-patch.yml被安全删除+guard由unit④直接覆盖）。等终验通知，同时准备T7c。
 2026-11-06 10:51 哨兵#3 | load7.6、无429。T7b+T9a 终验在跑。开工 T7c（shell-ask.mjs 写入审阅卡，Q-028=B）。
+2026-11-06 11:23 T7bc/T7cb/T9ab 三线并行 | T7bc完成（暗色Add+SandIconButton+Remove失败提示+死行+先红断言，e2e 3 passed）。T7cb：⑧门开态provision真做（8/9绿）；⑨符号链接场景红（真发现：skill判定在符号链接+根不存在的场景下没触发，两种canonicalPath修法不生效——write直接放行，根因待插桩）；⑦标TODO。T9ab：⑧⑪绿+⑨ guard拒未达grep（rg实际执行了）。三张返修的根因都是「组合内的行为验证」，需要新会话插桩。

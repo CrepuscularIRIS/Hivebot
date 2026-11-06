@@ -60,3 +60,6 @@ V="pnpm --config.verify-deps-before-run=false exec vitest run"
 - 新建：`app/sdk/tests/e2e/ws-write-claim.test.ts`（或 UI 侧 `app/ui/tests/e2e/ws-write.spec.ts`，按边界 1）
 - 修改：根因处一个产品文件
 - 回执：`work/tickets/receipts/T14.md`（先红输出、三格结果矩阵、根因、变异输出、T7a 解阻结果）
+
+## 经理补充（任务 B 顺带核，2026-11-06，施工中追加，只收紧不放宽）
+验收 5 只探数据根顶层 `bots.json`，「给整个 `<dataDir>/workspaces/` 开例外」这种放宽仍能过。补 **验收 5b**：在 ① 的会话里 `write <dataDir>/workspaces/<另一个 botId>/x`（目录先由测试建好）→ 仍被拒、文件不存在。修法若改为从会话 header.cwd 取工作区，5b 自然绿；若 5b 红 = 修法放宽了遮蔽，按边界 4 不得合并。

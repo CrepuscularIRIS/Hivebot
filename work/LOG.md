@@ -1033,3 +1033,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 12:43 T7cb⑨插桩未成 | console.error 进 dsh 子进程 stderr 不达 vitest；appendFileSync 的 Python 转义与 JS 冲突（\n 变真换行破语法）。已还原。下会话用 Edit 工具直接编辑 JS（不走 Python），或改在 guard.mjs 的 noteZoneVerdict 加打点（该文件已有 fs import）。
 2026-11-06 12:51 哨兵#13 | load9.7、无429。L5-a 挪 done。T7cb⑨ 用 Edit 工具重试插桩。
 2026-11-06 13:01 哨兵#14 | load3.9（H7窗口）、无429。T7c 派终验 + H7 双全量重跑。
+2026-11-06 13:05 H7重跑结果 | W1(T7c wt):737/763绿15红(6文件) 112s；W2(主仓):741/755绿3红(4文件) 93s。合计1478绿18红。完整verbose reporter 已落盘 /tmp/bot-H7r-{w1,w2}-full.log。W1 红含 policy.test×5（疑T7c worktree的shell-ask改动影响——单跑确认）；W2 红含已知超时族+security⑥。PBOTS_TEST_WORKERS=8。

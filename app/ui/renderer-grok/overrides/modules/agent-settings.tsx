@@ -6,6 +6,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import { AgentSettingsPanel as Upstream, type AgentSettingsPanelProps } from '../../frontend/src/recovered/features/agent-info/settings/view'
 import { SandButton, SandIcon } from '../../frontend/src/recovered/ui/sand-kit-primitives'
 import { openNewBot } from './new-bot-dialog'
+import { SkillsSection } from './skills-dialog'
 import { api, modelOptions, ui, useBotConfig, useOnline, type BotConfig, type ModelOption, type NewBotInit } from './pbots-ui'
 
 export * from '../../frontend/src/recovered/features/agent-info/settings/view'
@@ -125,6 +126,7 @@ function BotConfigSections({ id, name }: { id: string; name: string }) {
       <ModelPicker key={id} id={id} config={config} online={online} />
       <div className="sand-info-pane__section-heading">Main bot</div>
       <MainBot id={id} config={config} online={online} />
+      <SkillsSection id={id} online={online} />
     </section>
   )
 }

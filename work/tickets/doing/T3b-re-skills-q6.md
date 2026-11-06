@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T3 验收不通过（review/T1-T3-test-validity.md 第 6 条，经理复核成立）。T3 留 doing/，T3b 验收后一起挪 done。
 > 分支 / 作业目录：只改文档，直接在集成分支
-> claimed：
+> claimed：2026-11-06 02:36 main (GLM 5.3)
 > accepted：
 
 ## 目标

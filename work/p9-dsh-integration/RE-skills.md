@@ -83,16 +83,17 @@
 
 ## Q6 运行时 skill 怎么到模型面前、与 dsh skill-filesystem 的等价性
 
-**结论：不等价。原版把 skill 全文随每次请求内联进 RequestContext（agent_skills），外加描述符列表；没有看到「目录挂载」或「按需 load 工具」。**
+**结论：投递方式未确定（推断）。wire 层 RequestContext 有 `agent_skills`（全文）与 `SkillOptions.skill_descriptors`（描述符）两种字段；客户端产物里没找到装配或发送它们的代码，哪一种在用、多频繁不可见。**
 
-- 请求内联（LED proto）：LED `RequestContext|2 rules #0*` 定义里含 `29 agent_skills #12`，元素 `AgentSkill|1 full_path 9|2 content 9`（后续字段 description/environments/disable_model_invocation/globs/scoped_to/argument_hint 等，开关位与 dsh frontmatter 键同名）；另有 `SkillOptions|1 skill_descriptors #0*`，元素 LED `SkillDescriptor|1 name 9|2 description 9|3 folder_path 9|4 enabled 8`。完整性旗标 LED `43 agent_skills_info_complete`。
+- wire 定义（只证字段存在；LED proto）：LED `RequestContext|2 rules #0*` 定义里含 `29 agent_skills #12`，元素 `AgentSkill|1 full_path 9|2 content 9`（后续字段 description/environments/disable_model_invocation/globs/scoped_to/argument_hint 等，开关位与 dsh frontmatter 键同名）；另有 `SkillOptions|1 skill_descriptors #0*`，元素 LED `SkillDescriptor|1 name 9|2 description 9|3 folder_path 9|4 enabled 8`。完整性旗标 LED `43 agent_skills_info_complete`。
+- **反证（装配不可见）**：LED 内 `agentSkills:` 命中 **0** 次（没有任何 `new RequestContext({agentSkills: …})` 式装配）；`.agentSkills=` 命中 **1** 次且唯一是构造器初始化 `this.agentSkills=[]`。字段存在不等于客户端真的填充发送。
 - 目录发现/合并（LED，box 内运行时）：span 名 LED `MergedAgentSkillsService.getAllAgentSkills` 合并多个 service → 按 key 去重排序（函数 `S8`）：agent-store 目录内同 key 优先（LED `inAgentStore:!0`）；key 生成 LED `::skills/` 模板（函数 `aD`）与 LED `V2e` 的路径归一（.cursor/.claude/.codex/.grok/.agents 段 → root 加双冒号前缀）。
 - 停用过滤：LED `getDisabledManagedSkillPaths failed; failing closed by dropping all managed skills for this call`——查停用路径失败时**整类 managed skill 全部下线**（fail closed）；managed 目录判定 LED `byr(t)`（路径含 xyr 模板段，即 .cursor/skills-cursor）。停用清单存哪、谁提供 → **未找到**（wiring 不在 bundle）。
 - 变更通知：LED `UL.CHANGE_COALESCE_MS=1500`（子 service 变更 1.5s 合并广播）+ `reload(e)`。
 - 与 dsh `skill-filesystem`（`repos/deepseek-harness/packages/skill/skill-filesystem/README.md`）逐项对照：
   - 格式：等价。两边都是 SKILL.md 目录包 + YAML frontmatter（dsh 必填 name/description，kebab-case；原版同名约定 + origin/upload 扩展键）。原版另支持对话导入扁平 txt/md/csv/json/yaml 等多类型与 files 附件；dsh 支持扁平 name.md。
   - 发现：等价（多根扫描 + 去重）。dsh 用 rank（100–600），原版用 agent-store 优先 + key 去重；.agents/skills 两边都在扫描表里。
-  - **投递：不等价**。dsh = catalog（frontmatter 摘要）+ 按需 load（每次 load 重读文件）；原版 = 全文内联 RequestContext。dsh 的 token 友好设计在原版 wire 层不存在（服务端模型侧是否再裁剪不可见）。
+  - 投递：**无法判定（推断，原版装配不可见）**。dsh = catalog（frontmatter 摘要）+ 按需 load（每次 load 重读文件）；原版 wire 层具备全文与描述符两种承载字段，实际用哪种、频率如何未见证据。
   - 变更检测：等价目的。dsh = Chokidar watch + write/edit 直接触发失效；原版 = 子 service onChange 合并（1.5s）。
   - 停用：两边都有（dsh 的 disable-model-invocation / user-invocable frontmatter；原版 wire 层 disable_model_invocation 字段 + managed 路径停用清单），语义细节不可比（原版清单来源未见）。
 
@@ -114,7 +115,7 @@
 3. **Q3**：审阅链按「PENDING→APPROVE/REJECT 条目 + agent_id + action/name/description/content」复刻即可；批准落 per-agent（推断，服务端行为未验证）。ProposeSkills 的参数 schema 原版在服务端，T6/T7 自行定义不违反「原版即规格」。
 4. **Q4**：T7 对话框照抄硬数字：扩展名 txt/md/markdown/csv/json/yaml/yml、单文件 **256,000 字符**（非字节）、**每 bot 250 条**、空文件/非 UTF-8/超限分别报 skip；命名=frontmatter name 优先、slug 化、-2 去重；入口放 bot 设置 Context 面板 + 建 bot 向导。
 5. **Q5**：示教≠skill 产出，产物是「附录屏的消息」，依赖电脑/VNC → **随 L9，本期不做**；T6/T7 文档里把它从 skill 链路摘出去。
-6. **Q6**：我们走 dsh `skill-filesystem`（catalog + 按需 load）即可，**不需要**模仿原版「全文内联每请求」——该差异是原版服务端约束，不是产品语义；fail-closed（停用清单读不到就整类下线 managed）值得抄。`.agents` 收口（T6）不受影响：原版也把 .agents/skills 当扫描根，我们的问题只在 dsh 侧 agentsHome 默认真 HOME。
+6. **Q6**：T6 走 dsh `skill-filesystem`（catalog + 按需 load）；原版投递方式不可见（推断，见 Q6 反证），这不构成与原版的已知偏离。fail-closed（停用清单读不到就整类下线 managed）值得抄。`.agents` 收口（T6）不受影响：原版也把 .agents/skills 当扫描根，我们的问题只在 dsh 侧 agentsHome 默认真 HOME。
 7. **Q7**：多 bot 启用存 **bot 定义侧**（每 bot 一份副本列表），账户库不存反向启用表；停用=删副本；T7 按此建 bot_skills（内容快照）+ 账户 skills（库）两张表，不做外键式引用。
 
-**仍是推断 / 未验证的项**：Q1 同步触发点与 Publish 调用方（未找到）；Q2 files 参数在 wire 层的去向、手动新建 skill 的 source 取值（未找到）；Q3 ProposeSkills 参数 schema（未找到）与「聊天挑选卡=ProposeSkills UI」「批准落 per-agent」（推断）；Q4 DIA slug 函数与 APP lOt 的压缩别名映射（推断）；Q6 停用清单的存储与提供方、服务端是否对内联 skill 再裁剪（未找到）；Q7 managed 停用清单存服务端（推断）。另：本报告未运行目标、未抓包，所有结论仅基于 0.78.1 静态字面证据。
+**仍是推断 / 未验证的项**：Q1 同步触发点与 Publish 调用方（未找到）；Q2 files 参数在 wire 层的去向、手动新建 skill 的 source 取值（未找到）；Q3 ProposeSkills 参数 schema（未找到）与「聊天挑选卡=ProposeSkills UI」「批准落 per-agent」（推断）；Q4 DIA slug 函数与 APP lOt 的压缩别名映射（推断）；Q6 投递方式（全文内联 vs 描述符）（推断）、Q6 停用清单的存储与提供方（未找到）；Q7 managed 停用清单存服务端（推断）。另：本报告未运行目标、未抓包，所有结论仅基于 0.78.1 静态字面证据。

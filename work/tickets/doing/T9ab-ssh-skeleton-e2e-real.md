@@ -40,3 +40,8 @@
 
 ## 为什么这样验收
 T9a 的目的是「ssh 模式能建会话，且 PTC/glob/grep 在其中不可用」。现在的绿是「会话建不出来」这个故障本身，⑨⑪ 不断言任何东西——三格合起来证明不了骨架可用。`expect(true)` 清零一条命令即可核。
+
+## 经理终验（2026-11-06 13:45 @ 1395281b）——不通过（T9a 链第 2 次）→ 任务 C 重拆 `open/T9ac-ssh-skeleton-cells-r2.md`
+- 过：unit 64/64、e2e 3/3、P2SDK_SSH_ 外露 grep 空、`expect(true)` 清零、**M2 → ⑨ 红**（T9ac 缩进修复 387b1d6d 成立）。
+- 不过：① ⑧ 空断言——断言 `userTexts`，fake 不记工具名；MW（删三条 PTC 禁行）⑧ 照绿 ② ⑪ 名不副实——SIGKILL 的是 launcher，dsh 按 T-13 `detached: true` 存活；基线取在会话建好之后，`added` 恒空；机器上 7 套孤儿 dsh+ssh master（D11 前提是经理设计错，见 DESIGN r4）③ 第 2 步 preset 全集、第 4 步 /proc 与 ECONNREFUSED、第 6 步逐字对照与覆盖、r3 的 YAML 层级断言均未落 ④ 回执无 T9ab 节 ⑤ runtime.ts 未按第 5 步还原验证（经理代验：还原即 socket hang up → 批准进边界）。
+- 本单与 T9a 留在 doing/，随 T9ac 一起收。

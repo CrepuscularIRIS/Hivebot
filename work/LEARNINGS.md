@@ -114,3 +114,5 @@
 2026-11-06 main 进程碰 bot 工作区（T7a 验收教训）：main 不在沙箱里，而 bot 工作区里的每一层（`.dsh`、`.dsh/skills`…）都可能被 bot 用 bash `ln -s` 换成链接。只 lstat 最外层 `workspaces/<id>` 不够——T7a 的 enable/disable 因此能被引着写/删工作区外。凡 main 侧按路径读写 bot 工作区，逐层 lstat 拒链接（或 realpath 后做包含判断），并配「外部目录没变」的断言格。另：直接 `sh scripts/run-e2e.sh` 会撞上 conda 的 `playwright`（`unknown command 'test'`），一律 `pnpm exec sh scripts/run-e2e.sh …`。
 
 2026-11-06 回执对号表要从 diff 写，不从意图写（T7ab→T7ac 同一行 ⑥ 连续两次虚记「已补断言」，实际只改了消息串）：写「已补/已加」前先 `git diff <起点>..HEAD -- <测试文件> | grep -n '<断言片段>'` 贴原样输出；没有输出就不许写已补。
+
+2026-11-06 断言载体要装得下被断言的东西（T9ab ⑧/⑪）：⑧ 用 `requests.jsonl.userTexts` 断言「工具面不含 workflow」，可 fake 根本不记工具名——删光 PTC 禁行照绿；⑪ 用「kill 前」做 `/tmp/dsh-ssh-*` 基线，目录早在建会话时就有，`added` 恒空。验「不含 X」的格一律配正对照（同一载体里能看到一个**应该在**的东西，如 `bash`）和一个「把 X 放回来就红」的变异。另：launcher 的 dsh 是 `detached: true`（T-13，故意让 launcher 崩了 dsh 照活），SIGKILL launcher 不会带走 dsh/ssh master——要证强杀残留就杀 dsh 本身。

@@ -18,10 +18,10 @@
 | D5 | ssh 模式下工作区 = `<remoteRoot>/workspaces/<botId>`；main 开机问 SDK 拿模式与 `remoteRoot`，`mintWorkspace`（#3/#4/worker 三条建会话路径的共同入口）改调 SDK 新 RPC `p2sdk/workspace.ensure`（SDK 侧经 `ctx.subprocess` 跑固定 argv `mkdir -p`，FileSystem 没有 mkdir） | T11 |
 | D6 | 进程级：一个 dsh 运行时 = 一台电脑；preset `isolate` 做不到。旧 bot 怎么办 → Q-029 | 全部；Q-029 |
 | D7 | 断连专用通知「可能已执行」；**重启触发 = main 在事件流里看到固定串 `SSH connection is closed`**（dsh 进程还活着，launcher 看不到）→ 通知里给「重新连接」按钮，用户点才重启（会打断其他 bot 在跑的回合，所以不自动）；不重放 | T12 |
-| D8 | ~~禁 base `ptc-runtime`~~（r3：实测禁它 → standard preset 整个 `agent-preset/invalid`，会话建不出，T9ab M1）。改为只禁 T4 三行（`workflow-ptc`/`tool-workflow`/`tool-executor-ptc`），首请求工具面无 `workflow`（T9ab ⑧ 绿）；测试**从组合后 profile 枚举全部 preset** 断言，不写死清单 | T9a |
+| D8 | ~~禁 base `ptc-runtime`~~（r3：实测禁它 → standard preset 整个 `agent-preset/invalid`，会话建不出，T9ab M1）。改为只禁 T4 三行（`workflow-ptc`/`tool-workflow`/`tool-executor-ptc`），首请求工具面无 `workflow`（T9ab ⑧ 绿——**r4：该格是空断言**，fake 不记工具名，删光三禁行照绿；待 T9ac ⑧ 实证）；测试**从组合后 profile 枚举全部 preset** 断言，不写死清单 | T9a |
 | D9 | `tool-fs-search` 在 ssh 模式由 guard 的工具名拒绝挡住（它嵌在 5 个 preset 里，禁 base 行不够）；其余行去留同 r1；**ssh bot 的 skill 副本落远端 `<remoteRoot>/workspaces/<botId>/.dsh/skills/<name>/`，T7a 本机复制在 ssh 模式下拒** | T9a（工具拒）、T11（skill） |
 | D10 | 37 个 release 全部 0 asset、npm 无 helper-runtime 包 → 真实远程用 node-script 闭包推送 | T13 |
-| D11 | 维持不扫；加回归格证明强杀只留空目录 | T9a |
+| D11 | 维持不扫；加回归格证明**强杀 dsh** 只留空目录（r4：强杀 launcher 时 dsh 按 T-13 设计存活，不在此格证明范围） | T9a |
 | D12 | box 按 agentId 记账、共用与否不可见；按每运行时一台 | — |
 | D13 | ssh 行由 `start.ts` 按 `P2SDK_SSH_*` 生成；身份只用 OpenSSH 别名；**T9a 第一步删 `ssh-headless.test.ts:111-122` 重复 llm-replay** | T9a |
 
@@ -260,7 +260,7 @@
 2. **改 dsh-ssh 目录位置**。拒：上游写死（`work/p9-dsh-integration/PLAN.md:53`）。
 3. **（选）维持不扫**，测试钉住「残留只是空目录」。
 
-**结论**：维持。强杀时 dsh 子进程随 launcher 退出，ssh master 随之消失，留空 0700 目录、无套接字、无进程。
+**结论**：维持。~~强杀时 dsh 子进程随 launcher 退出，~~（r4：不成立，dsh 是 detached，见文末 r4）强杀 dsh 时 ssh master 随之消失，留空 0700 目录、无套接字、无进程。
 
 **锚点**：`work/p9-dsh-integration/PLAN.md:59`、`work/tickets/receipts/T4.md:43`。
 
@@ -345,3 +345,13 @@
 - 变异 M2（guardRow 不写 extraNeverTools）→ ⑨ 红，照 T9ab 原验收。
 
 **连带约束（写进 T10 前置）**：T9a/T9b 合并后、T10 落地前，ssh 模式只给测试用，不在产品 UI 打开；理由同上——policy-state 门一开，bash 在原版 sandbox-ssh（读不设防，D4 备选 1）里免卡执行。
+
+---
+
+## r4 · T9ab 终验发现（2026-11-06，manager 执笔，`/dev/shm/bot-T9a` @ 1395281b）
+
+**D11 结论「强杀时 dsh 子进程随 launcher 退出」不成立（经理设计错）。** `app/sdk/src/start.ts:795` `dshSpawnOptions` 故意 `detached: true`，`:910-915` 注释写明 T-13 的意图：launcher 被 SIGKILL/OOM 时 dsh 照活，home 锁靠记录的 dsh pid 继续护住。实测：T9ab ⑪ 每跑一次留一套孤儿（dsh + ssh master + 远端 helper，ppid=2050），`/tmp/dsh-ssh-*` 里是活的 `master` 套接字。优雅停 dsh 后 master 与目录一并消失。
+
+**改定**：D11 要证的是「**dsh** 被强杀 → ssh master 与 helper 退出、目录只剩空壳」（与 T4 receipts §43 的观测同一对象）。「launcher 被强杀 → dsh 存活」是 T-13 既定行为，⑪ 前半照它断言、不当缺陷。孤儿 dsh 由谁收（产品里 Electron main 重启时）不在 T9 范围；若要管，另立单。
+
+**D8 补记**：T9ab ⑧ 绿不构成「工具面无 workflow」的证据——断言对象是 `requests.jsonl.userTexts`，fake（`tests/support/fake/plugin.mjs:132-150`）不记工具清单；删光三条 PTC 禁行 ⑧ 仍绿（经理 MW 变异）。T9ac 第 1–2 步补观测后再定。

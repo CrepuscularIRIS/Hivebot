@@ -1024,3 +1024,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 11:51 H7双全量完成 | W1(T8 worktree):733/752绿 8红 11skip 102s；W2(主仓):741/754绿 5红 8skip 145s。合计1474绿/13红。PBOTS_TEST_WORKERS=8。基点单跑约2-3红（超时族）→并行多出约10红=资源竞争仍致额外红。按P5-H3修订口径判：互踩签名=0（两套无交叉污染迹象——各自独立HOME/TMPDIR）+守护测试未跑（需另验）。结论待manager裁。
 2026-11-06 12:01 T8b修完 | interrupt import归位+w1ap0-scan 3处tmkdir；vitest list exit=0、两文件4绿残留0、递归残留=6处（预期保留）。H7重跑等load<8+T8合并后再做。下一手：T8b终验→L5-a或T7cb⑨插桩。
 2026-11-06 12:02 哨兵#8 | load11、无429。T8b 派终验；开工 L5-a（定时投递）。
+2026-11-06 12:06 T8合并落地+L5-a测试跑中 | T8b 过验→feat/T8 合并（23 文件 97+82-）→回测 list=0+mock-demo 9绿+残留 0。L5-a schedule-delivery.test.ts 写好并后台跑（65s 定时+等待≈3 分钟）。BRIEF 验收③的第一步。

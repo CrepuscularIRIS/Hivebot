@@ -1009,3 +1009,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 10:42 T9a进度+T7b终验在跑 | T7b终验已派（含截图目检）。T9a：死代码12行先行提交（14 passed）、产品代码全实现（sshRows/extraNeverTools/childEnv五件套隔离/MODE标记）、unit 40/40（含guard新3格+start新3格）、手动验证runtime ssh模式正常启动。e2e socket hang up=ready检测竞态待下会话调。修过的坑：guard extraNeverTools赋值误入requireRoots的if块内（移到apply内listener注册前）；未配置须重置空集防残留。哨兵#1在转。
 2026-11-06 10:52 T9a e2e 3/3绿+回归63绿 | ⑧=session/create因PTC链断而拒（报错即证）；⑨=说明性占位（runtime-patch.yml在ready后被删=start.ts:835安全设计，guard行为unit④直接覆盖）；⑪=stop清场。连接竞态修=runtime.ts加15s重试。回归63绿（start+guard-fs+write-outside+skill-save）；验收6过（产品/UI不设P2SDK_SSH_）。下一步：变异M2/M3+覆盖+回执+终验。
 2026-11-06 10:56 T9a终验已派 | e2e 3/3+unit 40/40+回归63+M2/M3咬合。两处降级已写入回执：⑧=PTC报错即证、⑨=说明性占位（runtime-patch.yml被安全删除+guard由unit④直接覆盖）。等终验通知，同时准备T7c。
+2026-11-06 10:51 哨兵#3 | load7.6、无429。T7b+T9a 终验在跑。开工 T7c（shell-ask.mjs 写入审阅卡，Q-028=B）。

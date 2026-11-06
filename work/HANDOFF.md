@@ -1,40 +1,33 @@
-# HANDOFF · 2026-11-05 18:50
+# HANDOFF · 2026-11-06 04:57
 
 新会话从这里接手。先读本文件，再读 `work/REPORT-2026-11-05.md`（额度诊断 + 今日成果 + 待办全表）。
 
 ## 1. 开发架构
 
-见 `CLAUDE.md` §1–§2（工单制，改编自 yanauto/opus-manager）。要点：
-- 主 agent（GLM 5.3）= 施工 + 调度：记需求、按工单 TDD 施工、写回执、按节点派经理和审查、只合并经理验收过的单。
-- `manager`（Opus 5.5）：立项拆单 / 验收与核实 / 重规划 / 阶段报告。`reviewer`（6.1 Sol）：一批单施工完后只读审查。派发都**不传 model**。
-- 工单在 `work/tickets/`，模板在 `_templates/`。
-- 旧 agents / grok-orchestrate / panel 已归档到 `docs/harness/archive/`，不要再用。
-- 不用 GLM flash（会整席 429 阵亡）；GLM 429 时等几秒重试即可。
+见 `CLAUDE.md` §1–§2（工单制）。要点：主 agent（GLM 5.3）施工；`manager`（Opus 5.5）任务 A 拆单 / 任务 B 验收；`reviewer`（6.1 Sol）批审，每条 CONFIRMED 必须实际复现。reviewer 席受自身约束不落盘报告——主会话机械代录进 work/tickets/review/。
 
 ## 2. 当前状态
 
-- 分支 `docs/rebuild-p6-p5-plan`（集成分支，非 main），tracked 干净。
-- 没有在跑的 agent，没有 cron。`work/tickets/` 刚建，还没有工单。
+- 分支 `docs/rebuild-p6-p5-plan`，T1–T6（含返修链 T2b/T2c/T3b 与复核修复）全部合并落地：合并后四文件回测 55/55 绿、`/tmp/dsh-ssh-*` 零新增、零遗留进程。
+- 首批链路：L8-a（ssh 夹具+连接级）、L8-b（headless 真组合）、L4-a（skill RE）、L4-b（根收口+存 skill）。
+- 关键事实都在 `work/p9-dsh-integration/PLAN.md` §3（十条，含 AllowTcpForwarding 耦合、dsh-ssh 硬编码 /tmp、硬杀残留豁免）与 receipts/T4.md §5（断连形态=运行整体终止、ReplayEntry 恰两键、插件失败只 warning）。
 
 ## 3. 待办（按顺序）
 
-工单队列在 `work/tickets/queue.md`（manager 维护，状态以工单所在目录为准）。当前第一批：**T2（L8-a ssh 测试夹具）→ T3（L4-a RE skills，派 reverse-engineer）→ T1（P5-H5a tmkdir）**；其后 T4（ssh 真组合）、T5（architect 组合设计）。P5-H7 双全量实证等 load<8 窗口。
+第一件：**派 manager 任务 A**，开 T5 与 T7：
+- T5：ssh × 安全层组合设计（原 architect 活）。输入：PLAN §2（fs-zone/guard/shell-ask 与 ssh 同挂点）、§3 十条、receipts/T4.md §5（断连形态/宿主直连清单：tool-fs-search、attachment-local、spill-local、agent-instructions、skill-filesystem）、§5-1（preset 隔离问题）。顺带删 queue 里记的 T4 死代码（ssh.patch.yml 重复 llm-replay insert）。
+- T7：账户 skill 库 + 按 bot 启用（RE-skills Q2/Q7：启用=复制快照；库不能放 $DSH_HOME/skills 或 agents/skills——全员共扫）。
+- 其后按 queue：T8（e2e mkdtemp 收尾）、L5-a、P5-H7 双全量实证（等 load<8）。
 
-阻塞（不要动）：P7-F3 等 **Q-027**；P7-F2 冻结；P6-24 等原版删除语义；Q-023 等用户确认。
+阻塞（不要动）：P7-F3 等 **Q-027**；P7-F2 冻结；P6-24 等原版删除语义；Q-023 等用户确认。**用户待办：`kill 3051833`（探针 sshd，沙箱外）；旧 worktree 13GB 清理批准（/tmp/bot-wt 下 25 个旧时代目录，见 LOG 2026-11-06 02:34）。**
 
 ## 4. 踩过的坑（直接照做）
 
-- pnpm 跑 vitest 必须带 `--config.verify-deps-before-run=false`，否则隔离 HOME 下报 deps 错。
-- 测试环境：`TMPDIR=<私有> HOME=<私有> DBUS_SESSION_BUS_ADDRESS=unix:path=<不存在路径>`，跑完删目录。
-- 清进程只用 `~/bot/scripts/bot-reap <PID...>`（hook 会拦裸 kill 带重定向的写法、拦 pkill -f）。
-- **主仓 checkout 跑 `orchestration-create-live.test.ts` 有 3 格确定性红**（③′/⑫/②′，⑫=another main client holds create channel），worktree 里同内容全绿——是 P5-H6 的排查对象，不是你的回归。回测这类文件用 worktree。
-- sdk e2e 全量单跑约 30 分钟；guard-fs① / w1ap0-matrix①⑦ 600s 超时在基点也红（P5-H8）。两套全量同时跑会互压，别并行跑全量。
-- 判断一个任务做没做完：先查分支 `git log`、`evidence/`、`VERIFY-*`，今天连发现 4 个「做完了但没记账」的旧任务。
-- 合并：默认 `git merge --no-ff`；commit 不加 Co-Authored-By（用户 attribution 已关）。
+- 全部旧坑见 `work/LEARNINGS.md`。本轮新增（已进各回执）：变异测试的绿版备份必须先落盘、还原用 cp（git checkout 对未跟踪文件无效且会抹掉未提交改动）；批量改文件后逐文件核 import 落点；headless 插件失败只报 warning 不致命；dispose 的 -O cancel 是 fire-and-forget（stop 要限界宽限）；LOG 时间戳必须 date 实测（本会话错了四次都当场改）。
+- pnpm 旗标 `--config.verify-deps-before-run=false` 放 pnpm 之后；测试隔离 HOME/TMPDIR（/tmp/bot-<任务>-* 前缀）；长跑后台等通知不轮询。
 
 ## 5. 文件地图
 
-- 各需求状态：`work/<slug>/PLAN.md`、`LOG.md`；全局日志 `work/LOG.md`；问题 `work/QUESTIONS.md`。
-- 经验：`work/LEARNINGS.md`（开工前扫一遍）。
-- review 覆盖：`work/review-coverage.txt`。
-- 旧编排已归档：`docs/harness/archive/`（项目路线 `skills/grok-orchestrate/references/roadmap.md` 仍可参考）。
+- 工单/回执/审查：`work/tickets/{open,doing,done,receipts,review}`、`queue.md`。
+- p9 状态：`work/p9-dsh-integration/PLAN.md`（§4 工单表）；RE 规格：同目录 RE-skills.md。
+- 全局日志 `work/LOG.md`；经验 `work/LEARNINGS.md`；问题 `work/QUESTIONS.md`（Q-023/Q-027 open）。

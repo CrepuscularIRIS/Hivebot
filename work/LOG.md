@@ -1013,3 +1013,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 11:23 T7bc/T7cb/T9ab 三线并行 | T7bc完成（暗色Add+SandIconButton+Remove失败提示+死行+先红断言，e2e 3 passed）。T7cb：⑧门开态provision真做（8/9绿）；⑨符号链接场景红（真发现：skill判定在符号链接+根不存在的场景下没触发，两种canonicalPath修法不生效——write直接放行，根因待插桩）；⑦标TODO。T9ab：⑧⑪绿+⑨ guard拒未达grep（rg实际执行了）。三张返修的根因都是「组合内的行为验证」，需要新会话插桩。
 2026-11-06 12:55 T7cb⑨修复 | 插桩（Edit工具+ESM import）实锤根因：workspaceRoot=符号链接路径 vs targets=真实树→跨树isPathUnder=false。修法=realpathSync(workspaceRoot)先规范化。9/9全绿。
 2026-11-06 13:23 T7c整枝合并落地 | 回测 13+10 全绿。BRIEF 验收② skill 链全部落地（含审阅卡 Q-028=B）。下一步：T9ab⑨需architect。
+2026-11-06 13:24 哨兵#16 | load8.9、无429。T9ab⑨派architect+H7结果派manager裁。清worktree。

@@ -3,35 +3,44 @@
 中文交流。目标：做到和 Grok Bot 同级体验，优先拼接、打磨 dsh + SuperAgent 现有能力。
 **用户主导**：需求、方案取舍、节奏由用户定。接手先读 `work/HANDOFF.md`。
 
-## 1. 角色（2026-11-05 起）
+## 1. 角色（2026-11-05 起，改编自 yanauto/opus-manager）
 
 | 角色 | 谁 | 做什么 |
 |---|---|---|
-| 主 agent | **GLM 5.3**（当前会话） | 把用户需求写进文档；读代码、写测试、写代码、跑测试、合并、记账 |
-| 架构师 | **`architect`**（Opus 5.5，按需派） | 需要设计决策时出方案：新功能方案、架构 / 契约 / 存储语义取舍、卡死后重新规划、复用还是自建 |
-| 审查者 | **`reviewer`**（6.1 Sol，独立） | 攒一批合并后审查；发现必须实际复现（CONFIRMED）或说明不是问题（REFUTED） |
-| 逆向 | 用户级 `reverse-engineer`（REA MCP 只挂在它上面） | 行为只存在于闭源产物时才派 |
+| 施工 + 调度 | **主 agent，GLM 5.3**（当前会话） | 记需求、按工单写测试和代码、写回执、按节点派经理和审查、验收通过后合并 |
+| 经理 | **`manager`**（Opus 5.5，subagent） | 立项拆单、定验收；亲自重跑验收、逐条核实审查意见、决定通过或返修；重规划；阶段报告 |
+| 审查 | **`reviewer`**（6.1 Sol，subagent，另一家厂商） | 一批工单施工完后只读审查，只找真问题，每条附行号与证据 |
+| 逆向 | 用户级 `reverse-engineer` | 行为只存在于闭源产物时才派 |
 
-不再派 builder / verifier，不建 cron 巡检。旧的多 agent 编排已归档到 `docs/harness/archive/`。
+为什么这样分：写代码最耗 token，交给最便宜的 GLM 在主会话里做；Opus 的额度只花在判断上（拆单、验收、核实审查意见）。经理和审查每次都是全新的小上下文，只看文件，所以便宜也干净。**不用 fork**（fork 继承主会话整段上下文、且只能用主会话同一个模型）。
 
-模型 slot（`~/.claude-kimi/CLAUDE.md`）：`fable`=Opus 5.5，`opus`=GLM 5.3，`sonnet`=6.1 Sol，`haiku` 不用。agent frontmatter 里 GLM 必须写完整 ID `glm-5.3[1m]`，别名 `opus` 会被解析错。
+subagent 不能再派 subagent，所以调度由主 agent 按下面的节点做。两个 agent 的模型在 frontmatter 锁死，派发时不传 model。旧的多 agent 编排已归档到 `docs/harness/archive/`。
 
-## 2. 工作流程
+模型 slot（`~/.claude-kimi/CLAUDE.md`）：`fable`=Opus 5.5，`opus`=GLM 5.3，`sonnet`=6.1 Sol，`haiku` 不用。
 
-1. **需求入文档**：用户提出需求或修改时，主 agent 先写进 `work/<slug>/BRIEF.md`（用户原话 + 日期 + 可证伪验收），再动手。没有对应 slug 就新建。
-2. **要不要找架构师**：改动有设计取舍（契约、存储、权限、跨模块、多种做法）→ 派 `architect`，方案写进 `work/<slug>/PLAN.md` 或 `DESIGN-<topic>.md`。直接、明确的改动不用派。
-3. **开发**：TDD——先写失败测试并看它红，再最小实现到绿。改动大或要并行时用 worktree `/tmp/bot-wt/<task>`。合并默认 `git merge --no-ff`，合并后跑定向回测。
-4. **审查**：攒一批合并（约 3～6 个改动，或一个阶段结束）后派 `reviewer`，2 个方向并行（如正确性 + 安全）。安全 / 协议 / 存储 / 鉴权类改动合并后必须审。CONFIRMED 的问题修完再审对应格；同一问题修 2 轮仍不过，交 `architect` 重规划。
-5. **记账**：状态写 `work/<slug>/PLAN.md`（状态列）与 `LOG.md`；跨需求经验写 `work/LEARNINGS.md`；要用户拍板的事写 `work/QUESTIONS.md`。只认文件，不认聊天记录。
-6. **控上下文**：额度主要耗在「请求次数 × 上下文大小」。长测试 `run_in_background` 跑一次等通知，不轮询；一个阶段一个会话，阶段结束更新 `work/HANDOFF.md` 后换新会话。
+## 2. 工作流程（工单制）
+
+工单目录 `work/tickets/`：`open/ doing/ done/ blocked/ dropped/`，回执与审查报告在 `receipts/`，顺序在 `queue.md`，模板在 `_templates/`。
+
+1. **需求入文档**：用户提出需求或修改，主 agent 先写进 `work/<slug>/BRIEF.md`（用户原话 + 日期），不直接开写代码。
+2. **立项**：派 `manager`（任务 A），它定方案、写工单进 `open/`、排 `queue.md`；要用户拍板的写进 `QUESTIONS.md`。纯机械的小改（改一行配置、合一个现成提交）可以由主 agent 直接按模板写单，跳过这一步。
+3. **施工**：主 agent 把工单挪到 `doing/`、填 `claimed`；在单的分支（大改动用 worktree `/tmp/bot-wt/T<N>`）上先写失败测试看它红，再最小实现到绿；写回执 `receipts/T<N>.receipt.md`，贴原样命令与输出。**主 agent 不自己宣布完成，不挪到 `done/`。**
+4. **审查**：一批（约 3～6 张单）或任何安全 / 协议 / 存储 / 鉴权单施工完后，派 `reviewer`，给它工单、回执和 commit 区间。
+5. **验收**：审查报告出来后派 `manager`（任务 B）：它重跑验收命令、查改动范围、逐条核实审查意见；通过的挪到 `done/`，不通过的写修复单 `T<N>b`。
+6. **合并**：只合并 `done/` 里的单：`git merge --no-ff`，合并后马上跑定向回测（用户要求：每完成一个 change 都回测），结果记 `work/LOG.md`，对应 PLAN 行改状态。
+7. **卡住**：同一张单失败两次，派 `manager`（任务 C）重规划，不换名重开。
+8. **阶段结束**：派 `reviewer` 审整段分支一次，再派 `manager`（任务 D）写阶段报告并更新 `work/HANDOFF.md`，然后换新会话。
+
+**控上下文**：额度主要耗在「请求次数 × 上下文大小」。主 agent 读文件按需读片段、测试输出只看尾部；长测试 `run_in_background` 跑一次等通知，不轮询；不建 cron。
 
 **问用户的边界**：只问需求与范围、品味偏好、越过硬约束的授权。行为与语义类问题按「原版即规格」——先查 0.18 源码 / 0.78.1 产物，按原版定，写明锚点。
 
 ## 3. 方法论
 
-- 先写测试，先找根因再修，先有证据再宣布完成。
+- 先写测试，先找根因再修，先有证据再宣布完成。非平凡逻辑改动行覆盖 ≥80%。
 - 复用 > 标准库 > 已装依赖 > 最少新代码。
-- 作者不自评：代码由 `reviewer` 独立审，方案有争议时由用户或 `architect` 定。
+- 作者不自评：代码由 `reviewer` 审、`manager` 验收；回执只是说法，不是证据。
+- UI 改动：真实浏览器截图（`playwright-cli` skill，只截目标窗口），对照 0.78.1 参考图；截图要亲眼打开确认内容。
 - 外部事实（竞品、API、依赖现状）先查（GitHub MCP / WebSearch / 本地 `repos/`），不凭记忆。
 
 ## 4. 搬运阶梯（用户 2026-11-01）
@@ -72,9 +81,10 @@
 | 路径 | 内容 |
 |---|---|
 | `work/HANDOFF.md` | 接手入口：当前状态、待办顺序、踩过的坑 |
-| `work/<slug>/` | 每个需求：BRIEF（需求）/ PLAN（任务与状态）/ LOG / REVIEW / evidence |
+| `work/<slug>/` | 每个需求：BRIEF（需求）/ PLAN（任务索引与状态）/ LOG / evidence |
+| `work/tickets/` | 工单、回执、审查报告、队列、模板 |
 | `work/QUESTIONS.md`、`work/LEARNINGS.md`、`work/LOG.md` | 待用户拍板的问题、跨需求经验、全局日志 |
-| `.claude/agents/` | `architect`、`reviewer` |
+| `.claude/agents/` | `manager`（Opus 5.5）、`reviewer`（6.1 Sol） |
 | `.claude/hooks/process_guard.py` | 进程安全拦截 hook |
 | `docs/harness/archive/` | 停用的旧编排（agents、grok-orchestrate、panel、PROTOCOL、MODELS 等） |
 | `app/`、`repos/` | 产品代码、只读参考仓 |

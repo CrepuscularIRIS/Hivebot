@@ -1,7 +1,7 @@
 # 归档：旧多 agent 编排（2026-10-28 ~ 2026-11-05）
 
 2026-11-05 起停用。原因：subagent 开发太慢；额度主要耗在上下文重读（详见 `work/REPORT-2026-11-05.md`）。
-现行架构见仓根 `CLAUDE.md`：主 agent（GLM 5.3）开发、`architect`（Opus 5.5）按需出方案、`reviewer`（6.1 Sol）独立审查。
+现行架构见仓根 `CLAUDE.md`：主 agent（GLM 5.3）开发、`manager`（Opus 5.5）经理、`reviewer`（6.1 Sol）独立审查。
 
 | 归档内容 | 原用途 |
 |---|---|

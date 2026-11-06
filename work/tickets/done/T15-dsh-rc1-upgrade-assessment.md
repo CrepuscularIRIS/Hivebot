@@ -3,8 +3,8 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：主 agent 上游巡检（2026-11-06）：npm `latest` = `0.2.2-rc.1`（11-04；`npm view @deepseek-ai/dsh dist-tags` → `{ latest: '0.2.2-rc.1', alpha: '0.2.2-alpha.3', next: '0.2.2-rc.1' }`，经理开单时实测），我们钉 `0.2.2-alpha.2`（10-27，`app/sdk/package.json:20-30`），据巡检相差约 333 个非 merge 提交。巡检点名的相关变更：ssh 族新增 guarded patch/delete/move RPC（`7bd189b3b5`）、tool-fs「沙箱决策下放 provider」（`8f798da97d`，**可能与 T14 相关**）、vendor cordis `4.0.6-alpha.1 → 4.1.0`。
 > 分支 / 作业目录：不建分支（不改仓内代码）；下载物放 `/dev/shm/bot-T15/`（每个 tarball 各自新建空目录解包，只读、不执行、不 `npm install`）
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
-> accepted：（经理验收通过时填：日期、HEAD）
+> claimed：2026-11-06 07:30 manager (Opus 5.5) 执笔 @ 588d3d1e；交稿 08:20（commit 2ee87e18）
+> accepted：2026-11-06 @ 2ee87e18（manager 任务 B 新实例：自检 1–7 复跑全过；抽查 T14 无关 / apply_patch 穿透 / schedule 改名绕过 三条对 tarball 与 app/sdk 源码确认成立；DESIGN helper.js:557→558 勘误已落）
 
 ## 目标
 出一份升级评估报告 `work/p9-dsh-integration/EVAL-dsh-rc1.md`，回答：升到 rc.1 会动到我们哪些东西、修了我们踩过的哪些坑、带来哪些新风险、**什么时候升**。本单**不升依赖、不改 `app/**`**。

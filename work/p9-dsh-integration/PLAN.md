@@ -85,5 +85,5 @@
 4. **[已核 2026-11-06，T5 D10]** 真实远程主机怎么装 helper：37 个 release 全部 0 asset、npm 无 helper-runtime 包（`tickets/evidence/T5/d10-release-assets.txt`）→ node-script 闭包推送（T13）。
 5. **[已定 2026-11-06，T3+T6 开单]** 原版「对话里存 skill」：有两条路——bot 直接写进扫描根（box 内 `.agents/skills` 等，无审批，RE-skills Q1/Q6）与 `ProposeSkills` 审阅项（落 per-agent，Q3）。T6 只做前者；审阅链列 queue 提议，T7 后定。
 6. **[已定 2026-11-06，T5 D12：box 按 agentId 记账、共用与否不可见；按每运行时一台]** **原版 bot 的电脑是每账户一台还是每 bot 一台**：BRIEF L8 写「bot 共用一台电脑」，与进程级 ssh 吻合；未在 0.78.1 里核。T5 设计前由 RE 补一句锚点即可，不必问用户。
-7. `market/wrapper.mjs` 的缺口在 dsh 0.2.2-rc.1 是否已补：未核。
+7. **[已核 2026-11-06，T15 EVAL §7 第 21 条：没修]** `market/wrapper.mjs` 的缺口在 dsh 0.2.2-rc.1 是否已补：plugin-manager 仍拒裸 MCP 包（`not-bundle` 计数两版各 6），wrapper 继续保留。
 8. 第三方仓的「issue 有人回应」只看了 open issue 数，没逐个看回应；表里凡标「不采用」的都不影响决策，dsh-im 若要用需先核。

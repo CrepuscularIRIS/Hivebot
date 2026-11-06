@@ -1,5 +1,7 @@
 # T7bb：T7b 返修——Pick 对话框无样式（名字/来源/描述粘连）+ 暗色 Pick 按钮字看不见
 
+> **blocked：2026-11-06 11:40 manager 任务 B — T7bc 终验 @ b2facacf 不通过（T7b 链第 3 次）。等用户答 Q-030（降级合并 fda457c2 功能链 / 再修一轮）。** 失败计数不重置。
+
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T7b 终验（不通过 第 1 次，功能链全过、截图目检不过）；receipts/T7b.md §6
 > 分支 / 作业目录：feat/T7b 续提交 @ /tmp/bot-wt/T7b

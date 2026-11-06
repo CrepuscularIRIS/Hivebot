@@ -1,5 +1,7 @@
 # T7b：L4-c bot 设置里的 Skills 段 +「Pick from your skills」对话框（接 T7a），截图对 0.78.1
 
+> **blocked：2026-11-06 11:40 manager 任务 B — T7bc 终验 @ b2facacf 不通过（T7b 链第 3 次）。等用户答 Q-030（降级合并 fda457c2 功能链 / 再修一轮）。** 失败计数不重置。
+
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：p9 BRIEF 验收第 2 条（「另一个 bot 能启用」的用户入口）、验收第 4 条（UI 截图对照 0.78.1）；RE-skills Q4、Q7
 > 分支 / 作业目录：feat/T7b @ /tmp/bot-wt/T7b

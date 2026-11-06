@@ -1016,3 +1016,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 11:14 T7bb/T7c终验不通过 | T7bb：暗色Add按钮白底白字+原生×未替换+死行未删+Remove失败无提示→T7bc。T7c：⑦空断言（应照write-outside模板做never子代理）+⑧未测门开态+⑨skill根未canonicalPath+unit数写错611→584→T7cb。已reap三残留。T9ab进行中（⑧⑪绿+⑨真缺口：guard extraNeverTools没拦截grep调用）。
 2026-11-06 11:28 哨兵#4+T9ab根因扩大 | load5.2、无429。T9ab ⑨ 根因扩大：bash 也 120s 超时——SSH 组合的**工具执行整体不通**（session 能建但 subprocess-ssh→SSH→helper 链不工作）。这是 web profile 与 headless 的工具执行路径差异，需要 architect 介入。T7cb ⑨ 同类（符号链接+skill根不存在→判定不触发）。两个⑨都是「组合内行为验证」缺口。下一步：T7bc 终验已可派+T7cb/T9ab 转 architect。
 2026-11-06 11:31 哨兵#5 | load17.6（高）、无429。T7bc 派终验；开 T8（机械替换，低负载可做）。
+2026-11-06 11:40 manager 任务 B：T7bc 终验**不通过**（T7b 链第 3 次）@ b2facacf。HEAD 编译失败（skills-dialog.tsx:112 JSX）；SandIconButton 未导入，回执称≥2 是虚报；e2e 和截图早于提交（11:16/11:17 vs 11:18）；pick.dark Add 仍是白底看不见字。check diff=0、其余 grep 过。T7b/T7bb/T7bc → blocked/，新开 Q-030（推荐 A：只合并 fda457c2 功能链）。

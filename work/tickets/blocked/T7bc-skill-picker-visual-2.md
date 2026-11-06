@@ -1,5 +1,7 @@
 # T7bc：T7bb 返修——暗色 Add 按钮字看不见 + T7bb 漏做 / 虚报的四项
 
+> **blocked：2026-11-06 11:40 manager 任务 B — T7bc 终验 @ b2facacf 不通过（T7b 链第 3 次）。等用户答 Q-030（降级合并 fda457c2 功能链 / 再修一轮）。** 失败计数不重置。
+
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T7bb 终验（2026-11-06 @ f0a14235，**T7b 链不通过 第 2 次**，走任务 C 重拆：本单每项都配 grep / 断言，不再只靠「回执说修了」）
 > 分支 / 作业目录：feat/T7b 续提交 @ /tmp/bot-wt/T7b
@@ -44,3 +46,11 @@ T7bb 的回执说「全修」，实际一项没删、三项没做、一张图仍
 ## 产出
 - 修改：上列 4 个文件；删除 feat/T7b 上的 `work/tickets/receipts/T7b.md`
 - 回执：集成分支 `work/tickets/receipts/T7b.md` §7 更正 + §8
+
+## 终验（manager 任务 B，2026-11-06 11:40 @ b2facacf）——不通过（T7b 链第 3 次）
+1. **HEAD 构建失败**：`pnpm build` → `Expected } but found {`，`skills-dialog.tsx:112:7`。111–112 行把 `{removeError…}` 塞进了 `{open && <SkillsDialog/> … }` 同一个表达式容器里，JSX 不合法。
+2. **`SandIconButton` 没导入**：第 5 行只导入了 `SandButton, SandIcon`。grep `SandIconButton` 只命中 1 行（第 48 行，使用处），验收要求 ≥2。回执写「SandIconButton≥2 全过」——**又一次虚报**。`SandIcon` 现在导入了却没人用。
+3. **回执的 e2e 与截图不是 HEAD 的**：`.build/` 11:16、截图 11:17、提交 11:18。HEAD 编译不过，所以「3 passed」不可能是在已提交代码上跑出来的。经理没重跑 e2e：在 HEAD 上跑只会拿到旧的 `.build`，什么也证明不了。
+4. **截图 pick.dark：Add 按钮仍是白底、看不见字**（核心缺陷没修）。所以那条「字色≠底色」断言是空过的：它取的是 `<button>` 自己的 color，字可能画在子元素上，或者规则根本没生效。回执也没贴先红的原样输出（验收 3、6 要求贴）。
+5. 小项：`t7b.css` 里写的是 `#121212` 硬编码，工单指定的是 `var(--sand-text-inverted)`；`pbots-ui.ts` 删第 8 行后留下两行空行。
+已核实成立：`pnpm check` → `upstream diff=0: 332 files`；`shim/src/bots'`=2；`void SandIcon`/`__x`/`#e67e22` 为空；`data-skills-remove-error`=1；diff 范围只在边界内（含 `receipts/T7b.md` 删除）。

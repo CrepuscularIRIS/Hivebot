@@ -164,10 +164,12 @@
               toolName: subagent_fork
           - id: workflow-ptc
             name: '@deepseek-ai/dsh-workflow-ptc'
+            disabled: !!js process.env.P2SDK_SSH_MODE === '1'
             config:
               provider: spawn
           - id: tool-workflow
             name: '@deepseek-ai/dsh-tool-workflow'
+            disabled: !!js process.env.P2SDK_SSH_MODE === '1'
       - id: tool-ask-user
         name: '@deepseek-ai/dsh-tool-ask-user'
       - id: tool-todo
@@ -287,10 +289,12 @@
               toolName: subagent_fork
           - id: workflow-ptc
             name: '@deepseek-ai/dsh-workflow-ptc'
+            disabled: !!js process.env.P2SDK_SSH_MODE === '1'
             config:
               provider: spawn
           - id: tool-workflow
             name: '@deepseek-ai/dsh-tool-workflow'
+            disabled: !!js process.env.P2SDK_SSH_MODE === '1'
       - id: tool-ask-user
         name: '@deepseek-ai/dsh-tool-ask-user'
       - id: tool-todo

@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { join } from 'node:path'
 import { expect, test } from 'playwright/test'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
-import { launchShell, type ShellLaunch } from '../support/launch.ts'
+import { launchShell, sandboxHome, type ShellLaunch } from '../support/launch.ts'
 import { botItem, createBots, PRESETS_PATCH, textCall, toolCall } from '../support/ui.ts'
 
 
@@ -28,14 +28,15 @@ const BODY_R = `t7a-${Math.random().toString(16).slice(2, 10)}`
 const BODY_R2 = `t7a2-${Math.random().toString(16).slice(2, 10)}`
 
 test('A 存 → B 启用（快照）→ 改源不联动 → B 能加载旧文 → disable', { timeout: 300_000 }, async ({ page }) => {
-  // dataDir 放隔离 HOME 下（T6 已证此布局 bot 可写自己工作区）；/dev/shm 布局被
-  // p2sdk-fs-guard 判 masked area（guard 的豁免根集合不含它）——取证见回执
-  const dataDir = mkdtempSync(join(process.env.HOME!, 'bot-T7a-e2e-'))
-  mkdirSync(join(dataDir, 'workspaces'), { recursive: true }) // sdk 子进程 cwd，spawn 前必须存在
-  const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}`, dataDir, cwd: join(dataDir, 'workspaces') })
+  // 对齐规范（workspaces.spec.ts launchAligned / T14 结论）：shell 与 SDK 共享 home、
+  // dataDir=<home>/data——此前只给 runtime 传 dataDir，main 侧用自己 userData，两侧分叉，
+  // 写「runtime 遮蔽根内、会话 workspaceRoot 外」的绝对路径被 guard 正确拒绝（非产品缺陷）
+  const home = sandboxHome('T7a')
+  const dataDir = join(home, 'data')
+  const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}`, dataDir })
   let shell: ShellLaunch | undefined
   try {
-    shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })
+    shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff }, home })
     const ui = shell.page
     await expect(ui.locator('.sand-agent-item')).toHaveCount(1, { timeout: 60_000 })
     await expect(ui.locator('.ProseMirror[contenteditable="true"]')).toBeVisible({ timeout: 20_000 })
@@ -69,7 +70,11 @@ test('A 存 → B 启用（快照）→ 改源不联动 → B 能加载旧文 �
     expect(existsSync(skillMd(wsA)), 'A 的 skill 已落盘').toBe(true)
 
     // ---- B 从未发过消息：list → candidates；enable → 快照
-    const skillsApi = <T>(req: object): Promise<T> => ui.evaluate((r) => (window as unknown as { pbots: { skills: (x: object) => Promise<{ ok: boolean; value?: T; error?: { code: string } }> } }).pbots.skills(r), req)
+    const skillsApi = async <T>(req: object): Promise<T> => {
+      const res = await ui.evaluate((r) => (window as unknown as { pbots: { skills: (x: object) => Promise<{ ok: boolean; value?: T; error?: { code: string; message: string } }> } }).pbots.skills(r), req)
+      expect(res.ok, `skills ${JSON.stringify(req)} 失败: ${res.error?.code} ${res.error?.message ?? ''}`).toBe(true)
+      return res.value as T
+    }
     const list = await skillsApi<{ onBot: unknown[]; candidates: Array<{ fromBotId: string; name: string }> }>({ op: 'list', botId: idB })
     expect(list.onBot, 'B 启用前 onBot 为空').toEqual([])
     expect(list.candidates).toContainEqual(expect.objectContaining({ fromBotId: idA, name: 't7-flow' }))
@@ -90,9 +95,17 @@ test('A 存 → B 启用（快照）→ 改源不联动 → B 能加载旧文 �
     await grokSend(ui, '用一下刚启用的 skill')
     await expectState(ui, 'idle', 120_000)
 
-    const requests = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8').trim().split('\n')
-      .map((line) => JSON.parse(line) as { sessionId: string | null; userTexts: string[]; toolResults: Array<{ toolCallId: string | null; isError: boolean; text: string }> })
-      .filter((r) => r.sessionId === idB)
+    // idle 回落可能早于 fake 落盘——轮询等 B 的请求出现（上限 60s）
+    let requests: Array<{ sessionId: string | null; userTexts: string[]; toolResults: Array<{ toolCallId: string | null; isError: boolean; text: string }> }> = []
+    for (let i = 0; i < 300; i++) {
+      try {
+        requests = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8').trim().split('\n')
+          .filter(Boolean).map((line) => JSON.parse(line) as typeof requests[number])
+          .filter((r) => r.sessionId === idB)
+      } catch { /* 尚未创建 */ }
+      if (requests.some((r) => r.toolResults.some((t) => t.toolCallId === 't7a-load'))) break
+      await new Promise((r) => setTimeout(r, 200))
+    }
     expect(requests.length, 'B 有模型请求记录').toBeGreaterThan(0)
     expect(requests[0]!.userTexts.join('\n'), 'B 首请求目录含 t7-flow').toContain('t7-flow')
     const load = requests.slice(1).flatMap((r) => r.toolResults).find((t) => t.toolCallId === 't7a-load')

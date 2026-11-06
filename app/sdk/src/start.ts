@@ -294,7 +294,7 @@ function guardRow(cfg: StartConfig): string {
       toolchainDirs:${list(roots.toolchainDirs)}
       policyRoots:${list(roots.policyRoots)}${
         cfg.ssh !== undefined
-          ? `\n      extraNeverTools:\n        - glob\n        - grep`
+          ? `\n    extraNeverTools:\n      - glob\n      - grep`
           : ''
       }
 `

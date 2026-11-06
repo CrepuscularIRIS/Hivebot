@@ -152,9 +152,6 @@ describe('T9a 产品启动器 ssh 组合', () => {
   })
 
   it('⑨ glob/grep 被 guard 拒：原因含 not available in ssh mode', { timeout: 240_000 }, async () => {
-    // 调试：先试 bash（已知走 pre-execute）看 guard 是否在链上
-    const bashResult = await drive([toolCall('bash', { description: 'test', command: 'echo hi' })])
-    console.log('[T9ab-dbg] bash result:', JSON.stringify(bashResult.toolResults[0]).slice(0, 200))
     const g = await drive([toolCall('grep', { pattern: 'x' })])
     expect(g.toolResults.length).toBeGreaterThanOrEqual(1)
     expect(g.toolResults[0]!.isError).toBe(true)

@@ -1018,3 +1018,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 13:32 任务C结论 | T9ab⑨=①执行链通（rg真跑了）②extraNeverTools缩进6格掉进roots=config下=产品bug（T9ac）③bash 120s=审批卡没人答（预期）。H7=不达标但全是代码故障（T8c w1ap0 import坏+T7c realpathSync回归），互踩证据仍=0。主线回归：policy.test 12红=T7cd（realpathSync在假路径ENOENT）。三张新单：T7cd→T8c→T9ac。
 2026-11-06 13:45 manager任务B→C T9a链终验 | 复跑 unit 64/64、e2e 3/3、外露grep空、M2→⑨红（缩进修复成立）。不通过（第2次）：⑧空断言（fake不记工具名，MW删三禁行照绿）；⑪D11前提证伪（dsh detached按T-13存活，SIGKILL launcher留7套孤儿dsh+ssh master，基线取错恒空）；T9ab第2/4/6步与r3层级断言未落、回执无T9ab节。runtime.ts重试经理代验必要（还原=socket hang up）→批准进边界+提议5a⁗查ready竞态。重拆open/T9ac；DESIGN r4（D11改定、D8补记）；feat/T9a不合并。
 2026-11-06 13:42 T8c修完 | w1ap0-matrix import 从 Python 字符串模板内移到模块头；vitest list rc=0。等 T9a 终验+load<8 重跑 H7。
+2026-11-06 13:47 T9ac WIP | fake plugin toolNames 已加（dsh options.tools 数组取 name）；⑧⑪ 重写因 Python heredoc 替换损坏 e2e 文件（40万行）已 git checkout 还原。下会话用 Edit 工具逐段改。extraNeverTools 缩进修复已验证。

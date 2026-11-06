@@ -175,6 +175,8 @@ export async function startSshServer(): Promise<SshServer> {
     }
   }
 
+  // T4（复核轮修复）：sshd 已起——服务器层后续步骤失败也必须回滚收 sshd 再抛
+  try {
   // PATH 包装与 ssh_config 属于服务器层：headless 子进程的 PATH 也靠 binDir 注入 -F
   writeFileSync(join(binDir, 'ssh'), [
     '#!/bin/sh',
@@ -208,6 +210,10 @@ export async function startSshServer(): Promise<SshServer> {
   }
 
   return { dir, port, mark, remoteHome, workspace, binDir, helper, helperHash, sshdPid: sshdChild.pid!, clientPids, stopServer }
+  } catch (error) {
+    await stopServer()
+    throw error
+  }
 }
 
 /** 起完整夹具：服务器层 + 本进程 PATH 注入 + dsh ssh 族手搭组合（T2 十格的接口不变）。 */
@@ -234,7 +240,14 @@ export async function startSshHost(): Promise<SshHost> {
     const alive = (pid: number): boolean => { try { process.kill(pid, 0); return true } catch { return false } }
     const stragglers = server.clientPids().filter(alive)
     for (let i = 0; i < 30 && stragglers.some(alive); i++) await new Promise((r) => setTimeout(r, 100))
-    for (const pid of stragglers) if (alive(pid)) { try { process.kill(pid, 'SIGKILL') } catch { /* 已退 */ } }
+    // 补刀只限 -O cancel 控制连接（dispose 的 fire-and-forget，纯竞态）——master 类残留
+    // 不补刀：「stop 不 dispose」的回归必须能被 ⑥ 的扫描看见（复核轮 CONFIRMED/中）
+    for (const pid of stragglers) {
+      if (!alive(pid)) continue
+      try {
+        if (readFileSync(`/proc/${pid}/cmdline`, 'utf8').includes('-O\u0000cancel')) process.kill(pid, 'SIGKILL')
+      } catch { /* 已退 */ }
+    }
     // cancel 连接可能在退净快照之后才 spawn（dispose 的 fire-and-forget）——再按
     // 「命令行含夹具目录」限界等零（≤3s，自然退出；不杀未知 PID）
     const dirInCmdline = (): number => {

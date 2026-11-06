@@ -38,11 +38,13 @@ test('截图四张', { timeout: 300_000 }, async ({ page }) => {
     await expect(dlg).toBeVisible({ timeout: 15_000 })
     await expect(dlg.locator('[data-skill-candidate="t7b-flow"]')).toBeVisible({ timeout: 15_000 })
     mkdirSync('test-output/T7b', { recursive: true })
+    await dlg.locator('[data-skill-candidate="t7b-flow"] input[type="checkbox"]').check()
     for (const t of ['light', 'dark'] as const) {
       await ui.emulateMedia({ colorScheme: t })
       await ui.waitForTimeout(400)
       await ui.screenshot({ path: `test-output/T7b/skills-pick.${t}.png` })
     }
+    await dlg.locator('[data-skill-candidate="t7b-flow"] input[type="checkbox"]').uncheck()
     // added 态（勾选+Add 后）
     await dlg.locator('[data-skill-candidate="t7b-flow"] input[type="checkbox"]').check()
     await dlg.locator('[data-action="skills-add"]').click()

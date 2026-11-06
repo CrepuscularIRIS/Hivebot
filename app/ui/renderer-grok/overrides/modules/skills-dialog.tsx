@@ -41,7 +41,8 @@ export function SkillsDialog({ botId, onClose, onChanged }: { botId: string; onC
     else onClose()
   }
   return (
-    <div className="pb-skills-dialog" role="dialog" aria-label="Pick from your skills" data-skills-dialog>
+    <div className="pb-skills-dialog" role="dialog" aria-label="Pick from your skills" data-skills-dialog onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--sand-bg-elevated, #fff)', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,.3)' }}>
       <div className="pb-skills-dialog__head">
         <span className="pb-skills-dialog__title">Pick from your skills</span>
         <button className="pb-skills-dialog__x" aria-label="Close" onClick={onClose}>×</button>
@@ -62,6 +63,7 @@ export function SkillsDialog({ botId, onClose, onChanged }: { botId: string; onC
       {notice !== null && <div className="pb-skills-dialog__notice" role="alert" data-skills-notice>{notice}</div>}
       <div className="pb-skills-dialog__foot">
         <SandButton data-action="skills-add" onClick={() => void add()} disabled={busy || picked.size === 0} shape="pill" size="sm">{busy ? 'Adding…' : 'Add'}</SandButton>
+      </div>
       </div>
     </div>
   )
@@ -101,7 +103,7 @@ export function SkillsSection({ id, online }: { id: string; online: boolean }) {
           </div>
         ))}
       </div>
-      <SandButton data-action="skills-pick" leadingIcon="plus" onClick={() => { setOpen(true) }} shape="pill" size="sm" disabled={!online}>
+      <SandButton data-action="skills-pick" leadingIcon="plus" onClick={() => { setOpen(true) }} shape="pill" size="sm" variant="secondary" disabled={!online}>
         Pick from your skills
       </SandButton>
       {open && <SkillsDialog botId={id} onClose={() => { setOpen(false); setTick(tick + 1) }} onChanged={() => setTick(tick + 1)} />}

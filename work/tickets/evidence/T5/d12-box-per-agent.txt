@@ -1,0 +1,9 @@
+# 2026-11-06 manager T5 D12：0.78.1 box 归属（静态字面计数，LC_ALL=C grep -a -c -F）
+NAC getForeverBoxStatus:I().args(lB) => 1
+NAC ensureForeverBox:I().args(lB) => 1
+NAC lB={id:y()} => 1
+APP getForeverBoxStatus({id:n.boxId} => 1
+APP ensureForeverBox({id:r.boxId} => 1
+APP ingestForeverBox:e=>{if(u)return;let t=_(e.agentId) => 1
+APP Lt.ingestForeverBox({agentId:t,state:`absent` => 1
+解读：box 状态按 agentId 记账（ingestForeverBox 以 e.agentId 取槽），查询/确保用该槽的 boxId；同一 boxId 是否被多个 agent 共用，静态产物不可见（未找到）。

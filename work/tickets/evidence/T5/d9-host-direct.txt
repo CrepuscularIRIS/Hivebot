@@ -1,0 +1,47 @@
+# 2026-11-06 manager T5 D9：宿主直连行逐个 grep（dsh 0.2.2-alpha.2 已装包 lib/）
+== dsh-tool-fs-search  (@deepseek-ai+dsh-tool-fs-search@0.2.2-alpha.2_3e038259fe9e3cc5fc22fea76715f3d1/node_modules/@deepseek-ai/dsh-tool-fs-search)
+      1 1201:ctx.fs
+      1 1204:ctx.subprocess
+      1 1204:spawn(
+      1 138:ctx.subprocess
+      1 16:ctx.subprocess
+      1 171:ctx.subprocess
+      1 171:spawn(
+      1 530:ctx.subprocess
+      1 5:from "node:fs"
+      1 886:ctx.subprocess
+== dsh-attachment-local  (@deepseek-ai+dsh-attachment-local@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1_@deep_b8c4a6d906fbd027f6fcaf631a2c1760/node_modules/@deepseek-ai/dsh-attachment-local)
+      1 599:readFile(
+      1 6:from "node:fs"
+      1 7:from "node:fs/promises"
+      1 817:readFile(
+== dsh-spill-local  (@deepseek-ai+dsh-spill-local@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1_@deepseek-_9e97cdb990d5a04b666424579f7e3f9e/node_modules/@deepseek-ai/dsh-spill-local)
+      1 277:readdir(
+      1 2:from "node:os"
+      1 336:readdir(
+      1 35:tmpdir()
+      1 410:readdir(
+      1 430:tmpdir()
+      1 443:tmpdir()
+      1 554:tmpdir()
+      1 5:from "node:fs/promises"
+      1 7:from "node:fs"
+== dsh-agent-instructions  (@deepseek-ai+dsh-agent-instructions@0.2.2-alpha.2_7f0052e860ccf00f62b67bd310dae1e7/node_modules/@deepseek-ai/dsh-agent-instructions)
+      1 1265:ctx.fs
+      1 6:from "node:fs"
+      1 7:from "node:fs/promises"
+== dsh-skill-filesystem  (@deepseek-ai+dsh-skill-filesystem@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1_@deep_b17095e1b059d1eede2d4d90ede35d25/node_modules/@deepseek-ai/dsh-skill-filesystem)
+      1 15:ctx.fs
+      1 1:from "node:fs/promises"
+      1 2:from "node:fs"
+      1 379:watch(
+      1 382:chokidar
+      1 382:watch(
+      1 454:watch(
+      1 462:watch(
+      1 464:watch(
+      2 4:chokidar
+      1 656:readdir(
+      1 661:ctx.fs
+      1 731:readFile(
+== dsh-shell-env  (@deepseek-ai+dsh-shell-env@0.2.2-alpha.2_a10992906a736db79a4e7194470cfead/node_modules/@deepseek-ai/dsh-shell-env)

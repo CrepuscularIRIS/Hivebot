@@ -4,7 +4,7 @@
 > 审：reviewer (6.1 Sol) 只读核 → `work/tickets/review/T5-design.md` | 验收：manager 任务 B（逐条核实 Sol 意见）
 > 来源：p9 BRIEF 目标 3 / L8 / 验收第 1 条；PLAN §2 fs-zone 行、§3 十条事实、§5-1/§5-4/§5-6；receipts/T4.md §5；queue 提议「T4 残留」
 > 分支 / 作业目录：文档直接写集成分支 `work/**`（不写代码）；只读探针目录 `/dev/shm/bot-T5-*`（ssh helper 要在 bwrap 私有 /tmp 之外，PLAN §3-5；在 bot-reap 白名单内）
-> claimed：（执笔开始时填：日期、起点 SHA）
+> claimed：2026-11-06 05:18 manager (Opus 5.5) @ b3983512；交稿 05:55（未提交，待主 agent commit）
 > accepted：（任务 B 验收通过时填：日期、HEAD）
 
 ## 目标

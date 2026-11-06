@@ -71,7 +71,7 @@
 | T3 | L4-a：0.78.1 skill 生命周期 RE（派 reverse-engineer） | **done**（accepted 2026-11-06，含 T3b） |
 | T3b | RE-skills.md Q6 投递方式降为推断 + 两条反证计数 + 影响节第 6 条收窄 | **done**（accepted 2026-11-06 @ 316b6c9，已在集成分支） |
 | T4 | L8-b：headless 真组合 + llm-replay，bash/写文件经 ssh 落到远端 | **done**（accepted 2026-11-06 @ f8d1e00c，`tickets/done/T4-l8b-ssh-headless.md`；待合并） |
-| T5 | L8-c：设计单，**manager 执笔** `DESIGN-ssh-composition.md`（D1–D13：fs-zone/guard/shell-ask/bwrap/P6 cwd/isolate/断连 UI/PTC/宿主直连行/helper 安装/残留/每账户或每 bot/产品化 patch + 删 T4 死代码） | **open**（`tickets/open/T5-l8c-ssh-composition-design.md`） |
+| T5 | L8-c：设计单，**manager 执笔** `DESIGN-ssh-composition.md`（D1–D13：fs-zone/guard/shell-ask/bwrap/P6 cwd/isolate/断连 UI/PTC/宿主直连行/helper 安装/残留/每账户或每 bot/产品化 patch + 删 T4 死代码） | **设计已交**（`DESIGN-ssh-composition.md` 2026-11-06，待 Sol 核 + 任务 B；实现单 T9–T13 见 queue） |
 | T6 | L4-b：skill 根收口（关 `~/.agents` 泄漏）+ bot 在对话里存 skill 的真组合 e2e | **done**（accepted 2026-11-06 @ 80958ad0，`tickets/done/T6-l4b-skill-save.md`；待合并） |
 | T7a | L4-c：main IPC `pbots:skills` list/enable/disable，启用 = 复制快照到 bot 私有根；库 = 全 bot 并集派生视图 | **open**（`tickets/open/T7a-l4c-skill-enable-api.md`） |
 | T7b | L4-c：info pane Skills 段 +「Pick from your skills」，R3 参照图对 0.78.1 | **open**（第 2 步起等 T7a；`tickets/open/T7b-l4c-skill-picker-ui.md`） |
@@ -79,11 +79,11 @@
 
 ## 5. 核实不了 / 存疑（单列）
 
-1. **ssh 能否按 preset 隔离**（只给部分 bot 远端电脑）：Loader 支持 `isolate`（`docs/user/develop/framework/service.md` §Service isolation，preset 里也在用，`bundle/web-app/presets/standard.patch.yml:51`），但上游只文档化进程级 ssh 组合；`bash-sandbox`、`sandbox-policy`、`working-directory` 都在顶层，isolate 后是否全链跟着切未知。T4 只测进程级，T5 再决定。
+1. **[已定 2026-11-06，T5 D6：不能，进程级；旧 bot 处理见 Q-029]** **ssh 能否按 preset 隔离**（只给部分 bot 远端电脑）：Loader 支持 `isolate`（`docs/user/develop/framework/service.md` §Service isolation，preset 里也在用，`bundle/web-app/presets/standard.patch.yml:51`），但上游只文档化进程级 ssh 组合；`bash-sandbox`、`sandbox-policy`、`working-directory` 都在顶层，isolate 后是否全链跟着切未知。T4 只测进程级，T5 再决定。
 2. **[已证 2026-11-06，T2]** subprocess-ssh 的 env 叠加在远端 helper 环境之上：PBOTS_SSH_MARK 经 sshd SetEnv/ForceCommand 注入 helper 会话，未显式传给 spawn 仍出现在子进程 stdout（receipts/T2.md §5.2）。
 3. **[已证 2026-11-06，T2]** npm 版 dsh-ssh 的 helper.js 在 pnpm 布局下 peer 解析正常（realpath 进 .pnpm store 有效，ready/fs/subprocess/sandbox 全通）。
-4. **真实远程主机怎么装 helper**：helper 可执行包不上 npm；GitHub release 是否附 `dsh-ssh-helper-*.tar.gz` 未核（`list_releases` 只看了标签）。本机测试不受影响。
+4. **[已核 2026-11-06，T5 D10]** 真实远程主机怎么装 helper：37 个 release 全部 0 asset、npm 无 helper-runtime 包（`tickets/evidence/T5/d10-release-assets.txt`）→ node-script 闭包推送（T13）。
 5. **[已定 2026-11-06，T3+T6 开单]** 原版「对话里存 skill」：有两条路——bot 直接写进扫描根（box 内 `.agents/skills` 等，无审批，RE-skills Q1/Q6）与 `ProposeSkills` 审阅项（落 per-agent，Q3）。T6 只做前者；审阅链列 queue 提议，T7 后定。
-6. **原版 bot 的电脑是每账户一台还是每 bot 一台**：BRIEF L8 写「bot 共用一台电脑」，与进程级 ssh 吻合；未在 0.78.1 里核。T5 设计前由 RE 补一句锚点即可，不必问用户。
+6. **[已定 2026-11-06，T5 D12：box 按 agentId 记账、共用与否不可见；按每运行时一台]** **原版 bot 的电脑是每账户一台还是每 bot 一台**：BRIEF L8 写「bot 共用一台电脑」，与进程级 ssh 吻合；未在 0.78.1 里核。T5 设计前由 RE 补一句锚点即可，不必问用户。
 7. `market/wrapper.mjs` 的缺口在 dsh 0.2.2-rc.1 是否已补：未核。
 8. 第三方仓的「issue 有人回应」只看了 open issue 数，没逐个看回应；表里凡标「不采用」的都不影响决策，dsh-im 若要用需先核。

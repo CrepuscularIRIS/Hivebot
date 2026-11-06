@@ -3,7 +3,7 @@
 //    fake 首请求 tools 不含 workflow）；
 // ⑨ glob/grep guard 工具名拒（真实会话驱动）；
 // ⑪ SIGKILL launcher → 清场。
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import * as net from 'node:net'
@@ -145,10 +145,11 @@ describe('T9a 产品启动器 ssh 组合', () => {
     stream.cancel(); void drained
     let raw = ''
     try { raw = readFileSync(join(rt!.home, 'fake', 'requests.jsonl'), 'utf8') } catch { /* */ }
-    const reqs = raw.trim().split('\n').filter(Boolean).map((l) => JSON.parse(l) as { sessionId: string | null; userTexts: string[] }).filter((r) => r.sessionId === sessionId)
+    const reqs = raw.trim().split('\n').filter(Boolean).map((l) => JSON.parse(l) as { sessionId: string | null; toolNames: string[] }).filter((r) => r.sessionId === sessionId)
     expect(reqs.length, '有模型请求').toBeGreaterThan(0)
-    const allText = reqs.map((r) => r.userTexts.join('\n')).join('\n')
-    expect(allText, '工具面不含 workflow').not.toContain('workflow')
+    const tools = reqs[0]!.toolNames ?? []
+    expect(tools, `toolNames 含 bash（正对照防恒绿）: ${tools.join(',')}`).toContain('bash')
+    expect(tools.filter((t) => /workflow/i.test(t)), 'toolNames 不含 workflow 族').toEqual([])
   })
 
   it('⑨ glob/grep 被 guard 拒：原因含 not available in ssh mode', { timeout: 240_000 }, async () => {
@@ -162,27 +163,42 @@ describe('T9a 产品启动器 ssh 组合', () => {
     expect(b.toolResults[0]!.text).toContain('not available in ssh mode')
   })
 
-  it('⑪ SIGKILL launcher → /tmp/dsh-ssh-* 新增 ≤1 且空、进程清场', { timeout: 120_000 }, async () => {
-    const child = (rt as unknown as { child: { pid: number; kill(s: string): void } }).child
-    expect(child, 'runtime.ts 暴露 child').toBeTruthy()
-    const killBefore = readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-')).sort()
+  it('⑪ launcher 强杀→dsh 仍活；dsh 强杀→ssh 清场、端口 ECONNREFUSED', { timeout: 180_000 }, async () => {
+    // 独立 runtime（避免基线被 ⑧⑨ 污染）
+    const rt3 = await launchRuntime({ env: {
+      HOME: TEST_HOME, PATH: `${server.binDir}:${process.env.PATH ?? ''}`,
+      P2SDK_HOME: mkdtempSync(join(TEST_ROOT, 'dsh11-')), P2SDK_PATCH: fakeOverlay(),
+      P2SDK_SSH_HOST: 'pbots-ssh-test', P2SDK_SSH_REMOTE_ROOT: server.workspace,
+      P2SDK_SSH_HELPER: server.helper, P2SDK_SSH_HELPER_HASH: server.helperHash, P2SDK_SSH_NODE: process.execPath,
+    } })
+    // dsh 是 launcher 的子进程——从 /proc 找
+    const launcherPid = (rt3 as unknown as { child: { pid: number } }).child.pid
+    const childList = readFileSync(`/proc/${launcherPid}/task/${launcherPid}/children`, 'utf8').trim().split(/\s+/).filter(Boolean).map(Number)
+    const dshPid = childList[0]
+    expect(dshPid, '从 /proc 找到 dsh 子进程').toBeTruthy()
+    // 前半：SIGKILL launcher → dsh 仍活（T-13 detached 设计）
+    const child = (rt3 as unknown as { child: { kill(s: string): void } }).child
     child.kill('SIGKILL')
     await new Promise((r) => setTimeout(r, 2000))
+    expect(existsSync(`/proc/${dshPid}`), 'dsh 仍活（detached 设计）').toBe(true)
+    // 后半：SIGKILL dsh → ssh master 清场
+    const baseline = readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-')).sort()
+    process.kill(dshPid, 'SIGKILL')
+    const alive = (p: number): boolean => { try { process.kill(p, 0); return true } catch { return false } }
+    for (let i = 0; i < 75; i++) { if (!alive(dshPid)) break; await new Promise((r) => setTimeout(r, 200)) }
+    await new Promise((r) => setTimeout(r, 2000))
     const after = readdirSync('/tmp').filter((n) => n.startsWith('dsh-ssh-')).sort()
-    const added = after.filter((n) => !killBefore.includes(n))
-    expect(added.length, `新增 dsh-ssh 目录 ≤1（实际 ${added.length}）`).toBeLessThanOrEqual(1)
-    for (const d of added) {
-      const contents = readdirSync(join('/tmp', d))
-      expect(contents, `目录 ${d} 应为空（实际 ${contents.join(',')}）`).toEqual([])
-    }
-    // launcher 端口拒连
-    const baseUrl = rt!.baseUrl
-    const port = Number(new URL(baseUrl).port)
-    await expect(new Promise((_, reject) => {
-      const s = net.connect(port, '127.0.0.1')
-      s.on('connect', () => { s.destroy(); reject(new Error('port still open')) })
-      s.on('error', (e) => { s.destroy(); reject(e) })
-    })).rejects.toThrow()
-    rt = undefined // 已杀
+    const added = after.filter((n) => !baseline.includes(n))
+    expect(added.length, `新增 dsh-ssh ≤1`).toBeLessThanOrEqual(1)
+    for (const d of added) { expect(readdirSync(join('/tmp', d)), `目录 ${d} 为空`).toEqual([]) }
+    const port3 = Number(new URL(rt3.baseUrl).port)
+    const err = await new Promise<Error>((resolve) => {
+      const sock = net.connect(port3, '127.0.0.1')
+      sock.on('error', (e) => { sock.destroy(); resolve(e) })
+      sock.on('connect', () => { sock.destroy(); resolve(new Error('still open')) })
+    })
+    expect((err as NodeJS.ErrnoException).code, '端口 ECONNREFUSED').toBe('ECONNREFUSED')
+    try { await rt3.stop() } catch { /* 已杀 */ }
+    rt = undefined
   })
 })

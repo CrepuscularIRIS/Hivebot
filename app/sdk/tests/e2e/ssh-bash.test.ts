@@ -16,7 +16,12 @@ import { clearRealKeys, waitFor, type Frame } from '../support/fake/harness.ts'
 import { trackTmpDir } from '../support/tmp-sweep.ts'
 
 const PKG_ROOT = join(import.meta.dirname, '../..')
-const TEST_ROOT = mkdtempSync(join(tmpdir(), 'bot-T10-run-'))
+// T10b：④ 探针必须在 /tmp 之外——上游 workspace-write profile 自带 --tmpfs /tmp
+// （dsh-sandbox-local lib/index.js:34-35），夹具在 /tmp 下时原版 helper 也「挡住」，
+// 变异不咬合（经理终验实验表）。本文件全部临时目录跟着这个 TMPDIR 走。
+const OUTSIDE_TMP = trackTmpDir(mkdtempSync('/var/tmp/bot-T10-'))
+process.env.TMPDIR = OUTSIDE_TMP
+const TEST_ROOT = mkdtempSync(join(OUTSIDE_TMP, 'bot-T10-run-'))
 trackTmpDir(TEST_ROOT)
 const TEST_HOME = join(TEST_ROOT, 'home')
 mkdirSync(TEST_HOME, { recursive: true })
@@ -53,6 +58,7 @@ function fakeOverlay(): string {
 beforeAll(async () => {
   clearRealKeys()
   server = await startSshServer()
+  for (const p of [TEST_HOME, server.remoteHome]) expect(p === '/tmp' || p.startsWith('/tmp/'), `探针必须在 /tmp 外：${p}`).toBe(false)
   rt = await launchRuntime({
     env: {
       HOME: TEST_HOME,
@@ -152,7 +158,7 @@ function provision(state: Record<string, unknown> = {}): void {
 }
 
 describe('T10 远端 bash wrapper', () => {
-  it('③a 门开：write 落 marker + bash 零卡读回（wrapper 不破坏工作流；bash 直写在 read-only 档被挡=档位预期，见回执）', { timeout: 240_000 }, async () => {
+  it('③a 门开：bash 直写 marker 零卡 + 读回（wrapper 保留 profile 的 --bind ws 写通路）', { timeout: 240_000 }, async () => {
     provision()
     const ws = join(server.workspace, 't10-3a')
     mkdirSync(ws, { recursive: true })
@@ -161,7 +167,7 @@ describe('T10 远端 bash wrapper', () => {
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({
       calls: [
-        toolCall('write', { file_path: 'mark.txt', content: server.mark }),
+        toolCall('bash', { command: `printf %s '${server.mark}' > mark.txt`, description: 'T10 3a write' }),
         toolCall('bash', { command: 'cat mark.txt', description: 'T10 3a readback' }),
         textCall('T10'),
       ],
@@ -183,6 +189,8 @@ describe('T10 远端 bash wrapper', () => {
     expect(bashOut.message?.isError, 'bash 零卡直跑（门开）').not.toBe(true)
     expect((bashOut.message?.content ?? []).map((c) => c.text ?? '').join(''), 'bash 读回 marker').toContain(server.mark)
     expect(existsSync(join(ws, 'mark.txt')), 'marker 落远端 ws').toBe(true)
+    expect(readFileSync(join(ws, 'mark.txt'), 'utf8'), '落盘内容=本轮 mark').toBe(server.mark)
+    expect(eventsFrames.filter((f: any) => f.event === 'approval/request' && f.agentId === sessionId).length, '本会话 0 张审批卡').toBe(0)
   })
 
   it('③b 门关（无 policy-state）→ bash 出卡', { timeout: 240_000 }, async () => {
@@ -198,7 +206,7 @@ describe('T10 远端 bash wrapper', () => {
   it('④c 沙箱内 /tmp/dsh-ssh-* 不可见；helper 包目录写保护', { timeout: 240_000 }, async () => {
     provision()
     const r = await driveBash('ls -d /tmp/dsh-ssh-* 2>/dev/null | wc -l')
-    expect(r.toolResults[0]!.text, 'endpoint 目录不露出（计数 0）').toContain('0')
+    expect(r.toolResults[0]!.text.trim(), 'endpoint 目录不露出（精确计数 0）').toBe('0')
     const helperDir = join(PKG_ROOT, 'node_modules', '@deepseek-ai', 'dsh-ssh')
     const r2 = await driveBash(`touch ${helperDir}/t10-x 2>/dev/null; echo rc=$?`)
     expect(r2.toolResults[0]!.text, 'helper 包目录写保护（非零退出）').toContain('rc=1')
@@ -209,13 +217,15 @@ describe('T10 远端 bash wrapper', () => {
     writeFileSync(sentinel, 'HOST-KEY-SENTINEL-T10')
     const r = await driveBash(`cat ${sentinel}; echo rc=$?`)
     expect(r.toolResults[0]!.text, '正文不出现（宿主 .ssh 在 wrapper NEVER 根）').not.toContain('HOST-KEY-SENTINEL-T10')
+    expect(r.toolResults[0]!.text, '退出非零（bash 真跑了、被挡）').toMatch(/rc=[1-9]/)
   })
 
   it('④b bash 读远端 ~/.ssh 哨兵 → 同挡', { timeout: 240_000 }, async () => {
     const sentinel = join(server.remoteHome, '.ssh', 'id_sentinel')
     mkdirSync(join(server.remoteHome, '.ssh'), { recursive: true })
     writeFileSync(sentinel, 'REMOTE-KEY-SENTINEL-T10')
-    const r = await driveBash(`cat ${sentinel}`)
+    const r = await driveBash(`cat ${sentinel}; echo rc=$?`)
     expect(r.toolResults[0]!.text, '远端正文不出现').not.toContain('REMOTE-KEY-SENTINEL-T10')
+    expect(r.toolResults[0]!.text, '退出非零').toMatch(/rc=[1-9]/)
   })
 })

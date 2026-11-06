@@ -39,7 +39,7 @@ export class ZoneCheckedSshSandboxProvider extends SshSandboxProvider {
   async confine(argv, policy, signal) {
     const plan = await super.confine(argv, policy, signal)
     if (basename(plan.argv[0]) !== 'bwrap' || plan.enforcement !== 'full') {
-      throw new SandboxUnavailableError(`p2sdk sandbox-zone-ssh: unexpected remote sandbox plan (argv0=${plan.argv[0]}, enforcement=${plan.enforcement}); refusing an unguarded run`)
+      throw new SandboxUnavailableError(policy?.mode ?? 'unknown', `p2sdk sandbox-zone-ssh: unexpected remote sandbox plan (argv0=${plan.argv[0]}, enforcement=${plan.enforcement}); refusing an unguarded run`)
     }
     // wrapper 调用形态（bwrap-wrap.py:287 实测）：wrap.py [wrapper 选项] <bwrap
     // profile…> -- <命令>——选项后**直接**接 profile（无额外 --；optparse 遇非

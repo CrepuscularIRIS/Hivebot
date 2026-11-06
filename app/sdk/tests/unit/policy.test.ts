@@ -6,9 +6,9 @@
 // 的 bash 语义（必问/严格更宽委托/never 拒绝）逐条保留。
 // The plugin's in-runtime wiring (loader row, approval round-trip over $events)
 // is covered end-to-end by tests/e2e/approval.test.ts + tiers-policy.test.ts.
-import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as plugin from '../../src/policy/shell-ask.mjs'
 import { issuePermit } from '../../src/policy/request-net.mjs'
@@ -750,5 +750,40 @@ describe('P6-25: write-class calls outside the workspace are denied (hard deny, 
     const listener = registeredListener({ mode: 'workspace-write', fs: true, config: p.config })
     expect(await listener({ name: 'write', arguments: { file_path: 'a.txt', content: 'x' } }, next)).toBe(nextResult)
     expect(await listener({ name: 'edit', arguments: { file_path: 'a.txt', old_string: 'a', new_string: 'b' } }, next)).toBe(nextResult)
+  })
+})
+
+
+// T7ce（审查 C1）：`.dsh` 是链接、skills 未建 → 首次写 skill 仍出卡（门开态，漏卡＝直接 next）
+describe('T7ce: skill roots are canonicalised like the targets', () => {
+  it('ws/.dsh → ws/config with no skills dir: both spellings still ask; a plain file passes', async () => {
+    const p = provisionedConfig(VALID)
+    cleanups.push(p.cleanup)
+    const ws = realpathSync(tmkdir('t7ce-ws-'))
+    cleanups.push(() => rmSync(ws, { recursive: true, force: true }))
+    mkdirSync(join(ws, 'config'))
+    symlinkSync(join(ws, 'config'), join(ws, '.dsh'))
+    // 照上游 fs.resolve 语义：最长现存祖先 realpath + 保留缺失后缀
+    const resolve = async (raw: string): Promise<{ targetKey: string }> => {
+      let a = raw.startsWith('/') ? raw : join(ws, raw)
+      const rest: string[] = []
+      while (!existsSync(a)) { rest.unshift(basename(a)); a = dirname(a) }
+      return { targetKey: join(realpathSync(a), ...rest) }
+    }
+    const listeners: RecordedListener[] = []
+    const ctx = {
+      on: (event: string, listener: RecordedListener['listener']) => { listeners.push({ event, listener }) },
+      get: (name: string) => name === 'sandboxPolicy' ? { resolve: () => ({ mode: 'workspace-write', workspaceRoot: ws }) }
+        : name === 'fs' ? { resolve } : undefined,
+    }
+    plugin.apply(ctx as never, p.config as never)
+    expect(listeners).toHaveLength(1)
+    const l = listeners[0].listener
+    for (const fp of [join(ws, '.dsh/skills/new/SKILL.md'), join(ws, 'config/skills/new/SKILL.md')]) {
+      const out = await l({ name: 'write', arguments: { file_path: fp, content: 'x' } }, next) as { kind?: string; reason?: string }
+      expect(out, fp).toMatchObject({ kind: 'ask' })
+      expect(out.reason, fp).toContain('writing to a skill folder requires user approval')
+    }
+    expect(await l({ name: 'write', arguments: { file_path: join(ws, 'notes.md'), content: 'x' } }, next), '门开态普通文件放行（正对照）').toBe(nextResult)
   })
 })

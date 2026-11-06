@@ -128,3 +128,34 @@ guard-plugin-manager 7 / ssh-headless+host 14 / fs-zone-write+ssh-fs-zone 12
 坑（追加 §4 系列）：approval 事件走 $events socket 不进 follow 流（stopOnAsked
 通道不对，已撤）；guard 先于 ssh 插件注册（apply 时 get('ssh')=null，轮询解）；
 Node/cordis 吞 fire-and-forget 拒绝态（进程照常服务）——fail-closed 必须显式。
+
+## §9 经理终验（manager Opus 5.5，2026-11-06 17:5x，HEAD 6556ac85）——**通过（第 2 次，连 T9b2+T9b3）**
+
+**复跑**（app/sdk，隔离 HOME/TMPDIR=/tmp/mgr-t9b-final/iso-*，DBus 不存在路径，e2e 单套顺跑）：
+```
+ssh-product.test.ts                       → Tests 5 passed (5)；跑后 pgrep -af bot-wt/T9b 无输出
+ssh-fs-zone.test.ts                       → Tests 9 passed (9)
+start+guard+containment+fs-zone-write     → Test Files 4 passed, Tests 77 passed (42+26+6+3)
+guard-plugin-manager.test.ts              → 7 passed
+ssh-headless+ssh-host                     → Test Files 2 passed, Tests 14 passed
+```
+与 §7/§8 申报一致。
+
+**经理变异**（每刀 cp 备份还原，git status 干净）——上轮七红项全部有格守：
+- M3 删 moveFile 源 `zoneGuardSsh(fs_, guard)` → 1 failed：`②b moveFile 源区外 … AssertionError: promise resolved "{ sourceBefore: 'SRC', …(2) }" instead of rejecting`
+- 刀1′ 只改 guardRow `const g = roots.guardRoots`（fs-zone-ssh 行不动，隔离 guard 一侧）→ ②b 红：`expected 'Error: p2sdk-fs-guard: path ".../remote-home/.ssh/id_sentinel" is in a masked area (.../remote-home)' to contain 'touches a hard-denied area'`。注：拆掉远端 hardRoots 后 read 仍被 homes 软遮蔽拒——纵深两层，②b 断拒串能分辨是哪层生效，成立。
+- READS 删 `'listDir'` → ③ 红：`上游新增方法未分类（写入口须进 WRITES 并在本类覆盖）：listDir: expected [ 'listDir' ] to deeply equal []`
+- M4 sshKeys 删 REMOTE_HOME → start 红：`REMOTE_HOME 进删除表（不泄漏给子进程）: expected '/r/home' to be undefined`
+- M5 删原版 fs-ssh 行 `disabled: true` → start 红：`原版 fs-ssh 行被禁 … to match / {4}- id: fs-ssh\n {6}name: 'file:\/…/`
+- per-call 改回 `this.ctx.sandboxPolicy.resolve()` → `②c 每调用 policy` 红；删构造器 `applyZoneRecheck` → `②d 读侧执行期 NEVER 复判` 红
+- 刀2′（干净版，替 §8 的 YAML 炸法）guardRow remoteHome 条件改 `false` → ②d 红：`AssertionError: promise resolved "{ …(9) }" instead of rejecting`（与 §8 先红原样同形）。该刀下被 resolve 的 runtime 泄漏 5 进程，经理已 bot-reap（经理自产）。
+
+**改动面**：`git diff --stat 1167eb95..6556ac85` = fs-zone-ssh/guard/containment/never-roots/start + ssh-fs-zone/ssh-product/containment/guard/start 测试 + tests/support/runtime.ts + 回执，均在 T9b∪T9b2∪T9b3 边界内，唯一越界 runtime.ts（6 行）。
+
+**两处边界裁决**：
+1. `tests/support/runtime.ts` connect 失败带 stderr 尾 → **追认**（测试支撑、只加错误信息、不改控制流；②d 须看到固定串）。
+2. guard 校验 `process.exit(86)` → **追认**（单内授权「改成能失败的形态」；被吞实测只在 guard.mjs 注释与 §8 一句话，未贴原样——记为回执欠项不阻塞，②d 先红/刀2′ 已证 fail-closed 生效）。残余：ssh.ready 后到校验 RPC 返回之间 runtime 已在服务（约一个 RTT），配错时远端真 ~/.ssh 在该窗内无硬根——转 queue 提议，不阻塞。
+
+**非阻塞欠项**：§7 未贴五刀原样（单验收 3 要求），经理已逐刀复现代证；T9b2/T9b3 未挪 doing/、claimed 空；②b 格名仍写「先红/现在能读到正文」、`asked` 恒 0 死变量；②d 失败态不 stop 已起的 runtime（会泄漏）——同转 queue 提议。
+
+**裁决**：通过。T9b/T9b2/T9b3 挪 done/（accepted @ 6556ac85）。**feat/T9b 可合并**。

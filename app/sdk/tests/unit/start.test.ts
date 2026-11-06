@@ -214,6 +214,30 @@ describe('childEnv', () => {
     expect(env0.P2SDK_SSH_MODE).toBeUndefined()
   })
 
+  it('T9ae-C4 本机模式清掉继承的 P2SDK_SSH_MODE；ssh 模式不论继承值都设 1', () => {
+    const localCfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h' })
+    expect(childEnv(localCfg, { PATH: '/bin', P2SDK_SSH_MODE: '1' }).P2SDK_SSH_MODE, '本机模式不继承 MODE').toBeUndefined()
+    const sshEnv = { P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h', P2SDK_SSH_HOST: 'a', P2SDK_SSH_REMOTE_ROOT: 'b', P2SDK_SSH_HELPER: 'c', P2SDK_SSH_HELPER_HASH: 'd', P2SDK_SSH_NODE: 'e' }
+    expect(childEnv(resolveConfig(sshEnv), { ...sshEnv, PATH: '/bin', P2SDK_SSH_MODE: '0' }).P2SDK_SSH_MODE).toBe('1')
+  })
+
+  it('T9ae-C3 runtime patch 的插值全部是单引号标量（含 \' 的路径、像布尔的 host）', () => {
+    const cfg = resolveConfig({
+      P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h', P2SDK_HANDOFF: "/tmp/h/ho'x",
+      P2SDK_SSH_HOST: 'true', P2SDK_SSH_REMOTE_ROOT: "/srv/O'Brien/work",
+      P2SDK_SSH_HELPER: "/remote/it's.js", P2SDK_SSH_HELPER_HASH: 'a'.repeat(64), P2SDK_SSH_NODE: "/remote/n'ode",
+    })
+    mkdirSync('/tmp/h', { recursive: true })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yaml).toContain("        host: 'true'\n")
+    expect(yaml).toContain("        workspace: '/srv/O''Brien/work'\n")
+    expect(yaml).toContain("    workspaceRoot: '/srv/O''Brien/work'\n")
+    expect(yaml).toContain("        helper: '/remote/it''s.js'\n")
+    expect(yaml).toContain("node: '/remote/n''ode' }")
+    expect(yaml).toContain("        dir: '/tmp/h/ho''x'\n")
+    expect(yaml, '不留未转义的单引号插值').not.toContain("O'Brien")
+  })
+
   it('T6: DSH_AGENTS_HOME 恒指运行时 home 下的 agents（覆盖父进程同名变量，关真实 ~/.agents 泄漏）', () => {
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: '/tmp/h' })
     const env = childEnv(cfg, { HOME: '/home/x', DSH_AGENTS_HOME: '/home/x/.agents' })

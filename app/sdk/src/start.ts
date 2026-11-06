@@ -207,7 +207,9 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
   child.DSH_TELEMETRY_MODE = env.DSH_TELEMETRY_MODE ?? 'DISABLED'
   // T9a：launcher-only 变量不进 dsh 子进程（照 PBOTS_DATA_DIR 的做法）；
   // ssh 模式标记（T9b containment 读它；本单只设不读）
-  const sshKeys = ['P2SDK_SSH_HOST', 'P2SDK_SSH_REMOTE_ROOT', 'P2SDK_SSH_HELPER', 'P2SDK_SSH_HELPER_HASH', 'P2SDK_SSH_NODE']
+  // T9ae（审查 C4）：继承来的 MODE 也先删，下一行按 cfg.ssh 重设——本机 bot 不因
+  // launcher 环境残留的 MODE 被 approval.yml 条件禁用误伤 workflow
+  const sshKeys = ['P2SDK_SSH_HOST', 'P2SDK_SSH_REMOTE_ROOT', 'P2SDK_SSH_HELPER', 'P2SDK_SSH_HELPER_HASH', 'P2SDK_SSH_NODE', 'P2SDK_SSH_MODE']
   for (const k of sshKeys) delete child[k]
   if (cfg.ssh !== undefined) child.P2SDK_SSH_MODE = '1'
   if (cfg.provider === 'mock') delete child.P2SDK_LLM_API_KEY
@@ -321,7 +323,7 @@ function fsSandboxRow(cfg: StartConfig): string {
   disabled: true
 - insert:
     - id: p2sdk-fs-zone
-      name: '${fileUrl(join(PKG_ROOT, 'src', 'policy', 'fs-zone.mjs'))}'
+      name: ${yamlScalar(fileUrl(join(PKG_ROOT, 'src', 'policy', 'fs-zone.mjs')))}
       config:
         neverRoots:${list(roots.guardRoots.hardRoots)}
 `
@@ -378,10 +380,10 @@ export function writeRuntimePatch(cfg: StartConfig): string {
     rows.push(`\
 - insert:
     - id: llm-replay
-      name: '${fileUrl(join(PKG_ROOT, 'node_modules', '@deepseek-ai', 'dsh-llm-replay', 'lib', 'index.js'))}'
+      name: ${yamlScalar(fileUrl(join(PKG_ROOT, 'node_modules', '@deepseek-ai', 'dsh-llm-replay', 'lib', 'index.js')))}
       config:
         file: /p2sdk/unused-session-fixture.jsonl
-        overrideFile: '${join(cfg.home, 'replay-override.json')}'
+        overrideFile: ${yamlScalar(join(cfg.home, 'replay-override.json'))}
         paceMs: 25
         providers:
           - id: mock
@@ -394,9 +396,9 @@ export function writeRuntimePatch(cfg: StartConfig): string {
   rows.push(`\
 - insert:
     - id: p2sdk-handoff
-      name: '${fileUrl(join(PKG_ROOT, 'profile', 'plugins', 'handoff.mjs'))}'
+      name: ${yamlScalar(fileUrl(join(PKG_ROOT, 'profile', 'plugins', 'handoff.mjs')))}
       config:
-        dir: '${cfg.handoff}'
+        dir: ${yamlScalar(cfg.handoff)}
 `)
   if (cfg.ssh === undefined) {
     // 本机模式：行为与改前逐字相同（T9a 验收 2-② 钉住）
@@ -439,22 +441,22 @@ function sshRows(cfg: StartConfig): string {
   disabled: true
 - insert:
     - id: ssh
-      name: '${lib('dsh-ssh')}'
+      name: ${yamlScalar(lib('dsh-ssh'))}
       config:
-        host: ${ssh.host}
-        launch: { kind: node-script, node: '${ssh.node}' }
-        helper: '${ssh.helper}'
-        helperHash: '${ssh.helperHash}'
-        workspace: '${ssh.remoteRoot}'
+        host: ${yamlScalar(ssh.host)}
+        launch: { kind: node-script, node: ${yamlScalar(ssh.node)} }
+        helper: ${yamlScalar(ssh.helper)}
+        helperHash: ${yamlScalar(ssh.helperHash)}
+        workspace: ${yamlScalar(ssh.remoteRoot)}
     - id: fs-ssh
-      name: '${lib('dsh-fs-ssh')}'
+      name: ${yamlScalar(lib('dsh-fs-ssh'))}
     - id: subprocess-ssh
-      name: '${lib('dsh-subprocess-ssh')}'
+      name: ${yamlScalar(lib('dsh-subprocess-ssh'))}
     - id: sandbox-ssh
-      name: '${lib('dsh-sandbox-ssh')}'
+      name: ${yamlScalar(lib('dsh-sandbox-ssh'))}
 - id: sandbox-policy
   config:
-    workspaceRoot: '${ssh.remoteRoot}'
+    workspaceRoot: ${yamlScalar(ssh.remoteRoot)}
 `
 }
 

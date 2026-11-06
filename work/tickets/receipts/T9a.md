@@ -154,3 +154,19 @@ dsh-ssh 目录：本轮 +2 空目录（8lTuuN/IAos0A，均 0 项）
 验收 5 预期「每轮最多 +1」：实测 +2——⑪ 断言窗口内 +1（断言过），窗口后
 rt3 dispose 的 fire-and-forget `-O cancel` 控制连接再 +1（ssh-host.ts:237
 注释同款竞态）。两目录均空、无进程残留；与 PLAN §3-10 硬杀残留豁免同类。
+
+## §8 经理终验（manager Opus 5.5，2026-11-06 14:4x @ feat/T9a 6a16afea）——**通过**
+
+经理在 /dev/shm/bot-T9a/app/sdk 亲自重跑（隔离 HOME/TMPDIR/DBus）：
+- unit `start.test.ts guard.test.ts` → `Tests 64 passed (64)`。
+- `ssh-product.test.ts` 连跑两轮 → 每轮 `Tests 3 passed (3)`；两轮后 `pgrep -af bot-T9a` 空；`/tmp/dsh-ssh-*` 每轮 +1 空目录（本次没复现回执说的 +2；+2 那种解释说得通，属于 PLAN §3-10 豁免的同一类）。
+- 变异（cp 备份还原，跑完 `git status` 干净，残留 dsh 已经 bot-reap）：
+  - M5（start.ts:297 改 6 格）→ `AssertionError: extraNeverTools 在 guard config 级（4 格），不在 roots 内: expected '- insert:…' to contain '\n    extraNeverTools:\n      - glob\…'`，1 failed | 39 passed。
+  - M6（删 `process.kill(dshPid, 'SIGKILL')`）→ `新增 dsh-ssh ≤1: expected 2 to be less than or equal to 1 ❯ :206`，和回执一致。M6 本身证明不了「退净」断言：不杀 dsh，后面的 ECONNREFUSED 断言也会先红。这是经理设计变异时的疏漏，不是施工方的问题。所以加做了下面两刀。
+  - M6b（kill 之后往 `myHelpers` 里推一个活的 `sleep 60`）→ `SIGKILL dsh 后其 ssh 客户端与远端 helper 15s 内退净: expected [ 3812995 ] to deeply equal []`；补刀把这个 sleep 杀掉了，事后不在。**结论：退净断言有效。**
+  - M-序′（把 `baseClients` 改到 kill 前、也就是 rt3 起来之后再取）→ `rt3 经包装器起过 ssh 客户端（防空集）: expected 0 to be greater than 0 ❯ :198`。**结论：防空集断言有效。** 回执里 M-序 的红是 TDZ（`ReferenceError`），那是单子写的挪法本身就会触发的，证明不了这条断言，以本刀为准。
+- 覆盖：经理按 coverage-final.json 的语句图，和 `git diff -U0 03251ea2..HEAD` 的改动行求交集。start.ts 改动 93 行，其中 68 行有语句，未覆盖的交集为空；guard.mjs 改动 16 行，其中 13 行有语句，交集为空。两者改动行覆盖都是 100%，回执结论成立。回执里写的「guard.mjs 未覆盖 133-326 段」说法不准确（那一段里其实有已覆盖的行），但不影响结论。
+- 改动面：`git diff --stat e9a23794..HEAD` 只有 ssh-product.test.ts、start.test.ts、receipts/T9a.md、work/LOG.md 四个文件，在边界内。⑪ 的代码和单子第 1–2 步的字面逐行一致。
+- 回执更正（经理代为更正）：§5 写的「⑪ 加孤儿 master 断言 …… ppid==1」已作废，以 §7 和本节为准（退净断言按 myClients∪myHelpers 登记的 PID 判断）。§7 对号表漏了「退净」那一行：在 diff 里 grep 是 `:76 expect(left, 'SIGKILL dsh 后其 ssh 客户端与远端 helper 15s 内退净')`，经理已核实。
+
+遗留问题（不阻塞，写进 queue 作为提议）：⑪ 如果在 kill 之前就失败，rt3 的 dsh 会活下来（afterAll 不收 rt3）。本次 M-序′ 和 M6 都遇到了，残留已经 reap。

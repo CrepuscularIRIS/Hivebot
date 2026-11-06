@@ -43,6 +43,8 @@ interface T6Runtime extends Runtime {
   readRequests(): Array<{ sessionId: string | null; userTexts: string[]; toolResults: Array<{ toolCallId: string | null; isError: boolean; text: string }> }>
 }
 
+let launched: Runtime | undefined
+let feed: Feed | undefined
 let rt: T6Runtime
 let a2: Awaited<ReturnType<typeof scriptedSession>>
 let b1: Awaited<ReturnType<typeof scriptedSession>>
@@ -98,10 +100,15 @@ beforeAll(async () => {
   mkdirSync(leakDir, { recursive: true })
   writeFileSync(join(leakDir, 'SKILL.md'), skillFile('t6-leak-probe', LEAK_R))
 
-  const launched = await launchRuntime({
+  launched = await launchRuntime({
     env: { HOME: TEST_HOME, P2SDK_HOME: sdkHome, P2SDK_PATCH: fakeOverlay(), PBOTS_DATA_DIR: DATA_DIR },
   })
-  const feed = await openFeed(launched)
+  try {
+    feed = await openFeed(launched)
+  } catch (error) {
+    try { await launched.stop() } catch { /* 已停 */ }
+    throw error
+  }
   rt = {
     ...launched,
     feed,
@@ -119,9 +126,10 @@ beforeAll(async () => {
 }, 240_000)
 
 afterAll(async () => {
-  // 不停 runtime 会漏 dsh 子进程（施工期三次运行漏了三个，已 bot-reap——回执存疑 1）
-  try { rt.feed.close() } catch { /* 已关 */ }
-  try { await rt.stop() } catch { /* 已停 */ }
+  // 不停 runtime 会漏 dsh 子进程（施工期漏了 5 个，已 bot-reap——回执存疑 1）；
+  // 复核轮修复：feed 初始化失败路径也要回收（launched 可能在 rt 之前就位）
+  try { feed?.close() } catch { /* 已关 */ }
+  try { await launched?.stop() } catch { /* 已停 */ }
 })
 
 /** 一次性写全整段脚本（fake 游标按会话持有，二次覆盖会脱同步——P5-03 实测）。 */
@@ -154,7 +162,10 @@ async function scriptedSession(cwd: string, calls: object[]): Promise<{
 }
 
 function toolTurnCall(name: string, args: object): object {
-  const id = `t6-${Math.random().toString(16).slice(2, 8)}`
+  return toolTurnCallWithId(`t6-${Math.random().toString(16).slice(2, 8)}`, name, args)
+}
+
+function toolTurnCallWithId(id: string, name: string, args: object): object {
   const argumentsJson = JSON.stringify(args)
   return {
     chunks: [
@@ -243,12 +254,15 @@ it('④ 根收口：对照 skill（agents 根）可见，隔离 HOME 的 ~/.agen
   expect(firstB1!.userTexts.join('\n'), 'B1 目录含对照 skill').toContain('t6-agents-ctl')
   expect(firstA2.userTexts.join('\n'), '泄漏探针不得出现').not.toContain('t6-leak-probe')
   expect(firstB1!.userTexts.join('\n'), '泄漏探针不得出现').not.toContain('t6-leak-probe')
-  // 追加一次直接加载探针 → 拿不到 LEAK_R
+  // 追加一次直接加载探针 → 按本次调用的 toolCallId 定位结果（复核轮修复：不再按文本挑，
+  // 否则可能选中历史 t6-flow 的结果让断言空转）
+  const leakCallId = `t6-leak-${Math.random().toString(16).slice(2, 8)}`
   rt.writeScriptCalls(a2.sessionId, [
     ...(JSON.parse(readFileSync(join(rt.home, 'fake', 'scripts', `${a2.sessionId}.json`), 'utf8')) as { calls: object[] }).calls,
-    toolTurnCall('skill', { name: 't6-leak-probe' }), textCall('T6 完成'),
+    toolTurnCallWithId(leakCallId, 'skill', { name: 't6-leak-probe' }), textCall('T6 完成'),
   ])
   await a2.next()
-  const leak = requestsOf(a2.sessionId).slice(-2).flatMap((r) => r.toolResults).find((t) => t.text.length > 0)
-  expect(leak?.text ?? '', '直接加载也拿不到探针正文').not.toContain(LEAK_R)
+  const leak = requestsOf(a2.sessionId).flatMap((r) => r.toolResults).find((t) => t.toolCallId === leakCallId)
+  expect(leak, '探针调用确实执行且结果回到模型').toBeTruthy()
+  expect(leak!.text ?? '', '直接加载也拿不到探针正文').not.toContain(LEAK_R)
 })

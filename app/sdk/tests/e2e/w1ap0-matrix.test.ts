@@ -24,6 +24,7 @@
 // fake 插件按会话持游标（LEARNINGS 2026-11-03）：根会话每 turn 新会话；子会话
 // 走 default.json 整段脚本。测试只结束自己 spawn 的子进程（launchRuntime.stop
 // 自管），不用 pkill。探针只报存在性 / rc / 内容标志，绝不回显真实凭证内容。
+import { tmkdir } from '../support/tmp-sweep.ts'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
@@ -914,7 +915,6 @@ function netProbeScript(targets: Array<{ name: string; host: string; port: numbe
   const cases = targets.map((t) => `  (False, "${t.name}", "${t.host}", ${t.port})`).join(',\n')
   return `/usr/bin/python3 -I -c '
 import socket
-import { tmkdir } from '../support/tmp-sweep.ts'
 cases = [
 ${cases}
 ]

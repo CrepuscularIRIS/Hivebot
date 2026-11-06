@@ -1014,3 +1014,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 2026-11-06 11:05 manager 任务 B：T9a 终验**不通过**（第 1 次）@ 64bc35c9。unit 64/e2e 3/验收6/M3 复现成立；M1 实测证伪 D8 前提（禁 ptc-runtime → 默认 preset invalid，ssh 模式无会话）；⑨⑪ 空断言；runtime.ts 越界；施工残留进程 4 个。→ open/T9ab。feat/T9a 不合并。
 2026-11-06 11:04 T7c完+T7b/T9a返修 | T7c e2e 8/8+M1咬合（M2不咬合=设计前提不成立，targets已realpath）+T6修订4绿+T7a e2e修订1 passed+回归611绿。T7b终验不通过（三截图破版）→T7bb视觉返修。T9a终验不通过（⑧⑨降级不成立+⑪空断言）→T9ab。下一手：T7bb（快）∥T9ab（需重写e2e）。
 2026-11-06 11:14 T7bb/T7c终验不通过 | T7bb：暗色Add按钮白底白字+原生×未替换+死行未删+Remove失败无提示→T7bc。T7c：⑦空断言（应照write-outside模板做never子代理）+⑧未测门开态+⑨skill根未canonicalPath+unit数写错611→584→T7cb。已reap三残留。T9ab进行中（⑧⑪绿+⑨真缺口：guard extraNeverTools没拦截grep调用）。
+2026-11-06 11:28 哨兵#4+T9ab根因扩大 | load5.2、无429。T9ab ⑨ 根因扩大：bash 也 120s 超时——SSH 组合的**工具执行整体不通**（session 能建但 subprocess-ssh→SSH→helper 链不工作）。这是 web profile 与 headless 的工具执行路径差异，需要 architect 介入。T7cb ⑨ 同类（符号链接+skill根不存在→判定不触发）。两个⑨都是「组合内行为验证」缺口。下一步：T7bc 终验已可派+T7cb/T9ab 转 architect。

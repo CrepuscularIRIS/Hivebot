@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：`work/tickets/review/T9b-chain-security.md` C1（经理核实成立，两条路径均复现退出码 86）；另含 P1 的一处注释更正
 > 分支 / 作业目录：feat/T9b4 @ /tmp/bot-wt/T9b4（从 `docs/rebuild-p6-p5-plan` 切；与 T10 无共享文件，可并行，见边界 4）
-> claimed：
+> claimed：2026-11-06 18:4x main (GLM 5.3) @ /tmp/bot-wt/T9b4
 > accepted：
 
 ## 目标

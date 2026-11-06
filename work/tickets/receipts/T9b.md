@@ -85,3 +85,46 @@ vitest run tests/e2e/ssh-product.test.ts → 3 passed；跑后 pgrep -af bot-wt/
 - §4 三个坑核实属实，块注释 `*/` 与空白名单两条记 LEARNINGS。
 
 **裁决**：不通过（第 1 次）。返修 → `open/T9b2-fs-zone-ssh-closure.md`（D1 收口 + start 接线格）、`open/T9b3-guard-remote-roots.md`（D2 剩余：guard 远端根 + 校验接线 + ssh-product ②）。同分支 feat/T9b 续提交，先 T9b2 后 T9b3。**feat/T9b 不合并**。
+
+## §7 T9b2（2026-11-06 17:2x，照经理单五件）
+
+- ③ 白名单全量分类（READS 14 + WRITES 5，上游新增方法未分类即红；证伪：READS 删
+  listDir → 红，还原）
+- ②b moveFile 源区外格（远端 /tmp 源 + ws 目标 → 拒、源在、目标无）；M3 下红
+- ②c 每调用 policy（per-call sandboxPolicy 优先，Map 按原串缓存根；刀=忽略
+  per-call 改回全局 → 红）；删实例级永久缓存与 additionalWritableRoots
+- 构造器挂 applyZoneRecheck + ②d 换链复判格（ctx.on spy + resolve 恒指 NEVER →
+  never-root denied）；刀=删构造器行 → 红
+- start 接线三断言（六变量→`- '/r/home/.ssh'`；原版 fs-ssh 行 disabled:true
+  正则（name 是 fileUrl 形态）；childEnv 删 REMOTE_HOME）；刀=M4+M5 → 红
+- ①b′ 注释改实（先红格：夹具 remoteHome 在 /tmp 下原版围栏也放行）
+
+变异五刀全红后还原（git status 只余正式改动）。回归：五文件 86 / ssh-product
+3 / guard-plugin-manager 7 全绿。
+
+## §8 T9b3（2026-11-06 17:4x，D2 另一半）
+
+先红两段原样：
+```
+②b（接产品前）：Error: turn/end 未到：[{"type":"event","event":{"type":"assistant/message",…tool-call…name":"read"…
+②d（接产品前）：AssertionError: promise resolved "{ …(9) }" instead of rejecting
+```
+
+实现（见 commit）：guardRow 并远端 hardRoots/软遮蔽/remoteHome 键；fs-zone-ssh
+neverRoots 同源；guard 校验轮询等 ssh 服务 + 去尾 / 比对 + exit(86) fail-closed
+（fire-and-forget 被吞实测在案）；runtime.ts connect 失败带 stderr 尾（边界外
+测试支撑小改，**请经理追认**）。
+
+终态：ssh-product 5 passed（②b guard hardRoots 拒串 `touches a hard-denied
+area`；②d rejects 含 `does not match the remote home`）；guard 26（校验格改
+spy process.exit 三态）；start 42（guardRow remoteHome 给/不给两态）；
+guard-plugin-manager 7 / ssh-headless+host 14 / fs-zone-write+ssh-fs-zone 12
+全绿；跑后进程残留 0（含 ②d 被 exit 86 的组）。
+
+变异：刀1（mergedGuardRoots 不并远端）→ ②b 红；刀2（remoteHome 行置空）→ ②d
+红（红形态=YAML 解析炸——变异实现粗暴；干净的语义先红以 §8 开头 resolved 原样
+为准）。均还原复核。
+
+坑（追加 §4 系列）：approval 事件走 $events socket 不进 follow 流（stopOnAsked
+通道不对，已撤）；guard 先于 ssh 插件注册（apply 时 get('ssh')=null，轮询解）；
+Node/cordis 吞 fire-and-forget 拒绝态（进程照常服务）——fail-closed 必须显式。

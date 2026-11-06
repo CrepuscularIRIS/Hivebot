@@ -1,6 +1,7 @@
 # T8：P5-H5b e2e 散点 mkdtemp → tmkdir
 
 > claimed：11:36 main (GLM 5.3)
+> accepted: 2026-11-06 feat/T8 @ 5b701922（集成 HEAD 8cf3be0f）（经 T8b 返修）
 > 来源：queue 第 8 行；T1 同族（e2e 侧）
 > 分支：feat/T8 @ /tmp/bot-wt/T8（已移除，代码在分支上）
 

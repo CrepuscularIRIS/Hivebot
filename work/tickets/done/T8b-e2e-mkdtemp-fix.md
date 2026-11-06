@@ -4,7 +4,7 @@
 > 来源：T8 终验不通过 第 1 次（`doing/T8-p5h5b-e2e-mkdtemp.md` 末尾「终验」节）
 > 分支 / 作业目录：在 feat/T8 上续提交（同一 worktree 重建即可：`git worktree add /tmp/bot-wt/T8 feat/T8` + `pnpm setup`）
 > claimed：
-> accepted：
+> accepted: 2026-11-06 feat/T8 @ 5b701922（集成 HEAD 8cf3be0f）
 
 ## 目标
 把 T8 改坏的一个文件修回来，补上漏掉的子目录，让「全 e2e 能收集、私有 TMPDIR 零残留」真成立。
@@ -29,3 +29,13 @@
 
 ## 为什么这样验收
 T8 的目的不是「换了 74 处」，是 e2e 跑完不漏目录、且一个文件都没被改坏。机械替换最容易出的错就是插 import 插歪——所以 `vitest list` 全目录收集是必过门；grep 必须递归，否则子目录永远漏。
+
+## 终验（manager Opus 5.5，2026-11-06 12:10，feat/T8 @ 5b701922）——**通过**
+独立 `worktree add --detach` + `pnpm setup`，隔离 HOME/TMPDIR/DBus（load ~12）：
+- 范围：`git diff 883617d9 5b701922` 只动 interrupt.test.ts（import 移出多行块）与 security/w1ap0-scan.test.ts（+import、3 处 tmkdir），2 文件 +5/-4，无断言改动。✓
+- 验收 1：`vitest list tests/e2e` rc=0，`Transform failed` 0 次，159 行，interrupt 2 条用例已收集。✓
+- 验收 2：递归 `mkdtempSync((join()?tmpdir()` 空。✓
+- 验收 3：非 import 行恰 6 行，与工单列表一致。✓
+- 验收 4：interrupt + w1ap0-scan `2 passed / 4 passed`，`ls -A $TMPDIR` 仅 `node-compile-cache`。✓
+- 第 3 条（无用 mkdtempSync import）未做，按工单不阻塞；转 queue 提议。
+- `git merge-tree HEAD feat/T8` 无冲突。

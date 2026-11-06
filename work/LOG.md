@@ -1037,3 +1037,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 17:1x T9b 施工完：D1 fs-zone-ssh 五入口（先红=原版写远端/tmp 成功坐实洞；六格+M1M2 变异全过）+ D2（containment 词法化/remoteRoots/guard remoteHome 校验/start 六变量接线）；回归 42+6+26+6+7+3+3 全绿。新坑×3 记回执 §4（块注释 */ 提前闭合等）
 - 17:5x T9b2+T9b3 照单施工完：五件收口（五刀全红）+ D2 另一半（guardRow 远端根/软遮蔽/remoteHome 键、校验 exit(86) fail-closed、ssh-product ②b②d 先红→绿）；回归 86+5+26+42+7+14+12 全绿
 - 17:5x T9b 链三单终验通过（第2次，九刀全红）合并落地；回测 77+9+5+7+14+9+10 全绿。ssh 安全链（T9a 组合→T9b 文件工具）完成，T10 bash wrapper 开工；T9b 链攒批 reviewer
+- 18:1x T10 主体落地（wrapperArgv 抽取/sandbox-zone-ssh 类/sshRows 接线，start 42 绿）；测试面（④/③格+变异）待下窗口。T9b 链 reviewer 审查中

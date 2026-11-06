@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T9a 经理验收（2026-11-06 @ 64bc35c9，/dev/shm/bot-T9a feat/T9a）
 > 分支 / 作业目录：feat/T9a 续提交 @ /dev/shm/bot-T9a
-> claimed：
+> claimed：11:06 main (GLM 5.3)
 > accepted：
 
 ## 经理实测（原样）

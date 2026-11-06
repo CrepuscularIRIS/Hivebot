@@ -1,0 +1,12 @@
+# T15 §2 证据（manager 2026-11-06）
+$ diff -rq a2/dsh-sandbox-policy/package rc1/dsh-sandbox-policy/package
+Files a2/dsh-sandbox-policy/package/package.json and rc1/dsh-sandbox-policy/package/package.json differ
+$ diff a2/dsh-sandbox-policy/package/lib/index.js rc1/dsh-sandbox-policy/package/lib/index.js | wc -l
+0
+$ grep -c "writableRoots\|sandboxPolicy" a2|rc1 dsh-tool-fs lib/index.js
+a2 writableRoots=0 sandboxPolicy=8 apply_patch=0
+rc1 writableRoots=0 sandboxPolicy=13 apply_patch=5
+$ grep -n "masked area" app/sdk/src/policy/guard.mjs（错误串属于我们的 guard）
+171:      return { deny: 'mask', reason: `path "${target}" is in a masked area (${root})` }
+$ diff -rq a2/dsh-working-directory/package rc1/dsh-working-directory/package
+Files a2/dsh-working-directory/package/package.json and rc1/dsh-working-directory/package/package.json differ

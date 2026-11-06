@@ -1,0 +1,14 @@
+sha=60d811de43a819eb4317966845c9fc677c41b50d
+date=2026-11-04T07:48:54Z
+msg:
+release(vendor): cordis 4.1.0, cosmokit 1.9.0, group 1.1.0, hmr 1.1.0, include 1.1.0, loader 1.1.0, logger-console 1.1.0, schemastery 3.19.0, timer 1.2.0
+files:
+modified	+1	-1	vendor/cordis/package.json
+modified	+1	-1	vendor/cosmokit/package.json
+modified	+1	-1	vendor/group/package.json
+modified	+1	-1	vendor/hmr/package.json
+modified	+1	-1	vendor/include/package.json
+modified	+1	-1	vendor/loader/package.json
+modified	+1	-1	vendor/logger-console/package.json
+modified	+1	-1	vendor/schemastery/package.json
+modified	+1	-1	vendor/timer/package.json

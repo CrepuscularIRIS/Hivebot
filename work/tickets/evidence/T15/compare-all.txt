@@ -1,0 +1,466 @@
+c7ff66bb02	1	2026-09-28	docs(fs): record confirmed apply_patch development plan
+6c0bb63be7	1	2026-09-30	feat(fs): add pure apply_patch parser
+88f5aa1d43	1	2026-10-08	fix(fs): avoid quadratic whitespace trimming in patch parser
+e5d0af6bce	1	2026-10-14	fix(fs): align patch header diagnostics and filesystem reference
+6368b5a564	1	2026-10-14	feat(fs): apply patch hunks to LF-normalized text
+ab54c18dd2	1	2026-10-14	feat(fs): add guarded patch delete and move operations
+743d4602e9	1	2026-10-14	feat(fs): fence patch mutations and guard delete observations
+7bd189b3b5	1	2026-10-14	feat(ssh): support guarded patch delete and move RPCs
+5abd31e8f7	1	2026-10-14	docs(fs): refresh guarded mutation references and catalogs
+a91a827546	1	2026-10-14	chore(cordis): upgrade Core to 4.0.0-rc.11
+27a4010098	1	2026-10-14	fix(fs): share error codes and preserve unexpected move failures
+9a4e78b469	1	2026-10-14	feat(tool-fs): preflight and execute ordered patches
+b96d527022	1	2026-10-14	docs(fs): document patch execution and regenerate event graph
+f265038f11	2	2026-10-14	Merge Cordis Core and resolver prerequisites for Loader upgrade
+e34f45723e	1	2026-10-14	fix(cordis): complete canonical Fiber consumer migration
+214c7f4f0b	2	2026-10-14	Merge Core CI fixes into Loader prerequisites
+bf1235541c	1	2026-10-14	chore(cordis): complete Loader rc.8 and share upstream Include patches
+5186f36a68	1	2026-10-14	fix(cordis): preserve built Remote context and teardown snapshots
+25732603c2	2	2026-10-14	Merge validated Core snapshot fixes into Loader prerequisites
+dad7202600	2	2026-10-14	Merge updated Core prerequisites
+f4a7cdfef5	1	2026-10-14	feat(tool-fs): use locked move baselines and cache patch roots
+4fbd33baef	1	2026-10-14	docs(cordis): align resolver note with completed Loader baseline
+9b154c04a6	1	2026-10-14	feat(tool-fs): register opt-in patches with canonical results
+d6d6c84803	1	2026-10-14	feat(client): present applied patch diffs and stopped operations
+f7dae57fda	1	2026-10-14	test(snapshot): prepare apply-patch scenes and document tool activation
+7ab485156e	1	2026-10-15	fix(tool-fs): report move destinations and remove unrecorded scenes
+9d37a5c03e	1	2026-10-15	refactor(tool-fs): express patch failure guarantees in types
+562c22a8c1	1	2026-10-15	refactor: drop invariant re-checks already guaranteed by types
+d678d8c78d	1	2026-10-15	feat(workspace-changes): capture every patch path before execution
+bda8ceac85	1	2026-10-15	docs: document patch review semantics and prune retired cast baseline
+c5db86f864	1	2026-10-16	fix: restore compaction failure and skill catalog fallback semantics
+e2f1208bcf	2	2026-10-16	Merge origin/master into feat/apply-patch
+2e06a30f7c	1	2026-10-16	docs(fs): add guarded mutation upgrade guide for external providers
+42958baa8c	1	2026-10-16	test(fs): record apply_patch success rejection and partial execution
+e85ef216bc	1	2026-10-16	docs: record implemented apply_patch decisions and deferred evaluation
+65f3735190	1	2026-10-16	docs: fix filesystem upgrade guide configuration link
+10fd0f806c	1	2026-10-16	feat(fs): enable apply_patch by default
+3f229e5089	1	2026-10-16	test(snapshot): separate model-switch and fixed-budget tool schemas
+788bae3674	1	2026-10-20	feat(client): adapt sidebar navigation to mobile drawers
+f601fb20b1	1	2026-10-20	test(client): isolate drawer acceptance from settings layout
+76d3498f09	1	2026-10-20	test(web): keep plugin header geometry valid with drawers
+4f0ab9d1ac	2	2026-10-20	🐛 fix(client): restore sidebar keyboard navigation and drawer focus
+c5ef3cd872	1	2026-10-20	🐛 fix(client): complete sidebar posture and keyboard regressions
+c6fa12c447	2	2026-10-20	🐛 fix(client): align mobile sidebar regressions with current layout
+2c3e85fd44	1	2026-10-20	🐛 fix(tests): wait for navigation during suite setup
+453f93236d	2	2026-10-20	🔀 merge master into mobile sidebar
+5e5346497c	1	2026-10-20	🐛 fix mobile drawer review regressions
+a9fd4de282	1	2026-10-20	🐛 fix macOS drawer background and native close hit area
+6dbe6e9ab7	1	2026-10-20	🐛 preserve titlebar dragging in macOS drawers
+9a559f1f6e	1	2026-10-20	♻️ centralize retained dialog focus restoration
+f5deff657c	2	2026-10-20	🔀 merge master into mobile sidebar
+785c595874	1	2026-10-20	🐛 preserve explicit focus when closing modals
+2bd9913e2f	1	2026-10-20	refactor(apply-patch): drop unrelated changes and redundant prose
+8834433444	2	2026-10-20	Merge branch 'master' into feat/apply-patch
+59ac56dfdd	1	2026-10-21	fix(tool-fs): derive applyPatch from write and edit
+8f798da97d	1	2026-10-21	fix(tool-fs): leave sandbox decisions to providers and bound patch diffs
+1f14903f28	2	2026-10-21	Merge branch 'master' into feat/apply-patch
+d269bf8ddb	2	2026-10-22	🔀 Merge master and preserve sidebar keyboard navigation
+20c17996e2	2	2026-10-22	🔀 Sync master and adapt drawer regressions to selector fades
+15af3baa86	2	2026-10-22	♻️ Split tree keyboard navigation from mobile drawer changes
+2faf547465	2	2026-10-22	🔀 Sync master after separating tree navigation
+e689139284	1	2026-10-22	🧪 Pin fork benchmark heap for consistent memory measurements
+411f157983	1	2026-10-22	feat(context-menu): add extensible resource actions and shared popup lifecycle
+101e151fd1	1	2026-10-22	fix(context-menu): preserve backdrop blur during popup fades
+5e6a442b54	1	2026-10-22	test(context-menu): align blur fixture cleanup with lint rules
+d3116fd9d3	1	2026-10-22	fix(context-menu): refine feedback, timing and extension lifetimes
+c4f5b69e15	1	2026-10-22	docs(context-menu): explain mixed slot icon alignment
+a5f17a9933	1	2026-10-22	test(workspace): allow empty selection after archiving last session
+7fab3cf976	1	2026-10-22	test: refresh module graph and Web pins for apply_patch
+54daad316e	2	2026-10-22	🔀 Sync master and adapt sidebar integration tests
+cdd7c76f2a	2	2026-10-22	Merge branch 'master' into feat/apply-patch
+fdd520f901	1	2026-10-22	♻️ Keep sidebar focus handling out of ui-layout
+78e1b1fb87	1	2026-10-22	🧪 Match sticky header coverage to drawer widths
+21e19d3639	2	2026-10-22	chore(cordis): merge master into cordis-core-rc11
+b03c351c0a	1	2026-10-22	fix(client): polish context menu styling and session action groups
+332a918a70	1	2026-10-22	test(cordis): adapt master consumers to rc.11 config and teardown
+caf7639e2f	1	2026-10-22	fix(cordis): keep Entry.fiber wrappers and save-free failed retries
+891967ef0c	2	2026-10-23	Merge master into feat/extensible-context-menus
+99cdeb0b9d	1	2026-10-23	feat(client): add workspace and directory context menus
+174962f8ba	2	2026-10-23	Merge master and reconcile menu locale coverage
+92b663812f	1	2026-10-23	test(client): align menu material assertions and disabled action coverage
+5593ec6bfb	2	2026-10-23	Merge master and adopt upstream locale fixes
+241468ce09	2	2026-10-23	🔀 Sync master and resolve mobile sidebar integration
+1430dee92b	2	2026-10-23	🔀 Sync master test configuration
+4b9e64bf39	2	2026-10-23	Merge master and preserve context menus for refreshed images
+6f8c0a55d1	2	2026-10-23	Merge master release and align new menu package versions
+09d9f1152e	1	2026-10-23	fix(web): parse colon line suffixes in Markdown file links
+b1cb1f34e9	1	2026-10-23	fix(web): distinguish URL links and tolerate file locations
+db2b8122f2	1	2026-10-23	docs: remove Markdown file link migration guide
+f84559ffda	1	2026-10-23	🧪 Match stats tooltip test to drawer content width
+7ee39638b2	1	2026-10-23	test(compaction): control the manual duration clock
+076b0e5881	1	2026-10-23	fix(client): clarify context menu ownership and render icon groups
+fa9bf4c407	1	2026-10-23	feat(client): show configured shortcuts in structured session menus
+ac84684f57	1	2026-10-23	fix(client): retain separators before legacy menu contributions
+dc34d986b0	1	2026-10-23	test: calibrate dual-release layout budget against measured graph
+722a694c30	1	2026-10-23	test(client): cover effective menu shortcuts across browser platforms
+a42991af24	1	2026-10-23	feat(sdk): enable plugin management and gate Desktop tool parity
+47c91f7a32	1	2026-10-23	fix(team): align SDK and Desktop member tool scopes
+6fcb9b6c78	1	2026-10-24	fix(auto-review): route review requests by their Session
+4af529130c	1	2026-10-25	feat(cua): give the macOS helper its own permission identity
+37eabf1800	1	2026-10-25	test(cua): check application publication in the unit lane
+4a969e874a	1	2026-10-25	fix(cua): normalize helper executable paths before bundle validation
+c535db8124	1	2026-10-25	fix(cua): retain the complete Buffer type in the build fixture
+c51054a030	1	2026-10-25	test(cua): reject bare helpers and clean up application registrations
+29feba8615	1	2026-10-25	fix(cua): keep preparation locks in the native build directory
+774982b702	1	2026-10-25	test(cua): record the independent helper in permission settings
+8cac535ac9	1	2026-10-25	feat(cua): use the Computer Use artwork for the helper application
+34598b65f3	1	2026-10-25	chore(cua): include artwork and native license notices in the application
+5cdd2aebed	1	2026-10-22	feat(sdk): support compact through unified query input
+83a0867416	1	2026-10-22	feat(sdk): support session permission commands
+d501108371	1	2026-10-22	feat(sdk): support native plan commands and review dismissal
+9c3971618a	1	2026-10-23	feat(sdk): support native goal slash commands
+f7379ef366	1	2026-10-23	fix(sdk): tighten slash command observation and regression coverage
+b367e53a6c	1	2026-10-25	test(sdk): align plan snapshot with current question guidance
+e122cfb627	1	2026-10-25	feat(sdk): route native commands through run
+5771a93f2e	1	2026-10-26	fix(sdk): harden command examples and run wheel regressions
+40ae469411	2	2026-10-26	Merge remote-tracking branch 'origin/master' into dshw/pr-deepseek-harness-deepseek-harness-7056
+ab664440f8	2	2026-10-26	🔀 Sync master and regenerate Dockkit translation record
+dc311ba744	1	2026-10-26	feat(sdk): route content blocks through native commands
+cc2262b0ae	2	2026-10-26	Merge origin/master into feat/cua-helper-permissions
+e9fe9ce613	1	2026-10-26	fix(cua): preserve helper startup failures and clean failed launches
+420829b1ee	1	2026-10-26	test(cua): hold the observed executable lock for startup failures
+6b3e5ae4fc	1	2026-10-26	🧪 Preserve model collapse test width in drawer layout
+4abb9147cf	2	2026-10-26	Merge master into feat/extensible-context-menus
+a2bf1d8c4d	1	2026-10-26	fix(sdk): keep run regression mocks type-safe
+0939fd6549	1	2026-10-26	fix(test): retry busy git transport fixture cleanup
+a36ddf4c40	1	2026-10-26	refactor(session): register request upload exclusions
+47bb7c142b	2	2026-10-26	Merge origin/master into worktree/issue-7150-investigation-4fc2ca
+1de7f17cc0	1	2026-10-26	fix(context-menu): use native downloads and explicit plugin presentation
+41d542eb7d	1	2026-10-26	fix(ci): recalibrate merged dependency resolution budget
+4108e7fd03	1	2026-10-26	fix(file-actions): reserve save-as for Desktop
+57a6929c98	1	2026-10-26	fix(python-sdk): decode plan input before detecting line endings
+2b9badbc37	1	2026-10-26	docs(sdk): clarify native command input and ordering
+cf679a1921	1	2026-10-26	fix(context-menu): hide empty lone-guide menus
+39da0914a9	1	2026-10-26	fix(file-actions): reveal saved files from completion toasts
+6e045ffc5c	1	2026-10-26	refactor(ui-primitives): remove unused file DOM metadata
+aa0f1dd7b5	2	2026-10-26	Merge master into feat/extensible-context-menus
+81b0bcf3ef	1	2026-10-26	feat(tool-fs): make apply_patch an opt-in switch, default off
+decd8fb29c	2	2026-10-26	Merge master and share native context menu feedback
+d37b2ba52b	2	2026-10-26	Merge branch 'master' into feat/apply-patch
+cf45e35425	1	2026-10-26	chore(release): align fs-patch with the root version and cover its resolution graph
+083bdcf625	2	2026-10-26	Merge pull request #7255 from deepseek-harness/worktree/release-dsh-0.2.1-rc.4
+1380daf293	1	2026-10-26	docs(llm): fix compaction purpose import guidance
+3c2ebf698d	2	2026-10-26	Merge master and preserve files context menus across session restores
+21563f9538	2	2026-10-26	Merge master revert of files tree retention
+efca341cbe	2	2026-10-26	Merge master and retain desktop file actions dependency
+3ff2bd2c32	1	2026-10-26	test(sdk): defer Team tool parity to issue 7172
+8494f13cde	2	2026-10-26	Merge remote-tracking branch 'origin/master' into feat/sdk-tool-parity
+497ce715ad	1	2026-10-26	test(worktree): normalize restoration probe paths on Windows
+3a80325a71	1	2026-10-26	fix(sdk): verify and document plugin management prerequisites
+2b076f5df5	1	2026-10-26	test(sdk): account for Windows missing-command diagnostics
+3e12b73695	1	2026-10-26	test(forge-session): cover reference observation without POSIX processes
+e500dfad0c	1	2026-10-26	test(web): isolate heartbeat replay and sample panel geometry atomically
+f13911e07e	2	2026-10-27	Merge master into feat/extensible-context-menus
+67ddc29472	2	2026-10-27	Merge master and align context menu packages with rc.4
+86264fe159	1	2026-10-27	fix(desktop): support download events in startup test mocks
+86bf2734c6	1	2026-10-27	fix(trajectory): preserve recorded tool failure output
+c099ecdfd5	1	2026-10-27	fix(trajectory): retain failure fallback for empty text blocks
+aa1cf9115b	1	2026-10-27	fix(trajectory): show failed JSON results as recorded text
+bbb9f7b7f3	2	2026-10-27	Merge origin/master into xtr/trajectory-failure-output
+0ad7372cf5	2	2026-10-27	Merge master and preserve context menu focus with sidebar updates
+f274f1673a	2	2026-10-27	Merge branch 'master' into feat/apply-patch
+7d4ac6566a	2	2026-10-27	Merge remote-tracking branch 'origin/master' into feat/apply-patch
+e91ee0fb89	1	2026-10-27	chore(release): align fs-patch with the 0.2.1-rc.4 root version
+483d3f8eff	1	2026-10-27	test(web): enable apply_patch in the standard preset for manual testing
+1836fc58e9	1	2026-10-27	chore(cua): initialize desktop plugin delivery work
+25d169bc59	1	2026-10-27	feat(client): expose stable composer prefill API
+2e3661bac2	1	2026-10-27	fix(scripts): raise vendor git output buffer
+b4d425a532	1	2026-10-27	test(web): switch apply_patch back off in the standard preset
+4d553166a3	1	2026-10-27	test(web): keep the apply_patch opt-in example in the standard preset comment
+dbd881ab46	1	2026-10-27	feat(cua): deliver notarized helpers through on-demand plugin installation
+650df8360a	1	2026-10-27	fix(cua): validate archive entries and preserve installed plugin controls
+6e4760ad86	1	2026-10-27	fix(cua): include release records and prepare local registry helpers
+f5f2b7031b	1	2026-10-27	fix(plugins): retain explicit enablement after typed official installation
+8962072809	1	2026-10-27	test(cua): align pending installation and await smoke failure cleanup
+b5eef52ca2	1	2026-10-27	test(cua): cover platform selection and signed release workflow integration
+59fbd01761	1	2026-10-27	docs(plugins): describe version-pinned manual official installation
+7de6009aae	1	2026-10-27	test(cua): distinguish on-demand metadata from installed worker plugins
+45f026528d	1	2026-10-27	test(cua): refresh on-demand plugin catalog session output
+2f49e5bac4	2	2026-10-27	Merge remote-tracking branch 'origin/master' into HEAD
+e6adfaeab2	2	2026-10-27	Merge remote-tracking branch 'origin/feat/cua-helper-permissions' into feat/cua-desktop-delivery
+122ed97c35	1	2026-10-27	test(cua): retain generated catalog field ordering after stack sync
+3c965b8dca	1	2026-10-27	docs(client): fix composer prefill API reference
+f31ee74c28	1	2026-10-27	test(ptc-runtime-node): synchronize hot-loop cancellation without RPC
+c0f40e469d	2	2026-10-27	Merge master and retain upstream portable test fixes
+64d04a4916	1	2026-10-27	feat(tool-fs): name the apply_patch argument `input` as Codex does
+1c9490b410	1	2026-10-27	fix(sdk): use prepared pnpm for approved plugin management
+29af61f9a0	1	2026-10-27	test(sdk): expect package manager in packaged CLI dispatch
+5301a93845	2	2026-10-27	Merge latest master into SDK tool parity
+fad4d63766	1	2026-10-27	fix(client): guard composer prefill replacement
+e27306b2a0	2	2026-10-28	Merge pull request #7232 from deepseek-harness/feat/cua-helper-permissions
+7e3ee09872	1	2026-10-28	docs(desktop): add CI publication configuration templates
+7cd00ebaaa	1	2026-10-28	fix(desktop): preserve tag creation rejection diagnostics
+8e69602796	2	2026-10-28	Merge remote-tracking branch 'origin/master' into dshw/pr-deepseek-harness-deepseek-harness-7056
+18bd83bf88	1	2026-10-28	fix(ci): repair Wine heap budget and release workflow tests (#7438)
+79231619e4	2	2026-10-28	🔀 Sync master and resolve sidebar column comment
+bd1c30cd81	1	2026-10-28	feat(forge): add file tree and inline review comments
+3ccae5ad75	1	2026-10-28	perf(values): traverse JSON with active container cursors
+f130e8b37a	1	2026-10-28	🐛 Preserve drawer search and keyboard focus
+3bcafbbb64	1	2026-10-28	✅ Align drawer snapshots and shortcut expectations
+41f005865b	1	2026-10-28	docs(skills): forbid plugins from rewriting the profile patch
+b53f21e80e	1	2026-10-28	fix(values): preserve fractional Proxy index schedules
+004c410158	1	2026-10-28	docs(skills): show a checked config edit and its volatile read
+822aef2804	1	2026-10-28	test(forge): cover review interactions and failure recovery
+3ac8daef66	1	2026-10-28	fix(forge): clarify worktree controls and align change panels
+7bcc2cf8e1	2	2026-10-28	Merge pull request #6672 from deepseek-harness/feat/mobile-sidebar
+9170c7b285	2	2026-10-28	Merge remote-tracking branch 'origin/master' into worktree/issue-7150-investigation-4fc2ca
+48a2319b0e	2	2026-10-28	Merge pull request #7456 from deepseek-harness/turtle/qqbot-plugin-review-259b5f2b51ba
+68132b9a6a	2	2026-10-28	perf(values): reduce temporary JSON traversal allocations (#7451)
+9a796304e4	2	2026-10-28	Merge pull request #7452 from deepseek-harness/worktree/forge-review-tree-comments
+4dba5b61e8	2	2026-10-28	Merge remote-tracking branch 'origin/master' into worktree/issue-7150-investigation-4fc2ca
+aab3033c37	2	2026-10-28	Merge master into worktree/forge-ui-polish
+37c6524818	2	2026-10-28	Merge pull request #7170 from deepseek-harness/worktree/issue-7150-investigation-4fc2ca
+1db4d6a96d	1	2026-10-28	fix(forge): preserve requested bases and accessible branch details
+cf29844580	1	2026-10-28	feat(forge): navigate diff files with horizontal arrow keys
+077ec64ac2	2	2026-10-28	Merge remote-tracking branch 'origin/master' into feat/cua-desktop-delivery
+9005026ea6	1	2026-10-28	fix(plugin-manager): stream the install diagnostics a failed run already holds
+90838b790a	1	2026-10-28	fix(plugin-manager): keep the failed install's step and complete log in the dialog
+fd138a1975	1	2026-10-28	test(forge): select code text when checking arrow navigation guards
+fa4e32a503	1	2026-10-28	docs(plugin-manager): record why install failure diagnostics stay in the dialog
+80a0cd0977	1	2026-10-28	chore(catalog): regenerate the Cordis catalog after the plugin-manager docs
+8c87f5b042	1	2026-10-28	test(web): cover the install failure diagnostics in the browser
+aabf588a75	1	2026-10-28	test(web): enable apply_patch in the standard preset for manual testing
+5db62649db	1	2026-10-28	fix(forge): restore session list status after reconnecting
+b2a7d2ec95	1	2026-10-28	ci(windows): remove optional packaging build root
+c89be0a88a	2	2026-10-28	refactor: extract context menu utilities and merge master
+50f3f50e1e	1	2026-10-28	fix(forge): preserve review position across hidden layouts
+c5fe7d30dc	1	2026-10-28	docs(packaging): remove stale workspace option references
+c4131600c4	1	2026-10-28	test(forge): switch sessions without platform shortcuts
+e2bcf1b2f1	1	2026-10-28	feat(cua): reuse verified helper artifacts from selected packaging attempts
+d02a083f42	1	2026-10-28	fix(cua): reject repository traversal in retained artifact selection
+b2fff8a197	2	2026-10-28	Merge pull request #7457 from deepseek-harness/worktree/forge-ui-polish
+39a268c982	2	2026-10-28	Merge remote-tracking branch 'origin/master' into worktree/fix-forge-session-list-status
+1f1a9cda72	1	2026-10-28	feat(tool-fs): add applyPatchGuard to run apply_patch without observation guards
+5f46355df3	2	2026-10-28	Merge pull request #7465 from deepseek-harness/cleanup/windows-build-root
+5711d3aae7	1	2026-10-28	docs(tool-fs): state apply_patch's whole-patch preflight in the model guidance
+1e4ceb5ea0	1	2026-10-28	Merge pull request #7468 from deepseek-harness/docs/gif-attach-only
+d41e3b95ae	2	2026-10-28	Merge pull request #7467 from deepseek-harness/worktree/fix-forge-session-list-status
+f0b4345c88	1	2026-10-28	test(cua): verify retained helper tarballs and guide partial release retries
+ae334bd17e	1	2026-10-28	fix(sdk): align builtin routing and query error handling
+2328698c7c	1	2026-10-28	fix(desktop): address publication review diagnostics and examples
+090b64341b	2	2026-10-28	Merge remote-tracking branch 'origin/master' into docs/desktop-publish-config-templates
+a10b6e1270	1	2026-10-28	💄 Polish narrow-screen navigation and page alignment
+9976a87e97	2	2026-10-28	Merge master into feat/python-sdk-slash-commands
+e7d5c32577	1	2026-10-28	fix(docs): ignore artifact byte counts in repository references
+a8d824c780	2	2026-10-28	Merge pull request #7446 from deepseek-harness/docs/desktop-publish-config-templates
+c6f3dff031	2	2026-10-28	Merge pull request #7420 from deepseek-harness/feat/cua-desktop-delivery
+e5269b3bd6	1	2026-10-28	fix(plugin-manager): keep the check's diagnostic honest and off the answer
+e2025b16b3	1	2026-10-28	fix(plugin-manager): claim only what the failed install's answer proves
+849f4d940d	1	2026-10-28	docs(plugin-manager): record the review round's diagnostic decisions
+2cb769b430	1	2026-10-28	fix(forge): deduplicate checks and improve review navigation
+ce1ce9f2a1	1	2026-10-28	fix(cua): retain packaged helper startup diagnostics
+05c2e4132f	1	2026-10-28	fix(cua): package notarized helpers without a desktop session
+2b9511548b	1	2026-10-28	fix(forge): honor session permissions for Git inspection
+36fe45fa26	2	2026-10-28	Merge pull request #7486 from deepseek-harness/fix/cua-headless-package
+6eeef2cca7	1	2026-10-28	fix(docs): exclude decimal-only commit reference candidates
+28d806e447	1	2026-10-28	fix(cua): retain malformed startup replies and raw diagnostics
+49e9d42a00	1	2026-10-28	refactor(context-menu): inject shared trigger bindings through slots
+f1ac884b3f	2	2026-10-28	🐛 Reconcile mobile UI polish with current master and review
+acab1c96ef	1	2026-10-28	test(cua): reject empty smoke discovery and document runtime checks
+ec733d5bfb	2	2026-10-28	Merge pull request #7480 from deepseek-harness/worktree/fix-uv-lock-reference-check
+1950259ce1	1	2026-10-28	fix(sdk): keep query internal and return session identity
+42a0dcc699	1	2026-10-28	docs: regenerate the event graph after the plugin-manager JSDoc shift
+12d86921bb	1	2026-10-28	test(web): pin the settled run's log path in the registry install golden
+d98eac4a01	1	2026-10-28	test(base): disable fs-observation-policy for the read-first evaluation
+eac359730b	1	2026-10-28	🧪 Align plugin header tests with mobile page insets
+1aead808e2	2	2026-10-28	chore(cordis): merge master into cordis-core-rc11
+afb1acd7b1	1	2026-10-28	fix(app-boot): read provider fibers through rc.11 Impl.ctx
+a2200ca581	2	2026-10-28	Merge pull request #7483 from deepseek-harness/fix/cua-helper-smoke-startup
+2d709ab5be	1	2026-10-28	fix(forge): address check states and review accessibility
+714ef855b2	1	2026-10-28	docs(vendor): give local modifications stable ids
+d8a4807853	2	2026-10-28	Merge updated Core into Loader prerequisites
+c47d9a3868	1	2026-10-28	feat(trajectory): add independent subcall folding
+c1dbb40ced	2	2026-10-28	Merge updated Core prerequisites
+d6fc02b173	1	2026-10-28	docs(cordis): name EntryTree.commit in tree consumers
+087aacf33a	2	2026-10-28	Merge pull request #7478 from deepseek-harness/saafo/mobile-ui-polish
+b1f635f325	1	2026-10-28	docs(vendor): sync rescope versions with Core and Timer pins
+68aea2d16b	2	2026-10-28	Merge updated Core into Loader
+c6f8fb1d37	1	2026-10-28	docs(vendor): sync rescope Loader version with rc.8 pin
+a5f1d4a16a	2	2026-10-28	refactor(client): bind context menus at their Slot consumers
+db1a3b3754	1	2026-10-28	chore(cordis): adopt Include 1.1.1 journal alongside Loader rc.8
+eef0b3e688	1	2026-10-28	docs(upgrade-guide): cover Loader entry tree reports and Include journal
+22c342269c	1	2026-10-28	fix(trajectory): keep fold controls usable in narrow panes
+4d7dfb9db7	1	2026-10-28	refactor(trajectory): handle subcall summaries exhaustively
+f6d4f3e2bc	1	2026-10-28	test(web): refresh trajectory subcall control snapshots
+2e5ac1db66	1	2026-10-28	test(client): wait longer for the lazy frontmatter field list
+9dce789696	1	2026-10-28	refactor(client): render context menu icons through keyed slots
+06fa1ba7df	1	2026-10-28	test(forge): cover fetches settling after service disposal under rc.11 teardown
+237b93348d	1	2026-10-28	test(trajectory): cover subcall folding edge cases
+2b6fedd33b	2	2026-10-28	Merge pull request #7056 from deepseek-harness/xtr/file-link-line-suffix
+34411fd570	2	2026-10-28	Merge master into feat/extensible-context-menus
+8866ed40bb	2	2026-10-28	Merge updated Core into Loader
+b9fafb54c8	2	2026-10-28	Merge pull request #6951 from deepseek-harness/feat/extensible-context-menus
+0c78c4c710	1	2026-10-28	fix(sdk): return RunResult after native command activity
+3b3f93ac66	2	2026-10-28	Merge pull request #6210 from deepseek-harness/chore/cordis-core-rc11
+917cf6c267	1	2026-10-28	fix(sdk): validate command lifecycles and normalize strict input
+9a26b453c3	1	2026-10-28	fix(cordis): accept colon-containing entry ids used by generated bundles
+c68c2aa96c	1	2026-10-29	test(sdk): update fixtures for command run lifecycle
+f08ad306cc	1	2026-10-29	fix(forge): load complete checks on demand per pull request
+4f40200ed8	1	2026-10-29	fix(forge): clarify filter failures and query guarantees
+a2fbf61170	1	2026-10-29	test(forge): allow additional configured Git filters
+4590c39d0a	1	2026-10-29	test(forge): cover check list cancellation and summaries
+6a994ee917	2	2026-10-29	Merge pull request #7463 from deepseek-harness/fix/plugin-install-failure-diagnostics
+c1d7dad796	2	2026-10-29	Merge pull request #7487 from deepseek-harness/worktree/forge-git-session-permissions
+dc169c71e7	2	2026-10-29	Merge pull request #7482 from deepseek-harness/worktree/forge-review-navigation-checks
+c2b668ccd8	2	2026-10-29	Merge master and regenerate plugin manager translation record
+74ff76d1ff	1	2026-10-29	refactor(sdk): simplify slash command input APIs
+6332eaf57a	1	2026-10-29	test(web): wait for restored preview path metadata
+8f236fef35	2	2026-10-29	Merge pull request #7107 from deepseek-harness/feat/sdk-tool-parity
+657d6a8129	1	2026-10-29	perf(client-modules): index Loader entries once per flush
+09eac50a14	2	2026-10-29	Merge master into feat/python-sdk-slash-commands
+8b8c9d9eea	2	2026-10-29	Merge latest master into feat/python-sdk-slash-commands
+d8eae171cb	2	2026-10-29	Merge branch 'master' into xtr/trajectory-subcall-folding
+1a8939248a	2	2026-10-29	Merge pull request #6955 from deepseek-harness/feat/python-sdk-slash-commands
+4214f86da3	1	2026-10-29	fix(desktop): show DevTools toggle in application menus
+d10576ea02	1	2026-10-23	fix(trajectory): restore run_code syntax highlighting
+b5be2c0339	1	2026-10-29	fix(desktop): localize DevTools menu labels
+135423b457	1	2026-10-29	fix(client): default static client bundles to production mode
+728bf7e71c	1	2026-10-29	fix(trajectory): validate recorded language hints and cover review cases
+b83f38a44b	1	2026-10-29	fix(desktop): group DevTools before quit and isolate shortcuts
+19956a1da9	1	2026-10-29	fix(ui-chat): hide a shown system prompt card instead of withdrawing it
+534dac8c81	1	2026-10-29	fix(web): customize thinking block rendering (#7484)
+bc705e0ff1	1	2026-10-29	fix(desktop): use developer tools as the localized menu name
+1598d8113b	1	2026-10-29	fix(artifact): keep text preview reading position across refresh
+ab627b91ce	1	2026-10-29	fix(ui-chat): rebuild the hidden prompt card through chatNode
+a05a0d02fa	1	2026-10-29	feat(llm): allow plugins to prepare pi-ai request headers
+4955eaa680	1	2026-10-29	perf(web): cache Assistant block visibility during streaming
+4d5945cb72	2	2026-10-29	Merge pull request #7523 from deepseek-harness/07akioni/show-devtools-menu
+812c9ec2aa	1	2026-10-29	test(client): share in-memory bundle fixture
+004d46fed6	1	2026-10-29	test(artifact): drop new unknown cast in text preview spec
+9b2bc5a783	1	2026-10-29	fix(web): 修复手机端模型目录输入框挤压 (#7512)
+568f93e617	2	2026-10-29	Merge pull request #7529 from deepseek-harness/fix/issue7241-preview-scroll
+c160db284e	1	2026-10-28	fix(hygiene): 完整读取仓库的 Git 跟踪文件列表
+2e6370fe1d	1	2026-10-28	feat(sidebar): 按分栏保留文件树并由挂载插件处理打开
+a7d2b5c214	1	2026-10-28	feat(sidebar): 文件菜单支持在侧栏或浮窗中打开并移动已有标签
+4b11531c86	1	2026-10-29	fix(sidebar): 修正柔光反馈、停靠展开和铺满焦点交接并精简树接口
+13e8ca59a4	1	2026-10-29	fix(sidebar): 仅在标签已显示时闪烁并减弱光晕
+984c0f62b6	2	2026-10-29	Merge pull request #7532 from deepseek-harness/perf/assistant-visibility-cache
+8b1e5e7d88	1	2026-10-29	fix(client-modules): contain flush enumeration failures
+821043d6bf	2	2026-10-29	Merge pull request #6759 from deepseek-harness/feat/workspace-tree-per-pane
+9e52bf1009	2	2026-10-29	Merge pull request #7518 from deepseek-harness/perf/client-modules-entry-name-index
+d54475a681	1	2026-10-29	fix(llm): preserve header overrides and safe failure diagnostics
+548fa6b843	2	2026-10-29	Merge pull request #7531 from deepseek-harness/worktree/hfai-session-request-header
+b45eee4fca	1	2026-10-29	docs(ui-chat): describe the hidden prompt node, not a card
+5444d2220c	1	2026-10-29	fix(web): 修复手机端插件发现页工具栏溢出 (#7542)
+fe5450b152	1	2026-10-29	feat(fs): ship without the observation policy and enable apply_patch in the Web standard preset
+3366284d6e	1	2026-10-29	docs(automation): propose event-triggered automation tasks
+e6f54cecbb	2	2026-10-29	Merge branch 'master' into feat/apply-patch
+d8243a3f52	1	2026-10-29	feat(base): enable apply_patch on the dsh-base tool-fs row
+4436420f47	1	2026-10-29	fix(web): stabilize mobile sidebar header layout
+b0c374d550	1	2026-10-29	docs(automation): judge event tasks in their own Session
+fdd9f9f6d8	2	2026-10-29	Merge pull request #7527 from deepseek-harness/turtle/load-earlier-broken-ca4d9cb21ffc
+d2337b1d0a	1	2026-10-29	feat(cua): guide macOS permission setup with the responsible application
+341ea6eea4	1	2026-10-29	feat(schedule): integrate standalone tasks with the existing WebUI (#6189)
+5d676d5b8a	1	2026-10-29	fix(cua): export application reference types and compare Finder paths
+a027dcaeb2	1	2026-10-29	fix(cua): wire application drag types and refresh generated references
+d678270915	1	2026-10-29	test(cua): cover native guide wiring and classify Finder access
+c3ed73fc80	1	2026-10-29	fix(file-drag): keep native application preparation optional for carriers
+bcaa348038	2	2026-10-29	Merge pull request #7490 from deepseek-harness/xtr/trajectory-subcall-folding
+fe81bef43e	1	2026-10-29	test(web): count apply_patch in the collapse-timing tool-update goldens
+d04f1d3165	1	2026-10-29	fix(ui): share frame width for sidebar presentation
+c8063f93cd	1	2026-10-29	fix(desktop): revalidate permission applications before native dragging
+ea4837abb1	1	2026-10-29	feat(fs): keep apply_patch opt-in and the observation policy mounted
+14d3e53c19	1	2026-10-29	feat(fs): ship apply_patch on and the observation policy off
+154263c2f1	2	2026-10-29	Merge latest master into xtr/trajectory-code-highlight
+1209f095e4	1	2026-10-29	docs(automation): specify event-turn tools, notify cards, unread marks, and storage
+426c231f73	2	2026-10-29	Merge pull request #7399 from deepseek-harness/xtr/trajectory-failure-output
+5e1f146eba	2	2026-10-29	Merge branch 'master' into feat/apply-patch
+6d8c7c8104	1	2026-10-29	docs(automation): deliver candidates and drop the end tool
+f45c48dce4	1	2026-10-29	fix(cordis): transfer cross-tree moves and contain Include refresh rejections
+c9970438d3	2	2026-10-29	Merge branch 'feat/apply-patch' into feat/apply-patch-default-on
+50157d0586	2	2026-10-29	Merge pull request #7069 from deepseek-harness/xtr/trajectory-code-highlight
+c36b7ef620	2	2026-10-29	Merge pull request #7545 from deepseek-harness/docs/automation-event-trigger-rfc
+b74851c0a6	1	2026-10-29	test(ui): provide frame width in sidebar consumer fixtures
+92e8a6f604	2	2026-10-29	Merge pull request #6747 from deepseek-harness/feat/apply-patch
+4c57ce75c4	1	2026-10-29	test(cua): record permission guidance and document application transfer ownership
+820336fa4d	1	2026-10-29	fix(ui): reuse mobile device detection for sidebar opener
+89e486ba14	2	2026-10-29	Merge remote-tracking branch 'origin/master' into feat/apply-patch-default-on
+0dadace440	1	2026-10-29	fix(cua): package the type entry and bind native drag callbacks
+7acc94869e	1	2026-10-29	refactor(desktop): use the validated application resource discriminator
+dffda31215	1	2026-10-29	fix(session): migrate format v0 logs with subagent descriptor v1 and v2
+7a5df74f31	1	2026-10-29	fix(cordis): backport cross-tree group member transfer from cordis#271
+31cfe2aafe	1	2026-10-29	release(dsh): 0.2.1-rc.5
+0588356f62	1	2026-10-29	feat(cua): present a native permission guide beside System Settings
+e0db8fa103	1	2026-10-29	fix(cua): keep native permission observations on the main actor
+7f65b04b4e	1	2026-10-29	fix(cua): include permission copy fixture in the client test program
+1cd4da161c	1	2026-10-29	test(cua): keep host and client permission copy fixtures independent
+e51cb3959f	1	2026-10-29	fix(session): require label in format v0 descriptor v1
+a7d97c9e15	1	2026-10-29	fix(cua): fit native guidance copy and retain keyboard access
+b830ec950f	2	2026-10-29	Merge pull request #7572 from deepseek-harness/worktree/release-dsh-0.2.1-rc.5
+babf1f6612	2	2026-10-29	Merge master into worktree/sync-dsh-0.2.1-rc.5-to-master
+cc2718bede	1	2026-10-29	fix(fs): address review of the shipped mutation defaults
+c536530456	2	2026-10-29	Merge pull request #7578 from deepseek-harness/worktree/sync-dsh-0.2.1-rc.5-to-master
+9969555d22	1	2026-10-29	fix(client): keep first prefill undoable and read the live caret
+72523e20fb	1	2026-10-29	style(client): align prefill test-double members
+59ba482af7	2	2026-10-29	Merge remote-tracking branch 'origin/master' into feat/composer-prefill-api
+4505415896	1	2026-10-29	docs(client): record the composer prefill API break
+08be8bda51	1	2026-10-29	test(client): complete the sidebar files input double
+6397b4e59c	2	2026-10-29	Merge pull request #7556 from deepseek-harness/fix/mobile-sidebar-title
+ce7073d512	1	2026-10-29	Merge pull request #7552 from deepseek-harness/fix/webworker-live-import-bindings
+af4bddbc59	1	2026-10-29	fix(ui-conversation): keep the docked composer seat stable
+7fc5c2ecb2	2	2026-10-29	Merge remote-tracking branch 'origin/master' into perf/client-static-production-mode
+a3d098d310	1	2026-10-30	refactor(cua): refresh page permissions on user activity instead of polling
+2b282f1a45	1	2026-10-30	test(client): pin prefill selection reads without fixture reformatting
+f77ba385c4	1	2026-10-30	fix(cua): keep permission guidance below authentication dialogs
+4ef8177d69	1	2026-10-30	fix(cua): avoid reordering an already positioned permission guide
+5f01833f80	1	2026-10-30	fix(client): align floating panels with the visual viewport (#6666)
+8752b64b35	1	2026-10-30	fix(cua): wait for the settings window before showing permission guidance
+1e578f1304	1	2026-10-30	fix(forge): align diff file order with the file tree
+12e47f5974	1	2026-10-30	docs(ui-conversation): state the composer fixed-overlay contract
+95e37ce6a9	1	2026-10-30	docs(ui-conversation): state the back-to-bottom offset as geometry
+cbbf9d86a1	1	2026-10-30	fix(cua): preserve settings recovery and validate current application metadata
+e5718bec14	2	2026-10-30	Merge pull request #7570 from deepseek-harness/agent/session-search-broken-ffdc574ce204
+8c2f5d85b2	2	2026-10-30	fix(ui-conversation): keep the docked composer seat stable (#7591)
+1abd104891	1	2026-10-30	fix(llm-pi-ai): offload old images when a request exceeds the image-count bound
+017b91a0af	1	2026-10-30	test(forge): exclude unreachable tree exhaustiveness guard
+b46adf9f64	1	2026-10-30	fix(llm-pi-ai): offload count overflow in steps and document the default
+2a80140bd4	1	2026-10-30	test(forge): tighten review navigation assertions and sorting docs
+41a37d87a3	2	2026-10-30	Merge pull request #7423 from deepseek-harness/feat/composer-prefill-api
+c0b48f8961	1	2026-10-30	fix(ci): bound CLI help children inside aggregate gates
+8077269375	1	2026-10-30	test(terminal): observe output delivered after send readiness
+f77e9a2757	2	2026-10-30	Merge pull request #7606 from deepseek-harness/turtle/session-stuck-400-2f5a21aa0140
+5c2826eae5	1	2026-10-30	Revert "feat(client): expose stable composer prefill API"
+86b59d4a17	1	2026-10-30	test(cordis): load vendor HMR without its type declarations
+76bb45e2be	2	2026-10-30	Merge pull request #7609 from deepseek-harness/revert-7423-feat/composer-prefill-api
+44fc4192e0	1	2026-10-30	refactor(cua): keep native permission guidance in macOS provider
+945006c984	1	2026-10-30	perf(session): send one projection frame per committed event (#7587)
+edb3d5a87d	1	2026-10-30	docs(cua): regenerate macOS provider configuration reference
+a9a4c73e91	1	2026-10-30	test(cua): expect provider-owned settings recovery copy
+1d9c0ab757	1	2026-10-30	revert(markdown): remove PR #4484 display-dollar parser
+04b0b190f0	2	2026-10-30	Merge pull request #7603 from deepseek-harness/worktree/forge-diff-tree-order
+da51975dfb	1	2026-10-30	fix(web): keep local changes visible alongside pull requests
+4a0a1452a2	2	2026-10-30	Merge pull request #7528 from deepseek-harness/perf/client-static-production-mode
+847c738e1f	2	2026-10-30	Merge pull request #7559 from deepseek-harness/feat/apply-patch-default-on
+618897a0a2	1	2026-10-30	fix(cua-macos): add an opaque white app icon tile
+490c6fdd92	2	2026-10-30	Merge pull request #7557 from deepseek-harness/feat/cua-permission-guide
+ea9912523d	2	2026-10-30	Merge pull request #7619 from deepseek-harness/worktree/forge-local-changes-independent
+93e28b1418	1	2026-10-30	Merge pull request #7581 from deepseek-harness/fix/merge-approve-jobs
+fd2a512e75	1	2026-10-30	test(plugin-market): control Git startup and fixture teardown (#7616)
+3d8c0d4941	1	2026-10-30	test(web): isolate plugin configuration from local credentials (#7614)
+02578b3cce	2	2026-10-30	Merge pull request #7629 from deepseek-harness/fix/revert-4484-display-dollar
+516ca64acb	1	2026-10-30	feat(settings): 支持插件自定义设置页面导航图标 (#7624)
+aae41629d1	1	2026-10-30	docs(vendor): record omitted Include HMR watch registration
+d9ed1e4e28	1	2026-10-30	feat(schedule): unify task creation and editing (#7567)
+125fabd8d0	1	2026-11-01	fix(python): deploy the runtime from the workspace lockfile
+67e2d1e506	1	2026-11-01	fix(python): preserve deployed dependency validation
+cd5f5c80ba	2	2026-11-02	Merge pull request #7707 from deepseek-harness/fix/7688-locked-runtime-deploy-0.2.2
+e1609fe164	1	2026-11-02	fix(fs): temporarily disable apply_patch in shipped defaults
+3def5c9e24	1	2026-11-02	test(fs): pin recorded patch tool and cover configurable defaults
+c87fd429e0	1	2026-11-02	test(web): align optional tools for recording and replay
+3841ba6aad	1	2026-11-02	test(acp): pin the recorded optional patch tool
+ce18012a52	2	2026-11-02	Merge pull request #6220 from deepseek-harness/chore/cordis-loader-rc11
+a25eebc146	2	2026-11-02	Merge pull request #7698 from deepseek-harness/fix/temporarily-disable-apply-patch
+d3f7b8abe7	1	2026-11-02	Merge pull request #7701 from deepseek-harness/fix/empty-session-sidebar-0.2.2
+86e2cc8277	1	2026-11-02	feat(schedule): prefill task creation on release 0.2.2 (#7702)
+d721353f86	1	2026-11-02	feat(forge): unify plugin entry for reviews and worktrees (#7721)
+eb1713f856	1	2026-11-03	fix(session-projection): keep released units in checkpoints (#7754)
+f07af538f8	1	2026-11-03	fix(schedule): initialize stored task timing controls (#7704)
+1c78d475bf	1	2026-11-03	release(dsh): 0.2.2-alpha.3
+f26f308e5e	1	2026-11-03	Merge pull request #7768 from deepseek-harness/fix/goal-shutdown-pause
+b3f1904e86	2	2026-11-03	Merge pull request #7724 from deepseek-harness/worktree-release-dsh-0.2.2-alpha.3
+05b1cae8db	1	2026-11-03	release(vendor): cordis 4.0.6-alpha.2, cosmokit 1.8.7-alpha.2, group 1.0.6-alpha.2, hmr 1.0.21-alpha.2, include 1.0.11-alpha.2, loader 1.0.7-alpha.2, logger-console 1.0.6-alpha.2, schemastery 3.18.6-alpha.2, timer 1.1.8-alpha.2
+41ef8c47a3	2	2026-11-03	Merge pull request #7790 from deepseek-harness/worktree-release-vendor-0.2.2-alpha.3
+60d811de43	1	2026-11-04	release(vendor): cordis 4.1.0, cosmokit 1.9.0, group 1.1.0, hmr 1.1.0, include 1.1.0, loader 1.1.0, logger-console 1.1.0, schemastery 3.19.0, timer 1.2.0
+2f97f60455	1	2026-11-04	release(dsh): 0.2.2-rc.1
+66491b05e3	2	2026-11-04	Merge pull request #7870 from deepseek-harness/worktree/release-dsh-0.2.2-rc.1

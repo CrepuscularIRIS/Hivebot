@@ -1,0 +1,29 @@
+# §4 内部 API（a2 vs rc1 tarball）
+## dsh-sandbox exports
+a2 eab15a0cf6960121b2b92251a6b83de6  -
+rc1 eab15a0cf6960121b2b92251a6b83de6  -
+## dsh-sandbox lib diff lines (excl. none)
+0
+## dsh-fs exports
+a2 export-count 5
+rc1 export-count 6
+1c1,2
+< export { FileSystem
+---
+> export { FS_ERROR_CODES
+>  FileSystem
+## dsh-fs-sandbox methods
+a2 asyncwriteText( asynceditText( asynccheckedTarget( 
+rc1 asyncwriteText( asynceditText( asyncpatchText( asyncdeleteFile( asyncmoveFile( asynccheckedTarget( 
+## fs-sandbox isPathUnder (containment 复制源) diff
+a2 14840e4896451da19b12894aba10337d  -
+rc1 14840e4896451da19b12894aba10337d  -
+## dsh-tools pre-execute / execute 扩展点
+a2 pre-execute=1 execute=1
+rc1 pre-execute=1 execute=1
+## dsh-tools pipeline.js 扩展点行（两版同位）
+a2 386:			const gate = await this.ctx.waterfall(carrier, "tools/pre-execute", exec, () => Promise.resolve({ kind: "allow" }));
+a2 492:			const result = await this.ctx.waterfall(carrier, "tools/execute", mutableExec, () => this.dispatchToolBody(mutableExec));
+rc1 386:			const gate = await this.ctx.waterfall(carrier, "tools/pre-execute", exec, () => Promise.resolve({ kind: "allow" }));
+rc1 492:			const result = await this.ctx.waterfall(carrier, "tools/execute", mutableExec, () => this.dispatchToolBody(mutableExec));
+pipeline.js diff lines: 0

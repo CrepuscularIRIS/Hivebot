@@ -1,0 +1,1683 @@
+[
+ {
+  "id": "agent-default-model",
+  "ours": [
+   "p2sdk.yml:38"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:90"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:90"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "agent-instructions",
+  "ours": [
+   "approval.yml:77",
+   "approval.yml:204",
+   "approval.yml:333"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:303",
+   "dsh-web-app/cordis.patch.yml:573",
+   "dsh-web-app/presets/standard.patch.yml:15",
+   "dsh-web-app/presets/cordis.patch.yml:18",
+   "dsh-web-app/presets/ptc.patch.yml:15"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:307",
+   "dsh-web-app/cordis.patch.yml:577",
+   "dsh-web-app/presets/standard.patch.yml:15",
+   "dsh-web-app/presets/cordis.patch.yml:18",
+   "dsh-web-app/presets/ptc.patch.yml:15"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "client-hmr",
+  "ours": [
+   "p2sdk.yml:56"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:210"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:214"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "command-compact",
+  "ours": [
+   "approval.yml:137",
+   "approval.yml:260",
+   "approval.yml:393"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:356",
+   "dsh-web-app/cordis.patch.yml:545",
+   "dsh-web-app/presets/standard.patch.yml:75",
+   "dsh-web-app/presets/cordis.patch.yml:74",
+   "dsh-web-app/presets/ptc.patch.yml:75",
+   "dsh-web-app/presets/minimal.patch.yml:32"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:360",
+   "dsh-web-app/cordis.patch.yml:549",
+   "dsh-web-app/presets/standard.patch.yml:78",
+   "dsh-web-app/presets/cordis.patch.yml:77",
+   "dsh-web-app/presets/ptc.patch.yml:78",
+   "dsh-web-app/presets/minimal.patch.yml:32"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "command-goal",
+  "ours": [
+   "approval.yml:103",
+   "approval.yml:226",
+   "approval.yml:359"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:329",
+   "dsh-web-app/cordis.patch.yml:526",
+   "dsh-web-app/presets/standard.patch.yml:41",
+   "dsh-web-app/presets/cordis.patch.yml:40",
+   "dsh-web-app/presets/ptc.patch.yml:41"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:333",
+   "dsh-web-app/cordis.patch.yml:530",
+   "dsh-web-app/presets/standard.patch.yml:44",
+   "dsh-web-app/presets/cordis.patch.yml:43",
+   "dsh-web-app/presets/ptc.patch.yml:44"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "compaction",
+  "ours": [
+   "approval.yml:128",
+   "approval.yml:251",
+   "approval.yml:384"
+  ],
+  "a2": [
+   "dsh-web-app/presets/standard.patch.yml:66",
+   "dsh-web-app/presets/cordis.patch.yml:65",
+   "dsh-web-app/presets/ptc.patch.yml:66",
+   "dsh-web-app/presets/minimal.patch.yml:24"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/standard.patch.yml:69",
+   "dsh-web-app/presets/cordis.patch.yml:68",
+   "dsh-web-app/presets/ptc.patch.yml:69",
+   "dsh-web-app/presets/minimal.patch.yml:24"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "compaction-basic",
+  "ours": [
+   "approval.yml:135",
+   "approval.yml:258",
+   "approval.yml:391"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:351",
+   "dsh-web-app/cordis.patch.yml:542",
+   "dsh-web-app/presets/standard.patch.yml:73",
+   "dsh-web-app/presets/cordis.patch.yml:72",
+   "dsh-web-app/presets/ptc.patch.yml:73",
+   "dsh-web-app/presets/minimal.patch.yml:30"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:355",
+   "dsh-web-app/cordis.patch.yml:546",
+   "dsh-web-app/presets/standard.patch.yml:76",
+   "dsh-web-app/presets/cordis.patch.yml:75",
+   "dsh-web-app/presets/ptc.patch.yml:76",
+   "dsh-web-app/presets/minimal.patch.yml:30"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "cordis",
+  "ours": [
+   "approval.yml:194"
+  ],
+  "a2": [
+   "dsh-web-app/presets/cordis.patch.yml:8"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/cordis.patch.yml:8"
+  ],
+  "status": "block-changed"
+ },
+ {
+  "id": "cordis-client-runner",
+  "ours": [
+   "p2sdk.yml:58"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:243"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:247"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "delegation",
+  "ours": [
+   "approval.yml:145",
+   "approval.yml:268",
+   "approval.yml:401"
+  ],
+  "a2": [
+   "dsh-web-app/presets/standard.patch.yml:83",
+   "dsh-web-app/presets/cordis.patch.yml:82",
+   "dsh-web-app/presets/ptc.patch.yml:83"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/standard.patch.yml:86",
+   "dsh-web-app/presets/cordis.patch.yml:85",
+   "dsh-web-app/presets/ptc.patch.yml:86"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "llm-pi-ai",
+  "ours": [
+   "p2sdk.yml:26"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:135"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:135"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "locale",
+  "ours": [
+   "p2sdk.yml:60"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:249"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:253"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "message-quotes",
+  "ours": [
+   "p2sdk.yml:62"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:324"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:328"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "p2-alpha",
+  "ours": [
+   "presets.yml:11"
+  ],
+  "a2": [],
+  "rc1": [],
+  "status": "ours-only"
+ },
+ {
+  "id": "p2-beta",
+  "ours": [
+   "presets.yml:26"
+  ],
+  "a2": [],
+  "rc1": [],
+  "status": "ours-only"
+ },
+ {
+  "id": "p2sdk-fs-guard",
+  "ours": [
+   "approval.yml:29"
+  ],
+  "a2": [],
+  "rc1": [],
+  "status": "ours-only"
+ },
+ {
+  "id": "p2sdk-request-net",
+  "ours": [
+   "approval.yml:40"
+  ],
+  "a2": [],
+  "rc1": [],
+  "status": "ours-only"
+ },
+ {
+  "id": "p2sdk-shell-ask",
+  "ours": [
+   "approval.yml:32"
+  ],
+  "a2": [],
+  "rc1": [],
+  "status": "ours-only"
+ },
+ {
+  "id": "p2temp-connectors",
+  "ours": [
+   "market.yml:27"
+  ],
+  "a2": [],
+  "rc1": [],
+  "status": "ours-only"
+ },
+ {
+  "id": "pbots-orchestration",
+  "ours": [
+   "orchestration.yml:14"
+  ],
+  "a2": [],
+  "rc1": [],
+  "status": "ours-only"
+ },
+ {
+  "id": "persona",
+  "ours": [
+   "approval.yml:68",
+   "approval.yml:199",
+   "approval.yml:329",
+   "presets.yml:15",
+   "presets.yml:30"
+  ],
+  "a2": [
+   "dsh-web-app/presets/standard.patch.yml:11",
+   "dsh-web-app/presets/cordis.patch.yml:13",
+   "dsh-web-app/presets/ptc.patch.yml:11",
+   "dsh-web-app/presets/minimal.patch.yml:11"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/standard.patch.yml:11",
+   "dsh-web-app/presets/cordis.patch.yml:13",
+   "dsh-web-app/presets/ptc.patch.yml:11",
+   "dsh-web-app/presets/minimal.patch.yml:11"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "plan-mode",
+  "ours": [
+   "approval.yml:113",
+   "approval.yml:236",
+   "approval.yml:369"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:332",
+   "dsh-web-app/cordis.patch.yml:532",
+   "dsh-web-app/presets/standard.patch.yml:51",
+   "dsh-web-app/presets/cordis.patch.yml:50",
+   "dsh-web-app/presets/ptc.patch.yml:51"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:336",
+   "dsh-web-app/cordis.patch.yml:536",
+   "dsh-web-app/presets/standard.patch.yml:54",
+   "dsh-web-app/presets/cordis.patch.yml:53",
+   "dsh-web-app/presets/ptc.patch.yml:54"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "planning",
+  "ours": [
+   "approval.yml:107",
+   "approval.yml:230",
+   "approval.yml:363"
+  ],
+  "a2": [
+   "dsh-web-app/presets/standard.patch.yml:45",
+   "dsh-web-app/presets/cordis.patch.yml:44",
+   "dsh-web-app/presets/ptc.patch.yml:45"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/standard.patch.yml:48",
+   "dsh-web-app/presets/cordis.patch.yml:47",
+   "dsh-web-app/presets/ptc.patch.yml:48"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "plugin-market",
+  "ours": [
+   "market.yml:21"
+  ],
+  "a2": [],
+  "rc1": [],
+  "status": "ours-only"
+ },
+ {
+  "id": "present",
+  "ours": [
+   "approval.yml:182",
+   "approval.yml:314",
+   "approval.yml:442"
+  ],
+  "a2": [
+   "dsh-web-app/presets/standard.patch.yml:120",
+   "dsh-web-app/presets/cordis.patch.yml:128",
+   "dsh-web-app/presets/ptc.patch.yml:124"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/standard.patch.yml:123",
+   "dsh-web-app/presets/cordis.patch.yml:131",
+   "dsh-web-app/presets/ptc.patch.yml:127"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "preset-cordis",
+  "ours": [
+   "approval.yml:191"
+  ],
+  "a2": [
+   "dsh-web-app/presets/cordis.patch.yml:5"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/cordis.patch.yml:5"
+  ],
+  "status": "block-changed"
+ },
+ {
+  "id": "preset-p2-alpha",
+  "ours": [
+   "presets.yml:8"
+  ],
+  "a2": [],
+  "rc1": [],
+  "status": "ours-only"
+ },
+ {
+  "id": "preset-p2-beta",
+  "ours": [
+   "presets.yml:23"
+  ],
+  "a2": [],
+  "rc1": [],
+  "status": "ours-only"
+ },
+ {
+  "id": "preset-ptc",
+  "ours": [
+   "approval.yml:323"
+  ],
+  "a2": [
+   "dsh-web-app/presets/ptc.patch.yml:5"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/ptc.patch.yml:5"
+  ],
+  "status": "block-changed"
+ },
+ {
+  "id": "preset-standard",
+  "ours": [
+   "approval.yml:62"
+  ],
+  "a2": [
+   "dsh-web-app/presets/standard.patch.yml:5"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/standard.patch.yml:5"
+  ],
+  "status": "block-changed"
+ },
+ {
+  "id": "ptc",
+  "ours": [
+   "approval.yml:326"
+  ],
+  "a2": [
+   "dsh-web-app/presets/ptc.patch.yml:8"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/ptc.patch.yml:8"
+  ],
+  "status": "block-changed"
+ },
+ {
+  "id": "resources",
+  "ours": [
+   "p2sdk.yml:64"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:268"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:272"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "session-title-llm",
+  "ours": [
+   "p2sdk.yml:20"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:67"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:67"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "shortcuts",
+  "ours": [
+   "p2sdk.yml:66"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:252"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:256"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "skill-filesystem",
+  "ours": [
+   "approval.yml:99",
+   "approval.yml:307",
+   "approval.yml:355"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:311",
+   "dsh-web-app/cordis.patch.yml:517",
+   "dsh-web-app/presets/standard.patch.yml:37",
+   "dsh-web-app/presets/cordis.patch.yml:121",
+   "dsh-web-app/presets/ptc.patch.yml:37"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:315",
+   "dsh-web-app/cordis.patch.yml:521",
+   "dsh-web-app/presets/standard.patch.yml:40",
+   "dsh-web-app/presets/cordis.patch.yml:124",
+   "dsh-web-app/presets/ptc.patch.yml:40"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "standard",
+  "ours": [
+   "approval.yml:65"
+  ],
+  "a2": [
+   "dsh-web-app/presets/standard.patch.yml:8"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/standard.patch.yml:8"
+  ],
+  "status": "block-changed"
+ },
+ {
+  "id": "time-context",
+  "ours": [
+   "approval.yml:81",
+   "approval.yml:208",
+   "approval.yml:337"
+  ],
+  "a2": [
+   "dsh-web-app/presets/standard.patch.yml:19",
+   "dsh-web-app/presets/cordis.patch.yml:22",
+   "dsh-web-app/presets/ptc.patch.yml:19"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/standard.patch.yml:19",
+   "dsh-web-app/presets/cordis.patch.yml:22",
+   "dsh-web-app/presets/ptc.patch.yml:19"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-ask-user",
+  "ours": [
+   "approval.yml:171",
+   "approval.yml:294",
+   "approval.yml:429"
+  ],
+  "a2": [
+   "dsh-web-app/presets/standard.patch.yml:109",
+   "dsh-web-app/presets/cordis.patch.yml:108",
+   "dsh-web-app/presets/ptc.patch.yml:111"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/standard.patch.yml:112",
+   "dsh-web-app/presets/cordis.patch.yml:111",
+   "dsh-web-app/presets/ptc.patch.yml:114"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-bash",
+  "ours": [
+   "approval.yml:83",
+   "approval.yml:210",
+   "approval.yml:339"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:281",
+   "dsh-web-app/cordis.patch.yml:483",
+   "dsh-web-app/presets/standard.patch.yml:21",
+   "dsh-web-app/presets/cordis.patch.yml:24",
+   "dsh-web-app/presets/ptc.patch.yml:21"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:281",
+   "dsh-web-app/cordis.patch.yml:487",
+   "dsh-web-app/presets/standard.patch.yml:21",
+   "dsh-web-app/presets/cordis.patch.yml:24",
+   "dsh-web-app/presets/ptc.patch.yml:21"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-cordis",
+  "ours": [
+   "approval.yml:305"
+  ],
+  "a2": [
+   "dsh-web-app/presets/cordis.patch.yml:119"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/cordis.patch.yml:122"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-executor-ptc",
+  "ours": [
+   "approval.yml:440"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:500",
+   "dsh-web-app/presets/ptc.patch.yml:122"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:504",
+   "dsh-web-app/presets/ptc.patch.yml:125"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-fs",
+  "ours": [
+   "approval.yml:89",
+   "approval.yml:216",
+   "approval.yml:345",
+   "presets.yml:21",
+   "presets.yml:36"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:295",
+   "dsh-web-app/cordis.patch.yml:502",
+   "dsh-web-app/presets/standard.patch.yml:27",
+   "dsh-web-app/presets/cordis.patch.yml:30",
+   "dsh-web-app/presets/ptc.patch.yml:27",
+   "dsh-web-app/presets/minimal.patch.yml:17"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:296",
+   "dsh-web-app/cordis.patch.yml:506",
+   "dsh-web-app/presets/standard.patch.yml:27",
+   "dsh-web-app/presets/cordis.patch.yml:30",
+   "dsh-web-app/presets/ptc.patch.yml:27",
+   "dsh-web-app/presets/minimal.patch.yml:17"
+  ],
+  "status": "block-changed"
+ },
+ {
+  "id": "tool-fs-search",
+  "ours": [
+   "approval.yml:91",
+   "approval.yml:218",
+   "approval.yml:347",
+   "presets.yml:38"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:298",
+   "dsh-web-app/cordis.patch.yml:505",
+   "dsh-web-app/presets/standard.patch.yml:29",
+   "dsh-web-app/presets/cordis.patch.yml:32",
+   "dsh-web-app/presets/ptc.patch.yml:29"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:302",
+   "dsh-web-app/cordis.patch.yml:509",
+   "dsh-web-app/presets/standard.patch.yml:32",
+   "dsh-web-app/presets/cordis.patch.yml:35",
+   "dsh-web-app/presets/ptc.patch.yml:32"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-goal",
+  "ours": [
+   "approval.yml:105",
+   "approval.yml:228",
+   "approval.yml:361"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:440",
+   "dsh-web-app/cordis.patch.yml:529",
+   "dsh-web-app/presets/standard.patch.yml:43",
+   "dsh-web-app/presets/cordis.patch.yml:42",
+   "dsh-web-app/presets/ptc.patch.yml:43"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:444",
+   "dsh-web-app/cordis.patch.yml:533",
+   "dsh-web-app/presets/standard.patch.yml:46",
+   "dsh-web-app/presets/cordis.patch.yml:45",
+   "dsh-web-app/presets/ptc.patch.yml:46"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-jobs",
+  "ours": [
+   "approval.yml:95",
+   "approval.yml:222",
+   "approval.yml:351"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:289",
+   "dsh-web-app/cordis.patch.yml:499",
+   "dsh-web-app/presets/standard.patch.yml:33",
+   "dsh-web-app/presets/cordis.patch.yml:36",
+   "dsh-web-app/presets/ptc.patch.yml:33"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:289",
+   "dsh-web-app/cordis.patch.yml:503",
+   "dsh-web-app/presets/standard.patch.yml:36",
+   "dsh-web-app/presets/cordis.patch.yml:39",
+   "dsh-web-app/presets/ptc.patch.yml:36"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-plugin-manager",
+  "ours": [
+   "approval.yml:184",
+   "approval.yml:316",
+   "approval.yml:444"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:16",
+   "dsh-web-app/cordis.patch.yml:480",
+   "dsh-web-app/presets/standard.patch.yml:122",
+   "dsh-web-app/presets/cordis.patch.yml:130",
+   "dsh-web-app/presets/ptc.patch.yml:126"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:16",
+   "dsh-web-app/cordis.patch.yml:484",
+   "dsh-web-app/presets/standard.patch.yml:125",
+   "dsh-web-app/presets/cordis.patch.yml:133",
+   "dsh-web-app/presets/ptc.patch.yml:129"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-plugin-market",
+  "ours": [
+   "approval.yml:187",
+   "approval.yml:319",
+   "approval.yml:447"
+  ],
+  "a2": [
+   "dsh-web-app/presets/standard.patch.yml:125",
+   "dsh-web-app/presets/cordis.patch.yml:133",
+   "dsh-web-app/presets/ptc.patch.yml:129"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/standard.patch.yml:128",
+   "dsh-web-app/presets/cordis.patch.yml:136",
+   "dsh-web-app/presets/ptc.patch.yml:132"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-pwsh",
+  "ours": [
+   "approval.yml:86",
+   "approval.yml:213",
+   "approval.yml:342"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:285",
+   "dsh-web-app/cordis.patch.yml:486",
+   "dsh-web-app/presets/standard.patch.yml:24",
+   "dsh-web-app/presets/cordis.patch.yml:27",
+   "dsh-web-app/presets/ptc.patch.yml:24"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:285",
+   "dsh-web-app/cordis.patch.yml:490",
+   "dsh-web-app/presets/standard.patch.yml:24",
+   "dsh-web-app/presets/cordis.patch.yml:27",
+   "dsh-web-app/presets/ptc.patch.yml:24"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-result-pruner",
+  "ours": [
+   "approval.yml:139",
+   "approval.yml:262",
+   "approval.yml:395"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:421",
+   "dsh-web-app/cordis.patch.yml:548",
+   "dsh-web-app/presets/standard.patch.yml:77",
+   "dsh-web-app/presets/cordis.patch.yml:76",
+   "dsh-web-app/presets/ptc.patch.yml:77"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:425",
+   "dsh-web-app/cordis.patch.yml:552",
+   "dsh-web-app/presets/standard.patch.yml:80",
+   "dsh-web-app/presets/cordis.patch.yml:79",
+   "dsh-web-app/presets/ptc.patch.yml:80"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-schedule",
+  "ours": [
+   "approval.yml:97",
+   "approval.yml:224",
+   "approval.yml:353"
+  ],
+  "a2": [
+   "dsh-web-app/presets/standard.patch.yml:35",
+   "dsh-web-app/presets/cordis.patch.yml:38",
+   "dsh-web-app/presets/ptc.patch.yml:35"
+  ],
+  "rc1": [
+   "dsh-web-app/presets/standard.patch.yml:38",
+   "dsh-web-app/presets/cordis.patch.yml:41",
+   "dsh-web-app/presets/ptc.patch.yml:38"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-skill",
+  "ours": [
+   "approval.yml:101",
+   "approval.yml:312",
+   "approval.yml:357"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:314",
+   "dsh-web-app/cordis.patch.yml:520",
+   "dsh-web-app/presets/standard.patch.yml:39",
+   "dsh-web-app/presets/cordis.patch.yml:126",
+   "dsh-web-app/presets/ptc.patch.yml:39"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:318",
+   "dsh-web-app/cordis.patch.yml:524",
+   "dsh-web-app/presets/standard.patch.yml:42",
+   "dsh-web-app/presets/cordis.patch.yml:129",
+   "dsh-web-app/presets/ptc.patch.yml:42"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-subagent",
+  "ours": [
+   "approval.yml:153",
+   "approval.yml:276",
+   "approval.yml:409"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:377",
+   "dsh-web-app/cordis.patch.yml:561",
+   "dsh-web-app/presets/standard.patch.yml:91",
+   "dsh-web-app/presets/cordis.patch.yml:90",
+   "dsh-web-app/presets/ptc.patch.yml:91"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:381",
+   "dsh-web-app/cordis.patch.yml:565",
+   "dsh-web-app/presets/standard.patch.yml:94",
+   "dsh-web-app/presets/cordis.patch.yml:93",
+   "dsh-web-app/presets/ptc.patch.yml:94"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-subagent-control",
+  "ours": [
+   "approval.yml:151",
+   "approval.yml:274",
+   "approval.yml:407"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:374",
+   "dsh-web-app/cordis.patch.yml:558",
+   "dsh-web-app/presets/standard.patch.yml:89",
+   "dsh-web-app/presets/cordis.patch.yml:88",
+   "dsh-web-app/presets/ptc.patch.yml:89"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:378",
+   "dsh-web-app/cordis.patch.yml:562",
+   "dsh-web-app/presets/standard.patch.yml:92",
+   "dsh-web-app/presets/cordis.patch.yml:91",
+   "dsh-web-app/presets/ptc.patch.yml:92"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-subagent-fork",
+  "ours": [
+   "approval.yml:160",
+   "approval.yml:283",
+   "approval.yml:416"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:387",
+   "dsh-web-app/cordis.patch.yml:564",
+   "dsh-web-app/presets/standard.patch.yml:98",
+   "dsh-web-app/presets/cordis.patch.yml:97",
+   "dsh-web-app/presets/ptc.patch.yml:98"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:391",
+   "dsh-web-app/cordis.patch.yml:568",
+   "dsh-web-app/presets/standard.patch.yml:101",
+   "dsh-web-app/presets/cordis.patch.yml:100",
+   "dsh-web-app/presets/ptc.patch.yml:101"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-todo",
+  "ours": [
+   "approval.yml:173",
+   "approval.yml:296",
+   "approval.yml:431"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:433",
+   "dsh-web-app/cordis.patch.yml:576",
+   "dsh-web-app/presets/standard.patch.yml:111",
+   "dsh-web-app/presets/cordis.patch.yml:110",
+   "dsh-web-app/presets/ptc.patch.yml:113"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:437",
+   "dsh-web-app/cordis.patch.yml:580",
+   "dsh-web-app/presets/standard.patch.yml:114",
+   "dsh-web-app/presets/cordis.patch.yml:113",
+   "dsh-web-app/presets/ptc.patch.yml:116"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-web",
+  "ours": [
+   "approval.yml:177",
+   "approval.yml:300",
+   "approval.yml:435"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:482",
+   "dsh-web-app/cordis.patch.yml:579",
+   "dsh-web-app/presets/standard.patch.yml:115",
+   "dsh-web-app/presets/cordis.patch.yml:114",
+   "dsh-web-app/presets/ptc.patch.yml:117"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:486",
+   "dsh-web-app/cordis.patch.yml:583",
+   "dsh-web-app/presets/standard.patch.yml:118",
+   "dsh-web-app/presets/cordis.patch.yml:117",
+   "dsh-web-app/presets/ptc.patch.yml:120"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "tool-workflow",
+  "ours": [
+   "approval.yml:169",
+   "approval.yml:292",
+   "approval.yml:426"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:401",
+   "dsh-web-app/cordis.patch.yml:570",
+   "dsh-web-app/presets/standard.patch.yml:107",
+   "dsh-web-app/presets/cordis.patch.yml:106",
+   "dsh-web-app/presets/ptc.patch.yml:108"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:405",
+   "dsh-web-app/cordis.patch.yml:574",
+   "dsh-web-app/presets/standard.patch.yml:110",
+   "dsh-web-app/presets/cordis.patch.yml:109",
+   "dsh-web-app/presets/ptc.patch.yml:111"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-agent-preset",
+  "ours": [
+   "p2sdk.yml:68"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:421"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:425"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-approval",
+  "ours": [
+   "p2sdk.yml:70"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:321"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:325"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-attachment",
+  "ours": [
+   "p2sdk.yml:72"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:334"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:338"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-brand-official",
+  "ours": [
+   "p2sdk.yml:74"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:331"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:335"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-chat",
+  "ours": [
+   "p2sdk.yml:76"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:327"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:331"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-commands",
+  "ours": [
+   "p2sdk.yml:78"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:375"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:379"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-conversation",
+  "ours": [
+   "p2sdk.yml:80"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:318"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:322"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-cordis",
+  "ours": [
+   "p2sdk.yml:82"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:344"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:348"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-deliverables",
+  "ours": [
+   "p2sdk.yml:84"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:353"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:357"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-file-drag",
+  "ours": [
+   "p2sdk.yml:86"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:337"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:341"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-goal",
+  "ours": [
+   "p2sdk.yml:88"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:403"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:407"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-input-trigger",
+  "ours": [
+   "p2sdk.yml:90"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:372"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:376"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-jobs",
+  "ours": [
+   "p2sdk.yml:92"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:394"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:398"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-layout",
+  "ours": [
+   "p2sdk.yml:94"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:258"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:262"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-message-feedback",
+  "ours": [
+   "p2sdk.yml:96"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:409"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:413"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-model-selection",
+  "ours": [
+   "p2sdk.yml:98"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:413"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:417"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-open-in-app",
+  "ours": [
+   "p2sdk.yml:100"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:80"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:84"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-permission",
+  "ours": [
+   "p2sdk.yml:102"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:416"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:420"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-plan",
+  "ours": [
+   "p2sdk.yml:104"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:454"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:458"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-plugin-manager",
+  "ours": [
+   "p2sdk.yml:106"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:310"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:314"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-reference",
+  "ours": [
+   "p2sdk.yml:108"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:384"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:388"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-renderer",
+  "ours": [
+   "p2sdk.yml:110"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:261"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:265"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-schedule",
+  "ours": [
+   "p2sdk.yml:112"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:399"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:403"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-secret-mask",
+  "ours": [
+   "p2sdk.yml:114"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:389"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:393"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-session",
+  "ours": [
+   "p2sdk.yml:116"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:264"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:268"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-settings",
+  "ours": [
+   "p2sdk.yml:118"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:298"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:302"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-settings-account",
+  "ours": [
+   "p2sdk.yml:120"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:136"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:140"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-settings-agent-loop",
+  "ours": [
+   "p2sdk.yml:122"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:444"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:448"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-settings-general",
+  "ours": [
+   "p2sdk.yml:124"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:301"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:305"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-settings-models",
+  "ours": [
+   "p2sdk.yml:126"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:304"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:308"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-settings-plugin-inventory",
+  "ours": [
+   "p2sdk.yml:128"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:315"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:319"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-settings-plugins",
+  "ours": [
+   "p2sdk.yml:130"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:435"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:439"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-settings-session-log",
+  "ours": [
+   "p2sdk.yml:132"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:429"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:433"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-settings-shell",
+  "ours": [
+   "p2sdk.yml:134"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:441"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:445"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-settings-subagent",
+  "ours": [
+   "p2sdk.yml:136"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:447"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:451"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-settings-web-search",
+  "ours": [
+   "p2sdk.yml:138"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:450"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:454"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-shortcuts",
+  "ours": [
+   "p2sdk.yml:140"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:255"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:259"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-sidebar",
+  "ours": [
+   "p2sdk.yml:142"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:271"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:275"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-sidebar-browser",
+  "ours": [
+   "p2sdk.yml:144"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:288"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:292"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-sidebar-documentpreview",
+  "ours": [
+   "p2sdk.yml:146"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:284"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:288"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-sidebar-files",
+  "ours": [
+   "p2sdk.yml:148"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:295"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:299"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-sidebar-right",
+  "ours": [
+   "p2sdk.yml:150"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:275"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:279"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-sidebar-terminal",
+  "ours": [
+   "p2sdk.yml:152"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:292"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:296"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-skill",
+  "ours": [
+   "p2sdk.yml:154"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:378"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:382"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-subagent",
+  "ours": [
+   "p2sdk.yml:156"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:381"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:385"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-theme",
+  "ours": [
+   "p2sdk.yml:158"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:246"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:250"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-tool",
+  "ours": [
+   "p2sdk.yml:160"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:341"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:345"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-trajectory",
+  "ours": [
+   "p2sdk.yml:162"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:460"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:464"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-user-questions",
+  "ours": [
+   "p2sdk.yml:164"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:457"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:461"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-workflow-run",
+  "ours": [
+   "p2sdk.yml:166"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:367"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:371"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "ui-workspace",
+  "ours": [
+   "p2sdk.yml:168"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:362"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:366"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "web-runtime",
+  "ours": [
+   "p2sdk.yml:9"
+  ],
+  "a2": [
+   "dsh-web-app/cordis.patch.yml:189"
+  ],
+  "rc1": [
+   "dsh-web-app/cordis.patch.yml:193"
+  ],
+  "status": "same"
+ },
+ {
+  "id": "workflow-ptc",
+  "ours": [
+   "approval.yml:165",
+   "approval.yml:288",
+   "approval.yml:421"
+  ],
+  "a2": [
+   "dsh-base/cordis.patch.yml:396",
+   "dsh-web-app/cordis.patch.yml:567",
+   "dsh-web-app/presets/standard.patch.yml:103",
+   "dsh-web-app/presets/cordis.patch.yml:102",
+   "dsh-web-app/presets/ptc.patch.yml:103"
+  ],
+  "rc1": [
+   "dsh-base/cordis.patch.yml:400",
+   "dsh-web-app/cordis.patch.yml:571",
+   "dsh-web-app/presets/standard.patch.yml:106",
+   "dsh-web-app/presets/cordis.patch.yml:105",
+   "dsh-web-app/presets/ptc.patch.yml:106"
+  ],
+  "status": "same"
+ }
+]

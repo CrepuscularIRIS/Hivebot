@@ -29,7 +29,7 @@
 | 7c | **T14** 缺陷：产品组合下 bot `write` 自己工作区被 guard 软遮蔽拒（`sandboxPolicy.resolve` 无 workspaceRoot；首要嫌疑 = M1 带 sessionId 的 claim 建会话）（`open/T14-ws-write-guard-mask.md`）：sdk 层三格最小复现（claim / mint 对照 / 去 presets.yml）→ 根因 → 根因处修，不放宽遮蔽；验收含 T7a e2e 解阻 | receipts/T7a 附记；T5 复审附带初判 | — | **doing**（优先；claimed 06:18 @ 5972d24d；验收 5b 已补） |
 | 7d | **T7c** L4-d bot 写 / 改自己 skill 根（`.dsh/skills`、`.agents/skills`）出确认卡（`open/T7c-l4d-skill-write-card.md`，Q-028=B）：shell-ask workspace-write 分支一条判定 + 原因串，自主门开也出卡；子代理拒；T6 `skill-save.test.ts:222` 与 T7a `skills-enable.spec.ts` 的旧断言明着修订（回执列对照表）；bash 路径为已知缺口 → T7d | Q-028 答复 B；RE-skills Q3 | **T7b 之后**（T7a 合并后才能修订其 spec） | **open**（排 T7b 后） |
 | 7e | T7d 补 bash 缺口：bot 工作区建出时预建 `.dsh/skills`、`.agents/skills`，bwrap wrapper 对会话工作区下这两个目录（或整个 `.dsh`/`.agents`）ro-bind，使 bash 写不进 skill 根（挂载点不可 rename/rm）；先红 = T7c 后 bash `cat > .dsh/skills/x/SKILL.md` 零卡写成 | T7c 回执 | T7c | 计划 |
-| 7f | **T15** 上游评估 dsh 0.2.2-alpha.2 → rc.1（`open/T15-dsh-rc1-upgrade-assessment.md`）：只出报告 `p9-dsh-integration/EVAL-dsh-rc1.md` 不升级；npm tarball 实物比对、五个 patch 文件 110 个行 id 逐个对照、cordis 4.1.0 peer 波及、`8f798da97d` 与 T14 关系单列（若修了 T14 根因，回执顶部标出供主 agent 定 T14 走向）、`7bd189b3b5` 对 DESIGN D1 前提的影响、踩坑对照表、升级时机建议（默认：T14+T7a+T7b 落地后专单升级 + 全量回归） | 主 agent 上游巡检 2026-11-06 | — | **open**（纯读，可与在途单并行） |
+| 7f | **T15** 上游评估 dsh 0.2.2-alpha.2 → rc.1（`open/T15-dsh-rc1-upgrade-assessment.md`）：只出报告 `p9-dsh-integration/EVAL-dsh-rc1.md` 不升级；npm tarball 实物比对、五个 patch 文件 110 个行 id 逐个对照、cordis 4.1.0 peer 波及、`8f798da97d` 与 T14 关系单列（若修了 T14 根因，回执顶部标出供主 agent 定 T14 走向）、`7bd189b3b5` 对 DESIGN D1 前提的影响、踩坑对照表、升级时机建议（默认：T14+T7a+T7b 落地后专单升级 + 全量回归） | 主 agent 上游巡检 2026-11-06 | — | **报告已交**（`p9-dsh-integration/EVAL-dsh-rc1.md` + `evidence/T15/*` + `receipts/T15.md`，自检 1–7 过；待 manager 任务 B）——§2 结论**无关**；时机维持并微调为「T9a 后、T9b 前」 |
 | 8 | T8 P5-H5b `tests/e2e/*.test.ts` 裸 mkdtemp → tmkdir（约 25 个文件）；验收用 `vitest list tests/e2e`（只收集不跑）抓 import 错 + 抽 3 个快文件跑残留计数 | HANDOFF §3-3 | T1 验收（已通过，可开；照 T1 的写法；已知残留源含 `tests/e2e/market.test.ts:108` 的 `p2sdk-t09-patch-`） | 计划 |
 | 9 | L5-a 定时投递 e2e：schedule 一次性任务按时投递到指定 bot 会话（BRIEF 验收第 3 条；`tool-schedule` 已在 preset，预计只要测试 + 少量胶水） | BRIEF 验收第 3 条 | — | 计划（T2–T4 后开，避免同时三条以上链） |
 | 10 | P5-H7 实证：`PBOTS_TEST_WORKERS` 下双全量并行一次（代码侧已完成 2c20a2c） | HANDOFF §3-2 | **load < 8 的窗口**（GPU 训练中不跑） | 等低负载 |
@@ -59,6 +59,7 @@
 
 ## 提议（未开单）
 
+- **升级单（T15 草案，EVAL §8）**：dsh 9 依赖一次升到 rc.1（cordis peer 不相交）；必做三件安全修补——envelope `JOB_TOOLS` 换 `schedule_edit/schedule_view`、guard `NEVER_TOOLS` 加 `apply_patch` + approval.yml preset 副本显式 `applyPatch: false`、执行层 patch/delete/move 经 checkedTarget 的证明格；备份 `$DSH_HOME`（会话日志迁移）；锚点重定；全量回归。排位：T14+T7a+T7b 落地、T9a 合并后，**T9b/T7c 开工前**（T9b 的 fs-zone-ssh 改五入口）。
 - ~~T4 残留~~ → 已并入 T5 D13（第一张 ssh 实现单删 `ssh-headless.test.ts:111-122`）。
 - L4 独立账户库 + 「Add new skill」手填 + 文件导入（RE Q4：7 种扩展名 txt/md/markdown/csv/json/yaml/yml、非 UTF-8/空/超限各报 skip）：T7a 的库是派生视图，有了这些写入方再建 `$PBOTS_DATA_DIR` 下独立库目录（不能放共扫根）。届时 A 删除自己的 skill 不再让它从库里消失。
 - L4 其余入口（建 bot 向导、bot 复制带 skill、聊天内挑选卡）：T7b 只做 info pane 一个入口。

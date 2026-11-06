@@ -5,7 +5,7 @@
 > 来源：p9 BRIEF 目标 3 / L8 / 验收第 1 条；PLAN §2 fs-zone 行、§3 十条事实、§5-1/§5-4/§5-6；receipts/T4.md §5；queue 提议「T4 残留」
 > 分支 / 作业目录：文档直接写集成分支 `work/**`（不写代码）；只读探针目录 `/dev/shm/bot-T5-*`（ssh helper 要在 bwrap 私有 /tmp 之外，PLAN §3-5；在 bot-reap 白名单内）
 > claimed：2026-11-06 05:18 manager (Opus 5.5) @ b3983512；交稿 05:55（未提交，待主 agent commit）
-> accepted：（任务 B 验收通过时填：日期、HEAD）
+> accepted：2026-11-06 @ 10e9951b（manager 任务 B；r2 + 两处小勘误并入 T9a/T9b/T10，见 review/T5-design.md 末节）
 
 ## 目标
 T4 证明了「上游 headless + ssh 族」能跑通；但产品组合里 fs / subprocess / sandbox 三个挂点上已经各挂了我们的安全层（fs-zone 替 fs-sandbox、guard 最外层拦 NEVER、shell-ask 档位、bwrap wrapper 作 sandbox runner、request-net），ssh 族在**同一批挂点**做进程级替换。本单出一份可直接拆成实现单的设计：每道题给结论、被拒备选、锚点、以及实现单要先跑红的那个测试。不出设计就接产品 = 安全层在 ssh 模式下悄悄失效。

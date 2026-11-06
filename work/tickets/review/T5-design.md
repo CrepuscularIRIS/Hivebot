@@ -40,3 +40,15 @@
 10. D7 定义触发（main 事件流固定串）+ 用户点「重新连接」，不自动重启（会打断他 bot 回合）。
 11. 两处锚点已改。
 T9 已拆 T9a/T9b；T7a 缺陷单 = `open/T14-ws-write-guard-mask.md`。自检 1–8 复跑全过（第 7 条按新口径，含负对照）。
+
+## 经理核实（任务 B，manager Opus 5.5 全新上下文，2026-11-06 @ 10e9951b）
+自检 1–8 亲自复跑全过：13 节 + 结论表 1；五件套无缺；109 锚点全可解析；证据 4 文件非空；D10 原文 `assets=0`；queue 引用 7 行、「可开」恰 1 行、删 `ssh-headless.test.ts:111-122` 写明；Q-013/024/029 口径过；无 bot-T5 进程，`/tmp/dsh-ssh-*` 相对执笔前无新增。
+抽查四条读源码对照（不是只看文字）：
+- 第 1 条 **修到位**：helper 的 fs 是 `SandboxedFileSystem`（helper.js:539、:783-793），其 `checkedTarget` 用含 `/tmp` 的 `writableRoots`（dsh-sandbox lib 239-246、fs-sandbox lib 160）→ 原版 fs-ssh 写远端 /tmp 必成功，①b 先红成立；①d（dfa 下 NEVER）同样原版必写成功。
+- 第 2 条 **修到位**：`wrapperArgv(cfg)` 抽自 start.ts sandboxRow（argv 实在 :217-226），宿主全套∪远端根；wrapper 对不存在路径 `hide_args` 返回 `[]`（bwrap-wrap.py:76-83）。
+- 第 3 条 **修到位，留一处小缺**：D2/D4 均明文禁止 Hello.root（helper.js:558 mkdtemp，文档写 :557 差一行）作 `--policy`；④c 断言沙箱内 `/tmp/dsh-ssh-*` 不可见。但 T9 基线（原版 sandbox-ssh）下 workspace-write profile 自带 `--tmpfs /tmp`（sandbox-local lib/index.js:34-35），④c 在基线也绿——它是回归格不是先红格，④d 必须点名变异「把 Hello.root 当 `--policy` 传 → ④c 红」，否则此格无人证伪。**并入 T10 验收**（queue 已写），不改设计文档。
+- 第 9 条 **修到位**：三条建会话路径都先调 `mintWorkspace`（orchestrate.ts:143、:219、:349），main 侧无其他 `session/create` 发起点；FileSystem 无 mkdir 属实；RPC 形态有 p2temp 先例（p2temp/index.mjs:47-48）。`ctx.subprocess.spawn` 签名未核，T11 单测时定。
+附带两处小勘误（不阻塞，并入对应实现单）：
+- 「未核实到底」第 1 条兜底写「改用 ①c 作先红」不对——①c（ws 内链向 remoteHome）原版围栏也拒；兜底应为 ①d。并入 T9b 行。
+- D13 ② 写 `validateConfig`，实际函数名 `validateStart`（start.ts:90）。已写进 T9a 工单。
+**裁决：T5 通过。** T5 挪 done/；开 T9a。

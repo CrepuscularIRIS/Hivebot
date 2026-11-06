@@ -512,6 +512,10 @@ function sshRows(cfg: StartConfig): string {
       disabled: true
 - id: sandbox-policy
   config:
+    # T10：同 id 整键覆盖会丢 base 行的 mode（!!js DSH_PERMISSION_MODE ??
+    # 'workspace-write'）——服务 schema default 是 read-only，ssh 会话全被压成
+    # 只读（③a 诊断实锤）。照 base 原样补 mode。
+    mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'
     workspaceRoot: ${yamlScalar(ssh.remoteRoot)}
 `
 }

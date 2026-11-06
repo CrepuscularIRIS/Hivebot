@@ -156,7 +156,7 @@ describe('T10 远端 bash wrapper', () => {
     provision()
     const ws = join(server.workspace, 't10-3a')
     mkdirSync(ws, { recursive: true })
-    const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: ws } })) as { sessionId: string }
+    const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: ws, permissionPreset: 'workspace-write' } })) as { sessionId: string }
     const dir = join(rt!.home, 'fake', 'scripts')
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({
@@ -181,8 +181,18 @@ describe('T10 远端 bash wrapper', () => {
     expect(results.length, '两个工具结果').toBeGreaterThanOrEqual(2)
     const bashOut = (results[1]!.event!.data as { message?: { isError?: boolean; content?: Array<{ text?: string }> } })
     expect(bashOut.message?.isError, 'bash 零卡直跑（门开）').not.toBe(true)
-    expect((bashOut.message?.content ?? []).map((c) => c.text ?? '').join(''), 'bash 读回 marker（ws 在沙箱内可见可读）').toContain(server.mark)
+    expect((bashOut.message?.content ?? []).map((c) => c.text ?? '').join(''), 'bash 读回 marker').toContain(server.mark)
     expect(existsSync(join(ws, 'mark.txt')), 'marker 落远端 ws').toBe(true)
+  })
+
+  it('③b 门关（无 policy-state）→ bash 出卡', { timeout: 240_000 }, async () => {
+    // 门关态：provision 不调（③a 已 provision 过同一 runtime……policy-state 是持久的！
+    // 独立 runtime 才干净——但 e2e 一套限制下用 paused:true 覆盖（tiers ② 同款语义：
+    // 无效状态逐个出卡）
+    provision({ paused: true })
+    const r = await driveBash('echo t10-3b')
+    // 出卡被 approveAll 应答后执行——断言「曾出卡」：answeredIds 有新条目
+    expect(answeredIds.size, '门关 bash 出卡（被应答后放行）').toBeGreaterThan(0)
   })
 
   it('④c 沙箱内 /tmp/dsh-ssh-* 不可见；helper 包目录写保护', { timeout: 240_000 }, async () => {

@@ -1033,3 +1033,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 15:3x T16 主体完：rc.1 全量 69/777+1 全绿（基点 67/772+1；差=T16 新增5格）；揪出并修 2 失败——L5-a 真·rc.1 工具面漂移（rrule+target 枚举）与 sandbox⑧ 预存在探针路径已删（改 agents/manager.md）；guard-escalation 7 绿、ui unit 568 绿
 - 16:3x 合并链三连落地：T7ce（b349b066，回测 73/9/10）→ T9ae（ff095e57，回测 42/14/3/7）→ T16（0b219130，主仓切 rc.1 后定向回测 ⑨1+4+10+1、ui build+d1 12.2s 全绿）；LOG 冲突双侧保留。四孤儿（H7r/T7c 路径）已 reap
 - 16:4x T9af 施工完（extraNeverTools 闭包化：先红 reason 改写→25绿→M1红→回归 7/3）
+- 16:5x T9af 终验通过合并落地（回测 67+10 绿）——Sol 审查 4 条 CONFIRMED 修复链全部闭环（C1=T7ce/C3+C4=T9ae/C2=T9af）。T9b 开工

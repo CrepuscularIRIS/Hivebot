@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T7b 终验（不通过 第 1 次，功能链全过、截图目检不过）；receipts/T7b.md §6
 > 分支 / 作业目录：feat/T7b 续提交 @ /tmp/bot-wt/T7b
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：11:05 main (GLM 5.3)（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

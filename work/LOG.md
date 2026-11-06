@@ -1040,3 +1040,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 18:1x T10 主体落地（wrapperArgv 抽取/sandbox-zone-ssh 类/sshRows 接线，start 42 绿）；测试面（④/③格+变异）待下窗口。T9b 链 reviewer 审查中
 - 18:2x T10 进展：confine 形态两修（选项后直接 profile+透传），④a④b④c 3 绿（宿主/远端哨兵挡、endpoint 不露、helper 写保护）；③a bash 零卡通但 marker 未落 ws（下窗口诊断）。T9b4（guard dispose 定时器）已开单可与 T10 并行
 - 18:3x T10 ③a 诊断：read-only 档坐实（bash 直写被挡=档位预期）；write+bash读回形态仍卡沙箱内 ws 视图（ls 空）——遮蔽源待定位。④ 三格稳定绿
+- 18:4x T10 收口：③a 根因=sandbox-policy 覆盖行丢 mode（整键替换陷阱）→补 workspace-write；④/③/④e 全绿（5+2+42+5）。疑点：③c 变异不咬合（mode 后原版也挡）交终验裁

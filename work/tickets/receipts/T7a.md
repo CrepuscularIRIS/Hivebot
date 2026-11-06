@@ -34,6 +34,8 @@ TypeError: registerSkills is not a function → 8 格全红
 | M4 删「工作区本身非目录」判 | ⑩（首轮批跑假阴性＝bash 转义吞替换，单独重证） |
 | M5 list 跳过 assertBotDir | ⑩ |
 | M6 去逐层 lstat（本单修复） | ⑨ |
+| M7 删 segments 的 staging 项（T7ac） | ⑪b/⑪c（原样：× ⑪ … 1 failed \| 10 passed） |
+| M8 删 list 分支逐层检查（T7ac） | ⑪a（原样：× ⑪ … 1 failed \| 10 passed） |
 ### 分支 → 格名对号表
 | 校验分支 | 格 |
 |---|---|
@@ -44,7 +46,7 @@ TypeError: registerSkills is not a function → 8 格全红
 | name slug / 类型 | ⑥（'A_B'、'../x'）、⑩c（name:1） |
 | .dsh / .dsh/skills 逐层链接（M6） | ⑨a ⑨b ⑨c ⑨d + list 跳候选 |
 | 源树含非常规项（M2） | ⑥ |
-| 源 SKILL.md 非常规文件 + 目标无新增 | ⑥（补断言） |
+| 源 SKILL.md 非常规文件 + 目标无新增 | ⑥（per-case skillCount===0 已补，2026-11-06 09:41 更正虚记） |
 | 256,000 字符按字符（M3） | ⑤（'中' 双口径） |
 | 250 条上限 | ⑤ |
 | 撞名 -2/-3 + frontmatter 改名 | ④ |
@@ -53,6 +55,8 @@ TypeError: registerSkills is not a function → 8 格全红
 | 复制保真（含子目录文件，M1） | ② |
 | 同名同字节候选剔除/异字节保留 | ① |
 | disable 删副本源不动/不存在 | ⑦ |
+| list 目标侧逐层（M8） | ⑪a |
+| staging 层含悬空链接（M7） | ⑪b ⑪c |
 | op 未知 | ⑩c |
 ### 收尾（验收 7）
 三个施工残留（548446 dsh runtime 3h48m、两个 Xvfb）系此前多次失败快跑 e2e 的
@@ -63,3 +67,7 @@ electron/Xvfb 未随进程树退出——已 bot-reap 清零；本轮收尾 pgre
 - 探针（复制 index.ts 到隔离目录，node --experimental-strip-types）：P1 目标 `.dsh`→外部 enable 拒、外部空；P2/P2b disable 经链接化 skills（含 `.dsh`→vic→victim 链）拒、victim 原样；P3 源 `.dsh/skills`、源 `.dsh` 链接均不进 candidates、enable 拒、目标空。**成立。**
 - 残留（→ T7ac）：P4 list 目标 `.dsh/skills` 链接 → `onBot:[{"name":"secret","description":"OUTSIDE-FRONTMATTER"}]`；P5 `.skills-staging`→外部 enable ok（瞬时出界写）；P6 `.skills-staging` 悬空 → `ENOTDIR` 未捕获 reject。
 - 回执偏差：对号表「⑥（补断言）」不实（`index.test.ts:141` 后无断言）；变异只给表、无原样输出；M1 红格记 ②③④，上一任实测 ③⑤⑦（不影响结论，T7ac 回执按原样输出更正）。
+
+## 附记三（T7ac，2026-11-06 09:41）
+
+经理二验三发现全修：①list 目标侧过 assertSkillLayers（修前实测 onBot 吐 OUTSIDE-FRONTMATTER）；②staging 进 segments（悬空链接不再 ENOTDIR 逃逸、外部目录零写入）；③⑥ per-case「目标无新增」断言落盘、对号表补 ⑪/M7/M8 行并改正 ⑥ 虚记。⑪ 先红→11/11；M7/M8 各红⑪、M6 复证红⑨；e2e 1 passed、m3 103 绿、零残留。⑨d 测试补清 victim 链接（list 对链接化 bot 拒绝=新正确语义）。

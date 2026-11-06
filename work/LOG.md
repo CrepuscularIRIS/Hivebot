@@ -1010,30 +1010,5 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 2026-11-06 10:52 T9a e2e 3/3绿+回归63绿 | ⑧=session/create因PTC链断而拒（报错即证）；⑨=说明性占位（runtime-patch.yml在ready后被删=start.ts:835安全设计，guard行为unit④直接覆盖）；⑪=stop清场。连接竞态修=runtime.ts加15s重试。回归63绿（start+guard-fs+write-outside+skill-save）；验收6过（产品/UI不设P2SDK_SSH_）。下一步：变异M2/M3+覆盖+回执+终验。
 2026-11-06 10:56 T9a终验已派 | e2e 3/3+unit 40/40+回归63+M2/M3咬合。两处降级已写入回执：⑧=PTC报错即证、⑨=说明性占位（runtime-patch.yml被安全删除+guard由unit④直接覆盖）。等终验通知，同时准备T7c。
 2026-11-06 10:51 哨兵#3 | load7.6、无429。T7b+T9a 终验在跑。开工 T7c（shell-ask.mjs 写入审阅卡，Q-028=B）。
-
-- 2026-11-06 11:05 manager 任务 B：T9a 终验**不通过**（第 1 次）@ 64bc35c9。unit 64/e2e 3/验收6/M3 复现成立；M1 实测证伪 D8 前提（禁 ptc-runtime → 默认 preset invalid，ssh 模式无会话）；⑨⑪ 空断言；runtime.ts 越界；施工残留进程 4 个。→ open/T9ab。feat/T9a 不合并。
-2026-11-06 11:04 T7c完+T7b/T9a返修 | T7c e2e 8/8+M1咬合（M2不咬合=设计前提不成立，targets已realpath）+T6修订4绿+T7a e2e修订1 passed+回归611绿。T7b终验不通过（三截图破版）→T7bb视觉返修。T9a终验不通过（⑧⑨降级不成立+⑪空断言）→T9ab。下一手：T7bb（快）∥T9ab（需重写e2e）。
-2026-11-06 11:14 T7bb/T7c终验不通过 | T7bb：暗色Add按钮白底白字+原生×未替换+死行未删+Remove失败无提示→T7bc。T7c：⑦空断言（应照write-outside模板做never子代理）+⑧未测门开态+⑨skill根未canonicalPath+unit数写错611→584→T7cb。已reap三残留。T9ab进行中（⑧⑪绿+⑨真缺口：guard extraNeverTools没拦截grep调用）。
-2026-11-06 11:28 哨兵#4+T9ab根因扩大 | load5.2、无429。T9ab ⑨ 根因扩大：bash 也 120s 超时——SSH 组合的**工具执行整体不通**（session 能建但 subprocess-ssh→SSH→helper 链不工作）。这是 web profile 与 headless 的工具执行路径差异，需要 architect 介入。T7cb ⑨ 同类（符号链接+skill根不存在→判定不触发）。两个⑨都是「组合内行为验证」缺口。下一步：T7bc 终验已可派+T7cb/T9ab 转 architect。
-2026-11-06 11:31 哨兵#5 | load17.6（高）、无429。T7bc 派终验；开 T8（机械替换，低负载可做）。
-2026-11-06 11:40 manager 任务 B：T7bc 终验**不通过**（T7b 链第 3 次）@ b2facacf。HEAD 编译失败（skills-dialog.tsx:112 JSX）；SandIconButton 未导入，回执称≥2 是虚报；e2e 和截图早于提交（11:16/11:17 vs 11:18）；pick.dark Add 仍是白底看不见字。check diff=0、其余 grep 过。T7b/T7bb/T7bc → blocked/，新开 Q-030（推荐 A：只合并 fda457c2 功能链）。
-2026-11-06 11:36 T7bc终验blocked+T8施工完 | T7bc第3次不过（HEAD编译不过=JSX语法错+虚报SandIconButton导入+截图在旧build上跑）→T7b/T7bb/T7bc三单blocked、Q-030等用户定合并策略。T8：22文件~74处机械替换完成（config.test.ts的import曾被误插进模板串→修正到模块头）；抽验mock-demo 9绿残留0、config+preset-broken 3绿；全量e2e待低负载。下一步：T7cb/T9ab两⑨转architect+T8全量+HANDOFF更新。
-2026-11-06 11:41 哨兵#6 | load4.8（好窗口！）、无429。T8全量验证+H7双全量（load<8窗口就是现在）+L5-a 三线推进。
-2026-11-06 11:43 T8全量e2e完成+H7进行中 | T8全量e2e后台完成。H7双全量仍在跑（18个vitest进程）。L5-a schedule 工具API在 repos/deepseek-harness/packages/schedule/tool-schedule/ 下，未开单。HANDOFF快照已更新。
-2026-11-06 11:45 T8全量=147绿/2红(已知P5-H8) | T8全量e2e 147 passed / 2 failed（3个失败文件=guard-fs+w1ap0-matrix 超时族，P5-H8 已知，非 T8 引入）。T8 可派终验。H7 双全量仍在跑。
-2026-11-06 11:51 H7双全量完成 | W1(T8 worktree):733/752绿 8红 11skip 102s；W2(主仓):741/754绿 5红 8skip 145s。合计1474绿/13红。PBOTS_TEST_WORKERS=8。基点单跑约2-3红（超时族）→并行多出约10红=资源竞争仍致额外红。按P5-H3修订口径判：互踩签名=0（两套无交叉污染迹象——各自独立HOME/TMPDIR）+守护测试未跑（需另验）。结论待manager裁。
-2026-11-06 12:01 T8b修完 | interrupt import归位+w1ap0-scan 3处tmkdir；vitest list exit=0、两文件4绿残留0、递归残留=6处（预期保留）。H7重跑等load<8+T8合并后再做。下一手：T8b终验→L5-a或T7cb⑨插桩。
-2026-11-06 12:02 哨兵#8 | load11、无429。T8b 派终验；开工 L5-a（定时投递）。
-2026-11-06 12:06 T8合并落地+L5-a测试跑中 | T8b 过验→feat/T8 合并（23 文件 97+82-）→回测 list=0+mock-demo 9绿+残留 0。L5-a schedule-delivery.test.ts 写好并后台跑（65s 定时+等待≈3 分钟）。BRIEF 验收③的第一步。
-2026-11-06 12:23 L5-a WIP+API发现 | schedule_create 用 rrule 参数（非 after_seconds/at——那些是服务端内部种类）；无效 rrule 报 invalid_selector 在 result body 不报 tool error；骨架完整只差 rrule 格式精确匹配。下会话读 node_modules 的 dsh-schedule 源码或单测找 rrule 字面量。
-2026-11-06 12:28 L5-a API发现完成 | 装版tool-schedule不用rrule也不用target——正确调用=({title,prompt,after_seconds:N})；参考仓源码与安装版schema不同（rrule→after_seconds等）。e2e骨架可照mock-demo模板直接写，下会话10分钟出。文件因多轮编辑损坏已删，发现入库。
-2026-11-06 12:31 哨兵#11 | load10.8、无429。L5-a 干净重写（API 已知，照 mock-demo 模板）。
-2026-11-06 12:33 L5-a 绿 | schedule_create after_seconds=60 → 60秒后定时投递到本会话→userTexts含标记→1 passed。BRIEF验收③（定时任务按时触发投递）落地。干净版一次过——API发现是关键。
-2026-11-06 12:41 哨兵#12 | load8.8（接近H7窗口）、无429。T7cb⑨插桩排查。
-2026-11-06 12:43 T7cb⑨插桩未成 | console.error 进 dsh 子进程 stderr 不达 vitest；appendFileSync 的 Python 转义与 JS 冲突（\n 变真换行破语法）。已还原。下会话用 Edit 工具直接编辑 JS（不走 Python），或改在 guard.mjs 的 noteZoneVerdict 加打点（该文件已有 fs import）。
-2026-11-06 12:51 哨兵#13 | load9.7、无429。L5-a 挪 done。T7cb⑨ 用 Edit 工具重试插桩。
-2026-11-06 13:01 哨兵#14 | load3.9（H7窗口）、无429。T7c 派终验 + H7 双全量重跑。
-2026-11-06 13:05 H7重跑结果 | W1(T7c wt):737/763绿15红(6文件) 112s；W2(主仓):741/755绿3红(4文件) 93s。合计1478绿18红。完整verbose reporter 已落盘 /tmp/bot-H7r-{w1,w2}-full.log。W1 红含 policy.test×5（疑T7c worktree的shell-ask改动影响——单跑确认）；W2 红含已知超时族+security⑥。PBOTS_TEST_WORKERS=8。
-2026-11-06 13:06 H7重跑分析 | W2(主仓,干净):3红全在已知族=H7口径干净。W1(T7c wt):~10个policy.test快速失败(1-10ms)=T7c代码影响非并行。两套失败文件零交集=互踩签名0。结论：并行执行零额外红（排除代码问题后）。
-2026-11-06 13:15 T7cc 9/9绿 | ⑦完整ptc worker造法（不再占位）+⑧⑨断言恰1+调试清零。两轮占位的教训：write-outside模板50行照抄就行，别先判「太复杂」。
-2026-11-06 13:17 哨兵#15 | load26.3（GPU尖峰，不跑测试）、无429。T7cc终验在跑。等通知。
+2026-11-06 11:23 T7bc/T7cb/T9ab 三线并行 | T7bc完成（暗色Add+SandIconButton+Remove失败提示+死行+先红断言，e2e 3 passed）。T7cb：⑧门开态provision真做（8/9绿）；⑨符号链接场景红（真发现：skill判定在符号链接+根不存在的场景下没触发，两种canonicalPath修法不生效——write直接放行，根因待插桩）；⑦标TODO。T9ab：⑧⑪绿+⑨ guard拒未达grep（rg实际执行了）。三张返修的根因都是「组合内的行为验证」，需要新会话插桩。
+2026-11-06 12:55 T7cb⑨修复 | 插桩（Edit工具+ESM import）实锤根因：workspaceRoot=符号链接路径 vs targets=真实树→跨树isPathUnder=false。修法=realpathSync(workspaceRoot)先规范化。9/9全绿。

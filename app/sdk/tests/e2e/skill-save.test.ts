@@ -141,8 +141,9 @@ async function scriptedSession(cwd: string, calls: object[]): Promise<{
   rt.writeScriptCalls(sessionId, calls.flatMap((c) => [c, textCall('T6 完成')]))
   return {
     sessionId,
-    async next(): Promise<Frame[]> {
+    async next(answer: 'allowed-once' | 'rejected' | 'none' = 'none'): Promise<Frame[]> {
       const stream = await rt.client.follow(sessionId)
+      const answered = new Set<string>()
       const frames: Frame[] = []
       const drained = (async () => { for await (const f of stream) frames.push(f) })()
       await rt.client.call('session/prompt', {
@@ -150,6 +151,14 @@ async function scriptedSession(cwd: string, calls: object[]): Promise<{
       })
       const deadline = Date.now() + 60_000
       for (;;) {
+        if (answer !== 'none') {
+          for (const f of rt.feed.frames) {
+            if (f.type === 'waterfall' && f.event === 'approval/request' && f.agentId === sessionId && !answered.has(f.eventId ?? '')) {
+              answered.add(f.eventId ?? '')
+              await rt.feed.answer(f, answer)
+            }
+          }
+        }
         if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
         if (Date.now() > deadline) throw new Error(`turn/end 未到；尾部：${JSON.stringify(frames.slice(-4)).slice(0, 400)}`)
         await new Promise((r) => setTimeout(r, 50))
@@ -211,15 +220,15 @@ const askedCount = (sessionId: string): number =>
 
 const requestsOf = (sessionId: string) => rt.readRequests().filter((r) => r.sessionId === sessionId)
 
-it('① bot A 用 write 存成 skill 文件：成功、零审批卡、内容落盘', { timeout: 240_000 }, async () => {
+it('① bot A 用 write 存成 skill 文件：成功、出 1 张卡（Q-028=B）、内容落盘', { timeout: 240_000 }, async () => {
   const target = join(WS_A, '.dsh', 'skills', 't6-flow')
   mkdirSync(target, { recursive: true })
   const sess = await scriptedSession(WS_A, [toolTurnCall('write', { file_path: join(target, 'SKILL.md'), content: skillFile('t6-flow', BODY_R) })])
-  const frames = await sess.next()
+  const frames = await sess.next('allowed-once')
   const results = toolResults(frames)
   expect(results, 'write 的 tool result').toHaveLength(1)
   expect(results[0]!.isError).toBe(false)
-  expect(askedCount(sess.sessionId), '区内写不出卡（P6-25 ⑤）').toBe(0)
+  expect(askedCount(sess.sessionId), '写 skill 根出 1 张卡（Q-028=B，修订自 P6-25 ⑤）').toBe(1)
   const saved = readFileSync(join(target, 'SKILL.md'), 'utf8')
   expect(saved).toContain(BODY_R)
 })

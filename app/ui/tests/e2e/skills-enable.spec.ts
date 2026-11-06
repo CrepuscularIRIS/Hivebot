@@ -58,6 +58,11 @@ test('A 存 → B 启用（快照）→ 改源不联动 → B 能加载旧文 �
     ])
     await botItem(ui, 'T7a-A').click()
     await grokSend(ui, '把刚才的流程存成 skill')
+    // T7c（Q-028=B）：写 skill 根现在必出审批卡——点 Allow once
+    const dock = ui.locator('[aria-label="Local tool permissions"]')
+    await expect(dock).toBeVisible({ timeout: 30_000 })
+    await dock.locator('button', { hasText: 'Allow once' }).click()
+    await expect(dock).toHaveCount(0, { timeout: 20_000 })
     await expectState(ui, 'idle', 120_000)
     for (let i = 0; i < 100 && !existsSync(skillMd(wsA)); i++) await ui.waitForTimeout(200)
     if (!existsSync(skillMd(wsA))) {

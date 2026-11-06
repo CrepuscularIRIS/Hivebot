@@ -12,6 +12,7 @@ import { DshConnection } from './dsh/connect'
 import { EventsLedger } from './dsh/ledger'
 import { m1Ledger, registerM1Api, type M1Request, type M1Result } from './m1-api'
 import { registerM2Mux } from './m2-mux'
+import { registerSkills } from './skills'
 import { registerM3Meta, type M3Handle } from './m3-meta'
 import { ensureThenReady, restoreGated } from './m3-meta/ensure'
 import { createBotWithConnectors, createSessionForcedWorkspace, createWorkerBot, type CreateBotArgs, type DshLike, type SessionCreateArgs } from './m3-meta/orchestrate'
@@ -264,6 +265,9 @@ async function main(): Promise<void> {
       void m2Gated(event, req)
     })
     ipcMain.handle('pbots:bots-meta', (event, req) => { assertSender(event); return m3.handler(req) })
+    // T7a（L4-c）：skill 启用 API（list/enable/disable；启用=复制快照到目标 bot 私有根）
+    const skills = registerSkills({ dataDir })
+    ipcMain.handle('pbots:skills', (event, req) => { assertSender(event); return skills.handler(req) })
 
     // P6-10 ⑤：main 常驻订阅 SDK 的 create 请求流（orchestration.yml 未加载时只记日志）
     if (dsh !== undefined) wireOrchChannel({ dsh, create: (req) => createWorkerBot(dsh, m3.store, req, { dataDir }) })

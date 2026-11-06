@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T9ac 经理终验（2026-11-06 @ e9a23794，/dev/shm/bot-T9a feat/T9a）；T9ac 第 4、5 步未落地
 > 分支 / 作业目录：feat/T9a 续提交 @ /dev/shm/bot-T9a
-> claimed：
+> claimed：2026-11-06 14:25 main (GLM 5.3) @ /dev/shm/bot-T9a
 > accepted：
 > 失败计数：T9a 链第 3 次（T9a → T9ab → T9ac → 本单）。**本单是最后一轮：再不过 → T9a/T9ab/T9ac/T9ad 挪 blocked/，不再开 T9ae。**
 > 为什么不照 T9ac 头部写的「挪 blocked/ 交 architect」：剩下的是三处测试断言，没有设计问题要决定。根因是施工照着文字描述重写测试逻辑时丢了关键细节（基线取在被测对象创建之后，T9ab 已指出一次，T9ac 又犯）。所以本单直接给要贴的代码，施工照抄。

@@ -4,7 +4,7 @@
 > 来源：T2 验收不通过（review/T1-T3-security.md 发现 1/2、审点④异常路径；经理核实新增：第二条 SetEnv 无效）。**T2c 是 T2b 拆出的另一半，不是 T2 的第二次失败。**
 > 分支 / 作业目录：feat/T2 @ /dev/shm/bot-T2（在 T2b 的提交上继续）
 > 依赖：**T2b 先提交**（两单都改 `ssh-host.ts`，不并行）
-> claimed：
+> claimed：2026-11-06 02:53 main (GLM 5.3)
 > accepted：
 
 ## 目标

@@ -4,7 +4,7 @@
 > 来源：T7ab 任务 B 验收（2026-11-06 @ d44ee165，经理探针 P4/P5/P6）；T7ab 第 1 次不通过
 > 分支 / 作业目录：feat/T7a @ /tmp/bot-wt/T7a（续提交；过后 T7a+T7ab+T7ac 一起 --no-ff 合并）
 > claimed：10:00 main (GLM 5.3) @ 0e7fcd4e（施工开始时由主 agent 填：日期、起点 SHA）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-06 10:10 manager @ 296a66c9（T7a+T7ab+T7ac 一并；合并前置：⑥ `index.test.ts:141` 后补 `expect(skillCount(dataDir, 't')).toBe(0)` + 回执 ⑥ 行改实，见 receipts/T7a.md「经理终验」）
 
 ## 目标
 T7ab 的三个探针场景已堵死（经理复跑：enable 目标 `.dsh`→外部 拒且外部空；disable 经链接化 skills 拒且外部原样；源侧链接不进 candidates）。剩三处：

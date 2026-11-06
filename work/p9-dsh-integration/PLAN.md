@@ -73,8 +73,8 @@
 | T4 | L8-b：headless 真组合 + llm-replay，bash/写文件经 ssh 落到远端 | **done**（accepted 2026-11-06 @ f8d1e00c，`tickets/done/T4-l8b-ssh-headless.md`；待合并） |
 | T5 | L8-c：设计单，**manager 执笔** `DESIGN-ssh-composition.md`（D1–D13：fs-zone/guard/shell-ask/bwrap/P6 cwd/isolate/断连 UI/PTC/宿主直连行/helper 安装/残留/每账户或每 bot/产品化 patch + 删 T4 死代码） | **done**（accepted 2026-11-06 @ 10e9951b，r2；实现单 T9a 已开，T9b–T13 见 queue） |
 | T6 | L4-b：skill 根收口（关 `~/.agents` 泄漏）+ bot 在对话里存 skill 的真组合 e2e | **done**（accepted 2026-11-06 @ 80958ad0，`tickets/done/T6-l4b-skill-save.md`；待合并） |
-| T7a | L4-c：main IPC `pbots:skills` list/enable/disable，启用 = 复制快照到 bot 私有根；库 = 全 bot 并集派生视图 | **open**（`tickets/open/T7a-l4c-skill-enable-api.md`） |
-| T7b | L4-c：info pane Skills 段 +「Pick from your skills」，R3 参照图对 0.78.1 | **open**（第 2 步起等 T7a；`tickets/open/T7b-l4c-skill-picker-ui.md`） |
+| T7a | L4-c：main IPC `pbots:skills` list/enable/disable，启用 = 复制快照到 bot 私有根；库 = 全 bot 并集派生视图 | **done**（accepted 2026-11-06 @ 296a66c9，含 T7ab/T7ac；`tickets/done/T7a-l4c-skill-enable-api.md`） |
+| T7b | L4-c：info pane Skills 段 +「Pick from your skills」，R3 参照图对 0.78.1 | **open**（第 2 步等 feat/T7a 合并；`tickets/open/T7b-l4c-skill-picker-ui.md`） |
 | T8 | P5-H5b：e2e/*.test.ts 裸 mkdtemp | 计划（等 T1） |
 
 ## 5. 核实不了 / 存疑（单列）

@@ -4,7 +4,7 @@
 > 来源：p9 BRIEF 验收第 2 条后半（「另一个 bot 能启用并复用它」）；RE-skills Q2 / Q4 / Q7 与「对 T6/T7 的影响」第 1、2、4、7 条；T6 工单「为什么」末段（库位置约束）
 > 分支 / 作业目录：feat/T7a @ /tmp/bot-wt/T7a（不涉 ssh，/tmp 可用）
 > claimed：2026-11-06 05:18 main (GLM 5.3) @ b3983512（施工开始时由主 agent 填：日期、起点 SHA）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-06 10:10 manager @ 296a66c9（T7a+T7ab+T7ac 一并；合并前置：⑥ `index.test.ts:141` 后补 `expect(skillCount(dataDir, 't')).toBe(0)` + 回执 ⑥ 行改实，见 receipts/T7a.md「经理终验」）
 > 经理验收（任务 B，2026-11-06 @ 7bccb802）：**不通过（第 1 次）→ `open/T7ab-skills-path-symlink.md`**。亲跑 unit 8/8、m3 103/103、e2e 1 passed，M1/M2/M3 在副本上各红指定格（M1 红 ③⑤⑦、M2 红 ⑥、M3 红 ⑤）——功能链成立。不过的三条：① CONFIRMED 安全缺口：`.dsh` / `.dsh/skills` 是符号链接时 enable 写到工作区外、disable 删工作区外（探针输出见 T7ab）；② 验收 4 未兑现：删掉工作区符号链接判断（M4）或 list 的 assertBotDir（M5）8/8 仍绿，回执缺「分支 → 格名」表；③ 回执无正文（先红输出、变异输出都不在），收尾挂着施工残留进程。
 > 经理二验（任务 B，2026-11-06 @ d44ee165）：T7a 本单验收项全过（unit、m3 103、e2e 1 passed、零残留）；第 1 次不过的 ①②③ 已由 T7ab 兑现，但 T7ab 本身留三处小缺口 → T7ac。**T7a 不单独挪 done**：与 T7ab、T7ac 同枝，T7ac 验收通过时三单一起挪 done、一起合并。不计 T7a 第 2 次失败（剩余项全在返修单范围内，其中一项是经理工单前提错）。
 

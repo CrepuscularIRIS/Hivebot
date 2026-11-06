@@ -43,6 +43,11 @@ const sameIdentity = (left, right) => left.dev === right.dev && left.ino === rig
 export async function isPathUnder(path, root, caseSensitive = process.platform !== 'win32') {
   if (isLexicallyUnder(path, root, caseSensitive)) return true
 
+  // T9b（D2 词法化）：ssh 模式下宿主 stat 对远端路径无意义（stat 到的是宿主同名
+  // 路径，身份比对反而是错的）——调用时读 P2SDK_SSH_MODE（launcher 的
+  // childEnv 在 ssh 模式设它；本机模式未设行为逐字不变）。
+  if (process.env.P2SDK_SSH_MODE === '1') return false
+
   const rootInfo = await statIfPresent(root)
   if (!rootInfo) return false
 

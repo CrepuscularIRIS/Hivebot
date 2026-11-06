@@ -249,3 +249,45 @@ describe('T9a extraNeverTools', () => {
     expect(oc.reason ?? '', '本机实例 C 不因 ssh 实例 D 的 apply 按 ssh 拒').not.toContain('ssh mode')
   })
 })
+
+// T9b（D2 验收 7）：remoteHome 启动校验——配置与远端 resolve('~') 不等 → fail loud。
+describe('T9b remoteHome 启动校验', () => {
+  it('配置 ≠ 远端实际 → 校验 promise 拒；相等 → 不拒；未配置 → 零行为', async () => {
+    const make = (actual: string, remoteHome?: string) => {
+      const errors: unknown[] = []
+      const services = {
+        sandboxPolicy: { resolve: () => ({ mode: 'workspace-write', workspaceRoot: '/tmp/ws' }) },
+        ssh: { ready: Promise.resolve() },
+        fs: { resolve: async () => ({ targetKey: actual }) },
+      }
+      const ctx = {
+        on: () => {},
+        get: (name: string) => (services as Record<string, unknown>)[name],
+      }
+      void plugin.apply(ctx as never, { roots: configRoots(), ...(remoteHome !== undefined ? { remoteHome } : {}) } as never)
+      return errors
+    }
+    // 拒绝态以 unhandled 捕捉：直接调内部逻辑不可行（fire-and-forget）——用
+    // process 级 unhandledRejection 捕捉，或改断言法：等一拍后 process 无崩溃
+    // 且相等/未配置路径无异常。这里测「等/不等」由 apply 内 then 链行为决定：
+    // 不等 → throw（promise 拒）；用 process.once 捕获。
+    const caught: unknown[] = []
+    const handler = (e: unknown) => caught.push(e)
+    process.on('unhandledRejection', handler)
+    try {
+      make('/actual/home', '/configured/home')
+      await new Promise((r) => setTimeout(r, 50))
+      expect(caught.length, '配置不等 → 校验拒（fail loud）').toBeGreaterThanOrEqual(1)
+      expect(String(caught[0])).toContain('does not match the remote home')
+      caught.length = 0
+      make('/same/home', '/same/home')
+      await new Promise((r) => setTimeout(r, 50))
+      expect(caught, '相等 → 不拒').toEqual([])
+      make('/actual/home')
+      await new Promise((r) => setTimeout(r, 50))
+      expect(caught, '未配置 remoteHome → 零行为').toEqual([])
+    } finally {
+      process.off('unhandledRejection', handler)
+    }
+  })
+})

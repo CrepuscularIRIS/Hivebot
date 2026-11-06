@@ -184,7 +184,9 @@ describe('childEnv', () => {
     expect(yaml).toContain('extraNeverTools')
     expect(yaml, 'extraNeverTools 在 guard config 级（4 格），不在 roots 内').toContain('\n    extraNeverTools:\n      - glob\n      - grep\n')
     expect(yaml).not.toMatch(/id: sandbox\n\s+config:/) // 本机 wrapper 不生成
-    expect(yaml).not.toContain('fs-zone') // T9b 才插
+    expect(yaml).not.toContain('fs-zone.mjs') // 本机 fs-zone 不插（T9b 起 ssh 模式插 fs-zone-ssh）
+    expect(yaml).toContain('fs-zone-ssh.mjs') // T9b：ssh 模式 provider 层收口
+    expect(yaml).toContain('neverRoots: []') // T9b：remoteHome 未给 → 远端根缺省空
     expect(yaml).not.toContain('IdentityFile') // 凭证不进生成行
   })
 

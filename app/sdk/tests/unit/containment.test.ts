@@ -45,3 +45,29 @@ describe('isPathUnder (P5-02 ⑩)', () => {
     await expect(isPathUnder('/nonexistent-p5-02/x', '/nonexistent-p5-02/y')).resolves.toBe(false)
   })
 })
+
+// T9b（D2 词法化）：ssh 模式（P2SDK_SSH_MODE=1）纯词法——宿主 stat 对远端路径
+// 无意义；本机模式（未设）行为逐字不变（别名/等价根回退仍走）。
+describe('T9b ssh 模式纯词法', () => {
+  it('MODE=1：假路径不 stat（词法不中直接 false）；未设：宿主回退仍生效', async () => {
+    const { mkdtempSync, mkdirSync, symlinkSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    const { tmpdir } = await import('node:os')
+    const real = mkdtempSync(join(tmpdir(), 'bot-t9b-cont-'))
+    mkdirSync(join(real, 'sub'))
+    const alias = real + '-alias'
+    symlinkSync(real, alias)
+    const target = join(real, 'sub', 'x')
+    // 未设 MODE：别名回退命中（宿主 stat 同一 inode）
+    delete process.env.P2SDK_SSH_MODE
+    expect(await isPathUnder(target, join(alias, 'sub')), '本机模式别名等价根回退仍生效').toBe(true)
+    // MODE=1：纯词法——别名拼写词法不中且不再 stat → false
+    process.env.P2SDK_SSH_MODE = '1'
+    try {
+      expect(await isPathUnder(target, join(alias, 'sub')), 'ssh 模式纯词法（不回退 stat）').toBe(false)
+      expect(await isPathUnder(target, join(real, 'sub')), 'ssh 模式词法命中仍 true').toBe(true)
+    } finally {
+      delete process.env.P2SDK_SSH_MODE
+    }
+  })
+})

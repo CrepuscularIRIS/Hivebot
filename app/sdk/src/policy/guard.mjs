@@ -232,6 +232,22 @@ function requireRoots(config) {
 /** 宿主平面注册一次，作用于全部 session（与 p2sdk-shell-ask 同一形态）。 */
 export function apply(ctx, config) {
   const roots = requireRoots(config)
+  // T9b（D2）：remoteHome 启动校验——ssh 模式的 guard 行带 remoteHome 时，等 ssh
+  // ready 后用 fs.resolve('~')（fs-ssh 远端展开）与配置比对；不等 → 抛错（fail
+  // loud，与「guard 行缺失 fail loud」同一风格）。本机模式不带 remoteHome，
+  // 零行为变化。fire-and-forget：拒绝态由 cordis 记为未处理错误（启动日志可见）。
+  if (typeof config.remoteHome === 'string' && config.remoteHome.length > 0) {
+    const ssh = typeof ctx.get === 'function' ? ctx.get('ssh') : null
+    const fs_ = typeof ctx.get === 'function' ? ctx.get('fs') : null
+    if (ssh && typeof ssh.ready?.then === 'function' && fs_) {
+      void ssh.ready.then(async () => {
+        const actual = await fs_.resolve('~')
+        if (actual.targetKey !== config.remoteHome) {
+          throw new Error(`p2sdk-fs-guard: configured remoteHome ${config.remoteHome} does not match the remote home reported by the connection (${actual.targetKey}); refusing to run with an unverified credential-root layout`)
+        }
+      })
+    }
+  }
   const resolved = resolveRoots(roots)
   // T9a/T9af（审查 C2）：extraNeverTools 归本次 apply 的闭包——模块级 Set 会被后一次 apply
   // 整体改写，连带改掉先前实例的策略（热重载 / 同进程多上下文）。校验仍在监听器注册前。

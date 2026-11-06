@@ -185,6 +185,12 @@ describe('T7c skill 写入审阅卡', () => {
       P2SDK_PATCH: `${fakeOverlay()}:${subOverlay}`,
       PBOTS_DATA_DIR: join(TEST_HOME, 't7cc-data'),
     } })
+    // T7cc 前置：rt2 也挂 feed——否则子会话出了卡也测不到
+    const feed2Client = await connect({ baseUrl: rt2.baseUrl, token: rt2.token, interactions: 'answer' })
+    const feed2Stream = await feed2Client.socket.open('$events', {})
+    const feed2Frames: Frame[] = []
+    const feed2Drained = (async () => { for await (const f of feed2Stream) feed2Frames.push(f as Frame) })().catch(() => {})
+    await waitFor(feed2Frames, (f) => f.type === 'ready', 5000, 'rt2 $events ready')
     try {
       const ws7 = join(TEST_HOME, 't7cc-data', 'workspaces', 'w7')
       mkdirSync(ws7, { recursive: true })
@@ -229,8 +235,14 @@ describe('T7c skill 写入审阅卡', () => {
         .filter((r) => r.sessionId === child).flatMap((r) => r.toolResults ?? [])
       expect(childResults.length, '子会话有 tool result').toBe(1)
       expect(childResults[0]!.isError, 'never 子代理写 skill 被拒').toBe(true)
+      // T7cc 前置：拒绝原因是 never 策略（不是「没人接卡」）
+      expect(childResults[0]!.text).toContain('approval unavailable in this session')
+      // T7cc 前置：子会话 0 卡（never 路径无卡直接拒）
+      const childAsked = feed2Frames.filter((f) => f.type === 'waterfall' && f.event === 'approval/request' && f.agentId === child).length
+      expect(childAsked, '子会话 0 卡').toBe(0)
       expect(existsSync(join(ws7, '.dsh/skills/t7c-g/SKILL.md')), '文件不存在').toBe(false)
     } finally {
+      try { feed2Stream.cancel(); void feed2Drained; feed2Client.close() } catch { /* */ }
       try { await rt2.stop() } catch { /* */ }
     }
   })

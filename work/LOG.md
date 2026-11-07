@@ -1082,3 +1082,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 02:3x T17 变异落定：M1/M3/M4 红（铁证在案）、M2 不咬合如实记；还原后全文件 5 绿（51.4s）。回执+终验下窗口
 - 02:4x T17 回执全文落盘（§1-§5：六格三坑/变异原样/probe 铁证/DESIGN 偏离三条/基建坑四条）——待 reviewer+终验
 - 02:5x T11 ui e2e 回归 3 绿（⑤a⑤b⑤c）；T11 全件落地待终验（与 T17 同批派）
+- 03:1x feat/T17 合并落地（终验通过）：回测 launcher.spec 7 passed（32.7s，含⑥真模型）、残留 0。M2 裁决=Electron 重写自身 environ+inspect 探针证不泄；T17b（3 小 bug）不阻塞用户。**用户本机体验入口开放**

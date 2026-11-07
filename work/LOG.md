@@ -1071,3 +1071,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 23:01 哨兵：load 21.9（1 分钟瞬时，15 分钟 8.3）——本轮只记不跑测试
 - 23:2x T11 ⑤c：execute 挂死（90s 无轮 2）——三嫌疑录回执；下窗口 fake 记录点+SDK 日志
 - 23:3x T11 ⑤c 破案：mainBotId mismatch（boot 主 bot vs 自建）——修=用 devState.meta.mainBotId（workspaces.spec 先例）
+- 23:4x T11 ⑤c 绿（worker 落远端/宿主空）——⑤a⑤b⑤c 三连绿；剩 ⑤d/⑥+T7a 拒+终验

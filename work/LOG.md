@@ -1088,3 +1088,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 03:1x feat/T11 合并落地（复验通过）：回测 77 单测+ssh-product 7+m3/skills 115+ssh-workspace 3 全绿。ssh 远端工作区全链收口；T11c（skills ssh 拒）开单排队
 - 03:5x T17b 8 格全绿+三小毛病修；M2 inspect oracle 实证咬合（变异红/还原绿）；M5 不咬合+M6 转义坏如实记。待终验
 - 03:4x 用户开始体验（启动器拉起真桌面实例：ready+Electron 在跑）；T17b 终验派出（M2/M4 抽验+M5/M6 裁决+回执欠账处理）。负载 ~10 双源（用户环境+体验实例）
+- 04:1x T17c 收口 9 格全绿（三修真落盘 c8d8157d+spec 八项 ae183aff）；M2 inspect 咬合/M5M6 如实记；残留核 0（snapshot shell 噪音排除）。待终验。0.79.3 deb 已下载解包（370M/asar 54M）——UI 逆向待派

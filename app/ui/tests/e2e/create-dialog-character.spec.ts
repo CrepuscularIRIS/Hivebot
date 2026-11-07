@@ -22,6 +22,16 @@ test('① picker 面：13 形状钮（aria-label X character shape）+ 11 色板
     const preview = dlg('[data-preview]')(page)
     await expect(preview).toHaveAttribute('data-avatar-shape', await pressedShape.first().getAttribute('data-shape') ?? '')
     await expect(preview).toHaveAttribute('data-avatar-color', (await pressedColor.first().getAttribute('data-color')) ?? '')
+    // T24b：排列断言——13 个形状钮按 y 分行 = [5,5,3]，末行中心与前两行中心差 <4px（居中）
+    const rows = await dlg('[aria-label$=" character shape"]')(page).evaluateAll((btns) => {
+      const byRow = new Map<number, number[]>()
+      for (const b of btns) { const r = b.getBoundingClientRect(); const key = Math.round(r.y); const near = [...byRow.keys()].find((k) => Math.abs(k - key) < 6) ?? key; byRow.set(near, [...(byRow.get(near) ?? []), r.x + r.width / 2]) }
+      return [...byRow.entries()].sort((a, b) => a[0] - b[0]).map(([, xs]) => xs)
+    })
+    expect(rows.map((xs) => xs.length), `实排=${rows.map((xs) => xs.length).join('/')}`).toEqual([5, 5, 3])
+    const topCenter = (rows[0]![0]! + rows[0]![4]!) / 2
+    const lastCenter = (rows[2]![0]! + rows[2]![2]!) / 2
+    expect(Math.abs(topCenter - lastCenter)).toBeLessThan(4)
   } finally {
     await env.stop()
   }

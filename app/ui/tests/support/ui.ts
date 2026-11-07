@@ -80,11 +80,19 @@ export async function waitProductReady(page: Page, timeout = 60_000): Promise<vo
  * 起 fake runtime + 壳。dataDir 两侧同源（P5-25 起会话 cwd = $PBOTS_DATA_DIR/workspaces/<sid>，
  * workspaces.spec launchAligned 同款），会话工作区路径可在测试侧直接派生。
  */
-export async function launchProduct(opts: ShellOptions & { ready?: boolean; patch?: string } = {}): Promise<Env> {
-  const { ready = true, patch, ...shellOpts } = opts
+export async function launchProduct(opts: ShellOptions & { ready?: boolean; patch?: string; onboardingFirst?: boolean } = {}): Promise<Env> {
+  const { ready = true, patch, onboardingFirst = false, ...shellOpts } = opts
   const home = shellOpts.home ?? tmkdir('bot-p554-')
   const rt = await launchSdkRuntime({ patch: patch ?? `${PRESETS_PATCH}:${fakeOverlayPath()}`, cwd: tmkdir('bot-u21-ws-'), dataDir: join(home, 'data') })
   const shell = await launchShell({ ...shellOpts, home, env: { PBOTS_DSH_HANDOFF: rt.handoff, ...shellOpts.env } })
+  // T26：真首启（未 seen+空 roster）进 onboarding、不建 main bot——常规 e2e 测的是引导
+  // 之后的产品面：页面起来后置 seen 并触发 roster 重载（补建 main bot）；onboarding 专项
+  // 用 onboardingFirst:true 自测真首启三态。
+  if (!onboardingFirst) {
+    await shell.page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
+    await shell.page.evaluate(() => { try { window.localStorage.setItem('pbots.shim.onboarding-seen', '1') } catch { /* ignore */ } }).catch(() => {})
+    await shell.page.evaluate(() => (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void> } }).__pbotsDev?.reloadRoster?.()).catch(() => {})
+  }
   if (ready) await waitProductReady(shell.page)
   return { rt, shell, page: shell.page, async stop() { await shell.stop(); await rt.stop() } }
 }

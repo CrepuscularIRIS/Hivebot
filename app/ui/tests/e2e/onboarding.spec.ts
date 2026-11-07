@@ -7,7 +7,7 @@ const seen = (page: Page) => page.evaluate(() => window.localStorage.getItem('pb
 
 test('① 真首启：landing 出现（Welcome to Grok Bot + Get started + Skip）——main bot 未建', async () => {
   test.setTimeout(120_000)
-  const env = await launchProduct({ ready: false })
+  const env = await launchProduct({ ready: false, onboardingFirst: true })
   try {
     const { page } = env
     await expect(page.locator('#sand-onboarding-landing-heading')).toBeVisible({ timeout: 30_000 })
@@ -20,7 +20,7 @@ test('① 真首启：landing 出现（Welcome to Grok Bot + Get started + Skip�
 
 test('② Skip：seen 落盘 → 退出引导 → main bot 补建（reloadRoster）→ 主界面可见', async () => {
   test.setTimeout(120_000)
-  const env = await launchProduct({ ready: false })
+  const env = await launchProduct({ ready: false, onboardingFirst: true })
   try {
     const { page } = env
     await expect(page.locator('#sand-onboarding-landing-heading')).toBeVisible({ timeout: 30_000 })
@@ -35,7 +35,7 @@ test('② Skip：seen 落盘 → 退出引导 → main bot 补建（reloadRoster
 
 test('③ 老用户（seen=1）启动：不进引导，main bot 照常建立', async () => {
   test.setTimeout(120_000)
-  const env = await launchProduct({ ready: false })
+  const env = await launchProduct({ ready: false, onboardingFirst: true })
   try {
     const { page } = env
     // launchProduct 起来后第一次 roster：seen 空 → landing。先等 landing 再置 seen 触发 reload？

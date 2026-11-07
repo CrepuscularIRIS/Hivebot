@@ -1137,3 +1137,6 @@ T25 reviewer 后台审查中；其修复/终验/合并的测试步骤等 load<8 
 ## 2026-11-07 · merge T25（终验通过后合并）
 - feat/T25 干净合入（8 files，+286）；合并后回测：unit grok-shim+fold **211 passed**；e2e kickstart+bots+outline **18 passed**
 - review 1M（用户自输标签被隐藏+ack 悬挂→rpcId 双条件）+1L（⑦竞态）修复随合并进主线；kickstart:false 参数已备好 T26
+
+## 2026-11-07 11:23 · 哨兵：load 20.2——本轮只记不跑测试
+T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修复/终验测试步骤等负载窗口。

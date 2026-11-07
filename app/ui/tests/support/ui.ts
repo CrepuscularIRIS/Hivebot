@@ -139,8 +139,9 @@ export async function openOutline(page: Page, botTitle: string): Promise<Locator
   return panel
 }
 
-/** T21：outline 面板内的工具行（面板作用域；主聊 toolRows 不动，T22 才迁）。 */
-export const outlineToolRows = (page: Page): Locator => page.locator('.sand-outline-panel .sand-outline-item[data-kind="tool-call"]')
+/** T22：工具行只在 outline 面板（主 transcript 不再渲染 tool-call；0.79.3 COORD Qz）。
+ * 断言前先 openOutline（T21 已证面板开着时事件实时更新）。 */
+export const toolRows = (page: Page): Locator => page.locator('.sand-outline-panel .sand-outline-item[data-kind="tool-call"]')
 
 export const transcript = (page: Page): Locator => page.locator('.sand-virtual-transcript')
 export const assistantRows = (page: Page): Locator => page.locator('.sand-virtual-transcript .sand-transcript-row[data-role="assistant"]')
@@ -149,7 +150,6 @@ export const streamingRow = (page: Page): Locator => page.locator('.sand-transcr
 /** 定稿的 bot 正文 prose（非 live）。 */
 export const finalAssistant = (page: Page): Locator =>
   page.locator('.sand-virtual-transcript .sand-transcript-row[data-role="assistant"]:not([data-entry-id="live-stream"]) .sand-message-prose')
-export const toolRows = (page: Page): Locator => page.locator('.sand-outline-item[data-kind="tool-call"]')
 export const permissionDock = (page: Page): Locator => page.locator('[aria-label="Local tool permissions"]')
 export const composer = (page: Page): Locator => page.locator('.sand-prompt-shell .ProseMirror[contenteditable="true"]')
 

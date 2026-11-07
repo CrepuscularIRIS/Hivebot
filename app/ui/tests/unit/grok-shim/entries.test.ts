@@ -36,19 +36,19 @@ describe('toRawEntries · 每类 entry 的 0.18 形状', () => {
     expect(msgs.map((m) => [rec(m).content, rec(m).author])).toEqual([['先看一下', 'Research'], ['结果是 42', 'Research']])
   })
 
-  it('thinking（reasoning 与 text 降级）→ thinking 行 text（running 中间正文不升气泡）', () => {
+  it('T22：thinking（reasoning 与 text 两种）不进主 transcript（0.79.3 COORD Qz / APP LF——过程只在 outline 侧板）', () => {
     const out = foldTurns([u('u1'), r(1, 0, '推理中'), t('c1'), a(1, 1, '中间')], { hasMore: false, running: true })
-    const thinks = toRawEntries(out, 'Bot', null).filter((e) => e.kind === 'thinking')
-    expect(thinks.map((x) => rec(x).text)).toEqual(['推理中', '中间'])
+    const raw = toRawEntries(out, 'Bot', null)
+    expect(raw.filter((e) => e.kind === 'thinking')).toEqual([])
+    expect(raw.some((e) => rec(e).kind === 'message' && rec(e).content === '中间')).toBe(false) // 中间轮正文也不进
   })
 
-  it('tool → tool-call：name/status/summary（done 映射 done，running/failed 原样）', () => {
+  it('T22：tool-call 不进主 transcript（ASSIGN_TOOLS 转编排 peer 不变）', () => {
     const items: TimelineItem[] = [u('u1'), tRun('c1'), t('c2', 'read')]
     const out = foldTurns(items, { hasMore: false, running: true })
-    const tools = toRawEntries(out, 'Bot', null).filter((e) => e.kind === 'tool-call')
-    expect(tools.map((x) => [rec(x).name, rec(x).status])).toEqual([['bash', 'running'], ['read', 'done']])
-    expect(typeof rec(tools[0]).summary).toBe('string')
-    expect(rec(tools[0]).summary).toContain('ls')
+    const raw = toRawEntries(out, 'Bot', null)
+    expect(raw.filter((e) => e.kind === 'tool-call')).toEqual([])
+    expect(raw.filter((e) => e.kind === 'user')).toHaveLength(1)
   })
 
   it('notice → notice 行（content 字符串）', () => {
@@ -96,16 +96,8 @@ describe('toRawEntries · 每类 entry 的 0.18 形状', () => {
     expect(rec(raw[0]).clientNonce).toBe('nonce-1')
   })
 
-  it('tool-call 保留完整 args 与 result（L-7 R2：输出/错误详情不再被序列化丢掉）', () => {
-    const items: TimelineItem[] = [u('u1'), { ...t('c1'), result: 'boom: ENOENT' }, t('c2', 'read')]
-    const out = foldTurns(items, { hasMore: false, running: false })
-    const tools = toRawEntries(out, 'Bot', null).filter((e) => e.kind === 'tool-call')
-    expect(rec(tools[0]).result).toBe('boom: ENOENT')
-    expect(rec(tools[0]).args).toBe('{"command":"ls"}')
-    expect(rec(tools[1]).result).toBe('ok')
-    // summary 仍是单行预览（不因带 result 变长）
-    expect(String(rec(tools[0]).summary).length).toBeLessThanOrEqual(120)
-  })
+  // T22：L-7 R2 的 tool-call 完整 args/result 格随主聊天工具卡退场（主 transcript 不再产
+  // tool-call）；summary 表达迁 outline.test.ts（outline 行 summary 与主聊天同源同参同果）。
 })
 
 describe('permissionEntry · 审批卡（P5-50 坑2 答案：dock 渲染条件）', () => {

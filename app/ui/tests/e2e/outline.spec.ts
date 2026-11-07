@@ -4,7 +4,7 @@
 // （面板开着 pending→done 原地变），不靠重开面板。前置：pnpm build（run-e2e 不重建 dist）。
 import { expect, test, type Page } from 'playwright/test'
 import {
-  botItem, createBots, devState, launchProduct, openBot, openOutline, outlineToolRows, permissionDock, send, textCall,
+  botItem, createBots, devState, launchProduct, openBot, openOutline, toolRows, permissionDock, send, textCall,
 } from '../support/ui.ts'
 
 const panelItems = (page: Page) => page.locator('.sand-outline-panel .sand-outline-item')
@@ -85,10 +85,10 @@ test('② 活推送：审批卡住时面板开着，tool 行 pending → 放行�
     await expect(permissionDock(page)).toBeVisible({ timeout: 30_000 }) // 工具停在审批（fold running）
 
     await openOutline(page, 'OL-B') // 面板此刻才开——快照里就该是 pending
-    await expect(outlineToolRows(page)).toHaveCount(1)
-    await expect(outlineToolRows(page).first()).toHaveAttribute('data-status', 'pending')
+    await expect(toolRows(page)).toHaveCount(1)
+    await expect(toolRows(page).first()).toHaveAttribute('data-status', 'pending')
     await allowOnce(page)
-    await expect(outlineToolRows(page).first()).toHaveAttribute('data-status', 'done', { timeout: 20_000 }) // outline 事件原地更新
+    await expect(toolRows(page).first()).toHaveAttribute('data-status', 'done', { timeout: 20_000 }) // outline 事件原地更新
     await ended(page, sid)
     await expect(panelItems(page)).toHaveCount(4) // 本格无 reasoning：user / A / tool / E（①已证含 R 的 5 条序列）
   } finally {
@@ -111,8 +111,8 @@ test('③ 失败工具：read 目录（isError=true）→ 面板行 data-status=
     await send(page, '看看环境')
     await ended(page, sid)
     await openOutline(page, 'OL-C')
-    await expect(outlineToolRows(page)).toHaveCount(1)
-    await expect(outlineToolRows(page).first()).toHaveAttribute('data-status', 'failed', { timeout: 15_000 })
+    await expect(toolRows(page)).toHaveCount(1)
+    await expect(toolRows(page).first()).toHaveAttribute('data-status', 'failed', { timeout: 15_000 })
   } finally {
     await env.stop()
   }

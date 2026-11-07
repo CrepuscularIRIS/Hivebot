@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：queue U8b；T28 探针（done/T28 :18/:24）；Q-033 第 2 点（默认「开」）；本单「探针结论」（经理 2026-11-07 重读 0.79.3 产物）
 > 分支 / 作业目录：feat/T28b @ /tmp/bot-wt/T28b（从 docs/rebuild-p6-p5-plan 含本单的那个提交起）
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T28b（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

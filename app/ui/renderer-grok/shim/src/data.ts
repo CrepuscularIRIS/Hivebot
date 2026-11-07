@@ -349,6 +349,8 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       summaries = {}
       order = []
       mainBotId = null
+      push.agents()
+      opts.boot?.('ready') // review HIGH 补丁：首启早退也要开 boot 门（否则遮罩拦 onboarding 交互）
       return
     }
     if (typeof listed !== 'string' || nextSummaries[listed] === undefined) {

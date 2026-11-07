@@ -7,7 +7,7 @@ const seen = (page: Page) => page.evaluate(() => window.localStorage.getItem('pb
 
 test('① 真首启：landing 出现（Welcome to Grok Bot + Get started + Skip）——main bot 未建', async () => {
   test.setTimeout(120_000)
-  const env = await launchProduct()
+  const env = await launchProduct({ ready: false })
   try {
     const { page } = env
     await expect(page.locator('#sand-onboarding-landing-heading')).toBeVisible({ timeout: 30_000 })
@@ -20,13 +20,13 @@ test('① 真首启：landing 出现（Welcome to Grok Bot + Get started + Skip�
 
 test('② Skip：seen 落盘 → 退出引导 → main bot 补建（reloadRoster）→ 主界面可见', async () => {
   test.setTimeout(120_000)
-  const env = await launchProduct()
+  const env = await launchProduct({ ready: false })
   try {
     const { page } = env
     await expect(page.locator('#sand-onboarding-landing-heading')).toBeVisible({ timeout: 30_000 })
     await page.locator('[data-action="onboarding-skip"]').click()
     await expect(page.locator('#sand-onboarding-landing-heading')).toHaveCount(0, { timeout: 15_000 })
-    await expect.poll(seen, { timeout: 10_000 }).toBe('1')
+    await expect.poll(() => seen(page), { timeout: 10_000 }).toBe('1')
     await expect(page.locator('.sand-agent-item').first(), 'skip 后补建 main bot').toBeVisible({ timeout: 30_000 })
   } finally {
     await env.stop()
@@ -35,7 +35,7 @@ test('② Skip：seen 落盘 → 退出引导 → main bot 补建（reloadRoster
 
 test('③ 老用户（seen=1）启动：不进引导，main bot 照常建立', async () => {
   test.setTimeout(120_000)
-  const env = await launchProduct()
+  const env = await launchProduct({ ready: false })
   try {
     const { page } = env
     // launchProduct 起来后第一次 roster：seen 空 → landing。先等 landing 再置 seen 触发 reload？

@@ -138,3 +138,10 @@
 - （2026-11-07 T17 终验）bash `while IFS='=' read -r k v` 读不到**末行无换行**的行（read 返回非 0）——用户手写配置文件常见，补 `|| [ -n "$k" ]`；带引号的值原样含引号。另：CDP `browser.close()` 是强退 Electron 主进程（Chromium 子进程慢退 20s+），模拟用户关窗用 renderer 里 `window.close()`。
 - （2026-11-07 T17b 终验）**变异前先提交修复**：在未提交的修复上做变异、再用 `git checkout --`/`reset`/`stash` 还原，会把修复本身一起还原掉——T17b 申报「启动器三修 + 全绿」，提交树里启动器零改动、⑦⑧ 红。规矩：修复先 commit；变异只用 `cp` 备份→改→跑→`cp` 还原→`cmp`；commit message 写之前 `git diff --stat <起点> HEAD` 核一遍。
 - （2026-11-07 T17b 终验）**e2e 的 finally 别直接 SIGKILL 被测启动器**：KILL 跳过 bash trap，detached 的 dsh 成孤儿（经理 M2/M4 红跑各留 1 个），下一刀基线就脏了。finally 先收后代 pid → TERM 启动器等 ≤30s → 仍活再 KILL 收集到的全部 pid。
+
+## 2026-11-07（T20/T21/T23 批次）
+- **0.79.3 R3 桩的 CDP evaluate 会超时**：单进程内反复 Page.navigate 重挂载后 evaluate 挂 20s（现象：json 字段变 'undefined' 字符串）。绕法：多挂载采样改外层独立进程循环（每次新 chrome），采样从 bodyText 行抽取聚合，不依赖内联 evaluate。
+- **事实记录一律 json 机器断言**：T20 首验翻车三处全是目测误读（形状 13 数成 24、随机初值巧合当「选形变色」、短语随机起步当固定）——picker 计数/选中态/文案对比必须 evaluate 抓 DOM（aria-label/aria-pressed 比 className 稳）。
+- **e2e worktree 起手三件**：app/ui 与 app/sdk 各 pnpm install --prefer-offline（node_modules 不随 worktree）；跑 e2e 前必 build；隔离 HOME/TMPDIR 先 mkdir -p（mktemp 模板对不存在目录报错）。
+- **vitest coverage-v8 在 ui 仓仍不可用**（P7 F1 同款）：customProviderModule 指向 sdk pnpm 深处可载入但覆盖计 0%（模块 id 对不上）。需要覆盖率时用手工核算表+记录工具问题，别再烧轮次调工具。
+- **面板/对话框等 role=dialog 组件开着会吃 Esc 与指针**（遮罩）——测试链里后续还有 Esc/点击交互时，用完即点 Close。

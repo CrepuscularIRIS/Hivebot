@@ -200,6 +200,8 @@ test.describe('T17 产品启动器', () => {
       const exit2 = new Promise<number>((r) => l2.proc.once('exit', (c) => r(c ?? 0)))
       const rc2 = await Promise.race([exit2, new Promise<number>((r) => setTimeout(() => r(-1), 20_000))])
       expect(rc2, '第二实例 ≤20s 退出码 0').toBe(0)
+      const listed = await page.evaluate(() => (window as unknown as { pbots: { api(m: string): Promise<{ ok: boolean }> } }).pbots.api('session/list'))
+      expect(listed.ok, '第一实例 session/list 仍可用').toBe(true)
       const sdkAfter = descendantPids(l1).filter(isSdk).length
       expect(sdkAfter, `无第二个 SDK（${sdkBefore}→${sdkAfter}）`).toBe(sdkBefore)
       expect(l1.proc.exitCode, '第一实例仍活').toBeNull()
@@ -270,8 +272,6 @@ test.describe('T17 产品启动器', () => {
         XDG_CONFIG_HOME: configDir, XDG_STATE_HOME: stateDir, XDG_CACHE_HOME: join(home, 'cache'),
         DBUS_SESSION_BUS_ADDRESS: `unix:path=${tmp}/no-dbus`, DISPLAY: process.env.DISPLAY ?? ':99',
         XAUTHORITY: process.env.XAUTHORITY ?? '',
-        // M2 变异面：模拟用户 shell 已 export（真实场景）——启动器须剥出 Electron
-        LITELLM_MASTER_KEY: 'sk-t17-envpath-000',
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     })
@@ -323,15 +323,7 @@ test.describe('T17 产品启动器', () => {
       if (sdkPid === undefined) throw new Error('SDK pid 未找到——marks/regex 失配')
       {
         const envBuf = readFileSync(`/proc/${sdkPid}/environ`)
-        if (!envBuf.includes('P2SDK_LLM_API_KEY\0')) {
-          // /proc environ 在 e2e 管线下偶发不含（直验 env -i 同形态=有——e2e 特有）；
-          // 行为正对照兜底：real 模式 SDK 起且 ready = validateStart 过 = key 生效
-          const logTxt = readFileSync(join(stateDir, 'hivebot', 'logs', 'sdk.log'), 'utf8')
-          expect(logTxt, '行为正对照：SDK ready（key 缺则 validateStart die）').toContain('[p2sdk] ready http')
-          expect(logTxt.includes('P2SDK_LLM_API_KEY'), 'sdk.log 无 key 报错面').toBe(false)
-        } else {
-          expect(envBuf.includes('hivebot'), 'SDK env 的 SANDBOX_MASK 含 hivebot 根').toBe(true)
-        }
+        expect(envBuf.includes(`P2SDK_LLM_API_KEY=${KEY}\0`), 'SDK env 有文件 key（值级正对照）').toBe(true)
       }
       proc.kill('SIGTERM')
       await Promise.race([exitP, new Promise((r) => setTimeout(r, 30_000))])
@@ -342,7 +334,12 @@ test.describe('T17 产品启动器', () => {
       expect(uiLog.includes(KEY), 'ui.log 无 key 值').toBe(false)
       await browser.close().catch(() => { /* 主进程退出后 CDP 断开属预期 */ })
     } finally {
-      if (proc.exitCode === null) { proc.kill('SIGKILL') }
+      if (proc.exitCode === null) {
+        // 优雅收（LEARNINGS：直接 SIGKILL 启动器跳过 cleanup 留孤儿 dsh）
+        proc.kill('SIGTERM')
+        await new Promise((r) => setTimeout(r, 3000))
+        if (proc.exitCode === null) proc.kill('SIGKILL')
+      }
     }
   })
 
@@ -388,13 +385,20 @@ test.describe('T17 产品启动器', () => {
       }
       expect(view?.turnEnded, `回合完成；view=${JSON.stringify(view)}`).toBe(true)
       expect((view?.chunkCount ?? 0) >= 2, `流式 chunk≥2（=${view?.chunkCount}）`).toBe(true)
+      const texts = (view?.items ?? []).filter((it) => it.kind === 'text' && (it.text ?? '').trim().length > 0)
+      expect(texts.length, '定稿文本非空（终答在 items）').toBeGreaterThan(0)
       // 优雅关窗（① 教训：CDP browser.close 强退慢；window.close → quit）
       await page.evaluate(() => window.close()).catch(() => { /* */ })
       await browser.close().catch(() => { /* */ })
       const rc = await Promise.race([exitP, new Promise<number>((r) => setTimeout(() => r(-1), 30_000))])
       expect(rc, '关窗后启动器退出').toBe(0)
     } finally {
-      if (proc.exitCode === null) { proc.kill('SIGKILL') }
+      if (proc.exitCode === null) {
+        // 优雅收（LEARNINGS：直接 SIGKILL 启动器跳过 cleanup 留孤儿 dsh）
+        proc.kill('SIGTERM')
+        await new Promise((r) => setTimeout(r, 3000))
+        if (proc.exitCode === null) proc.kill('SIGKILL')
+      }
     }
   })
 
@@ -452,9 +456,21 @@ test.describe('T17 产品启动器', () => {
       try { sdkTail = readFileSync(join(stateDir, 'hivebot', 'logs', 'sdk.log'), 'utf8').slice(-300) } catch { sdkTail = '无' }
       expect(rc, `正常起；proc.exitCode=${proc.exitCode} stderr=${err.slice(-150)} sdk尾=${sdkTail}`).toBe(0)
       expect(err.includes('P2SDK_LLM_API_KEY'), '无缺 key 报错').toBe(false)
+      // M7 面：引号已剥——SDK environ 是 sk-t18-nl-000（无引号）
+      {
+        const sp = descendantPids({ proc, home, stateDir, configDir, tmp, port } as never).find((q) => { try { return readFileSync(`/proc/${q}/cmdline`, 'utf8').includes('start.mjs') } catch { return false } })
+        expect(sp, 'SDK pid 在（引号断言）').toBeTruthy()
+        if (sp !== undefined) expect(readFileSync(`/proc/${sp}/environ`, 'utf8').includes('P2SDK_LLM_API_KEY=sk-t18-nl-000\0'), '引号已剥（SDK env 无引号 key）').toBe(true)
+      }
     } finally {
-      if (proc.exitCode === null) { proc.kill('SIGKILL') }
+      if (proc.exitCode === null) {
+        // 优雅收（LEARNINGS：直接 SIGKILL 启动器跳过 cleanup 留孤儿 dsh）
+        proc.kill('SIGTERM')
+        await new Promise((r) => setTimeout(r, 3000))
+        if (proc.exitCode === null) proc.kill('SIGKILL')
+      }
     }
   })
 
 })
+

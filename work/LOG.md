@@ -1142,3 +1142,9 @@ T25 reviewer 后台审查中；其修复/终验/合并的测试步骤等 load<8 
 T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修复/终验测试步骤等负载窗口。
 - 11:32 哨兵：load 33.6（GPU 峰值）——T26 review 修复（ef5f75ad）已提交，e2e 验证持续等 load<10。
 - 13:13 哨兵：load 21（GPU 峰）暂测试。T26b 返修完成（145c784d）四修四刀全绿；经理合并验收中。
+
+## 2026-11-07 · merge T26+T26b（合并验收通过后合并）
+- 干净合入（png 自动保留 docs 新图——blob 核对相同）；残留 3 个 dsh web 进程 reap 清
+- 合并后回测：unit grok-shim+fold **211 passed**；e2e onboarding+bots+kickstart **17 passed**
+- T26 全链：主 agent 补开单（经理立项超时）→A 段→review（HIGH gate 架空+3M）→修复→终验返修 T26b（4 条）→修复→合并验收（变异 V-c 抽验 2/2 红）→合并
+- 已记 T32（不阻塞）：引导期间侧栏未盖/create 版式散

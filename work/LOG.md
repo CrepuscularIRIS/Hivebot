@@ -1166,3 +1166,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 合并前清主仓 7 张未提交截图（分支版为准）；T30db 工单 rename 冲突解（取 done）
 - 合并后回测：unit **225**；e2e 0793+character+kickstart **19 passed**
 - T30d/db 闭环：暗三处（Create 白底黑字/分隔线/贴纸边）——贴纸边被 viewBox 裁断是 T30d 引入的回归（overflow=visible 修）；Create 发灰两层根因（transition 中间帧+span 文字色）
+
+## 2026-11-07 · merge T28b（终验通过后合并）
+- 回执三方合并（review 修复节+经理验收节双保留）；合并后回测：unit grok-shim+fold **233 passed**；e2e onboarding+kickstart+bots **19 passed**
+- T28bb 一行修复单遗留（already 分支 return 位置——单账号不触发，不阻塞）
+- T28b 全链：经理立项（探针纠 queue 两处）→施工→review 1M（介绍失败停链）→修复→终验（变异两刀）→合并

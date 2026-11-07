@@ -171,8 +171,8 @@ dialog.pb-dialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh
 .pb-character__shapes { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-width: calc(5 * 40px + 4 * 6px); } /* 5/5/3：恰放 5 个/行（T24b：220px 差 4px 致 4/4/4/1），末行 3 个随 justify 居中 */
 .pb-character__shape { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: none; border-radius: 8px; background: transparent; cursor: pointer; padding: 4px; }
 .pb-character__shape[aria-pressed="true"] { background: color-mix(in srgb, var(--sand-text-secondary, #1c1c1c) 12%, transparent); }
-.pb-character__colors { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 172px; } /* 6+5（review L2）：22px×6 + gap8×5 = 172 */
-.pb-character__color { width: 22px; height: 22px; border-radius: 9999px; border: 2px solid transparent; cursor: pointer; padding: 0; }
+.pb-character__colors { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; max-width: calc(6 * 24px + 5 * 16px); row-gap: 16px; } /* T30b：24 直径/中心距 40（gap16）——ref 实测 */
+.pb-character__color { width: 24px; height: 24px; border-radius: 9999px; border: 2px solid transparent; cursor: pointer; padding: 0; }
 .pb-character__color[aria-pressed="true"] { border-color: var(--sand-text-secondary, #1c1c1c); }
 
 /* ======== T30 · 0.79.3 Thn 版式：预览 96/名字框/More options 折叠 ======== */
@@ -188,3 +188,9 @@ dialog.pb-dialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh
 /* 选中态：形状去灰底（描边在 ShapeGlyph 画）；色板 outline 外环 */
 .pb-character__shape[aria-pressed="true"] { background: transparent; }
 .pb-character__color[aria-pressed="true"] { border-color: transparent; outline: 1px solid var(--sand-text-secondary, #1c1c1c); outline-offset: 2px; }
+
+/* T30b：头部/底栏分隔线 + 名字框圆角灰边（ref）+ 暗 Create 对比 */
+.pb-dialog__head { border-bottom: 1px solid var(--sand-border, #1c1c1c1f); }
+.pb-dialog__actions { border-top: 1px solid var(--sand-border, #1c1c1c1f); }
+.pb-name-input { border: 1px solid var(--sand-border, #1c1c1c2e); border-radius: 9px; padding: 8px 12px; }
+.pb-name-input:focus { border-color: var(--sand-text-secondary, #1c1c1cad); outline: none; }

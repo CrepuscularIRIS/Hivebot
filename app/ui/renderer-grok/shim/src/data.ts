@@ -614,7 +614,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       }
       if (req.model !== undefined) {
         const sel = await ui.selectModel(sid, req.model.provider, req.model.model)
-        if (!sel.ok) notice = `Bot created, but the model wasn't changed: ${sel.error?.message ?? ''}`
+        if (!sel.ok) notice = notice === null ? `Bot created, but the model wasn't changed: ${sel.error?.message ?? ''}` : `${notice}\nBot created, but the model wasn't changed: ${sel.error?.message ?? ''}`
       }
       // L-7 O4：非致命失败不能静默吞掉——落进空会话的 transcript notice（旧 renderer
       // 的 addCreated(sid, presetId, notice) 同一可见性，新架构的呈现位置是会话内）。

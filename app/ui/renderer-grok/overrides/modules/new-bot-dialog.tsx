@@ -36,12 +36,12 @@ export function initialCharacter(rand: () => number): { shape: string; color: st
 const themeOf = (): 'light' | 'dark' => (typeof document === 'undefined' || !document.documentElement.dataset.theme.endsWith('dark') ? 'light' : 'dark')
 
 /** T24：形状钮的静态 SVG（0.79.3 用 hT 3D 引擎逐帧画——有意偏差：静态，见 character.tsx 头注）。 */
-function ShapeGlyph({ shape, color, size = 28, pressed = false }: { shape: string; color: string; size?: number; pressed?: boolean }) {
+function ShapeGlyph({ shape, color, size = 36, pressed = false }: { shape: string; color: string; size?: number; pressed?: boolean }) {
   const ink = personaInk(color, themeOf())
   return (
     <svg aria-hidden="true" width={size} height={size} viewBox="-15 -15 259 259" style={{ display: 'block' }}>
-      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--sand-border, #1c1c1c33)" strokeWidth={14} /> : null}
-      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--sand-surface, #ffffff)" strokeWidth={8} /> : null}
+      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--sand-border, #1c1c1c55)" strokeWidth={9} /> : null}
+      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--sand-surface, #ffffff)" strokeWidth={19} /> : null}
       <path d={personaShapePath(shape)} fill={ink} />
     </svg>
   )
@@ -153,9 +153,9 @@ function NewBotDialog({ init }: { init: NewBotInit | null }) {
         {init.note !== undefined && <p className="pb-dialog__note" data-dialog-note>{init.note}</p>}
         <div className="pb-character" data-character>
           <span className="pb-character__preview" data-preview data-avatar-shape={character.shape} data-avatar-color={character.color} aria-label={`${character.shape} preview`}>
-            <OnboardingCharacter color={character.color} shape={character.shape} sizePx={96} state="idle" paused />
+            <OnboardingCharacter color={character.color} shape={character.shape} sizePx={96} state="idle" paused surfaceTheme={themeOf() === 'dark' ? 'dark' : undefined} />
           </span>
-          <input aria-label="Bot name" className="pb-name-input" maxLength={255} onChange={(e) => setName(e.currentTarget.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !busy && name.trim() !== '' && presetId !== '' && bundles !== null) { e.preventDefault(); void submit() } }} placeholder="Name your Bot" type="text" value={name} />
+          <input aria-label="Bot name" className="pb-name-input" maxLength={255} onChange={(e) => setName(e.currentTarget.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing && !busy && name.trim() !== '' && presetId !== '' && bundles !== null) { e.preventDefault(); void submit() } }} placeholder="Name your Bot" type="text" value={name} />
           <div className="pb-character__shapes" role="group" aria-label="character shape">
             {PICKER_SHAPES.map((shape) => (
               <button key={shape} type="button" className="pb-character__shape" data-shape={shape}

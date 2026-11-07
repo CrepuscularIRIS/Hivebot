@@ -4,7 +4,7 @@
 > 来源：T17 终验（`receipts/T17.md` §6）。T17 产品面已通过并可合并；本单不挡用户体验。
 > 分支 / 作业目录：feat/T17b（从 T17 合并后的主线切）@ /tmp/bot-wt/T17b
 > claimed：
-> accepted：
+> accepted：——（2026-11-07 终验**不通过〔第 1 次〕** @ 84595995：启动器三修不在提交树里，⑦⑧ 红；T17b 未做五项 → `open/T17c-launcher-fixes-actually-land.md`；证据 feat/T17b `receipts/T17b.md`）
 
 ## 目标
 让 `launcher.spec.ts` 每格真咬住它声称保护的那一行（M1–M4 全红），并修启动器三处小毛病。

@@ -5,7 +5,7 @@
 > 分支 / 作业目录：feat/T21 @ /tmp/bot-wt/T21；**T22 在同一分支接着做，两单验收后一起合并**
 > 排期：UI 链第 1 张，现在开（与 T20 并行）
 > claimed：
-> accepted：
+> accepted：2026-11-07 manager (Opus 5.5) 任务 B · feat/T21 HEAD d1e85205 · 通过（附 T21b：⑤ 回归格咬不住 review M1，测试单，不阻塞合并）
 > 失败计数：0
 
 ## 为什么先做它

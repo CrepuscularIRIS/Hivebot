@@ -5,7 +5,7 @@
 > 分支 / 作业目录：**feat/T21 续做**（/tmp/bot-wt/T21）。T21 回执写完即可开工，不等 T21 验收；两单一起验收、一起合并
 > 排期：UI 链第 2 张（用户反馈最直接对应的一张）
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T21 续做
-> accepted：
+> accepted：2026-11-07 manager (Opus 5.5) 任务 B · feat/T21 HEAD d1e85205 · 通过（附 T21b：⑤ 回归格咬不住 review M1，测试单，不阻塞合并）
 > 失败计数：0
 
 ## 规格（原版即规格）

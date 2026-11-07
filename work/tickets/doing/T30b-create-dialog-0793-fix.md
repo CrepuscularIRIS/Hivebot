@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T30 经理任务 B 终验（HEAD 06c331e3）不通过
 > 分支 / 作业目录：继续 feat/T30 @ /tmp/bot-wt/T30（不另开分支；T30 的单与验收照旧有效，本单只列差额）
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T30 续修
 > accepted：
 
 ## 目标

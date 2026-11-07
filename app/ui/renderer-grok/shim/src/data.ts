@@ -13,6 +13,7 @@
 import { CarrierSocket, pageEnv } from '../../../renderer/carrier'
 import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../../../renderer/carrier/mux'
 import { initView, olderItemsOf, reduceFollow, type SessionView } from '../../../renderer/session/reduce'
+import { avatarOf, saveAvatar } from './avatars'
 import { askText, serialize, permissionEntry, type RawEntry } from './entries'
 import { toOutlineItems } from './outline'
 import { activityOf, toAgentRecord } from './agents'
@@ -222,6 +223,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       ...(overlay.waitingReason !== undefined ? { waitingReason: overlay.waitingReason } : {}),
       // D10c 侧栏角标：失效 bot 的预览行（0.18 行内 lastMessagePreview 槽）；P6-15 worker 行的状态预览
       ...(configOf(id)?.readOnly === true ? { preview: CONNECTOR_UNAVAILABLE } : overlay.preview !== undefined ? { preview: overlay.preview } : {}),
+      ...(avatarOf(id) !== null ? { avatarShape: avatarOf(id)!.shape, avatarColor: avatarOf(id)!.color } : {}), // T24
     })
   }
 
@@ -564,6 +566,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         if (meta.ok) { recipes = rec(rec(meta.value).recipes) as unknown as Record<string, Recipe>; createdBy = createdByOf(meta.value) }
       }
       // 本地 preset 先记 p2temp 前缀未知：#4 的实际 preset id 由 follow header 给，#3 就是所选
+      if (req.avatar !== undefined) saveAvatar(sid, req.avatar) // T24：形象（localStorage，丢不致命）
       summaries = { ...summaries, [sid]: { sessionId: sid, title: null, preset: req.connectors.length > 0 ? null : req.preset, running: false, updatedAt: Date.now() } }
       order = [...order.filter((id) => id !== sid), sid]
       followed.add(sid)

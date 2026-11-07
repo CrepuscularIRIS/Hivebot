@@ -5,7 +5,7 @@
 > 分支 / 作业目录：feat/T26 @ /tmp/bot-wt/T26
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T26
 > accepted：
-> 失败次数：0
+> 失败次数：1（2026-11-07 经理任务 B 返修 → open/T26b：landing 不在视口/常规 e2e 竞态/双 main/介绍时机）
 
 ## 已定事实（探针已跑掉的部分）
 - **0.79.3 七步**（RE :99，`Fe={step:'landing'` 锚点）：`landing → meet → computer-demo → jobs → attribution/role/connect/tools → create → handoff`；初始态含 createColor:'blue'/createShape:'blob'（与 T24 随机初值不同——onboarding 的 create 步是固定默认）

@@ -201,9 +201,18 @@ describe('T25 kickstart 提示隐藏', () => {
     // 只认标签不认正文（M3 咬合格）：T30 往正文加名字后旧会话照样认得出
     expect(isKickstartPrompt('<bot_introduction_request>完全不同的正文，比如带名字 {name: X}</bot_introduction_request>')).toBe(true)
   })
+  it('review M：用户自输同标签文本（rpcId 非 kickstart-）→ 照常显示与对账（ack 可清）', async () => {
+    const { KICKSTART_PROMPT } = await import('../../../renderer-grok/shim/src/entries')
+    // reduce 的 user 条目：真实用户 rpcId = 自己的 nonce
+    const out = foldTurns([{ kind: 'user', id: 'u9', text: '<bot_introduction_request>这是用户自己输入的消息</bot_introduction_request>', rpcId: 'USER-N' }, a(1, 0, '回复')], { hasMore: false, running: false })
+    const raw = toRawEntries(out, 'Bot', null, { clientNonce: 'USER-N' })
+    const users = raw.filter((e) => rec(e).kind === 'message' && rec(e).role === 'user')
+    expect(users).toHaveLength(1) // 显示
+    expect(rec(users[0]).clientNonce).toBe('USER-N') // ack 对账（nonce 绑上 = 回执可清）
+  })
   it('toRawEntries：kickstart user 不出条目、紧跟 assistant 照常；普通 user 照常', async () => {
     const { KICKSTART_PROMPT } = await import('../../../renderer-grok/shim/src/entries')
-    const out = foldTurns([u('k1', KICKSTART_PROMPT), a(1, 0, '介绍'), u('u2', '正常问题')], { hasMore: false, running: false })
+    const out = foldTurns([{ kind: 'user', id: 'k1', text: KICKSTART_PROMPT, rpcId: 'kickstart-s1' }, a(1, 0, '介绍'), u('u2', '正常问题')], { hasMore: false, running: false })
     const raw = toRawEntries(out, 'Bot', null)
     const users = raw.filter((e) => rec(e).kind === 'message' && rec(e).role === 'user')
     expect(users).toHaveLength(1)

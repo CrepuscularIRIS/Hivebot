@@ -41,6 +41,12 @@ export function isKickstartPrompt(text: string | undefined | null): boolean {
   return t.startsWith('<bot_introduction_request>') && t.endsWith('</bot_introduction_request>')
 }
 
+/** T25 review M：条目级判定——标签 + kickstart 发送身份（rpcId 前缀）。
+ * 用户自己输入同标签文本时 rpcId 是自己的 nonce，照常显示与对账（ack 不悬挂）。 */
+export function isKickstartEntry(text: string | undefined | null, rpcId: string | undefined | null): boolean {
+  return isKickstartPrompt(text) && (rpcId ?? '').startsWith('kickstart-')
+}
+
 export function toolSummary(name: string, args: string, result: string | null): string {
   const text = argText(args)
   if (text !== null) return text.slice(0, 120)
@@ -95,7 +101,7 @@ export function toRawEntries(
     switch (e.kind) {
       case 'user': {
         // T25：kickstart 介绍提示不进主 transcript（0.79.3 客户端看不到那条引导 user 消息）
-        if (isKickstartPrompt(e.text)) break
+        if (isKickstartEntry(e.text, e.rpcId)) break
         // P5-55：0.18 model.ts 判侧 `kind==='send-message' || role==='assistant' ? assistant : user`——send-message 是 agent 发来的消息，
         // 用户消息必须 message + role:'user'（原 send-message 让用户输入落 assistant 侧，VERIFY-P5-51 OBS）
         const entry: RawEntry = { kind: 'message', id: e.id, timestampMs: ts(at), role: 'user', author: 'You', content: e.text }

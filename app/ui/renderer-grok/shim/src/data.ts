@@ -14,7 +14,7 @@ import { CarrierSocket, pageEnv } from '../../../renderer/carrier'
 import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../../../renderer/carrier/mux'
 import { initView, olderItemsOf, reduceFollow, type SessionView } from '../../../renderer/session/reduce'
 import { avatarOf, saveAvatar } from './avatars'
-import { askText, isKickstartPrompt, KICKSTART_PROMPT, serialize, permissionEntry, type RawEntry } from './entries'
+import { askText, isKickstartEntry, KICKSTART_PROMPT, serialize, permissionEntry, type RawEntry } from './entries'
 import { toOutlineItems } from './outline'
 import { activityOf, toAgentRecord } from './agents'
 import type { CoordinatorDeps } from './coordinator'
@@ -254,7 +254,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     const view = views.get(agentId)
     // T25（真 bug 预防，工单设计 4）：kickstart 提示也是 user 条目——撤除条件必须是
     // 「存在一条不是 kickstart 提示的 user 条目」，否则介绍提示会把 model 失败的 notice 顶掉。
-    if (view !== undefined && view.items.some((i) => i.kind === 'user' && !isKickstartPrompt(i.text))) {
+    if (view !== undefined && view.items.some((i) => i.kind === 'user' && !isKickstartEntry(i.text, i.rpcId))) {
       createNotices.delete(agentId)
       return []
     }

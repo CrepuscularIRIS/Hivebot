@@ -139,9 +139,9 @@ test('⑦ model notice 与介绍共存（M5 咬合）：kickstart user 不得撤
     // 选一个具体 model（默认空 = 不调 selectModel）
     const modelSelect = page.locator('dialog[data-dialog="new-bot"] select[data-model-select]')
     await expect(modelSelect).toBeVisible({ timeout: 15_000 })
-    await page.waitForTimeout(1500) // 等 modelCatalog 加载
-    const options = await modelSelect.locator('option').all()
-    if (options.length > 1) await modelSelect.selectOption({ index: 1 })
+    // review L：等第一个具体 model option 出现（catalog 加载完成）再选——固定 sleep 有竞态
+    await expect(modelSelect.locator('option').nth(1)).toBeAttached({ timeout: 15_000 })
+    await modelSelect.selectOption({ index: 1 })
     await page.locator('dialog[data-dialog="new-bot"] [data-action="create-bot"]').click()
     // 介绍照常出现（prompt 成功；kickstart user 已落 view）
     await expect(finalAssistant(page).last()).toContainText(INTRO, { timeout: 30_000 })

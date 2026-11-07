@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：queue U5c/T32 计划行 + 提议⑩（T28c 终验）+ T26 合并时记的两条遗留（LOG.md:1150、review-T26.md:34「引导期间侧栏未盖 / create 版式散」）
 > 分支 / 作业目录：feat/T32 @ /tmp/bot-wt/T32（从 docs/rebuild-p6-p5-plan 本立项提交起；T28b/T28bb 已并入）
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T32（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

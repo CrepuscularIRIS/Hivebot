@@ -5,7 +5,7 @@
 > 分支 / 作业目录：feat/T24 @ /tmp/bot-wt/T24，起点 = **T23 合并后**的集成分支 HEAD（状态行头像要读 T23 在 `chat-header.tsx` 写进 `markers.activeAgent` 的 avatarShape/avatarColor）
 > 排期：T23 合并后开工；与 T29 不同文件，可并行
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T24
-> accepted：
+> accepted：2026-11-07 manager (Opus 5.5) @ feat/T24 8c2d746f（产品代码 30109977）
 > 失败计数：1（2026-11-07 终验返修 → T24b）
 
 ## 目标
@@ -106,3 +106,9 @@
 - 边界例外追认：`overrides.test.ts` 的 COPIES 例外（窄，只放 character.tsx 且断言来源头）✓；`shot-character.spec.ts` 同 T23 shot-statusline 先例 ✓，并入 queue 提议⑦一起收口。
 - 存疑四项：① flower——Sol 核 Lc 参数一致，截图轮廓与 ref 同为六瓣，接受；② 预览尺寸——ref 实测约 79 CSS px（非 58），我们 72，交 T30 整框对照时定；③ 色板——ref 本来就是 6+5 两行（回执「ref 单行」看错），现已一致，关闭；④ 认 15 vs 24——没有消费者，YAGNI，不开提议。
 - 另记 T30：选中态样式不同（ref 形状选中是白底描边圆角块、色板是带白缝的外圈；我们是灰底 / 贴边框）。
+
+## 复验（经理任务 B，2026-11-07，feat/T24 8c2d746f）：**通过**（连同 T24b）
+- T24b 只改 `p5-57.css` 一行 + e2e ① 加排列断言，范围合规。
+- 变异：max-width 临时改回 220px → build 0 → ① 红 `Error: 实排=4/4/4/1`；还原（git checkout）→ 重 build 0 → create-dialog-character 5 passed；check upstream diff=0（332 files）。
+- 截图（主仓 `work/grok-0.79.3-re/ours/`，fe135aa0 已提交版）：light/dark-shape3 形状 5/5/3 末行居中、色板 6+5、暗色 Black 白；cmp.light 右半已是 ref 形象区（形状 5/5/3、色板首行），可对照。
+- **合并前置**：feat/T24 的 30109977 里提交的 8 张 `create-character.*.png` 是**旧图**（08:42，形状末行左对齐、色板 8+3、拼版右半仍是侧栏）——shot spec 写的是主仓绝对路径，worktree 里那份没被刷新。合并时这 8 张一律取 docs 分支版本（`git checkout --ours`/主仓 fe135aa0 版），不要让分支旧图覆盖。

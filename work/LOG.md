@@ -1154,3 +1154,10 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - feat/T28 干净合入（六页截图自动取 docs 新版）；合并后回测：unit grok-shim+fold **222 passed**；e2e onboarding+kickstart+bots **19 passed**
 - T28 全链：经理立项（探针颠覆预设）→ 施工 → review 3M → 修复 → 终验返修 T28c（3F：三页出框/复制缺件/单测缺格）→ 复用上游组件修复 → 合并验收（Vb 变异未咬合记提议⑩：版式居中无断言，与 T32 一起补）
 - 提议⑩ 记 queue：meet 标题 opacity/computer-demo 底栏序/role+connect 可见性断言/④标题过时
+
+## 2026-11-07 · merge T30+T30b+T30c（终验通过后合并）
+- 合并前经理要求：截图单一来源进 feat/T30（主仓 15:59 版覆盖旧图）——docs 工作区还原后干净合入
+- 合并后回测：unit **225**；e2e 0793+kickstart+character+market **21 passed**（market 转绿——launchShell 直连 spec 因 T26b 首启路径在基线就红，seen 兜底修复后绿，经理已核实）
+- T30 全链（3 轮）：施工→终验返修 T30b（空测试/暗Black/notice/组字/六处版式）→二次返修 T30c（任务 C 重规划：③判等/描边真因 --sand-surface 不存在/focus 圈/暗Create/暗线/证据链）→过
+- **T30d 开**（不阻塞）：暗色三处样式（Create 白字浅灰底/头尾线无/描边暗不可见——像素数值验收；Create 若是全局 primary token 问题先问经理）
+- T30 教训进 LEARNINGS 口径：回执「已核/见某某」=无证据；交单前自己 Read 截图逐条看

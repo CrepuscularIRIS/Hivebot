@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T21+T22 终验（`receipts/T21.md` 验收记录 5、`receipts/review-T21T22.md` 经理核实）
 > 分支 / 作业目录：合并 feat/T21 之后直接在集成分支 docs/rebuild-p6-p5-plan 改（只动一个测试文件）
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ docs/rebuild-p6-p5-plan
 > accepted：
 > 失败计数：0
 

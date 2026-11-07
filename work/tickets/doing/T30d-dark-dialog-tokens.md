@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T30c 终验（feat/T30 HEAD 53928cf2）。T30 已经第三轮，按任务 C 把暗色这几项拆出来单做，不再挡 T30 合并
 > 分支 / 作业目录：feat/T30d @ /tmp/bot-wt/T30d，起点是 T30 合并后的 docs 分支
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T30d
 > accepted：
 
 ## 目标

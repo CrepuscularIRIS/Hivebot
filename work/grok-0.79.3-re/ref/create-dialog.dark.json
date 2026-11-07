@@ -1,0 +1,68 @@
+{
+ "scene": "create-dialog",
+ "theme": "dark",
+ "asserts": {},
+ "facts": {
+  "createDialog": {
+   "hasDialog": true,
+   "dialogButtons": 27,
+   "buttonsWithSvg": 13,
+   "svgRoots": 14,
+   "bgColors": [
+    "rgba(245, 245, 245, 0.1)",
+    "rgba(245, 245, 245, 0.22)",
+    "rgb(255, 255, 255)",
+    "rgb(161, 107, 57)",
+    "rgb(252, 44, 62)",
+    "rgb(249, 103, 14)",
+    "rgb(246, 148, 18)",
+    "rgb(20, 195, 112)",
+    "rgb(19, 184, 163)",
+    "rgb(24, 132, 252)",
+    "rgb(144, 90, 251)",
+    "rgb(251, 52, 153)",
+    "rgb(119, 119, 119)",
+    "rgba(245, 245, 245, 0.04)",
+    "rgb(245, 245, 245)"
+   ],
+   "text": "Create New Bot\nCancel\nCreate"
+  },
+  "shapeClick": {
+   "clicked": true,
+   "found": 13
+  }
+ },
+ "statusLineSamples": [],
+ "bodyText": "Main Bot\nResearch Bot\nOps Bot\nSD\nStub Dev\nConnect apps\nNo messages yet\n\n\n\n\nCreate New Bot\nCancel\nCreate",
+ "errors": [
+  "[error] Sentry SDK failed to establish connection with the Electron main process.\n  - Ensure you have initialized the SDK in the main process\n  - If your renderers use custom sessions, be sure to set 'getSessions' in the main process options\n  - If you are bundling your main process code and using Electron < v5, you'll need to manually configure a preload script"
+ ],
+ "nonLoopbackRequests": [],
+ "consoleTail": [
+  "[log] [STUB] coord.request getBotTemplateExportPolicy {}",
+  "[log] [STUB] main.writeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.connection.last-host-capabilities\",\"value\":\"{\\\"schemaVersion\\\":1,\\\"value\\\":{\\\"capabilities\\\":[]}}\"}]",
+  "[log] [STUB] local.noteBootGateOpened undefined",
+  "[log] [STUB] main.exposeFeatureGate [{\"name\":\"sand_easy_mode\"}]",
+  "[log] [STUB] main.listCursorAccounts ",
+  "[log] [STUB] main.getMcpCatalog ",
+  "[log] [STUB] main.getEffectivePlugins ",
+  "[log] [STUB] main.getMcpTeamPopularity ",
+  "[log] [STUB] main.getCursorTrainingOptIn ",
+  "[log] [STUB] main.getCredentialsState ",
+  "[log] [STUB] main.reportTrainingOptIn [{\"kind\":\"offer_read\",\"durationMs\":36.10000002384186}]",
+  "[log] [STUB] main.exposeFeatureGate [{\"name\":\"sand_sidebar_activity_recency\"}]",
+  "[log] [STUB] main.exposeFeatureGate [{\"name\":\"sand_grok_main_agent\"}]",
+  "[log] [STUB] coord.request getMainAgent {}",
+  "[log] [STUB] coord.request getAgentTranscriptTail {\"id\":\"ag_main\",\"limit\":500,\"background\":true}",
+  "[log] [STUB] coord.request getAgentTranscriptTail {\"id\":\"ag_research\",\"limit\":500,\"background\":true}",
+  "[log] [STUB] coord.request getAgentTranscriptTail {\"id\":\"ag_ops\",\"limit\":500,\"background\":true}",
+  "[log] [STUB] main.exposeFeatureGate [{\"name\":\"sand_hide_at_mentions\"}]",
+  "[log] [STUB] main.exposeFeatureGate [{\"name\":\"sand_hide_slash_commands\"}]",
+  "[error] Sentry SDK failed to establish connection with the Electron main process.\n  - Ensure you have initialized the SDK in the main process\n  - If your renderers use custom sessions, be sure to set 'getSessions' in the main process options\n  - If you are bundling your main process code and using Electron < v5, you'll need to manually configure a preload script",
+  "[log] [STUB] main.writeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.roster.last-roster\",\"value\":\"{\\\"schemaVersion\\\":4,\\\"value\\\":{\\\"rows\\\":[{\\\"id\\\":\\\"ag_main\\\",\\\"name\\\":\\\"Main Bot\\\",\\\"description\\\":\\\"Main Bot — fixture\\\",\\\"memberIds\\\":[]},{\\\"id\\\":\\\"ag_research\\\",\\\"name\\\":\\\"Research Bot\\\",\\\"description\\\":\\\"Research Bot — fixture\\\",\\\"memberIds\\\":[]},{\\\"id\\\":\\\"ag_ops\\\",\\\"name\\\":\\\"Ops Bot\\\",\\\"description\\\":\\\"Ops Bot — fixture\\\",\\\"memberIds\\\":[]}]}}\"}]",
+  "[log] [STUB] main.removeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.transcript.replicas.ag_main\"}]",
+  "[log] [STUB] main.removeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.transcript.replicas.ag_research\"}]",
+  "[log] [STUB] main.removeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.transcript.replicas.ag_ops\"}]",
+  "[log] [STUB] main.exposeFeatureGate [{\"name\":\"sand_pumpkin_2026\"}]"
+ ]
+}

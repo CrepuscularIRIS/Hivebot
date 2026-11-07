@@ -3,8 +3,8 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T11 终验不通过（第 1 次），receipts/T11.md §8
 > 分支 / 作业目录：feat/T11 @ /tmp/bot-wt/T11（同分支续提交）
-> claimed：
-> accepted：
+> claimed：2026-11-07 03:0x（main）
+> accepted：2026-11-07 feat/T11 a6d1e3ff
 
 ## 目标
 补上 T11 合并前缺的三格：一格是被删掉的旧回归格，两格证明「canonical 回传」真的走到了 header.cwd 和 guard。

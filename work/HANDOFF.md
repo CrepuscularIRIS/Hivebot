@@ -1,4 +1,6 @@
-# HANDOFF · 2026-11-07 11:3x（UI 链第 8 张进行中）
+# HANDOFF · 2026-11-07 14:3x（UI 链第 9 张收口）
+
+> 快照：T20-T28+T21b/T24b/T26b/T28c/T29 共 14 单全部合并主线（GitHub 同步）。onboarding 全链（landing→六步 walk→三页→hand-off 自动建主 bot→介绍延后）落地。剩：T27（等用户编排结论）、T28b（roleUseCaseBots+42 模板）、T30/T31（对话框版式/Help 卡）、T32（B 段编舞+提议⑩版式断言）、老单 T7bd/T7d/T12/T17d/H7 按经理序排后。Q-033（去起名/挑形象）按 A 落地待用户追认。生产实例健康。经理超时 75min 教训：立项探针重（如需跑产物 bundle/桩）时派单提示「纯读文件探针，不跑构建」。
 
 > 快照：T20-T25+T29+T21b 全部合并主线（GitHub 同步）；**T26（onboarding）A 段核改完成、下会话续**——worktree /tmp/bot-wt/T26（feat/T26，1f0ee18f），工单 doing/T26-onboarding.md 末有交接记录（已完成/未做/续接入口/e2e 基线 3 passed）。关键发现：0.18 gate「agentCount>0 自动 seen」——六步 UI 在 e2e 不可达（恒有 main bot），真首启才进。经理 agent 立项超时 75min 被 TaskStop 的教训已隐含在 T26 开单说明。UI 链剩：T26 续（landing 前奏/attribution 页/kickstart 通道/变异/截图）、T27（等用户编排结论）、T28（42 模板）、T30/T31/T32。生产实例健康（launcher+SDK）。
 

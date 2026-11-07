@@ -135,6 +135,12 @@ test('④ 六步走完：Get started → Next 到 create → 填名建 bot → h
     expect(st.order).toHaveLength(3)
     expect(st.meta.mainBotId).toBe(st.order[0])
     expect(st.meta.mainBotId).not.toBe(st.order[1])
+    // T28b review NOTE：order[1]/[2] 对应两个模板——侧栏行序断（第 2/3 行各含一个模板名）
+    const rowTexts = await page.locator('.sand-agent-item').allInnerTexts()
+    expect(rowTexts[2], '主 bot 行（新 bot 置顶——主在后）').toContain('New chat')
+    expect(rowTexts[0]).toMatch(/Bug Reproduction|Product Performance/)
+    expect(rowTexts[1]).toMatch(/Bug Reproduction|Product Performance/)
+    expect(rowTexts[0]).not.toBe(rowTexts[1])
     // hand-off 后介绍发出（主 bot+2 模板 bot 各一条，≥3 次），creatorContext/模板名都在
     await expect.poll(async () => { try { return readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { return '' } }, { timeout: 60_000 }).toContain('bot_introduction_request')
     await expect.poll(async () => { try { return readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { return '' } }, { timeout: 45_000 }).toContain('Your name is Bug Reproduction.')
@@ -182,5 +188,6 @@ test('⑥ 全 Skip：landing Skip 不建也不介绍；走 walk 全 Skip 也建�
     // creatorContext 空（没选 role）→ 请求里无设定句
     await expect.poll(async () => { try { return readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { return '' } }, { timeout: 45_000 }).toContain('bot_introduction_request')
     expect(readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8')).not.toContain('primarily works in')
+    expect(readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8'), 'T28b review NOTE：全 Skip 不建模板').not.toContain('Your name is')
   } finally { await env.stop() }
 })

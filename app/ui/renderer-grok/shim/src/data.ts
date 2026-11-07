@@ -693,7 +693,10 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         if (prompt === undefined) continue
         pendingKickstart.delete(target)
         const intro = await api('session/prompt', { request: { requestId: `kickstart-${target}`, sessionId: target, mode: 'queue', content: [{ type: 'text', text: prompt }] } })
-        if (!intro.ok) createNotices.set(target, "Your Bot couldn't introduce itself")
+        if (!intro.ok) {
+          createNotices.set(target, "Your Bot couldn't introduce itself")
+          throw new Error(`kickstart prompt failed for ${target}`) // T28b review M：失败抛错——完成链停建后续模板（工单「任一步失败停止循环」）
+        }
       }
     },
     newSocket: () => newDevSocket((h) => { dev.sockets.push(h) }),

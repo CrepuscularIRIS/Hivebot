@@ -47,6 +47,28 @@ describe('T28b kickstart 队列', () => {
     const p = await data.deps.createAgent({ origin: 'user', isKickstartRequested: true, name: 'P', description: '' })
     expect(metaOps.some((op) => rec(op).op === 'patch' && rec(op).mainBotId === rec(p).id), '主 bot setMain').toBe(true)
   })
+  it('(e) 介绍失败抛错——完成链停建后续模板（review M）', async () => {
+    let seq = 0
+    const prompts: Array<{ sid: string; ok: boolean }> = []
+    const api = (method: string, args?: unknown) => {
+      if (method === 'session/prompt') {
+        const sid = (rec(args).request as { sessionId: string }).sessionId
+        const ok = prompts.length === 0 ? false : true // 第一次介绍失败
+        prompts.push({ sid, ok })
+        return ok ? Promise.resolve({ ok: true }) : Promise.resolve({ ok: false, error: { code: 'x', message: 'boom' } })
+      }
+      return Promise.resolve({ ok: true, value: { sessionId: `s${++seq}` } })
+    }
+    const data = createShimData({ authId: 'a', api, metaApi: () => Promise.resolve({ ok: true, value: { mainBotId: null, recipes: {} } }) })
+    const a = await data.deps.createAgent({ origin: 'user', isKickstartRequested: true, name: 'A', description: '' })
+    const b = await data.deps.createAgent({ origin: 'user', isKickstartRequested: true, name: 'B', description: '' })
+    await expect(data.dev.finishKickstart(rec(a).id as string)).rejects.toThrow('kickstart prompt failed')
+    // B 未被消费（失败抛错不吞后续）
+    const promptsAfter = prompts.length
+    await data.dev.finishKickstart(rec(b).id as string).catch(() => {})
+    expect(prompts.length).toBe(promptsAfter + 1) // B 的介绍仍可独立发
+  })
+
   it('(d) roleUseCaseBots 请求体经 createAgent 全链可建', async () => {
     const { data } = rig()
     const [first] = roleUseCaseBots('engineering')

@@ -1057,3 +1057,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 21:1x T11 #3 全通（DIRECT ok/sessionId；rebuild 教训=旧 build 假证据）；⑤a 卡 view 时机（poll cwd undefined）——下窗口先等 order 或直读远端目录断言
 - 21:2x T11 ⑤a：reload 后 order 通；views.cwd 时机（null/follow header）最后一步——主证可改直接目录断言
 - 21:3x T11 ⑤a 绿（1 passed 3.7s）：远端 workspaces 真建、宿主无——远端电脑语义落地。剩 ⑤b-d+⑥+T7a拒+回执终验
+- 21:4x T11 ⑤b 卡 bash 执行链（90s 无 marker；④方向=先看 tool/result 错误文本）；⑤a 稳定绿

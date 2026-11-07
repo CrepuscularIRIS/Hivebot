@@ -111,7 +111,19 @@ test.describe('T11 ssh 远端工作区', () => {
           { type: 'usage', usage: { inputTokens: 10, outputTokens: 5 } },
           { type: 'finish', reason: { kind: 'tool-calls' } },
         ] }])
-        await api(shell.page, 'session/prompt', { request: { requestId: `t11b-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'go' }] } })
+        const prompted = await api(shell.page, 'session/prompt', { request: { requestId: `t11b-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'go' }] } })
+        EVIDENCE(`⑤b prompt resp: ${JSON.stringify(prompted).slice(0, 300)}`)
+        // 观测 tool 结果：等 turn/end 后 dump devState items 的错误文本
+        const deadlineView = Date.now() + 60_000
+        for (;;) {
+          const st = await devState(shell.page)
+          const v = st.views[sessionId]
+          if (v?.turnEnded === true) break
+          if (Date.now() > deadlineView) { EVIDENCE(`⑤b turn 未完：${JSON.stringify(v ?? null).slice(0, 400)}`); break }
+          await new Promise((r) => setTimeout(r, 500))
+        }
+        const stEnd = await devState(shell.page)
+        EVIDENCE(`⑤b view 尾态: ${JSON.stringify(stEnd.views[sessionId] ?? null).slice(0, 600)}`)
         const wsRoot = join(server.workspace, 'workspaces')
         const deadline = Date.now() + 90_000
         let found = ''

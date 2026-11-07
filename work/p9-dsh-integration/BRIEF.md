@@ -50,3 +50,4 @@
 - **第一阶段（现在）**：本机 Linux 完整体验——产品启动器拉起 SDK + Electron，日常使用 skills/定时/M1-M3 全链。
 - **第二阶段**：**Windows exe 客户端**，连接到 ssh ubuntu 远端电脑（bot 的电脑）。测试链路可能走 **tailscale**；Windows 侧由用户自己连接过来测试。
 - 含义：T9-T12 的 ssh 链最终消费者 = Windows exe 客户端；启动器/打包设计为 Windows 预留（electron-builder 目标 win、SDK 跑远端不进 exe、handoff 通道经 tailscale 可达）。
+- **经理注（2026-11-06 23:5x，任务 A）**：上一条两句互相矛盾——「SDK 跑远端不进 exe」时 ubuntu 本身就是 bot 的电脑，SDK 以本机模式在那里跑，Windows 客户端只经隧道连 SDK，**不消费** T9–T12 的 ssh 链（ssh 链的设计前提是「SDK 在这边、电脑在那边」）。两种走法（A：exe 含 SDK、工具经 ssh 在 ubuntu 执行 = ssh 链的消费者；B：exe 只是 UI、SDK 在 ubuntu 本机模式 + ssh -L 隧道 / tailscale）的对比与推荐（B）见 `work/product-launcher/DESIGN-launcher.md` §4，交用户拍板 = **Q-031**。T11 两种走法都用得上（B 下它的 `workspace.ensure` RPC 是 main 文件职责迁 SDK 侧的第一块），照常做完；T12/T13 随 Q-031 定。

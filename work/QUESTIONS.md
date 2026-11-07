@@ -276,3 +276,12 @@
   - A（推荐）：功能链合并到 `fda457c2`（T7bb 的代码，构建和 e2e 都过；f0a14235 只多一份会冲突的回执，跳过它）。b2facacf 不合并。暗色 Add 的问题另开一张小单：先查清字到底画在哪个元素上，再改。已知缺陷：暗色 Add 看不见字、× 是原生按钮、Remove 失败不提示。
   - B：在 feat/T7b 上再修一轮（修构建、补 import、Add 用真正承载字色的元素断言），过了再整枝合并。T7c 合并跟着往后推。
 - 答复：
+
+## Q-031 [open] Windows 客户端：SDK 跑在 Windows 上还是 ubuntu 上
+- slug：product-launcher / p9-dsh-integration ｜ 类型：需求范围 ｜ 阻塞：不阻塞 T17（本机启动器）；阻塞 T19（Windows 设计单），影响 T12/T13 是否继续 ｜ 提出：2026-11-06 23:5x
+- 背景：你定了第二阶段做 Windows exe，连 ssh 可达的 ubuntu 电脑。「bot 在哪台电脑干活」和「SDK（bot 的大脑）跑在哪」是两件事，选法决定后面几周的活。详见 `work/product-launcher/DESIGN-launcher.md` §4.1。
+- 选项：
+  - A：exe 里装 SDK，bot 在 Windows 上思考、通过 ssh 在 ubuntu 上跑命令改文件。正好用上已做的 ssh 链（T9–T12）。代价：dsh 要移植到 Windows（原生依赖、沙箱 bwrap 在 Windows 没有）；LLM key 放 Windows；Windows 关机 bot 就停。
+  - B（推荐）：exe 只是界面；SDK 在 ubuntu 上按现在的本机模式跑，Windows 经 ssh 隧道（tailscale 负责连得上）连过去。key 只在服务器、Windows 关了 bot 照跑、沙箱用现成的。代价：现在界面进程在本机做的几件文件活（bot 名册、建工作区、复制 skill）要挪到 SDK 那边，约 3–5 张单；ssh 链对 Windows 客户端不再需要（只剩「再操控另一台机器」的用途）。
+- 推荐理由：B 不用移植 dsh 到 Windows，安全面（key、沙箱）不变；正在做的 T11 两种都用得上，不浪费。
+- 答复：

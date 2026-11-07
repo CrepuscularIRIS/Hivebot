@@ -99,9 +99,9 @@ test.describe('T11 ssh 远端工作区', () => {
         const { createHash } = await import('node:crypto')
         const token = readFileSync(join(rt.handoff, 'launch-token'), 'utf8').trim()
         const instance = createHash('sha256').update(token).digest('hex')
-        const uiDataDir = join(home, '.config', 'pbots-ui')
-        mkdirSync(uiDataDir, { recursive: true })
-        writeFileSync(join(uiDataDir, 'policy-state.json'), JSON.stringify({ version: 1, paused: false, instance }))
+        // dataDirs 跟 launchSdkRuntime 的 dataDir 走（=home/data，非缺省 .config）
+        mkdirSync(dataDir, { recursive: true })
+        writeFileSync(join(dataDir, 'policy-state.json'), JSON.stringify({ version: 1, paused: false, instance }))
         const bashArgs = JSON.stringify({ command: 'printf T11MARK > m.txt', description: 'T11 5b' })
         rt.writeScriptCalls(sessionId, [{ chunks: [
           { type: 'block-start', index: 0, blockType: 'tool-call' },
@@ -121,7 +121,8 @@ test.describe('T11 ssh 远端工作区', () => {
           if (reqLog.includes(sessionId) || Date.now() > deadlineFake) break
           await new Promise((r) => setTimeout(r, 500))
         }
-        EVIDENCE(`⑤b fake requests: ${reqLog.split('\n').filter((l) => l.includes(sessionId)).map((l) => l.slice(0, 200)).join(' || ') || '（无）'}`)
+        const reqLines = reqLog.split('\n').filter((l) => l.includes(sessionId))
+        EVIDENCE(`⑤b fake 轮数=${reqLines.length} 尾行=${reqLines[reqLines.length - 1]?.slice(0, 260) ?? '无'}`)
         // 观测 tool 结果：等 turn/end 后 dump devState items 的错误文本
         const deadlineView = Date.now() + 60_000
         for (;;) {
@@ -144,6 +145,10 @@ test.describe('T11 ssh 远端工作区', () => {
           await new Promise((r) => setTimeout(r, 500))
         }
         expect(found, 'bash 写的 m.txt 落远端 ws').not.toBe('')
+        try {
+          const finalReq = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8').split('\n').filter((l) => l.includes(sessionId))
+          EVIDENCE(`⑤b 终态轮数=${finalReq.length}`)
+        } catch { /* */ }
         expect(readFileSync(found, 'utf8').trim()).toBe('T11MARK')
         EVIDENCE(`⑤b marker=${found}`)
       } finally {

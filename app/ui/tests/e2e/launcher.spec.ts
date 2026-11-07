@@ -267,6 +267,8 @@ test.describe('T17 产品启动器', () => {
         XDG_CONFIG_HOME: configDir, XDG_STATE_HOME: stateDir, XDG_CACHE_HOME: join(home, 'cache'),
         DBUS_SESSION_BUS_ADDRESS: `unix:path=${tmp}/no-dbus`, DISPLAY: process.env.DISPLAY ?? ':99',
         XAUTHORITY: process.env.XAUTHORITY ?? '',
+        // M2 变异面：模拟用户 shell 已 export（真实场景）——启动器须剥出 Electron
+        LITELLM_MASTER_KEY: 'sk-t17-envpath-000',
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     })
@@ -292,7 +294,8 @@ test.describe('T17 产品启动器', () => {
       const electronPid = pidOf(/electron/)
       const sdkPid = pidOf(/start\.mjs/)
       expect(sdkPid, '找到 SDK 进程').toBeTruthy()
-      if (electronPid !== undefined) {
+      expect(electronPid, '找到 Electron 主进程（env 断言的前提）').toBeTruthy()
+      {
         const envBuf = readFileSync(`/proc/${electronPid}/environ`)
         for (const k of CREDS_5) expect(envBuf.includes(`${k}\0`), `Electron env 无 ${k}`).toBe(false)
       }

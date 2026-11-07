@@ -6,21 +6,23 @@
  "statusLineSamples": [
   {
    "t": 0,
-   "text": ""
+   "text": "undefined"
   },
   {
    "t": 5,
-   "text": ""
+   "text": "undefined"
   },
   {
    "t": 10,
-   "text": ""
+   "text": "undefined"
   },
   {
    "t": 12,
-   "text": ""
+   "text": "undefined"
   }
  ],
+ "mountT0": "undefined",
+ "bodyText": "Main Bot\nResearch Bot\nOps Bot\nSD\nStub Dev\nConnect apps\nMain Bot\nToday 7:52 AM\nMulling it over\n\n\n",
  "errors": [
   "[error] Sentry SDK failed to establish connection with the Electron main process.\n  - Ensure you have initialized the SDK in the main process\n  - If your renderers use custom sessions, be sure to set 'getSessions' in the main process options\n  - If you are bundling your main process code and using Electron < v5, you'll need to manually configure a preload script"
  ],
@@ -42,7 +44,7 @@
   "[log] [STUB] main.exposeFeatureGate [{\"name\":\"grok_bot_all_bots_color_theming\"}]",
   "[log] [STUB] main.setViewingAgent [{\"agentId\":\"ag_main\"}]",
   "[log] [STUB] main.writeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.selection.last-agent\",\"value\":\"{\\\"schemaVersion\\\":1,\\\"value\\\":{\\\"agentId\\\":\\\"ag_main\\\"}}\"}]",
-  "[log] [STUB] main.reportClientFailure [{\"kind\":\"transcript_first_layout\",\"reason\":\"settled\",\"heldMs\":14.899999976158142,\"unsettledBodies\":0,\"unsettledPlaceholders\":0,\"cloudAgentCards\":0}]",
+  "[log] [STUB] main.reportClientFailure [{\"kind\":\"transcript_first_layout\",\"reason\":\"settled\",\"heldMs\":13.399999976158142,\"unsettledBodies\":0,\"unsettledPlaceholders\":0,\"cloudAgentCards\":0}]",
   "[log] [STUB] coord.request openAgentTail {\"id\":\"ag_main\",\"limit\":500}",
   "[log] [STUB] coord.request getBotTemplateForSourceAgent {\"sourceAgentId\":\"ag_main\"}",
   "[log] [STUB] coord.request getAsyncTasks {\"id\":\"ag_main\"}",

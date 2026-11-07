@@ -5,31 +5,126 @@
  "facts": {
   "createDialog": {
    "hasDialog": true,
-   "dialogButtons": 27,
-   "buttonsWithSvg": 13,
-   "svgRoots": 14,
-   "bgColors": [
-    "rgba(245, 245, 245, 0.1)",
-    "rgba(245, 245, 245, 0.22)",
-    "rgb(255, 255, 255)",
-    "rgb(161, 107, 57)",
-    "rgb(252, 44, 62)",
-    "rgb(249, 103, 14)",
-    "rgb(246, 148, 18)",
-    "rgb(20, 195, 112)",
-    "rgb(19, 184, 163)",
-    "rgb(24, 132, 252)",
-    "rgb(144, 90, 251)",
-    "rgb(251, 52, 153)",
-    "rgb(119, 119, 119)",
-    "rgba(245, 245, 245, 0.04)",
-    "rgb(245, 245, 245)"
+   "shapes": [
+    {
+     "i": 1,
+     "svg": "M44.16 27.6A16.56 16.56 0 0 0 27.6 11.04",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    },
+    {
+     "i": 2,
+     "svg": "M131.36 72 131.37 72.78 131.37 73.55 131",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    },
+    {
+     "i": 3,
+     "svg": "M15.65 52.11 15.7 51.12 15.88 50.2 16.54",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    },
+    {
+     "i": 4,
+     "svg": "M71.78 133.31 70.3 132.69 68.82 131.89 6",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "true"
+    },
+    {
+     "i": 5,
+     "svg": "M91.45 113.68 90.54 113.59 89.62 113.46 ",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    },
+    {
+     "i": 6,
+     "svg": "M115.83 72 115.6 72.57 115.38 73.14 115.",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    },
+    {
+     "i": 7,
+     "svg": "M20.16 77.52 19.55 76.34 18.5 74.13 17.9",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    },
+    {
+     "i": 8,
+     "svg": "M27.24 81.25 27.25 79.26 27.35 77.25 27.",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    },
+    {
+     "i": 9,
+     "svg": "M128.72 72 128.38 74.22 127.92 76.4 127.",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    },
+    {
+     "i": 10,
+     "svg": "M31.12 115.68 31.14 114.05 31.21 112.38 ",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    },
+    {
+     "i": 11,
+     "svg": "M23.92 73.41 23.93 72.05 24.03 70.72 24.",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    },
+    {
+     "i": 12,
+     "svg": "M77.67 124.3 76.35 122.83 75.03 121.36 7",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    },
+    {
+     "i": 13,
+     "svg": "M17.68 65.43 17.74 64.09 17.96 62.79 18.",
+     "bg": "rgba(0, 0, 0, 0)",
+     "pressed": "false"
+    }
    ],
-   "text": "Create New Bot\nCancel\nCreate"
-  },
-  "shapeClick": {
-   "clicked": true,
-   "found": 13
+   "swatches": [
+    "Black",
+    "Brown",
+    "Red",
+    "Orange",
+    "Yellow",
+    "Green",
+    "Cyan",
+    "Blue",
+    "Violet",
+    "Magenta",
+    "Gray"
+   ],
+   "helpCard": false,
+   "text": "Create New Bot\nCancel\nCreate",
+   "selectedShapeIdx": 4,
+   "selectedSwatch": "Cyan character color",
+   "afterShape3": {
+    "clicked": {
+     "clicked": true,
+     "found": 13
+    },
+    "selectedShapeIdx": 3,
+    "selectedSwatch": "Cyan character color",
+    "shapesSameOrder": false
+   },
+   "initials": [
+    {
+     "shape": 6,
+     "swatch": "Blue character color"
+    },
+    {
+     "shape": 10,
+     "swatch": "Orange character color"
+    },
+    {
+     "shape": 2,
+     "swatch": "Gray character color"
+    }
+   ]
   }
  },
  "statusLineSamples": [],
@@ -49,7 +144,7 @@
   "[log] [STUB] main.getMcpTeamPopularity ",
   "[log] [STUB] main.getCursorTrainingOptIn ",
   "[log] [STUB] main.getCredentialsState ",
-  "[log] [STUB] main.reportTrainingOptIn [{\"kind\":\"offer_read\",\"durationMs\":36.10000002384186}]",
+  "[log] [STUB] main.reportTrainingOptIn [{\"kind\":\"offer_read\",\"durationMs\":34.19999998807907}]",
   "[log] [STUB] main.exposeFeatureGate [{\"name\":\"sand_sidebar_activity_recency\"}]",
   "[log] [STUB] main.exposeFeatureGate [{\"name\":\"sand_grok_main_agent\"}]",
   "[log] [STUB] coord.request getMainAgent {}",

@@ -95,9 +95,9 @@ const stub = await fs.readFile(path.join(HERE, 'stub-init-0793.js'), 'utf8');
 await send('Page.addScriptToEvaluateOnNewDocument', { source: stub });
 
 const clickText = async (text, sel = 'button,[role=button]') => {
-  const info = await evaluate(`(() => { const els=[...document.querySelectorAll('${sel}')]; const el=els.find(e=>(e.textContent||'').includes(${JSON.stringify(text)}) || (e.getAttribute('aria-label')||'').includes(${JSON.stringify(text)})); if(!el) return JSON.stringify({found:0,els:els.length}); const r=el.getBoundingClientRect(); return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2}); })()`);
-  const p = JSON.parse(String(info));
-  if (p.found === 0) return false;
+  const info = await evaluate(`(() => { try { const els=[...document.querySelectorAll('${sel}')]; const el=els.find(e=>(e.textContent||'').includes(${JSON.stringify(text)}) || (e.getAttribute('aria-label')||'').includes(${JSON.stringify(text)})); if(!el) return JSON.stringify({found:0,els:els.length}); const r=el.getBoundingClientRect(); return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2}); } catch (e) { return JSON.stringify({found:0,err:String(e)}); } })()`);
+  let p; try { p = JSON.parse(String(info)); } catch { return false; }
+  if (!p || p.found === 0) return false;
   for (const t of ['mousePressed', 'mouseReleased']) await send('Input.dispatchMouseEvent', { type: t, x: p.x, y: p.y, button: 'left', clickCount: 1 });
   return true;
 };
@@ -119,49 +119,78 @@ await new Promise((r) => setTimeout(r, 9000));
 
 const result = { scene: SCENE, theme: THEME, asserts: {}, facts: {}, statusLineSamples: [] };
 
-if (SCENE === 'conv-done' || SCENE === 'conv-working') {
+if (SCENE.startsWith('conv-working')) {
+  // T20b：短语探针不猜白名单——bodyText 行集合里排除静态 UI 词后取首条符合短语形态的行
+  const phrase = () => evaluate(`(() => {
+    const STATIC = new Set(['Main Bot','Research Bot','Ops Bot','Connect apps','Cancel','Create','Create New Bot','New chat','SD','Stub Dev','No messages yet','Mulling it over placeholder']);
+    const lines = (document.body.innerText||'').split('\n').map(x=>x.trim()).filter(Boolean);
+    const hit = lines.find(l => !STATIC.has(l) && /^[A-Z][a-z']+( [a-z']+){1,6}$/.test(l) && l.length >= 10 && l.length <= 45);
+    return hit || '';
+  })()`);
   await clickText('Main Bot');
-  await new Promise((r) => setTimeout(r, SCENE === 'conv-done' ? 5000 : 3000));
-  if (SCENE === 'conv-working') {
-    // 0.79.3 短语轮换（RE：5s 一换）——采样跨 ≥2 个轮换窗：t=0/5/10/12
-    const phrase = () => evaluate(`(() => { const el=[...document.querySelectorAll('span,p,div,h1,h2,h3')].find(e=>e.children.length===0 && e.offsetParent!==null && /^(Mulling|Think|Working|Search|Look|Ponder|Consider|Rolling)/i.test((e.textContent||'').trim())); return el?el.textContent.trim().slice(0,80):''; })()`);
-    for (const t of [0, 5, 10, 12]) {
-      if (t > 0) await new Promise((r) => setTimeout(r, (t === 12 ? 2 : 5) * 1000));
-      result.statusLineSamples.push({ t, text: String(await phrase()) });
-      if (t === 0 || t === 12) await shot(`-t${t}`);
-    }
-  } else {
-    const body = String(await evaluate('document.body.innerText'));
-    result.bodyText = body.slice(0, 4000);
-    result.asserts.hasA = body.includes('A first answer');
-    result.asserts.hasE = body.includes('E final answer');
-    result.asserts.noB = !body.includes('B middle turn');
-    result.asserts.noToolSummary = !body.includes('ls -la');
-    result.asserts.noToolRowDom = (await evaluate(`document.querySelectorAll('.sand-outline-item[data-kind="tool-call"], [class*="tool-call"]').length`)) === 0;
-    await shot('');
+  await new Promise((r) => setTimeout(r, 3000));
+  for (const t of [0, 5, 10, 12]) {
+    if (t > 0) await new Promise((r) => setTimeout(r, (t === 12 ? 2 : 5) * 1000));
+    result.statusLineSamples.push({ t, text: String(await phrase()) });
+    if (t === 0 || t === 12) await shot(`-t${t}`);
   }
-} else if (SCENE === 'create-dialog') {
-  // S4：New Bot 对话框（入口是 aria-label="New Bot" 的图标钮；空态→输入名字→picker→选第 3 形状）
-  await clickText('New Bot', 'button[aria-label="New Bot"]');
-  await new Promise((r) => setTimeout(r, 3500));
-  await shot('-empty');
-  // 输入名字 → 等 picker 出现
-  const input = await evaluate(`(() => { const el=document.querySelector('[role=dialog] input,[role=dialog] textarea'); if(!el) return JSON.stringify({found:0}); el.focus(); const r=el.getBoundingClientRect(); return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2}); })()`);
-  const ip = JSON.parse(String(input));
-  if (ip.found !== 0) {
-    for (const t of ['mousePressed', 'mouseReleased']) await send('Input.dispatchMouseEvent', { type: t, x: ip.x, y: ip.y, button: 'left', clickCount: 1 });
-    await send('Input.insertText', { text: 'Research Helper' });
-    await new Promise((r) => setTimeout(r, 3500));
-  }
-  await shot('-named');
-  const facts = await evaluate(`(() => { const dlg=document.querySelector('[role=dialog]'); if(!dlg) return JSON.stringify({hasDialog:false}); const btns=[...dlg.querySelectorAll('button,[role=button]')]; const withSvg=btns.filter(e=>e.querySelector('svg')).length; const svgRoots=dlg.querySelectorAll('svg').length; const bgColors=[...new Set([...dlg.querySelectorAll('*')].map(e=>getComputedStyle(e).backgroundColor).filter(c=>c!=='rgba(0, 0, 0, 0)'))].slice(0,16); return JSON.stringify({hasDialog:true, dialogButtons:btns.length, buttonsWithSvg:withSvg, svgRoots, bgColors, text:(dlg.innerText||'').slice(0,400)}); })()`);
-  try { result.facts.createDialog = JSON.parse(String(facts)); } catch { result.facts.createDialog = { raw: String(facts) }; }
-  // 点第 3 个形状按钮（若可辨）
-  const clicked = await clickIdx('svg', 2, '[role=dialog]');
-  result.facts.shapeClick = clicked;
-  if (clicked) { await new Promise((r) => setTimeout(r, 2500)); await shot('-shape3'); }
+  // T20b：多挂载短语采样改由外层独立进程循环（单进程内反复 navigate 会卡 boot）——
+  // 本进程只采本挂载 t0，写 mountT0；外层聚合成 phrasesAcrossMounts/toolPhrases。
+  result.mountT0 = result.statusLineSamples[0]?.text ?? '';
   const body = String(await evaluate('document.body.innerText'));
   result.bodyText = body.slice(0, 4000);
+} else if (SCENE === 'conv-done') {
+  await clickText('Main Bot');
+  await new Promise((r) => setTimeout(r, 5000));
+  const body = String(await evaluate('document.body.innerText'));
+  result.bodyText = body.slice(0, 4000);
+  result.asserts.hasA = body.includes('A first answer');
+  result.asserts.hasE = body.includes('E final answer');
+  result.asserts.noB = !body.includes('B middle turn');
+  result.asserts.noToolSummary = !body.includes('ls -la');
+  result.asserts.noToolRowDom = (await evaluate(`document.querySelectorAll('.sand-outline-item[data-kind="tool-call"], [class*="tool-call"]').length`)) === 0;
+  await shot('');
+} else if (SCENE === 'create-dialog') {
+  // T20b：S4 全机器记录——形状按钮数组 / 色板数组 / 初始选中 / 点第 3 形状后 / helpCard / 多次重开初始随机性
+  const openDlg = async () => {
+    await clickText('New Bot', 'button[aria-label="New Bot"]');
+    await new Promise((r) => setTimeout(r, 3000));
+    const input = await evaluate(`(() => { const el=document.querySelector('[role=dialog] input,[role=dialog] textarea'); if(!el) return JSON.stringify({found:0}); el.focus(); const r=el.getBoundingClientRect(); return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2}); })()`);
+    const ip = JSON.parse(String(input));
+    if (ip.found !== 0) {
+      for (const t of ['mousePressed', 'mouseReleased']) await send('Input.dispatchMouseEvent', { type: t, x: ip.x, y: ip.y, button: 'left', clickCount: 1 });
+      await send('Input.insertText', { text: 'Research Helper' });
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  };
+  const snapshot = () => evaluate(`(() => {
+    const dlg = document.querySelector('[role=dialog]'); if (!dlg) return JSON.stringify({hasDialog:false});
+    const btns = [...dlg.querySelectorAll('button,[role=button]')];
+    const shapes = btns.map((b, i) => ({ i, svg: b.querySelector('svg path') ? (b.querySelector('svg path').getAttribute('d') || '').slice(0, 40) : null, bg: getComputedStyle(b).backgroundColor, pressed: b.getAttribute('aria-pressed') || b.getAttribute('aria-checked') || (b.dataset.active ?? null) })).filter((x) => x.svg);
+    const swatchBtns = btns.map((b, i) => ({ i, aria: b.getAttribute('aria-label') || '', pressed: b.getAttribute('aria-pressed') })).filter((x) => / character color$/.test(x.aria));
+    const selectedShape = shapes.find((x) => x.pressed === 'true' || x.pressed === true) ?? null;
+        return JSON.stringify({ hasDialog: true, shapes, swatches: swatchBtns.map((x) => x.aria.replace(' character color', '')), helpCard: (dlg.innerText || '').includes('Help me create'), text: (dlg.innerText || '').slice(0, 300), selectedShapeIdx: selectedShape ? selectedShape.i : null, selectedSwatch: (swatchBtns.find((x) => x.pressed === 'true') || {}).aria ?? null });
+  })()`);
+  await openDlg();
+  await shot('-named');
+  const facts = JSON.parse(String(await snapshot()));
+  // 点第 3 个形状按钮 → 之后态
+  const clicked = await clickIdx('svg', 2, '[role=dialog]');
+  await new Promise((r) => setTimeout(r, 2000));
+  const after = JSON.parse(String(await snapshot()));
+  result.facts.createDialog = { ...facts, afterShape3: { clicked, selectedShapeIdx: after.selectedShapeIdx, selectedSwatch: after.selectedSwatch, shapesSameOrder: JSON.stringify(after.shapes) === JSON.stringify(facts.shapes) } };
+  await shot('-shape3');
+  // 重开 3 次记 initial（关对话框 → 再开）：Cancel 关闭
+  const initials = [];
+  for (let k = 0; k < 3; k += 1) {
+    await clickText('Cancel', '[role=dialog] button');
+    await new Promise((r) => setTimeout(r, 1200));
+    await openDlg();
+    const st = JSON.parse(String(await snapshot()));
+    initials.push({ shape: st.selectedShapeIdx, swatch: st.selectedSwatch });
+  }
+  result.facts.createDialog.initials = initials;
+  result.bodyText = String(await evaluate('document.body.innerText')).slice(0, 4000);
 } else {
   // 兜底：直接截当前态
   result.bodyText = String(await evaluate('document.body.innerText')).slice(0, 4000);

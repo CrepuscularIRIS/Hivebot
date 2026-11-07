@@ -267,6 +267,12 @@
     COORD_VALUES.reportTranscriptSource = null;
     COORD_VALUES.resolveServerTranscriptTail = null;
     MAIN_VALUES.getOnboardingSeen = SCENE !== 'onboarding';
+    if (SCENE === 'conv-working-tool') {
+      const toolRun = (a) => a.id === 'ag_main' ? { ...a, status: 'running', isRunning: true, currentActivity: { kind: 'tool', tool: 'WebSearch' } } : a;
+      const rosterVal0 = COORD_VALUES.getServerAgentRoster;
+      COORD_VALUES.getServerAgentRoster = () => ({ ...rosterVal0, agents: rosterVal0.agents.map(toolRun) });
+      COORD_VALUES.listAgents = COORD_VALUES.listAgents.map(toolRun);
+    }
     if (SCENE === 'conv-working') {
       // S2：主 bot 运行中（isRunning + currentActivity thinking → 状态行短语轮换）
       // 注意：getServerAgentRoster / listAgents 原值是对象/数组（非函数），这里整体替换。

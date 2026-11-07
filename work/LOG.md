@@ -1109,3 +1109,9 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - T23 状态行短语引擎：纯函数（无时间轮换/800ms 防抖/5s 泛 working 静默/60s elapsed/140ms 退场）+ typing 三点退役 + e2e ①-④（切换间隔实测 824ms）+ 五刀变异 + ours|ref 拼版对照达标。reviewer 审查中；验收 7（working 态复测）等 T20b 数据回填
 - T29 删 ToolResultCard 死路径：attach 三函数删、投影回归上游透传，净删 100 行，unit 180 passed、check diff=0
 - T20b（T20 事实表纠正）采样后台跑中；T20 验收未过（形状 13 非 24 / 选形不变色 / 短语随机起步——目测误读教训：事实一律 json 机器记录）
+
+## 2026-11-07 · merge T23 + T20/T20b（终验通过后合并）
+- feat/T23 干净合入；feat/T20 的 receipts/T20.md 三方合并（保留主仓经理验收记录节）
+- 合并后回测：unit grok-shim+fold **197 passed**；e2e status-line+outline+p6-fold **11 passed**
+- 经理终验：T23 通过（review 4 条修复逐条核实+3 补格咬住 5s 轮换变异）；T20b 附条件通过（json 逐字段核实；回执「samples 非空」一句不实已更正——短语事实只认 phrase-samples.json）；T20 随之收口
+- 经理立项 T24：13 形状=0.79.3 pn 序（blob,cloud,square,sparkle,clover,heart,flower,teardrop,tablet,wedge,house,star,hex；缺 7 个从 Hs 表复制改造，character.tsx 整模块复制进覆盖层）；11 色与 AVATAR_COLORS 逐字相同纯接线；**真断点=键名**（toAgentRecord 写 shape/color、上游读 avatarShape/avatarColor）；名字输入拆 T30

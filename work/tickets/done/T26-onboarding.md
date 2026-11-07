@@ -4,7 +4,7 @@
 > 来源：queue U5/T26 计划行；RE-UI-0.79.3.md :99（ONB chunk）；T20 S5 止损记录
 > 分支 / 作业目录：feat/T26 @ /tmp/bot-wt/T26
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T26
-> accepted：
+> accepted：2026-11-07 feat/T26 @ 145c784d（经理任务 B，与 T26b 合并验收）
 > 失败次数：1（2026-11-07 经理任务 B 返修 → open/T26b：landing 不在视口/常规 e2e 竞态/双 main/介绍时机）
 
 ## 已定事实（探针已跑掉的部分）

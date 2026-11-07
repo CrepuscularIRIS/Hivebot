@@ -25,3 +25,10 @@ reviewer 实跑：check diff=0、轻量探针三件（mock 传输/React hook/数
   3. create 步直建不 setMain → finish→reloadRoster 再建空 main，用户得两个 bot。
   4. 介绍应在 seen 之后发（T25 工单 :24 锚点），回执「笔误」判断不成立。
 - reloadRoster 借 `__pbotsDev`（回执存疑）：判**可接受**——index.ts:73 无条件安装、生产可达；T26b 只要求加注释标明生产在用。
+
+## 经理终验（T26+T26b 合并，2026-11-07 13:2x，feat/T26 HEAD 145c784d）→ **accepted**
+- 重跑：build 后 onboarding ×3 **12 passed**；bots+kickstart+onboarding ×2 **34 passed**；unit **211**；check **diff=0: 332**——与回执一致。
+- 变异抽验 V-c（介绍挪回 create 步）：④ ×2 **2 failed**（250ms 窗断言命中 `bot_introduction_request`），还原后 worktree 干净并重建。
+- 截图亲眼看：landing 亮/暗——标题+Get started+Skip 在视口中央；create 步可见（版式散，归 T32）。
+- 4 条返修逐条看 diff：外壳/setMain（mainBotId===null 才 patch）/pendingKickstart+finishKickstart（skip 不发）/launchProduct reload+哨兵——均成立。
+- 遗留（不阻塞）：引导时侧栏未被覆盖、create 步版式 → T32 对照 0.79.3 参照；pendingKickstart 仅内存（create 后未走完即退出会丢介绍，可接受）。

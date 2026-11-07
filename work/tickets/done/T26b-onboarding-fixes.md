@@ -4,7 +4,7 @@
 > 来源：T26 终验（经理任务 B，验收时 feat/T26 HEAD 8ba0b66c）——验收命令全绿，但实物与探针打穿四处
 > 分支 / 作业目录：继续 feat/T26 @ /tmp/bot-wt/T26（同分支续修，T26 验收时一起看）
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T26 续修
-> accepted：
+> accepted：2026-11-07 feat/T26 @ 145c784d（经理任务 B，与 T26b 合并验收）
 
 ## 目标
 让真首启的用户**真的看得见** landing 并能走完六步，走完后 roster 只有他建的那一个 bot，介绍时机对齐 0.79.3。

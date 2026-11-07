@@ -4,7 +4,8 @@
 > 来源：DESIGN §D3 §D4 验证节（T10 先红格已逐格写明）；前置 T9a/T9b 均已合并
 > 分支 / 作业目录：feat/T10 @ /tmp/bot-wt/T10
 > claimed：2026-11-06 18:0x
-> accepted：
+> accepted：2026-11-06 19:1x manager 任务 B @ feat/T10 fa6b72e2（T10 + T10b 联合终验通过；见 receipts/T10.md「## 终验 2（经理）」）
+> 终验：2026-11-06 18:5x @ 9e43562c **不通过（第 1 次）**→ `open/T10b-ssh-bash-probes-outside-tmp.md`。产品代码成立；④a/④b 在 /tmp 下对「删 wrapper」不敏感（上游 workspace-write profile 自带 `--tmpfs /tmp`），③a 需回 DESIGN 形态，回执缺。详见 receipts/T10.md「## 终验（经理）」（在 feat/T10）。**feat/T10 暂不合并。**
 
 ## 目标
 ssh 模式的 bash 与本机同等受 wrapper 约束：宿主+远端两套读遮蔽/写保护/恒断网（许可才通）；坏 wrapper → bash 执行失败（无「无卡裸跑」）；D3 档位语义不动。

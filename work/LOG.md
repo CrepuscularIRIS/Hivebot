@@ -1087,3 +1087,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 19:5x T11 main 面摸底：Electron main 经 PBOTS_DSH_HANDOFF（外部启动器给 base-url/token）连 SDK——「main 得知 ssh 模式」正解=handoff 目录扩字段（start.ts 写 ssh-mode/remote-root，main 读）→mintWorkspace 分支。D5 预案方向的落地机制，下窗口实现
 - 03:1x feat/T11 合并落地（复验通过）：回测 77 单测+ssh-product 7+m3/skills 115+ssh-workspace 3 全绿。ssh 远端工作区全链收口；T11c（skills ssh 拒）开单排队
 - 03:5x T17b 8 格全绿+三小毛病修；M2 inspect oracle 实证咬合（变异红/还原绿）；M5 不咬合+M6 转义坏如实记。待终验
+- 03:4x 用户开始体验（启动器拉起真桌面实例：ready+Electron 在跑）；T17b 终验派出（M2/M4 抽验+M5/M6 裁决+回执欠账处理）。负载 ~10 双源（用户环境+体验实例）

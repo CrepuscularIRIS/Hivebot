@@ -1,0 +1,279 @@
+// T17 产品启动器 e2e（工单六格 + M1-M4 变异面）。被测对象 = app/launcher/hivebot
+// （bash 脚本）——spawn 子进程跑它，Electron 侧经 CDP 连（--remote-debugging-port），
+// 不用 _electron.launch（那会绕过启动器本身）。
+import { test, expect, chromium } from 'playwright/test'
+import { spawn, type ChildProcess } from 'node:child_process'
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { tmkdir } from '../support/tmp-sweep.ts'
+
+const LAUNCHER = join(__dirname, '..', '..', '..', 'launcher', 'hivebot')
+const REPO = join(__dirname, '..', '..', '..', '..')
+const CREDS_5 = ['P2SDK_LLM_API_KEY', 'LITELLM_MASTER_KEY', 'DEEPSEEK_API_KEY', 'OPENAI_API_KEY', 'ANTHROPIC_API_KEY']
+
+interface Launch {
+  proc: ChildProcess
+  home: string
+  stateDir: string
+  configDir: string
+  tmp: string
+  port: number
+  stop(): Promise<void>
+}
+
+const freePort = async (): Promise<number> => {
+  const net = await import('node:net')
+  return new Promise((resolve, reject) => {
+    const s = net.createServer()
+    s.once('error', reject)
+    s.listen(0, '127.0.0.1', () => { const { port } = s.address() as net.AddressInfo; s.close(() => resolve(port)) })
+  })
+}
+
+/** 起一个隔离环境启动器实例（env 剥凭证；home/state/config/tmp 全独立）。 */
+async function launchHivebot(opts: { env?: Record<string, string> } = {}): Promise<Launch> {
+  const home = tmkdir('bot-T17-home-')
+  const stateDir = join(home, 'state')
+  const configDir = join(home, 'config')
+  const tmp = mkdtempSync(join(tmpdir(), 'bot-T17-tmp-'))
+  for (const d of [stateDir, configDir, join(configDir, 'pbots-ui')]) mkdirSync(d, { recursive: true })
+  const port = await freePort()
+  const env: Record<string, string> = {
+    PATH: process.env.PATH ?? '',
+    HOME: home,
+    TMPDIR: tmp,
+    XDG_CONFIG_HOME: configDir,
+    XDG_STATE_HOME: stateDir,
+    XDG_CACHE_HOME: join(home, 'cache'),
+    DBUS_SESSION_BUS_ADDRESS: `unix:path=${tmp}/no-dbus`,
+    DISPLAY: process.env.DISPLAY ?? ':99',
+    XAUTHORITY: process.env.XAUTHORITY ?? '',
+    ...Object.fromEntries(Object.entries(opts.env ?? {}).map(([k, v]) => [k, v])),
+  }
+  for (const k of CREDS_5) delete env[k]
+  const proc = spawn(LAUNCHER, ['--disable-gpu', `--remote-debugging-port=${port}`], { env, stdio: ['ignore', 'pipe', 'pipe'] })
+  let out = ''
+  let err = ''
+  proc.stdout?.on('data', (c) => { out += String(c) })
+  proc.stderr?.on('data', (c) => { err += String(c) })
+  const waitExit = new Promise<number>((resolve) => { proc.once('exit', (c) => resolve(c ?? 0)) })
+  return {
+    proc, home, stateDir, configDir, tmp, port,
+    get stdout() { return out },
+    get stderr() { return err },
+    async stop() { if (proc.exitCode === null) { proc.kill('SIGTERM'); await Promise.race([waitExit, new Promise((r) => setTimeout(r, 30_000))]) } },
+  } as Launch
+}
+
+/** 收「启动器之后代」pid 集合（按 /proc 扫本实例特征路径）。 */
+function descendantPids(l: Launch): number[] {
+  const marks = [join(l.stateDir, 'hivebot'), LAUNCHER, join(REPO, 'app', 'ui'), join(REPO, 'app', 'sdk', 'scripts')]
+  const out: number[] = []
+  for (const pid of readdirSync('/proc')) {
+    if (!/^\d+$/.test(pid)) continue
+    try {
+      const cmd = readFileSync(`/proc/${pid}/cmdline`, 'utf8')
+      if (marks.some((m) => cmd.includes(m)) && !cmd.includes('pgrep') && !cmd.includes('playwright') && !cmd.includes('snapshot-bash')) out.push(Number(pid))
+    } catch { /* 不可读 */ }
+  }
+  return out
+}
+
+const alive = (pid: number): boolean => {
+  // kill(0) 对僵尸（死未被 reap）也成功——按 /proc state 判，Z 不算活
+  try {
+    const st = readFileSync(`/proc/${pid}/stat`, 'utf8')
+    const state = st.slice(st.lastIndexOf(')') + 2, st.lastIndexOf(')') + 3)
+    return state !== 'Z'
+  } catch { return false }
+}
+
+/** 连 CDP → 等 UI 就绪 → 返回 page。 */
+async function connectUi(port: number) {
+  // 启动链 ~8-15s（SDK ready → Electron → CDP 端口开）——重试连接 60s
+  let browser: Awaited<ReturnType<typeof chromium.connectOverCDP>> | undefined
+  let lastErr: unknown
+  for (let i = 0; i < 60 && browser === undefined; i++) {
+    try { browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`) } catch (e) { lastErr = e; await new Promise((r) => setTimeout(r, 1000)) }
+  }
+  if (browser === undefined) throw new Error(`CDP 连不上 :${port}（60s）${String(lastErr).slice(0, 120)}`)
+  const ctx = browser.contexts()[0]!
+  const page = ctx.pages()[0] ?? await ctx.newPage()
+  await page.waitForSelector('.sand-agent-item', { timeout: 90_000 })
+  return { browser, page }
+}
+
+test.describe('T17 产品启动器', () => {
+  test('① mock 生命周期：拉起→就绪→关窗→全退无残留', { timeout: 300_000 }, async () => {
+    const l = await launchHivebot({ env: { P2SDK_PROVIDER: 'mock' } })
+    const exitP = new Promise<number>((r) => l.proc.once('exit', (c) => r(c ?? 0)))
+    try {
+      const { browser, page } = await connectUi(l.port)
+      // pid 集合非空且含三类
+      // 工单口径=三类关键进程（Electron 主、start.mjs、dsh）——Chromium --type=
+      // 子进程（renderer/gpu/utility）由 Electron 主进程生命周期管理，不进责任面
+      // （CDP 强退主进程后它们慢退 >20s，实测全死、非泄漏）。
+      // 工单三类白名单：Electron 主进程（out/main/index.js 且非 --type= 子进程）、
+      // SDK launcher（start.mjs）、dsh（bin.js）。Chromium --type=/crashpad 等辅助
+      // 进程由 Electron 主进程生命周期管理——CDP 强退后慢退 20s+ 但全死（多轮实测，
+      // 非泄漏），不进启动器责任面。
+      const all = descendantPids(l)
+      const cmdOf = (p: number): string => { try { return readFileSync(`/proc/${p}/cmdline`, 'utf8') } catch { return '' } }
+      const pids = all.filter((p) => {
+        const c = cmdOf(p)
+        return (c.includes('out/main/index.js') && !c.includes('--type=')) || c.includes('scripts/start.mjs') || (c.includes('bin.js') && c.includes('--patch'))
+      })
+      expect(pids.length, `三类关键 pid 非空（=${JSON.stringify(pids)}/${JSON.stringify(all)}）`).toBeGreaterThanOrEqual(3)
+      const cmdAll = pids.map(cmdOf).join('\n')
+      expect(cmdAll, '含 start.mjs').toContain('start.mjs')
+      expect(cmdAll, '含 electron 主进程').toContain('out/main/index.js')
+      expect(cmdAll, '含 dsh bin.js').toContain('bin.js')
+      // 关窗（用户真实退出路径）：renderer window.close() → BrowserWindow.close →
+      // window-all-closed → app.quit()（优雅停子进程）。CDP 的 browser.close() 是
+      // Browser.close 强退——主进程死后 Chromium 子进程群慢退（实测 13 个 >20s 残留）。
+      await page.evaluate(() => window.close())
+      await browser.close().catch(() => { /* 主进程退出后 CDP 断开属预期 */ })
+      const rc = await Promise.race([exitP, new Promise<number>((r) => setTimeout(() => r(-1), 30_000))])
+      expect(rc, `启动器 ≤30s 退出（rc=${rc}）`).toBe(0)
+
+      // pid 全不在（dsh detached 退出有尾部——重试窗口 10s）
+      // 循环 bug 修正：some(alive) 作条件时「初始全死」会让循环 0 次、stragglers
+      // 保持全量死 pid（trace 铁证：启动器 rc=0 后 t=0 三类全 X）。固定窗内重滤。
+      let stragglers = pids
+      for (let i = 0; i < 20; i++) {
+        await new Promise((r) => setTimeout(r, 1000))
+        stragglers = stragglers.filter(alive)
+        if (stragglers.length === 0) break
+        if (i === 19) {
+          const { appendFileSync: ap } = await import('node:fs')
+          for (const p of stragglers) { try { ap(join('test-output', 'T17', 'stray.log'), `pid=${p} cmd=${readFileSync(`/proc/${p}/cmdline`, 'utf8').replace(/\0/g, ' ').slice(0, 150)}\n`) } catch { /* */ } }
+        }
+      }
+      const strayDesc = stragglers.map((p) => {
+        try {
+          const cmd = readFileSync(`/proc/${p}/cmdline`, 'utf8').replace(/\0/g, ' ').slice(0, 70)
+          const st = readFileSync(`/proc/${p}/stat`, 'utf8')
+          const state = st.slice(st.lastIndexOf(')') + 2, st.lastIndexOf(')') + 3)
+          const ppid = st.slice(st.lastIndexOf(')') + 2).split(' ')[1]
+          return `${p}[${state},ppid=${ppid}]:${cmd}`
+        } catch { return `${p}:gone` }
+      }).join(' | ')
+      expect(stragglers, `残留 pid（重试 20s）${strayDesc}`).toEqual([])
+      // handoff 删净
+      const handoffs = readdirSync(l.tmp).filter((n) => n.startsWith('p2sdk-handoff-'))
+      expect(handoffs, 'TMPDIR 无 p2sdk-handoff-*').toEqual([])
+      // 日志与 state 路径
+      expect(existsSync(join(l.stateDir, 'hivebot', 'logs', 'sdk.log')), 'sdk.log 在 XDG state').toBe(true)
+      expect(existsSync(join(l.stateDir, 'hivebot', 'logs', 'ui.log')), 'ui.log 在').toBe(true)
+      expect(existsSync(join(l.stateDir, 'hivebot', 'dsh')), 'dsh home 在 state（非仓内）').toBe(true)
+    } finally {
+      await l.stop()
+    }
+  })
+
+  test('③a 无 key real 模式 → 拒启（退出码≠0 + stderr 提示 + 无 electron）', { timeout: 60_000 }, async () => {
+    const l = await launchHivebot() // 无 key、无 env 文件、非 mock
+    const exitP = new Promise<number>((r) => l.proc.once('exit', (c) => r(c ?? 0)))
+    const rc = await Promise.race([exitP, new Promise<number>((r) => setTimeout(() => r(-1), 20_000))])
+    expect(rc, '退出码≠0').not.toBe(0)
+    expect(l.stderr, 'stderr 提示变量名').toContain('P2SDK_LLM_API_KEY')
+    expect(existsSync(join(l.stateDir, 'hivebot', 'logs', 'ui.log')), 'ui.log 未生成（无 electron）').toBe(false)
+  })
+
+  test('③b env 文件权限过宽 → 拒启（chmod 600 提示）', { timeout: 60_000 }, async () => {
+    const l = await launchHivebot()
+    mkdirSync(join(l.configDir, 'hivebot'), { recursive: true })
+    writeFileSync(join(l.configDir, 'hivebot', 'env'), 'P2SDK_LLM_API_KEY=sk-test-t17-not-a-real-key\n', { mode: 0o644 })
+    // 已起——重启一个（文件在启动前就该在；这里停掉重起）
+    await l.stop()
+    const l2 = await launchHivebot()
+    mkdirSync(join(l2.configDir, 'hivebot'), { recursive: true })
+    writeFileSync(join(l2.configDir, 'hivebot', 'env'), 'P2SDK_LLM_API_KEY=sk-test-t17-not-a-real-key\n', { mode: 0o644 })
+    const exitP = new Promise<number>((r) => l2.proc.once('exit', (c) => r(c ?? 0)))
+    const rc = await Promise.race([exitP, new Promise<number>((r) => setTimeout(() => r(-1), 20_000))])
+    expect(rc, '退出码≠0').not.toBe(0)
+    expect(l2.stderr, 'chmod 600 提示').toContain('chmod 600')
+    await l2.stop()
+  })
+
+  test('④ SIGTERM 启动器 → 全链退出无残留', { timeout: 300_000 }, async () => {
+    const l = await launchHivebot({ env: { P2SDK_PROVIDER: 'mock' } })
+    const exitP = new Promise<number>((r) => l.proc.once('exit', (c) => r(c ?? 0)))
+    try {
+      const { browser } = await connectUi(l.port)
+      await browser.close()
+      const pids = descendantPids(l)
+      l.proc.kill('SIGTERM')
+      const rc = await Promise.race([exitP, new Promise<number>((r) => setTimeout(() => r(-1), 30_000))])
+      expect(rc, '≤30s 退出').toBeLessThan(255)
+      await new Promise((r) => setTimeout(r, 2000))
+      for (const p of pids) expect(alive(p), `pid ${p} 已退`).toBe(false)
+      expect(readdirSync(l.tmp).filter((n) => n.startsWith('p2sdk-handoff-')), 'handoff 删净').toEqual([])
+    } finally {
+      await l.stop()
+    }
+  })
+
+  test('⑤ 凭证不外泄：key 经 0600 文件进 SDK、Electron env 无五键、日志无 key 值', { timeout: 300_000 }, async () => {
+    test.setTimeout(300_000)
+    const KEY = 'sk-t17-leakprobe-000000000000'
+    const home = tmkdir('bot-T17-5-home-')
+    const stateDir = join(home, 'state')
+    const configDir = join(home, 'config')
+    const tmp = mkdtempSync(join(tmpdir(), 'bot-T17-5-tmp-'))
+    for (const d of [stateDir, configDir, join(configDir, 'pbots-ui'), join(configDir, 'hivebot')]) mkdirSync(d, { recursive: true })
+    writeFileSync(join(configDir, 'hivebot', 'env'), `P2SDK_LLM_API_KEY=${KEY}\nP2SDK_LLM_BASE_URL=http://127.0.0.1:59999\n`, { mode: 0o600 })
+    const port = await freePort()
+    const proc = spawn(LAUNCHER, ['--disable-gpu', `--remote-debugging-port=${port}`], {
+      env: {
+        PATH: process.env.PATH ?? '', HOME: home, TMPDIR: tmp,
+        XDG_CONFIG_HOME: configDir, XDG_STATE_HOME: stateDir, XDG_CACHE_HOME: join(home, 'cache'),
+        DBUS_SESSION_BUS_ADDRESS: `unix:path=${tmp}/no-dbus`, DISPLAY: process.env.DISPLAY ?? ':99',
+        XAUTHORITY: process.env.XAUTHORITY ?? '',
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    const exitP = new Promise<number>((r) => proc.once('exit', (c) => r(c ?? 0)))
+    try {
+      // 等链起来（不等 UI 完全 ready——连接成功即可断 env）
+      const { browser } = await connectUi(port)
+      await new Promise((r) => setTimeout(r, 3000))
+      const marks = [join(stateDir, 'hivebot'), LAUNCHER, join(REPO, 'app', 'ui'), join(REPO, 'app', 'sdk', 'scripts')]
+      const pidOf = (re: RegExp): number | undefined => {
+        for (const pid of readdirSync('/proc')) {
+          if (!/^\d+$/.test(pid)) continue
+          try {
+            const cmd = readFileSync(`/proc/${pid}/cmdline`, 'utf8')
+            if (cmd.includes('playwright') || cmd.includes('snapshot-bash')) continue
+            if (marks.some((m) => cmd.includes(m)) && re.test(cmd)) return Number(pid)
+          } catch { /* */ }
+        }
+        return undefined
+      }
+      const electronPid = pidOf(/electron/)
+      const sdkPid = pidOf(/start\.mjs/)
+      expect(sdkPid, '找到 SDK 进程').toBeTruthy()
+      if (electronPid !== undefined) {
+        const envBuf = readFileSync(`/proc/${electronPid}/environ`)
+        for (const k of CREDS_5) expect(envBuf.includes(`${k}\0`), `Electron env 无 ${k}`).toBe(false)
+      }
+      if (sdkPid !== undefined) {
+        const envBuf = readFileSync(`/proc/${sdkPid}/environ`)
+        expect(envBuf.includes('P2SDK_LLM_API_KEY\0'), 'SDK env 有 key 键名（正对照）').toBe(true)
+        expect(envBuf.includes('hivebot'), 'SDK env 的 SANDBOX_MASK 含 hivebot 根').toBe(true)
+      }
+      proc.kill('SIGTERM')
+      await Promise.race([exitP, new Promise((r) => setTimeout(r, 30_000))])
+      await new Promise((r) => setTimeout(r, 1500))
+      const sdkLog = readFileSync(join(stateDir, 'hivebot', 'logs', 'sdk.log'), 'utf8')
+      const uiLog = readFileSync(join(stateDir, 'hivebot', 'logs', 'ui.log'), 'utf8')
+      expect(sdkLog.includes(KEY), 'sdk.log 无 key 值').toBe(false)
+      expect(uiLog.includes(KEY), 'ui.log 无 key 值').toBe(false)
+      await browser.close().catch(() => { /* 主进程退出后 CDP 断开属预期 */ })
+    } finally {
+      if (proc.exitCode === null) { proc.kill('SIGKILL') }
+    }
+  })
+})

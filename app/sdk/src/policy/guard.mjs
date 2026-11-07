@@ -243,7 +243,10 @@ export function apply(ctx, config) {
     // 注册——apply 时 ctx.get('ssh') 还是 null（T9b3 ②d 实测）。轮询等服务出现
     // （ssh 模式下必然出现；上限 60s 防挂死，超时按校验失败处理）。
     const verify = async (ssh, fs_) => {
+        // T9b4（审查 C1）：已发出的 ready.then 撤不回——回调入口先判 disposed。
+        if (disposed) return
         const actual = await fs_.resolve('~')
+        if (disposed) return
         const norm = (p) => (p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p)
         if (norm(actual.targetKey) !== norm(config.remoteHome)) {
           const msg = `p2sdk-fs-guard: configured remoteHome ${config.remoteHome} does not match the remote home reported by the connection (${actual.targetKey}); refusing to run with an unverified credential-root layout`
@@ -251,11 +254,24 @@ export function apply(ctx, config) {
           process.exit(86)
         }
     }
+    // T9b4：释放即停——轮询句柄登记生命周期（照 request-net.mjs:194 的 ctx.effect
+    // 先例）；ready 回调按 disposed 短路。热重载/停用 guard 行后旧实例不再误杀。
+    let disposed = false
+    let pollTimer = null
+    // 手搓 ctx（旧单测）无 effect——守卫后退化为无清理（行为同 T9b3）。
+    if (typeof ctx.effect === 'function') {
+      ctx.effect(() => () => {
+        disposed = true
+        if (pollTimer !== null) clearTimeout(pollTimer)
+      })
+    }
     const poll = (deadline) => {
+      if (disposed) return
       const ssh = typeof ctx.get === 'function' ? ctx.get('ssh') : null
       const fs_ = typeof ctx.get === 'function' ? ctx.get('fs') : null
       if (ssh && typeof ssh.ready?.then === 'function' && fs_) {
         void ssh.ready.then(() => verify(ssh, fs_)).catch((error) => {
+          if (disposed) return
           try { console.error(`p2sdk-fs-guard: remoteHome verification failed: ${String(error?.message ?? error)}`) } catch { /* */ }
           process.exit(86)
         })
@@ -265,7 +281,7 @@ export function apply(ctx, config) {
         try { console.error('p2sdk-fs-guard: remoteHome verification timed out waiting for the ssh service; refusing to run') } catch { /* */ }
         process.exit(86)
       }
-      setTimeout(() => poll(deadline), 100)
+      pollTimer = setTimeout(() => poll(deadline), 100)
     }
     poll(Date.now() + 60_000)
   }

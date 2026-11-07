@@ -285,3 +285,89 @@ describe('T9b remoteHome 启动校验', () => {
     }
   })
 })
+
+// T9b4（审查 C1）：guard 释放后 remoteHome 校验停——真 cordis Context（手搓 ctx
+// 没有 dispose 语义，终验漏网正因如此）。ⓐ轮询路径 / ⓑready 晚到路径 / ⓒ不释放对照。
+describe('T9b4 remoteHome 校验随插件释放而停', () => {
+  it('ⓐ 轮询路径：dispose 后前移 61s 不退出（假时钟在插件加载前装——首个轮询 timer 也走假时钟）', async () => {
+    const { Context } = await import('@deepseek-ai/cordis')
+    const exit = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never)
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      const root = new Context()
+      const fiber = root.plugin({ name: 'g', apply: plugin.apply } as never, { roots: configRoots(), remoteHome: '/configured' } as never)
+      await fiber
+      await fiber.dispose()
+      await vi.advanceTimersByTimeAsync(61_000)
+      expect(exit, 'dispose 后轮询超时不再 exit(86)').not.toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers(); exit.mockRestore(); err.mockRestore()
+    }
+  })
+
+  it('ⓑ ready 路径：dispose 后 ssh.ready 才 resolve → 不校验不退出', async () => {
+    const { Context } = await import('@deepseek-ai/cordis')
+    const root = new Context()
+    const exit = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never)
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    let releaseReady: ((v: unknown) => void) | undefined
+    const ready = new Promise((r) => { releaseReady = r })
+    try {
+      root.provide('ssh', null as never); root.provide('fs', null as never)
+      root.set('ssh', { ready } as never)
+      root.set('fs', { resolve: async () => ({ targetKey: '/actual' }) } as never)
+      const fiber = root.plugin({ name: 'g', apply: plugin.apply } as never, { roots: configRoots(), remoteHome: '/configured' } as never)
+      await fiber
+      await fiber.dispose()
+      releaseReady!(undefined)
+      await new Promise((r) => setImmediate(r))
+      await new Promise((r) => setImmediate(r))
+      expect(exit, 'dispose 后 ready 回调不再校验/退出').not.toHaveBeenCalled()
+    } finally {
+      exit.mockRestore(); err.mockRestore()
+      void root
+    }
+  })
+
+  it('ⓒ 对照：不释放 + ssh 就绪 + 配错 → 仍 exit(86)（fail closed 保住）', async () => {
+    // 未释放校验路径对照（ready 已就绪 + 配错 → verify 退出）；60s 超时分支由 ⓓ 守。
+    const { Context } = await import('@deepseek-ai/cordis')
+    const root = new Context()
+    const exit = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never)
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      root.provide('ssh', null as never); root.provide('fs', null as never)
+      root.set('ssh', { ready: Promise.resolve() } as never)
+      root.set('fs', { resolve: async () => ({ targetKey: '/actual' }) } as never)
+      const fiber = root.plugin({ name: 'g', apply: plugin.apply } as never, { roots: configRoots(), remoteHome: '/configured' } as never)
+      await fiber
+      await new Promise((r) => setImmediate(r))
+      await new Promise((r) => setImmediate(r))
+      expect(exit, '未释放时配错仍 exit(86)').toHaveBeenCalledWith(86)
+      expect(err.mock.calls.flat().join('\n')).toContain('does not match the remote home')
+      await fiber.dispose()
+    } finally {
+      exit.mockRestore(); err.mockRestore()
+      void root
+    }
+  })
+
+  it('ⓓ 60s 超时对照：不释放、前移 61s → exit(86) + 超时串（fail closed 保住）', async () => {
+    const { Context } = await import('@deepseek-ai/cordis')
+    const exit = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never)
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      const root = new Context()
+      const fiber = root.plugin({ name: 'g', apply: plugin.apply } as never, { roots: configRoots(), remoteHome: '/configured' } as never)
+      await fiber
+      await vi.advanceTimersByTimeAsync(61_000)
+      expect(exit, '未释放时轮询超时仍 exit(86)').toHaveBeenCalledWith(86)
+      expect(err.mock.calls.flat().join('\n')).toContain('timed out waiting for the ssh service')
+      await fiber.dispose()
+    } finally {
+      vi.useRealTimers(); exit.mockRestore(); err.mockRestore()
+    }
+  })
+})

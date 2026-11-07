@@ -44,8 +44,9 @@ export class ZoneCheckedSshFileSystem extends SshFileSystem {
   /** @type {string[]} */
   p2sdkNeverRoots = []
   /** @type {Map<string, string>} 原串 ws 根 → resolve 过的 targetKey。
-   * ponytail: Map 缓存按原串键——T11 一 bot 一远端 ws 时各会话各键互不污染；
-   * 上游 resolve 结果对同一拼写稳定（helper 远端 realpath）。 */
+   * ponytail: 首次解析即钉住——ws 原串事后被换链，可写根仍是首次的 realpath
+   * （拒新目标、不跟随放宽；审查 P1 经理核实）。上限 = 首次解析前就被换链会钉
+   * 错，根治在 T11 建 ws 时存远端 canonical 路径。 */
   p2sdkRootCache = new Map()
 
   // FileSystem 基类构造器是 super(ctx, 'fs')——只收 ctx；cordis loader 的 config

@@ -4,7 +4,7 @@
 > 来源：queue.md U4b（T30 计划行）；T24 终验遗留三项（预览尺寸 / 选中态 / Black）；T25「不做」里的「介绍提示带名字」；Q-032（默认 A，未答，按 A 施工）
 > 分支 / 作业目录：feat/T30 @ /tmp/bot-wt/T30，起点 = docs/rebuild-p6-p5-plan 21f6127c（已含 T24/T24b、T25、T26、T28 合并）
 > 排期：现在开。与 T28b / T32 不同文件；与 T31 的关系见下面「对计划的更正」
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T30
 > accepted：
 > 失败计数：0
 

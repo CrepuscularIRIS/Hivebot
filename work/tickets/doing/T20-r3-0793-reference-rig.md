@@ -5,8 +5,8 @@
 > 分支 / 作业目录：feat/T20 @ /tmp/bot-wt/T20（只写 `work/**`，不碰 `app/**`）
 > 排期：与 T21 并行（不共享任何文件；本单不跑 app/ui e2e，只起 headless chrome）
 > claimed：
-> accepted：
-> 失败计数：0
+> accepted：**未通过**（2026-11-07 manager 任务 B @ f1aedbc5）——图全部合格（S1/S2/S4 亮暗 13 张逐张目测有内容），但事实表三处与图矛盾、验收 3 未达；修复单 `open/T20b-fact-table-correction.md`。详见回执末「验收记录」
+> 失败计数：1
 
 ## 目标
 UI 复刻链（T21–T25）的每张单都要「我们 | 0.79.3」并排截图。0.78.1 时我们用 R3 桩（静态起 renderer + preload 桩 + 假 coordinator）做到了，复跑 2 分钟一张。本单把同一套桩改挂 0.79.3 的 renderer，渲出 5 个场景的参照图，并顺手拿到静态分析拿不到的几个事实（状态行短语原文、建 bot 对话框到底给几个形状、onboarding 各步长什么样）。

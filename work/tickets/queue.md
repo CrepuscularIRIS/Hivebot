@@ -8,7 +8,8 @@
 
 | # | 项 | 依赖 | 状态 |
 |---|---|---|---|
-| U0 | **T20** 0.79.3 参照台（`open/T20-r3-0793-reference-rig.md`）：R3 桩复制改挂 0.79.3，S1 首答终答 / S2 状态行 / S3 outline / S4 建 bot 对话框 / S5 onboarding 亮暗参照图 + 事实表（suppressed 形状、短语原文、picker 形状数）；只写 `work/**` | — | **open**（与 T21 并行） |
+| U0 | **T20** 0.79.3 参照台（`open/T20-r3-0793-reference-rig.md`）：R3 桩复制改挂 0.79.3，S1 首答终答 / S2 状态行 / S3 outline / S4 建 bot 对话框 / S5 onboarding 亮暗参照图 + 事实表（suppressed 形状、短语原文、picker 形状数）；只写 `work/**` | — | **doing → 验收未通过**（2026-11-07：图合格，事实表三处与图矛盾——实为 13 形状 / 选形不改色 / 短语每挂载随机；修复单 T20b） |
+| U0b | **T20b** 事实表纠正（`open/T20b-fact-table-correction.md`）：S2 采样器修空 + 多次挂载短语集 + tool 轮；S4 json 记 shapes/swatches/initial/afterShape3/helpCard；回执重写事实表 | T20 | **open**（阻塞 T23 短语表、T24 形状集与配色语义） |
 | U1 | **T21** outline 侧板接数据（`done/T21-outline-data.md`）：`shim/src/outline.ts` fold→outline item + `getConversationOutline` + `outline` 快照推送；纯加法 | — | **done**（2026-11-07 终验 d1e85205；待主 agent 合并 feat/T21） |
 | U1b | **T21b** outline.spec ⑤ 回归格咬住 review M1（`open/T21b-outline-reload-regression-bite.md`）：只改测试，reload 前切走 + 前置断言 + 变异红 | T21 合并 | **open**（合并后在集成分支做，不阻塞合并） |
 | U2 | **T22** 主聊天只留首答 + 终答（`done/T22-hide-process-main-chat.md`）：entries.ts 过滤 thinking / tool-call / 中间轮（对应 COORD Qz）；`toolRows` 等老 oracle 迁到 outline；受影响测试 13 个文件已列表 | T21（同分支续做） | **done**（2026-11-07 与 T21 一起终验；一起合并） |

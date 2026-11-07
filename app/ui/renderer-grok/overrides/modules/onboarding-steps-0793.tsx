@@ -3,7 +3,6 @@
 // attribution 每次运行洗一次牌（useState 初始化，Fisher-Yates）。
 // 品牌图标（x/instagram/…）：本仓无 svg 资产（探针结论），只显示文字标签——回执记。
 import type { ReactNode } from 'react'
-import { useState } from 'react'
 import { ATTRIBUTION, CONNECT, ROLE, type RoleChoice } from './onboarding-walk'
 
 /** 通用底栏：主钮（未选=Skip tertiary / 已选=Continue 或 Next）+ Back。 */
@@ -39,13 +38,8 @@ export function RoleStep({ roleId, onPick, onBack, onForward }: { roleId: string
   )
 }
 
-export function AttributionStep({ sourceId, onPick, onBack, onForward }: { sourceId: string | null; onPick(id: string): void; onBack(): void; onForward(): void }) {
-  // 每次运行洗一次牌（Fisher-Yates——c_e；useState 初始化只跑一次）
-  const [shuffled] = useState(() => {
-    const a = [...ATTRIBUTION.choices]
-    for (let i = a.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j]!, a[i]!] }
-    return a
-  })
+export function AttributionStep({ sourceId, onPick, onBack, onForward, shuffled }: { sourceId: string | null; onPick(id: string): void; onBack(): void; onForward(): void; shuffled: readonly RoleChoice[] }) {
+  // review M2：洗牌由 Walk 持有（本组件会被条件渲染卸载重挂——useState 初始化器每次重跑）
   return (
     <section className={`sand-onboarding__attribution`}>
       <h1 id="sand-onboarding-attribution-heading">{ATTRIBUTION.title}</h1>

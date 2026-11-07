@@ -4,11 +4,15 @@
 // 来源: grok-bot 0.18 reconstructed view.tsx（复制骨架）+ 0.79.3 index.eager-app@380k 与
 // chunk-onboarding-flow（walk/三页形态）。
 import { useEffect, useRef, useState } from 'react'
-import { createOnboardingHandOffDwell, handOffStatus, type OnboardingComputerSnapshot } from '../../frontend/src/recovered/features/onboarding/signed-in/model'
+import {
+  createOnboardingHandOffDwell, handOffStatus, typedMeetText, ONBOARDING_MEET_BEAT_MS, ONBOARDING_MEET_DELAY_BEATS,
+  MEET_TYPED_TEXT, ONBOARDING_DEMO_BEAT_MS, COMPUTER_DEMO_FRAMES, ONBOARDING_JOBS_BEAT_MS, ONBOARDING_JOBS_BEAT_LIMIT,
+  ONBOARDING_JOBS, ONBOARDING_JOB_BUBBLE_Y_OFFSET, type OnboardingComputerSnapshot,
+} from '../../frontend/src/recovered/features/onboarding/signed-in/model'
 import { createCoordinatorOnboardingReadiness, type OnboardingComputerReadiness, type OnboardingComputerStatusSource } from '../../frontend/src/recovered/features/onboarding/signed-in/computer-readiness'
 import { ComputerDemo } from '../../frontend/src/recovered/features/onboarding/signed-in/view'
 import { AttributionStep, ConnectStep, RoleStep } from './onboarding-steps-0793'
-import { creatorContext, HANDOFF_DEFAULTS, next, prev, type WalkStep } from './onboarding-walk'
+import { ATTRIBUTION, creatorContext, HANDOFF_DEFAULTS, next, prev, type WalkStep } from './onboarding-walk'
 
 /** view.tsx:31 同形（上游私有常量不导出——本地复制）。 */
 const EMPTY_COMPUTER: OnboardingComputerSnapshot = { isComputerReady: false, computerState: null, pullPercent: null }
@@ -78,6 +82,13 @@ function Walk({ bridge, client, computerReadiness, computerStatus, finish, isAcc
   const [step, setStep] = useState<Step>('meet')
   const [roleId, setRoleId] = useState<string | null>(null)
   const [sourceId, setSourceId] = useState<string | null>(null)
+  // review M2：洗牌提升到 Walk（条件渲染会卸载重挂 AttributionStep，其 useState 初始化器
+  // 每次重挂都跑——「每次运行洗一次」必须在 Walk 级）
+  const [shuffled] = useState(() => {
+    const a = [...ATTRIBUTION.choices]
+    for (let i = a.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j]!, a[i]!] }
+    return a
+  })
   const [error, setError] = useState<string | null>(null)
   const [computer, setComputer] = useState<OnboardingComputerSnapshot>(EMPTY_COMPUTER)
   const creatingRef = useRef(false)
@@ -85,6 +96,22 @@ function Walk({ bridge, client, computerReadiness, computerStatus, finish, isAcc
   const slotRef = useRef(slot)
   const readinessRef = useRef<OnboardingComputerReadiness | null>(computerReadiness ?? null)
   const [dwell] = useState(() => createOnboardingHandOffDwell())
+  // review M1：上游 beat 推进（view.tsx useSceneBeat 私有——本地复制同款）
+  const useSceneBeat = (active: boolean, intervalMs: number, limit: number): number => {
+    const [beat, setBeat] = useState(0)
+    useEffect(() => {
+      setBeat(0)
+      if (!active) return
+      const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+      if (reduced) return
+      const timer = window.setInterval(() => setBeat((c) => { if (c >= limit) { window.clearInterval(timer); return c } return c + 1 }), intervalMs)
+      return () => window.clearInterval(timer)
+    }, [active, intervalMs, limit])
+    return beat
+  }
+  const meetBeat = useSceneBeat(step === 'meet', ONBOARDING_MEET_BEAT_MS, ONBOARDING_MEET_DELAY_BEATS + MEET_TYPED_TEXT.length)
+  const demoBeat = useSceneBeat(step === 'computer-demo', ONBOARDING_DEMO_BEAT_MS, COMPUTER_DEMO_FRAMES.length)
+  const jobsBeat = useSceneBeat(step === 'jobs', ONBOARDING_JOBS_BEAT_MS, ONBOARDING_JOBS_BEAT_LIMIT)
   slotRef.current = slot
   useEffect(() => {
     const readiness = computerReadiness ?? (client == null ? null : createCoordinatorOnboardingReadiness(client, computerStatus))
@@ -128,11 +155,13 @@ function Walk({ bridge, client, computerReadiness, computerStatus, finish, isAcc
   }
 
   let body: JSX.Element
-  if (step === 'meet') body = <section className="sand-onboarding__meet"><h1 id="sand-onboarding-meet-heading">Meet Grok Bot</h1><div className="sand-onboarding__footer"><button onClick={goNext} type="button">Next</button></div></section>
-  else if (step === 'computer-demo') body = <section className="sand-onboarding__computer-demo"><h1 id="sand-onboarding-computer-demo-heading">Grok Bot has its own computer and works just like you</h1><ComputerDemo beat={0} /><div className="sand-onboarding__footer"><button onClick={goBack} type="button">Back</button><button onClick={goNext} type="button">Next</button></div></section>
-  else if (step === 'jobs') body = <section className="sand-onboarding__jobs"><h1 id="sand-onboarding-jobs-heading">Give each Bot a job</h1><div className="sand-onboarding__footer"><button onClick={goBack} type="button">Back</button><button onClick={goNext} type="button">Next</button></div></section>
+  // review M1：三步渲染按上游原样（meet 的 composer 打字/computer-demo 的 beat 推进/jobs 的
+  // 职责气泡）——此前复制骨架时被误删
+  if (step === 'meet') body = <section className="sand-onboarding__meet"><h1 id="sand-onboarding-meet-heading" style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}>Meet Grok Bot</h1><div aria-hidden="true" className="sand-onboarding__composer"><p>{typedMeetText(meetBeat)}{meetBeat >= ONBOARDING_MEET_DELAY_BEATS && meetBeat < ONBOARDING_MEET_DELAY_BEATS + MEET_TYPED_TEXT.length ? <span style={{ borderLeft: '1px solid currentColor', display: 'inline-block', height: '1em' }} /> : null}</p><span><button aria-label="Attach" tabIndex={-1} type="button">+</button><button aria-label="Send" onClick={goNext} tabIndex={-1} type="button">↑</button></span></div><div className="sand-onboarding__footer"><button onClick={goNext} type="button">Next</button></div></section>
+  else if (step === 'computer-demo') body = <section className="sand-onboarding__computer-demo"><h1 id="sand-onboarding-computer-demo-heading" style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}>Grok Bot has its own computer and works just like you</h1><ComputerDemo beat={demoBeat} /><div className="sand-onboarding__footer"><button onClick={goBack} type="button">Back</button><button onClick={goNext} type="button">Next</button></div></section>
+  else if (step === 'jobs') body = <section className="sand-onboarding__jobs"><h1 id="sand-onboarding-jobs-heading" style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}>Give each Bot a job</h1><div aria-hidden="true">{ONBOARDING_JOBS.map((job) => <span className="sand-onboarding__job-bubble" key={job.id} style={{ opacity: jobsBeat >= 2 ? 1 : 0, transform: `translate(${job.x}px, ${job.y + ONBOARDING_JOB_BUBBLE_Y_OFFSET}px) translate(-50%, 0)` }}>{job.label}</span>)}</div><div className="sand-onboarding__footer"><button onClick={goBack} type="button">Back</button><button onClick={goNext} type="button">Next</button></div></section>
   else if (step === 'role') body = <RoleStep onBack={goBack} onForward={goNext} onPick={setRoleId} roleId={roleId} />
-  else if (step === 'attribution') body = <AttributionStep onBack={goBack} onForward={goNext} onPick={setSourceId} sourceId={sourceId} />
+  else if (step === 'attribution') body = <AttributionStep onBack={goBack} onForward={goNext} onPick={setSourceId} shuffled={shuffled} sourceId={sourceId} />
   else if (step === 'connect') body = <ConnectStep onBack={goBack} onForward={goNext} />
   else body = <div className="sand-onboarding__hand-off"><p aria-live="polite" id="sand-onboarding-hand-off-heading">{error == null ? handOffStatus(computer) : 'Grok Bot couldn’t finish setting up'}</p>{error == null ? null : <><p>{error}</p><button autoFocus onClick={() => void create()} type="button">Try again</button></>}</div>
   return <div className="sand-onboarding" role="main"><div className="sand-onboarding__step-wrap">{body}</div></div> // T26b #1 同款覆盖层外壳

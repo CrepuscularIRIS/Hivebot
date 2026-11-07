@@ -35,11 +35,12 @@ export default class WorkspaceService extends TypertRemoteService {
 
   async p2sdkRun(argv) {
     const handle = this.ctx.subprocess.spawn({ argv, cwd: this.p2sdkRemoteRoot, stdio: { stdin: 'ignore', stdout: { maxBytes: 4096 }, stderr: { maxBytes: 4096 } }, graceMs: 15_000 })
-    await handle.done
-    const status = await handle.waitForExit()
+    // subprocess-ssh 的 handle.done resolve 值即 {exitCode, signal}（waitForExit
+    // 无参时返回 boolean——T11diag2 实测踩坑）
+    const outcome = await handle.done
     const out = handle.collected.stdout?.readFrom(0).text ?? ''
-    if (status.kind !== 'exited' || status.exitCode !== 0) {
-      throw new RemoteError('p2sdk/workspace/exec-failed', `argv failed: ${JSON.stringify(argv)}`, { status, stderr: handle.collected.stderr?.readFrom(0).text ?? '' })
+    if (outcome.exitCode !== 0) {
+      throw new RemoteError('p2sdk/workspace/exec-failed', `argv failed: ${JSON.stringify(argv)}`, { exitCode: outcome.exitCode, stderr: handle.collected.stderr?.readFrom(0).text ?? '' })
     }
     return out.trim()
   }
@@ -61,3 +62,19 @@ export default class WorkspaceService extends TypertRemoteService {
     return { path, canonical }
   }
 }
+
+// typert-protocol 的方法路由按 remoteMethods marker 扫（dsh-api-gateway lib:936
+// claims.add(endpointOf(namespace, candidate.exportName ?? candidate.method))）；
+// mark() 不导出、@Remote 装饰器在 .mjs 裸 node 不可用——照 lib:449-468 的
+// descriptor 形态程序化注册（version 1 / method / direct invocation）。
+const REMOTE_METHOD_DESCRIPTOR = '@deepseek-ai/dsh-typert-protocol/remote-methods'
+Object.defineProperty(WorkspaceService.prototype, REMOTE_METHOD_DESCRIPTOR, {
+  configurable: true,
+  value: Object.freeze({
+    version: 1,
+    methods: Object.freeze([Object.freeze({
+      method: 'workspace_ensure',
+      invocation: Object.freeze({ kind: 'direct' }),
+    })]),
+  }),
+})

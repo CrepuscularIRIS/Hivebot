@@ -13,8 +13,7 @@ async function makeRoot(canonicalOf: (path: string) => string, calls: string[][]
       calls.push(argv)
       const text = argv[0] === 'readlink' ? canonicalOf(argv[argv.length - 1]!) : ''
       return {
-        done: Promise.resolve(),
-        waitForExit: async () => ({ kind: 'exited', exitCode: 0 }),
+        done: Promise.resolve({ exitCode: 0, signal: null }),
         collected: { stdout: { readFrom: () => ({ text }) }, stderr: { readFrom: () => ({ text: '' }) } },
       }
     },

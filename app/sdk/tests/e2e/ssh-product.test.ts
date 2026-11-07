@@ -124,6 +124,9 @@ async function drive(calls: object[]): Promise<{ sessionId: string; toolResults:
 describe('T9a 产品启动器 ssh 组合', () => {
 
 
+
+
+
   it('⑨ glob/grep 被 guard 拒：原因含 not available in ssh mode', { timeout: 240_000 }, async () => {
     const g = await drive([toolCall('grep', { pattern: 'x' })])
     expect(g.toolResults.length).toBeGreaterThanOrEqual(1)

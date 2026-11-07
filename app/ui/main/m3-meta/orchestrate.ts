@@ -110,7 +110,7 @@ async function mintWorkspace(
       return { ok: false, error: { code: 'pbots/storage', message: `ssh mode (remoteRoot ${remoteRoot}) but no SDK call channel for workspace_ensure` } }
     }
     try {
-      const r = (await callSdk('p2sdk/workspace_ensure', { botId })) as { path: string; canonical: string }
+      const r = (await callSdk('p2sdk/workspace_ensure', { request: { botId } })) as { path: string; canonical: string }
       return { ok: true, botId, workspace: r.canonical }
     } catch (error) {
       return { ok: false, error: { code: 'pbots/storage', message: `remote workspace_ensure failed for bot ${botId}: ${String(error)}` } }

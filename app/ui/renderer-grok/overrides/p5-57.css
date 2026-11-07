@@ -168,9 +168,9 @@ dialog.pb-dialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh
 /* ======== T24 · 新建对话框形象区（13 形状 5/5/3 + 11 色板 + 58px 预览）======== */
 .pb-character { display: grid; gap: 10px; justify-items: center; }
 .pb-character__preview { display: inline-flex; }
-.pb-character__shapes { display: grid; grid-template-columns: repeat(5, 40px); gap: 6px; justify-content: center; }
+.pb-character__shapes { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-width: 220px; } /* 5/5/3：flex wrap 让末行 3 个居中（review L2：grid 末行左对齐） */
 .pb-character__shape { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: none; border-radius: 8px; background: transparent; cursor: pointer; padding: 4px; }
 .pb-character__shape[aria-pressed="true"] { background: color-mix(in srgb, var(--sand-text-secondary, #1c1c1c) 12%, transparent); }
-.pb-character__colors { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 260px; }
+.pb-character__colors { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 172px; } /* 6+5（review L2）：22px×6 + gap8×5 = 172 */
 .pb-character__color { width: 22px; height: 22px; border-radius: 9999px; border: 2px solid transparent; cursor: pointer; padding: 0; }
 .pb-character__color[aria-pressed="true"] { border-color: var(--sand-text-secondary, #1c1c1c); }

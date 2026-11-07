@@ -282,7 +282,7 @@ const ARTIFACT_SHAPE_PATHS: Record<string, string> = {
   // ws(107,28)/Ts(100,110,78,29)，clover 用 cloudPath 复刻 ks(38,58)，flower 用 Lc）
   square: normalizeArtifactPath(roundedPointsPath([[CENTER - 107, CENTER - 107], [CENTER + 107, CENTER - 107], [CENTER + 107, CENTER + 107], [CENTER - 107, CENTER + 107]], 28)),
   house: normalizeArtifactPath(roundedPointsPath([[CENTER - 100, CENTER + 110], [CENTER + 100, CENTER + 110], [CENTER + 100, CENTER - 32], [CENTER, CENTER - 110], [CENTER - 100, CENTER - 32]], 29)),
-  clover: normalizeArtifactPath(cloudPath([[CENTER - 38, CENTER - 58, 58], [CENTER + 38, CENTER - 58, 58], [CENTER + 38, CENTER + 58, 58], [CENTER - 38, CENTER + 58, 58]])),
+  clover: normalizeArtifactPath(cloudPath([[CENTER - 38, CENTER - 38, 58], [CENTER + 38, CENTER - 38, 58], [CENTER + 38, CENTER + 38, 58], [CENTER - 38, CENTER + 38, 58]])), // ks(38,58)：圆心纵横均 ±38、半径 58（review M1 修正：原纵向误 58）
   heart: normalizeArtifactPath(HEART_PATH),
   sparkle: normalizeArtifactPath(SPARKLE_PATH),
   star: normalizeArtifactPath(STAR_PATH),

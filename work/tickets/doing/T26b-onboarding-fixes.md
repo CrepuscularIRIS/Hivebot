@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T26 终验（经理任务 B，验收时 feat/T26 HEAD 8ba0b66c）——验收命令全绿，但实物与探针打穿四处
 > 分支 / 作业目录：继续 feat/T26 @ /tmp/bot-wt/T26（同分支续修，T26 验收时一起看）
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T26 续修
 > accepted：
 
 ## 目标

@@ -1,7 +1,7 @@
 // #4 编排（D8/D10a/D10b/D7/⑦ 屏障）与 deriveBots（D10d）。
 // presetIdOf 直接 import app/sdk/src/p2temp/preset-id.mjs（REUSE v1.1 决策行，不复制第二份）。
 import { describe, expect, it } from 'vitest'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs' 
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs' 
 import { join } from 'node:path'
 import { tmkdir } from '../../support/tmp-sweep.ts'
 import { BOTS_JSON, BotsMetaStore, type BotsMeta } from '../../../main/m3-meta/store'
@@ -465,6 +465,42 @@ describe('P5-25 工作目录强制 · #3 session/create', () => {
     const request2 = (dsh.calls[1].args as { request: Record<string, unknown> }).request
     expect(request2.agentPreset).toBe('p2-alpha')
     expect(request2.cwd).toBe(join(WS_ROOT(dir), 'workspaces', request2.sessionId as string))
+  })
+
+  it('T11b B：ssh 模式（handoff ssh-mode/remote-root）→ workspace_ensure RPC；cwd=canonical 非 path；本机不建；RPC 失败→pbots/storage+0 次 session/create', async () => {
+    const dir = tmpHome()
+    // handoff：ssh-mode + remote-root（mintWorkspace 的 sshRemoteRoot() 读这里）
+    const hb = join(dir, 'handoff')
+    mkdirSync(hb, { recursive: true })
+    writeFileSync(join(hb, 'ssh-mode'), 'ssh\n')
+    writeFileSync(join(hb, 'remote-root'), '/r/workspaces-root\n')
+    process.env.PBOTS_DSH_HANDOFF = hb
+    let ensureArgs: unknown[] = []
+    const dsh = mockDsh({
+      'p2sdk/workspace_ensure': (args) => {
+        ensureArgs.push(args)
+        return { ok: true as const, value: { path: '/r/workspaces-root/workspaces/bot-1', canonical: '/real/ws/workspaces/bot-1' } }
+      },
+      'session/create': () => ({ ok: true as const, value: { sessionId: 'echoed' } }),
+    })
+    try {
+      const result = await createSessionForcedWorkspace(dsh, {}, { dataDir: WS_ROOT(dir) })
+      expect(result.ok, JSON.stringify(result)).toBe(true)
+      const request = (dsh.calls.find((c) => c.method === 'session/create')!.args as { request: Record<string, unknown> }).request
+      expect(request.cwd, 'cwd=canonical（P2 收口：header.cwd 存远端真实路径）').toBe('/real/ws/workspaces/bot-1')
+      expect(request.cwd, 'cwd 不是原串 path').not.toBe('/r/workspaces-root/workspaces/bot-1')
+      const botId = ((ensureArgs[0] as { request?: { botId?: string } })?.request)?.botId
+      expect(botId, 'ensure 收 botId').toBeTruthy()
+      expect(existsSync(join(WS_ROOT(dir), 'workspaces')), '本机 workspaces 未建').toBe(false)
+      // RPC 失败路径
+      const dshFail = mockDsh({ 'p2sdk/workspace_ensure': () => ({ ok: false as const, error: { code: 'p2sdk/x', message: 'boom', details: {} } }) })
+      const fail = await createSessionForcedWorkspace(dshFail, {}, { dataDir: WS_ROOT(dir) })
+      expect(fail.ok).toBe(false)
+      if (!fail.ok) expect(fail.error.code).toBe('pbots/storage')
+      expect(dshFail.calls.filter((c) => c.method === 'session/create').length, 'RPC 失败 → 0 次 session/create').toBe(0)
+    } finally {
+      delete process.env.PBOTS_DSH_HANDOFF
+    }
   })
 
   it('保留 base 行为：agentPreset p2temp-* → invalid-args（CONTRACT §2 表 1 过滤），dsh 计数 0', async () => {

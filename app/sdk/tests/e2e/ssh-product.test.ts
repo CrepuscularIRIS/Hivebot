@@ -122,11 +122,73 @@ async function drive(calls: object[]): Promise<{ sessionId: string; toolResults:
 }
 
 describe('T9a 产品启动器 ssh 组合', () => {
+
+
+
+
+
+  it('⑨ glob/grep 被 guard 拒：原因含 not available in ssh mode', { timeout: 240_000 }, async () => {
+    const g = await drive([toolCall('grep', { pattern: 'x' })])
+    expect(g.toolResults.length).toBeGreaterThanOrEqual(1)
+    expect(g.toolResults[0]!.isError).toBe(true)
+    expect(g.toolResults[0]!.text).toContain('not available in ssh mode')
+    const b = await drive([toolCall('glob', { pattern: '*' })])
+    expect(b.toolResults.length).toBeGreaterThanOrEqual(1)
+    expect(b.toolResults[0]!.isError).toBe(true)
+    expect(b.toolResults[0]!.text).toContain('not available in ssh mode')
+  })
+
+  it('②b（T9b3 先红）远端 ~/.ssh 哨兵 read：guard 远端根未接 → 现在能读到正文（先红）', { timeout: 240_000 }, async () => {
+    const { writeFileSync: wfs, mkdirSync: mks } = await import('node:fs')
+    mks(join(server.remoteHome, '.ssh'), { recursive: true })
+    wfs(join(server.remoteHome, '.ssh', 'id_sentinel'), 'REMOTE-KEY-SENTINEL-T9B3')
+    const r = await drive([toolCall('read', { file_path: join(server.remoteHome, '.ssh', 'id_sentinel') })])
+    // 终态断言（T9b3 接远端根后）：guard NEVER 拒——isError、never-root、零卡。
+    // 先红态（guard 未接远端根）：出审批卡（asked≥1）或读出正文——下方两断言在先红态红。
+    expect(r.toolResults[0]!.isError, '远端凭证 read 被拒').toBe(true)
+    expect(r.toolResults[0]!.text, 'guard hardRoots 拒串').toContain('touches a hard-denied area')
+  })
+
+  it('⑥ Q-029 旧会话（header.cwd 宿主路径）bash → 拒 + 固定提示串 + 两侧无新文件', { timeout: 180_000 }, async () => {
+    // 旧会话 = cwd 在宿主（TEST_HOME 下），不在 remoteRoot 下
+    const oldWs = join(TEST_HOME, 'legacy-ws')
+    mkdirSync(oldWs, { recursive: true })
+    const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: oldWs } })) as { sessionId: string }
+    const dir = join(rt!.home, 'fake', 'scripts')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({ calls: [toolCall('bash', { command: 'echo x > probe.txt', description: 'T11-6' }), textCall('T116')] }))
+    const stream = await rt!.client.follow(sessionId)
+    const frames: Frame[] = []
+    const drained = (async () => { for await (const f of stream) frames.push(f) })()
+    await rt!.client.call('session/prompt', { request: { requestId: `t116-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'go' }] } })
+    const deadline = Date.now() + 90_000
+    for (;;) {
+      if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
+      if (frames.some((f) => f.type === 'event' && f.event?.type === 'approval/asked')) {
+        throw new Error('⑥ guard 未拦（出卡）——单测层已验 guard sshMode 分支')
+      }
+      if (Date.now() > deadline) throw new Error(`turn/end 未到：${JSON.stringify(frames.map((f) => f.type === 'event' && f.event ? { t: f.event.type } : f.type).slice(-6))}`)
+      await new Promise((r) => setTimeout(r, 200))
+    }
+    stream.cancel(); void drained
+    if (frames.some((f) => f.type === 'event' && f.event?.type === 'approval/asked')) {
+      throw new Error(`⑥ guard 未拦（出了审批卡）——runtime-patch guard 行核：${readFileSync(join(rt!.home, 'runtime-patch.yml'), 'utf8').split('\n').filter((l) => l.includes('sshMode') || l.includes('remoteRoot') || l.includes('p2sdk-fs-guard')).join(' | ')}`)
+    }
+    const results = frames.filter((f) => f.type === 'event' && f.event?.type === 'tool/result')
+    expect(results.length).toBeGreaterThanOrEqual(1)
+    const d0 = results[0]!.event!.data as { message?: { isError?: boolean; content?: Array<{ text?: string }> } }
+    expect(d0.message?.isError, '旧会话 bash 被拒').toBe(true)
+    const text = (d0.message?.content ?? []).map((c) => c.text ?? '').join('')
+    expect(text, '固定提示串（含新建会话指引）').toContain('Create a new chat')
+    expect(existsSync(join(oldWs, 'probe.txt')), '宿主无新文件').toBe(false)
+  })
+
   it('⑧ 会话可建；首请求工具面不含 workflow 族', { timeout: 240_000 }, async () => {
     // T9ab：去掉 ptc-runtime 禁行后 standard preset 可建会话。
     // workflow 工具被禁（workflow-ptc/tool-workflow/tool-executor-ptc 三行）——
     // 不直接调它（会挂：依赖链断但工具壳还在等）；改为验证首请求的 tools
-    // 面里没出现 workflow 族工具名。
+    // 面里没出现 workflow 族工具名。（T11b 恢复：565761e1 wip 误删——原文照
+    // db1af845，断言未改）
     const ws = join(server.workspace, 't9a-ptc')
     mkdirSync(ws, { recursive: true })
     const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: ws } })) as { sessionId: string }
@@ -154,26 +216,26 @@ describe('T9a 产品启动器 ssh 组合', () => {
     expect(tools.filter((t) => /workflow/i.test(t)), 'toolNames 不含 workflow 族').toEqual([])
   })
 
-  it('⑨ glob/grep 被 guard 拒：原因含 not available in ssh mode', { timeout: 240_000 }, async () => {
-    const g = await drive([toolCall('grep', { pattern: 'x' })])
-    expect(g.toolResults.length).toBeGreaterThanOrEqual(1)
-    expect(g.toolResults[0]!.isError).toBe(true)
-    expect(g.toolResults[0]!.text).toContain('not available in ssh mode')
-    const b = await drive([toolCall('glob', { pattern: '*' })])
-    expect(b.toolResults.length).toBeGreaterThanOrEqual(1)
-    expect(b.toolResults[0]!.isError).toBe(true)
-    expect(b.toolResults[0]!.text).toContain('not available in ssh mode')
-  })
-
-  it('②b（T9b3 先红）远端 ~/.ssh 哨兵 read：guard 远端根未接 → 现在能读到正文（先红）', { timeout: 240_000 }, async () => {
-    const { writeFileSync: wfs, mkdirSync: mks } = await import('node:fs')
-    mks(join(server.remoteHome, '.ssh'), { recursive: true })
-    wfs(join(server.remoteHome, '.ssh', 'id_sentinel'), 'REMOTE-KEY-SENTINEL-T9B3')
-    const r = await drive([toolCall('read', { file_path: join(server.remoteHome, '.ssh', 'id_sentinel') })])
-    // 终态断言（T9b3 接远端根后）：guard NEVER 拒——isError、never-root、零卡。
-    // 先红态（guard 未接远端根）：出审批卡（asked≥1）或读出正文——下方两断言在先红态红。
-    expect(r.toolResults[0]!.isError, '远端凭证 read 被拒').toBe(true)
-    expect(r.toolResults[0]!.text, 'guard hardRoots 拒串').toContain('touches a hard-denied area')
+  it('⑤d workspace_ensure 越界/坏形状 → 拒且远端无新目录', { timeout: 120_000 }, async () => {
+    const before = readdirSync(server.workspace).length
+    const wsRootBefore = existsSync(join(server.workspace, 'workspaces')) ? readdirSync(join(server.workspace, 'workspaces')).length : 0
+    // 六坏形全拒（RemoteError bad-bot-id）
+    const rejected: string[] = []
+    for (const bad of ['../escape', 'a/b', 'has space', '.hidden', 'x'.repeat(200), 'ok/id']) {
+      try {
+        await rt!.client.call('p2sdk/workspace_ensure', { request: { botId: bad } })
+      } catch (e) {
+        rejected.push(bad)
+        if (!String(e).includes('bad-bot-id')) throw new Error(`坏形状 ${bad} 拒因异常: ${String(e).slice(0, 150)}`)
+      }
+    }
+    expect(rejected, '六个坏形状全拒').toHaveLength(6)
+    await new Promise((r) => setTimeout(r, 500))
+    // workspaces 根可能尚未被任何 ensure 建出（全坏形皆拒）——不存在即最强断言
+    const wsDir = join(server.workspace, 'workspaces')
+    const wsRootAfter = existsSync(wsDir) ? readdirSync(wsDir).length : -1
+    expect(wsRootAfter, `远端 workspaces 无新目录（before=${wsRootBefore} after=${wsRootAfter}）`).toBeLessThanOrEqual(wsRootBefore)
+    expect(readdirSync(server.workspace).length, '远端根无逃逸目录').toBe(before)
   })
 
   it('②d remoteHome 配错 → 起不来：launchRuntime reject 且错误含校验固定串（guard exit 86）', { timeout: 240_000 }, async () => {

@@ -371,3 +371,59 @@ describe('T9b4 remoteHome 校验随插件释放而停', () => {
     }
   })
 })
+
+// T11 ⑥（Q-029=A）：ssh 模式旧会话（header.cwd 不在 remoteRoot 下）bash 拒 + 固定提示串。
+// e2e 层（ssh-product ⑥）实证了「不加判定时出审批卡」=先红；终态判定在单测层（假 exec）。
+describe('T11 ⑥ 旧会话拒（整机切换）', () => {
+  const listenerOf = (config: object) => {
+    const listeners: Array<(exec: never, next: () => unknown) => unknown> = []
+    const ctx = {
+      on: (_e: string, fn: never) => { listeners.push(fn) },
+      get: (name: string) => (name === 'sandboxPolicy' ? { resolve: () => ({ mode: 'workspace-write', workspaceRoot: '/tmp/ws' }) } : undefined),
+      effect(): void {},
+    }
+    plugin.apply(ctx as never, config as never)
+    return listeners[0]!
+  }
+  const EXEC = (cwd: string | undefined) => ({ name: 'bash', arguments: { command: 'echo x' }, agent: { session: { header: { cwd } } } })
+
+  it('ssh 模式 + 宿主 cwd → isError + 固定串；remoteRoot 下 cwd → 放行；本机模式（无 sshMode）→ 放行', async () => {
+    const next = async () => ({ kind: 'allow' })
+    const l = listenerOf({ roots: configRoots(), sshMode: 'ssh', remoteRoot: '/remote/root' })
+    const out = await l(EXEC('/home/user/old-ws') as never, next as never) as { kind?: string; reason?: string }
+    expect(out.kind, '旧会话拒（pre-execute deny 形态）').toBe('deny')
+    expect(out.reason).toContain('Create a new chat')
+    expect(out.reason).toContain('整机切换')
+    const ok1 = await l(EXEC('/remote/root/ws/a') as never, next as never)
+    expect(ok1, 'remoteRoot 下放行').toEqual({ kind: 'allow' })
+    const lLocal = listenerOf({ roots: configRoots() })
+    const ok2 = await lLocal(EXEC('/home/user/old-ws') as never, next as never)
+    expect(ok2, '本机模式放行（零行为变化）').toEqual({ kind: 'allow' })
+  })
+})
+
+// T11b C（P2 收口·review/T9b-chain-security :31 经理口径）：ssh 模式（词法化）
+// 下 ws 原串为链接——canonical workspaceRoot → 合法写放行；链接原串 workspaceRoot
+// → deny:mask（对照）；换链（目标 resolve 到 canonical 外）→ 不放行。
+describe('T11b C：P2 收口——链接 ws 的 canonical 判定', () => {
+  const ROOTS = () => ({ hardRoots: [], softRoots: [ '/remote/home' ], toolchainDirs: [], policyRoots: [] })
+  const W = '/remote/home/ws-real' // canonical ws（readlink -f 后）
+  const LINK = '/remote/home/ws-link' // ws 原串（链接路径）
+
+  it('canonical workspaceRoot → 合法写 ok；链接原串 → deny:mask（对照）；换链目标 → 非 ok', async () => {
+    const { judgePath } = await import('../../src/policy/guard.mjs')
+    const prev = process.env.P2SDK_SSH_MODE
+    process.env.P2SDK_SSH_MODE = '1'
+    try {
+      const legal = await judgePath(`${W}/a.txt`, ROOTS(), { isWrite: true, workspaceRoot: W })
+      expect(legal, 'canonical ws 内写 → ok').toBe('ok')
+      const linkRoot = await judgePath(`${W}/a.txt`, ROOTS(), { isWrite: true, workspaceRoot: LINK })
+      expect(linkRoot, 'ws 原串（链接）→ deny:mask——canonical 收口的判据').toEqual({ deny: 'mask', reason: expect.stringContaining('masked') })
+      const swapped = await judgePath('/remote/home/other/x', ROOTS(), { isWrite: true, workspaceRoot: W })
+      expect(swapped, '换链（目标 resolve 到 canonical 外）→ 不放行').not.toBe('ok')
+    } finally {
+      if (prev === undefined) delete process.env.P2SDK_SSH_MODE
+      else process.env.P2SDK_SSH_MODE = prev
+    }
+  })
+})

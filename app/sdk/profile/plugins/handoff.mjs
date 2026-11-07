@@ -23,6 +23,14 @@ export function apply(ctx, config = {}) {
     if (!token) throw new Error('authenticated URL carried no token')
     writeFileSync(join(dir, 'launch-token'), `${token}\n`, { mode: 0o600 })
     writeFileSync(join(dir, 'base-url'), `${origin}\n`, { mode: 0o600 })
+    // T11（D5）：main 经 handoff 目录得知 ssh 模式与远端根（Electron main 只连
+    // 不启 SDK——启动器与本进程之间的现成通信面就是这里）。无秘密，0600 一致。
+    if (typeof config.sshMode === 'string' && config.sshMode.length > 0) {
+      writeFileSync(join(dir, 'ssh-mode'), `${config.sshMode}\n`, { mode: 0o600 })
+    }
+    if (typeof config.remoteRoot === 'string' && config.remoteRoot.length > 0) {
+      writeFileSync(join(dir, 'remote-root'), `${config.remoteRoot}\n`, { mode: 0o600 })
+    }
     console.log(`[p2sdk] ready ${origin}`)
   } catch (err) {
     console.error(`[p2sdk] handoff failed: ${err instanceof Error ? err.message : String(err)}`)

@@ -303,7 +303,9 @@ function guardRow(cfg: StartConfig): string {
   return `\
 - id: p2sdk-fs-guard
   config:
-${cfg.ssh?.remoteHome !== undefined && cfg.ssh.remoteHome.length > 0 ? `    remoteHome: ${yamlScalar(cfg.ssh.remoteHome)}
+${cfg.ssh !== undefined ? `    sshMode: 'ssh'
+    remoteRoot: ${yamlScalar(cfg.ssh.remoteRoot)}
+` : ''}${cfg.ssh?.remoteHome !== undefined && cfg.ssh.remoteHome.length > 0 ? `    remoteHome: ${yamlScalar(cfg.ssh.remoteHome)}
 ` : ''}    roots:
       hardRoots:${list(g.hardRoots)}
       dataMaskRoots:${list(g.dataMaskRoots)}
@@ -413,7 +415,9 @@ export function writeRuntimePatch(cfg: StartConfig): string {
     - id: p2sdk-handoff
       name: ${yamlScalar(fileUrl(join(PKG_ROOT, 'profile', 'plugins', 'handoff.mjs')))}
       config:
-        dir: ${yamlScalar(cfg.handoff)}
+        dir: ${yamlScalar(cfg.handoff)}${cfg.ssh !== undefined ? `
+        sshMode: 'ssh'
+        remoteRoot: ${yamlScalar(cfg.ssh.remoteRoot)}` : ''}
 `)
   if (cfg.ssh === undefined) {
     // 本机模式：行为与改前逐字相同（T9a 验收 2-② 钉住）
@@ -510,6 +514,11 @@ function sshRows(cfg: StartConfig): string {
     - id: sandbox-ssh
       name: ${yamlScalar(lib('dsh-sandbox-ssh'))}
       disabled: true
+- insert:
+    - id: p2sdk-workspace
+      name: ${yamlScalar(fileUrl(join(PKG_ROOT, 'src', 'p2sdk', 'workspace.mjs')))}
+      config:
+        remoteRoot: ${yamlScalar(ssh.remoteRoot)}
 - id: sandbox-policy
   config:
     # T10：同 id 整键覆盖会丢 base 行的 mode（!!js DSH_PERMISSION_MODE ??

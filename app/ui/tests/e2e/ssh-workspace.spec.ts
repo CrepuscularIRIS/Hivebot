@@ -44,14 +44,16 @@ test.describe('T11 ssh 远端工作区', () => {
       try {
         // 排查：不等侧栏（boot 链死的观测）——等 pbots API 面就绪直调 #3
         await shell.page.waitForFunction(() => (window as unknown as { pbots?: unknown }).pbots !== undefined, { timeout: 60_000 }).catch(() => {})
-        const direct = await api<{ sessionId: string }>(shell.page, 'session/create', { request: {} })
-        EVIDENCE(`DIRECT #3: ${JSON.stringify(direct).slice(0, 500)}`)
-        // M1 #3 直调建 bot（createBots 的单 bot 形态；返回 sessionId）
+        // M1 #3 直调建 bot；createBots 先例：建后 reload 让 roster 重拉
         const created = await api<{ sessionId: string }>(shell.page, 'session/create', { request: {} })
         expect(created.ok, JSON.stringify(created.error)).toBe(true)
         const sessionId = created.value!.sessionId
+        await shell.page.reload()
+        await shell.page.waitForFunction(() => (window as unknown as { pbots?: unknown }).pbots !== undefined, { timeout: 60_000 })
         // 会话头/工作区：devState 的 views[sessionId].cwd = 宿主 workspaces/<botId>（现状）
-        // T11 终态：会话 cwd 落远端 <remoteRoot>/workspaces/<botId>；宿主无
+        // T11 终态：会话 cwd 落远端 <remoteRoot>/workspaces/<botId>；宿主无。
+        // view 出现前先等 order 含 sessionId（follow 订阅建立），cwd 再 poll。
+        await expect.poll(async () => (await devState(shell.page)).order.includes(sessionId), { timeout: 60_000 }).toBe(true)
         await expect.poll(async () => (await devState(shell.page)).views[sessionId]?.cwd, { timeout: 30_000 }).toContain(server.workspace)
         const state = await devState(shell.page)
         const cwd = state.views[sessionId]?.cwd ?? ''

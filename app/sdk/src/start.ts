@@ -246,26 +246,37 @@ function sandboxRow(cfg: StartConfig): string {
     extraMaskRoots: cfg.extraMaskRoots,
     pkgRoot: PKG_ROOT,
   })
-  // P5-22（D-1 ⑤）：联网许可根（数据根下，整棵已在 maskRoots 内被 wrapper
-  // --tmpfs 遮蔽、guard 软遮蔽兜底——bash test -e 退出码 1）与 slirp4netns
-  // 静态二进制（sandbox/bin/README.md 记来源与 sha256）。wrapper 命中许可才走
-  // supervisor；目录缺失 = 无许可 = 断网路径，不预创建。
-  const argv = [
-    '/usr/bin/python3', '-I', join(PKG_ROOT, 'sandbox', 'bwrap-wrap.py'),
-    ...roots.homes.flatMap((p) => ['--home', p]),
-    ...roots.maskRoots.flatMap((p) => ['--mask', p]),
-    ...roots.neverRoots.flatMap((p) => ['--never', p]),
-    ...roots.toolchainDirs.flatMap((p) => ['--tool', p]),
-    ...roots.policyRoots.flatMap((p) => ['--policy', p]),
-    '--permit-root', join(cfg.dataDirs[0] ?? cfg.home, 'network-permits'),
-    '--slirp', join(PKG_ROOT, 'sandbox', 'bin', 'slirp4netns'),
-  ]
+  const argv = wrapperArgv(cfg, roots)
   return `\
 - id: sandbox
   config:
     runnerCommand: [${argv.map(yamlScalar).join(', ')}]
     runnerFailureSignatures: ['bwrap: ']
 `
+}
+
+/**
+ * T10（D4 r2）：本机 wrapper 的完整参数集（sandboxRow 与 sandbox-zone-ssh 共用；
+ * ssh 模式 = 此集 ∪ 远端根——宿主根不能丢：本机测试时宿主哨兵就是要挡的东西，
+ * wrapper 对不存在的路径直接跳过，真实远程时宿主独有路径多传无害）。
+ * P5-22（D-1 ⑤）：联网许可根与 slirp4netns 静态二进制——wrapper 命中许可才走
+ * supervisor；目录缺失 = 无许可 = 断网路径，不预创建。
+ */
+export function wrapperArgv(cfg: StartConfig, roots?: ReturnType<typeof computeRoots>): string[] {
+  const r = roots ?? computeRoots({
+    envHome: cfg.envHome, home: cfg.home, handoff: cfg.handoff,
+    dataDirs: cfg.dataDirs, extraMaskRoots: cfg.extraMaskRoots, pkgRoot: PKG_ROOT,
+  })
+  return [
+    '/usr/bin/python3', '-I', join(PKG_ROOT, 'sandbox', 'bwrap-wrap.py'),
+    ...r.homes.flatMap((p) => ['--home', p]),
+    ...r.maskRoots.flatMap((p) => ['--mask', p]),
+    ...r.neverRoots.flatMap((p) => ['--never', p]),
+    ...r.toolchainDirs.flatMap((p) => ['--tool', p]),
+    ...r.policyRoots.flatMap((p) => ['--policy', p]),
+    '--permit-root', join(cfg.dataDirs[0] ?? cfg.home, 'network-permits'),
+    '--slirp', join(PKG_ROOT, 'sandbox', 'bin', 'slirp4netns'),
+  ]
 }
 
 /**
@@ -490,10 +501,21 @@ function sshRows(cfg: StartConfig): string {
       disabled: true
     - id: subprocess-ssh
       name: ${yamlScalar(lib('dsh-subprocess-ssh'))}
+    - id: p2sdk-sandbox-zone-ssh
+      name: ${yamlScalar(fileUrl(join(PKG_ROOT, 'src', 'policy', 'sandbox-zone-ssh.mjs')))}
+      config:
+        wrapperArgv: [${wrapperArgv(cfg).map(yamlScalar).join(', ')}]${cfg.ssh?.remoteHome !== undefined && cfg.ssh.remoteHome.length > 0 ? `
+        remoteHome: ${yamlScalar(cfg.ssh.remoteHome)}
+        remoteNever: [${remoteRoots(cfg.ssh.remoteHome, undefined).hardRoots.map(yamlScalar).join(', ')}]` : ''}
     - id: sandbox-ssh
       name: ${yamlScalar(lib('dsh-sandbox-ssh'))}
+      disabled: true
 - id: sandbox-policy
   config:
+    # T10：同 id 整键覆盖会丢 base 行的 mode（!!js DSH_PERMISSION_MODE ??
+    # 'workspace-write'）——服务 schema default 是 read-only，ssh 会话全被压成
+    # 只读（③a 诊断实锤）。照 base 原样补 mode。
+    mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'
     workspaceRoot: ${yamlScalar(ssh.remoteRoot)}
 `
 }

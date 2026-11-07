@@ -2,6 +2,26 @@
 
 顺序由 manager 维护；`open/` 只放现在就能做的单。下表是计划，状态以工单所在目录为准。
 
+## UI 复刻链（0.79.3）——2026-11-07 立项，**最高优先**（用户：「先做 UI 部分」）
+
+**2026-11-07 manager 任务 A（立项）**：输入 `work/grok-0.79.3-re/RE-UI-0.79.3.md` + BRIEF §用户体验反馈。关键发现：**0.18 移植里大部分零件已经在了，只是没接数据或被 shim 关掉**——「Full conversation」侧板（view + provider + 行菜单入口）在，shim 对 `getConversationOutline` 回 `[]`；程序化 SVG 吉祥物（39 状态 + 活动→状态映射，P5-56 已接 `currentActivity`）在，但 bot 记录 `shape/color` 恒 null（`shim/src/agents.ts:43`）；onboarding 电影化分镜（meet→computer-demo→jobs→tools→create→hand-off，含 3 个演示 bot）在，shim `onboarding.getSeen` 恒 true（`shim/src/desktop.ts:197`）把它跳过了。所以链子按「先接现成的、再补 0.79.3 增量」排，自建只剩状态行短语引擎。参照图统一来自 T20（R3 桩挂 0.79.3），T20 渲不出的场景退回 RE 文字 + 标未验证。编排层（subagent / 跨 bot）用户在研究，T27 不开。
+
+| # | 项 | 依赖 | 状态 |
+|---|---|---|---|
+| U0 | **T20** 0.79.3 参照台（`open/T20-r3-0793-reference-rig.md`）：R3 桩复制改挂 0.79.3，S1 首答终答 / S2 状态行 / S3 outline / S4 建 bot 对话框 / S5 onboarding 亮暗参照图 + 事实表（suppressed 形状、短语原文、picker 形状数）；只写 `work/**` | — | **open**（与 T21 并行） |
+| U1 | **T21** outline 侧板接数据（`open/T21-outline-data.md`）：`shim/src/outline.ts` fold→outline item + `getConversationOutline` + `outline` 快照推送；纯加法 | — | **open**（feat/T21） |
+| U2 | **T22** 主聊天只留首答 + 终答（`open/T22-hide-process-main-chat.md`）：entries.ts 过滤 thinking / tool-call / 中间轮（对应 COORD Qz）；`toolRows` 等老 oracle 迁到 outline；受影响测试 13 个文件已列表 | T21（同分支续做） | **open**（T21 回执后开工；与 T21 一起验收合并） |
+| U3 | T23 状态行：0.18 typing 三点 → 0.79.3 状态行（transcript 末行 `working`/`typing` 行，短语引擎：新活动停 ≥800ms 才切、working 5s 轮换、thinking 2.5s、满 60s 加 elapsed、退场 140ms；RE 题 1(d) `Yjn`/`ren`/`tZ`/`sen`）；短语原文取 T20 S2 事实表（T20 没拿到则从 APP i18n 表抽，搜索串写进单）；状态机写成纯函数 + 假时钟单测；活动源复用 `agents.ts activityOf`。自建（rung 5）理由：0.18 无此组件，0.79.3 只有 minified；只搬短语表与时序常数 | T22 合并；T20 S2 | 计划（T22 回执后经理开单） |
+| U4 | T24 建 bot 对话框 0.79.3 样式：58px 实时吉祥物预览（复用 0.18 `PersonaMark`/`OnboardingCharacter`）+ 名字（255）+ 形状 / 颜色 picker（选形自动配色）+ Cancel/Create + 行内 `role=alert` 错误；**形状集按 T20 S4 事实定**：若默认 picker = `fn` 8 个，正好是 0.18 已有的 8 个 SVG 路径，零新素材；若 = `pn` 13 个，补 7 个路径（从 0.79.3 COMMON 复制，rung 3）另开 T24b。颜色 10（去 black）。持久化：bots 记录加 `avatarShape/avatarColor`，shim `toAgentRecord` 透传（`shape/color` 不再恒 null，侧栏/头部吉祥物随之变化）；未选时按 agentId 确定性哈希（0.18 `resolvePersonaShape` 已实现）。我们的 preset / 连接器 / 模型按 **Q-032**（默认 A：折叠进「More options」）。「Help me create a Bot」卡本单只渲染不接（点了 = 打开主 bot 会话并预填一句话，接线放 T26） | T20 S4；Q-032（默认 A 可先做） | 计划 |
+| U5 | T25 onboarding 开闸：shim `onboarding.getSeen/setSeen` 接真实持久（首次启动 false、走完或 Skip 写 true；设置里「重看引导」若 0.18 有入口则接上）；onboarding create 步的 `createAgent` 走我们的建 bot 路径并带上 color/shape；先跑通 0.18 已有六步，与 T20 S5 并排对照，0.79.3 多出的 attribution/role/connect 步与 42 模板目录**另立 T28** | T24（createAgent 带形象） | 计划 |
+| U6 | T26 建后打招呼（kickstart）+「Help me create a Bot」接线：创建成功后向新 bot 发一条**不显示的**引导提示让它自我介绍（主聊天隐藏规则对应 LF 的 `wxt`——系统注入的 user 消息不渲染；需要在 T22 的过滤里加一条，带测试）；可在建 bot 时关掉（对应 `isIntroductionSuppressed`） | T22、T24 | 计划 |
+| U7 | T27 subagent / 跨 bot 呈现：outline per-subagent tab（`agent.raw.subagents` + 2s 轮询）、任务卡（Subagent/Shell/Cloud 三 icon）、跨 bot 消息改 message+fromAgent/toAgent | **等用户编排层研究结论**（BRIEF §用户体验反馈 2）；先要探针：dsh subagent 子会话事件能否从 SDK 拿到 | 阻塞（不开单） |
+| U8 | T28 0.79.3 onboarding 增量步（attribution / role / connect）+ 42 模板目录（9 role；只有 id + 名 + 一句话职责，模板正文在服务端——我们用一句话职责做 bot 描述 + 首条提示） | T25 | 计划（低） |
+
+**施工序建议**：T21 → T22（同分支，最快把「主聊天没有过程」交到用户手上）‖ T20 并行 → 经理验收 T21+T22 合并 → T23 + T24 并行（不同文件：transcript 覆盖层 vs 对话框/agents.ts）→ T25 → T26 → T28。并发 ≤2；ui e2e 同一时刻一套。原排期调整：T7bd（UI 小修）排在 T21/T22 之后、T23 之前；T7d、T12、T17d、H7 等后移到 UI 链 U4 之后。
+
+**提议（未开单）**：① `EMPTY_RESULT_NOTICE`「已完成，没有文字结果 · 展开查看过程」在 T22 后指向空处——T23 定状态行时一起改成指向「Show full conversation」或删掉「展开」半句；② 0.79.3 outline 入口在会话头「...」菜单（我们只有侧栏行菜单），T21 后若用户找不到再补；③ 头像上传 / 拖放 / 缩放（0.18 `agent-info/avatar-editor` 已有，接 shim 即可）、AI 文生头像（要图像模型，暂不做）；④ outline 的 tool 名用原版名（`agents.ts ORIGINAL_TOOL` 已有映射）；⑤ 主聊天不再喂 tool-call 后，`overrides/modules/model.ts` 的 ToolResultCard 投影成死路径，T22 合并后可删（`p5-w3f1/w3f3` 单测随之调整）。
+
 **2026-11-07 04:5x manager 任务 B（T17c 终验**通过（带遗留）** @ feat/T17b dd9f70c5）**：提交树核实——hivebot 三修在 c8d8157d（T17LAUNCH=0、CLEANUP_RC、末行补读、引号剥离）；经理全文件 **9 passed (43.4s)**、前后无残留。变异 7 刀（cp 还原、cmp 相同、红跑后 /proc environ 扫描无残留）：M2′→⑤红、M5′→⑦红（回执「M5 不咬合」不成立：变的是不可达行）、M6→⑧红、M7→⑧红、M3→②红、M4→③b红；**M1（删 cleanup 的 SDK TERM 段）全文件绿**。未落地：M1 断言、③b 先写后起、⑤ pidOf 全机扫、finally 简化版（实测不留孤儿）。T17b 计 2 次失败 → 按 C 重切：已落地部分通过，测试面遗留转 **T17d 计划**（下表 10a″，不开单、不挡体验）。T17b/T17c 挪 done/。主 agent：① feat/T17b 提交经理追加的回执「终验 第 2 轮」② 主线提交两单挪动 + 本 queue ③ `git merge --no-ff feat/T17b` ④ 回测 `pnpm -C app/ui --config.verify-deps-before-run=false test:e2e tests/e2e/launcher.spec.ts` → 9 passed，前后 `pgrep -af bot-T17` 空（去 snapshot shell）。
 
 **2026-11-07 04:0x manager 任务 B（T17b 终验**不通过〔第 1 次〕** @ feat/T17b 84595995）**：申报「启动器三修 + 8 格全绿」与提交树不符——`app/launcher/hivebot` 零改动（:105 调试行仍在、无 CLEANUP_RC、无末行补读），全仓/全 worktree/unreachable 都找不到修复；reflog 有 `reset: moving to HEAD`，推断变异 git 还原时丢了。经理跑全文件 **7 passed / ⑦⑧ 红**（⑦ rc=-1 挂死、⑧ 缺 key 超时）；跑前清了施工期 ⑤ 留下的孤儿 dsh。M2 → ⑤ 红（inspect oracle 真咬，这项成立）、M4 → ③b 红；两刀红跑**各留孤儿 dsh**（finally SIGKILL 启动器）。另 ⑤ 仍带 LITELLM 不走文件、兜底分支未删、M1/③b/⑥/② 未动。M5 改 M5′、M6 须真跑 + 加 M7。回执未写，commit message 不作替代，经理在 feat/T17b 代记终验节。→ `open/T17c-launcher-fixes-actually-land.md`（续 feat/T17b）。**feat/T17b 不可合并**；产品面不受影响。主 agent：① feat/T17b 提交 `receipts/T17b.md` ② 主线提交 doing/T17b 头 + open/T17c + 本 queue + LEARNINGS ③ 施工 T17c（**先提交修复再变异，cp 还原，不 stash/reset/checkout**）④ 回执齐 → 经理任务 B（T17b 计 1 次失败；T17c 再不过走 C）。

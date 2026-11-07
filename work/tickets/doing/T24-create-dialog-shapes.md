@@ -4,7 +4,7 @@
 > 来源：queue.md U4（T24 计划行，按 T20b 实测更正）；RE-UI-0.79.3 题 2(a)(c)、差距表 #1；T20b 事实表（`receipts/T20.md`「T20b · 事实表」S4）
 > 分支 / 作业目录：feat/T24 @ /tmp/bot-wt/T24，起点 = **T23 合并后**的集成分支 HEAD（状态行头像要读 T23 在 `chat-header.tsx` 写进 `markers.activeAgent` 的 avatarShape/avatarColor）
 > 排期：T23 合并后开工；与 T29 不同文件，可并行
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T24
 > accepted：
 > 失败计数：0
 

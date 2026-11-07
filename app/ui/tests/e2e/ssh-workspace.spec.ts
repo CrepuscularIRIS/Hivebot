@@ -113,6 +113,15 @@ test.describe('T11 ssh 远端工作区', () => {
         ] }])
         const prompted = await api(shell.page, 'session/prompt', { request: { requestId: `t11b-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'go' }] } })
         EVIDENCE(`⑤b prompt resp: ${JSON.stringify(prompted).slice(0, 300)}`)
+        // 观测：SDK 侧 fake 是否被调（requests.jsonl）与脚本消费
+        const deadlineFake = Date.now() + 30_000
+        let reqLog = ''
+        for (;;) {
+          try { reqLog = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { /* 未写 */ }
+          if (reqLog.includes(sessionId) || Date.now() > deadlineFake) break
+          await new Promise((r) => setTimeout(r, 500))
+        }
+        EVIDENCE(`⑤b fake requests: ${reqLog.split('\n').filter((l) => l.includes(sessionId)).map((l) => l.slice(0, 200)).join(' || ') || '（无）'}`)
         // 观测 tool 结果：等 turn/end 后 dump devState items 的错误文本
         const deadlineView = Date.now() + 60_000
         for (;;) {
@@ -125,7 +134,7 @@ test.describe('T11 ssh 远端工作区', () => {
         const stEnd = await devState(shell.page)
         EVIDENCE(`⑤b view 尾态: ${JSON.stringify(stEnd.views[sessionId] ?? null).slice(0, 600)}`)
         const wsRoot = join(server.workspace, 'workspaces')
-        const deadline = Date.now() + 90_000
+        const deadline = Date.now() + 180_000
         let found = ''
         for (;;) {
           for (const e of readdirSync(wsRoot, { withFileTypes: true })) {

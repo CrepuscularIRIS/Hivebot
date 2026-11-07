@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T20 验收未通过（`receipts/T20.md` 末「验收记录」三条矛盾）
 > 分支 / 作业目录：feat/T20 @ /tmp/bot-wt/T20（续用；只写 `work/grok-0.79.3-re/harness/r3/**`、`work/grok-0.79.3-re/ref/**`、`receipts/T20.md`）
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T20 续用
 > accepted：
 
 ## 目标

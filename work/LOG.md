@@ -1069,3 +1069,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 22:7x T11 ⑤c 根因：create_bot when=agent.id===mainBotId（bots.json）——测试没写 bots.json 所以隐藏。修法=writeBots 模式（envelope-live 先例）
 - 23:0x T11 ⑤c：create_bot 进面（ORCH_DATA_DIR+bots.json 两修）✓；剩 create→orch-channel→main 链下游（轮数仍 1）——下窗口查 main 订阅+channel 日志
 - 23:01 哨兵：load 21.9（1 分钟瞬时，15 分钟 8.3）——本轮只记不跑测试
+- 23:2x T11 ⑤c：execute 挂死（90s 无轮 2）——三嫌疑录回执；下窗口 fake 记录点+SDK 日志

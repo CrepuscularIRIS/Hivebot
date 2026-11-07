@@ -4,7 +4,7 @@
 > 来源：T17b 终验不通过（第 1 次），证据 `receipts/T17b.md` §经理终验
 > 分支 / 作业目录：继续 feat/T17b @ /tmp/bot-wt/T17b（在 84595995 上续提交，不新开分支）
 > claimed：
-> accepted：
+> accepted：2026-11-07 feat/T17b @ dd9f70c5（带遗留：M1 不咬合 / ③b 竞态 / ⑤ pidOf 全机扫 / finally 简化 → queue T17d 计划；证据 feat/T17b `receipts/T17b.md` §经理终验 第 2 轮）
 
 ## 目标
 T17b 工单「要改的」逐条在**提交里**落地；commit message 只写 diff 里真有的东西。

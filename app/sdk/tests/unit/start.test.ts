@@ -200,7 +200,7 @@ describe('childEnv', () => {
     const envOut = childEnv(resolveConfig(env6), { ...env6, PATH: '/bin' })
     expect(envOut.P2SDK_SSH_REMOTE_HOME, 'REMOTE_HOME 进删除表（不泄漏给子进程）').toBeUndefined()
     // T9b3：guardRow 写 remoteHome（校验消费）+ 不给时两者都不出现
-    expect(yaml6, 'guard 行带 remoteHome（校验接线）').toMatch(/- id: p2sdk-fs-guard\n {2}config:\n {4}remoteHome: '\/r\/home'\n/)
+    expect(yaml6, 'guard 行带 remoteHome（校验接线）').toMatch(/- id: p2sdk-fs-guard\n {2}config:\n {4}sshMode: 'ssh'\n {4}remoteRoot: '\/remote\/root'\n {4}remoteHome: '\/r\/home'\n/)
     expect(yaml, '不给 REMOTE_HOME：guard 行无 remoteHome 键').not.toContain('remoteHome:')
     expect(yaml, '不给 REMOTE_HOME：无远端凭证根').not.toContain(`- '/r/home/.ssh'`)
     expect(yaml).not.toContain('IdentityFile') // 凭证不进生成行

@@ -149,6 +149,42 @@ describe('T9a 产品启动器 ssh 组合', () => {
     expect(r.toolResults[0]!.text, 'guard hardRoots 拒串').toContain('touches a hard-denied area')
   })
 
+  it('⑥ Q-029 旧会话（header.cwd 宿主路径）bash → 拒 + 固定提示串 + 两侧无新文件', { timeout: 180_000 }, async () => {
+    // 旧会话 = cwd 在宿主（TEST_HOME 下），不在 remoteRoot 下
+    const oldWs = join(TEST_HOME, 'legacy-ws')
+    mkdirSync(oldWs, { recursive: true })
+    const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: oldWs } })) as { sessionId: string }
+    const dir = join(rt!.home, 'fake', 'scripts')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({ calls: [toolCall('bash', { command: 'echo x > probe.txt', description: 'T11-6' }), textCall('T116')] }))
+    const stream = await rt!.client.follow(sessionId)
+    const frames: Frame[] = []
+    const drained = (async () => { for await (const f of stream) frames.push(f) })()
+    await rt!.client.call('session/prompt', { request: { requestId: `t116-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'go' }] } })
+    const deadline = Date.now() + 90_000
+    for (;;) {
+      if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
+      if (frames.some((f) => f.type === 'event' && f.event?.type === 'approval/asked')) {
+        let patch = ''
+        void patch
+        throw new Error('⑥ guard 未拦（出卡）——runtime-patch 已被 handoff 删（设计）；下一步：单测层直验 guard sshMode 分支（guard.test 假 exec.agent.session.header.cwd）')
+      }
+      if (Date.now() > deadline) throw new Error(`turn/end 未到：${JSON.stringify(frames.map((f) => f.type === 'event' && f.event ? { t: f.event.type } : f.type).slice(-6))}`)
+      await new Promise((r) => setTimeout(r, 200))
+    }
+    stream.cancel(); void drained
+    if (frames.some((f) => f.type === 'event' && f.event?.type === 'approval/asked')) {
+      throw new Error(`⑥ guard 未拦（出了审批卡）——runtime-patch guard 行核：${readFileSync(join(rt!.home, 'runtime-patch.yml'), 'utf8').split('\n').filter((l) => l.includes('sshMode') || l.includes('remoteRoot') || l.includes('p2sdk-fs-guard')).join(' | ')}`)
+    }
+    const results = frames.filter((f) => f.type === 'event' && f.event?.type === 'tool/result')
+    expect(results.length).toBeGreaterThanOrEqual(1)
+    const d0 = results[0]!.event!.data as { message?: { isError?: boolean; content?: Array<{ text?: string }> } }
+    expect(d0.message?.isError, '旧会话 bash 被拒').toBe(true)
+    const text = (d0.message?.content ?? []).map((c) => c.text ?? '').join('')
+    expect(text, '固定提示串（含新建会话指引）').toContain('Create a new chat')
+    expect(existsSync(join(oldWs, 'probe.txt')), '宿主无新文件').toBe(false)
+  })
+
   it('⑤d workspace_ensure 越界/坏形状 → 拒且远端无新目录', { timeout: 120_000 }, async () => {
     const before = readdirSync(server.workspace).length
     const wsRootBefore = existsSync(join(server.workspace, 'workspaces')) ? readdirSync(join(server.workspace, 'workspaces')).length : 0

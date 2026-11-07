@@ -299,6 +299,18 @@ export function apply(ctx, config) {
   // 选项（events.ts register：prepend → unshift 到 listeners 数组最前）把
   // guard 钉在最外层——deny 先于任何出卡，顺序证明在 P5-04 ⑤ 的 e2e。
   ctx.on('tools/pre-execute', async (exec, next) => {
+    // T11 ⑥（Q-029=A 整机切换的旧会话拒）：ssh 模式下旧会话的 header.cwd 还是
+    // 宿主路径（不可变）——不在 remoteRoot 下。在回调最前拒（先于任何出卡/执行），
+    // 固定提示串告知用户整机已切换。config.sshMode/remoteRoot 由 start.ts guardRow 注入。
+    if (config.sshMode === 'ssh' && typeof config.remoteRoot === 'string' && config.remoteRoot.length > 0) {
+      const cwd = exec?.agent?.session?.header?.cwd
+      if (typeof cwd === 'string' && cwd.length > 0) {
+        const rr = config.remoteRoot.endsWith('/') ? config.remoteRoot : config.remoteRoot + '/'
+        if (cwd !== config.remoteRoot && !cwd.startsWith(rr)) {
+          return { kind: 'deny', reason: 'p2sdk-fs-guard: this computer has been switched to a remote machine; the old session workspace no longer exists here. Create a new chat to continue (旧会话工作区已随整机切换失效，请新建会话)。' }
+        }
+      }
+    }
     if (NEVER_TOOLS.has(exec.name)) {
       return { kind: 'deny', reason: `p2sdk-fs-guard: tool "${exec.name}" is not available (disabled by policy; overrides cannot re-enable it)` }
     }

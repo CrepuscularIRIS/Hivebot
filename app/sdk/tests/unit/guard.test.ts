@@ -371,3 +371,33 @@ describe('T9b4 remoteHome 校验随插件释放而停', () => {
     }
   })
 })
+
+// T11 ⑥（Q-029=A）：ssh 模式旧会话（header.cwd 不在 remoteRoot 下）bash 拒 + 固定提示串。
+// e2e 层（ssh-product ⑥）实证了「不加判定时出审批卡」=先红；终态判定在单测层（假 exec）。
+describe('T11 ⑥ 旧会话拒（整机切换）', () => {
+  const listenerOf = (config: object) => {
+    const listeners: Array<(exec: never, next: () => unknown) => unknown> = []
+    const ctx = {
+      on: (_e: string, fn: never) => { listeners.push(fn) },
+      get: (name: string) => (name === 'sandboxPolicy' ? { resolve: () => ({ mode: 'workspace-write', workspaceRoot: '/tmp/ws' }) } : undefined),
+      effect(): void {},
+    }
+    plugin.apply(ctx as never, config as never)
+    return listeners[0]!
+  }
+  const EXEC = (cwd: string | undefined) => ({ name: 'bash', arguments: { command: 'echo x' }, agent: { session: { header: { cwd } } } })
+
+  it('ssh 模式 + 宿主 cwd → isError + 固定串；remoteRoot 下 cwd → 放行；本机模式（无 sshMode）→ 放行', async () => {
+    const next = async () => ({ kind: 'allow' })
+    const l = listenerOf({ roots: configRoots(), sshMode: 'ssh', remoteRoot: '/remote/root' })
+    const out = await l(EXEC('/home/user/old-ws') as never, next as never) as { kind?: string; reason?: string }
+    expect(out.kind, '旧会话拒（pre-execute deny 形态）').toBe('deny')
+    expect(out.reason).toContain('Create a new chat')
+    expect(out.reason).toContain('整机切换')
+    const ok1 = await l(EXEC('/remote/root/ws/a') as never, next as never)
+    expect(ok1, 'remoteRoot 下放行').toEqual({ kind: 'allow' })
+    const lLocal = listenerOf({ roots: configRoots() })
+    const ok2 = await lLocal(EXEC('/home/user/old-ws') as never, next as never)
+    expect(ok2, '本机模式放行（零行为变化）').toEqual({ kind: 'allow' })
+  })
+})

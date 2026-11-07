@@ -303,7 +303,9 @@ function guardRow(cfg: StartConfig): string {
   return `\
 - id: p2sdk-fs-guard
   config:
-${cfg.ssh?.remoteHome !== undefined && cfg.ssh.remoteHome.length > 0 ? `    remoteHome: ${yamlScalar(cfg.ssh.remoteHome)}
+${cfg.ssh !== undefined ? `    sshMode: 'ssh'
+    remoteRoot: ${yamlScalar(cfg.ssh.remoteRoot)}
+` : ''}${cfg.ssh?.remoteHome !== undefined && cfg.ssh.remoteHome.length > 0 ? `    remoteHome: ${yamlScalar(cfg.ssh.remoteHome)}
 ` : ''}    roots:
       hardRoots:${list(g.hardRoots)}
       dataMaskRoots:${list(g.dataMaskRoots)}

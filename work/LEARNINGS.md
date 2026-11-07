@@ -132,3 +132,7 @@
 - （2026-11-06 T9b4 终验）测插件里的定时器，`vi.useFakeTimers({ shouldAdvanceTime: true })` 要装在 `root.plugin(...)` **之前**：apply 时建的首个 timer 用的是装假时钟那一刻的 `setTimeout`，装晚了 advance 碰不到，格子变空测（旧代码也绿）。`shouldAdvanceTime` 让 cordis 加载不卡。判一个"释放即停"格有没有用：拿修复前的源码跑，必须红。
 
 - （2026-11-06 T7bd 开单）renderer-grok 的 build（esbuild）**不做类型检查**：overrides 里用了没导入的组件（T7bc 的 `SandIconButton`）照样出包，运行时一渲染就 ReferenceError。所以「build 过了」不等于「能用」；碰 overrides 的单，验收必须跑一格真会渲染到改动组件的 e2e，且先 `git status --short app/ui` 为空、产物 mtime 晚于 HEAD 提交，证据才算来自已提交代码。
+
+- （2026-11-07 T17 终验）**Electron/Chromium 进程的 `/proc/<pid>/environ` 不能当 oracle**：启动即 setproctitle 改写 argv+environ 原内存区，读出来 0 条 `KEY=`（连必在的 `DISPLAY` 都没有），「env 不含 X」断言恒真。要看 Electron 主进程真实 env：`electron --inspect=<port> <entry>`，经 inspector `Runtime.evaluate('k in process.env')`，并带一个必在键当正对照（证据 `work/product-launcher/evidence/probe2.sh`）。node 进程的 environ 可读。
+- （2026-11-07 T17 终验）**e2e 的 pid 集合必须限本实例**（从被测进程沿 `/proc/<pid>/task/*/children` 收），不能按仓内路径扫全机：施工期 SIGKILL 留下的旧 start.mjs/dsh 会被算进来——T17 的 M1「红」证据和 ⑤「environ 偶发不含」都是扫到了 01:42 的旧残留。**变异和复跑前先 `pgrep -af bot-T<N>` 为空**，否则红绿都不可信。
+- （2026-11-07 T17 终验）bash `while IFS='=' read -r k v` 读不到**末行无换行**的行（read 返回非 0）——用户手写配置文件常见，补 `|| [ -n "$k" ]`；带引号的值原样含引号。另：CDP `browser.close()` 是强退 Electron 主进程（Chromium 子进程慢退 20s+），模拟用户关窗用 renderer 里 `window.close()`。

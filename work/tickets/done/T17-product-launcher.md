@@ -4,7 +4,7 @@
 > 来源：`work/product-launcher/DESIGN-launcher.md` §2–§3（用户目标：本机日常使用；当前唯一阻塞 = 没有生产启动入口）
 > 分支 / 作业目录：feat/T17 @ /tmp/bot-wt/T17
 > claimed：2026-11-06 23:5x main (GLM 5.3) @ 集成分支（bash 脚本，无新依赖）
-> accepted：
+> accepted：2026-11-07 manager (Opus 5.5) @ feat/T17 a980aa90（产品面通过；测试面缺口转 T17b，见回执 §6）
 
 ## 目标
 一条命令 `app/launcher/hivebot` 拉起全链：SDK（`start.ts` 默认 patch 链、真实 provider）→ 等 ready → 带 `PBOTS_DSH_HANDOFF` 起 Electron；关窗口即全部退出、无残留进程和 handoff 目录；双开聚焦已有窗口；凭证只进 SDK 进程。

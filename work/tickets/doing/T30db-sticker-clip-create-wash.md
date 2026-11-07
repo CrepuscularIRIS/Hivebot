@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T30d 终验（feat/T30d HEAD 0a47fb46）不通过，失败计数 1
 > 分支 / 作业目录：继续 feat/T30d @ /tmp/bot-wt/T30d
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T30d 续修
 > accepted：
 
 ## 终验已确认的（不用再证）

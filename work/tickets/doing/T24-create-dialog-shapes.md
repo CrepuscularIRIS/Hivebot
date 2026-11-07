@@ -6,7 +6,7 @@
 > 排期：T23 合并后开工；与 T29 不同文件，可并行
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T24
 > accepted：
-> 失败计数：0
+> 失败计数：1（2026-11-07 终验返修 → T24b）
 
 ## 目标
 新建 bot 时能选形状（13 个）和颜色（11 个），预览实时变；建好后侧栏、会话头、状态行的吉祥物都用选中的形状和颜色，重启后不变。
@@ -98,3 +98,11 @@
 
 ## 后续（写在 queue 里当计划，不开单）
 - **T30** 对话框换成 0.79.3 版式：标题「Create New Bot」、名字输入（maxLength 255，占位「Name your Bot」，按 Enter 提交，没填名字时 Create 置灰——对照 ref 的 empty/named 两张图；`createBot` 成功后走 `session/rename`）；Q-032 默认 A，把 preset/连接器/模型收进默认折叠的「More options」，「用此配置新建」入口自动展开；「Help me create a Bot」卡只渲染、不接线；行内 `role=alert` 报错；整个对话框做截图对照。依赖 T24。
+
+## 终验（经理任务 B，2026-11-07，HEAD b4dc3cd0）：**返修 → T24b**
+- 重跑：定向 unit 14 passed；grok-shim+fold 211 passed（=回执 210 + review 新增 clover 对称 1 格；另两格是原地加强）；build 退出 0；e2e create-dialog-character 5 passed；check upstream diff=0（332 files）。范围只动工单白名单 + 下面两项例外；`frontend/**` diff 0。
+- review 四条核实：clover 对 0.79.3 `ks=(e,t)=>ms([[L-e,L-e,t],…])` 原文成立，已修 ✓；色回落逐 id + 队列随机 ✓；Black 渐变 `character.tsx:387` 与上游 :316 逐字相同、未动 ✓（转 T30 同意）；**L2 布局修坏**：flex max-width 220 < 5×40+4×6=224，截图实为 4/4/4/1 ✗。
+- 失败点只此一条（截图验收项「13 形状 5/5/3」不过）→ `open/T24b-shape-grid-5-5-3.md`：改一行 CSS + e2e 加行数断言 + 截图与拼版重出（现拼版右半裁错，看不到 ref 形象区）。
+- 边界例外追认：`overrides.test.ts` 的 COPIES 例外（窄，只放 character.tsx 且断言来源头）✓；`shot-character.spec.ts` 同 T23 shot-statusline 先例 ✓，并入 queue 提议⑦一起收口。
+- 存疑四项：① flower——Sol 核 Lc 参数一致，截图轮廓与 ref 同为六瓣，接受；② 预览尺寸——ref 实测约 79 CSS px（非 58），我们 72，交 T30 整框对照时定；③ 色板——ref 本来就是 6+5 两行（回执「ref 单行」看错），现已一致，关闭；④ 认 15 vs 24——没有消费者，YAGNI，不开提议。
+- 另记 T30：选中态样式不同（ref 形状选中是白底描边圆角块、色板是带白缝的外圈；我们是灰底 / 贴边框）。

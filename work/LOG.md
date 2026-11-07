@@ -1062,3 +1062,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 22:0x T11 ⑤b：fake 被调但 bash 未执行（180s）；follow null=观测面时序非缺陷。下步=数 fake 轮数判脚本消费
 - 22:1x T11 ⑤b 绿（provision 位置=home/data 破案：门没开卡审批）；⑤a⑤b 双绿
 - 22:1x T11 回执前半（SDK 三坑/main 分支/⑤a⑤b 破案链）落盘；load 10.9 来自用户环境（playwright-mcp 常驻+编辑器），非我方测试——⑤c 等 load 回落
+- 22:3x Q-030 执行：feat/T7b 功能版合并落地（紧急修 JSX 括号 build 炸——三轮终验都没跑过 build 的旧账）；回测 114+2 绿。T13 用户定调确认（本地全能力+体验 1-2 天后再远程）

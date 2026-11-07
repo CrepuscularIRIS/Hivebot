@@ -1047,3 +1047,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 19:2x T9b4b 施工完（ⓐ假时钟前置咬合：旧码红/新码绿；ⓓ超时格守 fail-closed；30 绿）
 - 19:2x feat/T9b4 合并落地（终验通过）：回测 83 单测 + ssh-product 5 全绿。Sol 审查两条链修复全闭环。T11 开工
 - 19:3x T11 开工：RPC 机制定位（TypertRemoteService p610 同款）+ workspace_ensure 骨架（词法校验/mkdir/readlink canonical）提交 WIP；sshRows 挂载与 ui e2e 下窗口
+- 19:4x T11 进展：sshRows 挂载 + RPC 单测 3/3（词法/固定argv/canonical 三态）；回归 42+5 绿。剩 ui e2e 面与 mintWorkspace 分支

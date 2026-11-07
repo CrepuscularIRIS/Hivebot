@@ -95,6 +95,7 @@ test('D7：直调 #4 未装连接器 → !ok 且列表无此 bot；重启孤儿�
     await newBtn.click()
     // P5-57：New → 新建对话框 → Create；失败留在对话框内报错（D7 不入列表），Cancel 后入口可用
     const dlg = page.locator('dialog[data-dialog="new-bot"]')
+    await dlg.getByRole('textbox', { name: 'Bot name' }).fill('D7') // T30：Create 需名字
     await dlg.locator('[data-action="create-bot"]').click()
     await expect(dlg.locator('[role="alert"]')).toContainText("Couldn't create the bot", { timeout: 15_000 })
     await dlg.getByRole('button', { name: 'Cancel' }).click()

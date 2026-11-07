@@ -207,6 +207,7 @@ test('P-C ②③④：Connect 旅程（串行 / 可离开 / 重拉 #16）→ New
     await expect(dlg(page).locator(`[data-connector-option="${LOCAL_PLUGIN}"] input`)).toBeChecked({ timeout: 15_000 })
     await page.screenshot({ path: join(EVIDENCE, 'new-with-dialog.png') })
     expect((await devState(page)).order).toEqual(before) // 预填不提交
+    await dlg(page).getByRole('textbox', { name: 'Bot name' }).fill('MB') // T30：Create 需名字
     await dlg(page).locator('[data-action="create-bot"]').click()
     await expect(dlg(page)).toHaveCount(0, { timeout: 60_000 })
     await expect(market(page)).toHaveCount(0) // 建成即关市场、聚焦新 bot
@@ -240,6 +241,7 @@ test('P-C ②③④：Connect 旅程（串行 / 可离开 / 重拉 #16）→ New
     await page.click(`[data-market-detail="${FS_PLUGIN}"] [data-action="new-with"]`)
     await expect(dlg(page).locator(`[data-connector-option="${WRAPPER}"] input`)).toBeChecked({ timeout: 15_000 })
     const beforeX = (await devState(page)).order
+    await dlg(page).getByRole('textbox', { name: 'Bot name' }).fill('MB') // T30：Create 需名字
     await dlg(page).locator('[data-action="create-bot"]').click()
     await expect(dlg(page)).toHaveCount(0, { timeout: 60_000 })
     const x = (await devState(page)).order.find((id) => !beforeX.includes(id))!

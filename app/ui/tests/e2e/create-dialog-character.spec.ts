@@ -66,6 +66,7 @@ test('③ Create → 侧栏与会话头头像用选中形象（shape/color 落�
     await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
     await dlg('[aria-label="heart character shape"]')(page).click()
     await dlg('[aria-label="Cyan character color"]')(page).click()
+    await page.getByRole('textbox', { name: 'Bot name' }).fill('CB') // T30：Create 需名字
     await dlg('[data-action="create-bot"]')(page).click()
     await expect.poll(async () => (await devState(page)).order.length, { timeout: 30_000 }).toBe(before.length + 1)
     const sid = (await devState(page)).order.find((id) => !before.includes(id))!

@@ -36,10 +36,13 @@ export function initialCharacter(rand: () => number): { shape: string; color: st
 const themeOf = (): 'light' | 'dark' => (typeof document === 'undefined' || !document.documentElement.dataset.theme.endsWith('dark') ? 'light' : 'dark')
 
 /** T24：形状钮的静态 SVG（0.79.3 用 hT 3D 引擎逐帧画——有意偏差：静态，见 character.tsx 头注）。 */
-function ShapeGlyph({ shape, color, size = 28 }: { shape: string; color: string; size?: number }) {
+function ShapeGlyph({ shape, color, size = 36, pressed = false }: { shape: string; color: string; size?: number; pressed?: boolean }) {
+  const ink = personaInk(color, themeOf())
   return (
     <svg aria-hidden="true" width={size} height={size} viewBox="-15 -15 259 259" style={{ display: 'block' }}>
-      <path d={personaShapePath(shape)} fill={personaInk(color, themeOf())} />
+      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--sand-border, #1c1c1c55)" strokeWidth={23} /> : null}
+      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--cursor-bg-elevated, var(--sand-bg-elevated, #ffffff))" strokeWidth={19} /> : null}
+      <path d={personaShapePath(shape)} fill={ink} />
     </svg>
   )
 }
@@ -79,6 +82,8 @@ function NewBotDialog({ init }: { init: NewBotInit | null }) {
   const [presetId, setPresetId] = useState('')
   // T24：形象（每轮开合按 key 重挂 → useState 初始化器即「每次打开随机」）
   const [character, setCharacter] = useState(() => initialCharacter(Math.random))
+  // T30：名字（255/trim 置灰；Enter 走 form 隐式提交）
+  const [name, setName] = useState('')
   const [checked, setChecked] = useState<string[]>(init?.connectors ?? [])
   const [model, setModel] = useState('')
   const [busy, setBusy] = useState(false)
@@ -102,7 +107,7 @@ function NewBotDialog({ init }: { init: NewBotInit | null }) {
       const list = ((p.value as { presets?: Preset[] }).presets ?? [])
       setPresets(list)
       setPresetId(list.find((x) => x.id === init.preset)?.id ?? list.find((x) => x.isDefault)?.id ?? list[0]?.id ?? '')
-      requestAnimationFrame(() => ref.current?.querySelector<HTMLInputElement>('input[name="pb-preset"]:checked')?.focus())
+      requestAnimationFrame(() => ref.current?.querySelector<HTMLInputElement>('input[aria-label="Bot name"]')?.focus()) // T30：打开聚焦名字框
       if (c.ok) {
         const cat = modelOptions(c.value)
         setDefaultModel(cat.fallback)
@@ -123,11 +128,11 @@ function NewBotDialog({ init }: { init: NewBotInit | null }) {
 
   async function submit(): Promise<void> {
     const u = ui()
-    if (busy || presetId === '' || bundles === null || u === null) return
+    if (busy || presetId === '' || bundles === null || u === null || name.trim() === '') return
     setBusy(true)
     setError(null)
     const picked = models.find((m) => m.value === model)
-    const res = await u.createBot({ preset: presetId, connectors: effective, avatar: character, ...(picked !== undefined ? { model: { provider: picked.provider, model: picked.model } } : {}) })
+    const res = await u.createBot({ preset: presetId, connectors: effective, avatar: character, name: name.trim(), ...(picked !== undefined ? { model: { provider: picked.provider, model: picked.model } } : {}) })
     setBusy(false)
     if (!res.ok) { setError(`Couldn't create the bot: ${res.message}`); return } // D7：不入列表
     finish(res.sessionId)
@@ -142,36 +147,36 @@ function NewBotDialog({ init }: { init: NewBotInit | null }) {
     >
       <form className="pb-dialog__body" onSubmit={(e) => { e.preventDefault(); void submit() }}>
         <header className="pb-dialog__head">
-          <h2 id="pb-new-bot-title">{init.title ?? 'New Bot'}</h2>
+          <h2 id="pb-new-bot-title">{init.title ?? 'Create New Bot'}</h2>
           <SandIconButton aria-label="Close" disabled={busy} icon="close" onClick={close} shape="circle" size="md" variant="ghost" />
         </header>
         {init.note !== undefined && <p className="pb-dialog__note" data-dialog-note>{init.note}</p>}
-        <fieldset className="pb-field" disabled={busy} data-character>
-          <legend>Character</legend>
-          <div className="pb-character">
-            <span className="pb-character__preview" data-preview data-avatar-shape={character.shape} data-avatar-color={character.color} aria-label={`${character.shape} preview`}>
-              <OnboardingCharacter color={character.color} shape={character.shape} sizePx={72} state="idle" paused />
-            </span>
-            <div className="pb-character__shapes" role="group" aria-label="character shape">
-              {PICKER_SHAPES.map((shape) => (
-                <button key={shape} type="button" className="pb-character__shape" data-shape={shape}
-                  aria-label={`${shape} character shape`} aria-pressed={character.shape === shape}
-                  onClick={() => setCharacter({ ...character, shape })}>
-                  <ShapeGlyph shape={shape} color={character.color} />
-                </button>
-              ))}
-            </div>
-            <div className="pb-character__colors" role="group" aria-label="character color">
-              {PICKER_COLORS.map((color) => (
-                <button key={color} type="button" className="pb-character__color" data-color={color}
-                  aria-label={`${color[0]!.toUpperCase()}${color.slice(1)} character color`} aria-pressed={character.color === color}
-                  style={{ backgroundColor: personaInk(color, themeOf()) }}
-                  onClick={() => setCharacter({ ...character, color })} />
-              ))}
-            </div>
+        <div className="pb-character" data-character>
+          <span className="pb-character__preview" data-preview data-avatar-shape={character.shape} data-avatar-color={character.color} aria-label={`${character.shape} preview`}>
+            <OnboardingCharacter color={character.color} shape={character.shape} sizePx={96} state="idle" paused surfaceTheme={themeOf() === 'dark' ? 'dark' : undefined} />
+          </span>
+          <input aria-label="Bot name" className="pb-name-input" maxLength={255} onChange={(e) => setName(e.currentTarget.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing && !busy && name.trim() !== '' && presetId !== '' && bundles !== null) { e.preventDefault(); void submit() } }} placeholder="Name your Bot" type="text" value={name} />
+          <div className="pb-character__shapes" role="group" aria-label="character shape">
+            {PICKER_SHAPES.map((shape) => (
+              <button key={shape} type="button" className="pb-character__shape" data-shape={shape}
+                aria-label={`${shape} character shape`} aria-pressed={character.shape === shape}
+                onClick={() => setCharacter({ ...character, shape })}>
+                <ShapeGlyph pressed={character.shape === shape} shape={shape} color={character.color} />
+              </button>
+            ))}
           </div>
-        </fieldset>
-        <fieldset className="pb-field" disabled={busy}>
+          <div className="pb-character__colors" role="group" aria-label="character color">
+            {PICKER_COLORS.map((color) => (
+              <button key={color} type="button" className="pb-character__color" data-color={color}
+                aria-label={`${color[0]!.toUpperCase()}${color.slice(1)} character color`} aria-pressed={character.color === color}
+                style={{ backgroundColor: personaInk(color, themeOf()) }}
+                onClick={() => setCharacter({ ...character, color })} />
+            ))}
+          </div>
+        </div>
+        <details className="pb-more" open={init.preset !== undefined || (init.connectors !== undefined && init.connectors.length > 0) || init.model !== undefined}>
+          <summary>More options</summary>
+          <fieldset className="pb-field" disabled={busy}>
           <legend>Preset</legend>
           {presets === null && <div className="pb-muted" role="status">Loading…</div>}
           {presets?.map((p) => (
@@ -225,10 +230,11 @@ function NewBotDialog({ init }: { init: NewBotInit | null }) {
         </label>
         <p className="pb-muted">Configuration is locked when the bot is created. To change it, create a new bot.</p>
         {missing.length > 0 && <p className="pb-warn" data-missing-note>Will be created without {missing.join(', ')}</p>}
+        </details>
         {error !== null && <p className="pb-error" role="alert">{error}</p>}
         <footer className="pb-dialog__actions">
           <SandButton disabled={busy} onClick={close} shape="pill" variant="secondary">Cancel</SandButton>
-          <SandButton data-action="create-bot" disabled={presetId === '' || bundles === null} pending={busy} shape="pill" type="submit" variant="primary">
+          <SandButton data-action="create-bot" disabled={name.trim() === '' || presetId === '' || bundles === null} pending={busy} shape="pill" type="submit" variant="primary">
             {busy ? 'Creating…' : 'Create'}
           </SandButton>
         </footer>

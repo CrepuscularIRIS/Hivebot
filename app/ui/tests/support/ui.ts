@@ -73,6 +73,14 @@ export interface Env { rt: SdkRuntime; shell: ShellLaunch; page: Page; stop(): P
 
 /** 产品就绪 = 主 bot 已进侧栏（shim roster 拉完，M1 已通）。 */
 export async function waitProductReady(page: Page, timeout = 60_000): Promise<void> {
+  // T30：launchProduct 已置 seen+reload；直接 launchShell 的 spec（market/settings 等）自己
+  // 走首启路径——这里兜底置 seen（若未置）再等（onboarding 打开时 agent 恒 0）。
+  try {
+    if (await page.evaluate(() => window.localStorage.getItem('pbots.shim.onboarding-seen') !== '1').catch(() => false)) {
+      await page.evaluate(() => window.localStorage.setItem('pbots.shim.onboarding-seen', '1')).catch(() => {})
+      await page.evaluate(() => (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void> } }).__pbotsDev?.reloadRoster?.()).catch(() => {})
+    }
+  } catch { /* ignore */ }
   await expect(page.locator('.sand-agent-item').first()).toBeVisible({ timeout })
 }
 

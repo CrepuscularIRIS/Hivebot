@@ -33,7 +33,14 @@ function argText(args: string): string | null {
 /** 工具行单行摘要：argText 优先，截 120 字。 */
 /** T25：kickstart 自我介绍提示（0.79.3 服务端注入引导提示的客户端形态——transcript/outline 都不显示）。
  * 0.79.3 无 UI 抑制开关：是否介绍由代码路径决定；我们的 createBot 带 kickstart?:false 供 T26 onboarding 用。 */
-export const KICKSTART_PROMPT = '<bot_introduction_request>You were just created. Greet the user and introduce yourself in two or three short sentences: your name if you have one, your personality, and what you can help with. Don\'t use any tools.</bot_introduction_request>'
+/** T30：介绍提示构造——全部内容都在标签内（name/setup 可选；:550 旧 bug 是 setup 拼到闭合标签后）。 */
+export function kickstartPrompt(o: { name?: string; setup?: string }): string {
+  const name = o.name !== undefined && o.name.trim() !== '' ? `Your name is ${o.name.trim()}. ` : ''
+  const setup = o.setup !== undefined && o.setup.trim() !== '' ? ` Your setup: ${o.setup.trim()}` : ''
+  return `<bot_introduction_request>${name}You were just created. Greet the user and introduce yourself in two or three short sentences: your name if you have one, your personality, and what you can help with. Don't use any tools.${setup}</bot_introduction_request>`
+}
+
+export const KICKSTART_PROMPT = kickstartPrompt({})
 
 /** 只认标签不认正文（T30 往里加名字时旧会话照样认得出）。 */
 export function isKickstartPrompt(text: string | undefined | null): boolean {

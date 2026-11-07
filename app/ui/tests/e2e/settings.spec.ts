@@ -26,9 +26,11 @@ async function createViaDialog(page: Page, preset: string, connectors: string[],
   const before = (await devState(page)).order
   await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
   await expect(dlg(page)).toBeVisible()
+  await dlg(page).locator('summary').click() // T30：preset/连接器收进 More options
   await dlg(page).locator(`[data-preset-option="${preset}"] input`).check()
   for (const c of connectors) await dlg(page).locator(`[data-connector-option="${c}"] input`).check()
   await page.screenshot({ path: join(EVIDENCE, 'new-bot-dialog.png') })
+  await dlg(page).getByRole('textbox', { name: 'Bot name' }).fill('SB') // T30：Create 需名字
   await dlg(page).locator('[data-action="create-bot"]').click()
   await expect(dlg(page)).toHaveCount(0, { timeout: 60_000 })
   await expect.poll(async () => (await devState(page)).order.find((id) => !before.includes(id)), { timeout: 30_000 }).toBeTruthy()

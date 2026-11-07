@@ -6,6 +6,7 @@
 > 排期：与 T21 并行（不共享任何文件；本单不跑 app/ui e2e，只起 headless chrome）
 > claimed：
 > accepted：**未通过**（2026-11-07 manager 任务 B @ f1aedbc5）——图全部合格（S1/S2/S4 亮暗 13 张逐张目测有内容），但事实表三处与图矛盾、验收 3 未达；修复单 `open/T20b-fact-table-correction.md`。详见回执末「验收记录」
+> accepted（终验）：2026-11-07 manager 任务 B @ feat/T20 b6d1438b——随 T20b 通过一并收口（事实表以 T20b 节为准；S3/S5 止损不计失败）
 > 失败计数：1
 
 ## 目标

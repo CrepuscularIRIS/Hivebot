@@ -5,7 +5,7 @@
 > 分支 / 作业目录：feat/T23 @ /tmp/bot-wt/T23（起点 = 集成分支含 merge 7ecc083b 的 HEAD）
 > 排期：现在开。T24（建 bot 对话框）可以并行：本单**不碰** `shim/src/agents.ts`、`new-bot-dialog.tsx`
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T23
-> accepted：
+> accepted：2026-11-07 manager 任务 B @ feat/T23 4624441f（见末「验收记录」）
 > 失败计数：0
 
 ## 为什么先做它
@@ -192,3 +192,25 @@ T22 合并后，主 transcript 不再渲染 thinking 和工具行。回合进行
 
 ## 附录 B：锚点索引（eager-app-BXVg2FvL.js 字节偏移，renderer 树只读）
 `Gpt/Kpt/qpt/Jpt/PN` ≈1648.4k · `mO` 1186552 · `tZ` 2723183 · `ren` 2723506 · `sen` 2724176 · 行渲染 `rtn` / `cZ`（quiet→null）≈2738.3k–2737.0k · `Gjn/Kjn/Jjn/Yjn` 3360515 · 行挂载（`statusReveal:o.kind===\`working\`&&o.isStatusQuiet?\`quiet\`:\`shown\``）≈3005.6k · 门 `qle`→`sand_side_model_status`
+
+## 验收记录（2026-11-07 manager 任务 B @ feat/T23 4624441f）
+**结论：通过。** 回执与 review 报告在 feat/T23（`receipts/T23.md`、`receipts/review-T23.md`）；经理核实结论记在这里（避免主仓与分支同名文件 add/add 冲突）。
+
+经理重跑（工作树 clean，HEAD=4624441f；out/renderer 07:55:37 晚于最后源改 07:55:14）：
+- 验收 1：`vitest run tests/unit/grok-shim/status-line.test.ts` → **13 passed**
+- 验收 3：`HOME=/tmp/bot-T23h TMPDIR=/tmp/bot-T23t test:e2e tests/e2e/status-line.spec.ts` → **4 passed**（①–④ 全过；② switch-interval-ms **809**，回执 824 / reviewer 834，均 ≥800 减轮询粒度）
+- 验收 5：`renderer-grok check` → **upstream diff=0: 332 files**；`git diff 3351094a..HEAD --stat` 13 文件，除下条外均在边界 1
+- 验收 6（Read 打开 `ours/conv-working.cmp.light.png` 并放大裁切核对）：位置 ✓（用户消息下方、靠左）；文字次级色 ✓（灰）；短语同组 ✓（ours "Thinking it through" / ref "Mulling it over"，同属 thinking）；吉祥物 **bot 色 ✓、"三点"✗**——ours 是该 bot 的橙色云形静态脸，ref 是三点。根因不在本单：侧栏同一 bot 在 ours 也是云形脸、在 ref 也是三点，差异来自共用 `AgentAvatar`/`OnboardingCharacter` 的 working 态渲染（0.18 vs 0.79.3），本单规格明令「复用 AgentAvatar，不新画」。验收 6 原文写「bot 色的三点」是经理措辞失准，按「颜色形状与侧栏一致」判过。头像 working 态三点化写进 queue 提议。截图出自 3eec1934 构建；其后 review 修复只动退场/elapsed/分隔符，不影响 thinking t<60s 画面，接受。
+- 验收 7：phrase-samples.json thinking ×5 三句全现、WebSearch ×5 恒 "Digging around"——与规格（tZ 新建抽签、单句类恒定、无按时轮换）吻合。泛 working（Write）5s 静默的实测采样**没有做**（drive 采样器坏，见 T20b 验收记录）；该语义由 unit f 格 + 0.79.3 代码锚点 `Gjn` 支撑，接受，不另开单。
+
+Sol 审查意见逐条核实（打开 4624441f 代码确认）：
+- MEDIUM elapsed 首醒：成立，已修——status-line.ts:111-117 未满 60s 排 `shownAt+60000`；补格 M1 断言 thinking→60000、working→min(5000)
+- MEDIUM A→B→A 清排队：成立，已修——status-line.ts:79 sameKind 分支 `queued: null`；补格 M2
+- MEDIUM 退场窗口内恢复运行：成立，已修——transcript.tsx:40 `b.exitUntil = null`（无 unit 格，组件级；reviewer 假时钟探针复现过，接受）
+- LOW `· ` 分隔符：成立，已修——transcript.tsx:77
+- NOTE 咬合（working 5s 轮换变异全绿）：成立，补格「working 揭示后长期不轮换」已加，堵住
+- NOTE shot-statusline.spec.ts 越白名单：**追溯授权**。它是验收 6 的必要产物，且同 `shot-conv.spec.ts`（T22 已收）/`shot-outline.spec.ts` 先例。但三份 shot-* 都硬编码 `/home/lingxufeng/bot/work/...` 且无 env 门，全量 e2e 时会改写主仓受控截图——写进 queue 提议统一收口，不挂本单
+- NOTE 覆盖率无机器证据：**接受手工核算**。核实 app/ui 下没有 `@vitest/coverage-*` 包（工具链缺件，非本单造成）。经理自查：13 格覆盖全部导出函数与分支，唯一未触达是 status-line.ts:76 「到期排队消费后活动又变」的递归分支（只在 wake 定时器迟到时走到），估行覆盖 >95%，不阻塞
+- 经理自查一处 nit：status-line.ts:110 `now < quietUntil && quietUntil > now` 条件重复，无害，不开单
+
+存疑项判定：①（③场景改一轮）合理；②吉祥物尺寸差、③模块变量渲染顺序依赖、④portal 末位 microtask——均记录在案，等用户实测再说。

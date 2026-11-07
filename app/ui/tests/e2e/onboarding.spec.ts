@@ -69,7 +69,7 @@ test('③ 老用户（seen=1）启动：不进引导，main bot 照常建立', a
   }
 })
 
-test('④ 六步走完：Get started → Next 到 create → 填名建 bot → hand-off 完成后恰 1 bot + 介绍延后', async () => {
+test('④ 走完 walk：landing → meet → computer-demo → jobs → role → attribution → connect → hand-off 自动建主 bot + 2 模板 bot + 介绍延后', async () => {
   test.setTimeout(180_000)
   const env = await launchProduct({ ready: false, onboardingFirst: true })
   try {
@@ -94,29 +94,106 @@ test('④ 六步走完：Get started → Next 到 create → 填名建 bot → h
     await nextBtn.click() // jobs → role
     await expect(page.locator('#sand-onboarding-role-heading')).toBeVisible({ timeout: 20_000 })
     await expect(page.locator('#sand-onboarding-role-heading')).toHaveText('What will you be working on most?')
-    await page.locator('[data-choice="engineering"]').click()
-    await page.locator('button', { hasText: 'Next' }).last().click() // role → attribution
+    // T32 role 页：可见性（9 卡）+几何+编舞+侧栏覆盖+退场
+    const visCheck = async (sel: string, expectCount: number): Promise<void> => {
+      const bad = await page.locator(sel).evaluateAll((list, selArg) => {
+        if (list.length === 0) return ['EMPTY: ' + selArg]
+        return list.map((el, i) => {
+          const r = el.getBoundingClientRect()
+          const cx = r.x + r.width / 2, cy = r.y + r.height / 2
+          const hit = document.elementFromPoint(cx, cy)
+          const inVp = r.x >= 0 && r.y >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight
+          return hit != null && (hit === el || el.contains(hit)) && inVp ? null : `${selArg}[${i}] 出框或被遮`
+        }).filter(Boolean)
+      }, sel)
+      if (bad.length > 0) {
+        const dbg = await page.evaluate((selArg) => {
+          const el = document.querySelector(selArg) as HTMLElement | null
+          if (el === null) return 'null'
+          const r = el.getBoundingClientRect()
+          const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
+          return JSON.stringify({ box: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)], inVp: r.x >= 0 && r.y >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight, hit: hit ? `${hit.tagName}.${String((hit as HTMLElement).className).slice(0, 50)} contained=${el.contains(hit)}` : 'null', ih: window.innerHeight })
+        }, sel)
+        console.log('VISDBG=', dbg)
+      }
+      expect(bad, `${sel} 必须全部可见`).toEqual([])
+      const n = await page.locator(sel).count()
+      expect(n, `${sel} 恰 ${expectCount}`).toBe(expectCount)
+    }
+    const geo = async (cls: string, opts: { w?: number; cols3?: boolean }): Promise<void> => {
+      const g = await page.evaluate((c) => {
+        const h1 = document.querySelector(`${c} h1`)!.getBoundingClientRect()
+        const grp = document.querySelector(`${c} [role="radiogroup"], ${c} [role="list"]`)!.getBoundingClientRect()
+        const btns = [...document.querySelectorAll(`${c} [role="radiogroup"] button, ${c} [role="list"] [role="listitem"]`)].map((b) => b.getBoundingClientRect())
+        const foot = document.querySelector(`${c} .sand-onboarding__footer`)!.getBoundingClientRect()
+        const sec = document.querySelector(c)!.getBoundingClientRect()
+        const ih = sec.height, iw = sec.width + sec.x * 2 // T32：基准=section rect（harness 下 onb 820/section 796 恒差 24——用 section 自身高度，视觉契约同）
+        return { h1Top: h1.top - sec.y, h1Cx: h1.x + h1.width / 2 - sec.x, grpTop: grp.top - sec.y, grpCx: grp.x + grp.width / 2 - sec.x, grpW: grp.width, b0: Math.round(btns[0]?.top ?? -1), b2: Math.round(btns[2]?.top ?? -1), b3: Math.round(btns[3]?.top ?? -1), footTop: foot.top - sec.y, ih, iw }
+      }, cls)
+      expect(Math.abs(g.h1Top - (g.ih / 2 - 264)), `${cls} h1 top`).toBeLessThanOrEqual(2)
+      expect(Math.abs(g.h1Cx - g.iw / 2), `${cls} h1 cx`).toBeLessThanOrEqual(2)
+      expect(Math.abs(g.grpTop - (g.ih / 2 - 147)), `${cls} grp top`).toBeLessThanOrEqual(2)
+      expect(Math.abs(g.grpCx - g.iw / 2), `${cls} grp cx`).toBeLessThanOrEqual(2)
+      if (opts.w !== undefined) expect(Math.abs(g.grpW - opts.w), `${cls} grp width`).toBeLessThanOrEqual(2)
+      if (opts.cols3 === true) { expect(g.b0, `${cls} 前 3 同排`).toBe(g.b2); expect(g.b3, `${cls} 第 4 换排`).toBeGreaterThan(g.b0) }
+      expect(Math.abs(g.footTop - (g.ih / 2 + 240)), `${cls} footer top`).toBeLessThanOrEqual(2)
+    }
+    const castOk = async (): Promise<void> => {
+      const r = await page.evaluate(() => {
+        const mates = ['invoice-chaser', 'weekly-standup', 'sales-forecast'].map((id) => {
+          const el = document.querySelector(`.sand-onboarding__cast-${id}`) as HTMLElement | null
+          return el === null ? { id, missing: true } : { id, missing: false, opacity: getComputedStyle(el).opacity, box: el.getBoundingClientRect().toJSON() }
+        })
+        const hero = document.querySelector('.sand-onboarding__cast-hero') as HTMLElement | null
+        const cards = [...document.querySelectorAll('.sand-onboarding__step:not([aria-hidden]) [role="radiogroup"] button, .sand-onboarding__step:not([aria-hidden]) .sand-onboarding__footer button')].map((b) => b.getBoundingClientRect().toJSON())
+        const overlap = mates.filter((m) => !m.missing).some((m) => cards.some((c) => !(m.box.right < c.x || c.right < m.box.x || m.box.bottom < c.y || c.bottom < m.box.y)))
+        return { mates, heroOpacity: hero === null ? 'n/a' : getComputedStyle(hero).opacity, overlap }
+      })
+      for (const m of r.mates) expect(m.missing, `${m.id} cast 在`).toBe(false)
+      for (const m of r.mates) if (!m.missing) expect(m.opacity, `${m.id} opacity`).toBe('1')
+      expect(r.heroOpacity, 'hero 隐藏').toBe('0')
+      expect(r.overlap, 'teammate 不压卡/底栏').toBe(false)
+    }
+    await visCheck('.sand-onboarding__role-choices button', 9)
+    await visCheck('.sand-onboarding__role h1', 1)
+    await geo('.sand-onboarding__role', { w: 624, cols3: true })
+    await page.waitForTimeout(900)
+    await castOk()
+    const covered = await page.evaluate(() => { const hit = document.elementFromPoint(140, window.innerHeight / 2); return { onb: hit?.closest('.sand-onboarding') != null, sidebar: hit?.closest('.sand-agents-sidebar') != null } })
+    expect(covered.onb, 'role 页侧栏位置被引导层盖住').toBe(true)
+    expect(covered.sidebar).toBe(false)
+    await page.evaluate(() => { (document.querySelector('.sand-onboarding__cast') as HTMLElement).__t32 = 1 })
+    await page.locator('[data-choice="engineering"]').click() // 先选——选中后前进钮才是 Next（未选是 Skip）
+    const exits = await page.evaluate(() => new Promise<unknown[]>((resolve) => {
+      const seen: unknown[] = []
+      const root = document.querySelector('.sand-onboarding')!
+      const obs = new MutationObserver(() => {
+        document.querySelectorAll('.sand-onboarding__step[aria-hidden="true"]').forEach((el) => {
+          seen.push({ anim: (el as HTMLElement).style.animation, heading: el.querySelector('h1, [id^="sand-onboarding"]')?.id ?? el.querySelector('main')?.getAttribute('aria-labelledby') ?? '' })
+        })
+      })
+      obs.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-hidden'] })
+      setTimeout(() => { obs.disconnect(); resolve(seen) }, 1200)
+      ;([...document.querySelectorAll('.sand-onboarding__step:not([aria-hidden]) button')] as HTMLButtonElement[]).find((b) => b.textContent === 'Next')?.click()
+    }))
+    expect(exits.length, 'role→attribution 有退场层').toBeGreaterThan(0)
+    expect(JSON.stringify(exits)).toContain('sand-onboarding-step-exit')
     await expect(page.locator('#sand-onboarding-attribution-heading')).toBeVisible({ timeout: 20_000 })
     await expect(page.locator('#sand-onboarding-attribution-heading')).toHaveText('How did you first hear about Grok Bot?')
+    await page.waitForTimeout(350) // 进场动画 200ms+进场期 elementFromPoint 命中旧层 span——稳定后再检
+    await visCheck('.sand-onboarding__attribution-choices button', 12)
+    await geo('.sand-onboarding__attribution', { w: 744, cols3: true })
+    await page.waitForTimeout(900)
+    await castOk()
+    expect(await page.evaluate(() => (document.querySelector('.sand-onboarding__cast') as HTMLElement).__t32)).toBe(1)
     // attribution 无选择 Skip（tertiary 主钮）
     await page.locator('button[data-action="skip"]', { hasText: 'Skip' }).first().click() // attribution → connect
     await expect(page.locator('#sand-onboarding-connect-heading')).toBeVisible({ timeout: 20_000 })
     await expect(page.locator('#sand-onboarding-connect-heading')).toHaveText('Connect your apps')
-    await expect(page.locator('.sand-onboarding__connect button:has-text("Connect")')).toHaveCount(2) // Gmail + Google Calendar（排除侧栏 Connect apps）
-    // T28c F1：三页「真的看得见」——中心点命中自身/后代 + bounding box 完整在视口（toBeVisible 抓不到遮挡/出框）
-    const visCheck = async (sel: string): Promise<void> => {
-      const bad = await page.locator(sel).evaluateAll((els) => els.map((el, i) => {
-        const r = el.getBoundingClientRect()
-        const cx = r.x + r.width / 2, cy = r.y + r.height / 2
-        const hit = document.elementFromPoint(cx, cy)
-        const inVp = r.x >= 0 && r.y >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight
-        return hit != null && (hit === el || el.contains(hit)) && inVp ? null : `${sel}[${i}] 出框或被遮`
-      }).filter(Boolean))
-      expect(bad, `${sel} 必须全部可见`).toEqual([])
-    }
-    await visCheck('.sand-onboarding__attribution-choices button')
-    for (const st of ['role', 'attribution', 'connect']) await visCheck(`.sand-onboarding__${st} h1`)
-    await page.locator('button', { hasText: 'Skip for now' }).click() // connect → hand-off（自动建主 bot）
+    await visCheck('.sand-onboarding__connect [role="listitem"]', 2)
+    await expect(page.locator('.sand-onboarding__connect button:has-text("Connect")')).toHaveCount(2)
+
+    await page.locator('.sand-onboarding__step:not([aria-hidden]) button', { hasText: 'Skip for now' }).click() // connect → hand-off（排除退场层副本）
     // tools/create 不出现在 walk
     await expect(page.locator('#sand-onboarding-tools-heading, #sand-onboarding-create-name')).toHaveCount(0)
     // 介绍延后断言：Skip for now 后 250ms 内无介绍（dwell 至数百 ms）
@@ -178,10 +255,11 @@ test('⑥ 全 Skip：landing Skip 不建也不介绍；走 walk 全 Skip 也建�
     writeDefaultScript(rt.home, [INTRO_TEXT])
     await page.locator('[data-action="onboarding-start"]').click()
     for (const st of ['computer-demo', 'jobs']) { await page.locator('.sand-onboarding button', { hasText: 'Next' }).first().click(); await expect(page.locator(`#sand-onboarding-${st}-heading`)).toBeVisible({ timeout: 20_000 }) }
-    await page.locator('.sand-onboarding button', { hasText: 'Next' }).first().click() // role
-    await page.locator('button[data-action="skip"]', { hasText: 'Skip' }).first().click() // role Skip（未选）
+    await page.locator('.sand-onboarding__step:not([aria-hidden]) button', { hasText: 'Next' }).first().click() // jobs → role（前循环只到 jobs）
+    await expect(page.locator('#sand-onboarding-role-heading')).toBeVisible({ timeout: 20_000 })
+    await page.locator('.sand-onboarding__step:not([aria-hidden]) button[data-action="skip"]').click() // role Skip（未选；退场层 aria-hidden 副本须排除——工单边界 5）
     await expect(page.locator('#sand-onboarding-attribution-heading')).toBeVisible({ timeout: 20_000 })
-    await page.locator('button[data-action="skip"]', { hasText: 'Skip' }).first().click() // attribution Skip
+    await page.locator('.sand-onboarding__step:not([aria-hidden]) button[data-action="skip"]').click() // attribution Skip
     await expect(page.locator('#sand-onboarding-connect-heading')).toBeVisible({ timeout: 20_000 })
     await page.locator('button', { hasText: 'Skip for now' }).click() // → hand-off
     await expect(page.locator('.sand-agent-item')).toHaveCount(1, { timeout: 30_000 }) // 全跳过仍建默认 bot

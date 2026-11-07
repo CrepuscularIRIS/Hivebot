@@ -1149,3 +1149,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - T26 全链：主 agent 补开单（经理立项超时）→A 段→review（HIGH gate 架空+3M）→修复→终验返修 T26b（4 条）→修复→合并验收（变异 V-c 抽验 2/2 红）→合并
 - 已记 T32（不阻塞）：引导期间侧栏未盖/create 版式散
 - 14:03 哨兵：load 24 暂测试。T28 review 3M 修复闭环（7c22aadb），终验中。
+
+## 2026-11-07 · merge T28+T28c（合并验收通过后合并）
+- feat/T28 干净合入（六页截图自动取 docs 新版）；合并后回测：unit grok-shim+fold **222 passed**；e2e onboarding+kickstart+bots **19 passed**
+- T28 全链：经理立项（探针颠覆预设）→ 施工 → review 3M → 修复 → 终验返修 T28c（3F：三页出框/复制缺件/单测缺格）→ 复用上游组件修复 → 合并验收（Vb 变异未咬合记提议⑩：版式居中无断言，与 T32 一起补）
+- 提议⑩ 记 queue：meet 标题 opacity/computer-demo 底栏序/role+connect 可见性断言/④标题过时

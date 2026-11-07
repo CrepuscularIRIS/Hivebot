@@ -1,4 +1,6 @@
-# HANDOFF · 2026-11-07 08:0x
+# HANDOFF · 2026-11-07 11:3x（UI 链第 8 张进行中）
+
+> 快照：T20-T25+T29+T21b 全部合并主线（GitHub 同步）；**T26（onboarding）A 段核改完成、下会话续**——worktree /tmp/bot-wt/T26（feat/T26，1f0ee18f），工单 doing/T26-onboarding.md 末有交接记录（已完成/未做/续接入口/e2e 基线 3 passed）。关键发现：0.18 gate「agentCount>0 自动 seen」——六步 UI 在 e2e 不可达（恒有 main bot），真首启才进。经理 agent 立项超时 75min 被 TaskStop 的教训已隐含在 T26 开单说明。UI 链剩：T26 续（landing 前奏/attribution 页/kickstart 通道/变异/截图）、T27（等用户编排结论）、T28（42 模板）、T30/T31/T32。生产实例健康（launcher+SDK）。
 
 > 2026-11-07 快照（UI 复刻链第一波收口）：T21（outline 侧板）+ T22（主聊天只留首答/终答）+ T21b（⑤ 咬合）全部终验合并进 docs/rebuild-p6-p5-plan；T20（0.79.3 参照台）S1/S2/S4 出图回执齐、经理验收中。全仓已推 GitHub（CrepuscularIRIS/Hivebot，private，73+ 分支；127MB evidence blob 已剥、B-env 隔离 HOME 垃圾已从 HEAD 树清+gitignore）。UI 复刻链下一张：T23（状态行短语引擎——0.79.3 短语原文已从 T20 拿到：thinking→"Mulling it over"，12s 不轮换）。用户在用产品实例（启动器拉起）；用户研究方向=编排（跨 bot 交流/subagent 呈现），T27 等其结论。
 

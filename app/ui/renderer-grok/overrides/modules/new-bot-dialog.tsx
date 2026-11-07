@@ -39,9 +39,9 @@ const themeOf = (): 'light' | 'dark' => (typeof document === 'undefined' || !doc
 function ShapeGlyph({ shape, color, size = 36, pressed = false }: { shape: string; color: string; size?: number; pressed?: boolean }) {
   const ink = personaInk(color, themeOf())
   return (
-    <svg aria-hidden="true" width={size} height={size} viewBox="-15 -15 259 259" style={{ display: 'block' }}>
-      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--sand-border, #1c1c1c55)" strokeWidth={23} /> : null}
-      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--cursor-bg-elevated, var(--sand-bg-elevated, #ffffff))" strokeWidth={19} /> : null}
+    <svg aria-hidden="true" width={size} height={size} viewBox="-15 -15 259 259" overflow="visible" style={{ display: 'block' }}> {/* T30db：外环 28.5u 超 viewBox 15u 边——overflow visible 防裁断（钮 57px 有空间） */}
+      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--pb-sticker-gray, #1c1c1c55)" strokeWidth={57} /> : null}
+      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--pb-sticker-surface, #ffffff)" strokeWidth={43} /> : null}
       <path d={personaShapePath(shape)} fill={ink} />
     </svg>
   )

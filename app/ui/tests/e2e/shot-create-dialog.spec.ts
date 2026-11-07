@@ -26,6 +26,7 @@ test('T30 六态截图', async () => {
       await dlg.locator('[aria-label="house character shape"]').click()
       await dlg.locator('[aria-label="Orange character color"]').click()
       await dlg.getByRole('textbox', { name: 'Bot name' }).fill('Research Helper')
+      await page.waitForTimeout(400) // T30db：disabled→enabled 过渡帧
       await dlg.screenshot({ path: join(OUT, `create-dialog.${mode}-named.png`) })
       // shape3：square
       await dlg.locator('[aria-label="square character shape"]').click()

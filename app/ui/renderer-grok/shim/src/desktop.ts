@@ -194,7 +194,18 @@ export function createDesktopBridge(win: AnyWindow, opts: DesktopOptions): Deskt
       egressTunnel: { initial: false, initialStatus: null, get: () => Promise.resolve(false), set: (v: boolean) => Promise.resolve(v), getStatus: () => Promise.resolve(null), onChanged: listener, onStatusChanged: listener },
       webauthnProxy: { initial: false, get: () => Promise.resolve(false), set: (v: boolean) => Promise.resolve(v), onChanged: listener },
     },
-    onboarding: { getSeen: () => Promise.resolve(true), setSeen: () => Promise.resolve(), onSkip: listener },
+    // T26：onboarding 首见接 localStorage（先例 avatars.ts）——首启 false 触发 0.18 六步流程；
+    // skip = 提前 seen（0.18 语义）。读失败按已见（不把老用户拖进引导）。
+    onboarding: {
+      getSeen: () => {
+        try { return Promise.resolve(window.localStorage.getItem('pbots.shim.onboarding-seen') === '1') } catch { return Promise.resolve(true) }
+      },
+      setSeen: (v: boolean) => {
+        try { window.localStorage.setItem('pbots.shim.onboarding-seen', v ? '1' : '0') } catch { /* 禁用/配额：丢了只会再看一遍引导 */ }
+        return Promise.resolve()
+      },
+      onSkip: listener,
+    },
     telemetry: new Proxy({}, { get: () => () => {} }) as unknown as DesktopBridge['telemetry'],
     timeZone: { get: () => Promise.resolve({ detectedTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? null, overrideTimeZone: null }), setOverride: () => Promise.resolve({ detectedTimeZone: null, overrideTimeZone: null }) },
     autoReviewInstructions: { get: () => Promise.resolve({ isEnabled: false, allowInstructions: [], blockInstructions: [] }), set: (v) => Promise.resolve(v) },

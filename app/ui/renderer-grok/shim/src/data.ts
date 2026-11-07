@@ -103,6 +103,10 @@ export interface DevSurface {
   /** 已 follow 的会话视图（D1/D2：preset / chunkCount / turnEnded / cwd …）。 */
   readonly bots: SessionView[]
   readonly state: { order: string[]; meta: { mainBotId: string | null; createdBy: Record<string, string> }; views: Record<string, SessionView> }
+  /** T26：重载 roster（onboarding 完成/skip 后——首启未建 main，seen 落盘后此调用补建）。 */
+  reloadRoster(): Promise<void>
+  /** T26b：发 onboarding 延后的 kickstart 介绍（生产调用——onboarding-view 的 finish 链，非仅测试）。 */
+  finishKickstart(): Promise<void>
   newSocket(): DevSocketHandle
   openStream(endpoint: string, args?: unknown): MuxStream
   muxStreams(): Array<{ streamId: string; endpoint: string }>
@@ -133,6 +137,8 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   const asks = new Map<string, Ask>() // eventId → pending 审批
   const pendingNonce = new Map<string, string>() // agentId → 待补记 clientNonce（按消息身份 source.rpcId 绑定，L-7 R4 f2）
   const createNotices = new Map<string, string>() // agentId → 新建 bot 的非致命失败通知（首条用户消息前展示，L-7 O4）
+  /** T26b #4：onboarding create 步登记的延后介绍（seen 落盘后由 finishKickstart 发）。 */
+  let pendingKickstart: { sid: string; prompt: string } | null = null
   let revision = 0
   let eventsClientId: string | undefined
   let booted = false
@@ -339,6 +345,18 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     recipes = rec(rec(meta.value).recipes) as unknown as Record<string, Recipe>
     createdBy = createdByOf(meta.value)
     const nextSummaries: Record<string, Summary> = Object.fromEntries(items.map((s) => [s.sessionId, s]))
+    // T26 review HIGH：真首启（onboarding 未 seen 且 roster 空）不自动建 main bot——
+    // 否则 countAgents=1 触发 0.18 gate「老用户」语义，landing/六步在生产首启也不可达。
+    // onboarding 完成/skip 后 onComplete 链走 ensureMainBot 补建（onboarding-view 调用）。
+    const onboardingUnseen = (() => { try { return window.localStorage.getItem('pbots.shim.onboarding-seen') !== '1' } catch { return false } })()
+    if (onboardingUnseen && items.length === 0) {
+      summaries = {}
+      order = []
+      mainBotId = null
+      push.agents()
+      opts.boot?.('ready') // review HIGH 补丁：首启早退也要开 boot 门（否则遮罩拦 onboarding 交互）
+      return
+    }
     if (typeof listed !== 'string' || nextSummaries[listed] === undefined) {
       const created = await api('session/create', { request: {} })
       const sid = rec(created.value).sessionId
@@ -504,6 +522,35 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     },
     setAgentUnread: (id, value) => { if (value) unread.add(id); else unread.delete(id); push.agents() },
     createAgent: async (args) => {
+      // T26：onboarding create 步的实参（model.ts makeOnboardingCreateRequest：origin:'user'
+      // + isKickstartRequested + name/avatarShape/avatarColor）——直建不走新建对话框（chooser
+      // 是侧栏 New 的覆盖行为；onboarding 的 create 是内嵌表单）。isKickstartRequested:true 按
+      // 0.18 语义发介绍（create 步建的是用户的第一个真 bot；B 段的编舞演示 bot 才 kickstart:false）。
+      const a = rec(args)
+      if (a.origin === 'user' && a.isKickstartRequested === true) {
+        const res = await api('session/create', { request: {} })
+        if (!res.ok || typeof rec(res.value).sessionId !== 'string') throw new Error(res.error?.message ?? 'session/create failed')
+        const sid = rec(res.value).sessionId as string
+        const name = typeof a.name === 'string' ? a.name : ''
+        if (name !== '') await api('session/rename', { request: { sessionId: sid, title: name } })
+        if (typeof a.avatarShape === 'string' && typeof a.avatarColor === 'string') saveAvatar(sid, { shape: a.avatarShape, color: a.avatarColor })
+        // review M：0.18 的 description 携带用户填的职责与日常工具（model.ts descriptionWithDailyTools）
+        // ——dsh session/create 无此槽，最小落地=并入介绍提示（开场自我介绍时知道自己的设定）
+        const desc = typeof a.description === 'string' && a.description !== '' ? ` Your setup: ${a.description}` : ''
+        summaries = { ...summaries, [sid]: { sessionId: sid, title: name !== '' ? name : null, preset: null, running: false, updatedAt: Date.now() } }
+        order = [...order.filter((id) => id !== sid), sid]
+        followed.add(sid)
+        openFollow(sid)
+        // T26b #3：onboarding 建的就是主 bot（0.79.3 语义）——patch meta，否则 finish 后
+        // reloadRoster 会再建一个空 main（双 bot）。
+        if (mainBotId === null) { const patched = await metaApi({ op: 'patch', mainBotId: sid }); if (patched.ok) mainBotId = sid }
+        // T26b #4：介绍延后到 onboarding 结束（T25 工单:24/queue U5：等 markOnboardingSeen
+        // 之后才发）——这里只登记，不发。pendingKickstart 由 desktop.setSeen 完成后经
+        // finishKickstart 消费（onboarding-view 的 finish 链）。
+        pendingKickstart = { sid, prompt: `${KICKSTART_PROMPT}${desc}` }
+        push.agents()
+        return recordOf(sid)
+      }
       // P5-57：覆盖层注册了新建对话框 → 先选 preset / 连接器 / 模型（D10/D11），取消回 null（上游 projectRendererAgent(null) → 不选中）
       if (ui.chooser !== undefined) {
         const chosen = await ui.chooser({})
@@ -626,6 +673,14 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     get sockets() { return dev.sockets },
     get bots() { return [...views.values()] },
     get state() { return { order: [...order], meta: { mainBotId, createdBy: { ...createdBy } }, views: Object.fromEntries(views) } },
+    reloadRoster: () => loadRoster(), // T26：onboarding 完成/skip 后补建 main bot 的入口（onboarding-view 生产调用，非仅测试）
+    finishKickstart: async () => {
+      const p = pendingKickstart
+      pendingKickstart = null
+      if (p === null) return
+      const intro = await api('session/prompt', { request: { requestId: `kickstart-${p.sid}`, sessionId: p.sid, mode: 'queue', content: [{ type: 'text', text: p.prompt }] } })
+      if (!intro.ok) createNotices.set(p.sid, "Your Bot couldn't introduce itself")
+    },
     newSocket: () => newDevSocket((h) => { dev.sockets.push(h) }),
     openStream(endpoint, args) {
       if (mux === undefined) throw new Error('boot mux not open yet')

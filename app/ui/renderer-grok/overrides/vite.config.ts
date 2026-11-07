@@ -19,6 +19,7 @@ export const MODULE_OVERRIDES: Record<string, string> = {
   'production/CommandPalette.tsx': 'CommandPalette.tsx',
   'recovered/features/conversation/workspace/transcript.tsx': 'transcript.tsx',
   'recovered/features/onboarding/signed-in/character.tsx': 'character.tsx', // T24：整模块复制补 7 形状（re-export 替换不到内部调用）
+  'recovered/features/onboarding/signed-in/view.tsx': 'onboarding-view.tsx', // T26：包一层 landing 前奏（0.79.3 七步第一步）
   'recovered/features/conversation/workspace/rich-text-editor.tsx': 'rich-text-editor.tsx',
   'recovered/features/settings/overlay/view.tsx': 'settings-view.tsx',
   'recovered/features/settings/overlay/panels.tsx': 'settings-panels.tsx',

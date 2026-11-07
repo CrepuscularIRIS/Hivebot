@@ -146,7 +146,7 @@ function Walk({ bridge, client, computerReadiness, computerStatus, finish, isAcc
       await readinessRef.current?.waitForComputer(); if (slotRef.current !== claimed) return
       const already = await isAccountOnboarded?.() ?? false
       if (slotRef.current !== claimed) return
-      if (already) { await bridge.onboarding.setSeen(true); await dwell.wait(); if (slotRef.current === claimed) { finish(null, roleId); return } }
+      if (already) { await bridge.onboarding.setSeen(true); await dwell.wait(); if (slotRef.current === claimed) finish(null); return } // T28bb：return 恢复无条件（槽位变更时旧槽不再往下建孤儿 bot）
       if (createdRef.current?.accountSlot !== claimed) createdRef.current = null
       if (createdRef.current == null) {
         if (client == null) throw new Error('coordinator is unavailable')

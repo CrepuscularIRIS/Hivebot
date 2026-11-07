@@ -6,7 +6,7 @@
 import { expect, test } from 'playwright/test'
 import { existsSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { startSshServer } from '../../../sdk/tests/support/ssh-host.ts'
+import { startUiSshServer } from '../support/ssh-fixture.ts'
 import { sandboxHome, launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { PRESETS_PATCH, api, devState, evidenceOut, waitProductReady } from '../support/ui.ts'
@@ -15,11 +15,13 @@ const PATCH = `${PRESETS_PATCH}:${fakeOverlayPath()}`
 const EVIDENCE = evidenceOut('T11')
 
 test.describe('T11 ssh 远端工作区', () => {
+  // ssh 组合启动 40s+（私 sshd + SDK + Electron 壳）——d1-real-model 的 setTimeout 先例
+  test.setTimeout(300_000)
   test('⑤a 先红：经 #3 建 bot → 现状宿主 workspaces/<botId> 被 mkdir', { timeout: 300_000 }, async () => {
     const home = sandboxHome('T11-5a')
     const dataDir = join(home, 'data')
     mkdirSync(dataDir, { recursive: true })
-    const server = await startSshServer()
+    const server = await startUiSshServer(home)
     try {
       const rt = await launchSdkRuntime({
         patch: PATCH, dataDir,
@@ -32,7 +34,7 @@ test.describe('T11 ssh 远端工作区', () => {
       })
       const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff }, home })
       try {
-        await waitProductReady(shell.page)
+        await waitProductReady(shell.page, 150_000)
         // M1 #3 直调建 bot（createBots 的单 bot 形态；返回 sessionId）
         const created = await api<{ sessionId: string }>(shell.page, 'session/create', { request: {} })
         expect(created.ok, JSON.stringify(created.error)).toBe(true)

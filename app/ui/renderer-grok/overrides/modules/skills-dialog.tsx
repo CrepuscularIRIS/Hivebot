@@ -108,8 +108,8 @@ export function SkillsSection({ id, online }: { id: string; online: boolean }) {
       <SandButton data-action="skills-pick" leadingIcon="plus" onClick={() => { setOpen(true) }} shape="pill" size="sm" variant="secondary" disabled={!online}>
         Pick from your skills
       </SandButton>
-      {open && <SkillsDialog botId={id} onClose={() => { setOpen(false); setTick(tick + 1) }} onChanged={() => setTick(tick + 1)} />
-      {removeError !== null && <div role="alert" data-skills-remove-error>{removeError}</div>}}
+      {open && <SkillsDialog botId={id} onClose={() => { setOpen(false); setTick(tick + 1) }} onChanged={() => setTick(tick + 1)} />}
+      {removeError !== null && <div role="alert" data-skills-remove-error>{removeError}</div>}
     </>
   )
 }

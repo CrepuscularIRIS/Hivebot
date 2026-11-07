@@ -1148,3 +1148,4 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 合并后回测：unit grok-shim+fold **211 passed**；e2e onboarding+bots+kickstart **17 passed**
 - T26 全链：主 agent 补开单（经理立项超时）→A 段→review（HIGH gate 架空+3M）→修复→终验返修 T26b（4 条）→修复→合并验收（变异 V-c 抽验 2/2 红）→合并
 - 已记 T32（不阻塞）：引导期间侧栏未盖/create 版式散
+- 14:03 哨兵：load 24 暂测试。T28 review 3M 修复闭环（7c22aadb），终验中。

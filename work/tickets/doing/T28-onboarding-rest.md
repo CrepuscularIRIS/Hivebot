@@ -5,6 +5,7 @@
 > 分支 / 作业目录：feat/T28 @ /tmp/bot-wt/T28（从 docs/rebuild-p6-p5-plan @ c4e73b9d 起）
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T28（施工开始时填：日期、起点 SHA）
 > accepted：（经理验收通过时填）
+> 验收 1：2026-11-07 @7c22aadb **返修** → T28c（见 receipts/review-T28.md 末「经理核实」）
 
 ## 目标
 首次启动的引导走 0.79.3 的步骤序列：`landing → meet → computer-demo → jobs → role → attribution → connect → hand-off`，三页的文案和交互 1:1，走完后 hand-off 自动建主 bot（带角色上下文）并按 T26 的延后规则做介绍。

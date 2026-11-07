@@ -5,7 +5,7 @@
 // （目录建好），renderer 传入即拒——缺省 cwd 继承 SDK runtime 启动目录会让初始工作区
 // 覆盖仓库/SDK 目录（R4 §4 纠偏）；header.cwd 不可变，事后无法缩小。
 import { randomUUID } from 'node:crypto'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { normalizedConnectors, presetIdOf } from './preset-id'
@@ -77,11 +77,45 @@ function resolveDataDir(opts: GateOptions): string | undefined {
   return fromEnv !== undefined && fromEnv !== '' ? fromEnv : undefined
 }
 
-/** mint botId 并建好 <dataDir>/workspaces/<botId>；失败 → pbots/storage（不调 dsh）。 */
+/**
+ * ssh 模式信息（T11/D5）：Electron main 只连不启 SDK——启动器经 handoff 目录
+ * （PBOTS_DSH_HANDOFF）传递 ssh-mode/remote-root（start.ts handoff 插件写，
+ * 0600）。无该文件=本机模式，mintWorkspace 走原路径。
+ */
+function sshRemoteRoot(): string | undefined {
+  const handoff = process.env.PBOTS_DSH_HANDOFF
+  if (!handoff) return undefined
+  try {
+    if (!existsSync(join(handoff, 'ssh-mode'))) return undefined
+    return readFileSync(join(handoff, 'remote-root'), 'utf8').trim() || undefined
+  } catch {
+    return undefined // 读失败按本机处理（fail 到原路径的 mkdir 会给出可见错误）
+  }
+}
+
+/**
+ * mint botId 并建工作区。本机：建 <dataDir>/workspaces/<botId>（原路径，逐字不变）。
+ * ssh（T11）：经 SDK 的 p2sdk/workspace_ensure RPC 在远端建
+ * <remoteRoot>/workspaces/<botId>（词法校验+canonical 回传——P2 收口）；
+ * RPC 未挂载（ssh-mode 缺失而 remoteRoot 在等怪态）→ pbots/storage 错误。
+ */
 async function mintWorkspace(
   dataDir: string,
+  callSdk?: (method: string, request: object) => Promise<unknown>,
 ): Promise<{ ok: true; botId: string; workspace: string } | { ok: false; error: { code: string; message: string } }> {
   const botId = mintBotId()
+  const remoteRoot = sshRemoteRoot()
+  if (remoteRoot !== undefined) {
+    if (callSdk === undefined) {
+      return { ok: false, error: { code: 'pbots/storage', message: `ssh mode (remoteRoot ${remoteRoot}) but no SDK call channel for workspace_ensure` } }
+    }
+    try {
+      const r = (await callSdk('p2sdk/workspace_ensure', { botId })) as { path: string; canonical: string }
+      return { ok: true, botId, workspace: r.canonical }
+    } catch (error) {
+      return { ok: false, error: { code: 'pbots/storage', message: `remote workspace_ensure failed for bot ${botId}: ${String(error)}` } }
+    }
+  }
   const workspace = join(dataDir, 'workspaces', botId)
   try {
     await mkdir(workspace, { recursive: true })
@@ -140,7 +174,7 @@ export async function createBotWithConnectors(
   if (dataDir === undefined) {
     return { ok: false, error: { code: 'pbots/unavailable', message: 'workspace data dir unresolved (no dataDir option and PBOTS_DATA_DIR unset)', details: {} } }
   }
-  const ws = await mintWorkspace(dataDir)
+  const ws = await mintWorkspace(dataDir, (m, r) => dsh.rpc(m, r).then((x) => (x.ok ? x.value : Promise.reject(new Error(String(x.error?.message ?? x.error))))))
   if (!ws.ok) return { ok: false, error: { ...ws.error, details: {} } }
 
   // 2 缺省 agentPreset 唯一显式解析（§8-2）：未过滤 #1 的 defaultId；同一值贯穿
@@ -216,7 +250,7 @@ export async function createSessionForcedWorkspace(
   if (dataDir === undefined) {
     return { ok: false, error: { code: 'pbots/unavailable', message: 'workspace data dir unresolved (no dataDir option and PBOTS_DATA_DIR unset)', details: {} } }
   }
-  const ws = await mintWorkspace(dataDir)
+  const ws = await mintWorkspace(dataDir, (m, r) => dsh.rpc(m, r).then((x) => (x.ok ? x.value : Promise.reject(new Error(String(x.error?.message ?? x.error))))))
   if (!ws.ok) return { ok: false, error: { ...ws.error, details: {} } }
   // typert wire {request:…} 壳（同 #4，U-15 联调口径）。
   return dsh.rpc('session/create', {
@@ -346,7 +380,7 @@ export async function createWorkerBot(
   if (dataDir === undefined) {
     return { ok: false, error: { code: 'pbots/unavailable', message: 'workspace data dir unresolved (no dataDir option and PBOTS_DATA_DIR unset)', details: {} } }
   }
-  const ws = await mintWorkspace(dataDir)
+  const ws = await mintWorkspace(dataDir, (m, r) => dsh.rpc(m, r).then((x) => (x.ok ? x.value : Promise.reject(new Error(String(x.error?.message ?? x.error))))))
   if (!ws.ok) return { ok: false, error: { ...ws.error, details: {} } }
 
   // 3 createdBy 先于会话落盘（CONTRACT §3.1；验收 ①：写失败 → 0 次 dsh 调用）。

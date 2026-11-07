@@ -413,7 +413,9 @@ export function writeRuntimePatch(cfg: StartConfig): string {
     - id: p2sdk-handoff
       name: ${yamlScalar(fileUrl(join(PKG_ROOT, 'profile', 'plugins', 'handoff.mjs')))}
       config:
-        dir: ${yamlScalar(cfg.handoff)}
+        dir: ${yamlScalar(cfg.handoff)}${cfg.ssh !== undefined ? `
+        sshMode: 'ssh'
+        remoteRoot: ${yamlScalar(cfg.ssh.remoteRoot)}` : ''}
 `)
   if (cfg.ssh === undefined) {
     // 本机模式：行为与改前逐字相同（T9a 验收 2-② 钉住）

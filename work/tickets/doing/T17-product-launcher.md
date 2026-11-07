@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：`work/product-launcher/DESIGN-launcher.md` §2–§3（用户目标：本机日常使用；当前唯一阻塞 = 没有生产启动入口）
 > 分支 / 作业目录：feat/T17 @ /tmp/bot-wt/T17
-> claimed：
+> claimed：2026-11-06 23:5x main (GLM 5.3) @ 集成分支（bash 脚本，无新依赖）
 > accepted：
 
 ## 目标

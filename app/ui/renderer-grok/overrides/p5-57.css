@@ -195,9 +195,17 @@ dialog.pb-dialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh
 .pb-name-input { border: 1px solid var(--sand-border, #1c1c1c2e); border-radius: 9px; padding: 8px 12px; }
 .pb-name-input:focus { border-color: var(--sand-text-secondary, #1c1c1cad); outline: none; }
 
-/* T30c：#3 名字框压全局 focus 圈（box-shadow+outline 双保险）；#4 暗 Create 可读（白底黑字 pill——ref）；
-   #5 暗分隔线用带暗值的 token */
+/* T30c：名字框压全局 focus 圈（box-shadow+outline 双保险） */
 .pb-name-input:focus, .pb-name-input:focus-visible { box-shadow: none !important; outline: none !important; border-color: var(--sand-text-secondary, #1c1c1cad) !important; }
-.pb-dialog__head { border-bottom: 1px solid var(--cursor-line, var(--sand-border, #1c1c1c2e)); }
-.pb-dialog__actions { border-top: 1px solid var(--cursor-line, var(--sand-border, #1c1c1c2e)); }
-[data-theme="cursor-dark"] .pb-dialog__actions [data-action="create-bot"]:not([disabled]) { background: #ffffff; color: #1c1c1c; border-color: #ffffff; }
+/* T30d #2：暗分隔线——--cursor-line/--sand-border 在此上下文均未定义（探针 UNDEF），暗色给显式亮线 */
+.pb-dialog__head { border-bottom: 1px solid #1c1c1c2e; }
+.pb-dialog__actions { border-top: 1px solid #1c1c1c2e; }
+[data-theme="cursor-dark"] .pb-dialog__head { border-bottom-color: #ffffff2e; }
+[data-theme="cursor-dark"] .pb-dialog__actions { border-top-color: #ffffff2e; }
+/* T30d #1：暗 Create 白底黑字（探针：SandButton primary 原子类赢过 T30c 规则——!important 提权；
+   仅对话框内此钮，不动全局 primary token） */
+[data-theme="cursor-dark"] .pb-dialog__actions [data-action="create-bot"]:not([disabled]) { background: #ffffff !important; color: #1c1c1c !important; border-color: #ffffff !important; }
+
+/* T30d #3：贴纸边双层 token（ref light=白 3px+灰 1px；ref dark 实测=浅灰环 48-78 on bg31） */
+.pb-character { --pb-sticker-gray: #1c1c1c59; --pb-sticker-surface: #ffffff; }
+[data-theme="cursor-dark"] .pb-character { --pb-sticker-gray: #565656; --pb-sticker-surface: #1f1f1f; }

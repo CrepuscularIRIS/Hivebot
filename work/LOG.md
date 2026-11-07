@@ -1065,3 +1065,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 22:3x Q-030 执行：feat/T7b 功能版合并落地（紧急修 JSX 括号 build 炸——三轮终验都没跑过 build 的旧账）；回测 114+2 绿。T13 用户定调确认（本地全能力+体验 1-2 天后再远程）
 - 22:4x T7bd 紧急修落地：SandIconButton 导入（先红 2 failed→修后 2 passed 6.9s）。经理发现合并版对话框运行时炸（esbuild 不查类型）；我 22:3x 的回测记录与经理实测矛盾待查（可能跑了旧产物）——以本轮 HEAD 先红为准
 - 22:5x T11 ⑤c：PATCH 补 orchestration.yml 后工具面在；worker 仍未建（新增=[]）——下窗口按 fake 轮数/orch-channel/dataDir 三向排查
+- 22:6x T11 ⑤c 定性：create_bot 不在工具面（17 工具无它；orchestration.yml 已挂）——注册条件待读（connector/config）

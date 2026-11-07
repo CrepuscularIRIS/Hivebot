@@ -5,8 +5,8 @@
 > 分支 / 作业目录：feat/T30 @ /tmp/bot-wt/T30，起点 = docs/rebuild-p6-p5-plan 21f6127c（已含 T24/T24b、T25、T26、T28 合并）
 > 排期：现在开。与 T28b / T32 不同文件；与 T31 的关系见下面「对计划的更正」
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T30
-> accepted：
-> 失败计数：0
+> accepted：（2026-11-07 终验 @06c331e3 不通过 → 返修单 `open/T30b-create-dialog-0793-fix.md`）
+> 失败计数：1
 
 ## 目标
 新建对话框和 0.79.3 默认版长得一样：标题「Create New Bot」，上面是大吉祥物，接着是名字框，再下面是形状和颜色。我们自己的 preset / 连接器 / 模型收进默认折叠的「More options」。不填名字不能建。建好以后侧栏显示这个名字，bot 自我介绍时也知道自己叫什么。

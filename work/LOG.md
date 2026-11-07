@@ -1073,3 +1073,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 23:3x T11 ⑤c 破案：mainBotId mismatch（boot 主 bot vs 自建）——修=用 devState.meta.mainBotId（workspaces.spec 先例）
 - 23:4x T11 ⑤c 绿（worker 落远端/宿主空）——⑤a⑤b⑤c 三连绿；剩 ⑤d/⑥+T7a 拒+终验
 - 23:5x T7d 开工：wrapper binds 派生 skill 根 ro-bind（直测铁证：写拒/读通）+ mintWorkspace 预建；远端侧等 T11 合并。产品启动器设计进行中（Opus）
+- 00:1x T17 启动器脚本落地（bash -n+exec ok）；六格 e2e 测试面下窗口。Q-031=B 已存档

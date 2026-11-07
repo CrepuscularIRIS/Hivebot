@@ -3,8 +3,8 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T9b4 终验不通过（第 1 次，@ d0d19883）；receipts/T9b4.md「## 终验（经理）」
 > 分支 / 作业目录：feat/T9b4 @ /tmp/bot-wt/T9b4（同分支续提交）
-> claimed：
-> accepted：
+> claimed：2026-11-06 19:2x main (GLM 5.3) @ /tmp/bot-wt/T9b4
+> accepted：2026-11-06 3a352b9e（manager 任务 B 终验通过；receipts/T9b4.md「## 终验 2（经理）」）
 
 ## 目标
 让 ⓐ 真能抓到「释放后轮询仍在跑、60s 后 exit(86)」——C1 的第一条路径。现在 ⓐ 在旧 HEAD、在「去掉 clearTimeout + poll 入口 disposed 判断」的变异下都绿，是空格。产品代码 T9b4 已对，本单只改测试。

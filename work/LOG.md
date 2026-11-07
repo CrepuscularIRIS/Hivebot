@@ -1079,3 +1079,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 01:2x T11 ⑤d 绿（六坏形拒+无逃逸）；ssh-product 5 全绿。剩 ⑥+T7a 拒+回归。load 15-18（用户游戏+训练在跑）——轻量 spec 窗口可用
 - 01:4x T11 ⑥ 绿（guard deny 形态——初版 tool/result 形态 pre-execute 不认是根因；T11DBG6 dump 铁证）；ssh-product 6 全绿+单测 76。T11 剩 T7a ssh 拒+ui e2e 回归+终验
 - 02:0x T17 六格全绿（52.7s 含真模型）：②双开同锁根因修、⑥boot 主 bot+优雅关窗。待 M1-M4 变异+回执+终验——用户即可开始体验
+- 02:3x T17 变异落定：M1/M3/M4 红（铁证在案）、M2 不咬合如实记；还原后全文件 5 绿（51.4s）。回执+终验下窗口

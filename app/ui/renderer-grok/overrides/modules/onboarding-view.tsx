@@ -13,7 +13,7 @@ import { createCoordinatorOnboardingReadiness, type OnboardingComputerReadiness,
 import { SceneCast, SignedInOnboardingStep } from '../../frontend/src/recovered/features/onboarding/signed-in/view'
 import { scenePlacements } from '../../frontend/src/recovered/features/onboarding/signed-in/scene'
 import { AttributionStep, ConnectStep, RoleStep } from './onboarding-steps-0793'
-import { ATTRIBUTION, creatorContext, HANDOFF_DEFAULTS, next, prev, shuffle, type WalkStep } from './onboarding-walk'
+import { ATTRIBUTION, creatorContext, HANDOFF_DEFAULTS, next, prev, roleUseCaseBots, shuffle, type WalkStep } from './onboarding-walk'
 
 /** view.tsx:31 同形（上游私有常量不导出——本地复制）。 */
 const EMPTY_COMPUTER: OnboardingComputerSnapshot = { isComputerReady: false, computerState: null, pullPercent: null }
@@ -47,12 +47,12 @@ function Landing({ onStart, onSkip, bridge }: { onStart(): void; onSkip(): void;
 }
 
 /** T26：onboarding 结束（完成或 skip）后重载 roster——首启未建 main bot，seen 落盘后补建。 */
-const devCall = (fn: 'reloadRoster' | 'finishKickstart'): void => {
-  const dev = (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void>; finishKickstart?(): Promise<void> } }).__pbotsDev
-  void dev?.[fn]?.()
+const devCall = (fn: 'reloadRoster' | 'finishKickstart', sid?: string): Promise<void> => {
+  const dev = (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void>; finishKickstart?(sid?: string): Promise<void> } }).__pbotsDev
+  return dev?.[fn]?.(sid) ?? Promise.resolve()
 }
-const reloadRoster = (): void => devCall('reloadRoster')
-const finishKickstart = (): void => devCall('finishKickstart')
+const reloadRoster = (): Promise<void> => devCall('reloadRoster')
+const finishKickstart = (sid?: string): Promise<void> => devCall('finishKickstart', sid)
 
 export function SignedInOnboarding(props: Props) {
   const [started, setStarted] = useState(() => {
@@ -62,10 +62,26 @@ export function SignedInOnboarding(props: Props) {
     try { window.sessionStorage.setItem('pbots.shim.onboarding-started', '1') } catch { /* 会话级而已 */ }
     setStarted(true)
   }
-  // review M：skip/完成都走这里——seen 已落，退引导 + 补建 main bot（首启未建）
-  const finish = (agentId: string | null): void => {
-    reloadRoster()
-    if (agentId !== null) finishKickstart() // T26b #4：走完引导（建了 bot）才发延后介绍；skip 不发
+  // review M：skip/完成都走这里——seen 已落，退引导 + 补建 main bot（首启未建）。
+  // T28b：先发 roster 刷新拿住 promise（防整体替换冲掉后面建的模板 bot），同步进主界面
+  //（不等模板 bot）；之后后台串行：reload 完 → 主 bot 介绍 → 模板 bot 逐个建+介绍。
+  // ponytail: 失败只 console.warn（0.79.3 的 fail 用户也看不到——进主界面后的呈现面另做）。
+  const finish = (agentId: string | null, roleId: string | null = null): void => {
+    const reloaded = reloadRoster()
+    if (agentId !== null) {
+      void reloaded
+        .then(() => finishKickstart(agentId))
+        .then(async () => {
+          for (const req of roleUseCaseBots(roleId)) {
+            const r = await props.client?.call('createAgent', req)
+            const candidate = r != null && typeof r === 'object' && 'agent' in r ? (r as { agent: unknown }).agent : r
+            const id = candidate != null && typeof candidate === 'object' && 'id' in candidate && typeof (candidate as { id: unknown }).id === 'string' ? (candidate as { id: string }).id : null
+            if (id == null) throw new Error('createAgent returned a malformed agent reply')
+            await finishKickstart(id)
+          }
+        })
+        .catch((err) => console.warn('[onboarding] role-use-case-bots', err))
+    }
     props.onComplete(agentId)
   }
   if (!started) return <Landing onStart={start} onSkip={() => finish(null)} bridge={props.bridge} />
@@ -78,7 +94,7 @@ type Step = WalkStep | 'hand-off'
  * connect 前进即 hand-off 自动建主 bot（0.79.3：用户不起名不挑形象，role 进 creatorContext）。 */
 function Walk({ bridge, client, computerReadiness, computerStatus, finish, isAccountOnboarded, slot }: {
   bridge: Props['bridge']; client: Props['client']; computerReadiness?: OnboardingComputerReadiness; computerStatus?: OnboardingComputerStatusSource
-  finish(agentId: string | null): void; isAccountOnboarded?: () => Promise<boolean>; slot: string
+  finish(agentId: string | null, roleId?: string | null): void; isAccountOnboarded?: () => Promise<boolean>; slot: string
 }) {
   const [step, setStep] = useState<Step>('meet')
   const [roleId, setRoleId] = useState<string | null>(null)
@@ -130,7 +146,7 @@ function Walk({ bridge, client, computerReadiness, computerStatus, finish, isAcc
       await readinessRef.current?.waitForComputer(); if (slotRef.current !== claimed) return
       const already = await isAccountOnboarded?.() ?? false
       if (slotRef.current !== claimed) return
-      if (already) { await bridge.onboarding.setSeen(true); await dwell.wait(); if (slotRef.current === claimed) finish(null); return }
+      if (already) { await bridge.onboarding.setSeen(true); await dwell.wait(); if (slotRef.current === claimed) { finish(null, roleId); return } }
       if (createdRef.current?.accountSlot !== claimed) createdRef.current = null
       if (createdRef.current == null) {
         if (client == null) throw new Error('coordinator is unavailable')
@@ -148,7 +164,7 @@ function Walk({ bridge, client, computerReadiness, computerStatus, finish, isAcc
       const agentId = createdRef.current.agentId
       await bridge.onboarding.setSeen(true)
       await dwell.wait()
-      if (slotRef.current === claimed) finish(agentId)
+      if (slotRef.current === claimed) finish(agentId, roleId)
     } catch (reason) { if (slotRef.current === claimed) setError(reason instanceof Error ? reason.message : String(reason)) } finally { creatingRef.current = false }
   }
 

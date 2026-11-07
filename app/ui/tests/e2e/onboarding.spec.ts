@@ -3,7 +3,7 @@
 import { expect, test, type Page } from 'playwright/test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { launchProduct } from '../support/ui.ts'
+import { devState, launchProduct } from '../support/ui.ts'
 
 const seen = (page: Page) => page.evaluate(() => window.localStorage.getItem('pbots.shim.onboarding-seen'))
 
@@ -125,12 +125,30 @@ test('④ 六步走完：Get started → Next 到 create → 填名建 bot → h
     try { req = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { /* 可能整个不存在 */ }
     expect(req, 'walk 内不发介绍（延后到 seen 落盘后）').not.toContain('bot_introduction_request')
     await page.waitForTimeout(2500)
-    // hand-off 自动建主 bot（默认名/形象+creatorContext）：恰 1 bot
-    await expect(page.locator('.sand-agent-item')).toHaveCount(1, { timeout: 30_000 })
-    // hand-off 后介绍发出，且 creatorContext（role=engineering）进了模型请求
-    await expect.poll(async () => { try { return readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { return '' } }, { timeout: 45_000 }).toContain('bot_introduction_request')
+    // hand-off 自动建主 bot + 2 个模板 bot（T28b：engineering 前 2）——后台串行建，轮询等到恰 3
+    await expect(page.locator('.sand-agent-item')).toHaveCount(3, { timeout: 45_000 })
+    const sidebarText = await page.locator('.sand-agents-sidebar').innerText()
+    expect(sidebarText).toContain('Bug Reproduction')
+    expect(sidebarText).toContain('Product Performance')
+    // order 前三 = 主 bot + 两个模板 bot；mainBotId = 主 bot（标题空——不是模板名）
+    const st = await devState(page)
+    expect(st.order).toHaveLength(3)
+    expect(st.meta.mainBotId).toBe(st.order[0])
+    expect(st.meta.mainBotId).not.toBe(st.order[1])
+    // T28b review NOTE：order[1]/[2] 对应两个模板——侧栏行序断（第 2/3 行各含一个模板名）
+    const rowTexts = await page.locator('.sand-agent-item').allInnerTexts()
+    expect(rowTexts[2], '主 bot 行（新 bot 置顶——主在后）').toContain('New chat')
+    expect(rowTexts[0]).toMatch(/Bug Reproduction|Product Performance/)
+    expect(rowTexts[1]).toMatch(/Bug Reproduction|Product Performance/)
+    expect(rowTexts[0]).not.toBe(rowTexts[1])
+    // hand-off 后介绍发出（主 bot+2 模板 bot 各一条，≥3 次），creatorContext/模板名都在
+    await expect.poll(async () => { try { return readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { return '' } }, { timeout: 60_000 }).toContain('bot_introduction_request')
+    await expect.poll(async () => { try { return readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { return '' } }, { timeout: 45_000 }).toContain('Your name is Bug Reproduction.')
     const finalReq = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8')
     expect(finalReq, 'role 设定句进模型请求').toContain('The user primarily works in Engineering')
+    expect(finalReq).toContain('Your name is Product Performance.')
+    expect(finalReq).toContain('Repros the bug in staging and drops a pack with steps and screenshots The user primarily works in Engineering')
+    expect(finalReq.match(/bot_introduction_request/g)?.length ?? 0).toBeGreaterThanOrEqual(3)
   } finally {
     await env.stop()
   }
@@ -170,5 +188,6 @@ test('⑥ 全 Skip：landing Skip 不建也不介绍；走 walk 全 Skip 也建�
     // creatorContext 空（没选 role）→ 请求里无设定句
     await expect.poll(async () => { try { return readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { return '' } }, { timeout: 45_000 }).toContain('bot_introduction_request')
     expect(readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8')).not.toContain('primarily works in')
+    expect(readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8'), 'T28b review NOTE：全 Skip 不建模板').not.toContain('Your name is')
   } finally { await env.stop() }
 })

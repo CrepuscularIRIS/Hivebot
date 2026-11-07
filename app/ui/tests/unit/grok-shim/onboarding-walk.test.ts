@@ -72,3 +72,31 @@ describe('T28c 补格（工单验收 1 明文项）', () => {
     expect(input).toEqual(ATTRIBUTION.choices.map((c) => c.id)) // 未改
   })
 })
+
+describe('T28b roleUseCaseBots', () => {
+  const extract = JSON.parse(readFileSync(join(import.meta.dirname ?? '.', '../../../../..', 'work/grok-0.79.3-re/onboarding-0793-extract.json'), 'utf8')) as { templates: Array<{ id: string; role: string; name: string; description: string }> }
+  it('⑦a TEMPLATES 与 extract 42 条逐条全等（顺序一致）', async () => {
+    const { TEMPLATES } = await import('../../../renderer-grok/overrides/modules/onboarding-templates-0793')
+    expect(TEMPLATES.map((t) => ({ id: t.id, role: t.role, name: t.name, description: t.description }))).toEqual(extract.templates.map((t) => ({ id: t.id, role: t.role, name: t.name, description: t.description })))
+  })
+  it("⑦b roleUseCaseBots('engineering') 两条完整请求体（description 逐字含 creatorContext）", async () => {
+    const { roleUseCaseBots } = await import('../../../renderer-grok/overrides/modules/onboarding-walk')
+    const rs = roleUseCaseBots('engineering')
+    expect(rs).toHaveLength(2)
+    expect(rs[0]).toEqual({ origin: 'user', isKickstartRequested: true, isAutomatic: true, templateId: 'bug-reproduction', name: 'Bug Reproduction', description: 'Repros the bug in staging and drops a pack with steps and screenshots The user primarily works in Engineering — tailor suggestions and work to that area.' })
+    expect(rs[1]!.name).toBe('Product Performance')
+  })
+  it('⑦c 9 role 各 2 条=extract 前 2；18 个 templateId 互异；null→[]', async () => {
+    const { roleUseCaseBots, ROLE } = await import('../../../renderer-grok/overrides/modules/onboarding-walk')
+    const all: string[] = []
+    for (const r of ROLE.choices) {
+      const rs = roleUseCaseBots(r.id)
+      expect(rs, r.id).toHaveLength(2)
+      const first2 = extract.templates.filter((t) => t.role === r.id).slice(0, 2).map((t) => t.id)
+      expect(rs.map((x) => x.templateId), r.id).toEqual(first2)
+      all.push(...rs.map((x) => x.templateId))
+    }
+    expect(new Set(all).size).toBe(18)
+    expect(roleUseCaseBots(null)).toEqual([])
+  })
+})

@@ -2,7 +2,7 @@
 // 数据全走 pbotsUi.skills（T7a 的 main 侧 API）；renderer 不碰文件。文案取 0.78.1 en 键
 // （76J7mZ/ggmjet/WnW32b，ref/skills-ref-notes.md）。
 import { useEffect, useState } from 'react'
-import { SandButton, SandIcon } from '../../frontend/src/recovered/ui/sand-kit-primitives'
+import { SandButton, SandIconButton, SandIcon } from '../../frontend/src/recovered/ui/sand-kit-primitives'
 import { ui, type SkillsApiResult } from './pbots-ui'
 
 export interface SkillEntry { name: string; description?: string }

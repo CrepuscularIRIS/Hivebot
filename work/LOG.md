@@ -1051,3 +1051,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 20:0x T11 main 面：handoff ssh-mode/remote-root 字段（插件+start 行）+ mintWorkspace 分支（RPC+canonical）；m3+skills 114 绿。剩 ui e2e 面
 - 20:1x T11 ⑤a spec 骨架落地；卡点=跨包 .ts 夹具 import（CJS 加载炸 import.meta）——下窗口内联精简夹具进 ui 侧
 - 20:3x T11 ⑤a 夹具通、启动通；卡点=ssh 模式 boot 主 bot 建不出（侧栏空）——boot 链 cwd 在 ssh 下不通，下窗口定位（这也是 T11 的核心集成场景本身）
+- 20:4x T11 boot 链定位（renderer 首帧→#3→mintWorkspace 分支→RPC→远端 cwd）；侧栏空=链中某步失败，下窗口抓 session/create 错误详情（rpc 名/mkdir/cwd 三疑点）

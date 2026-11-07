@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T30b 终验（feat/T30 HEAD 9fd43f2b）不通过。T30 累计失败 2 次，按任务 C 重规划，不换名、不重置计数
 > 分支 / 作业目录：继续 feat/T30 @ /tmp/bot-wt/T30
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T30 续修
 > accepted：
 
 ## 重规划结论（根因）

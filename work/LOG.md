@@ -1063,3 +1063,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 22:1x T11 ⑤b 绿（provision 位置=home/data 破案：门没开卡审批）；⑤a⑤b 双绿
 - 22:1x T11 回执前半（SDK 三坑/main 分支/⑤a⑤b 破案链）落盘；load 10.9 来自用户环境（playwright-mcp 常驻+编辑器），非我方测试——⑤c 等 load 回落
 - 22:3x Q-030 执行：feat/T7b 功能版合并落地（紧急修 JSX 括号 build 炸——三轮终验都没跑过 build 的旧账）；回测 114+2 绿。T13 用户定调确认（本地全能力+体验 1-2 天后再远程）
+- 22:4x T7bd 紧急修落地：SandIconButton 导入（先红 2 failed→修后 2 passed 6.9s）。经理发现合并版对话框运行时炸（esbuild 不查类型）；我 22:3x 的回测记录与经理实测矛盾待查（可能跑了旧产物）——以本轮 HEAD 先红为准

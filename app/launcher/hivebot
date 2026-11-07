@@ -68,10 +68,16 @@ if [ -z "${P2SDK_PROVIDER:-}" ]; then
     [ "$(stat -c %u "$ENV_FILE")" = "$(id -u)" ] || die "env 文件属主不是当前用户: $ENV_FILE"
     perm="$(stat -c %a "$ENV_FILE")"
     [ "$((8#"$perm" & 8#077))" -eq 0 ] || die "env 文件权限过宽（$perm）: chmod 600 $ENV_FILE"
-    while IFS='=' read -r k v; do
+    while IFS='=' read -r k v || [ -n "$k" ]; do
       case "$k" in
         P2SDK_LLM_API_KEY|P2SDK_LLM_BASE_URL|P2SDK_LLM_MODEL|P2SDK_MARKET_INDEXES)
-          [ -z "${!k:-}" ] && export "$k=$v" ;;
+          [ -z "${!k:-}" ] || continue
+          # 成对首尾引号剥离（"v"/'v'）——按首尾字符判，case 引号形态脆
+          v0=${v%"${v#?}"}; vL=${v#"${v%?}"}
+          if [ "$v0" = "$vL" ] && { [ "$v0" = '"' ] || [ "$v0" = "'" ]; } && [ ${#v} -ge 2 ]; then
+            v=${v#?}; v=${v%?}
+          fi
+          export "$k=$v" ;;
       esac
     done < "$ENV_FILE"
   fi
@@ -86,7 +92,7 @@ export P2SDK_HANDOFF="$HANDOFF" P2SDK_PORT=0
 SDK_PID=""
 DSH_PID=""
 cleanup() {
-  local rc=$?
+  local rc="${CLEANUP_RC:-$?}"
   trap - EXIT INT TERM HUP
   [ -n "${UI_PID:-}" ] && kill -TERM "$UI_PID" 2>/dev/null
   if [ -n "$SDK_PID" ] && kill -0 "$SDK_PID" 2>/dev/null; then
@@ -102,7 +108,6 @@ cleanup() {
   case "${HANDOFF:-}" in
     "$TMPDIR"/p2sdk-handoff-*|/tmp/p2sdk-handoff-*) rm -rf "$HANDOFF" ;;
   esac
-  echo "T17LAUNCH cleanup-done ui=${UI_PID:-} sdk=$SDK_PID dsh=$DSH_PID rc=$rc" >&2
   exit "$rc"
 }
 trap cleanup EXIT
@@ -138,10 +143,17 @@ UI_PID=$!
 
 # ── 6 等（UI 或 SDK 任一退出）──
 set +e
-wait -n "$UI_PID" "$SDK_PID"
-RC=$?
-kill -0 "$UI_PID" 2>/dev/null || RC=$RC
+wait -n "$UI_PID" "$SDK_PID" 2>/dev/null
+if kill -0 "$UI_PID" 2>/dev/null; then
+  # SDK 先退：TERM UI（优雅）限界 10s → 清理 → exit 1
+  kill -TERM "$UI_PID" 2>/dev/null
+  for _ in $(seq 1 20); do kill -0 "$UI_PID" 2>/dev/null || break; sleep 0.5; done
+  kill -0 "$UI_PID" 2>/dev/null && kill -KILL "$UI_PID" 2>/dev/null
+  wait "$UI_PID" 2>/dev/null
+  CLEANUP_RC=1 cleanup
+  exit 1
+fi
 wait "$UI_PID" 2>/dev/null
 UI_RC=$?
-cleanup
-exit $([ "$UI_RC" -ne 0 ] && echo "$UI_RC" || echo "$RC")
+CLEANUP_RC="$UI_RC" cleanup
+exit "$UI_RC"

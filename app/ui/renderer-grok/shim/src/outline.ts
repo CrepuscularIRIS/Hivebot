@@ -7,7 +7,7 @@
 // 一律 assistant-text）；thinking 即 reasoning（无 from 字段）；tool 三态 running|done|failed。
 // ponytail: 只覆盖当前已载入窗口（view.items），更早分页不进 outline——需要全量时按
 // outline agent 单独取（升级路径：复用 view.items 的 hasMore 游标翻页）。
-import { toolSummary } from './entries'
+import { isKickstartEntry, toolSummary } from './entries'
 
 export interface OutlineToolStatus { readonly status: 'pending' | 'failed' | 'done'; readonly summary?: string }
 
@@ -25,6 +25,7 @@ export interface ViewLikeItem {
   readonly kind: string
   readonly id: string
   readonly text?: string
+  readonly rpcId?: string
   readonly name?: string
   readonly status?: string
   readonly args?: string
@@ -45,6 +46,8 @@ export function toOutlineItems(out: ViewLikeOutput): OutlineItem[] {
   for (const e of out.items) {
     switch (e.kind) {
       case 'user':
+        // T25：kickstart 提示不进 outline——「Full conversation」从 bot 的介绍开始（0.79.3 客户端无此条）
+        if (isKickstartEntry(e.text, e.rpcId)) break
         items.push({ kind: 'user', id: e.id, text: e.text ?? '' })
         break
       case 'assistant':

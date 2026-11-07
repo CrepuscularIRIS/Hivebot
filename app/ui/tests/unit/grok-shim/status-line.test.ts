@@ -113,3 +113,27 @@ describe('T23 状态行 · 退场（h）', () => {
     expect(exitUntil(1000)).toBe(1140)
   })
 })
+
+describe('T23 review 补格', () => {
+  it('M1：初始即排 elapsed 首醒——nextWakeMs(begin(thinking,0),0,0)===60000；working 静默期取 5000 与 60000 的最小', () => {
+    const th = begin(thinking(), 0, T(0.1))
+    expect(nextWakeMs(th, 0, 0)).toBe(60000)
+    const wk = begin(tool('Task'), 0, T(0.2))
+    expect(nextWakeMs(wk, 0, 0)).toBe(5000) // 静默先醒；60000 已在候选但取最小
+    expect(nextWakeMs(wk, 6000, 0)).toBe(60000)
+  })
+  it('M2：A→B→A——thinking@0→Shell@100→thinking@200，t=800 仍显示 thinking 句（旧排队作废）', () => {
+    let s = begin(thinking(), 0, T(0.1))
+    s = step(s, tool('Shell'), 100, T(0.2))
+    s = step(s, thinking(), 200, T(0.9))
+    s = step(s, thinking(), 800, T(0.9))
+    expect(render(s, 800, 0).text).toBe('Thinking it through')
+  })
+  it('NOTE 咬合：working 揭示后长期不轮换（防「5s 轮换」回归）', () => {
+    let s = begin(tool('Task'), 0, T(0.2))
+    for (const now of [5000, 10000, 15000, 30000, 600000]) {
+      s = step(s, tool('Task'), now, T(0.9))
+      expect(render(s, now, 0).text).toBe('Making progress')
+    }
+  })
+})

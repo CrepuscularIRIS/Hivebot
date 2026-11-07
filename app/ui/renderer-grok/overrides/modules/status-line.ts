@@ -75,7 +75,8 @@ export function step(state: StatusState, activity: Activity, now: number, rand: 
     const next: StatusState = { activity: q.activity, textKind: textKindOf(q.activity), draw: rand(), shownAtMs: q.at, queued: null }
     return sameKind(next, activity) ? next : step(next, activity, now, rand)
   }
-  if (sameKind(state, activity)) return { ...state, activity }
+  // review M2：活动回到当前显示类 → 旧排队作废（A→B→A 时 B 不该再被展示）
+  if (sameKind(state, activity)) return { ...state, activity, queued: null }
   if (now - state.shownAtMs >= SWITCH_DEBOUNCE_MS) {
     return { activity, textKind: textKindOf(activity), draw: rand(), shownAtMs: now, queued: null }
   }
@@ -107,7 +108,10 @@ export function nextWakeMs(state: StatusState, now: number, visibleSince: number
   if (state.queued !== null && state.queued.at > now) candidates.push(state.queued.at)
   const quietUntil = visibleSince + quietMsOf(state.textKind)
   if (now < quietUntil && quietUntil > now) candidates.push(quietUntil)
-  if (now - state.shownAtMs >= ELAPSED_START_MS - 0) {
+  // review M1：elapsed 首次到达也要唤醒（未满 60s 时排 shownAt+60000，满后排下一整分钟）
+  const elapsedFirst = state.shownAtMs + ELAPSED_START_MS
+  if (elapsedFirst > now) candidates.push(elapsedFirst)
+  else {
     const nextMinute = state.shownAtMs + (Math.floor((now - state.shownAtMs) / ELAPSED_START_MS) + 1) * ELAPSED_START_MS
     if (nextMinute > now) candidates.push(nextMinute)
   }

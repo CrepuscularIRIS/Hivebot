@@ -37,6 +37,7 @@ function StatusLine() {
   const b = box.current
   const activity = normalizeActivity(activeAgent.activity)
   if (activeAgent.running) {
+    b.exitUntil = null // review M3：退场窗口内恢复运行 → 取消退场
     if (b.state === null) {
       b.state = begin(activity, now, Math.random)
       b.visibleSince = now
@@ -73,7 +74,7 @@ function StatusLine() {
     <div className="sand-status-line" data-role="assistant" data-activity={kind} data-exiting={b.exitUntil !== null || undefined}>
       <span className="sand-status-line__avatar"><AgentAvatar agentId={activeAgent.id ?? ''} color={activeAgent.avatarColor} shape={activeAgent.avatarShape} currentActivity={activeAgent.activity} isRunning size="sm" /></span>
       {out.text !== null ? <span className="sand-activity-label__text">{out.text}</span> : null}
-      {out.elapsed !== null ? <span className="sand-activity-elapsed">{out.elapsed}</span> : null}
+      {out.elapsed !== null ? <span className="sand-activity-elapsed">· {out.elapsed}</span> : null}
     </div>,
     scroller,
   )

@@ -1120,3 +1120,8 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 施工：13 形状（7 缺口：ws/Ts/ks 构造器复刻+Es/Os/Ds 字面量+Lc 算法）+11 色板+预览+localStorage 持久化+键名修复；unit 14 格、e2e ①-⑤、变异四刀、六态截图
 - Sol 审 2M+2L：clover 圆心误读（58 是半径非纵偏——轮廓 189×228≠228×228）、测试两缺口（颜色回落没对照/随机没证独立取值）→ 全修+补格；Black 渐变（0.18 全局行为，不越界不动）转 T30；布局 5/5/3 居中+色板 6+5 修
 - 教训：JSX 行内 // 注释吞闭合 > → build 失败跑旧 dist 的假绿（build 输出不可吞，已进回执与 LEARNINGS 口径）
+
+## 2026-11-07 · merge T24+T24b（经理复验通过后合并）
+- 合并冲突三处全解（回执双边/T24b rename 双路径/png 自动保留 docs 新版——分支 8 张旧图未盖掉）
+- 合并后定向回测：unit grok-shim+fold **211 passed**；e2e create-dialog-character+bots+grok-persona+market **14 passed**
+- T24b 教训：review 修复的 CSS 数值没算账（220<224 差 4px）+「5/5/3 ✓」写在回执却没人核图——排列断言现在常驻 ①；shot 脚本写主仓绝对路径致 worktree 图不更新（queue 提议⑦ 收口）

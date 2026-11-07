@@ -321,6 +321,8 @@ export const OnboardingCharacter = forwardRef<OnboardingCharacterHandle, Onboard
   const actionRef = useRef<"spin" | "bounce" | "burst" | null>(null);
   const resolvedColor = resolvePersonaColor(sourceId ?? "persona", color);
   const colors = COLORS[resolvedColor] ?? COLORS.black;
+    // T30：Black 预览按主题纯色（原 light→dark 渐变是 0.18 行为；surfaceTheme 未传回落亮色）
+    const isBlack = resolvedColor === "black";
   const motion = MOTION[state] ?? MOTION.idle;
   useImperativeHandle(ref, () => ({
     spin: () => { actionRef.current = "spin"; },
@@ -384,7 +386,7 @@ export const OnboardingCharacter = forwardRef<OnboardingCharacterHandle, Onboard
   const rootStyle: CSSProperties = { display: "block", height: sizePx, overflow: "visible", userSelect: "none", WebkitUserSelect: "none", width: sizePx };
   const eyeHeight = state === "sleeping" ? 2 : 7;
   return <svg aria-hidden="true" className={className} data-emphasis={emphasis || undefined} data-grok-state={state} data-paused={paused || undefined} data-pointer-shown={pointerShown || undefined} data-reduced-motion={reducedMotion() ? "true" : "false"} data-source-id={sourceId || undefined} height={sizePx} style={rootStyle} viewBox={VIEWBOX} width={sizePx} xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id={`${id}-ink`} x1="0" x2="1" y1="0" y2="1"><stop offset="0" stopColor={colors.light} /><stop offset="1" stopColor={colors.dark} /></linearGradient></defs>
+    <defs><linearGradient id={`${id}-ink`} x1="0" x2="1" y1="0" y2="1"><stop offset="0" stopColor={isBlack ? (surfaceTheme === "dark" ? "#FFFFFF" : "#000000") : colors.light} /><stop offset="1" stopColor={isBlack ? (surfaceTheme === "dark" ? "#FFFFFF" : "#000000") : colors.dark} /></linearGradient></defs>
     <g ref={faceRef} transform="translate(0 0)">
       <path d={personaShapePath(shape)} fill={`url(#${id}-ink)`} />
       <g ref={eyesRef} fill={background} transform="translate(0 0)">

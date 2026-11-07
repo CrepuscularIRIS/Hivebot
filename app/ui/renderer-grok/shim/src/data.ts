@@ -14,7 +14,7 @@ import { CarrierSocket, pageEnv } from '../../../renderer/carrier'
 import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../../../renderer/carrier/mux'
 import { initView, olderItemsOf, reduceFollow, type SessionView } from '../../../renderer/session/reduce'
 import { avatarOf, saveAvatar } from './avatars'
-import { askText, isKickstartEntry, KICKSTART_PROMPT, serialize, permissionEntry, type RawEntry } from './entries'
+import { askText, isKickstartEntry, kickstartPrompt, serialize, permissionEntry, type RawEntry } from './entries'
 import { toOutlineItems } from './outline'
 import { activityOf, toAgentRecord } from './agents'
 import type { CoordinatorDeps } from './coordinator'
@@ -534,9 +534,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         const name = typeof a.name === 'string' ? a.name : ''
         if (name !== '') await api('session/rename', { request: { sessionId: sid, title: name } })
         if (typeof a.avatarShape === 'string' && typeof a.avatarColor === 'string') saveAvatar(sid, { shape: a.avatarShape, color: a.avatarColor })
-        // review M：0.18 的 description 携带用户填的职责与日常工具（model.ts descriptionWithDailyTools）
-        // ——dsh session/create 无此槽，最小落地=并入介绍提示（开场自我介绍时知道自己的设定）
-        const desc = typeof a.description === 'string' && a.description !== '' ? ` Your setup: ${a.description}` : ''
+        // T30：setup 经 kickstartPrompt 进标签内（此前手拼在闭合标签后——提示会露出主聊天，:550 bug）
         summaries = { ...summaries, [sid]: { sessionId: sid, title: name !== '' ? name : null, preset: null, running: false, updatedAt: Date.now() } }
         order = [...order.filter((id) => id !== sid), sid]
         followed.add(sid)
@@ -547,7 +545,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         // T26b #4：介绍延后到 onboarding 结束（T25 工单:24/queue U5：等 markOnboardingSeen
         // 之后才发）——这里只登记，不发。pendingKickstart 由 desktop.setSeen 完成后经
         // finishKickstart 消费（onboarding-view 的 finish 链）。
-        pendingKickstart = { sid, prompt: `${KICKSTART_PROMPT}${desc}` }
+        pendingKickstart = { sid, prompt: kickstartPrompt({ setup: typeof a.description === 'string' ? a.description : undefined }) }
         push.agents()
         return recordOf(sid)
       }
@@ -602,6 +600,18 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       const sid = rec(res.value).sessionId
       if (!res.ok || typeof sid !== 'string') return { ok: false, message: res.error?.message ?? 'unknown error' } // D7：不入列表
       let notice: string | null = null
+      // T30：rename 在 selectModel/openFollow/kickstart 之前且 await（名字没存上就不往介绍写——
+      // 否则侧栏默认名、bot 自称另一个名字）；失败不挡建 bot（notice 同 L-7 O4 模式）。
+      const wantedName = req.name !== undefined ? req.name.trim() : ''
+      let renamed = false
+      if (wantedName !== '') {
+        const rn = await api('session/rename', { request: { sessionId: sid, title: wantedName } })
+        if (rn.ok) renamed = true
+        else {
+          const msg = `Bot created, but the name wasn't saved: ${rn.error?.message ?? ''}`
+          notice = notice === null ? msg : `${notice}\n${msg}`
+        }
+      }
       if (req.model !== undefined) {
         const sel = await ui.selectModel(sid, req.model.provider, req.model.model)
         if (!sel.ok) notice = `Bot created, but the model wasn't changed: ${sel.error?.message ?? ''}`
@@ -616,13 +626,13 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       }
       // 本地 preset 先记 p2temp 前缀未知：#4 的实际 preset id 由 follow header 给，#3 就是所选
       if (req.avatar !== undefined) saveAvatar(sid, req.avatar) // T24：形象（localStorage，丢不致命）
-      summaries = { ...summaries, [sid]: { sessionId: sid, title: null, preset: req.connectors.length > 0 ? null : req.preset, running: false, updatedAt: Date.now() } }
+      summaries = { ...summaries, [sid]: { sessionId: sid, title: renamed ? wantedName : null, preset: req.connectors.length > 0 ? null : req.preset, running: false, updatedAt: Date.now() } }
       order = [...order.filter((id) => id !== sid), sid]
       followed.add(sid)
       openFollow(sid)
       // T25：创建成功选中新 bot 后立刻请它自我介绍（0.79.3 时序；失败不影响建 bot）
       if (req.kickstart !== false) {
-        const intro = await api('session/prompt', { request: { requestId: `kickstart-${sid}`, sessionId: sid, mode: 'queue', content: [{ type: 'text', text: KICKSTART_PROMPT }] } })
+        const intro = await api('session/prompt', { request: { requestId: `kickstart-${sid}`, sessionId: sid, mode: 'queue', content: [{ type: 'text', text: kickstartPrompt({ name: renamed ? wantedName : undefined }) }] } })
         if (!intro.ok) {
           const msg = 'Your Bot couldn\'t introduce itself'
           createNotices.set(sid, createNotices.has(sid) ? `${createNotices.get(sid)!}\n${msg}` : msg) // 0.79.3 原文；多条都可见

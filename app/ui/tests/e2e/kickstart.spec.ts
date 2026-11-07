@@ -29,6 +29,7 @@ test('① 介绍出现：提示到模型（requests.jsonl 可证）、user 行 0
     const { page, rt } = env
     writeDefaultScript(rt.home, [INTRO])
     await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
+    await page.getByRole('textbox', { name: 'Bot name' }).fill('KB') // T30：Create 需名字
     await page.locator('dialog[data-dialog="new-bot"] [data-action="create-bot"]').click()
     await expect(finalAssistant(page).last()).toContainText(INTRO, { timeout: 30_000 })
     await expect(userRows(page)).toHaveCount(0)
@@ -48,6 +49,7 @@ test('② reload 后介绍仍在、user 行仍 0（按内容匹配经历史重�
     const { page, rt } = env
     writeDefaultScript(rt.home, [INTRO])
     await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
+    await page.getByRole('textbox', { name: 'Bot name' }).fill('KB') // T30：Create 需名字
     await page.locator('dialog[data-dialog="new-bot"] [data-action="create-bot"]').click()
     await expect(finalAssistant(page).last()).toContainText(INTRO, { timeout: 30_000 })
     await page.reload()
@@ -66,6 +68,7 @@ test('③ outline：无 user 行、介绍是 assistant-text', async () => {
     const { page, rt } = env
     writeDefaultScript(rt.home, [INTRO])
     await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
+    await page.getByRole('textbox', { name: 'Bot name' }).fill('KB') // T30：Create 需名字
     await page.locator('dialog[data-dialog="new-bot"] [data-action="create-bot"]').click()
     await expect(finalAssistant(page).last()).toContainText(INTRO, { timeout: 30_000 })
     const rowLabel = await page.locator('.sand-agent-item[data-active="true"]').getAttribute('aria-label') ?? 'New chat'
@@ -84,6 +87,7 @@ test('④ 用户接着说话：恰 1 条 user 行（hello there），介绍在�
     const { page, rt } = env
     writeDefaultScript(rt.home, [INTRO, 'reply']) // 介绍轮消费 default[0]，用户轮消费 default[1]
     await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
+    await page.getByRole('textbox', { name: 'Bot name' }).fill('KB') // T30：Create 需名字
     await page.locator('dialog[data-dialog="new-bot"] [data-action="create-bot"]').click()
     await expect(finalAssistant(page).last()).toContainText(INTRO, { timeout: 30_000 })
     const { send } = await import('../support/ui.ts')
@@ -138,10 +142,12 @@ test('⑦ model notice 与介绍共存（M5 咬合）：kickstart user 不得撤
     await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
     // 选一个具体 model（默认空 = 不调 selectModel）
     const modelSelect = page.locator('dialog[data-dialog="new-bot"] select[data-model-select]')
+    await page.locator('dialog[data-dialog="new-bot"] summary').click() // T30：Model 收进 More options
     await expect(modelSelect).toBeVisible({ timeout: 15_000 })
     // review L：等第一个具体 model option 出现（catalog 加载完成）再选——固定 sleep 有竞态
     await expect(modelSelect.locator('option').nth(1)).toBeAttached({ timeout: 15_000 })
     await modelSelect.selectOption({ index: 1 })
+    await page.getByRole('textbox', { name: 'Bot name' }).fill('KB') // T30：Create 需名字
     await page.locator('dialog[data-dialog="new-bot"] [data-action="create-bot"]').click()
     // 介绍照常出现（prompt 成功；kickstart user 已落 view）
     await expect(finalAssistant(page).last()).toContainText(INTRO, { timeout: 30_000 })
@@ -160,6 +166,7 @@ test('⑥ 失败 notice：failNext(session/prompt) → bot 照常建好 + Your B
     await page.evaluate(() => (window as unknown as { __pbotsDev: { failNext(m: string): void } }).__pbotsDev.failNext('session/prompt'))
     const before = await (await import('../support/ui.ts')).devState(page)
     await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
+    await page.getByRole('textbox', { name: 'Bot name' }).fill('KB') // T30：Create 需名字
     await page.locator('dialog[data-dialog="new-bot"] [data-action="create-bot"]').click()
     await expect(page.locator('.sand-agent-item')).toHaveCount(before.order.length + 1, { timeout: 30_000 })
     await expect(transcript(page)).toContainText("Your Bot couldn't introduce itself", { timeout: 20_000 })

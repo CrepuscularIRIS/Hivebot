@@ -38,6 +38,7 @@ test('[GU-1] 侧栏 New 的 create 抛错：不留半截 bot、入口仍可用�
     await newBtn.click()
     // 第二次 create（本次 New → 对话框 Create）→ main 抛错 → shim api 兜底 !ok → 对话框内报错、不入列表（D7）
     const dlg = page.locator('dialog[data-dialog="new-bot"]')
+    await dlg.getByRole('textbox', { name: 'Bot name' }).fill('GU') // T30：Create 需名字
     await dlg.locator('[data-action="create-bot"]').click()
     await expect(dlg.locator('[role="alert"]')).toContainText("Couldn't create the bot", { timeout: 15_000 })
     expect((await devState(page)).order).toEqual(before)

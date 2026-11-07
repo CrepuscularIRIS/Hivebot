@@ -220,3 +220,25 @@ describe('T25 kickstart 提示隐藏', () => {
     expect(raw.some((e) => rec(e).kind === 'message' && rec(e).content === '介绍')).toBe(true)
   })
 })
+
+describe('T30 kickstartPrompt 构造', () => {
+  const ORIG = '<bot_introduction_request>You were just created. Greet the user and introduce yourself in two or three short sentences: your name if you have one, your personality, and what you can help with. Don\'t use any tools.</bot_introduction_request>'
+  it('a. kickstartPrompt({}) 逐字节等于 T25 原串', async () => {
+    const { kickstartPrompt, KICKSTART_PROMPT } = await import('../../../renderer-grok/shim/src/entries')
+    expect(kickstartPrompt({})).toBe(ORIG)
+    expect(KICKSTART_PROMPT).toBe(ORIG)
+  })
+  it('b. name 进正文且谓词仍真', async () => {
+    const { kickstartPrompt, isKickstartPrompt } = await import('../../../renderer-grok/shim/src/entries')
+    const s = kickstartPrompt({ name: 'Research Helper' })
+    expect(isKickstartPrompt(s)).toBe(true)
+    expect(s).toContain('Your name is Research Helper. ')
+  })
+  it('c. setup 在标签内（:550 bug 回归格）；空串等于原串', async () => {
+    const { kickstartPrompt, isKickstartPrompt } = await import('../../../renderer-grok/shim/src/entries')
+    const s = kickstartPrompt({ setup: 'The user primarily works in Design.' })
+    expect(isKickstartPrompt(s)).toBe(true) // 修复前 setup 拼在闭合标签后 → 谓词假
+    expect(s).toContain('Your setup: The user primarily works in Design.</bot_introduction_request>')
+    expect(kickstartPrompt({ name: '', setup: '' })).toBe(kickstartPrompt({}))
+  })
+})

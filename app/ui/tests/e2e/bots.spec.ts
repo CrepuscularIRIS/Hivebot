@@ -61,6 +61,7 @@ test('侧栏「New」→ 新建对话框 Create：#3 建 bot → 侧栏插入并
     const { page } = env
     const before = (await devState(page)).order
     await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
+    await page.getByRole('textbox', { name: 'Bot name' }).fill('NB') // T30：Create 需名字
     await page.locator('dialog[data-dialog="new-bot"] [data-action="create-bot"]').click() // P5-57：New 先开新建对话框
     await expect.poll(async () => (await devState(page)).order.length, { timeout: 30_000 }).toBe(before.length + 1)
     const sid = (await devState(page)).order.find((id) => !before.includes(id))!

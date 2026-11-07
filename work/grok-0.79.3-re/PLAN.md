@@ -11,7 +11,7 @@
 | T24 | 建 bot 对话框 + 吉祥物形象持久化（Q-032） | 计划 |
 | T25 | kickstart 自我介绍（2026-11-07 与 onboarding 互换编号） | done（2026-11-07 经理验收通过，待合并；`tickets/done/T25-kickstart-intro.md`） |
 | T26 | onboarding 开闸 | 计划（T25 合并后） |
-| T31 | Help me create a Bot 接线（从原 kickstart 行拆出） | 计划（低，T30 后） |
+| T31 | Help me create a Bot 接线（从原 kickstart 行拆出） | 搁置（T30 探针：卡只在 flag 版 Ahn 对话框，默认版无；见 queue U6b） |
 | T27 | subagent / 跨 bot 呈现 | 阻塞：等用户编排层结论 |
 | T28 | onboarding 增量步 + 42 模板 | 计划（低） |
 

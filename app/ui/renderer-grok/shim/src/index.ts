@@ -57,6 +57,7 @@ export function installShim(win: Window & { pbots?: PbotsPreload; desktop?: unkn
   data.wire({
     agents: () => server.emit('agents', data.agentsPayload()),
     transcript: (agentId) => server.emit('transcript', data.transcriptPayload(agentId)),
+    outline: (agentId) => server.emit('outline', data.outlinePayload(agentId)),
     sections: () => server.emit('host-settings', { fields: ['sidebarSections'] }),
   })
   win.coordinatorPort = {

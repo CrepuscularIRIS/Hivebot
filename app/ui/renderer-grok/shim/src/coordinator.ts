@@ -21,6 +21,8 @@ export interface CoordinatorDeps {
   setAgentUnread(id: string, value: boolean): void
   createAgent(args: Record<string, unknown>): Promise<unknown>
   updateAgent(args: Record<string, unknown>): Promise<unknown>
+  /** T21：outline 侧板拉取（data.ts 注入——items 来自当前 view）。 */
+  outline?(id: string): unknown[]
 }
 
 const TEACH_IDLE = { state: 'idle', agentId: null, startedAtMs: null, maxDurationMs: 600_000 }
@@ -29,7 +31,7 @@ const TEACH_IDLE = { state: 'idle', agentId: null, startedAtMs: null, maxDuratio
 function defaultReply(method: string, deps: CoordinatorDeps): unknown | undefined {
   switch (method) {
     case 'getTrays': case 'getSubagents': case 'getAsyncTasks': case 'getAgentWorkflows':
-    case 'listAllAutomations': case 'searchAgents': case 'getAgentAutomations': case 'getConversationOutline':
+    case 'listAllAutomations': case 'searchAgents': case 'getAgentAutomations':
     case 'skillsCatalog': case 'syncPluginSkills': case 'listRoutedMcpTools': case 'searchMedia':
       return []
     case 'isAgentNetworkEnabled': case 'isGlobalSearchEnabled': case 'isEgressTunnelAvailable':
@@ -42,6 +44,7 @@ function defaultReply(method: string, deps: CoordinatorDeps): unknown | undefine
     case 'promptAcceptanceStatus': return { status: 'accepted' }
     case 'getBoxSecretsStatus': return { available: false }
     case 'countAgents': return deps.listAgents().length
+    case 'getConversationOutline': return deps.outline?.(args?.id ?? '') ?? []
     default: return undefined // 未知方法 → failed
   }
 }

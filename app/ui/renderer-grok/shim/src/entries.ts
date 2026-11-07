@@ -31,7 +31,7 @@ function argText(args: string): string | null {
 }
 
 /** 工具行单行摘要：argText 优先，截 120 字。 */
-function toolSummary(name: string, args: string, result: string | null): string {
+export function toolSummary(name: string, args: string, result: string | null): string {
   const text = argText(args)
   if (text !== null) return text.slice(0, 120)
   if (result !== null && result !== '') return result.replace(/\s+/g, ' ').slice(0, 120)

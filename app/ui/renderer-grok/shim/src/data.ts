@@ -14,6 +14,7 @@ import { CarrierSocket, pageEnv } from '../../../renderer/carrier'
 import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../../../renderer/carrier/mux'
 import { initView, olderItemsOf, reduceFollow, type SessionView } from '../../../renderer/session/reduce'
 import { askText, serialize, permissionEntry, type RawEntry } from './entries'
+import { toOutlineItems } from './outline'
 import { activityOf, toAgentRecord } from './agents'
 import type { CoordinatorDeps } from './coordinator'
 import { botConfigOf, type PbotsUi, type Recipe } from './bots'
@@ -112,7 +113,7 @@ export interface DevSurface {
 
 export function createShimData(opts: ShimDataOptions): ShimData {
   const log = opts.log ?? (() => {})
-  const push: { agents(): void; transcript(agentId: string): void } = { agents: () => {}, transcript: () => {} }
+  const push: { agents(): void; transcript(agentId: string): void; outline?(agentId: string): void } = { agents: () => {}, transcript: () => {} }
 
   let order: string[] = []
   let summaries: Record<string, Summary> = {}
@@ -272,7 +273,11 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   // 首个 openAgentTail 回值之前不推该 bot 的 transcript 快照：上游 openAgent 见 entriesByAgent 已有条目就不再取 tail，
   // 而分页游标（nextBeforeSeq）只随 tail 回值安装——先推快照会让重入的 openAgent 抢掉游标，#11 永不翻页（P5-54 实测）。
   const tailed = new Set<string>()
-  const pushTranscript = (agentId: string): void => { if (tailed.has(agentId)) push.transcript(agentId) }
+  const pushTranscript = (agentId: string): void => {
+    if (tailed.has(agentId)) push.transcript(agentId)
+    // T21：outline 快照与 transcript 同时机推（provider 订阅 outline 事件族整体替换）
+    push.outline?.(agentId)
+  }
 
   const onFollowItem = (agentId: string, item: unknown): void => {
     const view = reduceFollow(views.get(agentId) ?? initView(agentId), item)
@@ -429,6 +434,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   // ---- coordinator deps（13 RPC 实底） ----
   const deps: CoordinatorDeps = {
     listAgents: () => order.map(recordOf),
+    outline: (id) => toOutlineItems({ items: views.get(id)?.items ?? [], streaming: views.get(id)?.streaming }),
     openAgentTail: (id) => {
       followed.add(id)
       openFollow(id)
@@ -629,10 +635,12 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         if (sig !== sectionsSig) { sectionsSig = sig; target.sections?.() }
       }
       push.transcript = target.transcript
+      push.outline = target.outline
     },
     sections,
     agentsPayload: () => order.map(recordOf),
     transcriptPayload: (agentId) => ({ type: 'snapshot', activeAgentId: agentId, entries: entriesOf(agentId) }),
+    outlinePayload: (agentId) => ({ type: 'snapshot', agentId, items: deps.outline?.(agentId) ?? [] }),
     start() {
       if (booted) return
       booted = true

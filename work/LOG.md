@@ -1075,3 +1075,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 23:5x T7d 开工：wrapper binds 派生 skill 根 ro-bind（直测铁证：写拒/读通）+ mintWorkspace 预建；远端侧等 T11 合并。产品启动器设计进行中（Opus）
 - 00:1x T17 启动器脚本落地（bash -n+exec ok）；六格 e2e 测试面下窗口。Q-031=B 已存档
 - 00:5x T17 ①③a③b④ 四格绿（①全生命周期 41s：CDP 重试/优雅关窗/pid 循环 bug 三修）；⑤差 SDK env 正对照一断言（bash -x 显示 export 生效——疑 pidOf 时序）。②⑥与 M1-M4 变异下窗口
+- 01:1x T17 ⑤ probe 铁证：启动器传 key 正确（SDK env 键名全 dump）；e2e 正对照失败=测试侧问题。load 21（用户游戏+训练）红线窗口，e2e 暂停

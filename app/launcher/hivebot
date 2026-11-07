@@ -49,7 +49,11 @@ if ! flock -n 9; then
   # 已有实例：只起 Electron（单实例锁聚焦），不带 handoff、不带凭证
   env -u P2SDK_LLM_API_KEY -u LITELLM_MASTER_KEY -u DEEPSEEK_API_KEY -u OPENAI_API_KEY -u ANTHROPIC_API_KEY \
     PBOTS_DATA_DIR="$PBOTS_DATA_DIR" "$ELECTRON_BIN" "$@" "$UI_ENTRY" >>"$LOG_DIR/ui.log" 2>&1 9>&- &
-  wait $! || true
+  SECOND_PID=$!
+  # Electron 单实例锁：聚焦已有窗口后应自退；限界 15s 防 focus-not-quit 挂死
+  for _ in $(seq 1 30); do kill -0 "$SECOND_PID" 2>/dev/null || break; sleep 0.5; done
+  kill -0 "$SECOND_PID" 2>/dev/null && kill -TERM "$SECOND_PID" 2>/dev/null
+  wait "$SECOND_PID" 2>/dev/null || true
   exit 0
 fi
 

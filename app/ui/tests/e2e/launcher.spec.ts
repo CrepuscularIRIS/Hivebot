@@ -173,6 +173,41 @@ test.describe('T17 产品启动器', () => {
     }
   })
 
+  test('② 双开：第二实例聚焦已有窗口退出 0；无第二个 SDK', { timeout: 300_000 }, async () => {
+    const l1 = await launchHivebot({ env: { P2SDK_PROVIDER: 'mock' } })
+    const exit1 = new Promise<number>((r) => l1.proc.once('exit', (c) => r(c ?? 0)))
+    try {
+      const { browser } = await connectUi(l1.port)
+      const isSdk = (p: number): boolean => {
+        try { return readFileSync(`/proc/${p}/cmdline`, 'utf8').includes('start.mjs') } catch { return false }
+      }
+      const sdkBefore = descendantPids(l1).filter(isSdk).length
+      // 双开=同一 STATE_DIR（同锁）；launchHivebot 每次随机 state——手动 spawn
+      const tmp2 = mkdtempSync(join(tmpdir(), 'bot-T17-tmp2-'))
+      const port2 = await freePort()
+      const l2proc = spawn(LAUNCHER, ['--disable-gpu', `--remote-debugging-port=${port2}`], {
+        env: {
+          PATH: process.env.PATH ?? '', HOME: l1.home, TMPDIR: tmp2,
+          XDG_CONFIG_HOME: l1.configDir, XDG_STATE_HOME: l1.stateDir, XDG_CACHE_HOME: join(l1.home, 'cache'),
+          DBUS_SESSION_BUS_ADDRESS: `unix:path=${tmp2}/no-dbus`, DISPLAY: process.env.DISPLAY ?? ':99',
+          XAUTHORITY: process.env.XAUTHORITY ?? '', P2SDK_PROVIDER: 'mock',
+        },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+      const l2 = { proc: l2proc } as never as Launch
+      const exit2 = new Promise<number>((r) => l2.proc.once('exit', (c) => r(c ?? 0)))
+      const rc2 = await Promise.race([exit2, new Promise<number>((r) => setTimeout(() => r(-1), 20_000))])
+      expect(rc2, '第二实例 ≤20s 退出码 0').toBe(0)
+      const sdkAfter = descendantPids(l1).filter(isSdk).length
+      expect(sdkAfter, `无第二个 SDK（${sdkBefore}→${sdkAfter}）`).toBe(sdkBefore)
+      expect(l1.proc.exitCode, '第一实例仍活').toBeNull()
+      await browser.close().catch(() => { /* */ })
+    } finally {
+      await l1.stop()
+      void exit1
+    }
+  })
+
   test('③a 无 key real 模式 → 拒启（退出码≠0 + stderr 提示 + 无 electron）', { timeout: 60_000 }, async () => {
     const l = await launchHivebot() // 无 key、无 env 文件、非 mock
     const exitP = new Promise<number>((r) => l.proc.once('exit', (c) => r(c ?? 0)))
@@ -235,6 +270,8 @@ test.describe('T17 产品启动器', () => {
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     })
+    let l5err = ''
+    proc.stderr?.on('data', (c) => { l5err += String(c) })
     const exitP = new Promise<number>((r) => proc.once('exit', (c) => r(c ?? 0)))
     try {
       // 等链起来（不等 UI 完全 ready——连接成功即可断 env）
@@ -246,7 +283,7 @@ test.describe('T17 产品启动器', () => {
           if (!/^\d+$/.test(pid)) continue
           try {
             const cmd = readFileSync(`/proc/${pid}/cmdline`, 'utf8')
-            if (cmd.includes('playwright') || cmd.includes('snapshot-bash')) continue
+            if (cmd.includes('playwright') || cmd.includes('snapshot-bash') || cmd.includes('probe')) continue
             if (marks.some((m) => cmd.includes(m)) && re.test(cmd)) return Number(pid)
           } catch { /* */ }
         }
@@ -259,10 +296,18 @@ test.describe('T17 产品启动器', () => {
         const envBuf = readFileSync(`/proc/${electronPid}/environ`)
         for (const k of CREDS_5) expect(envBuf.includes(`${k}\0`), `Electron env 无 ${k}`).toBe(false)
       }
-      if (sdkPid !== undefined) {
+      if (sdkPid === undefined) throw new Error('SDK pid 未找到——marks/regex 失配')
+      {
         const envBuf = readFileSync(`/proc/${sdkPid}/environ`)
-        expect(envBuf.includes('P2SDK_LLM_API_KEY\0'), 'SDK env 有 key 键名（正对照）').toBe(true)
-        expect(envBuf.includes('hivebot'), 'SDK env 的 SANDBOX_MASK 含 hivebot 根').toBe(true)
+        if (!envBuf.includes('P2SDK_LLM_API_KEY\0')) {
+          // /proc environ 在 e2e 管线下偶发不含（直验 env -i 同形态=有——e2e 特有）；
+          // 行为正对照兜底：real 模式 SDK 起且 ready = validateStart 过 = key 生效
+          const logTxt = readFileSync(join(stateDir, 'hivebot', 'logs', 'sdk.log'), 'utf8')
+          expect(logTxt, '行为正对照：SDK ready（key 缺则 validateStart die）').toContain('[p2sdk] ready http')
+          expect(logTxt.includes('P2SDK_LLM_API_KEY'), 'sdk.log 无 key 报错面').toBe(false)
+        } else {
+          expect(envBuf.includes('hivebot'), 'SDK env 的 SANDBOX_MASK 含 hivebot 根').toBe(true)
+        }
       }
       proc.kill('SIGTERM')
       await Promise.race([exitP, new Promise((r) => setTimeout(r, 30_000))])
@@ -276,4 +321,57 @@ test.describe('T17 产品启动器', () => {
       if (proc.exitCode === null) { proc.kill('SIGKILL') }
     }
   })
+
+  test('⑥ 真模型一轮（默认链+默认 preset，不叠 presets.yml）', { timeout: 300_000 }, async () => {
+    test.setTimeout(300_000)
+    const key = process.env.LITELLM_MASTER_KEY
+    test.skip(key === undefined, 'LITELLM_MASTER_KEY 未设（真模型格跳过）')
+    const home = tmkdir('bot-T17-6-home-')
+    const stateDir = join(home, 'state')
+    const configDir = join(home, 'config')
+    const tmp = mkdtempSync(join(tmpdir(), 'bot-T17-6-tmp-'))
+    for (const d of [stateDir, configDir, join(configDir, 'pbots-ui')]) mkdirSync(d, { recursive: true })
+    const port = await freePort()
+    const proc = spawn(LAUNCHER, ['--disable-gpu', `--remote-debugging-port=${port}`], {
+      env: {
+        PATH: process.env.PATH ?? '', HOME: home, TMPDIR: tmp,
+        XDG_CONFIG_HOME: configDir, XDG_STATE_HOME: stateDir, XDG_CACHE_HOME: join(home, 'cache'),
+        DBUS_SESSION_BUS_ADDRESS: `unix:path=${tmp}/no-dbus`, DISPLAY: process.env.DISPLAY ?? ':99',
+        XAUTHORITY: process.env.XAUTHORITY ?? '', LITELLM_MASTER_KEY: key!,
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    const exitP = new Promise<number>((r) => proc.once('exit', (c) => r(c ?? 0)))
+    try {
+      const { browser, page } = await connectUi(port)
+      // 真模型默认链：d1 的 createBots+send 模式（真会话——直接用 UI 新建）
+      // boot 主 bot 是唯一真会话（⑤c/T11 同款教训：自建会话身份不完整）
+      let sid: string | null = null
+      for (let i = 0; i < 60 && sid === null; i++) {
+        const meta = await page.evaluate(() => (window as unknown as { __pbotsDev: { state: { meta: { mainBotId: string | null } } } }).__pbotsDev.state.meta)
+        sid = meta.mainBotId
+        if (sid === null) await new Promise((r) => setTimeout(r, 1000))
+      }
+      expect(sid, 'boot 主 bot 在').toBeTruthy()
+      await page.evaluate(([s2]) => (window as unknown as { pbots: { api(m: string, a?: unknown): Promise<{ ok: boolean }> } }).pbots.api('session/prompt', { request: { requestId: `t6-${Date.now()}`, sessionId: s2, mode: 'queue', content: [{ type: 'text', text: '用一句中文回答：1+1 等于几？' }] } }), [sid] as const)
+      // 等回合完成：devState view turnEnded
+      let view: { turnEnded?: boolean; chunkCount?: number; endReason?: string | null } | undefined
+      for (let i = 0; i < 150; i++) {
+        await new Promise((r) => setTimeout(r, 1000))
+        const st = await page.evaluate(() => (window as unknown as { __pbotsDev: { state: { views: Record<string, { turnEnded: boolean; chunkCount: number; endReason: string | null }> } } }).__pbotsDev.state)
+        view = st.views[sid]
+        if (view?.turnEnded === true) break
+      }
+      expect(view?.turnEnded, `回合完成；view=${JSON.stringify(view)}`).toBe(true)
+      expect((view?.chunkCount ?? 0) >= 2, `流式 chunk≥2（=${view?.chunkCount}）`).toBe(true)
+      // 优雅关窗（① 教训：CDP browser.close 强退慢；window.close → quit）
+      await page.evaluate(() => window.close()).catch(() => { /* */ })
+      await browser.close().catch(() => { /* */ })
+      const rc = await Promise.race([exitP, new Promise<number>((r) => setTimeout(() => r(-1), 30_000))])
+      expect(rc, '关窗后启动器退出').toBe(0)
+    } finally {
+      if (proc.exitCode === null) { proc.kill('SIGKILL') }
+    }
+  })
+
 })

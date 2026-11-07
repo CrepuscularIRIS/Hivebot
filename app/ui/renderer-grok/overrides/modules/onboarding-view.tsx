@@ -13,14 +13,21 @@ export * from '../../frontend/src/recovered/features/onboarding/signed-in/view'
 type Props = Parameters<typeof Upstream>[0]
 
 /** landing 封面（0.79.3 形态：标题 + Get started；未点进前不挂六步）。 */
-function Landing({ onStart, bridge }: { onStart(): void; bridge: DesktopBridge }) {
+function Landing({ onStart, onSkip, bridge }: { onStart(): void; onSkip(): void; bridge: DesktopBridge }) {
   return (
     <section className="sand-onboarding__landing" aria-labelledby="sand-onboarding-landing-heading">
       <h1 id="sand-onboarding-landing-heading">Welcome to Grok Bot</h1>
       <button type="button" data-action="onboarding-start" onClick={onStart}>Get started</button>
-      <button type="button" data-action="onboarding-skip" onClick={() => { void bridge.onboarding.setSeen(true); onStart() }}>Skip</button>
+      {/* review M：Skip = 提前 seen 后直接退出（onComplete(null)），不进六步 */}
+      <button type="button" data-action="onboarding-skip" onClick={() => { void bridge.onboarding.setSeen(true).then(onSkip, onSkip) }}>Skip</button>
     </section>
   )
+}
+
+/** T26：onboarding 结束（完成或 skip）后重载 roster——首启未建 main bot，seen 落盘后补建。 */
+const reloadRoster = (): void => {
+  const dev = (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void> } }).__pbotsDev
+  void dev?.reloadRoster?.()
 }
 
 export function SignedInOnboarding(props: Props) {
@@ -31,8 +38,13 @@ export function SignedInOnboarding(props: Props) {
     try { window.sessionStorage.setItem('pbots.shim.onboarding-started', '1') } catch { /* 会话级而已 */ }
     setStarted(true)
   }
-  if (!started) return <Landing onStart={start} bridge={props.bridge} />
-  return <Upstream {...props} />
+  // review M：skip/完成都走这里——seen 已落，退引导 + 补建 main bot（首启未建）
+  const finish = (agentId: string | null): void => {
+    reloadRoster()
+    props.onComplete(agentId)
+  }
+  if (!started) return <Landing onStart={start} onSkip={() => finish(null)} bridge={props.bridge} />
+  return <Upstream {...props} onComplete={finish} />
 }
 
 // 覆盖层类型出口对齐（上游 view 的这些类型经 export * 已带）

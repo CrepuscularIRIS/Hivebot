@@ -103,6 +103,8 @@ export interface DevSurface {
   /** 已 follow 的会话视图（D1/D2：preset / chunkCount / turnEnded / cwd …）。 */
   readonly bots: SessionView[]
   readonly state: { order: string[]; meta: { mainBotId: string | null; createdBy: Record<string, string> }; views: Record<string, SessionView> }
+  /** T26：重载 roster（onboarding 完成/skip 后——首启未建 main，seen 落盘后此调用补建）。 */
+  reloadRoster(): Promise<void>
   newSocket(): DevSocketHandle
   openStream(endpoint: string, args?: unknown): MuxStream
   muxStreams(): Array<{ streamId: string; endpoint: string }>
@@ -339,6 +341,16 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     recipes = rec(rec(meta.value).recipes) as unknown as Record<string, Recipe>
     createdBy = createdByOf(meta.value)
     const nextSummaries: Record<string, Summary> = Object.fromEntries(items.map((s) => [s.sessionId, s]))
+    // T26 review HIGH：真首启（onboarding 未 seen 且 roster 空）不自动建 main bot——
+    // 否则 countAgents=1 触发 0.18 gate「老用户」语义，landing/六步在生产首启也不可达。
+    // onboarding 完成/skip 后 onComplete 链走 ensureMainBot 补建（onboarding-view 调用）。
+    const onboardingUnseen = (() => { try { return window.localStorage.getItem('pbots.shim.onboarding-seen') !== '1' } catch { return false } })()
+    if (onboardingUnseen && items.length === 0) {
+      summaries = {}
+      order = []
+      mainBotId = null
+      return
+    }
     if (typeof listed !== 'string' || nextSummaries[listed] === undefined) {
       const created = await api('session/create', { request: {} })
       const sid = rec(created.value).sessionId
@@ -516,11 +528,14 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         const name = typeof a.name === 'string' ? a.name : ''
         if (name !== '') await api('session/rename', { request: { sessionId: sid, title: name } })
         if (typeof a.avatarShape === 'string' && typeof a.avatarColor === 'string') saveAvatar(sid, { shape: a.avatarShape, color: a.avatarColor })
+        // review M：0.18 的 description 携带用户填的职责与日常工具（model.ts descriptionWithDailyTools）
+        // ——dsh session/create 无此槽，最小落地=并入介绍提示（开场自我介绍时知道自己的设定）
+        const desc = typeof a.description === 'string' && a.description !== '' ? ` Your setup: ${a.description}` : ''
         summaries = { ...summaries, [sid]: { sessionId: sid, title: name !== '' ? name : null, preset: null, running: false, updatedAt: Date.now() } }
         order = [...order.filter((id) => id !== sid), sid]
         followed.add(sid)
         openFollow(sid)
-        const intro = await api('session/prompt', { request: { requestId: `kickstart-${sid}`, sessionId: sid, mode: 'queue', content: [{ type: 'text', text: KICKSTART_PROMPT }] } })
+        const intro = await api('session/prompt', { request: { requestId: `kickstart-${sid}`, sessionId: sid, mode: 'queue', content: [{ type: 'text', text: `${KICKSTART_PROMPT}${desc}` }] } })
         if (!intro.ok) createNotices.set(sid, "Your Bot couldn't introduce itself")
         push.agents()
         return recordOf(sid)
@@ -647,6 +662,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     get sockets() { return dev.sockets },
     get bots() { return [...views.values()] },
     get state() { return { order: [...order], meta: { mainBotId, createdBy: { ...createdBy } }, views: Object.fromEntries(views) } },
+    reloadRoster: () => loadRoster(), // T26：onboarding 完成/skip 后补建 main bot 的入口
     newSocket: () => newDevSocket((h) => { dev.sockets.push(h) }),
     openStream(endpoint, args) {
       if (mux === undefined) throw new Error('boot mux not open yet')

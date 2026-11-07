@@ -1161,3 +1161,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - T30 全链（3 轮）：施工→终验返修 T30b（空测试/暗Black/notice/组字/六处版式）→二次返修 T30c（任务 C 重规划：③判等/描边真因 --sand-surface 不存在/focus 圈/暗Create/暗线/证据链）→过
 - **T30d 开**（不阻塞）：暗色三处样式（Create 白字浅灰底/头尾线无/描边暗不可见——像素数值验收；Create 若是全局 primary token 问题先问经理）
 - T30 教训进 LEARNINGS 口径：回执「已核/见某某」=无证据；交单前自己 Read 截图逐条看
+
+## 2026-11-07 · merge T30d+T30db（终验通过后合并）
+- 合并前清主仓 7 张未提交截图（分支版为准）；T30db 工单 rename 冲突解（取 done）
+- 合并后回测：unit **225**；e2e 0793+character+kickstart **19 passed**
+- T30d/db 闭环：暗三处（Create 白底黑字/分隔线/贴纸边）——贴纸边被 viewBox 裁断是 T30d 引入的回归（overflow=visible 修）；Create 发灰两层根因（transition 中间帧+span 文字色）

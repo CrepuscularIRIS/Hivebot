@@ -1133,3 +1133,7 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 
 ## 2026-11-07 09:37 · 哨兵：load 21（GPU 高峰）——本轮只记不跑测试
 T25 reviewer 后台审查中；其修复/终验/合并的测试步骤等 load<8 窗口再执行。
+
+## 2026-11-07 · merge T25（终验通过后合并）
+- feat/T25 干净合入（8 files，+286）；合并后回测：unit grok-shim+fold **211 passed**；e2e kickstart+bots+outline **18 passed**
+- review 1M（用户自输标签被隐藏+ack 悬挂→rpcId 双条件）+1L（⑦竞态）修复随合并进主线；kickstart:false 参数已备好 T26

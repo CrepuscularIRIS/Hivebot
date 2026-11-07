@@ -510,6 +510,11 @@ function sshRows(cfg: StartConfig): string {
     - id: sandbox-ssh
       name: ${yamlScalar(lib('dsh-sandbox-ssh'))}
       disabled: true
+- insert:
+    - id: p2sdk-workspace
+      name: ${yamlScalar(fileUrl(join(PKG_ROOT, 'src', 'p2sdk', 'workspace.mjs')))}
+      config:
+        remoteRoot: ${yamlScalar(ssh.remoteRoot)}
 - id: sandbox-policy
   config:
     # T10：同 id 整键覆盖会丢 base 行的 mode（!!js DSH_PERMISSION_MODE ??

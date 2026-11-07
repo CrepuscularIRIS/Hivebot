@@ -10,9 +10,9 @@ import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
 const require_ = createRequire(import.meta.url)
-const { TypertRemoteService, RemoteError } = await import(
-  pathToFileURL(require_.resolve('@deepseek-ai/dsh-typert-protocol', { paths: [require_.resolve('@deepseek-ai/dsh-plugin-market/lib/index.js')] }))
-)
+// p610-inspect 同款：经 dsh-plugin-market 的 require 域解析 typert-protocol
+const fromMarket = createRequire(require_.resolve('@deepseek-ai/dsh-plugin-market'))
+const { TypertRemoteService, RemoteError } = await import(pathToFileURL(fromMarket.resolve('@deepseek-ai/dsh-typert-protocol')))
 
 const BOT_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$/
 
@@ -28,12 +28,12 @@ export default class WorkspaceService extends TypertRemoteService {
   }
 
   /** 词法校验：<remoteRoot>/workspaces/<botId>（末段 botId 形状；拒绝 .. 与越界）。 */
-  #validate(botId) {
+  p2sdkValidate(botId) {
     if (!BOT_ID_RE.test(botId)) throw new RemoteError('p2sdk/workspace/bad-bot-id', `botId shape rejected: ${JSON.stringify(botId)}`, {})
     return `${this.p2sdkRemoteRoot.replace(/\/+$/, '')}/workspaces/${botId}`
   }
 
-  async #run(argv) {
+  async p2sdkRun(argv) {
     const handle = this.ctx.subprocess.spawn({ argv, cwd: this.p2sdkRemoteRoot, stdio: { stdin: 'ignore', stdout: { maxBytes: 4096 }, stderr: { maxBytes: 4096 } }, graceMs: 15_000 })
     await handle.done
     const status = await handle.waitForExit()
@@ -49,9 +49,9 @@ export default class WorkspaceService extends TypertRemoteService {
    * @param {{ botId: string }} request
    */
   async workspace_ensure(request) {
-    const path = this.#validate(String(request?.botId ?? ''))
-    await this.#run(['mkdir', '-p', '--', path])
-    const canonical = await this.#run(['readlink', '-f', '--', path])
+    const path = this.p2sdkValidate(String(request?.botId ?? ''))
+    await this.p2sdkRun(['mkdir', '-p', '--', path])
+    const canonical = await this.p2sdkRun(['readlink', '-f', '--', path])
     if (canonical !== path) {
       // P2 收口：链接后的真实路径回传给 main 存档（header.cwd 不可变，存 canonical）
       // ——canonical 必须仍在 <remoteRoot>/workspaces/ 下（防 link 出区）。

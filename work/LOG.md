@@ -1053,3 +1053,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 20:3x T11 ⑤a 夹具通、启动通；卡点=ssh 模式 boot 主 bot 建不出（侧栏空）——boot 链 cwd 在 ssh 下不通，下窗口定位（这也是 T11 的核心集成场景本身）
 - 20:4x T11 boot 链定位（renderer 首帧→#3→mintWorkspace 分支→RPC→远端 cwd）；侧栏空=链中某步失败，下窗口抓 session/create 错误详情（rpc 名/mkdir/cwd 三疑点）
 - 20:5x T11 RPC 404 诊断：三排除（字符集/warning/gateway 禁用）；存疑=marker 机制（@Remote 装饰器 .mjs 不可用；p610 control 无 marker 却 work）——下窗口读 api-gateway 发现源码
+- 21:0x T11 RPC 全链通（marker defineProperty+request 包裹+done 值三坑）；diag2 绿=远端目录真建；三面回归绿。剩：ui e2e ⑤a 起链复跑（boot 主 bot 应活）→⑤b-d+⑥→回执终验

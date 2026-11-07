@@ -4,7 +4,7 @@
 > 来源：T28b 经理验收遗留（receipts/T28b.md「经理验收」节）
 > 分支 / 作业目录：可直接在集成分支（T28b 合并之后）；机械小改
 > claimed：2026-11-07 main (GLM 5.3) @ 集成分支（施工开始时由主 agent 填：日期、起点 SHA）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-07（机械单：1 行 diff 逐字对照原行 + onboarding 6 passed + check diff=0——工单验收 1/2/3 全过；经 T28b 终验经理开单授权）（经理验收通过时填：日期、HEAD）
 
 ## 目标
 T28b 把 `onboarding-view.tsx:149` 的 `return` 挪进了 `if (slotRef.current === claimed) { … }`。结果是：账号已经走过引导，并且在 setSeen 或 dwell 期间账号槽位变了的时候，代码会往下走，为旧槽位调 createAgent（产生孤儿 bot）。要恢复成 T28b 之前的语义，并且去掉没用的 roleId 实参。

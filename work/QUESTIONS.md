@@ -284,4 +284,4 @@
   - A：exe 里装 SDK，bot 在 Windows 上思考、通过 ssh 在 ubuntu 上跑命令改文件。正好用上已做的 ssh 链（T9–T12）。代价：dsh 要移植到 Windows（原生依赖、沙箱 bwrap 在 Windows 没有）；LLM key 放 Windows；Windows 关机 bot 就停。
   - B（推荐）：exe 只是界面；SDK 在 ubuntu 上按现在的本机模式跑，Windows 经 ssh 隧道（tailscale 负责连得上）连过去。key 只在服务器、Windows 关了 bot 照跑、沙箱用现成的。代价：现在界面进程在本机做的几件文件活（bot 名册、建工作区、复制 skill）要挪到 SDK 那边，约 3–5 张单；ssh 链对 Windows 客户端不再需要（只剩「再操控另一台机器」的用途）。
 - 推荐理由：B 不用移植 dsh 到 Windows，安全面（key、沙箱）不变；正在做的 T11 两种都用得上，不浪费。
-- 答复：
+- 答复：**B**（用户 2026-11-06 23:5x：「选择B推荐的路子去走即可」）——exe 只是界面；SDK 在 ubuntu 按本机模式跑，Windows 经 ssh 隧道（tailscale）连过去。T19 按此设计；T12/T13 的 ssh 链定位改为「再操控另一台机器」用途。

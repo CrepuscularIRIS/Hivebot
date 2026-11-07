@@ -1,0 +1,14 @@
+/* T23 · 0.79.3 状态行（ours）——参照 ref/conv-working.light-t0.png：首条消息下方靠左，
+ * 吉祥物小号 + 次级色短语。token 用 --sand-*（p5-55-palette）。 */
+.sand-status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 10px 14px;
+  color: var(--sand-text-secondary, inherit);
+  transition: opacity 140ms ease;
+}
+.sand-status-line[data-exiting] { opacity: 0; }
+.sand-status-line__avatar { display: inline-flex; }
+.sand-activity-label__text { font-size: 13px; }
+.sand-activity-elapsed { font-size: 12px; opacity: 0.7; }

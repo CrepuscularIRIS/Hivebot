@@ -71,7 +71,7 @@ export function withMarkers<T extends MarkerEntry>(entries: readonly T[], now: n
 /** 当前会话的 agentId：ConversationTranscript 的 props 不带 agentId，由同一渲染趟里先渲染的
  * ConversationAgentHeader 覆盖写入（ProductionRenderer.tsx:3483 header 在 transcript 之前）。
  * ponytail: 渲染期写模块变量，依赖兄弟渲染顺序；上游若把 header 挪到 transcript 之后，改成 transcript 覆盖接 agentId prop。 */
-export const activeAgent: { id: string | null } = { id: null }
+export const activeAgent: { id: string | null; running: boolean; activity: unknown; avatarColor: unknown; avatarShape: unknown } = { id: null, running: false, activity: null, avatarColor: null, avatarShape: null }
 
 /** 每个 bot 的已读边界 + 当前访问冻结的未读起点（模块级：transcript 实例跨 bot 复用，不随切换重挂）。 */
 export interface UnreadTracker {

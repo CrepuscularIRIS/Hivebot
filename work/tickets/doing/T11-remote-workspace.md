@@ -4,7 +4,7 @@
 > 来源：DESIGN §D5 §D6 验证节（⑤a-d + ⑥）；queue 5c 行（含经理核实时加的 P2 收口格）
 > 分支 / 作业目录：feat/T11 @ /tmp/bot-wt/T11
 > claimed：2026-11-06 19:3x
-> accepted：
+> accepted：（2026-11-07 终验不通过第 1 次 @ 1f659cfe → T11b；第 4 条拆 T11c）
 
 ## 目标
 ssh 模式下 bot 工作区落在远端：SDK 新 RPC `p2sdk/workspace.ensure`（subprocess mkdir -p，词法校验 <remoteRoot>/workspaces/ + botId 形状）；main `mintWorkspace` 按模式分支（#3/#4/worker 共同入口）；远端会话 cwd 可用；Q-029=A 旧 bot 工具调用拒+提示；T7a skills API 在 ssh 模式拒。

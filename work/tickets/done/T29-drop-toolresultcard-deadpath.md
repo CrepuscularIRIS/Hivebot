@@ -4,7 +4,7 @@
 > 来源：T22 合并后主聊天不再喂 tool-call（entries.ts 不产 tool-call raw）——`overrides/modules/model.ts` 的 ToolResultCard 投影成死路径
 > 分支 / 作业目录：feat/T29 @ /tmp/bot-wt/T29
 > claimed：
-> accepted：
+> accepted：2026-11-07（机械单：unit 180 passed、check diff=0、范围恰边界 3 文件——receipts/T29.md；经理 queue U3b 授权主 agent 直接写单）
 > 失败计数：0
 
 ## 目标

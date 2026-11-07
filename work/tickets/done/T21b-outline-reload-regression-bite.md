@@ -4,7 +4,7 @@
 > 来源：T21+T22 终验（`receipts/T21.md` 验收记录 5、`receipts/review-T21T22.md` 经理核实）
 > 分支 / 作业目录：合并 feat/T21 之后直接在集成分支 docs/rebuild-p6-p5-plan 改（只动一个测试文件）
 > claimed：2026-11-07 main (GLM 5.3) @ docs/rebuild-p6-p5-plan
-> accepted：
+> accepted：2026-11-07（施工 6ac5296a 已合并主线；变异刀红绿+全文件 5 passed 记回执 receipts/T21b.md——经理开的修复单，证据链闭环随记）
 > 失败计数：0
 
 ## 目标

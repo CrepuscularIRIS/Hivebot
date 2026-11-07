@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：queue U8/T28（含原 T26c）；T26 回执 :10/:26；RE-UI-0.79.3.md :94/:99/:104；0.79.3 产物探针（本单「探针结论」）
 > 分支 / 作业目录：feat/T28 @ /tmp/bot-wt/T28（从 docs/rebuild-p6-p5-plan @ c4e73b9d 起）
-> claimed：（施工开始时填：日期、起点 SHA）
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T28（施工开始时填：日期、起点 SHA）
 > accepted：（经理验收通过时填）
 
 ## 目标

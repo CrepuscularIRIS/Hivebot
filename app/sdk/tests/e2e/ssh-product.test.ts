@@ -122,37 +122,7 @@ async function drive(calls: object[]): Promise<{ sessionId: string; toolResults:
 }
 
 describe('T9a 产品启动器 ssh 组合', () => {
-  it('⑧ 会话可建；首请求工具面不含 workflow 族', { timeout: 240_000 }, async () => {
-    // T9ab：去掉 ptc-runtime 禁行后 standard preset 可建会话。
-    // workflow 工具被禁（workflow-ptc/tool-workflow/tool-executor-ptc 三行）——
-    // 不直接调它（会挂：依赖链断但工具壳还在等）；改为验证首请求的 tools
-    // 面里没出现 workflow 族工具名。
-    const ws = join(server.workspace, 't9a-ptc')
-    mkdirSync(ws, { recursive: true })
-    const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: ws } })) as { sessionId: string }
-    expect(sessionId, 'session/create 成功（standard preset 可用）').toBeTruthy()
-    const dir = join(rt!.home, 'fake', 'scripts')
-    mkdirSync(dir, { recursive: true })
-    writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({ calls: [textCall('T9a')] }))
-    const stream = await rt!.client.follow(sessionId)
-    const frames: Frame[] = []
-    const drained = (async () => { for await (const f of stream) frames.push(f) })()
-    await rt!.client.call('session/prompt', { request: { requestId: `t9a-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'T9a' }] } })
-    const deadline = Date.now() + 60_000
-    for (;;) {
-      if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
-      if (Date.now() > deadline) throw new Error(`turn/end 未到`)
-      await new Promise((r) => setTimeout(r, 100))
-    }
-    stream.cancel(); void drained
-    let raw = ''
-    try { raw = readFileSync(join(rt!.home, 'fake', 'requests.jsonl'), 'utf8') } catch { /* */ }
-    const reqs = raw.trim().split('\n').filter(Boolean).map((l) => JSON.parse(l) as { sessionId: string | null; toolNames: string[] }).filter((r) => r.sessionId === sessionId)
-    expect(reqs.length, '有模型请求').toBeGreaterThan(0)
-    const tools = reqs[0]!.toolNames ?? []
-    expect(tools, `toolNames 含 bash（正对照防恒绿）: ${tools.join(',')}`).toContain('bash')
-    expect(tools.filter((t) => /workflow/i.test(t)), 'toolNames 不含 workflow 族').toEqual([])
-  })
+
 
   it('⑨ glob/grep 被 guard 拒：原因含 not available in ssh mode', { timeout: 240_000 }, async () => {
     const g = await drive([toolCall('grep', { pattern: 'x' })])

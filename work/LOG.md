@@ -1125,3 +1125,8 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 合并冲突三处全解（回执双边/T24b rename 双路径/png 自动保留 docs 新版——分支 8 张旧图未盖掉）
 - 合并后定向回测：unit grok-shim+fold **211 passed**；e2e create-dialog-character+bots+grok-persona+market **14 passed**
 - T24b 教训：review 修复的 CSS 数值没算账（220<224 差 4px）+「5/5/3 ✓」写在回执却没人核图——排列断言现在常驻 ①；shot 脚本写主仓绝对路径致 worktree 图不更新（queue 提议⑦ 收口）
+
+## 2026-11-07 · T21b/T29 单据收口 + T29 合并
+- T21b（⑤ 咬合修复）：施工 6ac5296a 早已合并主线，本轮补挪 done（证据链：回执变异刀红绿+当时全文件 5 passed）
+- T29（删 ToolResultCard 死路径，机械单）：feat/T29 合并（范围恰 4 文件=3 边界+回执）；合并后 unit grok-shim+fold **207 passed**（211-T29 退场 4 格，数对）
+- 第一次 merge 失败=index 有 T24b rename 残留，commit 后重试成功

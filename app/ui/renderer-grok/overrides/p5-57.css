@@ -204,8 +204,10 @@ dialog.pb-dialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh
 [data-theme="cursor-dark"] .pb-dialog__actions { border-top-color: #ffffff2e; }
 /* T30d #1：暗 Create 白底黑字（探针：SandButton primary 原子类赢过 T30c 规则——!important 提权；
    仅对话框内此钮，不动全局 primary token） */
-[data-theme="cursor-dark"] .pb-dialog__actions [data-action="create-bot"]:not([disabled]) { background: #ffffff !important; color: #1c1c1c !important; border-color: #ffffff !important; }
+[data-theme="cursor-dark"] .pb-dialog__actions [data-action="create-bot"]:not([disabled]) { background: #ffffff !important; color: #1c1c1c !important; border-color: #ffffff !important; transition: none !important; }
+/* T30db #2：disabled→enabled 的 background-color transition 在截图/快速态拍出 205（computed 已 255）——transition none 消掉中间帧 */
 
 /* T30d #3：贴纸边双层 token（ref light=白 3px+灰 1px；ref dark 实测=浅灰环 48-78 on bg31） */
+[data-theme=cursor-dark] .pb-dialog__actions [data-action=create-bot]:not([disabled]) span { color: #1c1c1c !important; } /* T30db：文字色在 span 上（原子类 var #2e2e2e） */
 .pb-character { --pb-sticker-gray: #1c1c1c59; --pb-sticker-surface: #ffffff; }
 [data-theme="cursor-dark"] .pb-character { --pb-sticker-gray: #565656; --pb-sticker-surface: #1f1f1f; }

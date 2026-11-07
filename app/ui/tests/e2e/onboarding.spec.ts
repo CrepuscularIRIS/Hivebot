@@ -80,33 +80,95 @@ test('④ 六步走完：Get started → Next 到 create → 填名建 bot → h
     await expect(page.locator('#sand-onboarding-meet-heading')).toBeVisible({ timeout: 15_000 })
     // 逐步 Next：meet→computer-demo→jobs→tools→create——每步等下一个 heading 出现
     //（meet 的 beat 动画期间 Next 可能延迟生效，固定 sleep 不可靠）
-    const steps = ['computer-demo', 'jobs', 'tools', 'create']
+    // T28c：meet 页 cast 有角色子节点（T26 画面回归；aria-hidden 舞台层用 DOM 断言）
+    await expect.poll(() => page.evaluate(() => document.querySelectorAll('.sand-onboarding__cast > div').length), { timeout: 10_000 }).toBeGreaterThan(0)
+    const steps = ['computer-demo', 'jobs']
     for (const st of steps) {
-      const next = page.locator('main button', { hasText: 'Next' }).first()
+      const next = page.locator('.sand-onboarding button', { hasText: 'Next' }).first()
       await expect(next).toBeVisible({ timeout: 25_000 })
       await next.click()
-      await expect(page.locator(`#sand-onboarding-${st}-heading, [id^="sand-onboarding-${st}"]`).first()).toBeVisible({ timeout: 25_000 })
+      await expect(page.locator(`#sand-onboarding-${st}-heading`).first()).toBeVisible({ timeout: 25_000 })
     }
-    // create 步（0.18 view:179）：#sand-onboarding-create-name 输入 + 「Get started」提交钮
-    const nameInput = page.locator('#sand-onboarding-create-name')
-    await expect(nameInput).toBeVisible({ timeout: 15_000 })
-    await nameInput.fill('My First Bot')
-    const submit = page.locator('.sand-onboarding__create button', { hasText: 'Get started' })
-    await expect(submit).toBeEnabled({ timeout: 10_000 })
-    await submit.click()
-    // 介绍延后断言：click 返回后 250ms 内无介绍（hand-off 动画+dwell 至少数百 ms——
-    // finish 链不可能已完成；3s 检查点会晚于 dwell，实测教训）
+    // T28：0.79.3 walk 无 tools/create——jobs 后直接 role 页
+    const nextBtn = page.locator('.sand-onboarding button', { hasText: 'Next' }).first()
+    await nextBtn.click() // jobs → role
+    await expect(page.locator('#sand-onboarding-role-heading')).toBeVisible({ timeout: 20_000 })
+    await expect(page.locator('#sand-onboarding-role-heading')).toHaveText('What will you be working on most?')
+    await page.locator('[data-choice="engineering"]').click()
+    await page.locator('button', { hasText: 'Next' }).last().click() // role → attribution
+    await expect(page.locator('#sand-onboarding-attribution-heading')).toBeVisible({ timeout: 20_000 })
+    await expect(page.locator('#sand-onboarding-attribution-heading')).toHaveText('How did you first hear about Grok Bot?')
+    // attribution 无选择 Skip（tertiary 主钮）
+    await page.locator('button[data-action="skip"]', { hasText: 'Skip' }).first().click() // attribution → connect
+    await expect(page.locator('#sand-onboarding-connect-heading')).toBeVisible({ timeout: 20_000 })
+    await expect(page.locator('#sand-onboarding-connect-heading')).toHaveText('Connect your apps')
+    await expect(page.locator('.sand-onboarding__connect button:has-text("Connect")')).toHaveCount(2) // Gmail + Google Calendar（排除侧栏 Connect apps）
+    // T28c F1：三页「真的看得见」——中心点命中自身/后代 + bounding box 完整在视口（toBeVisible 抓不到遮挡/出框）
+    const visCheck = async (sel: string): Promise<void> => {
+      const bad = await page.locator(sel).evaluateAll((els) => els.map((el, i) => {
+        const r = el.getBoundingClientRect()
+        const cx = r.x + r.width / 2, cy = r.y + r.height / 2
+        const hit = document.elementFromPoint(cx, cy)
+        const inVp = r.x >= 0 && r.y >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight
+        return hit != null && (hit === el || el.contains(hit)) && inVp ? null : `${sel}[${i}] 出框或被遮`
+      }).filter(Boolean))
+      expect(bad, `${sel} 必须全部可见`).toEqual([])
+    }
+    await visCheck('.sand-onboarding__attribution-choices button')
+    for (const st of ['role', 'attribution', 'connect']) await visCheck(`.sand-onboarding__${st} h1`)
+    await page.locator('button', { hasText: 'Skip for now' }).click() // connect → hand-off（自动建主 bot）
+    // tools/create 不出现在 walk
+    await expect(page.locator('#sand-onboarding-tools-heading, #sand-onboarding-create-name')).toHaveCount(0)
+    // 介绍延后断言：Skip for now 后 250ms 内无介绍（dwell 至数百 ms）
     await page.waitForTimeout(250)
     let req = ''
     try { req = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { /* 可能整个不存在 */ }
-    expect(req, 'create 步不发介绍（延后到 seen 落盘后）').not.toContain('bot_introduction_request')
+    expect(req, 'walk 内不发介绍（延后到 seen 落盘后）').not.toContain('bot_introduction_request')
     await page.waitForTimeout(2500)
-    // hand-off 完成等主界面：恰 1 bot 且名字对
+    // hand-off 自动建主 bot（默认名/形象+creatorContext）：恰 1 bot
     await expect(page.locator('.sand-agent-item')).toHaveCount(1, { timeout: 30_000 })
-    await expect(page.locator('.sand-agent-item').first()).toContainText('My First Bot')
-    // hand-off 后介绍发出
+    // hand-off 后介绍发出，且 creatorContext（role=engineering）进了模型请求
     await expect.poll(async () => { try { return readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { return '' } }, { timeout: 45_000 }).toContain('bot_introduction_request')
+    const finalReq = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8')
+    expect(finalReq, 'role 设定句进模型请求').toContain('The user primarily works in Engineering')
   } finally {
     await env.stop()
   }
+})
+
+test('⑤ Back 往返：role 选中→Back→再前进，选择保留', async () => {
+  test.setTimeout(120_000)
+  const env = await launchProduct({ ready: false, onboardingFirst: true })
+  try {
+    const { page } = env
+    await page.locator('[data-action="onboarding-start"]').click()
+    for (const st of ['computer-demo', 'jobs']) { await page.locator('.sand-onboarding button', { hasText: 'Next' }).first().click(); await expect(page.locator(`#sand-onboarding-${st}-heading`)).toBeVisible({ timeout: 20_000 }) }
+    await page.locator('.sand-onboarding button', { hasText: 'Next' }).first().click() // → role
+    await page.locator('[data-choice="design"]').click()
+    await page.locator('.sand-onboarding button', { hasText: 'Back' }).first().click() // ← jobs
+    await expect(page.locator('#sand-onboarding-jobs-heading')).toBeVisible({ timeout: 20_000 })
+    await page.locator('.sand-onboarding button', { hasText: 'Next' }).first().click() // → role
+    await expect(page.locator('[data-choice="design"]')).toHaveAttribute('aria-checked', 'true') // 选择保留
+  } finally { await env.stop() }
+})
+
+test('⑥ 全 Skip：landing Skip 不建也不介绍；走 walk 全 Skip 也建默认 bot（0.79.3 语义：全跳过仍 hand-off 建 bot）', async () => {
+  test.setTimeout(150_000)
+  const env = await launchProduct({ ready: false, onboardingFirst: true })
+  try {
+    const { page, rt } = env
+    writeDefaultScript(rt.home, [INTRO_TEXT])
+    await page.locator('[data-action="onboarding-start"]').click()
+    for (const st of ['computer-demo', 'jobs']) { await page.locator('.sand-onboarding button', { hasText: 'Next' }).first().click(); await expect(page.locator(`#sand-onboarding-${st}-heading`)).toBeVisible({ timeout: 20_000 }) }
+    await page.locator('.sand-onboarding button', { hasText: 'Next' }).first().click() // role
+    await page.locator('button[data-action="skip"]', { hasText: 'Skip' }).first().click() // role Skip（未选）
+    await expect(page.locator('#sand-onboarding-attribution-heading')).toBeVisible({ timeout: 20_000 })
+    await page.locator('button[data-action="skip"]', { hasText: 'Skip' }).first().click() // attribution Skip
+    await expect(page.locator('#sand-onboarding-connect-heading')).toBeVisible({ timeout: 20_000 })
+    await page.locator('button', { hasText: 'Skip for now' }).click() // → hand-off
+    await expect(page.locator('.sand-agent-item')).toHaveCount(1, { timeout: 30_000 }) // 全跳过仍建默认 bot
+    // creatorContext 空（没选 role）→ 请求里无设定句
+    await expect.poll(async () => { try { return readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { return '' } }, { timeout: 45_000 }).toContain('bot_introduction_request')
+    expect(readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8')).not.toContain('primarily works in')
+  } finally { await env.stop() }
 })

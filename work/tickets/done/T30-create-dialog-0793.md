@@ -5,7 +5,7 @@
 > 分支 / 作业目录：feat/T30 @ /tmp/bot-wt/T30，起点 = docs/rebuild-p6-p5-plan 21f6127c（已含 T24/T24b、T25、T26、T28 合并）
 > 排期：现在开。与 T28b / T32 不同文件；与 T31 的关系见下面「对计划的更正」
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T30
-> accepted：（2026-11-07 终验 @06c331e3 不通过 → 返修单 `open/T30b-create-dialog-0793-fix.md`）
+> accepted：2026-11-07 feat/T30 @53928cf2（连同 T30b/T30c；暗色三处 token 拆 T30d，不挡合并）｜历史：@06c331e3 不过→T30b；@9fd43f2b 不过→T30c
 > 失败计数：2（2026-11-07 T30b 终验 @9fd43f2b 再不通过 → 任务 C 重规划 → `open/T30c-create-dialog-0793-final.md`）
 
 ## 目标

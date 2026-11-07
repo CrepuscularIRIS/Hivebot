@@ -1130,3 +1130,6 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - T21b（⑤ 咬合修复）：施工 6ac5296a 早已合并主线，本轮补挪 done（证据链：回执变异刀红绿+当时全文件 5 passed）
 - T29（删 ToolResultCard 死路径，机械单）：feat/T29 合并（范围恰 4 文件=3 边界+回执）；合并后 unit grok-shim+fold **207 passed**（211-T29 退场 4 格，数对）
 - 第一次 merge 失败=index 有 T24b rename 残留，commit 后重试成功
+
+## 2026-11-07 09:37 · 哨兵：load 21（GPU 高峰）——本轮只记不跑测试
+T25 reviewer 后台审查中；其修复/终验/合并的测试步骤等 load<8 窗口再执行。

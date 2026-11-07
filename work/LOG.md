@@ -1098,3 +1098,9 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 04:51 哨兵：load 6.0 回落。UI 工单链拆单中（经理任务 A 后台）。无 429
 - 05:0x 对齐目标升级存档；全量 RE 派出（11 维度普查——preload RPC 面为总索引，产出体验差距 Top 20 给 Opus 取舍）。三线并行：T20 参照台/T21 侧板/全量 RE
 - 05:03 哨兵：load 6.0。全量 RE 跑中（11 维度）；T20/T21 worktree 就绪。无 429
+
+## 2026-11-07 · merge T21+T22（经理终验通过后合并）
+- `git merge --no-ff feat/T21`：22 files，+621/-103，无冲突（回执双边改动不同区域自然合）
+- 合并后定向回测（主线 HEAD）：unit grok-shim+fold **184 passed**；e2e outline①-⑤ + p6-fold D1/D2 + session D3/composer/截图/分页 **11 passed**
+- reviewer 2 MEDIUM 已修复（data.ts openFollow + D1 双行 oracle，commit d1e85205）；T21b（⑤ 空绿修复单）在 open/ 排队
+- 同日：全仓首推 GitHub（CrepuscularIRIS/Hivebot，73 分支；filter-repo 剥 127MB evidence pnpm store 后 size-pack 298MB）

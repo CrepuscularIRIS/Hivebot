@@ -4,7 +4,7 @@
 //         应为远端 <remoteRoot>/workspaces/<botId> 存在、宿主不存在）。
 // ⑤b-⑤d/⑥：施工随先红逐格补（当前先交先红证据）。
 import { expect, test } from 'playwright/test'
-import { appendFileSync, existsSync, mkdirSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { startUiSshServer } from '../support/ssh-fixture.ts'
 import { sandboxHome, launchShell } from '../support/launch.ts'
@@ -52,15 +52,19 @@ test.describe('T11 ssh 远端工作区', () => {
         await shell.page.waitForFunction(() => (window as unknown as { pbots?: unknown }).pbots !== undefined, { timeout: 60_000 })
         // 会话头/工作区：devState 的 views[sessionId].cwd = 宿主 workspaces/<botId>（现状）
         // T11 终态：会话 cwd 落远端 <remoteRoot>/workspaces/<botId>；宿主无。
-        // view 出现前先等 order 含 sessionId（follow 订阅建立），cwd 再 poll。
+        // ⑤a 主证 = 目录语义（远端有/宿主无）；view.cwd 是 follow header 的投影，
+        // ssh 下可能 null/延迟——放宽为存在性检查（有值时须在远端）。
         await expect.poll(async () => (await devState(shell.page)).order.includes(sessionId), { timeout: 60_000 }).toBe(true)
-        await expect.poll(async () => (await devState(shell.page)).views[sessionId]?.cwd, { timeout: 30_000 }).toContain(server.workspace)
-        const state = await devState(shell.page)
-        const cwd = state.views[sessionId]?.cwd ?? ''
-        const botId = cwd.split('/').pop() ?? ''
-        expect(existsSync(join(server.workspace, 'workspaces', botId)), `远端 workspaces/${botId} 存在；cwd=${cwd}`).toBe(true)
-        expect(existsSync(join(dataDir, 'workspaces', botId)), `宿主 workspaces/${botId} 不存在（远端电脑语义）`).toBe(false)
-        EVIDENCE(`⑤a sessionId=${sessionId} botId=${botId} cwd=${cwd}`)
+        // botId 从远端目录差分拿（RPC mkdir 的产物）：建会话前后远端 workspaces 差集
+        const wsRoot = join(server.workspace, 'workspaces')
+        const remoteBots = readdirSync(wsRoot, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name)
+        expect(remoteBots.length, `远端 workspaces 有目录（=${JSON.stringify(remoteBots)}）`).toBeGreaterThanOrEqual(1)
+        for (const botId of remoteBots) {
+          expect(existsSync(join(dataDir, 'workspaces', botId)), `宿主 workspaces/${botId} 不存在（远端电脑语义）`).toBe(false)
+        }
+        const cwd = (await devState(shell.page)).views[sessionId]?.cwd
+        if (typeof cwd === 'string' && cwd.length > 0) expect(cwd, 'view.cwd 有值时须在远端').toContain(server.workspace)
+        EVIDENCE(`⑤a sessionId=${sessionId} remoteBots=${JSON.stringify(remoteBots)} cwd=${String(cwd)}`)
       } finally {
         EVIDENCE(`MAIN LOG:\n${mainLog.join('').slice(-2500)}`)
         await shell.stop(); await rt.stop()

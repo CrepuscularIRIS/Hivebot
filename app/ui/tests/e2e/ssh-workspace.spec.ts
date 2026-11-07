@@ -4,7 +4,7 @@
 //         应为远端 <remoteRoot>/workspaces/<botId> 存在、宿主不存在）。
 // ⑤b-⑤d/⑥：施工随先红逐格补（当前先交先红证据）。
 import { expect, test } from 'playwright/test'
-import { appendFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { startUiSshServer } from '../support/ssh-fixture.ts'
 import { sandboxHome, launchShell } from '../support/launch.ts'
@@ -73,4 +73,64 @@ test.describe('T11 ssh 远端工作区', () => {
       await server.stopServer()
     }
   })
+
+  test('⑤b bash 写 marker 落远端 ws', { timeout: 300_000 }, async () => {
+    const home = sandboxHome('T11-5b')
+    const dataDir = join(home, 'data')
+    mkdirSync(dataDir, { recursive: true })
+    const server = await startUiSshServer(home)
+    try {
+      const rt = await launchSdkRuntime({
+        patch: PATCH, dataDir,
+        env: {
+          PATH: `${server.binDir}:${process.env.PATH ?? ''}`,
+          P2SDK_SSH_HOST: 'pbots-ssh-test', P2SDK_SSH_REMOTE_ROOT: server.workspace,
+          P2SDK_SSH_HELPER: server.helper, P2SDK_SSH_HELPER_HASH: server.helperHash,
+          P2SDK_SSH_NODE: process.execPath, P2SDK_SSH_REMOTE_HOME: server.remoteHome,
+        },
+      })
+      const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff }, home })
+      try {
+        await shell.page.waitForFunction(() => (window as unknown as { pbots?: unknown }).pbots !== undefined, { timeout: 60_000 })
+        const created = await api<{ sessionId: string }>(shell.page, 'session/create', { request: {} })
+        expect(created.ok, JSON.stringify(created.error)).toBe(true)
+        const sessionId = created.value.sessionId
+        // 门开绕审批卡（tiers provision 同款：instance=sha256(launch-token)）
+        const { createHash } = await import('node:crypto')
+        const token = readFileSync(join(rt.handoff, 'launch-token'), 'utf8').trim()
+        const instance = createHash('sha256').update(token).digest('hex')
+        const uiDataDir = join(home, '.config', 'pbots-ui')
+        mkdirSync(uiDataDir, { recursive: true })
+        writeFileSync(join(uiDataDir, 'policy-state.json'), JSON.stringify({ version: 1, paused: false, instance }))
+        const bashArgs = JSON.stringify({ command: 'printf T11MARK > m.txt', description: 'T11 5b' })
+        rt.writeScriptCalls(sessionId, [{ chunks: [
+          { type: 'block-start', index: 0, blockType: 'tool-call' },
+          { type: 'tool-call-delta', index: 0, id: 't11b1', name: 'bash', argumentsDelta: bashArgs.slice(0, 10) },
+          { type: 'tool-call-delta', index: 0, id: 't11b1', name: 'bash', argumentsDelta: bashArgs.slice(10) },
+          { type: 'block-end', index: 0, block: { type: 'tool-call', id: 't11b1', name: 'bash', arguments: bashArgs } },
+          { type: 'usage', usage: { inputTokens: 10, outputTokens: 5 } },
+          { type: 'finish', reason: { kind: 'tool-calls' } },
+        ] }])
+        await api(shell.page, 'session/prompt', { request: { requestId: `t11b-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'go' }] } })
+        const wsRoot = join(server.workspace, 'workspaces')
+        const deadline = Date.now() + 90_000
+        let found = ''
+        for (;;) {
+          for (const e of readdirSync(wsRoot, { withFileTypes: true })) {
+            if (e.isDirectory() && existsSync(join(wsRoot, e.name, 'm.txt'))) { found = join(wsRoot, e.name, 'm.txt'); break }
+          }
+          if (found !== '' || Date.now() > deadline) break
+          await new Promise((r) => setTimeout(r, 500))
+        }
+        expect(found, 'bash 写的 m.txt 落远端 ws').not.toBe('')
+        expect(readFileSync(found, 'utf8').trim()).toBe('T11MARK')
+        EVIDENCE(`⑤b marker=${found}`)
+      } finally {
+        await shell.stop(); await rt.stop()
+      }
+    } finally {
+      await server.stopServer()
+    }
+  })
+
 })

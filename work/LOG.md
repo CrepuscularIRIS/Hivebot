@@ -1060,3 +1060,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 21:4x T11 ⑤b 卡 bash 执行链（90s 无 marker；④方向=先看 tool/result 错误文本）；⑤a 稳定绿
 - 21:5x T11 ⑤b 定性：session/prompt accepted 但 renderer follow/view 未激活（60s null）——ssh 组合事件流疑点，下窗口查 renderer follow 建立链
 - 22:0x T11 ⑤b：fake 被调但 bash 未执行（180s）；follow null=观测面时序非缺陷。下步=数 fake 轮数判脚本消费
+- 22:1x T11 ⑤b 绿（provision 位置=home/data 破案：门没开卡审批）；⑤a⑤b 双绿

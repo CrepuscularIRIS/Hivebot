@@ -4,7 +4,7 @@
 > 来源：queue U8/T28（含原 T26c）；T26 回执 :10/:26；RE-UI-0.79.3.md :94/:99/:104；0.79.3 产物探针（本单「探针结论」）
 > 分支 / 作业目录：feat/T28 @ /tmp/bot-wt/T28（从 docs/rebuild-p6-p5-plan @ c4e73b9d 起）
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T28（施工开始时填：日期、起点 SHA）
-> accepted：（经理验收通过时填）
+> accepted：2026-11-07 feat/T28 @ 7f6cb06d（经理任务 B，T28+T28c 合并验收；见 receipts/review-T28.md「经理终验」）
 > 验收 1：2026-11-07 @7c22aadb **返修** → T28c（见 receipts/review-T28.md 末「经理核实」）
 
 ## 目标

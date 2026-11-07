@@ -4,7 +4,7 @@
 > 来源：T28 经理任务 B 验收（HEAD 7c22aadb）不通过。编号说明：T28b 已被 queue U8b（roleUseCaseBots）占用，本修复单用 T28c
 > 分支 / 作业目录：继续 feat/T28 @ /tmp/bot-wt/T28（从 7c22aadb 起）
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T28 续修（起点 7c22aadb）（施工开始时由主 agent 填：日期、起点 SHA）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-07 feat/T28 @ 7f6cb06d（经理任务 B，T28+T28c 合并验收；见 receipts/review-T28.md「经理终验」）
 
 ## 目标
 三页在画面里真的看得见、居中、和前三步同一套版式；前三步与 hand-off 恢复 T26 时就有的上游画面（角色 cast、可见标题、Next 在上 Back 在下、hand-off 图标+名）。

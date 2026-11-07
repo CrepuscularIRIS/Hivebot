@@ -130,6 +130,18 @@ export async function openBot(page: Page, title: string): Promise<void> {
   await expect(botItem(page, title)).toHaveAttribute('data-active', 'true')
 }
 
+/** T21：侧栏行右键 → 菜单「Show full conversation」打开 outline 面板（真实菜单点击，不 evaluate）。 */
+export async function openOutline(page: Page, botTitle: string): Promise<Locator> {
+  await botItem(page, botTitle).click({ button: 'right' })
+  await page.locator('[aria-label="Agent actions"] [role="menuitem"]', { hasText: 'Show full conversation' }).click()
+  const panel = page.locator('aside.sand-outline-panel')
+  await expect(panel).toBeVisible({ timeout: 15_000 })
+  return panel
+}
+
+/** T21：outline 面板内的工具行（面板作用域；主聊 toolRows 不动，T22 才迁）。 */
+export const outlineToolRows = (page: Page): Locator => page.locator('.sand-outline-panel .sand-outline-item[data-kind="tool-call"]')
+
 export const transcript = (page: Page): Locator => page.locator('.sand-virtual-transcript')
 export const assistantRows = (page: Page): Locator => page.locator('.sand-virtual-transcript .sand-transcript-row[data-role="assistant"]')
 /** 流式中的正文（shim entries.ts live-stream 条目的 prose；行本身还含隐藏的作者 / 时间 span）。 */

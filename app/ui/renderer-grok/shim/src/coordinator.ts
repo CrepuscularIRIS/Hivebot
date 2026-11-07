@@ -28,7 +28,7 @@ export interface CoordinatorDeps {
 const TEACH_IDLE = { state: 'idle', agentId: null, startedAtMs: null, maxDurationMs: 600_000 }
 
 /** 已知但未实装的方法 → 空/能力关回值（RE-s0 实底口径）。 */
-function defaultReply(method: string, deps: CoordinatorDeps): unknown | undefined {
+function defaultReply(method: string, deps: CoordinatorDeps, args: Record<string, unknown> = {}): unknown | undefined {
   switch (method) {
     case 'getTrays': case 'getSubagents': case 'getAsyncTasks': case 'getAgentWorkflows':
     case 'listAllAutomations': case 'searchAgents': case 'getAgentAutomations':
@@ -138,7 +138,7 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
         case 'createAgent': return reply(requestId, await deps.createAgent(args))
         case 'updateAgent': return reply(requestId, await deps.updateAgent(args))
         default: {
-          const value = defaultReply(method, deps)
+          const value = defaultReply(method, deps, args)
           if (value !== undefined) return reply(requestId, value)
           unhandled.push(method)
           return replyFailed(requestId, 'unknown-method', `coordinator has no handler for ${method}`)

@@ -180,3 +180,15 @@ describe('resolveLocalToolPermission · D9 值域', () => {
     client.close()
   })
 })
+
+describe('T21 · getConversationOutline 分派', () => {
+  it('按 args.id 调 deps.outline（defaultReply 此前漏传 args → 运行时 ReferenceError 回 failed，e2e 面板恒空）', async () => {
+    const seen: string[] = []
+    const deps = { ...baseDeps(), outline: (id: string) => (seen.push(id), [{ kind: 'user', id: 'u1', text: 'hi' }]) }
+    const { client, frames } = handshake(deps)
+    const value = await call(client, frames, 'getConversationOutline', { id: 'ag_9' })
+    expect(seen).toEqual(['ag_9'])
+    expect(value).toEqual([{ kind: 'user', id: 'u1', text: 'hi' }])
+    client.close()
+  })
+})

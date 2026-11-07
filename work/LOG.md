@@ -1091,3 +1091,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 04:1x T17c 收口 9 格全绿（三修真落盘 c8d8157d+spec 八项 ae183aff）；M2 inspect 咬合/M5M6 如实记；残留核 0（snapshot shell 噪音排除）。待终验。0.79.3 deb 已下载解包（370M/asar 54M）——UI 逆向待派
 - 04:2x 用户反馈存档 BRIEF；0.79.3 解包完成（renderer 42M/641 chunk/716 资产）；RE 三题已派（回复呈现/创建动画素材/subagent 呈现）。T17c 终验并行中
 - 04:25 哨兵：load 31.25（1 分钟瞬时——RE 逆向实例+用户环境+体验实例三方叠加）——本轮只记不跑测试。体验实例健康（ready）
+- 04:4x feat/T17b 合并落地（终验通过 6/7 刀）：回测 launcher.spec 9 passed、残留 0。启动器全部修复进入主线（用户在用的版本不含这些——下次重启 launcher 生效）。T17d 四小项计划行不挡体验。RE 三题进行中

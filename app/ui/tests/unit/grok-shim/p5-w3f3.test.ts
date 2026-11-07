@@ -21,9 +21,7 @@ describe('L-8 R2: args that are legal JSON null must not crash the tool-result c
       0, 'Bot', 'a1',
     )
     expect(entry).not.toBeNull()
-    const card = rec(rec(entry).toolResult)
-    expect(card.output).toBe('Error: args must be an object')
-    expect(card.command, 'args 非对象 → 无 command 可取，不断言崩溃').toBeNull()
+    expect((entry as { toolResult?: unknown }).toolResult, 'T29：卡已删——投影仍在且不崩').toBeUndefined()
   })
 
   it("other non-object JSON ('[1,2]', '\"str\"', '123') stays safe", () => {
@@ -32,7 +30,7 @@ describe('L-8 R2: args that are legal JSON null must not crash the tool-result c
         { kind: 'tool-call', id: 't', timestampMs: 1, name: 'bash', status: 'done', summary: 'x', args, result: 'OUT' },
         0, 'Bot', 'a1',
       )
-      expect(rec(rec(entry).toolResult).output, `args=${args}`).toBe('OUT')
+      expect((entry as { toolResult?: unknown }).toolResult, `args=${args} T29：卡已删`).toBeUndefined()
     }
   })
 
@@ -47,8 +45,8 @@ describe('L-8 R2: args that are legal JSON null must not crash the tool-result c
 
     const feed = projectTranscriptFeedEntries([good('g1'), poisonArgs, poisonKind, good('g2')], 'Bot', 'a1')
     expect(feed.map((e) => rec(e).id), '附卡失败的条目退回无卡投影（行仍可见），上游投影抛错的条目跳过').toEqual(['g1', 'poison-args', 'g2'])
-    expect(rec(feed[0]).toolResult, '好条目仍附卡').toMatchObject({ output: 'OK' })
-    expect(rec(feed[1]).toolResult).toBeUndefined()
+    expect((feed[0] as { toolResult?: unknown }).toolResult, 'T29：卡已删——好条目无卡但行在').toBeUndefined()
+    expect((feed[1] as { toolResult?: unknown }).toolResult).toBeUndefined()
 
     const page = projectTranscriptPageResult({ entries: [good('g1'), poisonKind, good('g2')], nextBeforeSeq: 5 }, 'Bot', 'a1')
     expect(page.entries.map((e) => rec(e).id), 'page 聚合同样隔离，其余条目与游标不受影响').toEqual(['g1', 'g2'])
@@ -64,10 +62,9 @@ describe('L-8 R3: an approval decision must not shadow the tool output', () => {
       { kind: 'tool-call', id: 't-ap', timestampMs: 1, name: 'bash', status: 'done', summary: 'curl', args: '{"command":"curl example.com"}', result: 'FULL STDOUT OUTPUT', decision: 'allowed-once' },
       0, 'Bot', 'a1',
     )
-    const card = rec(rec(entry).toolResult)
-    expect(card.summary).toBe('')
-    expect(card.output).toBe('FULL STDOUT OUTPUT')
-    expect(String(card.summary || card.diff || card.output), 'view.tsx detail 取值看到全文而非 allowed-once').toBe('FULL STDOUT OUTPUT')
+    // T29：卡已删——投影不附带 toolResult（decision/output 语义随主聊天工具行一起退场）
+    expect((entry as { toolResult?: unknown }).toolResult).toBeUndefined()
+    expect(rec(entry).kind).toBe('tool-call')
   })
 
   it("decision='rejected' with no result keeps the decision as summary (denial reason stays visible)", () => {
@@ -75,6 +72,6 @@ describe('L-8 R3: an approval decision must not shadow the tool output', () => {
       { kind: 'tool-call', id: 't-dn', timestampMs: 1, name: 'bash', status: 'failed', summary: 'rm x', args: '{"command":"rm x"}', result: null, decision: 'rejected' },
       0, 'Bot', 'a1',
     )
-    expect(rec(rec(entry).toolResult).summary).toBe('rejected')
+    expect((entry as { toolResult?: unknown }).toolResult).toBeUndefined() // T29：卡已删
   })
 })

@@ -1,77 +1,14 @@
-// P5-W3.f1 覆盖（L-7 R2）：projectTranscriptEntry 给 tool-call 投影附带 ToolResultCard
-// 快照。上游投影只带 name/status/summary（≤120 字预览），shim 序列化里的完整
-// args/result（entries.ts L-7 R2 起原样带出）在此转成快照——上游 transcript.tsx 的
-// 展开区本来就渲染 entry.toolResult（TranscriptToolCall.toolResult?: ToolResultCardSnapshot），
-// 只是 0.18 重建树里没有任何喂它的路径。快照 kind 按工具名映射，超出的两档
-// （file-read/connector）是对上游三档（file-edit/file-write/shell）的扩展：卡片视图
-// 只把 kind 当字符串用（标题回退 + aria-label），运行时无影响，故在 attach 处单点收窄类型。
+// T29（2026-11-07）：L-7 R2 的 tool-call 附 ToolResultCard 死路径已删——T22 后主聊天
+// 不再产 tool-call raw（entries.ts 不序列化），attach 永不触发。projectTranscriptEntry
+// 回归上游投影原样透传；本覆盖层保留的实功能 = 聚合入口重建（feed/page 逐条隔离，
+// 见下）与 page 的 composedAtMs / nextBeforeSeq / threadCounts 复刻。
 import { projectTranscriptEntry as upstream, isRecord, type ProductionTranscriptEntry, type ProjectedTranscriptPage } from '../../frontend/src/production/model'
 import type { TranscriptThreadSummary } from '../../frontend/src/recovered/features/conversation/cards/transcript-card/thread-summary-controller'
-import type { ToolResultCardSnapshot, ToolResultCardStatus } from '../../frontend/src/recovered/features/conversation/tool-results/model'
 
 export * from '../../frontend/src/production/model'
 
-/** 工具名 → 卡片档；读类与连接器是扩展档（见文件头）。 */
-function resultCardKind(name: string): 'shell' | 'file-write' | 'file-edit' | 'file-read' | 'connector' {
-  if (name === 'bash') return 'shell'
-  if (name === 'write') return 'file-write'
-  if (name === 'edit') return 'file-edit'
-  if (name === 'read' || name === 'read_image' || name === 'glob' || name === 'grep' || name === 'present') return 'file-read'
-  return 'connector'
-}
-
-function resultCardStatus(status: string): ToolResultCardStatus {
-  if (status === 'done') return 'success'
-  if (status === 'failed' || status === 'error') return 'error'
-  if (status === 'aborted') return 'cancelled'
-  return 'running' // pending | running
-}
-
-/** shim tool-call raw entry（args/result 由 entries.ts 附带）→ 卡片快照；无可展示内容 → null。 */
-function toolResultOf(value: Record<string, unknown>, entry: { kind: 'tool-call'; id: string; status: string }): ToolResultCardSnapshot | null {
-  const result = typeof value.result === 'string' ? value.result : null
-  const decision = typeof value.decision === 'string' && value.decision !== '' ? value.decision : null
-  if ((result === null || result === '') && decision === null) return null
-  let args: Record<string, unknown> = {}
-  if (typeof value.args === 'string' && value.args !== '') {
-    try {
-      const parsed: unknown = JSON.parse(value.args)
-      // L-8 R2：合法 JSON 但非对象（'null' / '[1]' / '"s"' / '123'）不是实参表——
-      // 空表回落（JSON.parse('null') 得 null，断言转换不起运行时作用，解引用必炸）。
-      if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) args = parsed as Record<string, unknown>
-    } catch { /* 原样（非 JSON 实参） */ }
-  }
-  const kind = resultCardKind(typeof value.name === 'string' ? value.name : '')
-  const argString = (key: string): string | null => (typeof args[key] === 'string' && args[key] !== '' ? args[key] as string : null)
-  const card = {
-    kind,
-    toolCallId: entry.id,
-    status: resultCardStatus(entry.status),
-    path: kind === 'shell' ? null : argString('path') ?? argString('file_path'),
-    command: kind === 'shell' ? argString('command') : null,
-    workingDirectory: null,
-    // L-8 R3：有输出时置空让 output 全文呈现（view 的 detail = summary || diff || output，
-    // decision 写进 summary 会把完整 stdout/错误详情遮成 'allowed-once'）；无输出才
-    // 回落决定（拒绝原因仍可见）。
-    summary: (result === null || result === '') ? (decision ?? '') : '',
-    output: result ?? '',
-    diff: '',
-    isStreaming: false,
-    isBackground: false,
-  }
-  return card as ToolResultCardSnapshot // kind 含扩展档：见文件头（视图只当字符串用）
-}
-
-export function projectTranscriptEntry(value: unknown, index: number, agentName: string, agentId?: string | null): ProductionTranscriptEntry | null {
-  const entry = upstream(value, index, agentName, agentId)
-  if (entry === null || entry.kind !== 'tool-call') return entry
-  try {
-    const toolResult = toolResultOf(value as Record<string, unknown>, entry)
-    return toolResult === null ? entry : { ...entry, toolResult }
-  } catch {
-    return entry // L-8 R2 隔离：单条附卡失败退回无卡投影（行仍可见），不杀整页
-  }
-}
+/** T29：attach 已删——与上游投影等价，保留命名导出供聚合入口与既有 import 使用。 */
+export const projectTranscriptEntry: typeof upstream = upstream
 
 /** 聚合的单条入口（L-8 R2）：连上游投影自身都抛错的条目也隔离掉（跳过）。 */
 function projectOne(value: unknown, index: number, agentName: string, agentId?: string | null): ProductionTranscriptEntry | null {

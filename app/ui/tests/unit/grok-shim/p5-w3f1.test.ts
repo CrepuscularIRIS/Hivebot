@@ -18,66 +18,32 @@ import { createShimData } from '../../../renderer-grok/shim/src/data'
 
 const rec = (v: unknown): Record<string, unknown> => (typeof v === 'object' && v !== null ? v as Record<string, unknown> : {})
 
-// ── L-7 R2：tool-call 投影附带 ToolResultCard 快照（输出/错误详情可见） ──
+// ── T29：ToolResultCard attach 已删（T22 后主聊天不产 tool-call raw，投影成死路径）。
+// 上游投影对 tool-call 的基本处理（name/status/summary）仍在；不再附带 toolResult 卡。
 
-describe('L-7 R2: projectTranscriptEntry 附带 toolResult（展开工具行可见完整输出）', () => {
-  it('bash done → shell 卡：command + output + success', () => {
-    const entry = projectTranscriptEntry(
+describe('T29: tool-call 投影不再附带 toolResult（死路径已删）', () => {
+  it('bash/read/write 等投影仍在（上游基本字段），toolResult 恒 undefined', () => {
+    for (const tool of [
       { kind: 'tool-call', id: 'tool-c1', timestampMs: 1, name: 'bash', status: 'done', summary: 'ls -la', args: '{"command":"ls -la"}', result: 'total 0\n' },
-      0, 'Bot', 'a1',
-    )
-    const card = rec(rec(entry).toolResult)
-    expect(card.kind).toBe('shell')
-    expect(card.command).toBe('ls -la')
-    expect(card.output).toBe('total 0\n')
-    expect(card.status).toBe('success')
-    expect(card.toolCallId).toBe('tool-c1')
-  })
-
-  it('bash failed → error 卡带错误输出；read → file-read 卡带 path 与内容', () => {
-    const failed = projectTranscriptEntry(
-      { kind: 'tool-call', id: 'tool-c2', timestampMs: 1, name: 'bash', status: 'failed', summary: 'cat x', args: '{"command":"cat x"}', result: 'cat: x: No such file' },
-      0, 'Bot', 'a1',
-    )
-    expect(rec(rec(failed).toolResult).status).toBe('error')
-    expect(rec(rec(failed).toolResult).output).toBe('cat: x: No such file')
-    const read = projectTranscriptEntry(
       { kind: 'tool-call', id: 'tool-c3', timestampMs: 1, name: 'read', status: 'done', summary: 'a.txt', args: '{"path":"a.txt"}', result: 'file body' },
-      0, 'Bot', 'a1',
-    )
-    const card = rec(rec(read).toolResult)
-    expect(card.kind).toBe('file-read')
-    expect(card.path).toBe('a.txt')
-    expect(card.output).toBe('file body')
+      { kind: 'tool-call', id: 't', timestampMs: 1, name: 'write', status: 'done', summary: 's', args: '{"path":"a"}', result: 'ok' },
+    ]) {
+      const entry = rec(projectTranscriptEntry(tool, 0, 'Bot', 'a1'))
+      expect(entry.kind).toBe('tool-call')
+      expect(entry.name).toBe((tool as { name: string }).name)
+      expect(entry.toolResult).toBeUndefined()
+    }
   })
+})
 
-  it('write/edit → file-write/file-edit；连接器与其他工具 → connector；审批拒绝（decision）进 summary', () => {
-    expect(rec(rec(projectTranscriptEntry({ kind: 'tool-call', id: 't', timestampMs: 1, name: 'write', status: 'done', summary: 's', args: '{"path":"a"}', result: 'ok' }, 0, 'B', 'a')).toolResult).kind).toBe('file-write')
-    expect(rec(rec(projectTranscriptEntry({ kind: 'tool-call', id: 't', timestampMs: 1, name: 'edit', status: 'done', summary: 's', args: '{"path":"a"}', result: 'ok' }, 0, 'B', 'a')).toolResult).kind).toBe('file-edit')
-    expect(rec(rec(projectTranscriptEntry({ kind: 'tool-call', id: 't', timestampMs: 1, name: 'mcp__x__search', status: 'done', summary: 's', args: '{"query":"q"}', result: 'hits' }, 0, 'B', 'a')).toolResult).kind).toBe('connector')
-    const denied = projectTranscriptEntry(
-      { kind: 'tool-call', id: 't', timestampMs: 1, name: 'bash', status: 'failed', summary: 'rm x', args: '{"command":"rm x"}', result: null, decision: 'rejected' },
-      0, 'B', 'a',
-    )
-    expect(rec(rec(denied).toolResult).summary).toBe('rejected')
-  })
 
-  it('无 result 且无 decision（进行中）→ 不附卡；非 tool-call 投影不受影响', () => {
-    const running = projectTranscriptEntry({ kind: 'tool-call', id: 't', timestampMs: 1, name: 'bash', status: 'running', summary: 's', args: '{"command":"ls"}', result: null }, 0, 'B', 'a')
-    expect(rec(running).toolResult).toBeUndefined()
-    const message = projectTranscriptEntry({ kind: 'message', id: 'm1', timestampMs: 1, role: 'user', author: 'You', content: 'hi', clientNonce: 'n' }, 0, 'B', 'a')
-    expect(rec(message).clientNonce).toBe('n')
-  })
+describe('T29: page 聚合投影保持上游语义（composedAtMs / threadSummaries / 空页）', () => {
+
+
+
 
   // P5-W3.f2 R2：直接投影有卡但聚合投影（feed=回基线 / tail=刷新）丢卡——上游聚合函数
   // 内部绑定的还是上游投影，覆盖层只换了单条入口。聚合必须在覆盖层同样走附卡投影。
-  it('聚合投影（feed / page）同样附卡——刷新/回基线后展开仍可见输出（f2 R2）', () => {
-    const tool = { kind: 'tool-call', id: 'tool-agg', timestampMs: 1, name: 'bash', status: 'done', summary: 'ls', args: '{"command":"ls"}', result: 'AGG-FULL-RESULT' }
-    expect(rec(projectTranscriptFeedEntries([tool], 'Bot', 'a1')[0]).toolResult, 'feed 投影附卡').toMatchObject({ output: 'AGG-FULL-RESULT' })
-    const page = projectTranscriptPageResult({ entries: [tool], nextBeforeSeq: 7 }, 'Bot', 'a1')
-    expect(rec(page.entries[0]).toolResult, 'tail/page 投影附卡').toMatchObject({ output: 'AGG-FULL-RESULT' })
-    expect(page.nextBeforeSeq).toBe(7)
-  })
 
   it('page 投影保持上游语义：composedAtMs / threadSummaries / 非法输入空页', () => {
     const msg = { kind: 'message', id: 'm1', timestampMs: 1, role: 'user', author: 'You', content: 'x' }

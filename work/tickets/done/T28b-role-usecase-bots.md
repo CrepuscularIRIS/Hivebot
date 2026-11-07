@@ -4,7 +4,7 @@
 > 来源：queue U8b；T28 探针（done/T28 :18/:24）；Q-033 第 2 点（默认「开」）；本单「探针结论」（经理 2026-11-07 重读 0.79.3 产物）
 > 分支 / 作业目录：feat/T28b @ /tmp/bot-wt/T28b（从 docs/rebuild-p6-p5-plan 含本单的那个提交起）
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T28b（施工开始时由主 agent 填：日期、起点 SHA）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-07 manager (Opus 5.5) @ feat/T28b 11d205fd（核实记录见 receipts/T28b.md「经理验收」节；遗留一处潜伏的控制流回退，已开修复单 T28bb，不阻塞合并）
 
 ## 目标
 引导里选了 role 的用户，走完 hand-off 后除了主 bot，还会多出该 role 的前 2 个模板 bot（名字是模板名，各自做自我介绍，介绍里带模板职责和 role 设定句），主 bot 不变。和 0.79.3 一致。

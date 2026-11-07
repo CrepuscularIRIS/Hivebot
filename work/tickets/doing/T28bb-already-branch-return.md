@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T28b 经理验收遗留（receipts/T28b.md「经理验收」节）
 > 分支 / 作业目录：可直接在集成分支（T28b 合并之后）；机械小改
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：2026-11-07 main (GLM 5.3) @ 集成分支（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

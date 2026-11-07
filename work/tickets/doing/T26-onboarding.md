@@ -41,3 +41,9 @@
 ## 存疑预记
 - 0.18 view 的 props 依赖 bridge/client 两路——shim 侧 client 为 null 时 onboarding 是否可跑（探针 view.tsx 的 client 用途）
 - computer-demo 步需要 computer readiness（computer-readiness.ts）——shim 无 computer，探针其降级路径
+
+---
+## 施工进度（2026-11-07 11:2x，会话交接记录）
+**已完成**：核改 desktop.ts onboarding 面接 localStorage（getSeen/setSeen/读失败按已见）；e2e ①-③ 全绿（onboarding.spec.ts）——①未 seen+有 bot→0.18 gate 自动落 seen（ProductionRenderer:2134 语义）且不进引导；②setSeen 写 0 后 gate 重估回 1；③老用户不进。**关键发现**：0.18 上游 gate「agentCount>0 自动 seen」——e2e 恒有 main bot 故 onboarding 流程本身（六步 UI）在 e2e 里不可达（需空 roster 环境）；真首启（真人无 bot）才会进。已提交见 git log。
+**未做（下会话续）**：landing 前奏（0.79.3 七步 vs 0.18 六步——探针 landing 形态）；attribution/role/connect 页；create 步演示 bot kickstart:false 通道；变异三刀；截图；回归。B 段已拆 T32。
+**续接入口**：worktree /tmp/bot-wt/T26（feat/T26）；工单本文件；先跑 `HOME=/tmp/bot-T26h TMPDIR=/tmp/bot-T26t pnpm --config.verify-deps-before-run=false test:e2e tests/e2e/onboarding.spec.ts`（3 passed 基线）。

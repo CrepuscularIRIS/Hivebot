@@ -149,6 +149,28 @@ describe('T9a 产品启动器 ssh 组合', () => {
     expect(r.toolResults[0]!.text, 'guard hardRoots 拒串').toContain('touches a hard-denied area')
   })
 
+  it('⑤d workspace_ensure 越界/坏形状 → 拒且远端无新目录', { timeout: 120_000 }, async () => {
+    const before = readdirSync(server.workspace).length
+    const wsRootBefore = existsSync(join(server.workspace, 'workspaces')) ? readdirSync(join(server.workspace, 'workspaces')).length : 0
+    // 六坏形全拒（RemoteError bad-bot-id）
+    const rejected: string[] = []
+    for (const bad of ['../escape', 'a/b', 'has space', '.hidden', 'x'.repeat(200), 'ok/id']) {
+      try {
+        await rt!.client.call('p2sdk/workspace_ensure', { request: { botId: bad } })
+      } catch (e) {
+        rejected.push(bad)
+        if (!String(e).includes('bad-bot-id')) throw new Error(`坏形状 ${bad} 拒因异常: ${String(e).slice(0, 150)}`)
+      }
+    }
+    expect(rejected, '六个坏形状全拒').toHaveLength(6)
+    await new Promise((r) => setTimeout(r, 500))
+    // workspaces 根可能尚未被任何 ensure 建出（全坏形皆拒）——不存在即最强断言
+    const wsDir = join(server.workspace, 'workspaces')
+    const wsRootAfter = existsSync(wsDir) ? readdirSync(wsDir).length : -1
+    expect(wsRootAfter, `远端 workspaces 无新目录（before=${wsRootBefore} after=${wsRootAfter}）`).toBeLessThanOrEqual(wsRootBefore)
+    expect(readdirSync(server.workspace).length, '远端根无逃逸目录').toBe(before)
+  })
+
   it('②d remoteHome 配错 → 起不来：launchRuntime reject 且错误含校验固定串（guard exit 86）', { timeout: 240_000 }, async () => {
     // 先红（T9b3 前）= guardRow 不带 remoteHome → 校验不跑、照常启动（resolve）。
     // 终态：校验在 ssh.ready 后 exit(86)，dsh 死于 connect 窗口——错误带 stderr 尾。

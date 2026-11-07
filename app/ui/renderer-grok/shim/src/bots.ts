@@ -59,7 +59,7 @@ export interface PbotsUi {
   config(agentId: string): BotConfig | null
   api(method: string, args?: unknown): Promise<ApiResult>
   /** #3 / #4 + 可选 #5；成功即插进 roster（主 bot 之后按创建顺序）并推 agents。 */
-  createBot(req: { preset: string; connectors: string[]; model?: { provider: string; model: string }; avatar?: { shape: string; color: string } }): Promise<CreateResult>
+  createBot(req: { preset: string; connectors: string[]; model?: { provider: string; model: string }; avatar?: { shape: string; color: string }; kickstart?: boolean }): Promise<CreateResult>
   /** #20：成功才改 mainBotId 并置顶。 */
   setMain(agentId: string): Promise<ApiResult>
   /** #5：成功后本地记下（follow 快照下一轮才投影 modelSelection）。 */

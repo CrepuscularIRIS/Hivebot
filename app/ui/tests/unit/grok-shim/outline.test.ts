@@ -69,3 +69,15 @@ describe('T21 toOutlineItems', () => {
     provider.reset()
   })
 })
+
+describe('T25 kickstart 不进 outline', () => {
+  it('kickstart user 不出行；普通 user 出 kind:user 行', async () => {
+    const { KICKSTART_PROMPT } = await import('../../../renderer-grok/shim/src/entries')
+    const out = toOutlineItems({ items: [
+      { kind: 'user', id: 'k1', text: KICKSTART_PROMPT },
+      { kind: 'assistant', id: 'a1', text: '介绍' },
+      { kind: 'user', id: 'u2', text: '正常问题' },
+    ] as never, streaming: null })
+    expect(out.map((o) => o.kind)).toEqual(['assistant-text', 'user'])
+  })
+})

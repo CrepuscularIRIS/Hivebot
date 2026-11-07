@@ -14,7 +14,7 @@ import { CarrierSocket, pageEnv } from '../../../renderer/carrier'
 import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../../../renderer/carrier/mux'
 import { initView, olderItemsOf, reduceFollow, type SessionView } from '../../../renderer/session/reduce'
 import { avatarOf, saveAvatar } from './avatars'
-import { askText, serialize, permissionEntry, type RawEntry } from './entries'
+import { askText, isKickstartPrompt, KICKSTART_PROMPT, serialize, permissionEntry, type RawEntry } from './entries'
 import { toOutlineItems } from './outline'
 import { activityOf, toAgentRecord } from './agents'
 import type { CoordinatorDeps } from './coordinator'
@@ -252,7 +252,9 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     const text = createNotices.get(agentId)
     if (text === undefined) return []
     const view = views.get(agentId)
-    if (view !== undefined && view.items.some((i) => i.kind === 'user')) {
+    // T25（真 bug 预防，工单设计 4）：kickstart 提示也是 user 条目——撤除条件必须是
+    // 「存在一条不是 kickstart 提示的 user 条目」，否则介绍提示会把 model 失败的 notice 顶掉。
+    if (view !== undefined && view.items.some((i) => i.kind === 'user' && !isKickstartPrompt(i.text))) {
       createNotices.delete(agentId)
       return []
     }
@@ -571,6 +573,14 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       order = [...order.filter((id) => id !== sid), sid]
       followed.add(sid)
       openFollow(sid)
+      // T25：创建成功选中新 bot 后立刻请它自我介绍（0.79.3 时序；失败不影响建 bot）
+      if (req.kickstart !== false) {
+        const intro = await api('session/prompt', { request: { requestId: `kickstart-${sid}`, sessionId: sid, mode: 'queue', content: [{ type: 'text', text: KICKSTART_PROMPT }] } })
+        if (!intro.ok) {
+          const msg = 'Your Bot couldn\'t introduce itself'
+          createNotices.set(sid, createNotices.has(sid) ? `${createNotices.get(sid)!}\n${msg}` : msg) // 0.79.3 原文；多条都可见
+        }
+      }
       push.agents()
       return { ok: true, sessionId: sid, notice }
     },

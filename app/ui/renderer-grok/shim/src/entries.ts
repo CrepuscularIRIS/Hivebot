@@ -31,6 +31,16 @@ function argText(args: string): string | null {
 }
 
 /** 工具行单行摘要：argText 优先，截 120 字。 */
+/** T25：kickstart 自我介绍提示（0.79.3 服务端注入引导提示的客户端形态——transcript/outline 都不显示）。
+ * 0.79.3 无 UI 抑制开关：是否介绍由代码路径决定；我们的 createBot 带 kickstart?:false 供 T26 onboarding 用。 */
+export const KICKSTART_PROMPT = '<bot_introduction_request>You were just created. Greet the user and introduce yourself in two or three short sentences: your name if you have one, your personality, and what you can help with. Don\'t use any tools.</bot_introduction_request>'
+
+/** 只认标签不认正文（T30 往里加名字时旧会话照样认得出）。 */
+export function isKickstartPrompt(text: string | undefined | null): boolean {
+  const t = (text ?? '').trim()
+  return t.startsWith('<bot_introduction_request>') && t.endsWith('</bot_introduction_request>')
+}
+
 export function toolSummary(name: string, args: string, result: string | null): string {
   const text = argText(args)
   if (text !== null) return text.slice(0, 120)
@@ -84,6 +94,8 @@ export function toRawEntries(
     const at = e.at
     switch (e.kind) {
       case 'user': {
+        // T25：kickstart 介绍提示不进主 transcript（0.79.3 客户端看不到那条引导 user 消息）
+        if (isKickstartPrompt(e.text)) break
         // P5-55：0.18 model.ts 判侧 `kind==='send-message' || role==='assistant' ? assistant : user`——send-message 是 agent 发来的消息，
         // 用户消息必须 message + role:'user'（原 send-message 让用户输入落 assistant 侧，VERIFY-P5-51 OBS）
         const entry: RawEntry = { kind: 'message', id: e.id, timestampMs: ts(at), role: 'user', author: 'You', content: e.text }

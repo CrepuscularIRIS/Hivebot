@@ -189,3 +189,25 @@ describe('toRawEntries · P6-16 编排条目', () => {
     expect(raw[1]).toMatchObject({ id: 'pbots-assign:a', content: 'From main bot: Run tests', pbotsPeer: { kind: 'task', fromId: 'm', text: 'Run tests' } })
   })
 })
+
+describe('T25 kickstart 提示隐藏', () => {
+  it('谓词：标签包裹（含首尾空白）命中；同文本无标签/只有开头标签/引用未包整段 不命中', async () => {
+    const { isKickstartPrompt, KICKSTART_PROMPT } = await import('../../../renderer-grok/shim/src/entries')
+    expect(isKickstartPrompt(KICKSTART_PROMPT)).toBe(true)
+    expect(isKickstartPrompt(`  \n${KICKSTART_PROMPT}\n `)).toBe(true)
+    expect(isKickstartPrompt(KICKSTART_PROMPT.replace(/<\/?bot_introduction_request>/g, ''))).toBe(false)
+    expect(isKickstartPrompt('<bot_introduction_request>half')).toBe(false)
+    expect(isKickstartPrompt(`quote: ${KICKSTART_PROMPT} trailing`)).toBe(false)
+    // 只认标签不认正文（M3 咬合格）：T30 往正文加名字后旧会话照样认得出
+    expect(isKickstartPrompt('<bot_introduction_request>完全不同的正文，比如带名字 {name: X}</bot_introduction_request>')).toBe(true)
+  })
+  it('toRawEntries：kickstart user 不出条目、紧跟 assistant 照常；普通 user 照常', async () => {
+    const { KICKSTART_PROMPT } = await import('../../../renderer-grok/shim/src/entries')
+    const out = foldTurns([u('k1', KICKSTART_PROMPT), a(1, 0, '介绍'), u('u2', '正常问题')], { hasMore: false, running: false })
+    const raw = toRawEntries(out, 'Bot', null)
+    const users = raw.filter((e) => rec(e).kind === 'message' && rec(e).role === 'user')
+    expect(users).toHaveLength(1)
+    expect(rec(users[0]).content).toBe('正常问题')
+    expect(raw.some((e) => rec(e).kind === 'message' && rec(e).content === '介绍')).toBe(true)
+  })
+})

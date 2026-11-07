@@ -1049,3 +1049,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 19:3x T11 开工：RPC 机制定位（TypertRemoteService p610 同款）+ workspace_ensure 骨架（词法校验/mkdir/readlink canonical）提交 WIP；sshRows 挂载与 ui e2e 下窗口
 - 19:4x T11 进展：sshRows 挂载 + RPC 单测 3/3（词法/固定argv/canonical 三态）；回归 42+5 绿。剩 ui e2e 面与 mintWorkspace 分支
 - 20:0x T11 main 面：handoff ssh-mode/remote-root 字段（插件+start 行）+ mintWorkspace 分支（RPC+canonical）；m3+skills 114 绿。剩 ui e2e 面
+- 20:1x T11 ⑤a spec 骨架落地；卡点=跨包 .ts 夹具 import（CJS 加载炸 import.meta）——下窗口内联精简夹具进 ui 侧

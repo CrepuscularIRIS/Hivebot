@@ -29,6 +29,11 @@ function StopButton({ agentId }: { agentId: string }) {
 
 export function ConversationAgentHeader(props: ConversationAgentHeaderProps) {
   activeAgent.id = props.agent.id
+  // T23：状态行活动源（props 类型带上 isRunning/currentActivity/avatar*——上游 chat-header.tsx:14）
+  activeAgent.running = props.agent.isRunning === true
+  activeAgent.activity = props.agent.isRunning === true ? props.agent.currentActivity ?? null : null
+  activeAgent.avatarColor = props.agent.avatarColor
+  activeAgent.avatarShape = props.agent.avatarShape
   // P6-15：当前打开的 bot 交给 shim（worker 打开即已读，主 bot 汇总随之消失）；放 effect 里，不在渲染期推 roster
   useEffect(() => { ui()?.setActive(props.agent.id) }, [props.agent.id])
   return <Upstream {...props} trailing={props.agent.isRunning === true && ui() !== null ? <StopButton agentId={props.agent.id} /> : undefined} />

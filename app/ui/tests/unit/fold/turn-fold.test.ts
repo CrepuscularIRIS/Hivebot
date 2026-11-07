@@ -71,7 +71,7 @@ describe('foldTurns · D2 七格', () => {
     const out = foldTurns([u('u1'), t('c1'), t('c2')], { hasMore: false, running: false })
     expect(msgs(out)).toHaveLength(0)
     expect(notices(out)).toHaveLength(1)
-    expect(notices(out)[0]).toMatchObject({ tone: 'muted', text: '已完成，没有文字结果 · 展开查看过程', source: 'fold' })
+    expect(notices(out)[0]).toMatchObject({ tone: 'muted', text: '已完成，没有文字结果', source: 'fold' })
   })
 
   for (const kind of ['aborted', 'interrupted', 'cancelled'] as const) {

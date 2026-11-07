@@ -22,7 +22,7 @@ export interface FoldInput { hasMore: boolean; running: boolean }
 export interface FoldOutput { entries: FoldEntry[]; streamingAs: 'message' | 'thinking' }
 
 /** (d) 的 notice 文案（B §2.2）；(b)(e) 用 reduce 已产出的那条，不另加。 */
-export const EMPTY_RESULT_NOTICE = '已完成，没有文字结果 · 展开查看过程'
+export const EMPTY_RESULT_NOTICE = '已完成，没有文字结果' // T23：主聊天无过程可展开（T22），入口在侧栏「Show full conversation」——文案不指名
 
 // 回合切分 = 以 user 条目为界 + assistant/thinking 的 `t<turn>-` 前缀变化（PLAN 决策 6）。
 // P6-16 决策 25 闭合：回报（report）与任务（task）条目是确定的回合起点，与 user 同级切段——

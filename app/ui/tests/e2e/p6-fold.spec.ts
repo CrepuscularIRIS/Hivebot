@@ -237,7 +237,7 @@ test('无工具问答恰 1 气泡；D2 (b)(c)(d)(e)(f) 的 DOM 对应；亮暗',
     await send(page, '兜底 d')
     await ended(d, 'completed')
     await expect(notices(page)).toHaveCount(1)
-    await expect(notices(page).first()).toContainText('已完成，没有文字结果 · 展开查看过程')
+    await expect(notices(page).first()).toContainText('已完成，没有文字结果')
     await expect(assistantRows(page)).toHaveCount(0)
     await bothThemes(page, 'd2-d-empty')
 
@@ -276,7 +276,7 @@ test('无工具问答恰 1 气泡；D2 (b)(c)(d)(e)(f) 的 DOM 对应；亮暗',
     await expect(page.locator('.sand-outline-panel .sand-outline-item[data-kind="thinking"]')).toContainText('只是推理，不是正文。')
     await expect(assistantRows(page)).toHaveCount(0)
     await expect(notices(page)).toHaveCount(1)
-    await expect(notices(page).first()).toContainText('已完成，没有文字结果 · 展开查看过程')
+    await expect(notices(page).first()).toContainText('已完成，没有文字结果')
   } finally {
     await env.stop()
   }

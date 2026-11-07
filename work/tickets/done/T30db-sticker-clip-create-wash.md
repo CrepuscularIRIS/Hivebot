@@ -4,7 +4,7 @@
 > 来源：T30d 终验（feat/T30d HEAD 0a47fb46）不通过，失败计数 1
 > 分支 / 作业目录：继续 feat/T30d @ /tmp/bot-wt/T30d
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T30d 续修
-> accepted：
+> accepted：2026-11-07 feat/T30d @d8d2ea0c。经理重拍并放大核对：亮暗两色外环连续不断；暗色 Create 底色 255，文字最暗 28（≤40 的有 253 px）；分隔线 71 对底色 31；12 passed；diff=0
 
 ## 终验已确认的（不用再证）
 - build 0；0793 + character 12 passed；check diff=0；pgrep 0。

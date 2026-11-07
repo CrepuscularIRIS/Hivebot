@@ -4,7 +4,7 @@
 > 来源：T30c 终验（feat/T30 HEAD 53928cf2）。T30 已经第三轮，按任务 C 把暗色这几项拆出来单做，不再挡 T30 合并
 > 分支 / 作业目录：feat/T30d @ /tmp/bot-wt/T30d，起点是 T30 合并后的 docs 分支
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T30d
-> accepted：（2026-11-07 终验 @0a47fb46 不通过：分隔线 ✓；贴纸外环被 viewBox 裁断——描边 57 伸出 28.5 > 留边 15，是本单引入的回归；暗色 Create 底色 205、文字发灰，ref 是 245/18 → 返修单 `open/T30db-sticker-clip-create-wash.md`）
+> accepted：2026-11-07 feat/T30d @d8d2ea0c（连同 T30db）｜历史：（2026-11-07 终验 @0a47fb46 不通过：分隔线 ✓；贴纸外环被 viewBox 裁断——描边 57 伸出 28.5 > 留边 15，是本单引入的回归；暗色 Create 底色 205、文字发灰，ref 是 245/18 → 返修单 `open/T30db-sticker-clip-create-wash.md`）
 > 失败计数：1
 
 ## 目标

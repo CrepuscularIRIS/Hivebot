@@ -351,6 +351,15 @@ def main():
         if os.path.isdir(p):
             out += ['--ro-bind', p, p]
             policies_mounted.append(p)
+    # T7d：skill 根只读覆盖——bash 写 .dsh/skills/.agents/skills 必须失败（挂载
+    # 点不可写/rename/rm；与 write/edit 的审阅卡同语义）。从 binds（会话工作区
+    # per-bot）派生，bwrap 挂载序：后 --ro-bind 覆盖前 --bind 的写权限。目录
+    # 缺失跳过（mintWorkspace 预建后必在）。不进 remask 集：skill 要可见可读。
+    for b in binds:
+        for sub in ('.dsh/skills', '.agents/skills'):
+            root = os.path.join(b, sub)
+            if os.path.isdir(root):
+                out += ['--ro-bind', root, root]
     # 再遮（v2.1）：硬 NEVER 根与 mask 根落在任何挂回/重 bind 目录之下 → 最后再遮一次
     mounted = binds + tools_mounted + policies_mounted
     remask = set()

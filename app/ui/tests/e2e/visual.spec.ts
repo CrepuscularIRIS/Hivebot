@@ -7,7 +7,7 @@
 import { expect, test, type Page } from 'playwright/test'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { bashCall, createBots, evidenceOut, finalAssistant, launchProduct, openBot, permissionDock, reasoningTextCall, send, textCall } from '../support/ui.ts'
+import { bashCall, createBots, evidenceOut, finalAssistant, launchProduct, openBot, openOutline, permissionDock, reasoningTextCall, send, textCall } from '../support/ui.ts'
 
 const OUT = evidenceOut('U2p')
 const BASELINE = join(__dirname, 'visual-baseline.json')
@@ -36,10 +36,10 @@ const ANCHORS: Anchor[] = [
   { id: 'B1 会话列', sel: '.sand-virtual-transcript', props: ['row-gap', 'padding-top', 'padding-left'], was: 'row-gap 22px' },
   { id: 'B2 会话列宽', sel: '.sand-virtual-transcript', props: ['max-width', 'padding'], was: 'padding 28px 30px; max-width 750px' },
   { id: 'B3 用户气泡', sel: null, props: [], was: '反转气泡（R2 B3）；0.18 持久用户条目落 assistant 侧（VERIFY-P5-51 OBS），无用户气泡锚点' },
-  { id: 'B6 工具行', sel: '.sand-outline-item[data-kind="tool-call"] .sand-outline-item__row', props: ['min-height', 'padding', 'border-top-left-radius'], was: 'min-height 34px; padding 7px 9px（R2：高 28 r8）' },
-  { id: 'B6 chevron', sel: '.sand-outline-item[data-kind="tool-call"] .sand-outline-item__chevron', props: ['width', 'height', 'transform'], was: '6×6；收起 rotate(-45deg)' },
-  { id: 'B6 预览', sel: '.sand-outline-item[data-kind="tool-call"] .sand-outline-item__preview', props: ['font-size', 'font-family'], was: 'preview 13px 非等宽（R2）' },
-  { id: 'B7 thinking 行', sel: '.sand-outline-item[data-kind="thinking"] .sand-outline-item__row', props: ['min-height', 'padding'], was: 'thinking 行（P5-12）' },
+  { id: 'B6 工具行', sel: '.sand-outline-panel .sand-outline-item[data-kind="tool-call"] .sand-outline-item__row', props: ['min-height', 'padding', 'border-top-left-radius'], was: 'min-height 34px; padding 7px 9px（R2：高 28 r8）' },
+  { id: 'B6 chevron', sel: '.sand-outline-panel .sand-outline-item[data-kind="tool-call"] .sand-outline-item__chevron', props: ['width', 'height', 'transform'], was: '6×6；收起 rotate(-45deg)' },
+  { id: 'B6 预览', sel: '.sand-outline-panel .sand-outline-item[data-kind="tool-call"] .sand-outline-item__preview', props: ['font-size', 'font-family'], was: 'preview 13px 非等宽（R2）' },
+  { id: 'B7 thinking 行', sel: '.sand-outline-panel .sand-outline-item[data-kind="thinking"] .sand-outline-item__row', props: ['min-height', 'padding'], was: 'thinking 行（P5-12）' },
   { id: 'B8 审批卡', sel: '[aria-label="Local tool permissions"]', props: ['border-top-left-radius', 'padding', 'box-shadow'], was: 'r10; padding 14px 16px（R2：r24 + 阴影）' },
   { id: 'B8 钮', sel: '[aria-label="Local tool permissions"] [role="group"] button', props: ['padding', 'border-top-left-radius', 'height'], was: 'padding 6px 9px r6（R2：药丸 r9999）' },
   { id: 'B10 composer 壳', sel: '.sand-prompt-shell', props: ['padding', 'border-top-left-radius'], was: 'padding 9px; r16（R2：药丸 r9999）' },
@@ -92,6 +92,7 @@ test('U2′：旧 U2 / R8 数值断言的新锚点亮暗锁定（基线 = 0.18 �
     await expect(finalAssistant(page).last()).toContainText('示例代码', { timeout: 20_000 })
     await send(page, '执行一下')
     await expect(permissionDock(page)).toBeVisible({ timeout: 20_000 }) // 审批卡挂着时量 B8
+    await openOutline(page, 'U2-X') // T22：工具/thinking 行迁 outline 面板（同一组件，量测数值期望不改）
     await page.click('button[aria-label="View agent settings"]')
     await expect(page.locator('aside.sand-info-pane[data-open]')).toBeVisible()
 

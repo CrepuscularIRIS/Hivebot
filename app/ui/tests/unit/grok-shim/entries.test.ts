@@ -36,19 +36,19 @@ describe('toRawEntries · 每类 entry 的 0.18 形状', () => {
     expect(msgs.map((m) => [rec(m).content, rec(m).author])).toEqual([['先看一下', 'Research'], ['结果是 42', 'Research']])
   })
 
-  it('thinking（reasoning 与 text 降级）→ thinking 行 text（running 中间正文不升气泡）', () => {
+  it('T22：thinking（reasoning 与 text 两种）不进主 transcript（0.79.3 COORD Qz / APP LF——过程只在 outline 侧板）', () => {
     const out = foldTurns([u('u1'), r(1, 0, '推理中'), t('c1'), a(1, 1, '中间')], { hasMore: false, running: true })
-    const thinks = toRawEntries(out, 'Bot', null).filter((e) => e.kind === 'thinking')
-    expect(thinks.map((x) => rec(x).text)).toEqual(['推理中', '中间'])
+    const raw = toRawEntries(out, 'Bot', null)
+    expect(raw.filter((e) => e.kind === 'thinking')).toEqual([])
+    expect(raw.some((e) => rec(e).kind === 'message' && rec(e).content === '中间')).toBe(false) // 中间轮正文也不进
   })
 
-  it('tool → tool-call：name/status/summary（done 映射 done，running/failed 原样）', () => {
+  it('T22：tool-call 不进主 transcript（ASSIGN_TOOLS 转编排 peer 不变）', () => {
     const items: TimelineItem[] = [u('u1'), tRun('c1'), t('c2', 'read')]
     const out = foldTurns(items, { hasMore: false, running: true })
-    const tools = toRawEntries(out, 'Bot', null).filter((e) => e.kind === 'tool-call')
-    expect(tools.map((x) => [rec(x).name, rec(x).status])).toEqual([['bash', 'running'], ['read', 'done']])
-    expect(typeof rec(tools[0]).summary).toBe('string')
-    expect(rec(tools[0]).summary).toContain('ls')
+    const raw = toRawEntries(out, 'Bot', null)
+    expect(raw.filter((e) => e.kind === 'tool-call')).toEqual([])
+    expect(raw.filter((e) => rec(e).kind === 'message' && rec(e).role === 'user')).toHaveLength(1)
   })
 
   it('notice → notice 行（content 字符串）', () => {
@@ -96,16 +96,8 @@ describe('toRawEntries · 每类 entry 的 0.18 形状', () => {
     expect(rec(raw[0]).clientNonce).toBe('nonce-1')
   })
 
-  it('tool-call 保留完整 args 与 result（L-7 R2：输出/错误详情不再被序列化丢掉）', () => {
-    const items: TimelineItem[] = [u('u1'), { ...t('c1'), result: 'boom: ENOENT' }, t('c2', 'read')]
-    const out = foldTurns(items, { hasMore: false, running: false })
-    const tools = toRawEntries(out, 'Bot', null).filter((e) => e.kind === 'tool-call')
-    expect(rec(tools[0]).result).toBe('boom: ENOENT')
-    expect(rec(tools[0]).args).toBe('{"command":"ls"}')
-    expect(rec(tools[1]).result).toBe('ok')
-    // summary 仍是单行预览（不因带 result 变长）
-    expect(String(rec(tools[0]).summary).length).toBeLessThanOrEqual(120)
-  })
+  // T22：L-7 R2 的 tool-call 完整 args/result 格随主聊天工具卡退场（主 transcript 不再产
+  // tool-call）；summary 表达迁 outline.test.ts（outline 行 summary 与主聊天同源同参同果）。
 })
 
 describe('permissionEntry · 审批卡（P5-50 坑2 答案：dock 渲染条件）', () => {
@@ -155,11 +147,14 @@ describe('toRawEntries · 流式落点（streamingAs）', () => {
     expect(raw.at(-1)).toMatchObject({ id: 'live-stream', kind: 'message', role: 'assistant', content: '收到，' })
   })
 
-  it('首工具后：live-stream 落 thinking 行，气泡仍 ≤1', () => {
-    const out = foldTurns([u('u1'), a(1, 0, 'A'), tRun('c1')], { hasMore: false, running: true })
-    const raw = toRawEntries(out, 'Bot', { text: '中间 B' })
-    expect(raw.at(-1)).toMatchObject({ id: 'live-stream', kind: 'thinking', text: '中间 B' })
-    expect(raw.filter((e) => e.kind === 'message' && e.role === 'assistant')).toHaveLength(1)
+  it('T22：首工具后 live-stream 不进主 transcript（turn/end 后作为 result 一次出现）；首答流照旧', () => {
+    const mid = foldTurns([u('u1'), a(1, 0, 'A'), tRun('c1')], { hasMore: false, running: true })
+    const rawMid = toRawEntries(mid, 'Bot', { text: '中间 B' })
+    expect(rawMid.some((e) => rec(e).id === 'live-stream')).toBe(false) // 流式期不显示（不闪）
+    expect(rawMid.filter((e) => e.kind === 'message' && e.role === 'assistant')).toHaveLength(1)
+    const first = foldTurns([u('u1')], { hasMore: false, running: true })
+    const rawFirst = toRawEntries(first, 'Bot', { text: '首答流' })
+    expect(rec(rawFirst.at(-1))).toMatchObject({ id: 'live-stream', kind: 'message', isStreaming: true })
   })
 })
 
@@ -168,7 +163,7 @@ describe('toRawEntries · P6-16 编排条目', () => {
   const tool = (name: string, args: object, status: ToolStatus, result: string | null): TimelineItem =>
     ({ kind: 'tool', id: `tool-${name}`, callId: name, name, args: JSON.stringify(args), status, result, awaiting: false, decision: null })
 
-  it('create_bot / send_to_bot 工具行 → notice（回落文本可读）+ assign 元数据；其他工具照旧 tool-call', () => {
+  it('create_bot / send_to_bot 工具行 → notice（回落文本可读）+ assign 元数据；T22：普通工具不产 tool-call', () => {
     const items: TimelineItem[] = [
       { kind: 'user', id: 'u1', text: '跑测试' },
       { kind: 'assistant', id: 't1-s0', text: '好的，派给 Test fixer。' },
@@ -177,7 +172,7 @@ describe('toRawEntries · P6-16 编排条目', () => {
       tool('bash', { command: 'ls' }, 'done', 'ok'),
     ]
     const raw = toRawEntries(foldTurns(items, { hasMore: false, running: false }), 'Main', null)
-    expect(raw.map((e) => e.kind)).toEqual(['message', 'message', 'notice', 'notice', 'tool-call'])
+    expect(raw.map((e) => e.kind)).toEqual(['message', 'message', 'notice', 'notice']) // T22：bash 不产 tool-call
     expect(raw[2]).toMatchObject({ content: 'Messaging Test fixer', pbotsPeer: { kind: 'assign', tool: 'create_bot', workerId: 'w1', status: 'done' } })
     expect(raw[3]).toMatchObject({ content: "Couldn't message another assistant: This worker is busy", pbotsPeer: { kind: 'assign', status: 'failed', workerId: 'w1' } })
   })

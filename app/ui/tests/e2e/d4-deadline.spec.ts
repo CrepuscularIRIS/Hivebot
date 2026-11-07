@@ -5,7 +5,7 @@
 import { expect, test } from 'playwright/test'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { EVIDENCE, bashCall, createBots, devState, finalAssistant, launchProduct, openBot, permissionDock, send, textCall, toolRows } from '../support/ui.ts'
+import { EVIDENCE, bashCall, createBots, devState, finalAssistant, launchProduct, openBot, openOutline, permissionDock, send, textCall, toolRows } from '../support/ui.ts'
 
 test('D4③：观察窗口（2×deadline）内终态 = rejected（deadline 代答）；副作用全程不存在', async () => {
   // deadline 窗口用 env 压短（生产默认 20s = 2×10s PORT_TRANSFER_TIMEOUT_MS，语义见 m2-mux/deadline.ts）
@@ -32,6 +32,7 @@ test('D4③：观察窗口（2×deadline）内终态 = rejected（deadline 代�
     ), { timeout: 15_000 }).toBe(1)
 
     // 界面终态（decided rejected → 行 failed + 回复继续）——窗口内完成
+    await openOutline(page, 'D4-X') // T22：工具行迁 outline 面板
     await expect(toolRows(page).last()).toHaveAttribute('data-status', 'failed', { timeout: 20_000 })
     await expect(permissionDock(page)).toHaveCount(0) // 已定局的卡从 dock 收掉（无 cancel 也收）
     await expect.poll(async () => (await devState(page)).views[x!]?.items.find((i) => i.kind === 'tool') as unknown as { decision?: string })

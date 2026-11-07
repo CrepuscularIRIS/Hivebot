@@ -130,6 +130,22 @@ export async function openBot(page: Page, title: string): Promise<void> {
   await expect(botItem(page, title)).toHaveAttribute('data-active', 'true')
 }
 
+/** T21：侧栏行右键 → 菜单「Show full conversation」打开 outline 面板（真实菜单点击，不 evaluate）。
+ * 同名多行（未命名 bot 都叫 New chat）时优先 data-active 行。 */
+export async function openOutline(page: Page, botTitle: string): Promise<Locator> {
+  const rows = botItem(page, botTitle)
+  const row = (await rows.count()) > 1 ? page.locator(`.sand-agent-item[data-active="true"][aria-label="${botTitle}"]`).first() : rows.first()
+  await row.click({ button: 'right' })
+  await page.locator('[aria-label="Agent actions"] [role="menuitem"]', { hasText: 'Show full conversation' }).click()
+  const panel = page.locator('aside.sand-outline-panel')
+  await expect(panel).toBeVisible({ timeout: 15_000 })
+  return panel
+}
+
+/** T22：工具行只在 outline 面板（主 transcript 不再渲染 tool-call；0.79.3 COORD Qz）。
+ * 断言前先 openOutline（T21 已证面板开着时事件实时更新）。 */
+export const toolRows = (page: Page): Locator => page.locator('.sand-outline-panel .sand-outline-item[data-kind="tool-call"]')
+
 export const transcript = (page: Page): Locator => page.locator('.sand-virtual-transcript')
 export const assistantRows = (page: Page): Locator => page.locator('.sand-virtual-transcript .sand-transcript-row[data-role="assistant"]')
 /** 流式中的正文（shim entries.ts live-stream 条目的 prose；行本身还含隐藏的作者 / 时间 span）。 */
@@ -137,7 +153,6 @@ export const streamingRow = (page: Page): Locator => page.locator('.sand-transcr
 /** 定稿的 bot 正文 prose（非 live）。 */
 export const finalAssistant = (page: Page): Locator =>
   page.locator('.sand-virtual-transcript .sand-transcript-row[data-role="assistant"]:not([data-entry-id="live-stream"]) .sand-message-prose')
-export const toolRows = (page: Page): Locator => page.locator('.sand-outline-item[data-kind="tool-call"]')
 export const permissionDock = (page: Page): Locator => page.locator('[aria-label="Local tool permissions"]')
 export const composer = (page: Page): Locator => page.locator('.sand-prompt-shell .ProseMirror[contenteditable="true"]')
 

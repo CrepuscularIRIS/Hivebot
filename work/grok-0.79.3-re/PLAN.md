@@ -9,8 +9,9 @@
 | T22 | 主聊天只留首答 + 终答 | done（同上，与 T21 一起合并） |
 | T23 | 状态行短语引擎 | done（2026-11-07 经理验收 4624441f；待主 agent 合并 feat/T23） |
 | T24 | 建 bot 对话框 + 吉祥物形象持久化（Q-032） | 计划 |
-| T25 | onboarding 开闸 | 计划 |
-| T26 | kickstart 自我介绍 + Help me create 接线 | 计划 |
+| T25 | kickstart 自我介绍（2026-11-07 与 onboarding 互换编号） | open（`tickets/open/T25-kickstart-intro.md`） |
+| T26 | onboarding 开闸 | 计划（T25 合并后） |
+| T31 | Help me create a Bot 接线（从原 kickstart 行拆出） | 计划（低，T30 后） |
 | T27 | subagent / 跨 bot 呈现 | 阻塞：等用户编排层结论 |
 | T28 | onboarding 增量步 + 42 模板 | 计划（低） |
 

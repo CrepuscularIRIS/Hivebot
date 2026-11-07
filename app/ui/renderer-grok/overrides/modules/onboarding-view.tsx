@@ -5,14 +5,15 @@
 // chunk-onboarding-flow（walk/三页形态）。
 import { useEffect, useRef, useState } from 'react'
 import {
-  createOnboardingHandOffDwell, handOffStatus, typedMeetText, ONBOARDING_MEET_BEAT_MS, ONBOARDING_MEET_DELAY_BEATS,
-  MEET_TYPED_TEXT, ONBOARDING_DEMO_BEAT_MS, COMPUTER_DEMO_FRAMES, ONBOARDING_JOBS_BEAT_MS, ONBOARDING_JOBS_BEAT_LIMIT,
-  ONBOARDING_JOBS, ONBOARDING_JOB_BUBBLE_Y_OFFSET, type OnboardingComputerSnapshot,
+  createOnboardingHandOffDwell, INITIAL_ONBOARDING_DRAFT, onboardingStepIndex,
+  ONBOARDING_MEET_BEAT_MS, ONBOARDING_MEET_DELAY_BEATS, MEET_TYPED_TEXT, ONBOARDING_DEMO_BEAT_MS, COMPUTER_DEMO_FRAMES,
+  ONBOARDING_JOBS_BEAT_MS, ONBOARDING_JOBS_BEAT_LIMIT, type OnboardingComputerSnapshot,
 } from '../../frontend/src/recovered/features/onboarding/signed-in/model'
 import { createCoordinatorOnboardingReadiness, type OnboardingComputerReadiness, type OnboardingComputerStatusSource } from '../../frontend/src/recovered/features/onboarding/signed-in/computer-readiness'
-import { ComputerDemo } from '../../frontend/src/recovered/features/onboarding/signed-in/view'
+import { SceneCast, SignedInOnboardingStep } from '../../frontend/src/recovered/features/onboarding/signed-in/view'
+import { scenePlacements } from '../../frontend/src/recovered/features/onboarding/signed-in/scene'
 import { AttributionStep, ConnectStep, RoleStep } from './onboarding-steps-0793'
-import { ATTRIBUTION, creatorContext, HANDOFF_DEFAULTS, next, prev, type WalkStep } from './onboarding-walk'
+import { ATTRIBUTION, creatorContext, HANDOFF_DEFAULTS, next, prev, shuffle, type WalkStep } from './onboarding-walk'
 
 /** view.tsx:31 同形（上游私有常量不导出——本地复制）。 */
 const EMPTY_COMPUTER: OnboardingComputerSnapshot = { isComputerReady: false, computerState: null, pullPercent: null }
@@ -84,11 +85,8 @@ function Walk({ bridge, client, computerReadiness, computerStatus, finish, isAcc
   const [sourceId, setSourceId] = useState<string | null>(null)
   // review M2：洗牌提升到 Walk（条件渲染会卸载重挂 AttributionStep，其 useState 初始化器
   // 每次重挂都跑——「每次运行洗一次」必须在 Walk 级）
-  const [shuffled] = useState(() => {
-    const a = [...ATTRIBUTION.choices]
-    for (let i = a.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j]!, a[i]!] }
-    return a
-  })
+  const [shuffled] = useState(() => shuffle(ATTRIBUTION.choices, Math.random))
+  const [draft] = useState(INITIAL_ONBOARDING_DRAFT)
   const [error, setError] = useState<string | null>(null)
   const [computer, setComputer] = useState<OnboardingComputerSnapshot>(EMPTY_COMPUTER)
   const creatingRef = useRef(false)
@@ -155,16 +153,24 @@ function Walk({ bridge, client, computerReadiness, computerStatus, finish, isAcc
   }
 
   let body: JSX.Element
-  // review M1：三步渲染按上游原样（meet 的 composer 打字/computer-demo 的 beat 推进/jobs 的
-  // 职责气泡）——此前复制骨架时被误删
-  if (step === 'meet') body = <section className="sand-onboarding__meet"><h1 id="sand-onboarding-meet-heading" style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}>Meet Grok Bot</h1><div aria-hidden="true" className="sand-onboarding__composer"><p>{typedMeetText(meetBeat)}{meetBeat >= ONBOARDING_MEET_DELAY_BEATS && meetBeat < ONBOARDING_MEET_DELAY_BEATS + MEET_TYPED_TEXT.length ? <span style={{ borderLeft: '1px solid currentColor', display: 'inline-block', height: '1em' }} /> : null}</p><span><button aria-label="Attach" tabIndex={-1} type="button">+</button><button aria-label="Send" onClick={goNext} tabIndex={-1} type="button">↑</button></span></div><div className="sand-onboarding__footer"><button onClick={goNext} type="button">Next</button></div></section>
-  else if (step === 'computer-demo') body = <section className="sand-onboarding__computer-demo"><h1 id="sand-onboarding-computer-demo-heading" style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}>Grok Bot has its own computer and works just like you</h1><ComputerDemo beat={demoBeat} /><div className="sand-onboarding__footer"><button onClick={goBack} type="button">Back</button><button onClick={goNext} type="button">Next</button></div></section>
-  else if (step === 'jobs') body = <section className="sand-onboarding__jobs"><h1 id="sand-onboarding-jobs-heading" style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}>Give each Bot a job</h1><div aria-hidden="true">{ONBOARDING_JOBS.map((job) => <span className="sand-onboarding__job-bubble" key={job.id} style={{ opacity: jobsBeat >= 2 ? 1 : 0, transform: `translate(${job.x}px, ${job.y + ONBOARDING_JOB_BUBBLE_Y_OFFSET}px) translate(-50%, 0)` }}>{job.label}</span>)}</div><div className="sand-onboarding__footer"><button onClick={goBack} type="button">Back</button><button onClick={goNext} type="button">Next</button></div></section>
-  else if (step === 'role') body = <RoleStep onBack={goBack} onForward={goNext} onPick={setRoleId} roleId={roleId} />
-  else if (step === 'attribution') body = <AttributionStep onBack={goBack} onForward={goNext} onPick={setSourceId} shuffled={shuffled} sourceId={sourceId} />
-  else if (step === 'connect') body = <ConnectStep onBack={goBack} onForward={goNext} />
-  else body = <div className="sand-onboarding__hand-off"><p aria-live="polite" id="sand-onboarding-hand-off-heading">{error == null ? handOffStatus(computer) : 'Grok Bot couldn’t finish setting up'}</p>{error == null ? null : <><p>{error}</p><button autoFocus onClick={() => void create()} type="button">Try again</button></>}</div>
-  return <div className="sand-onboarding" role="main"><div className="sand-onboarding__step-wrap">{body}</div></div> // T26b #1 同款覆盖层外壳
+  // T28c F2：四步（meet/computer-demo/jobs/hand-off）直接复用上游导出的
+  // SignedInOnboardingStep——标题可见/底栏顺序（Next 上 Back 下）/composer/气泡/hand-off
+  // 图标+名自动回来；手抄版此前多缺。三页自有组件套 FramedStep 同形包裹。
+  if (step === 'role') body = <Framed step={step}><RoleStep onBack={goBack} onForward={goNext} onPick={setRoleId} roleId={roleId} /></Framed>
+  else if (step === 'attribution') body = <Framed step={step}><AttributionStep onBack={goBack} onForward={goNext} onPick={setSourceId} shuffled={shuffled} sourceId={sourceId} /></Framed>
+  else if (step === 'connect') body = <Framed step={step}><ConnectStep onBack={goBack} onForward={goNext} /></Framed>
+  else body = <div className="sand-onboarding__step"><main aria-labelledby={`sand-onboarding-${step}-heading`}><SignedInOnboardingStep computer={computer} dailyTools={[]} demoBeat={demoBeat} draft={draft} error={step === 'hand-off' ? error : null} isAvatarLanded={false} jobsBeat={jobsBeat} meetBeat={meetBeat} onAvatarSlotAttached={() => {}} onBack={goBack} onCreate={() => { void create() }} onDailyToolsChange={() => {}} onDraftChange={() => {}} onForward={goNext} renderCharacter={undefined} step={step as 'meet'} /></main></div>
+  const sceneStep = step === 'role' || step === 'attribution' || step === 'connect' ? 'tools' : step
+  const beat = step === 'meet' ? meetBeat : step === 'computer-demo' ? demoBeat : step === 'jobs' ? jobsBeat : 0
+  return <div className="sand-onboarding" data-platform="linux" data-step={sceneStep} data-step-index={String(onboardingStepIndex(sceneStep as 'tools'))} data-theme={document.documentElement.dataset.theme ?? 'light'} role="main">
+    <SceneCast avatarTarget={null} demoBeat={beat} draft={draft} isAvatarLanded={false} jobsBeat={beat} meetBeat={beat} renderCharacter={undefined} step={sceneStep} />
+    {body}
+  </div>
+}
+
+/** T28c：FramedStep 同形（上游 view.tsx:68 未导出——本地 2 行；退场动画归 T32）。 */
+function Framed({ step, children }: { step: Step; children: JSX.Element }) {
+  return <div className="sand-onboarding__step"><main aria-labelledby={`sand-onboarding-${step}-heading`}>{children}</main></div>
 }
 
 // 覆盖层类型出口对齐（上游 view 的这些类型经 export * 已带）

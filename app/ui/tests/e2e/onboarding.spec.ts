@@ -80,6 +80,8 @@ test('④ 六步走完：Get started → Next 到 create → 填名建 bot → h
     await expect(page.locator('#sand-onboarding-meet-heading')).toBeVisible({ timeout: 15_000 })
     // 逐步 Next：meet→computer-demo→jobs→tools→create——每步等下一个 heading 出现
     //（meet 的 beat 动画期间 Next 可能延迟生效，固定 sleep 不可靠）
+    // T28c：meet 页 cast 有角色子节点（T26 画面回归；aria-hidden 舞台层用 DOM 断言）
+    await expect.poll(() => page.evaluate(() => document.querySelectorAll('.sand-onboarding__cast > div').length), { timeout: 10_000 }).toBeGreaterThan(0)
     const steps = ['computer-demo', 'jobs']
     for (const st of steps) {
       const next = page.locator('.sand-onboarding button', { hasText: 'Next' }).first()
@@ -101,6 +103,19 @@ test('④ 六步走完：Get started → Next 到 create → 填名建 bot → h
     await expect(page.locator('#sand-onboarding-connect-heading')).toBeVisible({ timeout: 20_000 })
     await expect(page.locator('#sand-onboarding-connect-heading')).toHaveText('Connect your apps')
     await expect(page.locator('.sand-onboarding__connect button:has-text("Connect")')).toHaveCount(2) // Gmail + Google Calendar（排除侧栏 Connect apps）
+    // T28c F1：三页「真的看得见」——中心点命中自身/后代 + bounding box 完整在视口（toBeVisible 抓不到遮挡/出框）
+    const visCheck = async (sel: string): Promise<void> => {
+      const bad = await page.locator(sel).evaluateAll((els) => els.map((el, i) => {
+        const r = el.getBoundingClientRect()
+        const cx = r.x + r.width / 2, cy = r.y + r.height / 2
+        const hit = document.elementFromPoint(cx, cy)
+        const inVp = r.x >= 0 && r.y >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight
+        return hit != null && (hit === el || el.contains(hit)) && inVp ? null : `${sel}[${i}] 出框或被遮`
+      }).filter(Boolean))
+      expect(bad, `${sel} 必须全部可见`).toEqual([])
+    }
+    await visCheck('.sand-onboarding__attribution-choices button')
+    for (const st of ['role', 'attribution', 'connect']) await visCheck(`.sand-onboarding__${st} h1`)
     await page.locator('button', { hasText: 'Skip for now' }).click() // connect → hand-off（自动建主 bot）
     // tools/create 不出现在 walk
     await expect(page.locator('#sand-onboarding-tools-heading, #sand-onboarding-create-name')).toHaveCount(0)

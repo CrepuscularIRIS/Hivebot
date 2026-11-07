@@ -53,3 +53,13 @@ export function creatorContext(roleId: string | null): string {
 
 /** hand-off 建主 bot 的默认形象（探针 provision：name/shape/color 用默认值；我们取 blob/black——回执记出处）。 */
 export const HANDOFF_DEFAULTS = { name: '', avatarShape: 'blob', avatarColor: 'black' } as const
+
+/** T28c：底栏文案（extract nav 逐字）。 */
+export const NAV = { nextDefault: 'Next', back: 'Back', continueLabel: 'Continue', skip: 'Skip', skipForNow: 'Skip for now' } as const
+
+/** T28c：Fisher-Yates 洗牌（纯函数：不改入参；同 rand 序列输出确定——可测）。 */
+export function shuffle<T>(xs: readonly T[], rand: () => number): T[] {
+  const a = [...xs]
+  for (let i = a.length - 1; i > 0; i -= 1) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j]!, a[i]!] }
+  return a
+}

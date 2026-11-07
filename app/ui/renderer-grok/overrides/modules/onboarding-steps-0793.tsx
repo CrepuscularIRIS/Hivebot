@@ -1,3 +1,4 @@
+import './onboarding-steps-0793.css'
 // T28：0.79.3 三页组件（role/attribution/connect）——文案与底栏逻辑按探针结论逐字
 //（onboarding-0793-extract.json；i18n 逐字）。选择状态由父组件持有（Back/Next 往返保留）；
 // attribution 每次运行洗一次牌（useState 初始化，Fisher-Yates）。

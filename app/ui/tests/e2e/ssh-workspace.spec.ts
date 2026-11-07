@@ -9,9 +9,9 @@ import { join } from 'node:path'
 import { startUiSshServer } from '../support/ssh-fixture.ts'
 import { sandboxHome, launchShell } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
-import { PRESETS_PATCH, api, devState, evidenceOut, waitProductReady } from '../support/ui.ts'
+import { PRESETS_PATCH, SDK_ROOT, api, devState, evidenceOut, waitProductReady } from '../support/ui.ts'
 
-const PATCH = `${PRESETS_PATCH}:${fakeOverlayPath()}`
+const PATCH = `${PRESETS_PATCH}:${join(SDK_ROOT, 'profile', 'patches', 'orchestration.yml')}:${fakeOverlayPath()}`
 const EVID_DIR = evidenceOut('T11')
 const EVIDENCE = (line: string): void => { appendFileSync(join(EVID_DIR, 'diag.log'), `${new Date().toISOString()} ${line}\n`) }
 
@@ -151,6 +151,69 @@ test.describe('T11 ssh 远端工作区', () => {
         } catch { /* */ }
         expect(readFileSync(found, 'utf8').trim()).toBe('T11MARK')
         EVIDENCE(`⑤b marker=${found}`)
+      } finally {
+        await shell.stop(); await rt.stop()
+      }
+    } finally {
+      await server.stopServer()
+    }
+  })
+
+
+  test('⑤c 主 bot 委派 worker → 工作区在远端、宿主无新目录', { timeout: 300_000 }, async () => {
+    const home = sandboxHome('T11-5c')
+    const dataDir = join(home, 'data')
+    mkdirSync(dataDir, { recursive: true })
+    const server = await startUiSshServer(home)
+    try {
+      const rt = await launchSdkRuntime({
+        patch: PATCH, dataDir,
+        env: {
+          PATH: `${server.binDir}:${process.env.PATH ?? ''}`,
+          P2SDK_SSH_HOST: 'pbots-ssh-test', P2SDK_SSH_REMOTE_ROOT: server.workspace,
+          P2SDK_SSH_HELPER: server.helper, P2SDK_SSH_HELPER_HASH: server.helperHash,
+          P2SDK_SSH_NODE: process.execPath, P2SDK_SSH_REMOTE_HOME: server.remoteHome,
+        },
+      })
+      const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff }, home })
+      try {
+        await shell.page.waitForFunction(() => (window as unknown as { pbots?: unknown }).pbots !== undefined, { timeout: 60_000 })
+        const created = await api<{ sessionId: string }>(shell.page, 'session/create', { request: {} })
+        expect(created.ok, JSON.stringify(created.error)).toBe(true)
+        const sessionId = created.value.sessionId
+        const { createHash } = await import('node:crypto')
+        const token = readFileSync(join(rt.handoff, 'launch-token'), 'utf8').trim()
+        const instance = createHash('sha256').update(token).digest('hex')
+        mkdirSync(dataDir, { recursive: true })
+        writeFileSync(join(dataDir, 'policy-state.json'), JSON.stringify({ version: 1, paused: false, instance }))
+        const wsRoot = join(server.workspace, 'workspaces')
+        const hostWs = join(dataDir, 'workspaces')
+        const beforeRemote = new Set(readdirSync(wsRoot))
+        const beforeHost = new Set(existsSync(hostWs) ? readdirSync(hostWs) : [])
+        // fake 脚本：主 bot 调 create_bot（SDK 编排 → orch-channel → main createWorkerBot → mintWorkspace ssh 分支）
+        const toolArgs = JSON.stringify({ name: 't11worker', prompt: 'T11 5c probe' })
+        rt.writeScriptCalls(sessionId, [
+          { chunks: [
+            { type: 'block-start', index: 0, blockType: 'tool-call' },
+            { type: 'tool-call-delta', index: 0, id: 't11c1', name: 'create_bot', argumentsDelta: toolArgs.slice(0, 10) },
+            { type: 'tool-call-delta', index: 0, id: 't11c1', name: 'create_bot', argumentsDelta: toolArgs.slice(10) },
+            { type: 'block-end', index: 0, block: { type: 'tool-call', id: 't11c1', name: 'create_bot', arguments: toolArgs } },
+            { type: 'usage', usage: { inputTokens: 10, outputTokens: 5 } },
+            { type: 'finish', reason: { kind: 'tool-calls' } },
+          ] },
+        ])
+        await api(shell.page, 'session/prompt', { request: { requestId: `t11c-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'go' }] } })
+        const deadline = Date.now() + 120_000
+        let newRemote: string[] = []
+        for (;;) {
+          newRemote = readdirSync(wsRoot).filter((n) => !beforeRemote.has(n))
+          if (newRemote.length > 0 || Date.now() > deadline) break
+          await new Promise((r) => setTimeout(r, 800))
+        }
+        expect(newRemote.length, `worker 工作区在远端（新增=${JSON.stringify(newRemote)}）`).toBeGreaterThan(0)
+        const newHost = readdirSync(hostWs).filter((n) => !beforeHost.has(n))
+        expect(newHost, '宿主无新目录').toEqual([])
+        EVIDENCE(`⑤c newRemote=${JSON.stringify(newRemote)} newHost=${JSON.stringify(newHost)}`)
       } finally {
         await shell.stop(); await rt.stop()
       }

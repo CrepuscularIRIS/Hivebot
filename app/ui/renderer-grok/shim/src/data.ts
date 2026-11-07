@@ -106,7 +106,7 @@ export interface DevSurface {
   /** T26：重载 roster（onboarding 完成/skip 后——首启未建 main，seen 落盘后此调用补建）。 */
   reloadRoster(): Promise<void>
   /** T26b：发 onboarding 延后的 kickstart 介绍（生产调用——onboarding-view 的 finish 链，非仅测试）。 */
-  finishKickstart(): Promise<void>
+  finishKickstart(sid?: string): Promise<void>
   newSocket(): DevSocketHandle
   openStream(endpoint: string, args?: unknown): MuxStream
   muxStreams(): Array<{ streamId: string; endpoint: string }>
@@ -138,7 +138,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   const pendingNonce = new Map<string, string>() // agentId → 待补记 clientNonce（按消息身份 source.rpcId 绑定，L-7 R4 f2）
   const createNotices = new Map<string, string>() // agentId → 新建 bot 的非致命失败通知（首条用户消息前展示，L-7 O4）
   /** T26b #4：onboarding create 步登记的延后介绍（seen 落盘后由 finishKickstart 发）。 */
-  let pendingKickstart: { sid: string; prompt: string } | null = null
+  const pendingKickstart = new Map<string, string>() // T28b：按 sid 存（原单槽——模板 bot 会同时挂多个）
   let revision = 0
   let eventsClientId: string | undefined
   let booted = false
@@ -540,12 +540,13 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         followed.add(sid)
         openFollow(sid)
         // T26b #3：onboarding 建的就是主 bot（0.79.3 语义）——patch meta，否则 finish 后
-        // reloadRoster 会再建一个空 main（双 bot）。
-        if (mainBotId === null) { const patched = await metaApi({ op: 'patch', mainBotId: sid }); if (patched.ok) mainBotId = sid }
+        // reloadRoster 会再建一个空 main（双 bot）。T28b：模板 bot（带 templateId）不设主。
+        const isTemplate = typeof rec(args).templateId === 'string'
+        if (mainBotId === null && !isTemplate) { const patched = await metaApi({ op: 'patch', mainBotId: sid }); if (patched.ok) mainBotId = sid }
         // T26b #4：介绍延后到 onboarding 结束（T25 工单:24/queue U5：等 markOnboardingSeen
         // 之后才发）——这里只登记，不发。pendingKickstart 由 desktop.setSeen 完成后经
         // finishKickstart 消费（onboarding-view 的 finish 链）。
-        pendingKickstart = { sid, prompt: kickstartPrompt({ setup: typeof a.description === 'string' ? a.description : undefined }) }
+        pendingKickstart.set(sid, kickstartPrompt({ name: name !== '' ? name : undefined, setup: typeof a.description === 'string' ? a.description : undefined })) // T28b：介绍带名字（主 bot 默认名空串→文本不变）
         push.agents()
         return recordOf(sid)
       }
@@ -684,12 +685,16 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     get bots() { return [...views.values()] },
     get state() { return { order: [...order], meta: { mainBotId, createdBy: { ...createdBy } }, views: Object.fromEntries(views) } },
     reloadRoster: () => loadRoster(), // T26：onboarding 完成/skip 后补建 main bot 的入口（onboarding-view 生产调用，非仅测试）
-    finishKickstart: async () => {
-      const p = pendingKickstart
-      pendingKickstart = null
-      if (p === null) return
-      const intro = await api('session/prompt', { request: { requestId: `kickstart-${p.sid}`, sessionId: p.sid, mode: 'queue', content: [{ type: 'text', text: p.prompt }] } })
-      if (!intro.ok) createNotices.set(p.sid, "Your Bot couldn't introduce itself")
+    finishKickstart: async (sid?: string) => {
+      // T28b：按 sid 消费（0.79.3 kickstartAwaitingFirstMessage(agentId)）——无参取全部（向后兼容旧 dev 面）
+      const targets = sid === undefined ? [...pendingKickstart.keys()] : [sid]
+      for (const target of targets) {
+        const prompt = pendingKickstart.get(target)
+        if (prompt === undefined) continue
+        pendingKickstart.delete(target)
+        const intro = await api('session/prompt', { request: { requestId: `kickstart-${target}`, sessionId: target, mode: 'queue', content: [{ type: 'text', text: prompt }] } })
+        if (!intro.ok) createNotices.set(target, "Your Bot couldn't introduce itself")
+      }
     },
     newSocket: () => newDevSocket((h) => { dev.sockets.push(h) }),
     openStream(endpoint, args) {

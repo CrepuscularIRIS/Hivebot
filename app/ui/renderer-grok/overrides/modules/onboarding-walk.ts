@@ -45,6 +45,8 @@ export const CONNECT: { readonly title: string; readonly connectors: readonly st
 }
 
 /** 0.79.3 creatorContext：role 英文标签进设定句；没选 role 为空串（tools 恒 []，第二句不出现）。 */
+import { TEMPLATES } from './onboarding-templates-0793'
+
 export function creatorContext(roleId: string | null): string {
   if (roleId === null) return ''
   const label = ROLE.choices.find((c) => c.id === roleId)?.label
@@ -62,4 +64,15 @@ export function shuffle<T>(xs: readonly T[], rand: () => number): T[] {
   const a = [...xs]
   for (let i = a.length - 1; i > 0; i -= 1) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j]!, a[i]!] }
   return a
+}
+
+/** T28b：该 role 的前 2 个模板 → createAgent 请求体（0.79.3 Me(role,2)——description=模板职责+creatorContext 拼接）。 */
+export interface RoleUseCaseBotRequest { readonly origin: 'user'; readonly isKickstartRequested: boolean; readonly isAutomatic: boolean; readonly templateId: string; readonly name: string; readonly description: string }
+export function roleUseCaseBots(roleId: string | null): RoleUseCaseBotRequest[] {
+  if (roleId === null) return []
+  const ctx = creatorContext(roleId)
+  return TEMPLATES.filter((t) => t.role === roleId).slice(0, 2).map((t) => ({
+    origin: 'user' as const, isKickstartRequested: true, isAutomatic: true, templateId: t.id, name: t.name,
+    description: [t.description, ctx].filter((x) => x !== '').join(' '),
+  }))
 }

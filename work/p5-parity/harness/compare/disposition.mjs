@@ -6,11 +6,7 @@ const px = (v) => (/^-?[\d.]+px$/.test(v) ? parseFloat(v) : null)
 const isElem = (r) => r.prop === '(element)'
 
 export const WAIVERS = [
-  {
-    tag: 'waived:arch',
-    reason: 'R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构',
-    match: (r) => r.part === 'transcript.thinking-row' || r.part === 'transcript.tool-row',
-  },
+  // R10（0.78.1 会话流对 tool-call / thinking 零渲染）已由 T22 落地为行为——waiver 撤销（2026-11-07）
   {
     tag: 'signoff:arch',
     reason: '审批卡（P5-41.f1）：分段结构已落（标题条 Computer+关闭钮 / 标题+说明+填充代码块+Copy / 按钮段，内边距在子段上，与 0.78.1 同口径）；剩余差异 = 位置（0.18 dock 在 composer 上方 vs 0.78.1 transcript 内）与高度（文案与按钮数随 L-AP A9④），交用户签收：evidence/P5-41f1/ACCEPTED-DEVIATIONS.md §2',

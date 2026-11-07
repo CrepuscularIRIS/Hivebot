@@ -4,7 +4,7 @@
 > 来源：T10 终验不通过（第 1 次，@ 9e43562c）；receipts/T10.md「## 终验（经理）」
 > 分支 / 作业目录：feat/T10 @ /tmp/bot-wt/T10（同分支续提交）
 > claimed：
-> accepted：
+> accepted：2026-11-06 19:1x manager 任务 B @ feat/T10 fa6b72e2（T10 + T10b 联合终验通过；见 receipts/T10.md「## 终验 2（经理）」）
 
 ## 目标
 让 `ssh-bash.test.ts` 在**标准跑法**（TMPDIR 在 /tmp 下）里真能区分「有 wrapper / 没 wrapper」。产品代码 T10 已对，本单基本只改测试。

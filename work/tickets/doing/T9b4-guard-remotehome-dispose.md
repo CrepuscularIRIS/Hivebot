@@ -5,6 +5,7 @@
 > 分支 / 作业目录：feat/T9b4 @ /tmp/bot-wt/T9b4（从 `docs/rebuild-p6-p5-plan` 切；与 T10 无共享文件，可并行，见边界 4）
 > claimed：2026-11-06 18:4x main (GLM 5.3) @ /tmp/bot-wt/T9b4
 > accepted：
+> 终验：2026-11-06 19:1x @ d0d19883 **不通过（第 1 次）**→ `open/T9b4b-guard-dispose-poll-cell.md`。产品代码成立（ⓑ/ⓒ 变异咬合、e2e ②d 绿）；ⓐ 是空格（旧 HEAD 与「去 clearTimeout + poll 入口判断」变异下都绿），60s 超时对照缺——根因是经理开单时「假时钟装在 await fiber 之后」的指示错了。详见 receipts/T9b4.md「## 终验（经理）」（在 feat/T9b4）。**feat/T9b4 暂不合并。**
 
 ## 目标
 guard 插件被 cordis 释放后，remoteHome 启动校验不再校验、不再 `process.exit(86)`。

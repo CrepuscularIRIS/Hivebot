@@ -128,3 +128,5 @@
 - （2026-11-06 T9b 链审查 C1）插件里任何 `setTimeout`/挂起的 Promise 回调都要登记 cordis 释放（`ctx.effect` 或 `ctx.on(dispose)`，先例 request-net.mjs:194、routing-prompt.mjs:74），回调入口判 disposed——已发出的 `.then` 撤不回。手搓 `{on,get}` 假 ctx 没有 dispose 语义，测生命周期必须用真 `new Context()` + `fiber.dispose()`。
 
 - （2026-11-06 T10 终验）沙箱读遮蔽的哨兵**不能放在 /tmp 下**：上游 dsh-sandbox-local 的 workspace-write profile 自带 `--tmpfs /tmp`（lib/index.js:34-35），`mkdtemp(tmpdir())` 出来的哨兵 HOME 在原版沙箱里本来就看不见——「删掉防线」的变异照样绿，测试成了空测。真实 HOME 在 /home/<user>。探针根放 /var/tmp 等 /tmp 之外，并在 beforeAll 断言它不在 /tmp 下；变异要在默认 TMPDIR 下跑。另：先红如果只出现在「某个 bug 还没修」的状态（这里是 mode 丢失落 read-only），修完那个 bug 要重新确认先红还在。
+
+- （2026-11-06 T9b4 终验）测插件里的定时器，`vi.useFakeTimers({ shouldAdvanceTime: true })` 要装在 `root.plugin(...)` **之前**：apply 时建的首个 timer 用的是装假时钟那一刻的 `setTimeout`，装晚了 advance 碰不到，格子变空测（旧代码也绿）。`shouldAdvanceTime` 让 cordis 加载不卡。判一个"释放即停"格有没有用：拿修复前的源码跑，必须红。

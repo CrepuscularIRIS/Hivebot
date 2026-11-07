@@ -165,9 +165,7 @@ describe('T9a 产品启动器 ssh 组合', () => {
     for (;;) {
       if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
       if (frames.some((f) => f.type === 'event' && f.event?.type === 'approval/asked')) {
-        let patch = ''
-        void patch
-        throw new Error('⑥ guard 未拦（出卡）——runtime-patch 已被 handoff 删（设计）；下一步：单测层直验 guard sshMode 分支（guard.test 假 exec.agent.session.header.cwd）')
+        throw new Error('⑥ guard 未拦（出卡）——单测层已验 guard sshMode 分支')
       }
       if (Date.now() > deadline) throw new Error(`turn/end 未到：${JSON.stringify(frames.map((f) => f.type === 'event' && f.event ? { t: f.event.type } : f.type).slice(-6))}`)
       await new Promise((r) => setTimeout(r, 200))
@@ -183,6 +181,39 @@ describe('T9a 产品启动器 ssh 组合', () => {
     const text = (d0.message?.content ?? []).map((c) => c.text ?? '').join('')
     expect(text, '固定提示串（含新建会话指引）').toContain('Create a new chat')
     expect(existsSync(join(oldWs, 'probe.txt')), '宿主无新文件').toBe(false)
+  })
+
+  it('⑧ 会话可建；首请求工具面不含 workflow 族', { timeout: 240_000 }, async () => {
+    // T9ab：去掉 ptc-runtime 禁行后 standard preset 可建会话。
+    // workflow 工具被禁（workflow-ptc/tool-workflow/tool-executor-ptc 三行）——
+    // 不直接调它（会挂：依赖链断但工具壳还在等）；改为验证首请求的 tools
+    // 面里没出现 workflow 族工具名。（T11b 恢复：565761e1 wip 误删——原文照
+    // db1af845，断言未改）
+    const ws = join(server.workspace, 't9a-ptc')
+    mkdirSync(ws, { recursive: true })
+    const { sessionId } = (await rt!.client.call('session/create', { request: { cwd: ws } })) as { sessionId: string }
+    expect(sessionId, 'session/create 成功（standard preset 可用）').toBeTruthy()
+    const dir = join(rt!.home, 'fake', 'scripts')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, `${sessionId}.json`), JSON.stringify({ calls: [textCall('T9a')] }))
+    const stream = await rt!.client.follow(sessionId)
+    const frames: Frame[] = []
+    const drained = (async () => { for await (const f of stream) frames.push(f) })()
+    await rt!.client.call('session/prompt', { request: { requestId: `t9a-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'T9a' }] } })
+    const deadline = Date.now() + 60_000
+    for (;;) {
+      if (frames.some((f) => f.type === 'event' && f.event?.type === 'turn/end')) break
+      if (Date.now() > deadline) throw new Error(`turn/end 未到`)
+      await new Promise((r) => setTimeout(r, 100))
+    }
+    stream.cancel(); void drained
+    let raw = ''
+    try { raw = readFileSync(join(rt!.home, 'fake', 'requests.jsonl'), 'utf8') } catch { /* */ }
+    const reqs = raw.trim().split('\n').filter(Boolean).map((l) => JSON.parse(l) as { sessionId: string | null; toolNames: string[] }).filter((r) => r.sessionId === sessionId)
+    expect(reqs.length, '有模型请求').toBeGreaterThan(0)
+    const tools = reqs[0]!.toolNames ?? []
+    expect(tools, `toolNames 含 bash（正对照防恒绿）: ${tools.join(',')}`).toContain('bash')
+    expect(tools.filter((t) => /workflow/i.test(t)), 'toolNames 不含 workflow 族').toEqual([])
   })
 
   it('⑤d workspace_ensure 越界/坏形状 → 拒且远端无新目录', { timeout: 120_000 }, async () => {

@@ -401,3 +401,29 @@ describe('T11 ⑥ 旧会话拒（整机切换）', () => {
     expect(ok2, '本机模式放行（零行为变化）').toEqual({ kind: 'allow' })
   })
 })
+
+// T11b C（P2 收口·review/T9b-chain-security :31 经理口径）：ssh 模式（词法化）
+// 下 ws 原串为链接——canonical workspaceRoot → 合法写放行；链接原串 workspaceRoot
+// → deny:mask（对照）；换链（目标 resolve 到 canonical 外）→ 不放行。
+describe('T11b C：P2 收口——链接 ws 的 canonical 判定', () => {
+  const ROOTS = () => ({ hardRoots: [], softRoots: [ '/remote/home' ], toolchainDirs: [], policyRoots: [] })
+  const W = '/remote/home/ws-real' // canonical ws（readlink -f 后）
+  const LINK = '/remote/home/ws-link' // ws 原串（链接路径）
+
+  it('canonical workspaceRoot → 合法写 ok；链接原串 → deny:mask（对照）；换链目标 → 非 ok', async () => {
+    const { judgePath } = await import('../../src/policy/guard.mjs')
+    const prev = process.env.P2SDK_SSH_MODE
+    process.env.P2SDK_SSH_MODE = '1'
+    try {
+      const legal = await judgePath(`${W}/a.txt`, ROOTS(), { isWrite: true, workspaceRoot: W })
+      expect(legal, 'canonical ws 内写 → ok').toBe('ok')
+      const linkRoot = await judgePath(`${W}/a.txt`, ROOTS(), { isWrite: true, workspaceRoot: LINK })
+      expect(linkRoot, 'ws 原串（链接）→ deny:mask——canonical 收口的判据').toEqual({ deny: 'mask', reason: expect.stringContaining('masked') })
+      const swapped = await judgePath('/remote/home/other/x', ROOTS(), { isWrite: true, workspaceRoot: W })
+      expect(swapped, '换链（目标 resolve 到 canonical 外）→ 不放行').not.toBe('ok')
+    } finally {
+      if (prev === undefined) delete process.env.P2SDK_SSH_MODE
+      else process.env.P2SDK_SSH_MODE = prev
+    }
+  })
+})

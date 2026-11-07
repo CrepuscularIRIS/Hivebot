@@ -1104,3 +1104,8 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 合并后定向回测（主线 HEAD）：unit grok-shim+fold **184 passed**；e2e outline①-⑤ + p6-fold D1/D2 + session D3/composer/截图/分页 **11 passed**
 - reviewer 2 MEDIUM 已修复（data.ts openFollow + D1 双行 oracle，commit d1e85205）；T21b（⑤ 空绿修复单）在 open/ 排队
 - 同日：全仓首推 GitHub（CrepuscularIRIS/Hivebot，73 分支；filter-repo 剥 127MB evidence pnpm store 后 size-pack 298MB）
+
+## 2026-11-07 · T23 + T29 施工完成（feat/T23、feat/T29 已推 GitHub）
+- T23 状态行短语引擎：纯函数（无时间轮换/800ms 防抖/5s 泛 working 静默/60s elapsed/140ms 退场）+ typing 三点退役 + e2e ①-④（切换间隔实测 824ms）+ 五刀变异 + ours|ref 拼版对照达标。reviewer 审查中；验收 7（working 态复测）等 T20b 数据回填
+- T29 删 ToolResultCard 死路径：attach 三函数删、投影回归上游透传，净删 100 行，unit 180 passed、check diff=0
+- T20b（T20 事实表纠正）采样后台跑中；T20 验收未过（形状 13 非 24 / 选形不变色 / 短语随机起步——目测误读教训：事实一律 json 机器记录）

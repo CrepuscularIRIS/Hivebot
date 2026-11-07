@@ -504,6 +504,27 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     },
     setAgentUnread: (id, value) => { if (value) unread.add(id); else unread.delete(id); push.agents() },
     createAgent: async (args) => {
+      // T26：onboarding create 步的实参（model.ts makeOnboardingCreateRequest：origin:'user'
+      // + isKickstartRequested + name/avatarShape/avatarColor）——直建不走新建对话框（chooser
+      // 是侧栏 New 的覆盖行为；onboarding 的 create 是内嵌表单）。isKickstartRequested:true 按
+      // 0.18 语义发介绍（create 步建的是用户的第一个真 bot；B 段的编舞演示 bot 才 kickstart:false）。
+      const a = rec(args)
+      if (a.origin === 'user' && a.isKickstartRequested === true) {
+        const res = await api('session/create', { request: {} })
+        if (!res.ok || typeof rec(res.value).sessionId !== 'string') throw new Error(res.error?.message ?? 'session/create failed')
+        const sid = rec(res.value).sessionId as string
+        const name = typeof a.name === 'string' ? a.name : ''
+        if (name !== '') await api('session/rename', { request: { sessionId: sid, title: name } })
+        if (typeof a.avatarShape === 'string' && typeof a.avatarColor === 'string') saveAvatar(sid, { shape: a.avatarShape, color: a.avatarColor })
+        summaries = { ...summaries, [sid]: { sessionId: sid, title: name !== '' ? name : null, preset: null, running: false, updatedAt: Date.now() } }
+        order = [...order.filter((id) => id !== sid), sid]
+        followed.add(sid)
+        openFollow(sid)
+        const intro = await api('session/prompt', { request: { requestId: `kickstart-${sid}`, sessionId: sid, mode: 'queue', content: [{ type: 'text', text: KICKSTART_PROMPT }] } })
+        if (!intro.ok) createNotices.set(sid, "Your Bot couldn't introduce itself")
+        push.agents()
+        return recordOf(sid)
+      }
       // P5-57：覆盖层注册了新建对话框 → 先选 preset / 连接器 / 模型（D10/D11），取消回 null（上游 projectRendererAgent(null) → 不选中）
       if (ui.chooser !== undefined) {
         const chosen = await ui.chooser({})

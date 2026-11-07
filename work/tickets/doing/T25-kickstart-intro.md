@@ -4,7 +4,7 @@
 > 来源：queue.md U6（原计划行编号 T26，本次与 onboarding 互换：kickstart = **T25**，onboarding = **T26**）；RE-UI-0.79.3 题 2(b)、差距表 #3；经理第 0 步探针（下节，已跑）
 > 分支 / 作业目录：feat/T25 @ /tmp/bot-wt/T25，起点 = 含 T24 合并（8f60a7d1）的集成分支 HEAD
 > 排期：现在开。T26（onboarding）、T30（对话框版式）排在本单**合并之后**：T30 会改 `data.ts createBot`（建后 rename），与本单同函数，不并行
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T25
 > accepted：
 > 失败计数：0
 

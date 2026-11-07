@@ -209,18 +209,20 @@ test.describe('T11 ssh 远端工作区', () => {
         ])
         await api(shell.page, 'session/prompt', { request: { requestId: `t11c-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'go' }] } })
         // ⑤b 同款观测：fake 轮数+尾行（create_bot 消费判定）
-        const dl5c = Date.now() + 45_000
+        const dl5c = Date.now() + 90_000
         let req5c = ''
+        let lines5c: string[] = []
         for (;;) {
           try { req5c = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8') } catch { /* */ }
-          const lines5c = req5c.split('\n').filter((l) => l.includes(sessionId))
-          if (lines5c.length >= 2 || Date.now() > dl5c) {
-            const last = lines5c[lines5c.length - 1] ?? ''
-            const names = (JSON.parse(last).toolNames ?? []) as string[]
-            EVIDENCE(`⑤c fake 轮数=${lines5c.length} create_bot 在面=${names.includes('create_bot')} 总数=${names.length}`)
-            break
-          }
+          lines5c = req5c.split('\n').filter((l) => l.includes(sessionId))
+          if (lines5c.length >= 2 || Date.now() > dl5c) break
           await new Promise((r) => setTimeout(r, 800))
+        }
+        {
+          const last = lines5c[lines5c.length - 1] ?? ''
+          const names = (JSON.parse(last).toolNames ?? []) as string[]
+          EVIDENCE(`⑤c fake 轮数=${lines5c.length} create_bot 在面=${names.includes('create_bot')} 总数=${names.length}`)
+          if (lines5c.length >= 2) EVIDENCE(`⑤c 轮2原文=${lines5c[1]!.slice(0, 700)}`)
         }
         const deadline = Date.now() + 120_000
         let newRemote: string[] = []

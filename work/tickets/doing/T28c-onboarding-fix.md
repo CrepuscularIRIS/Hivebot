@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T28 经理任务 B 验收（HEAD 7c22aadb）不通过。编号说明：T28b 已被 queue U8b（roleUseCaseBots）占用，本修复单用 T28c
 > 分支 / 作业目录：继续 feat/T28 @ /tmp/bot-wt/T28（从 7c22aadb 起）
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T28 续修（起点 7c22aadb）（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

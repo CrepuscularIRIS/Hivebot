@@ -4,7 +4,7 @@
 > 来源：queue U3；RE-UI-0.79.3 题 1(d)；T20 S2 参照图与事实表；queue 提议①（EMPTY_RESULT_NOTICE 收口，并入本单）
 > 分支 / 作业目录：feat/T23 @ /tmp/bot-wt/T23（起点 = 集成分支含 merge 7ecc083b 的 HEAD）
 > 排期：现在开。T24（建 bot 对话框）可以并行：本单**不碰** `shim/src/agents.ts`、`new-bot-dialog.tsx`
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T23
 > accepted：
 > 失败计数：0
 

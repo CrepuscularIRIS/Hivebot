@@ -1,0 +1,33 @@
+/* T7b/T7bb：Skills 段与 Pick 对话框样式（覆盖层专用，不改上游 css） */
+.pb-skills-dialog {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.45);
+}
+.pb-skills-dialog > div { max-width: 480px; width: 90%; }
+.pb-skills-dialog__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid rgba(128,128,128,.3);
+}
+.pb-skills-dialog__title { font-size: 16px; font-weight: 600; }
+.pb-skills-dialog__list { max-height: 320px; overflow-y: auto; padding: 8px 16px; }
+.pb-skills-dialog__item {
+  display: flex; align-items: center; gap: 8px; padding: 8px 0;
+  border-bottom: 1px solid rgba(128,128,128,.15); cursor: pointer;
+}
+.pb-skills-dialog__name { font-weight: 500; white-space: nowrap; }
+.pb-skills-dialog__from { font-size: 12px; opacity: .7; white-space: nowrap; }
+.pb-skills-dialog__desc { font-size: 13px; opacity: .8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.pb-skills-dialog__notice {
+  padding: 8px 16px; font-size: 13px; color: var(--sand-text-danger-primary); white-space: pre-line;
+}
+.pb-skills-dialog__foot { padding: 12px 16px; text-align: right; }
+
+/* 暗色 Pick 按钮可读（P5-57 已知：--sand-text-on-primary 在暗色下=浅色底浅色字） */
+[data-action="skills-pick"] { color: inherit !important; }
+
+/* ponytail: 暗色 neutral primary 字色为色板原样问题（--sand-text-on-primary #f5f5f5 配浅底），
+   全局修见 queue 提议。此处只修对话框内按钮。 */
+html[data-theme="cursor-dark"] .pb-skills-dialog [data-action="skills-add"] {
+  color: #121212 !important;
+}

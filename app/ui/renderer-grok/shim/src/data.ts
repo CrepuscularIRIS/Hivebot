@@ -523,6 +523,12 @@ export function createShimData(opts: ShimDataOptions): ShimData {
 
   const ui: PbotsUi = {
     version: () => uiVersion,
+    // T7b：renderer 不碰文件——skill list/enable/disable 全走 main（T7a 的 pbots:skills）
+    skills(req) {
+      const w = window as unknown as { pbots?: { skills?: (r: unknown) => Promise<{ ok: boolean; value?: unknown; error?: { code: string; message: string } }> } }
+      if (w.pbots?.skills === undefined) return Promise.resolve({ ok: false, error: { code: 'pbots/unavailable', message: 'preload skills bridge missing' } })
+      return w.pbots.skills(req)
+    },
     subscribe(listener) { uiListeners.add(listener); return () => { uiListeners.delete(listener) } },
     online: () => mux !== undefined,
     config: configOf,

@@ -81,4 +81,13 @@ export interface PbotsUi {
   setActive(agentId: string): void
   /** 覆盖层注册的新建对话框：resolve 新 bot 的 sessionId，取消 = null。未注册时 createAgent 直建（单测 / 无覆盖构建）。 */
   chooser?: (init: NewBotInit) => Promise<string | null>
+  /** T7b（L4-c）：skill 启用面——透传 T7a 的 window.pbots.skills（list/enable/disable）。 */
+  skills(req: SkillsReq): Promise<SkillsApiResult>
 }
+
+/** T7b：与 main/skills/index.ts 的 SkillsResult 对齐（renderer 侧形状）。 */
+export type SkillsApiResult = { ok: true; value: unknown } | { ok: false; error: { code: string; message: string } }
+export type SkillsReq =
+  | { op: 'list'; botId: string }
+  | { op: 'enable'; botId: string; fromBotId: string; name: string }
+  | { op: 'disable'; botId: string; name: string }

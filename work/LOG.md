@@ -1066,3 +1066,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 22:4x T7bd 紧急修落地：SandIconButton 导入（先红 2 failed→修后 2 passed 6.9s）。经理发现合并版对话框运行时炸（esbuild 不查类型）；我 22:3x 的回测记录与经理实测矛盾待查（可能跑了旧产物）——以本轮 HEAD 先红为准
 - 22:5x T11 ⑤c：PATCH 补 orchestration.yml 后工具面在；worker 仍未建（新增=[]）——下窗口按 fake 轮数/orch-channel/dataDir 三向排查
 - 22:6x T11 ⑤c 定性：create_bot 不在工具面（17 工具无它；orchestration.yml 已挂）——注册条件待读（connector/config）
+- 22:7x T11 ⑤c 根因：create_bot when=agent.id===mainBotId（bots.json）——测试没写 bots.json 所以隐藏。修法=writeBots 模式（envelope-live 先例）

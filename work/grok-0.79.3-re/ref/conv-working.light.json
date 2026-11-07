@@ -6,19 +6,19 @@
  "statusLineSamples": [
   {
    "t": 0,
-   "text": "Mulling it over"
+   "text": ""
   },
   {
    "t": 5,
-   "text": "Mulling it over"
+   "text": ""
   },
   {
    "t": 10,
-   "text": "Mulling it over"
+   "text": ""
   },
   {
    "t": 12,
-   "text": "Mulling it over"
+   "text": ""
   }
  ],
  "errors": [
@@ -42,7 +42,7 @@
   "[log] [STUB] main.exposeFeatureGate [{\"name\":\"grok_bot_all_bots_color_theming\"}]",
   "[log] [STUB] main.setViewingAgent [{\"agentId\":\"ag_main\"}]",
   "[log] [STUB] main.writeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.selection.last-agent\",\"value\":\"{\\\"schemaVersion\\\":1,\\\"value\\\":{\\\"agentId\\\":\\\"ag_main\\\"}}\"}]",
-  "[log] [STUB] main.reportClientFailure [{\"kind\":\"transcript_first_layout\",\"reason\":\"settled\",\"heldMs\":14.100000023841858,\"unsettledBodies\":0,\"unsettledPlaceholders\":0,\"cloudAgentCards\":0}]",
+  "[log] [STUB] main.reportClientFailure [{\"kind\":\"transcript_first_layout\",\"reason\":\"settled\",\"heldMs\":15,\"unsettledBodies\":0,\"unsettledPlaceholders\":0,\"cloudAgentCards\":0}]",
   "[log] [STUB] coord.request openAgentTail {\"id\":\"ag_main\",\"limit\":500}",
   "[log] [STUB] coord.request getBotTemplateForSourceAgent {\"sourceAgentId\":\"ag_main\"}",
   "[log] [STUB] coord.request getAsyncTasks {\"id\":\"ag_main\"}",

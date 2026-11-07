@@ -1,4 +1,6 @@
-# HANDOFF · 2026-11-06 11:45
+# HANDOFF · 2026-11-07 08:0x
+
+> 2026-11-07 快照（UI 复刻链第一波收口）：T21（outline 侧板）+ T22（主聊天只留首答/终答）+ T21b（⑤ 咬合）全部终验合并进 docs/rebuild-p6-p5-plan；T20（0.79.3 参照台）S1/S2/S4 出图回执齐、经理验收中。全仓已推 GitHub（CrepuscularIRIS/Hivebot，private，73+ 分支；127MB evidence blob 已剥、B-env 隔离 HOME 垃圾已从 HEAD 树清+gitignore）。UI 复刻链下一张：T23（状态行短语引擎——0.79.3 短语原文已从 T20 拿到：thinking→"Mulling it over"，12s 不轮换）。用户在用产品实例（启动器拉起）；用户研究方向=编排（跨 bot 交流/subagent 呈现），T27 等其结论。
 
 新会话从这里接手。先读本文件，再读 `work/REPORT-2026-11-05.md`（额度诊断 + 今日成果 + 待办全表）。
 

@@ -1115,3 +1115,8 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 合并后回测：unit grok-shim+fold **197 passed**；e2e status-line+outline+p6-fold **11 passed**
 - 经理终验：T23 通过（review 4 条修复逐条核实+3 补格咬住 5s 轮换变异）；T20b 附条件通过（json 逐字段核实；回执「samples 非空」一句不实已更正——短语事实只认 phrase-samples.json）；T20 随之收口
 - 经理立项 T24：13 形状=0.79.3 pn 序（blob,cloud,square,sparkle,clover,heart,flower,teardrop,tablet,wedge,house,star,hex；缺 7 个从 Hs 表复制改造，character.tsx 整模块复制进覆盖层）；11 色与 AVATAR_COLORS 逐字相同纯接线；**真断点=键名**（toAgentRecord 写 shape/color、上游读 avatarShape/avatarColor）；名字输入拆 T30
+
+## 2026-11-07 · T24 施工+审查闭环（feat/T24，终验中）
+- 施工：13 形状（7 缺口：ws/Ts/ks 构造器复刻+Es/Os/Ds 字面量+Lc 算法）+11 色板+预览+localStorage 持久化+键名修复；unit 14 格、e2e ①-⑤、变异四刀、六态截图
+- Sol 审 2M+2L：clover 圆心误读（58 是半径非纵偏——轮廓 189×228≠228×228）、测试两缺口（颜色回落没对照/随机没证独立取值）→ 全修+补格；Black 渐变（0.18 全局行为，不越界不动）转 T30；布局 5/5/3 居中+色板 6+5 修
+- 教训：JSX 行内 // 注释吞闭合 > → build 失败跑旧 dist 的假绿（build 输出不可吞，已进回执与 LEARNINGS 口径）

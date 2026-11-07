@@ -1043,3 +1043,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 18:4x T10 收口：③a 根因=sandbox-policy 覆盖行丢 mode（整键替换陷阱）→补 workspace-write；④/③/④e 全绿（5+2+42+5）。疑点：③c 变异不咬合（mode 后原版也挡）交终验裁
 - 18:5x T9b4 施工完（guard remoteHome 校验 dispose 即停：ⓑ先红/ⓒ等价形态/变异2红；29+51+②d 全绿）。T10 终验中（③c 疑点定位）
 - 19:0x T10b 施工完（探针出 /tmp 后三刀变异全咬合：直通/原版/只传远端根各红；③a 回直写；7+42 绿）。与 T9b4 同批待终验
+- 19:1x feat/T10 合并落地（T10+T10b 终验通过）：回测 79 单测+5+5+7+9+14 e2e 全绿、/var/tmp 清零。T9b4b 施工（ⓐ假时钟时机+ⓓ超时格）

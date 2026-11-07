@@ -113,7 +113,8 @@ test('③ 折叠提交：折叠区选择（preset/连接器/Model）真进 creat
     await expect(inDlg(page, 'input[name="pb-preset"]').first()).toBeVisible()
     const radios = inDlg(page, 'input[name="pb-preset"]')
     const n = await radios.count()
-    if (n > 1) await radios.nth(1).check()
+    let pickedPreset = ''
+    if (n > 1) { await radios.nth(1).check(); pickedPreset = (await radios.nth(1).getAttribute('value')) ?? '' }
     await page.getByRole('textbox', { name: 'Bot name' }).fill('Folded Bot')
     await inDlg(page, '[data-action="create-bot"]').click()
     await expect(inDlg(page, 'h2')).toHaveCount(0, { timeout: 30_000 })
@@ -122,6 +123,7 @@ test('③ 折叠提交：折叠区选择（preset/连接器/Model）真进 creat
     const req = seen[0]!
     expect(typeof req.preset).toBe('string')
     expect(req.preset).not.toBe('')
+    if (pickedPreset !== '') expect(req.preset, '就是折叠区选的那一个').toBe(pickedPreset) // T30c #1
     expect(Array.isArray(req.connectors)).toBe(true)
   } finally { await env.stop() }
 })

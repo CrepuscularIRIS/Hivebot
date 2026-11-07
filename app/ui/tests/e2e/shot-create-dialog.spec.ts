@@ -12,6 +12,7 @@ test('T30 六态截图', async () => {
   const env = await launchProduct()
   try {
     const { page } = env
+    await page.evaluate(() => { /* noop */ })
     for (const mode of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme: mode })
       await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
@@ -31,6 +32,16 @@ test('T30 六态截图', async () => {
       await dlg.screenshot({ path: join(OUT, `create-dialog.${mode}-shape3.png`) })
       await dlg.locator('button[aria-label="Close"]').click()
     }
+    // T30c (b)：暗色 + Black 预览一张
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'cursor-dark')
+    await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
+    const d2 = page.locator('dialog[data-dialog="new-bot"]')
+    await expect(d2.locator('h2')).toBeVisible()
+    await d2.locator('[aria-label="Black character color"]').click()
+    await d2.locator('[aria-label="blob character shape"]').click()
+    await d2.screenshot({ path: join(OUT, 'create-dialog.dark-black.png') })
+    await d2.locator('button[aria-label="Close"]').click()
     await page.emulateMedia({ colorScheme: 'light' })
   } finally { await env.stop() }
 })

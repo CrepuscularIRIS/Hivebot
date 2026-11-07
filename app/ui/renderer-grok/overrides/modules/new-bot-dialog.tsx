@@ -40,8 +40,8 @@ function ShapeGlyph({ shape, color, size = 36, pressed = false }: { shape: strin
   const ink = personaInk(color, themeOf())
   return (
     <svg aria-hidden="true" width={size} height={size} viewBox="-15 -15 259 259" style={{ display: 'block' }}>
-      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--sand-border, #1c1c1c55)" strokeWidth={9} /> : null}
-      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--sand-surface, #ffffff)" strokeWidth={19} /> : null}
+      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--sand-border, #1c1c1c55)" strokeWidth={23} /> : null}
+      {pressed ? <path d={personaShapePath(shape)} fill="none" stroke="var(--cursor-bg-elevated, var(--sand-bg-elevated, #ffffff))" strokeWidth={19} /> : null}
       <path d={personaShapePath(shape)} fill={ink} />
     </svg>
   )

@@ -197,6 +197,8 @@ test.describe('T11 ssh 远端工作区', () => {
         const beforeHost = new Set(existsSync(hostWs) ? readdirSync(hostWs) : [])
         // fake 脚本：主 bot 调 create_bot（SDK 编排 → orch-channel → main createWorkerBot → mintWorkspace ssh 分支）
         const toolArgs = JSON.stringify({ name: 't11worker', prompt: 'T11 5c probe' })
+        // 两轮：轮 1 create_bot；轮 2 text 收尾（脚本耗尽会 throw——轮 2 的
+        // requests.jsonl 记录发生在脚本项存在之后，缺轮 2 会让观测丢行）
         rt.writeScriptCalls(sessionId, [
           { chunks: [
             { type: 'block-start', index: 0, blockType: 'tool-call' },
@@ -205,6 +207,13 @@ test.describe('T11 ssh 远端工作区', () => {
             { type: 'block-end', index: 0, block: { type: 'tool-call', id: 't11c1', name: 'create_bot', arguments: toolArgs } },
             { type: 'usage', usage: { inputTokens: 10, outputTokens: 5 } },
             { type: 'finish', reason: { kind: 'tool-calls' } },
+          ] },
+          { chunks: [
+            { type: 'block-start', index: 0, blockType: 'text' },
+            { type: 'text-delta', index: 0, text: 'T11-5c done' },
+            { type: 'block-end', index: 0, block: { type: 'text', text: 'T11-5c done' } },
+            { type: 'usage', usage: { inputTokens: 10, outputTokens: 1 } },
+            { type: 'finish', reason: { kind: 'stop' } },
           ] },
         ])
         await api(shell.page, 'session/prompt', { request: { requestId: `t11c-${Date.now()}`, sessionId, mode: 'queue', content: [{ type: 'text', text: 'go' }] } })
@@ -222,7 +231,13 @@ test.describe('T11 ssh 远端工作区', () => {
           const last = lines5c[lines5c.length - 1] ?? ''
           const names = (JSON.parse(last).toolNames ?? []) as string[]
           EVIDENCE(`⑤c fake 轮数=${lines5c.length} create_bot 在面=${names.includes('create_bot')} 总数=${names.length}`)
-          if (lines5c.length >= 2) EVIDENCE(`⑤c 轮2原文=${lines5c[1]!.slice(0, 700)}`)
+          if (lines5c.length >= 2) {
+            try {
+              const r2 = JSON.parse(lines5c[1]!) as { userTexts?: unknown; toolResults?: unknown }
+              EVIDENCE(`⑤c 轮2 userTexts=${JSON.stringify(r2.userTexts).slice(0, 500)}`)
+              EVIDENCE(`⑤c 轮2 toolResults=${JSON.stringify(r2.toolResults).slice(0, 500)}`)
+            } catch (e) { EVIDENCE(`⑤c 轮2解析失败 ${String(e).slice(0, 100)}`) }
+          }
         }
         const deadline = Date.now() + 120_000
         let newRemote: string[] = []

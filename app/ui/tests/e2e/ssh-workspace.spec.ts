@@ -173,6 +173,7 @@ test.describe('T11 ssh 远端工作区', () => {
           P2SDK_SSH_HOST: 'pbots-ssh-test', P2SDK_SSH_REMOTE_ROOT: server.workspace,
           P2SDK_SSH_HELPER: server.helper, P2SDK_SSH_HELPER_HASH: server.helperHash,
           P2SDK_SSH_NODE: process.execPath, P2SDK_SSH_REMOTE_HOME: server.remoteHome,
+          P2SDK_ORCH_DATA_DIR: dataDir,
         },
       })
       const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff }, home })
@@ -186,6 +187,10 @@ test.describe('T11 ssh 远端工作区', () => {
         const instance = createHash('sha256').update(token).digest('hex')
         mkdirSync(dataDir, { recursive: true })
         writeFileSync(join(dataDir, 'policy-state.json'), JSON.stringify({ version: 1, paused: false, instance }))
+        // create_bot 的 when 读 bots.json.mainBotId（create.mjs:77）；PBOTS_DATA_DIR
+        // 不进 dsh 子进程（start.ts:198 launcher-only）——P2SDK_ORCH_DATA_DIR 显式
+        // 指到 dataDir，bots.json 与 policy-state 同根
+        writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: sessionId, recipes: {}, bots: {} }))
         const wsRoot = join(server.workspace, 'workspaces')
         const hostWs = join(dataDir, 'workspaces')
         const beforeRemote = new Set(readdirSync(wsRoot))

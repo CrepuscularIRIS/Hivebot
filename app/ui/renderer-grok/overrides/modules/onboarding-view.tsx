@@ -15,20 +15,24 @@ type Props = Parameters<typeof Upstream>[0]
 /** landing 封面（0.79.3 形态：标题 + Get started；未点进前不挂六步）。 */
 function Landing({ onStart, onSkip, bridge }: { onStart(): void; onSkip(): void; bridge: DesktopBridge }) {
   return (
-    <section className="sand-onboarding__landing" aria-labelledby="sand-onboarding-landing-heading">
-      <h1 id="sand-onboarding-landing-heading">Welcome to Grok Bot</h1>
-      <button type="button" data-action="onboarding-start" onClick={onStart}>Get started</button>
-      {/* review M：Skip = 提前 seen 后直接退出（onComplete(null)），不进六步 */}
-      <button type="button" data-action="onboarding-skip" onClick={() => { void bridge.onboarding.setSeen(true).then(onSkip, onSkip) }}>Skip</button>
-    </section>
+    <div className="sand-onboarding" role="main"> {/* T26b #1：上游覆盖层外壳（production.css:176 position:fixed inset:0）——曾裸 section 落文档流底部屏外 */}
+      <section className="sand-onboarding__landing" aria-labelledby="sand-onboarding-landing-heading">
+        <h1 id="sand-onboarding-landing-heading">Welcome to Grok Bot</h1>
+        <button type="button" data-action="onboarding-start" onClick={onStart}>Get started</button>
+        {/* review M：Skip = 提前 seen 后直接退出（onComplete(null)），不进六步 */}
+        <button type="button" data-action="onboarding-skip" onClick={() => { void bridge.onboarding.setSeen(true).then(onSkip, onSkip) }}>Skip</button>
+      </section>
+    </div>
   )
 }
 
 /** T26：onboarding 结束（完成或 skip）后重载 roster——首启未建 main bot，seen 落盘后补建。 */
-const reloadRoster = (): void => {
-  const dev = (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void> } }).__pbotsDev
-  void dev?.reloadRoster?.()
+const devCall = (fn: 'reloadRoster' | 'finishKickstart'): void => {
+  const dev = (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void>; finishKickstart?(): Promise<void> } }).__pbotsDev
+  void dev?.[fn]?.()
 }
+const reloadRoster = (): void => devCall('reloadRoster')
+const finishKickstart = (): void => devCall('finishKickstart')
 
 export function SignedInOnboarding(props: Props) {
   const [started, setStarted] = useState(() => {
@@ -41,6 +45,7 @@ export function SignedInOnboarding(props: Props) {
   // review M：skip/完成都走这里——seen 已落，退引导 + 补建 main bot（首启未建）
   const finish = (agentId: string | null): void => {
     reloadRoster()
+    if (agentId !== null) finishKickstart() // T26b #4：走完引导（建了 bot）才发延后介绍；skip 不发
     props.onComplete(agentId)
   }
   if (!started) return <Landing onStart={start} onSkip={() => finish(null)} bridge={props.bridge} />

@@ -89,11 +89,15 @@ export async function launchProduct(opts: ShellOptions & { ready?: boolean; patc
   // 之后的产品面：页面起来后置 seen 并触发 roster 重载（补建 main bot）；onboarding 专项
   // 用 onboardingFirst:true 自测真首启三态。
   if (!onboardingFirst) {
+    // T26b #2：置 seen 后整页 reload——gate 在新加载里必判 shell（消 1/3 竞态残留），
+    // 末尾断言 onboarding 节点为 0 让未来竞态显式红。
     await shell.page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
     await shell.page.evaluate(() => { try { window.localStorage.setItem('pbots.shim.onboarding-seen', '1') } catch { /* ignore */ } }).catch(() => {})
-    await shell.page.evaluate(() => (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void> } }).__pbotsDev?.reloadRoster?.()).catch(() => {})
+    await shell.page.reload()
+    await shell.page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
   }
   if (ready) await waitProductReady(shell.page)
+  if (!onboardingFirst) await expect(shell.page.locator('.sand-onboarding')).toHaveCount(0) // T26b #2：竞态哨兵
   return { rt, shell, page: shell.page, async stop() { await shell.stop(); await rt.stop() } }
 }
 

@@ -3,7 +3,7 @@
 > 开单：main (GLM 5.3)（经理 agent 立项超时 75min 被 TaskStop，主 agent 按模板补开——探针数据已备：RE 题 2 序列 + 0.18 组件树 + T25 kickstart:false）| 日期：2026-11-07
 > 来源：queue U5/T26 计划行；RE-UI-0.79.3.md :99（ONB chunk）；T20 S5 止损记录
 > 分支 / 作业目录：feat/T26 @ /tmp/bot-wt/T26
-> claimed：
+> claimed：2026-11-07 main (GLM 5.3) @ feat/T26
 > accepted：
 > 失败次数：0
 

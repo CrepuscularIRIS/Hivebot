@@ -142,3 +142,26 @@ test('④ 按 bot 隔离：面板 aria-label 与条目只含被选 bot', async (
     await env.stop()
   }
 })
+
+test('⑤ reload 后未先进聊天、直接开面板：follow 启动 → 快照到 → 面板活填充（review M1 回归格）', async () => {
+  test.setTimeout(120_000)
+  const env = await launchProduct()
+  try {
+    const { page, rt } = env
+    const [a] = await createBots(page, [{ title: 'OL-E1' }, { title: 'OL-E2' }]) as [string]
+    rt.writeScriptCalls(a, [textCall(['甲的答案'])])
+    await openBot(page, 'OL-E1')
+    await send(page, '甲好')
+    await expect.poll(async () => (await devState(page)).views[a]?.endReason, { timeout: 30_000 }).toBe('completed')
+    // E1 有历史；reload 后不先进聊天、直接从侧栏菜单开它的面板（views 未载该 bot）
+    await page.reload()
+    await expect(page.locator('.sand-agent-item').first()).toBeVisible({ timeout: 60_000 })
+    const panel = await openOutline(page, 'OL-E1')
+    // 修复后：outline 请求启动 follow → 持久会话快照回来 → outline 事件活填充（不重开面板）
+    await expect(panel).toContainText('甲的答案', { timeout: 30_000 })
+    await expect(panel).toContainText('甲好')
+    await expect(panel).not.toContainText('No conversation activity yet.')
+  } finally {
+    await env.stop()
+  }
+})

@@ -102,16 +102,17 @@ async function assertD1Outline(page: Page): Promise<void> {
   await expect(rows).toHaveCount(4)
 }
 
-/** 展开 outline 里第一条 B 行（中间轮正文在面板可见全文）。 */
-async function expandOutlineB(page: Page): Promise<void> {
-  const bRow = page.locator('.sand-outline-panel .sand-outline-item[data-kind="assistant-text"]', { hasText: 'B：第一步结果正常' }).first()
-  await bRow.locator('button.sand-outline-item__row').click()
-  await expect(bRow.locator('.sand-outline-item__detail')).toContainText('B 第二行：配置里有三个键')
+/** 展开 outline 里的 B、C 两行（中间轮正文在面板可见全文；review M2：C 的收起/展开/全文 oracle 不得丢）。 */
+async function expandAll(page: Page): Promise<void> {
+  const rowOf = (text: string) => page.locator('.sand-outline-panel .sand-outline-item[data-kind="assistant-text"]', { hasText: text }).first()
+  for (const [head, full] of [['B：第一步结果正常', 'B 第二行：配置里有三个键'], ['C：配置读完，最后核对一次。', 'C：配置读完，最后核对一次。']] as const) {
+    const row = rowOf(head)
+    await expect(row.locator('button.sand-outline-item__row')).toHaveAttribute('aria-expanded', 'false')
+    await row.locator('button.sand-outline-item__row').click()
+    await expect(row.locator('.sand-outline-item__detail')).toContainText(full)
+  }
 }
 
-async function expandAll(page: Page): Promise<void> {
-  await expandOutlineB(page)
-}
 
 test('D1 主链：进行中气泡 ≤1 + tool running；结束恰 2 气泡、B/C 收起、展开见全文、E 不重复；reload 重放；亮暗', async () => {
   test.setTimeout(180_000)

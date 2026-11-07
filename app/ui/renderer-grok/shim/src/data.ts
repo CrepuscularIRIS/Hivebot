@@ -434,7 +434,12 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   // ---- coordinator deps（13 RPC 实底） ----
   const deps: CoordinatorDeps = {
     listAgents: () => order.map(recordOf),
-    outline: (id) => toOutlineItems({ items: views.get(id)?.items ?? [], streaming: views.get(id)?.streaming }),
+    // T21b（review M1）：reload 后未先进聊天、直接开面板的 bot——views 尚无该 id，回值会是空。
+    // 这里启动 follow（幂等）：快照到达 → onFollowItem → pushTranscript 同机推 outline 事件，面板活更新。
+    outline: (id) => {
+      if (!views.has(id)) openFollow(id)
+      return toOutlineItems({ items: views.get(id)?.items ?? [], streaming: views.get(id)?.streaming })
+    },
     openAgentTail: (id) => {
       followed.add(id)
       openFollow(id)

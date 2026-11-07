@@ -1094,3 +1094,4 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 04:4x feat/T17b 合并落地（终验通过 6/7 刀）：回测 launcher.spec 9 passed、残留 0。启动器全部修复进入主线（用户在用的版本不含这些——下次重启 launcher 生效）。T17d 四小项计划行不挡体验。RE 三题进行中
 - 04:32 哨兵：load 18.8（RE 实例 91 进程在跑——逆向主战场）+用户环境。报告未出继续等。无 429
 - 04:41 哨兵：load 12.8 回落；RE 报告未出（仍在跑）。无 429
+- 04:5x RE 三题报告归档 work/grok-0.79.3-re/。核心：无 thinking kind+无条件隐藏 tool-call+suppressed 中间轮（主聊只有 user→状态行→终答）；创建=对话框（24×11 形状色+42 模板+吉祥物 53 状态动画）；无 superagent 一词（subagent 靠 outline 侧板）

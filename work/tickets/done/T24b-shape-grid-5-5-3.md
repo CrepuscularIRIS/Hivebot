@@ -4,7 +4,11 @@
 > 来源：T24 终验（经理任务 B）——review L2 的修复把排列改坏了
 > 分支 / 作业目录：feat/T24 @ /tmp/bot-wt/T24（接着 b4dc3cd0 提交）
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T24
+<<<<<<<< HEAD:work/tickets/done/T24b-shape-grid-5-5-3.md
 > accepted：2026-11-07 manager (Opus 5.5) @ feat/T24 8c2d746f（产品代码 30109977）
+========
+> accepted：
+>>>>>>>> feat/T24:work/tickets/doing/T24b-shape-grid-5-5-3.md
 > 失败计数：0
 
 ## 哪里失败

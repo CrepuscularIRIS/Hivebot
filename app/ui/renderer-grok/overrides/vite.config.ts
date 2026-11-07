@@ -18,6 +18,7 @@ export const MODULE_OVERRIDES: Record<string, string> = {
   'production/agent-row-actions-model.ts': 'agent-row-actions-model.ts',
   'production/CommandPalette.tsx': 'CommandPalette.tsx',
   'recovered/features/conversation/workspace/transcript.tsx': 'transcript.tsx',
+  'recovered/features/onboarding/signed-in/character.tsx': 'character.tsx', // T24：整模块复制补 7 形状（re-export 替换不到内部调用）
   'recovered/features/conversation/workspace/rich-text-editor.tsx': 'rich-text-editor.tsx',
   'recovered/features/settings/overlay/view.tsx': 'settings-view.tsx',
   'recovered/features/settings/overlay/panels.tsx': 'settings-panels.tsx',

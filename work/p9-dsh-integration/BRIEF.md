@@ -44,3 +44,9 @@
 1. 按上表逐行核对 dsh 插件能力（读包 README / 源码；用 GitHub MCP 检索第三方 dsh 插件，记入 `repos/MANIFEST.tsv` 或 reuse 文件），给出「直接用 / 插件+胶水 / 需自建 / 不做」。
 2. 标出现有自建模块（`app/sdk/src` policy / orchestration / admin / market）中能被插件替代的部分。
 3. 定第一批工单：建议从 L8（ssh 本机）和 L4（skill）开始，二者独立、插件现成、能最快跑出一条端到端体验；重排 p5–p8 剩余任务。
+
+## 产品方向（用户定调 2026-11-06 23:5x）
+
+- **第一阶段（现在）**：本机 Linux 完整体验——产品启动器拉起 SDK + Electron，日常使用 skills/定时/M1-M3 全链。
+- **第二阶段**：**Windows exe 客户端**，连接到 ssh ubuntu 远端电脑（bot 的电脑）。测试链路可能走 **tailscale**；Windows 侧由用户自己连接过来测试。
+- 含义：T9-T12 的 ssh 链最终消费者 = Windows exe 客户端；启动器/打包设计为 Windows 预留（electron-builder 目标 win、SDK 跑远端不进 exe、handoff 通道经 tailscale 可达）。

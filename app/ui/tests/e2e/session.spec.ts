@@ -8,7 +8,7 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   EVIDENCE, MAIN_TITLE, api, bashCall, botItem, composer, createBots, devState, finalAssistant, launchProduct, openBot, permissionDock, send,
-  streamingRow, textCall, toolRows, transcript,
+  openOutline, streamingRow, textCall, toolRows, transcript,
 } from '../support/ui.ts'
 
 const shimAnswers = (page: import('playwright/test').Page): Promise<string[]> =>
@@ -33,6 +33,7 @@ test('D3 审批往返：dock 仅本 bot、侧栏 Needs attention；Deny → 不�
     await send(page, '请建 canary')
     const dock = permissionDock(page)
     await expect(dock).toBeVisible({ timeout: 20_000 })
+    await openOutline(page, 'D3-X') // T22：工具行迁 outline 面板
     await expect(toolRows(page).last()).toContainText('touch')
     // P5-31（L-AP A9④）：bash 卡无始终允许、无 Never——DOM 中按钮数 === 0；只剩 Allow once / Deny once；完整命令（绝对路径全文）可见
     await expect(dock.locator('button', { hasText: 'Always allow' })).toHaveCount(0)
@@ -55,6 +56,7 @@ test('D3 审批往返：dock 仅本 bot、侧栏 Needs attention；Deny → 不�
     await openBot(page, 'D3-X')
     await dock.locator('button', { hasText: 'Deny once' }).click()
     await expect(dock).toHaveCount(0, { timeout: 20_000 })
+    await openOutline(page, 'D3-X')
     await expect(toolRows(page).last()).toHaveAttribute('data-status', 'failed', { timeout: 20_000 })
     await expect(botItem(page, 'D3-X').locator('[data-status="needs-attention"]')).toHaveCount(0)
     await expect(finalAssistant(page).last()).toHaveText('好的，不执行。', { timeout: 20_000 })
@@ -64,6 +66,7 @@ test('D3 审批往返：dock 仅本 bot、侧栏 Needs attention；Deny → 不�
     await send(page, '这次批准')
     await dock.locator('button', { hasText: 'Allow once' }).click({ timeout: 20_000 })
     await expect.poll(() => existsSync(okCanary), { timeout: 30_000 }).toBe(true)
+    await openOutline(page, 'D3-X')
     await expect(toolRows(page).last()).toHaveAttribute('data-status', 'done', { timeout: 20_000 })
     await expect(finalAssistant(page).last()).toHaveText('已执行。', { timeout: 20_000 })
     expect((await shimAnswers(page)).sort()).toEqual(['allowed-once', 'rejected'])

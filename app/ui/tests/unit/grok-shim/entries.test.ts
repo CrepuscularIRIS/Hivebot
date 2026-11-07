@@ -48,7 +48,7 @@ describe('toRawEntries · 每类 entry 的 0.18 形状', () => {
     const out = foldTurns(items, { hasMore: false, running: true })
     const raw = toRawEntries(out, 'Bot', null)
     expect(raw.filter((e) => e.kind === 'tool-call')).toEqual([])
-    expect(raw.filter((e) => e.kind === 'user')).toHaveLength(1)
+    expect(raw.filter((e) => rec(e).kind === 'message' && rec(e).role === 'user')).toHaveLength(1)
   })
 
   it('notice → notice 行（content 字符串）', () => {
@@ -147,11 +147,14 @@ describe('toRawEntries · 流式落点（streamingAs）', () => {
     expect(raw.at(-1)).toMatchObject({ id: 'live-stream', kind: 'message', role: 'assistant', content: '收到，' })
   })
 
-  it('首工具后：live-stream 落 thinking 行，气泡仍 ≤1', () => {
-    const out = foldTurns([u('u1'), a(1, 0, 'A'), tRun('c1')], { hasMore: false, running: true })
-    const raw = toRawEntries(out, 'Bot', { text: '中间 B' })
-    expect(raw.at(-1)).toMatchObject({ id: 'live-stream', kind: 'thinking', text: '中间 B' })
-    expect(raw.filter((e) => e.kind === 'message' && e.role === 'assistant')).toHaveLength(1)
+  it('T22：首工具后 live-stream 不进主 transcript（turn/end 后作为 result 一次出现）；首答流照旧', () => {
+    const mid = foldTurns([u('u1'), a(1, 0, 'A'), tRun('c1')], { hasMore: false, running: true })
+    const rawMid = toRawEntries(mid, 'Bot', { text: '中间 B' })
+    expect(rawMid.some((e) => rec(e).id === 'live-stream')).toBe(false) // 流式期不显示（不闪）
+    expect(rawMid.filter((e) => e.kind === 'message' && e.role === 'assistant')).toHaveLength(1)
+    const first = foldTurns([u('u1')], { hasMore: false, running: true })
+    const rawFirst = toRawEntries(first, 'Bot', { text: '首答流' })
+    expect(rec(rawFirst.at(-1))).toMatchObject({ id: 'live-stream', kind: 'message', isStreaming: true })
   })
 })
 
@@ -160,7 +163,7 @@ describe('toRawEntries · P6-16 编排条目', () => {
   const tool = (name: string, args: object, status: ToolStatus, result: string | null): TimelineItem =>
     ({ kind: 'tool', id: `tool-${name}`, callId: name, name, args: JSON.stringify(args), status, result, awaiting: false, decision: null })
 
-  it('create_bot / send_to_bot 工具行 → notice（回落文本可读）+ assign 元数据；其他工具照旧 tool-call', () => {
+  it('create_bot / send_to_bot 工具行 → notice（回落文本可读）+ assign 元数据；T22：普通工具不产 tool-call', () => {
     const items: TimelineItem[] = [
       { kind: 'user', id: 'u1', text: '跑测试' },
       { kind: 'assistant', id: 't1-s0', text: '好的，派给 Test fixer。' },
@@ -169,7 +172,7 @@ describe('toRawEntries · P6-16 编排条目', () => {
       tool('bash', { command: 'ls' }, 'done', 'ok'),
     ]
     const raw = toRawEntries(foldTurns(items, { hasMore: false, running: false }), 'Main', null)
-    expect(raw.map((e) => e.kind)).toEqual(['message', 'message', 'notice', 'notice', 'tool-call'])
+    expect(raw.map((e) => e.kind)).toEqual(['message', 'message', 'notice', 'notice']) // T22：bash 不产 tool-call
     expect(raw[2]).toMatchObject({ content: 'Messaging Test fixer', pbotsPeer: { kind: 'assign', tool: 'create_bot', workerId: 'w1', status: 'done' } })
     expect(raw[3]).toMatchObject({ content: "Couldn't message another assistant: This worker is busy", pbotsPeer: { kind: 'assign', status: 'failed', workerId: 'w1' } })
   })

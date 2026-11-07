@@ -10,7 +10,7 @@ import { expect, test, type Page } from 'playwright/test'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { AUDIT, type AuditRow, type Target } from '../support/contrast.ts'
-import { bashCall, createBots, evidenceOut, finalAssistant, launchProduct, openBot, permissionDock, reasoningTextCall, send, textCall } from '../support/ui.ts'
+import { bashCall, createBots, evidenceOut, finalAssistant, launchProduct, openBot, openOutline, permissionDock, reasoningTextCall, send, textCall } from '../support/ui.ts'
 
 const OUT = evidenceOut('P5-58')
 type Mode = 'light' | 'dark'
@@ -35,8 +35,8 @@ const TARGETS: Target[] = [
   { id: '正文', sel: '.sand-transcript-row[data-role="assistant"] .sand-message-prose p' },
   { id: '正文链接', sel: '.sand-message-prose a' },
   { id: '代码块', sel: '.sand-message-prose pre' },
-  { id: 'thinking 行', sel: '.sand-outline-item[data-kind="thinking"] .sand-outline-item__row' },
-  { id: '工具行预览', sel: '.sand-outline-item[data-kind="tool-call"] .sand-outline-item__preview' },
+  { id: 'thinking 行', sel: '.sand-outline-panel .sand-outline-item[data-kind="thinking"] .sand-outline-item__row' },
+  { id: '工具行预览', sel: '.sand-outline-panel .sand-outline-item[data-kind="tool-call"] .sand-outline-item__preview' },
   { id: '审批卡标题条', sel: '[aria-label="Local tool permissions"] [data-pbots="ask-titlebar"] .pb-ask__label' },
   { id: '审批卡标题', sel: '[aria-label="Local tool permissions"] strong' },
   { id: '审批卡说明', sel: '[aria-label="Local tool permissions"] [data-pbots="ask-scope"]' },
@@ -69,8 +69,8 @@ const SHOTS: Array<{ id: string; sel: string }> = [
   { id: 'chat-header', sel: '.sand-chat-header' },
   { id: 'transcript', sel: '.sand-virtual-transcript' },
   { id: 'prose', sel: '.sand-transcript-row[data-role="assistant"] .sand-message-prose' },
-  { id: 'thinking-row', sel: '.sand-outline-item[data-kind="thinking"]' },
-  { id: 'tool-row', sel: '.sand-outline-item[data-kind="tool-call"]' },
+  { id: 'thinking-row', sel: '.sand-outline-panel .sand-outline-item[data-kind="thinking"]' },
+  { id: 'tool-row', sel: '.sand-outline-panel .sand-outline-item[data-kind="tool-call"]' },
   { id: 'approval-card', sel: '[aria-label="Local tool permissions"]' },
   { id: 'composer', sel: '.sand-prompt-shell' },
   { id: 'info-pane', sel: 'aside.sand-info-pane[data-open]' },
@@ -145,6 +145,7 @@ test('P5-58① 双主题：emulateMedia / nativeTheme 双路翻转 + 逐部件�
     await expect(finalAssistant(page).last()).toContainText('示例', { timeout: 20_000 })
     await send(page, '执行一下')
     await expect(permissionDock(page)).toBeVisible({ timeout: 20_000 })
+    await openOutline(page, 'T58-X') // T22：工具/thinking 行迁 outline 面板
     await page.click('button[aria-label="View agent settings"]')
     await expect(page.locator('aside.sand-info-pane[data-open]')).toBeVisible()
     // composer 占位：空 composer 才有 ::before，打草稿前亮暗各审一次
@@ -168,6 +169,7 @@ test('P5-58① 双主题：emulateMedia / nativeTheme 双路翻转 + 逐部件�
     audits.dark.push(...capDark.audit)
     await page.emulateMedia({ colorScheme: 'light' })
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'cursor-light')
+    await page.click('button[aria-label="Close full conversation"]') // 面板 dialog 的遮罩挡后续 overlay 交互（Esc 也被它吃）
 
     // overlay 面（设置 / 搜索面板 / 市场）：开着截亮暗两份 + 审计，再关掉——主题翻转对 overlay 同样生效
     const pick = (...ids: string[]): Target[] => TARGETS.filter((t) => ids.includes(t.id))

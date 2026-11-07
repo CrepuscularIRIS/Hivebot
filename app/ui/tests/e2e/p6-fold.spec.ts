@@ -159,7 +159,9 @@ test('D1 主链：进行中气泡 ≤1 + tool running；结束恰 2 气泡、B/C
     await page.reload()
     await expect(page.locator('.sand-agent-item').first()).toBeVisible({ timeout: 60_000 })
     await assertD1Ended(page)
-    await openOutline(page, MAIN_TITLE)
+    // reload 后 main bot 行标题随会话预览变化——取实际 aria-label 再开面板
+    const rowLabel = await page.locator('.sand-agent-item').first().getAttribute('aria-label') ?? MAIN_TITLE
+    await openOutline(page, rowLabel)
     await assertD1Outline(page)
     await expandAll(page)
   } finally {

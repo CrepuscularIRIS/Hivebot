@@ -130,9 +130,12 @@ export async function openBot(page: Page, title: string): Promise<void> {
   await expect(botItem(page, title)).toHaveAttribute('data-active', 'true')
 }
 
-/** T21：侧栏行右键 → 菜单「Show full conversation」打开 outline 面板（真实菜单点击，不 evaluate）。 */
+/** T21：侧栏行右键 → 菜单「Show full conversation」打开 outline 面板（真实菜单点击，不 evaluate）。
+ * 同名多行（未命名 bot 都叫 New chat）时优先 data-active 行。 */
 export async function openOutline(page: Page, botTitle: string): Promise<Locator> {
-  await botItem(page, botTitle).click({ button: 'right' })
+  const rows = botItem(page, botTitle)
+  const row = (await rows.count()) > 1 ? page.locator(`.sand-agent-item[data-active="true"][aria-label="${botTitle}"]`).first() : rows.first()
+  await row.click({ button: 'right' })
   await page.locator('[aria-label="Agent actions"] [role="menuitem"]', { hasText: 'Show full conversation' }).click()
   const panel = page.locator('aside.sand-outline-panel')
   await expect(panel).toBeVisible({ timeout: 15_000 })

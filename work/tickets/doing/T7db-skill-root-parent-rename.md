@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T7d 终验不通过第 1 次（receipts/review-T7d.md §4）；queue 7e 不变量「挂载点不可 rename/rm」
 > 分支 / 作业目录：feat/T7d @ /tmp/bot-wt/T7d（同分支续做）
-> claimed：
+> claimed：2026-11-07 21:4x main (GLM 5.3) @ feat/T7d
 > accepted：
 
 ## 目标

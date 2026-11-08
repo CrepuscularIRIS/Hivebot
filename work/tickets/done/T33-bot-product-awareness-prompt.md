@@ -4,7 +4,7 @@
 > 来源：work/bot-product-awareness/BRIEF.md 第 1、2 条（第 3 条只带一句 subagent 说明，其余归 Q-036 / T27）；探针结论见 work/bot-product-awareness/PLAN.md §1
 > 分支 / 作业目录：feat/T33 @ /tmp/bot-wt/T33
 > claimed：2026-11-08 01:5x main (GLM 5.3) @ feat/T33（起点 114bcc5a）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-08 a76a5cf9（manager Opus 5.5 终验，见 receipts/review-T33.md「T33 终验」；live ④ 守卫强度/空断言/挂载滤无格三条记 queue 提议，不挡合并）
 
 ## 目标
 用户问 bot「有哪些别的 bot / 帮我建个 bot」时，bot 知道自己在多 bot 应用里、知道现在有哪些同伴（名字 + 主 bot / worker / 自己）、知道建 bot 的产品路径（New Bot → Create New Bot 对话框），没有工具时如实指路，不假装做了。

@@ -29,3 +29,6 @@ $ for i in 1 2 3; do …run-e2e.sh tests/e2e/wait-product-ready.spec.ts …
 - 提交：8469b3b1（helper 修+循环×10 同一提交）；验收 2（修后连跑 5 次）：`2 passed (31.8/31.6/31.4/31.3/31.3s)` ×5
 - 验收 3（三 spec 批 10 轮）：后台运行中（~18 分钟），完成后补逐轮计数
 - 验收 4/5：排队（批跑完）
+- 验收 3（三 spec 批 10 轮，后台跑原样）：`5 passed (1.8m)`×6 + `(1.7m)`×4——**D10c1 0 红**（旧比例 3/11；10 轮全绿 p≈0.04）
+- 验收 4：resilience+theme-flash+onboarding → **16 passed (1.9m)**
+- 验收 5：`git status --short app/ui` 空；T7beb 自身改动恰 ui.ts+wait-product-ready.spec 两文件（diff 范围内另含 T12a 合并文件，基准说明）

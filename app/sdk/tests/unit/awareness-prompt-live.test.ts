@@ -116,35 +116,49 @@ it('③ 新建 C 后 A 再发一条 → 新 system 含 C（现取名册非快照
   expect(text, 'A 的新一轮 system 含 Charlie-T33').toContain('Charlie-T33')
 })
 
-it('④ subagent helper 不入名册：subagent 轮后 A 的 system/message 不再发（名册未增——工单 b 选项等价证明）', { timeout: 120_000 }, async () => {
-  const a = alphaId
-  expect(a, '①格先跑').toBeTruthy()
-  // p2fake 脚本一轮调 subagent 工具（若工具不可达则该格降级为「名册无子会话」断言——回执写清）
-  const pad = () => ({ chunks: [
-    { type: 'block-start', index: 0, blockType: 'text' },
-    { type: 'text-delta', index: 0, text: 'pad' },
-    { type: 'block-end', index: 0, block: { type: 'text', text: 'pad' } },
-    { type: 'finish', reason: { kind: 'stop' } },
-  ] })
-  writeFileSync(join(home, 'fake', 'scripts', `${a}.json`), JSON.stringify({ calls: [
-    pad(), pad(), // ①③两轮已消耗——垫齐轮次（④是 A 的第 3 次 prompt）
-    { chunks: [
-      { type: 'block-start', index: 0, blockType: 'tool-call' },
-      { type: 'tool-call-delta', index: 0, id: 't33-sub', name: 'subagent', argumentsDelta: '{"description":"T33 helper","prompt":"help"}' },
-      { type: 'block-end', index: 0, block: { type: 'tool-call', id: 't33-sub', name: 'subagent', arguments: '{"description":"T33 helper","prompt":"help"}' } },
-      { type: 'finish', reason: { kind: 'tool-calls' } },
-    ] },
-    { chunks: [
+it('④ A1p 确定性化：subagent 真建 → 等 helper 进 list → A 新一轮名册不含 helper（件1+件2）', { timeout: 180_000 }, async () => {
+    const a = alphaId
+    expect(a, '①格先跑').toBeTruthy()
+    const pad = () => ({ chunks: [
       { type: 'block-start', index: 0, blockType: 'text' },
-      { type: 'text-delta', index: 0, text: 'sub done' },
-      { type: 'block-end', index: 0, block: { type: 'text', text: 'sub done' } },
+      { type: 'text-delta', index: 0, text: 'pad' },
+      { type: 'block-end', index: 0, block: { type: 'text', text: 'pad' } },
       { type: 'finish', reason: { kind: 'stop' } },
-    ] },
-  ] }))
-  const out: { systems: number; tools?: string } = { systems: 0 }
-  const text = await systemText(a, out)
-  // review 中2：先证 subagent 真创建了（tool/result 返回 started subagent id）——否则「名册未增」是空绿
-  expect(out.tools ?? '', 'subagent 工具真执行并返回 id').toMatch(/started subagent [0-9a-f-]+/)
-  expect(out.systems, 'subagent 轮不再发 system/message（名册未增——helper 被 origin 滤除）').toBe(0)
-  expect(text, 'helper 的 title 不入 A 名册').not.toContain('help')
-})
+    ] })
+    const subArgs = JSON.stringify({ description: 'T33 helper', prompt: 'help' })
+    writeFileSync(join(home, 'fake', 'scripts', `${a}.json`), JSON.stringify({ calls: [
+      pad(), pad(),
+      { chunks: [
+        { type: 'block-start', index: 0, blockType: 'tool-call' },
+        { type: 'tool-call-delta', index: 0, id: 't33-sub', name: 'subagent', argumentsDelta: subArgs.slice(0, 5) },
+        { type: 'tool-call-delta', index: 0, id: 't33-sub', name: 'subagent', argumentsDelta: subArgs.slice(5) },
+        { type: 'block-end', index: 0, block: { type: 'tool-call', id: 't33-sub', name: 'subagent', arguments: subArgs } },
+        { type: 'finish', reason: { kind: 'tool-calls' } },
+      ] },
+      pad(), // 第 4 轮：helper 已进 list 后的名册组装轮
+    ] }))
+    // 第 3 轮：subagent 真建（断言 id）
+    const out: { systems: number; tools?: string } = { systems: 0 }
+    await systemText(a, out)
+    expect(out.tools ?? '', 'subagent 工具真执行并返回 id').toMatch(/started subagent [0-9a-f-]+/)
+    // 等 helper 进 session/list（确定性：不猜竞态）——helper title 来自 prompt（'help …'）
+    const deadline = Date.now() + 15_000
+    let helperSid = ''
+    for (;;) {
+      const list = await rt.client.call('session/list', { _request: {} }) as { items?: Array<{ sessionId: string, origin?: string, parentSessionId?: string, projections?: { values?: { title?: string } } }> }
+      const helper = (list.items ?? []).find((x) => x.origin === 'subagent' || x.parentSessionId)
+      if (helper) { helperSid = helper.sessionId; break }
+      if (Date.now() > deadline) break
+      await new Promise((r) => setTimeout(r, 200))
+    }
+    expect(helperSid, 'helper 已进 session/list（带 origin/parentSessionId）').toBeTruthy()
+    // 第 4 轮：rename 触发名册变化 → system/message 必重发 → 该 system 不含 helper sid（M4 删滤后 helper 会进名册→红）
+    const bravoSid = ((await rt.client.call('session/list', { _request: {} }) as { items?: Array<{ sessionId: string, projections?: { values?: { title?: string } } }> }).items ?? []).find((x) => x.projections?.values?.title === 'Bravo-T33')?.sessionId
+    await rt.client.call('session/rename', { request: { sessionId: bravoSid!, title: 'Bravo2-T33' } })
+    await new Promise((r) => setTimeout(r, 400))
+    const out2: { systems: number } = { systems: 0 }
+    const text2 = await systemText(a, out2)
+    expect(out2.systems, 'rename 后 A 的新一轮重发 system/message（名册变化）').toBeGreaterThanOrEqual(1)
+    expect(text2).toContain('Bravo2-T33') // 新名入册（名册健康+现取）
+    expect(text2).not.toContain(helperSid.slice(0, 12)) // helper 的 sessionId 不入名册（滤守卫）
+  })

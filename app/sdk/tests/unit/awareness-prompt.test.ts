@@ -128,6 +128,25 @@ describe('T33 registerProductPrompt/readMeta（mock ctx 分支盖）', () => {
     expect(sections[0]!.text()).toContain('"New" (you)') // 丢事件缺陷已修：补刷后为最新
     dispose()
   })
+  it('A1p 件3：挂载滤——subagent helper（header.origin/parentSession）不挂 section', () => {
+    const sections: Array<{ name: string }> = []
+    const mk = (id: string, header: Record<string, unknown> | undefined) => ({
+      id,
+      session: header === undefined ? undefined : { header },
+      ctx: { systemPrompt: { getSectionOrder: () => 10, section: (d: { name: string }) => { sections.push(d); return () => {} } } },
+    })
+    const plain = mk('s-plain', undefined)
+    const sub = mk('s-sub', { origin: 'subagent' })
+    const subParent = mk('s-subp', { parentSession: 's-plain' })
+    const ctx = {
+      agents: { list: () => [plain, sub, subParent] },
+      sessionController: { list: async () => ({ items: [] }) },
+      on: () => () => {},
+    } as never
+    const dispose = registerProductPrompt(ctx)
+    expect(sections.map((x) => x.name).length, '只有普通 agent 挂段（subagent×2 被滤）').toBe(1)
+    dispose()
+  })
   it('AwarenessPlugin default export：constructor 挂段、dispose 可调（awareness.yml 入口形态）', () => {
     const m = mkCtx()
     const plugin = new AwarenessPlugin(m.ctx)

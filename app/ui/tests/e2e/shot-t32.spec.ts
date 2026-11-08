@@ -3,7 +3,8 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { launchProduct } from '../support/ui.ts'
 
-const OUT = '/home/lingxufeng/bot/work/grok-0.79.3-re/ours'
+const OUT = join(process.cwd(), '../../work/grok-0.79.3-re/ours') // T32b F6：仓内相对路径（e2e cwd=app/ui → ../../=仓根）
+mkdirSync(OUT, { recursive: true })
 
 test.skip(!process.env.PBOTS_SHOT, '截图专用：PBOTS_SHOT=1')
 

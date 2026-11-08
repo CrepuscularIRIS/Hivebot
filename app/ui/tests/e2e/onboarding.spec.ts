@@ -78,17 +78,36 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
     await expect(page.locator('#sand-onboarding-landing-heading')).toBeInViewport({ timeout: 30_000 })
     await page.locator('[data-action="onboarding-start"]').click()
     await expect(page.locator('#sand-onboarding-meet-heading')).toBeVisible({ timeout: 15_000 })
-    // 逐步 Next：meet→computer-demo→jobs→tools→create——每步等下一个 heading 出现
-    //（meet 的 beat 动画期间 Next 可能延迟生效，固定 sleep 不可靠）
     // T28c：meet 页 cast 有角色子节点（T26 画面回归；aria-hidden 舞台层用 DOM 断言）
     await expect.poll(() => page.evaluate(() => document.querySelectorAll('.sand-onboarding__cast > div').length), { timeout: 10_000 }).toBeGreaterThan(0)
-    const steps = ['computer-demo', 'jobs']
-    for (const st of steps) {
-      const next = page.locator('.sand-onboarding button', { hasText: 'Next' }).first()
-      await expect(next).toBeVisible({ timeout: 25_000 })
-      await next.click()
-      await expect(page.locator(`#sand-onboarding-${st}-heading`).first()).toBeVisible({ timeout: 25_000 })
-    }
+    // T32b ⑩a：meet 页标题 opacity=1（进场完）+侧栏被引导层盖住
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.querySelector('#sand-onboarding-meet-heading')!).opacity), { timeout: 10_000 }).toBe('1')
+    const meetCov = await page.evaluate(() => { const hit = document.elementFromPoint(140, window.innerHeight / 2); return { onb: hit?.closest('.sand-onboarding') != null, sidebar: hit?.closest('.sand-agents-sidebar') != null } })
+    expect(meetCov.onb, 'meet 页侧栏被引导层盖住').toBe(true)
+    expect(meetCov.sidebar).toBe(false)
+    await page.evaluate(() => { (document.querySelector('.sand-onboarding__cast') as HTMLElement).__t32 = 1 }) // T32b F4：meet 打标→connect 验仍在（跨步不重挂）
+    // T32b：meet→computer-demo 退场层（第二段）——首次前进即 meet→cd，观察器随点击启动
+    const exitsCd = await page.evaluate(() => new Promise<unknown[]>((resolve) => {
+      const seen: unknown[] = []
+      const root = document.querySelector('.sand-onboarding')!
+      const obs = new MutationObserver(() => {
+        document.querySelectorAll('.sand-onboarding__step[aria-hidden="true"]').forEach((el) => { seen.push((el as HTMLElement).style.animation) })
+      })
+      obs.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-hidden'] })
+      setTimeout(() => { obs.disconnect(); resolve(seen) }, 1200)
+      ;([...document.querySelectorAll('.sand-onboarding__step:not([aria-hidden]) button')] as HTMLButtonElement[]).find((b) => b.textContent === 'Next')?.click()
+    }))
+    expect(JSON.stringify(exitsCd), 'meet→cd 退场').toContain('sand-onboarding-step-exit')
+    await expect(page.locator('#sand-onboarding-computer-demo-heading')).toBeVisible({ timeout: 20_000 })
+    await expect(page.locator('.sand-onboarding__step[aria-hidden="true"]')).toHaveCount(0, { timeout: 1000 }) // 退场层 1s 内消失
+    // T32b ⑩b：computer-demo 底栏第一钮 Next、第二钮 Back（进场后）
+    await page.waitForTimeout(250)
+    const cdBtns = await page.locator('.sand-onboarding__step:not([aria-hidden]) .sand-onboarding__computer-demo .sand-onboarding__footer button').allInnerTexts()
+    expect(cdBtns[0], 'cd 底栏 Next 先').toBe('Next')
+    expect(cdBtns[1], 'cd 底栏 Back 下').toBe('Back')
+    // cd → jobs（jobs 页无专属断言，仅过渡）
+    await page.locator('.sand-onboarding button', { hasText: 'Next' }).first().click()
+    await expect(page.locator('#sand-onboarding-jobs-heading')).toBeVisible({ timeout: 25_000 })
     // T28：0.79.3 walk 无 tools/create——jobs 后直接 role 页
     const nextBtn = page.locator('.sand-onboarding button', { hasText: 'Next' }).first()
     await nextBtn.click() // jobs → role
@@ -103,9 +122,7 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
           const cx = r.x + r.width / 2, cy = r.y + r.height / 2
           const hit = document.elementFromPoint(cx, cy)
           const inVp = r.x >= 0 && r.y >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight
-          // T32：cast 编舞角色浮于选项上方属 0.79.3 设计（角色是 hover 目标非遮挡物）——cast 命中视为可见
-          const castCovered = hit != null && (hit as HTMLElement).closest?.('.sand-onboarding__cast') != null
-          return hit != null && (castCovered || hit === el || el.contains(hit)) && inVp ? null : `${selArg}[${i}] 出框或被遮`
+          return hit != null && (hit === el || el.contains(hit)) && inVp ? null : `${selArg}[${i}] 出框或被遮(${hit ? String((hit as HTMLElement).className).slice(0, 25) : 'null'})`
         }).filter(Boolean)
       }, sel)
       expect(bad, `${sel} 必须全部可见`).toEqual([])
@@ -134,17 +151,20 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
       const r = await page.evaluate(() => {
         const mates = ['invoice-chaser', 'weekly-standup', 'sales-forecast'].map((id) => {
           const el = document.querySelector(`.sand-onboarding__cast-${id}`) as HTMLElement | null
-          return el === null ? { id, missing: true } : { id, missing: false, opacity: getComputedStyle(el).opacity, box: el.getBoundingClientRect().toJSON() }
+          return el === null ? { id, missing: true } : { id, missing: false, opacity: getComputedStyle(el).opacity, state: el.getAttribute('data-character-state'), box: el.getBoundingClientRect().toJSON() }
         })
         const hero = document.querySelector('.sand-onboarding__cast-hero') as HTMLElement | null
         const cards = [...document.querySelectorAll('.sand-onboarding__step:not([aria-hidden]) [role="radiogroup"] button, .sand-onboarding__step:not([aria-hidden]) .sand-onboarding__footer button')].map((b) => b.getBoundingClientRect().toJSON())
-        const overlap = false as boolean // T32 review：teammate 浮于 attribution 中列是 0.79.3 编舞定位（绝对偏移——缩格躲不开中心角色）；overlap 契约对 role 已由 visCheck 侧覆盖，此处不作为否决项（回执记）
+        const overlap = mates.filter((m) => !m.missing).some((m) => cards.some((c) => !(m.box.right < c.x || c.right < m.box.x || m.box.bottom < c.y || c.bottom < m.box.y)))
+        const idleOk = mates.every((m) => m.missing || document.querySelector(`.sand-onboarding__cast-${m.id}`)?.getAttribute('data-character-state') === 'idle') // T32b：state 在角色元素自身（view.tsx:96）
         return { mates, heroOpacity: hero === null ? 'n/a' : getComputedStyle(hero).opacity, overlap }
       })
       for (const m of r.mates) expect(m.missing, `${m.id} cast 在`).toBe(false)
       for (const m of r.mates) if (!m.missing) expect(m.opacity, `${m.id} opacity`).toBe('1')
       expect(r.heroOpacity, 'hero 隐藏').toBe('0')
       expect(r.overlap, 'teammate 不压卡/底栏').toBe(false)
+      expect(r.mates.every((m: { state: string | null }) => m.state === 'idle'), '三 teammate idle（state 在角色元素自身）').toBe(true)
+
     }
     await visCheck('.sand-onboarding__role-choices button', 9)
     await visCheck('.sand-onboarding__role h1', 1)
@@ -154,7 +174,6 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
     const covered = await page.evaluate(() => { const hit = document.elementFromPoint(140, window.innerHeight / 2); return { onb: hit?.closest('.sand-onboarding') != null, sidebar: hit?.closest('.sand-agents-sidebar') != null } })
     expect(covered.onb, 'role 页侧栏位置被引导层盖住').toBe(true)
     expect(covered.sidebar).toBe(false)
-    await page.evaluate(() => { (document.querySelector('.sand-onboarding__cast') as HTMLElement).__t32 = 1 })
     await page.locator('[data-choice="engineering"]').click() // 先选——选中后前进钮才是 Next（未选是 Skip）
     const exits = await page.evaluate(() => new Promise<unknown[]>((resolve) => {
       const seen: unknown[] = []
@@ -174,15 +193,19 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
     await expect(page.locator('#sand-onboarding-attribution-heading')).toHaveText('How did you first hear about Grok Bot?')
     await page.waitForTimeout(350) // 进场动画 200ms+进场期 elementFromPoint 命中旧层 span——稳定后再检
     await visCheck('.sand-onboarding__attribution-choices button', 12)
-    await geo('.sand-onboarding__attribution', { w: 624, cols3: true }) // 624：820 视口下 744 与 teammate 编舞相撞（回执记）
+    await geo('.sand-onboarding__attribution', { w: 744, cols3: true })
     await page.waitForTimeout(900)
     await castOk()
-    expect(await page.evaluate(() => (document.querySelector('.sand-onboarding__cast') as HTMLElement).__t32)).toBe(1)
     // attribution 无选择 Skip（tertiary 主钮）
     await page.locator('button[data-action="skip"]', { hasText: 'Skip' }).first().click() // attribution → connect
     await expect(page.locator('#sand-onboarding-connect-heading')).toBeVisible({ timeout: 20_000 })
     await expect(page.locator('#sand-onboarding-connect-heading')).toHaveText('Connect your apps')
     await visCheck('.sand-onboarding__connect [role="listitem"]', 2)
+    await visCheck('.sand-onboarding__connect h1', 1)
+    await geo('.sand-onboarding__connect', {})
+    await page.waitForTimeout(900)
+    await castOk()
+    expect(await page.evaluate(() => (document.querySelector('.sand-onboarding__cast') as HTMLElement).__t32), 'cast meet→connect 不重挂').toBe(1)
     await expect(page.locator('.sand-onboarding__connect button:has-text("Connect")')).toHaveCount(2)
 
     await page.locator('.sand-onboarding__step:not([aria-hidden]) button', { hasText: 'Skip for now' }).click() // connect → hand-off（排除退场层副本）

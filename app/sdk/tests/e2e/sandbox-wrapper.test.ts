@@ -107,6 +107,33 @@ describe('挂载序（dry-run，PLAN P5-01 挂载顺序逐段）', () => {
   })
 })
 
+describe('T7d：skill 根 ro-bind（binds 派生——bash 写 skill 根必败）', () => {
+  it('ws 下 .dsh/skills/.agents/skills 存在 → 各追加 ro-bind，位置在 ws 重 bind 之后、再遮之前；缺失则不追加', () => {
+    const ws = tmkdir('t7d-ws-')
+    mkdirSync(join(ws, '.dsh/skills'), { recursive: true })
+    mkdirSync(join(ws, '.agents/skills'), { recursive: true })
+    const never = join(ws, '.condarc')
+    writeFileSync(never, 'x')
+    const argv = dryRun(['--home', '/tmp/t7d-nohome', '--never', never, ...profileArgs(ws), '--', '/bin/sh', '-c', 'true'])
+    const dsh = join(ws, '.dsh/skills')
+    const ag = join(ws, '.agents/skills')
+    const wsAt = argv.indexOf(ws)
+    const dshAt = argv.indexOf(dsh)
+    const agAt = argv.indexOf(ag)
+    expect(dshAt).toBeGreaterThan(wsAt) // 后挂载覆盖 --bind 写权限
+    expect(agAt).toBeGreaterThan(wsAt)
+    expect(argv[dshAt - 1]).toBe('--ro-bind')
+    expect(argv[agAt - 1]).toBe('--ro-bind')
+    const remaskAt = argv.indexOf(never)
+    expect(dshAt).toBeLessThan(remaskAt)
+    expect(agAt).toBeLessThan(remaskAt)
+    // 目录缺失（预建前的旧工作区）：不追加、wrapper 照常出 argv
+    const bare = tmkdir('t7d-bare-')
+    const argv2 = dryRun(['--home', '/tmp/t7d-nohome', ...profileArgs(bare), '--', '/bin/sh', '-c', 'true'])
+    expect(argv2.some((a) => String(a).includes('.dsh/skills') || String(a).includes('.agents/skills'))).toBe(false)
+  })
+})
+
 describe('⑧④ 前置：HOME 祖先拒绝（决策 13 ④）与再遮闭合', () => {
   it('工作区等于/是任一 HOME 的祖先 → bwrap: 拒绝、不 exec；工作区在 HOME 之下放行', () => {
     const home = tmkdir('p5-01-home-')

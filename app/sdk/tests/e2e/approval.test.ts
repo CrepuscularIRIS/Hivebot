@@ -490,3 +490,39 @@ it('R1: a model-side shell cannot derive or find the launch token', async () => 
     await rt.stop()
   }
 })
+
+// T7d：bash 写 skill 根必须失败（挂载点不可写）——与 write/edit 出卡同语义。缺口：shell-ask
+// 的 targets 判定对 cat>/heredoc 形态漏判 → 零卡直写（T7c 已知）。修复=预建两 skill 根 +
+// bwrap-wrap.py 从 binds 派生 --ro-bind。本用例模拟预建后世界：批准（allowed-once）执行
+// bash 写两根——文件仍不存在（ro-bind 挡，Read-only file system）。Vk 态（删派生段）红。
+it('T7d: 批准后的 bash 写 skill 根仍失败（ro-bind 挂载点不可写）', async () => {
+  const rt = await launchApprovalRuntime()
+  const feed = await openEvents(rt)
+  try {
+    const s1 = await createSessionAt(rt.client, rt.home)
+    for (const sub of ['.dsh/skills', '.agents/skills']) mkdirSync(join(rt.home, 'workspace', sub), { recursive: true })
+    const pwn1 = join(rt.home, 'workspace', '.dsh/skills/pwn.md')
+    const pwn2 = join(rt.home, 'workspace', '.agents/skills/pwn.md')
+    rt.writeScript(s1, [
+      bashCall(`cat > ${pwn1} <<'EOF'\nevil\nEOF\n`),
+      textCall('dsh 写完'),
+      bashCall(`echo evil > ${pwn2}`),
+      textCall('agents 写完'),
+    ])
+    const stream = await follow(rt.client, s1)
+    await sendPrompt(rt.client, s1, '写 dsh 根')
+    const asked1 = await waitForApproval(feed, s1, 1)
+    await feed.answer(asked1, 'allowed-once')
+    await waitForTurnEnds(stream.frames, 1)
+    await sendPrompt(rt.client, s1, '写 agents 根')
+    const asked2 = await waitForApproval(feed, s1, 2)
+    await feed.answer(asked2, 'allowed-once')
+    await waitForTurnEnds(stream.frames, 2)
+    expect(existsSync(pwn1), '批准后 .dsh/skills 仍写不进（ro-bind）').toBe(false)
+    expect(existsSync(pwn2), '批准后 .agents/skills 仍写不进（ro-bind）').toBe(false)
+    stream.stop()
+  } finally {
+    feed.close()
+    await rt.stop()
+  }
+})

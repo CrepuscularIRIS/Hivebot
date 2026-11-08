@@ -52,6 +52,12 @@ export default class WorkspaceService extends TypertRemoteService {
   async workspace_ensure(request) {
     const path = this.p2sdkValidate(String(request?.botId ?? ''))
     await this.p2sdkRun(['mkdir', '-p', '--', path])
+    // T7d：skill 根预建（远端）——wrapper 的 ro-bind 只挂已存在目录（bwrap-wrap.py 从
+    // binds 派生）；预建后 bash 写 .dsh/skills/.agents/skills 必撞只读挂载点（与
+    // write/edit 出卡同语义）。mkdir -p 幂等，重复 ensure 无害。
+    for (const sub of ['.dsh/skills', '.agents/skills']) {
+      await this.p2sdkRun(['mkdir', '-p', '--', `${path}/${sub}`])
+    }
     const canonical = await this.p2sdkRun(['readlink', '-f', '--', path])
     if (canonical !== path) {
       // P2 收口：链接后的真实路径回传给 main 存档（header.cwd 不可变，存 canonical）

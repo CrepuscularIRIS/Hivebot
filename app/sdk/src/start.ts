@@ -159,6 +159,9 @@ export function buildArgs(cfg: StartConfig, runtimePatch: string): string[] {
     // T33：awareness.yml（产品认知提示段）进默认链——生产启动器不带 P2SDK_PATCH，
     // 不进默认链=「测试绿生产没有」（P6 编排的教训，见工单「为什么这样验收」）。
     '--patch', join(PKG_ROOT, 'profile', 'patches', 'awareness.yml'),
+    // T34（Q-035=A 编排开闸）：orchestration.yml 进默认链——主 bot 获 create_bot/
+    // send_to_bot/stop_bot 与路由提示；测试再显式叠加 = 同 id 整行替换（只改 config）。
+    '--patch', join(PKG_ROOT, 'profile', 'patches', 'orchestration.yml'),
     '--patch', runtimePatch,
   ]
   for (const p of cfg.extraPatches) args.push('--patch', p)
@@ -202,6 +205,10 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
     ) child[name] = value
   }
   child.DSH_HOME = cfg.home
+  // T34：数据根以 DSH_ 前缀注入（orchestration/awareness 插件读它定位 bots.json）。
+  // 不用 P2SDK_PBOTS_DATA_DIR：P2SDK_* 会进工具子进程 env（上游只擦 DSH_*），等于把
+  // 数据目录路径告诉 bash——违反 P5-01 决策 15；PBOTS_DATA_DIR 本身 launcher-only 已 drop。
+  if (cfg.dataDirs[0] !== undefined) child.DSH_PBOTS_DATA_DIR = cfg.dataDirs[0]
   // T6（L4-b）：agents 根无条件收进运行时 home——dsh-home-paths 在 $DSH_AGENTS_HOME 未设时
   // 取 homedir()/.agents，会把真实/测试 HOME 的 ~/.agents（skill-filesystem 与
   // agent-instructions 两个消费者、所有 preset 共扫）泄给每个 bot；覆盖父进程同名变量。

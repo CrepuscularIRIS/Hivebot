@@ -9,9 +9,9 @@ import { mkdtempSync } from 'node:fs'
 import { join } from 'node:path'
 import { trackTmpDir } from './tmp-sweep.ts'
 
-const PARENT = '/home/lingxufeng/bot/.test-homes' // 决策 8（主仓 .gitignore 已覆盖）
+export const TEST_HOMES_PARENT = '/home/lingxufeng/bot/.test-homes' // 决策 8（主仓 .gitignore 已覆盖）
 
 /** 每次运行唯一的测试 HOME：PARENT/<slug>-<mkdtemp 随机>。 */
 export function uniqueTestHome(slug: string): string {
-  return trackTmpDir(mkdtempSync(join(PARENT, `${slug}-`)))
+  return trackTmpDir(mkdtempSync(join(TEST_HOMES_PARENT, `${slug}-`)))
 }

@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { expect, test } from 'playwright/test'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { launchShell, sandboxHome } from '../support/launch.ts'
-import { createBots, PRESETS_PATCH } from '../support/ui.ts'
+import { createBots, PRESETS_PATCH, waitProductReady } from '../support/ui.ts'
 
 test('Skills 段：Added 空 → Pick 勾选 Add → 磁盘副本字节等于源 → 移除双清', { timeout: 300_000 }, async ({ page }) => {
   const home = sandboxHome('T7b')
@@ -15,9 +15,7 @@ test('Skills 段：Added 空 → Pick 勾选 Add → 磁盘副本字节等于源
   try {
     shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff }, home })
     const ui = shell.page
-    await expect(ui.locator('.sand-agent-item')).toHaveCount(1, { timeout: 60_000 })
-    await expect(ui.locator('.ProseMirror[contenteditable="true"]')).toBeVisible({ timeout: 20_000 })
-    await expect(ui.locator('.sand-agent-item [data-grok-state]').first()).toHaveAttribute('data-grok-state', 'idle', { timeout: 30_000 })
+    await waitProductReady(ui) // T7bd：T26b 后裸 launchShell 首启进 onboarding、agent 恒 0——用兜底（置 seen+reloadRoster）
 
     const [idA, idB] = await createBots(ui, [{ title: 'T7b-A' }, { title: 'T7b-B' }])
     const wsA = join(dataDir, 'workspaces', idA)
@@ -70,9 +68,7 @@ test('250 上限：Add 显示可读提示、磁盘无新增', { timeout: 300_000
   try {
     shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff }, home })
     const ui = shell.page
-    await expect(ui.locator('.sand-agent-item')).toHaveCount(1, { timeout: 60_000 })
-    await expect(ui.locator('.ProseMirror[contenteditable="true"]')).toBeVisible({ timeout: 20_000 })
-    await expect(ui.locator('.sand-agent-item [data-grok-state]').first()).toHaveAttribute('data-grok-state', 'idle', { timeout: 30_000 })
+    await waitProductReady(ui) // T7bd：T26b 后裸 launchShell 首启进 onboarding、agent 恒 0——用兜底（置 seen+reloadRoster）
 
     const [idA, idB] = await createBots(ui, [{ title: 'T7b-A2' }, { title: 'T7b-B2' }])
     const wsA = join(dataDir, 'workspaces', idA)

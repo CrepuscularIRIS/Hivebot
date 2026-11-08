@@ -10,7 +10,12 @@ const sources = readFileSync(join(ROOT, 'SOURCES.tsv'), 'utf8').split('\n').map(
 
 /** P5-57：整面替换（不是包一层）——0.18 的 PluginsDesktopSurface 是 Cursor MCP 目录，P-C 市场是另一套功能；
  * 只借上游的 props 类型，不 import 上游实现（不把 desktop.mcp.* 的死链路打进包）。 */
-const WHOLE_REPLACEMENTS = new Set(['market-surface.tsx'])
+const WHOLE_REPLACEMENTS = new Set([
+  'market-surface.tsx',
+  // T24：character.tsx 整模块复制（OnboardingCharacter 内部直调本文件 personaShapePath，
+  // re-export 包一层替换不到内部调用——工单 T24 方案 1 的依据），在副本上补 7 形状。
+  'character.tsx',
+])
 
 describe('renderer-grok overrides', () => {
   it('模块覆盖：上游目标在 SOURCES.tsv、覆盖文件存在且不在 SOURCES.tsv', () => {
@@ -31,8 +36,12 @@ describe('renderer-grok overrides', () => {
   })
 
   it('整面替换：只借上游类型，不 import 上游实现', () => {
+    // T24：character.tsx 是「复制改造」（搬运阶梯第 3 级）——整文件抄上游后在副本上补
+    // 形状，文件头已注来源；它与 market-surface（借类型自己写）不同，单列并查来源头。
+    const COPIES = new Set(['character.tsx'])
     for (const ours of WHOLE_REPLACEMENTS) {
       const text = readFileSync(join(ROOT, 'overrides', 'modules', ours), 'utf8')
+      if (COPIES.has(ours)) { expect(text.includes('// T24 覆盖：整模块复制上游 character.tsx')).toBe(true); continue }
       const upstream = Object.entries(MODULE_OVERRIDES).find(([, o]) => o === ours)![0].replace(/\.tsx?$/, '')
       const imports = text.split('\n').filter((l) => l.includes(`frontend/src/${upstream}'`))
       expect(imports.length).toBeGreaterThan(0)

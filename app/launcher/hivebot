@@ -1,0 +1,159 @@
+#!/usr/bin/env bash
+# hivebot 产品启动器（T17，DESIGN-launcher.md §2）——一条命令拉起 SDK + Electron。
+# 用法：app/launcher/hivebot [-- electron-flag …]（如 --disable-gpu --remote-debugging-port=9222）
+#
+# env 文件（可选）：${XDG_CONFIG_HOME:-$HOME/.config}/hivebot/env
+#   dotenv 形态，只读白名单键：P2SDK_LLM_API_KEY P2SDK_LLM_BASE_URL P2SDK_LLM_MODEL
+#   P2SDK_MARKET_INDEXES；属主须为当前用户且 mode 600（group/other 位 → 拒启）。
+#   环境变量优先于文件。
+# key 顺序：P2SDK_LLM_API_KEY → LITELLM_MASTER_KEY → env 文件。key 只进 SDK 进程；
+#   Electron env 剥五个凭证键（ps/environ 不可见）。
+#
+# 路径（XDG，可覆盖）：见 DESIGN §2.1——数据根 ${XDG_CONFIG_HOME:-~/.config}/pbots-ui；
+#   SDK home ${XDG_STATE_HOME:-~/.local/state}/hivebot/dsh；日志 …/hivebot/logs/{sdk,ui}.log。
+# 退出联动：关窗口（或启动器收 TERM）→ 收 SDK（TERM→超时 KILL，dsh pid 取自 sdk.log
+#   且 /proc 核 cmdline）→ 删本次 handoff。双开 = 已有实例聚焦（Electron 单实例锁）。
+set -u
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SDK_LAUNCHER="$REPO_ROOT/app/sdk/scripts/start.mjs"
+NODE_BIN="$REPO_ROOT/app/sdk/node_modules/.bin/node"
+ELECTRON_BIN="$REPO_ROOT/app/ui/node_modules/electron/dist/electron"
+UI_ENTRY="$REPO_ROOT/app/ui/out/main/index.js"
+UI_SHIM="$REPO_ROOT/app/ui/out/renderer/shim.iife.js"
+
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}"
+HB_DIR="$STATE_DIR/hivebot"
+LOG_DIR="$HB_DIR/logs"
+LOCK_FILE="$HB_DIR/launcher.lock"
+ENV_FILE="$CONFIG_DIR/hivebot/env"
+export PBOTS_DATA_DIR="${PBOTS_DATA_DIR:-$CONFIG_DIR/pbots-ui}"
+export P2SDK_HOME="${P2SDK_HOME:-$HB_DIR/dsh}"
+export P2SDK_SANDBOX_MASK="${P2SDK_SANDBOX_MASK:-}:$CONFIG_DIR:$HB_DIR"
+
+die() { printf 'hivebot: %s\n' "$*" >&2; exit 1; }
+
+# ── 0 预检（不自动构建；缺什么打什么命令）──
+for f in "$NODE_BIN" "$SDK_LAUNCHER"; do
+  [ -e "$f" ] || die "缺 $f——先跑: pnpm --config.verify-deps-before-run=false -C app/sdk setup"
+done
+for f in "$ELECTRON_BIN" "$UI_ENTRY" "$UI_SHIM"; do
+  [ -e "$f" ] || die "缺 $f——先跑: pnpm --config.verify-deps-before-run=false -C app/ui setup && pnpm --config.verify-deps-before-run=false -C app/ui build"
+done
+mkdir -p "$LOG_DIR" "$P2SDK_HOME" "$PBOTS_DATA_DIR"
+
+# ── 1 锁（双开 = 聚焦已有窗口后退出）──
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+  # 已有实例：只起 Electron（单实例锁聚焦），不带 handoff、不带凭证
+  env -u P2SDK_LLM_API_KEY -u LITELLM_MASTER_KEY -u DEEPSEEK_API_KEY -u OPENAI_API_KEY -u ANTHROPIC_API_KEY \
+    PBOTS_DATA_DIR="$PBOTS_DATA_DIR" "$ELECTRON_BIN" "$@" "$UI_ENTRY" >>"$LOG_DIR/ui.log" 2>&1 9>&- &
+  SECOND_PID=$!
+  # Electron 单实例锁：聚焦已有窗口后应自退；限界 15s 防 focus-not-quit 挂死
+  for _ in $(seq 1 30); do kill -0 "$SECOND_PID" 2>/dev/null || break; sleep 0.5; done
+  kill -0 "$SECOND_PID" 2>/dev/null && kill -TERM "$SECOND_PID" 2>/dev/null
+  wait "$SECOND_PID" 2>/dev/null || true
+  exit 0
+fi
+
+# ── 2 凭证（白名单 0600 文件；不 source）──
+SDK_ENV_KEYS=""
+if [ -z "${P2SDK_PROVIDER:-}" ]; then
+  # real 模式才需要 key（mock 透传免 key）
+  if [ -z "${P2SDK_LLM_API_KEY:-}" ] && [ -n "${LITELLM_MASTER_KEY:-}" ]; then
+    export P2SDK_LLM_API_KEY="$LITELLM_MASTER_KEY"
+  fi
+  if [ -z "${P2SDK_LLM_API_KEY:-}" ] && [ -f "$ENV_FILE" ]; then
+    [ "$(stat -c %u "$ENV_FILE")" = "$(id -u)" ] || die "env 文件属主不是当前用户: $ENV_FILE"
+    perm="$(stat -c %a "$ENV_FILE")"
+    [ "$((8#"$perm" & 8#077))" -eq 0 ] || die "env 文件权限过宽（$perm）: chmod 600 $ENV_FILE"
+    while IFS='=' read -r k v || [ -n "$k" ]; do
+      case "$k" in
+        P2SDK_LLM_API_KEY|P2SDK_LLM_BASE_URL|P2SDK_LLM_MODEL|P2SDK_MARKET_INDEXES)
+          [ -z "${!k:-}" ] || continue
+          # 成对首尾引号剥离（"v"/'v'）——按首尾字符判，case 引号形态脆
+          v0=${v%"${v#?}"}; vL=${v#"${v%?}"}
+          if [ "$v0" = "$vL" ] && { [ "$v0" = '"' ] || [ "$v0" = "'" ]; } && [ ${#v} -ge 2 ]; then
+            v=${v#?}; v=${v%?}
+          fi
+          export "$k=$v" ;;
+      esac
+    done < "$ENV_FILE"
+  fi
+  [ -n "${P2SDK_LLM_API_KEY:-}" ] || die "real 模式缺 P2SDK_LLM_API_KEY——设环境变量或写 $ENV_FILE（chmod 600）"
+fi
+
+# ── 3 SDK ──
+HANDOFF="$(mktemp -d "${TMPDIR:-/tmp}/p2sdk-handoff-XXXXXXXX")"
+[ -n "${P2SDK_PROVIDER:-}" ] && export P2SDK_PROVIDER
+[ -n "${P2SDK_LLM_API_KEY:-}" ] && export P2SDK_LLM_API_KEY
+export P2SDK_HANDOFF="$HANDOFF" P2SDK_PORT=0
+SDK_PID=""
+DSH_PID=""
+cleanup() {
+  local rc="${CLEANUP_RC:-$?}"
+  trap - EXIT INT TERM HUP
+  [ -n "${UI_PID:-}" ] && kill -TERM "$UI_PID" 2>/dev/null
+  if [ -n "$SDK_PID" ] && kill -0 "$SDK_PID" 2>/dev/null; then
+    kill -TERM "$SDK_PID" 2>/dev/null
+    for _ in $(seq 1 40); do kill -0 "$SDK_PID" 2>/dev/null || break; sleep 0.5; done
+    kill -0 "$SDK_PID" 2>/dev/null && kill -KILL "$SDK_PID" 2>/dev/null
+  fi
+  # dsh 是 detached 的——launcher（start.mjs）死了它可能还活；pid 复用防护
+  if [ -n "$DSH_PID" ] && [ -r "/proc/$DSH_PID/cmdline" ] \
+     && grep -q 'bin\.js' "/proc/$DSH_PID/cmdline" 2>/dev/null; then
+    kill -KILL "$DSH_PID" 2>/dev/null
+  fi
+  case "${HANDOFF:-}" in
+    "$TMPDIR"/p2sdk-handoff-*|/tmp/p2sdk-handoff-*) rm -rf "$HANDOFF" ;;
+  esac
+  exit "$rc"
+}
+trap cleanup EXIT
+trap 'cleanup; exit 143' TERM
+trap 'cleanup; exit 130' INT
+trap 'cleanup; exit 129' HUP
+
+# 日志滚动一代
+[ -f "$LOG_DIR/sdk.log" ] && mv "$LOG_DIR/sdk.log" "$LOG_DIR/sdk.log.1"
+[ -f "$LOG_DIR/ui.log" ] && mv "$LOG_DIR/ui.log" "$LOG_DIR/ui.log.1"
+
+( cd "$HB_DIR" && exec "$NODE_BIN" "$SDK_LAUNCHER" ) >"$LOG_DIR/sdk.log" 2>&1 9>&- &
+SDK_PID=$!
+
+# ── 4 等 ready（90s 上限；SDK 早退→打尾 20 行）──
+READY=0
+for _ in $(seq 1 180); do
+  grep -q '\[p2sdk\] ready http' "$LOG_DIR/sdk.log" 2>/dev/null && { READY=1; break; }
+  kill -0 "$SDK_PID" 2>/dev/null || break
+  sleep 0.5
+done
+DSH_PID="$(sed -n 's/^p2sdk: dsh pid //p' "$LOG_DIR/sdk.log" | tail -1)"
+if [ "$READY" -ne 1 ]; then
+  tail -20 "$LOG_DIR/sdk.log" >&2
+  die "SDK 未就绪（90s）——上方为 sdk.log 尾部"
+fi
+
+# ── 5 Electron（剥五凭证键；"$@" 在入口前=Chromium 开关透传）──
+env -u P2SDK_LLM_API_KEY -u LITELLM_MASTER_KEY -u DEEPSEEK_API_KEY -u OPENAI_API_KEY -u ANTHROPIC_API_KEY \
+  PBOTS_DSH_HANDOFF="$HANDOFF" PBOTS_DATA_DIR="$PBOTS_DATA_DIR" \
+  "$ELECTRON_BIN" "$@" "$UI_ENTRY" >"$LOG_DIR/ui.log" 2>&1 9>&- &
+UI_PID=$!
+
+# ── 6 等（UI 或 SDK 任一退出）──
+set +e
+wait -n "$UI_PID" "$SDK_PID" 2>/dev/null
+if kill -0 "$UI_PID" 2>/dev/null; then
+  # SDK 先退：TERM UI（优雅）限界 10s → 清理 → exit 1
+  kill -TERM "$UI_PID" 2>/dev/null
+  for _ in $(seq 1 20); do kill -0 "$UI_PID" 2>/dev/null || break; sleep 0.5; done
+  kill -0 "$UI_PID" 2>/dev/null && kill -KILL "$UI_PID" 2>/dev/null
+  wait "$UI_PID" 2>/dev/null
+  CLEANUP_RC=1 cleanup
+  exit 1
+fi
+wait "$UI_PID" 2>/dev/null
+UI_RC=$?
+CLEANUP_RC="$UI_RC" cleanup
+exit "$UI_RC"

@@ -42,7 +42,7 @@ export function SkillsDialog({ botId, onClose, onChanged }: { botId: string; onC
   }
   return (
     <div className="pb-skills-dialog" role="dialog" aria-label="Pick from your skills" data-skills-dialog onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--sand-bg-elevated, #fff)', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,.3)' }}>
+      <div onClick={(e) => e.stopPropagation()}>
       <div className="pb-skills-dialog__head">
         <span className="pb-skills-dialog__title">Pick from your skills</span>
         <SandIconButton aria-label="Close" icon="close" onClick={onClose} shape="circle" size="md" variant="ghost" />

@@ -1072,3 +1072,102 @@ ready 未派 = 0（BRIEF/PLAN 未出，无 ready 任务；scout 与 RE 是 roadm
 - 23:2x T11 ⑤c：execute 挂死（90s 无轮 2）——三嫌疑录回执；下窗口 fake 记录点+SDK 日志
 - 23:3x T11 ⑤c 破案：mainBotId mismatch（boot 主 bot vs 自建）——修=用 devState.meta.mainBotId（workspaces.spec 先例）
 - 23:4x T11 ⑤c 绿（worker 落远端/宿主空）——⑤a⑤b⑤c 三连绿；剩 ⑤d/⑥+T7a 拒+终验
+- 23:5x T7d 开工：wrapper binds 派生 skill 根 ro-bind（直测铁证：写拒/读通）+ mintWorkspace 预建；远端侧等 T11 合并。产品启动器设计进行中（Opus）
+- 00:1x T17 启动器脚本落地（bash -n+exec ok）；六格 e2e 测试面下窗口。Q-031=B 已存档
+- 00:5x T17 ①③a③b④ 四格绿（①全生命周期 41s：CDP 重试/优雅关窗/pid 循环 bug 三修）；⑤差 SDK env 正对照一断言（bash -x 显示 export 生效——疑 pidOf 时序）。②⑥与 M1-M4 变异下窗口
+- 01:1x T17 ⑤ probe 铁证：启动器传 key 正确（SDK env 键名全 dump）；e2e 正对照失败=测试侧问题。load 21（用户游戏+训练）红线窗口，e2e 暂停
+- 01:2x T11 ⑤d 绿（六坏形拒+无逃逸）；ssh-product 5 全绿。剩 ⑥+T7a 拒+回归。load 15-18（用户游戏+训练在跑）——轻量 spec 窗口可用
+- 01:4x T11 ⑥ 绿（guard deny 形态——初版 tool/result 形态 pre-execute 不认是根因；T11DBG6 dump 铁证）；ssh-product 6 全绿+单测 76。T11 剩 T7a ssh 拒+ui e2e 回归+终验
+- 02:0x T17 六格全绿（52.7s 含真模型）：②双开同锁根因修、⑥boot 主 bot+优雅关窗。待 M1-M4 变异+回执+终验——用户即可开始体验
+- 02:3x T17 变异落定：M1/M3/M4 红（铁证在案）、M2 不咬合如实记；还原后全文件 5 绿（51.4s）。回执+终验下窗口
+- 02:4x T17 回执全文落盘（§1-§5：六格三坑/变异原样/probe 铁证/DESIGN 偏离三条/基建坑四条）——待 reviewer+终验
+- 02:5x T11 ui e2e 回归 3 绿（⑤a⑤b⑤c）；T11 全件落地待终验（与 T17 同批派）
+- 03:1x feat/T17 合并落地（终验通过）：回测 launcher.spec 7 passed（32.7s，含⑥真模型）、残留 0。M2 裁决=Electron 重写自身 environ+inspect 探针证不泄；T17b（3 小 bug）不阻塞用户。**用户本机体验入口开放**
+- 03:2x T11b 三格完（⑧恢复 7/7、B canonical 先红铁证+35 绿、C 三态 32 绿；回归 45+7+115 全绿）——待复验
+- 19:5x T11 main 面摸底：Electron main 经 PBOTS_DSH_HANDOFF（外部启动器给 base-url/token）连 SDK——「main 得知 ssh 模式」正解=handoff 目录扩字段（start.ts 写 ssh-mode/remote-root，main 读）→mintWorkspace 分支。D5 预案方向的落地机制，下窗口实现
+- 03:1x feat/T11 合并落地（复验通过）：回测 77 单测+ssh-product 7+m3/skills 115+ssh-workspace 3 全绿。ssh 远端工作区全链收口；T11c（skills ssh 拒）开单排队
+- 03:5x T17b 8 格全绿+三小毛病修；M2 inspect oracle 实证咬合（变异红/还原绿）；M5 不咬合+M6 转义坏如实记。待终验
+- 03:4x 用户开始体验（启动器拉起真桌面实例：ready+Electron 在跑）；T17b 终验派出（M2/M4 抽验+M5/M6 裁决+回执欠账处理）。负载 ~10 双源（用户环境+体验实例）
+- 04:1x T17c 收口 9 格全绿（三修真落盘 c8d8157d+spec 八项 ae183aff）；M2 inspect 咬合/M5M6 如实记；残留核 0（snapshot shell 噪音排除）。待终验。0.79.3 deb 已下载解包（370M/asar 54M）——UI 逆向待派
+- 04:2x 用户反馈存档 BRIEF；0.79.3 解包完成（renderer 42M/641 chunk/716 资产）；RE 三题已派（回复呈现/创建动画素材/subagent 呈现）。T17c 终验并行中
+- 04:25 哨兵：load 31.25（1 分钟瞬时——RE 逆向实例+用户环境+体验实例三方叠加）——本轮只记不跑测试。体验实例健康（ready）
+- 04:4x feat/T17b 合并落地（终验通过 6/7 刀）：回测 launcher.spec 9 passed、残留 0。启动器全部修复进入主线（用户在用的版本不含这些——下次重启 launcher 生效）。T17d 四小项计划行不挡体验。RE 三题进行中
+- 04:32 哨兵：load 18.8（RE 实例 91 进程在跑——逆向主战场）+用户环境。报告未出继续等。无 429
+- 04:41 哨兵：load 12.8 回落；RE 报告未出（仍在跑）。无 429
+- 04:5x RE 三题报告归档 work/grok-0.79.3-re/。核心：无 thinking kind+无条件隐藏 tool-call+suppressed 中间轮（主聊只有 user→状态行→终答）；创建=对话框（24×11 形状色+42 模板+吉祥物 53 状态动画）；无 superagent 一词（subagent 靠 outline 侧板）
+- 04:51 哨兵：load 6.0 回落。UI 工单链拆单中（经理任务 A 后台）。无 429
+- 05:0x 对齐目标升级存档；全量 RE 派出（11 维度普查——preload RPC 面为总索引，产出体验差距 Top 20 给 Opus 取舍）。三线并行：T20 参照台/T21 侧板/全量 RE
+- 05:03 哨兵：load 6.0。全量 RE 跑中（11 维度）；T20/T21 worktree 就绪。无 429
+
+## 2026-11-07 · merge T21+T22（经理终验通过后合并）
+- `git merge --no-ff feat/T21`：22 files，+621/-103，无冲突（回执双边改动不同区域自然合）
+- 合并后定向回测（主线 HEAD）：unit grok-shim+fold **184 passed**；e2e outline①-⑤ + p6-fold D1/D2 + session D3/composer/截图/分页 **11 passed**
+- reviewer 2 MEDIUM 已修复（data.ts openFollow + D1 双行 oracle，commit d1e85205）；T21b（⑤ 空绿修复单）在 open/ 排队
+- 同日：全仓首推 GitHub（CrepuscularIRIS/Hivebot，73 分支；filter-repo 剥 127MB evidence pnpm store 后 size-pack 298MB）
+
+## 2026-11-07 · T23 + T29 施工完成（feat/T23、feat/T29 已推 GitHub）
+- T23 状态行短语引擎：纯函数（无时间轮换/800ms 防抖/5s 泛 working 静默/60s elapsed/140ms 退场）+ typing 三点退役 + e2e ①-④（切换间隔实测 824ms）+ 五刀变异 + ours|ref 拼版对照达标。reviewer 审查中；验收 7（working 态复测）等 T20b 数据回填
+- T29 删 ToolResultCard 死路径：attach 三函数删、投影回归上游透传，净删 100 行，unit 180 passed、check diff=0
+- T20b（T20 事实表纠正）采样后台跑中；T20 验收未过（形状 13 非 24 / 选形不变色 / 短语随机起步——目测误读教训：事实一律 json 机器记录）
+
+## 2026-11-07 · merge T23 + T20/T20b（终验通过后合并）
+- feat/T23 干净合入；feat/T20 的 receipts/T20.md 三方合并（保留主仓经理验收记录节）
+- 合并后回测：unit grok-shim+fold **197 passed**；e2e status-line+outline+p6-fold **11 passed**
+- 经理终验：T23 通过（review 4 条修复逐条核实+3 补格咬住 5s 轮换变异）；T20b 附条件通过（json 逐字段核实；回执「samples 非空」一句不实已更正——短语事实只认 phrase-samples.json）；T20 随之收口
+- 经理立项 T24：13 形状=0.79.3 pn 序（blob,cloud,square,sparkle,clover,heart,flower,teardrop,tablet,wedge,house,star,hex；缺 7 个从 Hs 表复制改造，character.tsx 整模块复制进覆盖层）；11 色与 AVATAR_COLORS 逐字相同纯接线；**真断点=键名**（toAgentRecord 写 shape/color、上游读 avatarShape/avatarColor）；名字输入拆 T30
+
+## 2026-11-07 · T24 施工+审查闭环（feat/T24，终验中）
+- 施工：13 形状（7 缺口：ws/Ts/ks 构造器复刻+Es/Os/Ds 字面量+Lc 算法）+11 色板+预览+localStorage 持久化+键名修复；unit 14 格、e2e ①-⑤、变异四刀、六态截图
+- Sol 审 2M+2L：clover 圆心误读（58 是半径非纵偏——轮廓 189×228≠228×228）、测试两缺口（颜色回落没对照/随机没证独立取值）→ 全修+补格；Black 渐变（0.18 全局行为，不越界不动）转 T30；布局 5/5/3 居中+色板 6+5 修
+- 教训：JSX 行内 // 注释吞闭合 > → build 失败跑旧 dist 的假绿（build 输出不可吞，已进回执与 LEARNINGS 口径）
+
+## 2026-11-07 · merge T24+T24b（经理复验通过后合并）
+- 合并冲突三处全解（回执双边/T24b rename 双路径/png 自动保留 docs 新版——分支 8 张旧图未盖掉）
+- 合并后定向回测：unit grok-shim+fold **211 passed**；e2e create-dialog-character+bots+grok-persona+market **14 passed**
+- T24b 教训：review 修复的 CSS 数值没算账（220<224 差 4px）+「5/5/3 ✓」写在回执却没人核图——排列断言现在常驻 ①；shot 脚本写主仓绝对路径致 worktree 图不更新（queue 提议⑦ 收口）
+
+## 2026-11-07 · T21b/T29 单据收口 + T29 合并
+- T21b（⑤ 咬合修复）：施工 6ac5296a 早已合并主线，本轮补挪 done（证据链：回执变异刀红绿+当时全文件 5 passed）
+- T29（删 ToolResultCard 死路径，机械单）：feat/T29 合并（范围恰 4 文件=3 边界+回执）；合并后 unit grok-shim+fold **207 passed**（211-T29 退场 4 格，数对）
+- 第一次 merge 失败=index 有 T24b rename 残留，commit 后重试成功
+
+## 2026-11-07 09:37 · 哨兵：load 21（GPU 高峰）——本轮只记不跑测试
+T25 reviewer 后台审查中；其修复/终验/合并的测试步骤等 load<8 窗口再执行。
+
+## 2026-11-07 · merge T25（终验通过后合并）
+- feat/T25 干净合入（8 files，+286）；合并后回测：unit grok-shim+fold **211 passed**；e2e kickstart+bots+outline **18 passed**
+- review 1M（用户自输标签被隐藏+ack 悬挂→rpcId 双条件）+1L（⑦竞态）修复随合并进主线；kickstart:false 参数已备好 T26
+
+## 2026-11-07 11:23 · 哨兵：load 20.2——本轮只记不跑测试
+T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修复/终验测试步骤等负载窗口。
+- 11:32 哨兵：load 33.6（GPU 峰值）——T26 review 修复（ef5f75ad）已提交，e2e 验证持续等 load<10。
+- 13:13 哨兵：load 21（GPU 峰）暂测试。T26b 返修完成（145c784d）四修四刀全绿；经理合并验收中。
+
+## 2026-11-07 · merge T26+T26b（合并验收通过后合并）
+- 干净合入（png 自动保留 docs 新图——blob 核对相同）；残留 3 个 dsh web 进程 reap 清
+- 合并后回测：unit grok-shim+fold **211 passed**；e2e onboarding+bots+kickstart **17 passed**
+- T26 全链：主 agent 补开单（经理立项超时）→A 段→review（HIGH gate 架空+3M）→修复→终验返修 T26b（4 条）→修复→合并验收（变异 V-c 抽验 2/2 红）→合并
+- 已记 T32（不阻塞）：引导期间侧栏未盖/create 版式散
+- 14:03 哨兵：load 24 暂测试。T28 review 3M 修复闭环（7c22aadb），终验中。
+
+## 2026-11-07 · merge T28+T28c（合并验收通过后合并）
+- feat/T28 干净合入（六页截图自动取 docs 新版）；合并后回测：unit grok-shim+fold **222 passed**；e2e onboarding+kickstart+bots **19 passed**
+- T28 全链：经理立项（探针颠覆预设）→ 施工 → review 3M → 修复 → 终验返修 T28c（3F：三页出框/复制缺件/单测缺格）→ 复用上游组件修复 → 合并验收（Vb 变异未咬合记提议⑩：版式居中无断言，与 T32 一起补）
+- 提议⑩ 记 queue：meet 标题 opacity/computer-demo 底栏序/role+connect 可见性断言/④标题过时
+
+## 2026-11-07 · merge T30+T30b+T30c（终验通过后合并）
+- 合并前经理要求：截图单一来源进 feat/T30（主仓 15:59 版覆盖旧图）——docs 工作区还原后干净合入
+- 合并后回测：unit **225**；e2e 0793+kickstart+character+market **21 passed**（market 转绿——launchShell 直连 spec 因 T26b 首启路径在基线就红，seen 兜底修复后绿，经理已核实）
+- T30 全链（3 轮）：施工→终验返修 T30b（空测试/暗Black/notice/组字/六处版式）→二次返修 T30c（任务 C 重规划：③判等/描边真因 --sand-surface 不存在/focus 圈/暗Create/暗线/证据链）→过
+- **T30d 开**（不阻塞）：暗色三处样式（Create 白字浅灰底/头尾线无/描边暗不可见——像素数值验收；Create 若是全局 primary token 问题先问经理）
+- T30 教训进 LEARNINGS 口径：回执「已核/见某某」=无证据；交单前自己 Read 截图逐条看
+
+## 2026-11-07 · merge T30d+T30db（终验通过后合并）
+- 合并前清主仓 7 张未提交截图（分支版为准）；T30db 工单 rename 冲突解（取 done）
+- 合并后回测：unit **225**；e2e 0793+character+kickstart **19 passed**
+- T30d/db 闭环：暗三处（Create 白底黑字/分隔线/贴纸边）——贴纸边被 viewBox 裁断是 T30d 引入的回归（overflow=visible 修）；Create 发灰两层根因（transition 中间帧+span 文字色）
+
+## 2026-11-07 · merge T28b（终验通过后合并）
+- 回执三方合并（review 修复节+经理验收节双保留）；合并后回测：unit grok-shim+fold **233 passed**；e2e onboarding+kickstart+bots **19 passed**
+- T28bb 一行修复单遗留（already 分支 return 位置——单账号不触发，不阻塞）
+- T28b 全链：经理立项（探针纠 queue 两处）→施工→review 1M（介绍失败停链）→修复→终验（变异两刀）→合并

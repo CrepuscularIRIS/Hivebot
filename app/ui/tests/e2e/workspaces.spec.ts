@@ -41,6 +41,7 @@ test('① header.cwd 强制 + ② renderer 传 cwd 即拒', async () => {
     const before = (await devState(page)).order
     await page.click('.sand-agents-sidebar__header button[aria-label="New"]')
     // P5-57：New 先开新建对话框（缺省 preset、无连接器 → #3）
+    await page.getByRole('textbox', { name: 'Bot name' }).fill('WS') // T30：Create 需名字
     await page.locator('dialog[data-dialog="new-bot"] [data-action="create-bot"]').click()
     await expect.poll(async () => (await devState(page)).order.find((id) => !before.includes(id)), { timeout: 30_000 }).toBeTruthy()
     const x = (await devState(page)).order.find((id) => !before.includes(id))!

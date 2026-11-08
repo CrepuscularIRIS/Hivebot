@@ -17,6 +17,9 @@ export interface AgentInput {
   waitingReason?: string
   /** P5-57 D10c：侧栏预览行文案（production/model.ts 读 lastMessagePreview）。 */
   preview?: string
+  /** T24：创建对话框选的形象（记录输出 avatarShape/avatarColor；未选 = null → 上游按 agentId 哈希回落）。 */
+  avatarShape?: string | null
+  avatarColor?: string | null
 }
 
 export function toAgentRecord(input: AgentInput): Record<string, unknown> {
@@ -39,8 +42,10 @@ export function toAgentRecord(input: AgentInput): Record<string, unknown> {
     lastMessageId: null,
     memberIds: [],
     conversationPartnerIds: [],
-    color: null,
-    shape: null,
+    // T24：上游 projectRendererAgent 读 avatarShape/avatarColor（production/model.ts:147）——
+    // 旧键 color/shape 无人读，已删（grep 确认，回执贴）。
+    avatarShape: input.avatarShape ?? null,
+    avatarColor: input.avatarColor ?? null,
     dataUrl: null,
     awaitingUserResponse: input.waitingReason !== undefined ? { reason: input.waitingReason }
       : input.awaitingApproval === true ? { reason: 'local-tool-permission' } : null,

@@ -8,6 +8,7 @@ import { expect, test, type Page } from 'playwright/test'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { launchShell } from '../support/launch.ts'
+import { waitProductReady } from '../support/ui.ts'
 import { tmkdir } from '../support/tmp-sweep.ts'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { bashCall, textCall } from '../support/ui.ts'
@@ -107,7 +108,7 @@ test('U4′：死入口隐藏清单逐条生效 + 主视图遍历零死入口', 
   const page = shell.page
   try {
     // ---- 一个有内容的会话：用户消息、bash 行（审批 allow-once）、assistant markdown（代码块） ----
-    await expect(page.locator('.sand-agent-item')).toHaveCount(1, { timeout: 60_000 })
+    await waitProductReady(page) // T7bd：T26b 后裸 launchShell 首启进 onboarding、agent 恒 0——用兜底
     const list = await rt.client.call('session/list', { _request: {} }) as { items?: Array<{ sessionId: string; origin?: string }> }
     const sid = list.items?.find((i) => i.origin !== 'subagent')?.sessionId
     expect(sid).toBeTruthy()
@@ -151,7 +152,7 @@ test('U4′：死入口隐藏清单逐条生效 + 主视图遍历零死入口', 
     // 模块覆盖：sidebar（剥 onDuplicateAgent/onRequestDeleteAgent/onShowFullConversation）+ row-actions model（滤 Hide from sidebar）
     await page.locator('.sand-agent-item', { hasText: AGENT_NAME }).click({ button: 'right' })
     const rowMenu = await visibleTexts(page, '[aria-label="Agent actions"] [role=menuitem]')
-    expect(rowMenu).toEqual(['Edit Profile', 'Move to new section', 'Pin', 'Mark as Unread', 'Copy conversation ID'])
+    expect(rowMenu).toEqual(['Edit Profile', 'Show full conversation', 'Move to new section', 'Pin', 'Mark as Unread', 'Copy conversation ID']) // T7bd：T21 加的活入口补进清单
     await page.keyboard.press('Escape')
     // CSS 覆盖：账户菜单只剩 Settings / About（Help Center / Send Feedback / Log out 屏蔽）
     await page.click('button[aria-label="Account"]')

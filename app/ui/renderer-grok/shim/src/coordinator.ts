@@ -21,15 +21,17 @@ export interface CoordinatorDeps {
   setAgentUnread(id: string, value: boolean): void
   createAgent(args: Record<string, unknown>): Promise<unknown>
   updateAgent(args: Record<string, unknown>): Promise<unknown>
+  /** T21：outline 侧板拉取（data.ts 注入——items 来自当前 view）。 */
+  outline?(id: string): unknown[]
 }
 
 const TEACH_IDLE = { state: 'idle', agentId: null, startedAtMs: null, maxDurationMs: 600_000 }
 
 /** 已知但未实装的方法 → 空/能力关回值（RE-s0 实底口径）。 */
-function defaultReply(method: string, deps: CoordinatorDeps): unknown | undefined {
+function defaultReply(method: string, deps: CoordinatorDeps, args: Record<string, unknown> = {}): unknown | undefined {
   switch (method) {
     case 'getTrays': case 'getSubagents': case 'getAsyncTasks': case 'getAgentWorkflows':
-    case 'listAllAutomations': case 'searchAgents': case 'getAgentAutomations': case 'getConversationOutline':
+    case 'listAllAutomations': case 'searchAgents': case 'getAgentAutomations':
     case 'skillsCatalog': case 'syncPluginSkills': case 'listRoutedMcpTools': case 'searchMedia':
       return []
     case 'isAgentNetworkEnabled': case 'isGlobalSearchEnabled': case 'isEgressTunnelAvailable':
@@ -42,6 +44,7 @@ function defaultReply(method: string, deps: CoordinatorDeps): unknown | undefine
     case 'promptAcceptanceStatus': return { status: 'accepted' }
     case 'getBoxSecretsStatus': return { available: false }
     case 'countAgents': return deps.listAgents().length
+    case 'getConversationOutline': return deps.outline?.(args?.id ?? '') ?? []
     default: return undefined // 未知方法 → failed
   }
 }
@@ -135,7 +138,7 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
         case 'createAgent': return reply(requestId, await deps.createAgent(args))
         case 'updateAgent': return reply(requestId, await deps.updateAgent(args))
         default: {
-          const value = defaultReply(method, deps)
+          const value = defaultReply(method, deps, args)
           if (value !== undefined) return reply(requestId, value)
           unhandled.push(method)
           return replyFailed(requestId, 'unknown-method', `coordinator has no handler for ${method}`)

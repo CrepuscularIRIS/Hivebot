@@ -104,7 +104,14 @@ export async function launchSdkRuntime(opts: { patch: string; readyTimeoutMs?: n
   const token = readFileSync(join(handoff, 'launch-token'), 'utf8').trim()
   const mod = await dshClient()
   // interactions=answer：$events/result 等作答调用要求（gateway 对 none 连接报 interactions-forbidden）
-  const client = await mod.connect({ baseUrl, token, interactions: 'answer' })
+  // T11：ssh 组合下 dsh 加载 ssh 插件时 HTTP 短暂不可用（sdk 侧 runtime.ts 的
+  // 已知竞态，15s 重试同款）——ui 精简版原先无重试，ssh e2e 撞 socket hang up。
+  let client: Awaited<ReturnType<ClientModule['connect']>> | undefined
+  let lastErr: unknown
+  for (let i = 0; i < 30; i++) {
+    try { client = await mod.connect({ baseUrl, token, interactions: 'answer' }); break } catch (e) { lastErr = e; await new Promise((r) => setTimeout(r, 500)) }
+  }
+  if (client === undefined) throw new Error(`sdk connect failed after 15s retry: ${String(lastErr)}`)
 
   return {
     home,

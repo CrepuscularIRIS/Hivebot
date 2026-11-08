@@ -9,7 +9,7 @@ import { existsSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { launchShell, sandboxHome, type ShellLaunch } from '../support/launch.ts'
 import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
-import { bashCall, textCall, toolCall } from '../support/ui.ts'
+import { bashCall, MAIN_TITLE, openOutline, textCall, toolCall } from '../support/ui.ts'
 
 const UI_ROOT = resolve(__dirname, '..', '..')
 const EVIDENCE = join(UI_ROOT, 'test-output', 'P5-51')
@@ -112,11 +112,16 @@ test('grok shim：fake 事件流每类 entry 渲染 boundary=0；persona 活动�
     await dock.locator('button', { hasText: 'Allow once' }).click()
     await expect(dock).toHaveCount(0, { timeout: 20_000 })
 
-    // 每类 entry 渲染：user / ack / thinking（reasoning 与中间文本）/ tool / assistant markdown 代码块
+    // T22：主 transcript 只有 user / ack / assistant markdown；thinking 与 tool 在 outline 面板 ≥1
     await expect(page.locator('.sand-virtual-transcript')).toContainText('请检查环境并执行', { timeout: 30_000 })
     await expect(page.locator('.sand-virtual-transcript')).toContainText('好的，先看一下环境。')
-    await expect(page.locator('.sand-virtual-transcript')).toContainText('先想想怎么做。')
-    await expect(page.locator('.sand-virtual-transcript').getByText(/bash/i).first()).toBeVisible({ timeout: 30_000 })
+    await expect(page.locator('.sand-virtual-transcript')).not.toContainText('先想想怎么做。')
+    await expect(page.locator('.sand-virtual-transcript').getByText(/bash/i).first()).toHaveCount(0)
+    const shimRowLabel = await page.locator('.sand-agent-item').first().getAttribute('aria-label') ?? MAIN_TITLE
+    await openOutline(page, shimRowLabel)
+    await expect(page.locator('.sand-outline-panel .sand-outline-item[data-kind="thinking"]')).toHaveCount(1, { timeout: 15_000 })
+    await expect(page.locator('.sand-outline-panel .sand-outline-item[data-kind="tool-call"]')).toHaveCount(1)
+    await page.click('button[aria-label="Close full conversation"]') // 面板是 dialog，开着会吃 Esc（回合 3 网络卡靠 Esc 拒绝）
     await expect(page.locator('.sand-virtual-transcript')).toContainText('收工。', { timeout: 30_000 })
     await expect(page.locator('.sand-virtual-transcript pre')).toHaveCount(1)
     // allow-once 真执行（D9 链路打通到 dsh）

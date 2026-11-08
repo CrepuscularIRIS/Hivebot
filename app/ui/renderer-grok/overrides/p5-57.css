@@ -164,3 +164,50 @@ dialog.pb-dialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh
 .pb-stop { display: inline-flex; align-items: center; gap: 8px; -webkit-app-region: no-drag; app-region: no-drag; }
 .pb-stop__error { color: var(--sand-text-danger-primary); font-size: 12px; }
 .pb-market__hint { padding: 10px 8px 0; }
+
+/* ======== T24 · 新建对话框形象区（13 形状 5/5/3 + 11 色板 + 58px 预览）======== */
+.pb-character { display: flex; flex-direction: column; align-items: center; gap: 10px; } /* T30：grid 改列 flex——名字框/预览按序纵排 */
+.pb-character__preview { display: inline-flex; }
+.pb-character__shapes { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-width: calc(5 * 40px + 4 * 6px); } /* 5/5/3：恰放 5 个/行（T24b：220px 差 4px 致 4/4/4/1），末行 3 个随 justify 居中 */
+.pb-character__shape { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: none; border-radius: 8px; background: transparent; cursor: pointer; padding: 4px; }
+.pb-character__shape[aria-pressed="true"] { background: color-mix(in srgb, var(--sand-text-secondary, #1c1c1c) 12%, transparent); }
+.pb-character__colors { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; max-width: calc(6 * 24px + 5 * 16px); row-gap: 16px; } /* T30b：24 直径/中心距 40（gap16）——ref 实测 */
+.pb-character__color { width: 24px; height: 24px; border-radius: 9999px; border: 2px solid transparent; cursor: pointer; padding: 0; }
+.pb-character__color[aria-pressed="true"] { border-color: var(--sand-text-secondary, #1c1c1c); }
+
+/* ======== T30 · 0.79.3 Thn 版式：预览 96/名字框/More options 折叠 ======== */
+.pb-dialog.pb-new-bot { width: 440px; }
+.pb-name-input { border: none; border-bottom: 1px solid var(--sand-border, #1c1c1c1f); font-size: 15px; padding: 8px 4px 10px; text-align: center; width: 100%; background: transparent; outline: none; }
+.pb-more { border: none; margin-top: 4px; }
+.pb-more > summary { color: var(--sand-text-secondary, #1c1c1cad); cursor: pointer; font-size: 13px; list-style: none; padding: 6px 0; text-align: center; }
+.pb-more > summary::marker { content: ''; }
+.pb-more[open] > summary { margin-bottom: 8px; }
+/* 形状钮 pitch 57/图形 36（ref 实测）——5/5/3 断言的 max-width 同步 */
+.pb-character__shapes { max-width: calc(5 * 57px + 4 * 6px); }
+.pb-character__shape { height: 57px; width: 57px; }
+/* 选中态：形状去灰底（描边在 ShapeGlyph 画）；色板 outline 外环 */
+.pb-character__shape[aria-pressed="true"] { background: transparent; }
+.pb-character__color[aria-pressed="true"] { border-color: transparent; outline: 1px solid var(--sand-text-secondary, #1c1c1c); outline-offset: 2px; }
+
+/* T30b：头部/底栏分隔线 + 名字框圆角灰边（ref）+ 暗 Create 对比 */
+.pb-dialog__head { border-bottom: 1px solid var(--sand-border, #1c1c1c1f); }
+.pb-dialog__actions { border-top: 1px solid var(--sand-border, #1c1c1c1f); }
+.pb-name-input { border: 1px solid var(--sand-border, #1c1c1c2e); border-radius: 9px; padding: 8px 12px; }
+.pb-name-input:focus { border-color: var(--sand-text-secondary, #1c1c1cad); outline: none; }
+
+/* T30c：名字框压全局 focus 圈（box-shadow+outline 双保险） */
+.pb-name-input:focus, .pb-name-input:focus-visible { box-shadow: none !important; outline: none !important; border-color: var(--sand-text-secondary, #1c1c1cad) !important; }
+/* T30d #2：暗分隔线——--cursor-line/--sand-border 在此上下文均未定义（探针 UNDEF），暗色给显式亮线 */
+.pb-dialog__head { border-bottom: 1px solid #1c1c1c2e; }
+.pb-dialog__actions { border-top: 1px solid #1c1c1c2e; }
+[data-theme="cursor-dark"] .pb-dialog__head { border-bottom-color: #ffffff2e; }
+[data-theme="cursor-dark"] .pb-dialog__actions { border-top-color: #ffffff2e; }
+/* T30d #1：暗 Create 白底黑字（探针：SandButton primary 原子类赢过 T30c 规则——!important 提权；
+   仅对话框内此钮，不动全局 primary token） */
+[data-theme="cursor-dark"] .pb-dialog__actions [data-action="create-bot"]:not([disabled]) { background: #ffffff !important; color: #1c1c1c !important; border-color: #ffffff !important; transition: none !important; }
+/* T30db #2：disabled→enabled 的 background-color transition 在截图/快速态拍出 205（computed 已 255）——transition none 消掉中间帧 */
+
+/* T30d #3：贴纸边双层 token（ref light=白 3px+灰 1px；ref dark 实测=浅灰环 48-78 on bg31） */
+[data-theme=cursor-dark] .pb-dialog__actions [data-action=create-bot]:not([disabled]) span { color: #1c1c1c !important; } /* T30db：文字色在 span 上（原子类 var #2e2e2e） */
+.pb-character { --pb-sticker-gray: #1c1c1c59; --pb-sticker-surface: #ffffff; }
+[data-theme="cursor-dark"] .pb-character { --pb-sticker-gray: #565656; --pb-sticker-surface: #1f1f1f; }

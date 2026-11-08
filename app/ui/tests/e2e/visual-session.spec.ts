@@ -7,11 +7,12 @@
 import { expect, test, type Page } from 'playwright/test'
 import { join } from 'node:path'
 import {
-  MAIN_TITLE, createBots, evidenceOut, finalAssistant, launchProduct, openBot, reasoningTextCall, send, textCall, transcript,
+  MAIN_TITLE, createBots, evidenceOut, finalAssistant, launchProduct, openBot, openOutline, reasoningTextCall, send, textCall, transcript,
 } from '../support/ui.ts'
 
 const OUT = evidenceOut('P5-12')
-const thinkingRows = (page: Page) => page.locator('.sand-virtual-transcript .sand-outline-item[data-kind="thinking"]')
+// T22：thinking 行只在 outline 面板（主 transcript 不再渲染）
+const thinkingRows = (page: Page) => page.locator('.sand-outline-panel .sand-outline-item[data-kind="thinking"]')
 const separators = (page: Page) => page.locator('.sand-virtual-transcript .sand-transcript-time-separator')
 const unreadLine = (page: Page) => page.locator('.sand-virtual-transcript .sand-unread-divider')
 
@@ -38,13 +39,14 @@ test('B7 thinking 行（live → 定稿、鼠标 / 键盘开合）+ B14 时间�
     ])
     await send(page, '想一想')
 
-    // ① live：推理流式期就有 thinking 行（shim live-reasoning 条目）
+    // ① live：T22 后流式 reasoning 不进主 transcript——面板开着时 live-reasoning 行出现（T21 outline 流式尾）
+    await openOutline(page, 'B7-X')
     await expect(thinkingRows(page)).toHaveCount(1, { timeout: 20_000 })
     const { mkdirSync, writeFileSync } = await import('node:fs')
     mkdirSync(join(rt.home, 'gates'), { recursive: true })
     writeFileSync(join(rt.home, 'gates', gate), '')
     await expect(finalAssistant(page).last()).toHaveText('答案是 42。', { timeout: 20_000 })
-    await expect(thinkingRows(page)).toHaveCount(1) // 定稿：仍恰一条（live 条目被持久 thinking 取代，不重复）
+    await expect(thinkingRows(page)).toHaveCount(1) // 定稿：仍恰一条（live-reasoning 被持久 thinking 取代，不重复）
 
     // 鼠标开合
     const row = thinkingRows(page).first().locator('button.sand-outline-item__row')

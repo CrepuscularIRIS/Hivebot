@@ -50,3 +50,21 @@
 - **第一阶段（现在）**：本机 Linux 完整体验——产品启动器拉起 SDK + Electron，日常使用 skills/定时/M1-M3 全链。
 - **第二阶段**：**Windows exe 客户端**，连接到 ssh ubuntu 远端电脑（bot 的电脑）。测试链路可能走 **tailscale**；Windows 侧由用户自己连接过来测试。
 - 含义：T9-T12 的 ssh 链最终消费者 = Windows exe 客户端；启动器/打包设计为 Windows 预留（electron-builder 目标 win、SDK 跑远端不进 exe、handoff 通道经 tailscale 可达）。
+- **经理注（2026-11-06 23:5x，任务 A）**：上一条两句互相矛盾——「SDK 跑远端不进 exe」时 ubuntu 本身就是 bot 的电脑，SDK 以本机模式在那里跑，Windows 客户端只经隧道连 SDK，**不消费** T9–T12 的 ssh 链（ssh 链的设计前提是「SDK 在这边、电脑在那边」）。两种走法（A：exe 含 SDK、工具经 ssh 在 ubuntu 执行 = ssh 链的消费者；B：exe 只是 UI、SDK 在 ubuntu 本机模式 + ssh -L 隧道 / tailscale）的对比与推荐（B）见 `work/product-launcher/DESIGN-launcher.md` §4，交用户拍板 = **Q-031**。T11 两种走法都用得上（B 下它的 `workspace.ensure` RPC 是 main 文件职责迁 SDK 侧的第一块），照常做完；T12/T13 随 Q-031 定。
+
+## 用户体验反馈（2026-11-07 04:0x，用户实测 Hivebot 后）
+
+1. **UI 层（用户定调最优先）**：逆向的 UI 缺很多元素。重逆向 0.79.3（已下载解包 /tmp/grokbot-0.79.3/）：
+   - 回复呈现：原版**无 CoT**——只有回复结果，「第一次回答和最后一次回答」（中间过程不可见的形态要逆向）
+   - 创建 bot：有很多**动画**、UI 有很多**素材可配置**——都要逆向
+   - 先做 UI 部分
+2. **编排层（用户自己研究中）**：跨 bot 交流 / subagent 区分不合理——「随便说一个需求，结果人家都弄错了」；dsh 本身也有 subagent（且看不了）；感觉没有完全连接起来；superagent 没看到创建。→ 等用户研究结论再拆单。
+
+## 体验对齐目标升级（用户 2026-11-07 05:0x）
+
+原话：「尽量把所有的最新版本的所有的功能UI, 背后的控制一系列行为, 看看能否都逆向出来. 我们尽量让Opus去取舍对齐. 至少在使用体验上, 几乎和Grok Bot保持一模一样即可」
+
+含义：
+- RE 范围从「UI 三题」扩到 **0.79.3 全功能面**（UI + 背后控制行为：交互流程/RPC 面/状态机/设置/快捷键/面板等）
+- 对齐取舍由 **manager（Opus）** 做：gap 全景 → 取舍清单 → 主计划
+- 验收标准 = **使用体验与 Grok Bot 几乎一模一样**（非逐字节，但用户可感知面全对齐）

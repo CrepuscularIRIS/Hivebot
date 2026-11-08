@@ -11,7 +11,7 @@ import { fakeOverlayPath, launchSdkRuntime } from '../../support/sdk-runtime.ts'
 import { MARKET_SOURCE_PATCH, serveMarket } from '../../support/connectors.ts'
 import { FS_PLUGIN, WRAPPER, approveConnectorCall, mcpCall } from '../../support/connector-call.ts'
 import {
-  PRESETS_PATCH, api, bashCall, createBots, devState, finalAssistant, openBot, permissionDock, send, textCall, toolRows, waitProductReady,
+  PRESETS_PATCH, api, bashCall, createBots, devState, finalAssistant, openBot, openOutline, permissionDock, send, textCall, toolRows, waitProductReady,
 } from '../../support/ui.ts'
 
 const PATCH = `${MARKET_SOURCE_PATCH}:${PRESETS_PATCH}:${fakeOverlayPath()}`
@@ -37,6 +37,7 @@ test('D4→D5→D6 全旅程：审批批准执行 → 装 filesystem→建 X→�
     await send(page, '建 canary')
     await permissionDock(page).locator('button', { hasText: 'Allow once' }).click({ timeout: 20_000 })
     await expect.poll(() => existsSync(canaryPath), { timeout: 30_000 }).toBe(true)
+    await openOutline(page, 'J-A') // T22：工具行迁 outline 面板
     await expect(toolRows(page).last()).toHaveAttribute('data-status', 'done', { timeout: 20_000 })
     await expect(finalAssistant(page).last()).toHaveText('已执行。', { timeout: 30_000 })
 
@@ -61,7 +62,7 @@ test('D4→D5→D6 全旅程：审批批准执行 → 装 filesystem→建 X→�
     writeFileSync(hello, 'u31-d5-journey-evidence')
     rt1.writeScriptCalls(x, [mcpCall({ path: hello }), textCall(['D5 读取完成'])])
     await send(page, '读一下文件')
-    await approveConnectorCall(page, x, 'u31-d5-journey-evidence')
+    await approveConnectorCall(page, x, 'u31-d5-journey-evidence', 'J-X')
   } finally {
     await shell1.stop()
     await rt1.stop()
@@ -82,6 +83,7 @@ test('D4→D5→D6 全旅程：审批批准执行 → 装 filesystem→建 X→�
     expect(state.order, `重启后不多出 bot（got ${JSON.stringify(state.order)}）`).toHaveLength(3)
     // D6a：A 的历史在（D4 的审批工具行定稿可读）
     await openBot(page, 'J-A')
+    await openOutline(page, 'J-A')
     await expect(toolRows(page).last()).toHaveAttribute('data-status', 'done', { timeout: 30_000 })
     await expect(finalAssistant(page).last()).toHaveText('已执行。', { timeout: 30_000 })
     // 普通 bot 重启后能发消息收回复（D6a 收尾）
@@ -101,7 +103,7 @@ test('D4→D5→D6 全旅程：审批批准执行 → 装 filesystem→建 X→�
     writeFileSync(hello2, 'u31-d6b-after-restart')
     rt2.writeScriptCalls(x!, [mcpCall({ path: hello2 }), textCall(['重启后读取完成'])])
     await send(page, '再读一次')
-    await approveConnectorCall(page, x!, 'u31-d6b-after-restart')
+    await approveConnectorCall(page, x!, 'u31-d6b-after-restart', 'J-X')
   } finally {
     await shell2.stop()
     await rt2.stop()

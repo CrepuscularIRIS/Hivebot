@@ -1,16 +1,9 @@
-import { mkdirSync, readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs'
+import { mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { expect, test } from 'playwright/test'
 import { fakeOverlayPath, launchSdkRuntime } from '../support/sdk-runtime.ts'
 import { launchShell, sandboxHome } from '../support/launch.ts'
-import { createBots, PRESETS_PATCH } from '../support/ui.ts'
-
-const shot = async (page: import('playwright/test').Page, theme: 'light' | 'dark', state: 'added' | 'pick', pane: import('playwright/test').Locator): Promise<void> => {
-  await page.emulateMedia({ colorScheme: theme })
-  await page.waitForTimeout(300)
-  await page.screenshot({ path: `test-output/T7b/skills-${state}.${theme}.png` })
-  void pane
-}
+import { createBots, PRESETS_PATCH, waitProductReady } from '../support/ui.ts'
 
 test('截图四张', { timeout: 300_000 }, async ({ page }) => {
   const home = sandboxHome('T7bS')
@@ -20,9 +13,7 @@ test('截图四张', { timeout: 300_000 }, async ({ page }) => {
   try {
     shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff }, home })
     const ui = shell.page
-    await expect(ui.locator('.sand-agent-item')).toHaveCount(1, { timeout: 60_000 })
-    await expect(ui.locator('.ProseMirror[contenteditable="true"]')).toBeVisible({ timeout: 20_000 })
-    await expect(ui.locator('.sand-agent-item [data-grok-state]').first()).toHaveAttribute('data-grok-state', 'idle', { timeout: 30_000 })
+    await waitProductReady(ui) // T7bd：T26b 后裸 launchShell 首启进 onboarding、agent 恒 0——用兜底（置 seen+reloadRoster）
     const [idA, idB] = await createBots(ui, [{ title: 'T7b-A' }, { title: 'T7b-B' }])
     const wsA = join(dataDir, 'workspaces', idA)
     mkdirSync(join(wsA, '.dsh', 'skills', 't7b-flow'), { recursive: true })
@@ -70,4 +61,3 @@ test('截图四张', { timeout: 300_000 }, async ({ page }) => {
     rmSync(dataDir, { recursive: true, force: true })
   }
 })
-void shot

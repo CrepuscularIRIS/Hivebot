@@ -1,4 +1,14 @@
-# HANDOFF · 2026-11-06 11:45
+# HANDOFF · 2026-11-07 17:3x（UI 复刻链主单全部收口）
+
+> 快照：T20-T28b 共 20 单合并主线（含全部返修单）。用户反馈的 UI 三大件+onboarding 全链（landing→六步→三页→hand-off 自动建主 bot+2 模板 bot 各自介绍）+创建对话框 0.79.3 Thn 版式全部落地。剩：T28bb（一行——already 分支 return）、T32（B 段编舞+提议⑩⑩）、T27（等用户编排结论）、T7bd/T7d/T12/T17d/H7 老单按序。Q-033 按 A 落地待追认。T31 搁置。生产实例健康。下一步建议：T28bb 秒修合并→T32 立项（或按用户偏好插单）。
+
+> 快照：T20-T28+T30（含 b/c/d/db 返修）共 19 单合并主线。onboarding 全链+创建对话框 0.79.3 Thn 版式（名字/预览96/More options/贴纸边/暗色三处）全部落地。剩：T27（等用户编排结论）、T28b（roleUseCaseBots+42 模板——queue U8b 计划行）、T32（B 段编舞+提议⑩版式断言）、老单 T7bd/T7d/T12/T17d/H7 按经理序排后。Q-033 按 A 落地待用户追认。T31（Help 卡）经理探针后搁置（Thn 无 Help 卡，等用户提）。生产实例健康。经验：T30 三轮的「回执=证据」教训（像素数值/原样输出）已成本批验收口径。
+
+> 快照：T20-T28+T21b/T24b/T26b/T28c/T29 共 14 单全部合并主线（GitHub 同步）。onboarding 全链（landing→六步 walk→三页→hand-off 自动建主 bot→介绍延后）落地。剩：T27（等用户编排结论）、T28b（roleUseCaseBots+42 模板）、T30/T31（对话框版式/Help 卡）、T32（B 段编舞+提议⑩版式断言）、老单 T7bd/T7d/T12/T17d/H7 按经理序排后。Q-033（去起名/挑形象）按 A 落地待用户追认。生产实例健康。经理超时 75min 教训：立项探针重（如需跑产物 bundle/桩）时派单提示「纯读文件探针，不跑构建」。
+
+> 快照：T20-T25+T29+T21b 全部合并主线（GitHub 同步）；**T26（onboarding）A 段核改完成、下会话续**——worktree /tmp/bot-wt/T26（feat/T26，1f0ee18f），工单 doing/T26-onboarding.md 末有交接记录（已完成/未做/续接入口/e2e 基线 3 passed）。关键发现：0.18 gate「agentCount>0 自动 seen」——六步 UI 在 e2e 不可达（恒有 main bot），真首启才进。经理 agent 立项超时 75min 被 TaskStop 的教训已隐含在 T26 开单说明。UI 链剩：T26 续（landing 前奏/attribution 页/kickstart 通道/变异/截图）、T27（等用户编排结论）、T28（42 模板）、T30/T31/T32。生产实例健康（launcher+SDK）。
+
+> 2026-11-07 快照（UI 复刻链第一波收口）：T21（outline 侧板）+ T22（主聊天只留首答/终答）+ T21b（⑤ 咬合）全部终验合并进 docs/rebuild-p6-p5-plan；T20（0.79.3 参照台）S1/S2/S4 出图回执齐、经理验收中。全仓已推 GitHub（CrepuscularIRIS/Hivebot，private，73+ 分支；127MB evidence blob 已剥、B-env 隔离 HOME 垃圾已从 HEAD 树清+gitignore）。UI 复刻链下一张：T23（状态行短语引擎——0.79.3 短语原文已从 T20 拿到：thinking→"Mulling it over"，12s 不轮换）。用户在用产品实例（启动器拉起）；用户研究方向=编排（跨 bot 交流/subagent 呈现），T27 等其结论。
 
 新会话从这里接手。先读本文件，再读 `work/REPORT-2026-11-05.md`（额度诊断 + 今日成果 + 待办全表）。
 

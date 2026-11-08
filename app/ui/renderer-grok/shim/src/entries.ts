@@ -31,7 +31,30 @@ function argText(args: string): string | null {
 }
 
 /** 工具行单行摘要：argText 优先，截 120 字。 */
-function toolSummary(name: string, args: string, result: string | null): string {
+/** T25：kickstart 自我介绍提示（0.79.3 服务端注入引导提示的客户端形态——transcript/outline 都不显示）。
+ * 0.79.3 无 UI 抑制开关：是否介绍由代码路径决定；我们的 createBot 带 kickstart?:false 供 T26 onboarding 用。 */
+/** T30：介绍提示构造——全部内容都在标签内（name/setup 可选；:550 旧 bug 是 setup 拼到闭合标签后）。 */
+export function kickstartPrompt(o: { name?: string; setup?: string }): string {
+  const name = o.name !== undefined && o.name.trim() !== '' ? `Your name is ${o.name.trim()}. ` : ''
+  const setup = o.setup !== undefined && o.setup.trim() !== '' ? ` Your setup: ${o.setup.trim()}` : ''
+  return `<bot_introduction_request>${name}You were just created. Greet the user and introduce yourself in two or three short sentences: your name if you have one, your personality, and what you can help with. Don't use any tools.${setup}</bot_introduction_request>`
+}
+
+export const KICKSTART_PROMPT = kickstartPrompt({})
+
+/** 只认标签不认正文（T30 往里加名字时旧会话照样认得出）。 */
+export function isKickstartPrompt(text: string | undefined | null): boolean {
+  const t = (text ?? '').trim()
+  return t.startsWith('<bot_introduction_request>') && t.endsWith('</bot_introduction_request>')
+}
+
+/** T25 review M：条目级判定——标签 + kickstart 发送身份（rpcId 前缀）。
+ * 用户自己输入同标签文本时 rpcId 是自己的 nonce，照常显示与对账（ack 不悬挂）。 */
+export function isKickstartEntry(text: string | undefined | null, rpcId: string | undefined | null): boolean {
+  return isKickstartPrompt(text) && (rpcId ?? '').startsWith('kickstart-')
+}
+
+export function toolSummary(name: string, args: string, result: string | null): string {
   const text = argText(args)
   if (text !== null) return text.slice(0, 120)
   if (result !== null && result !== '') return result.replace(/\s+/g, ' ').slice(0, 120)
@@ -61,9 +84,7 @@ export function serialize(input: SerializeInput): RawEntry[] {
   const raw = toRawEntries(out, input.agentName, input.streaming, input.clientNonce === undefined
     ? undefined
     : { clientNonce: input.clientNonce })
-  if (input.streaming !== null && input.streaming.reasoning !== '' && input.streaming.text === '') {
-    raw.push({ id: 'live-reasoning', kind: 'thinking', text: input.streaming.reasoning, timestampMs: Date.now() })
-  }
+  // T22（0.79.3 COORD Qz / APP LF）：reasoning 流不进主 transcript（过程只在 outline 侧板）
   return raw
 }
 
@@ -86,6 +107,8 @@ export function toRawEntries(
     const at = e.at
     switch (e.kind) {
       case 'user': {
+        // T25：kickstart 介绍提示不进主 transcript（0.79.3 客户端看不到那条引导 user 消息）
+        if (isKickstartEntry(e.text, e.rpcId)) break
         // P5-55：0.18 model.ts 判侧 `kind==='send-message' || role==='assistant' ? assistant : user`——send-message 是 agent 发来的消息，
         // 用户消息必须 message + role:'user'（原 send-message 让用户输入落 assistant 侧，VERIFY-P5-51 OBS）
         const entry: RawEntry = { kind: 'message', id: e.id, timestampMs: ts(at), role: 'user', author: 'You', content: e.text }
@@ -98,17 +121,14 @@ export function toRawEntries(
         raw.push({ kind: 'message', id: e.id, timestampMs: ts(at), role: 'assistant', author: agentName, content: e.text })
         break
       case 'thinking':
-        raw.push({ kind: 'thinking', id: e.id, timestampMs: ts(at), text: e.text })
+        // T22（0.79.3 COORD Qz / APP LF）：thinking（reasoning 与中间轮正文两种 from）无条件
+        // 不进主 transcript——用户原话「没有 cot，只有第一次回答和最后一次回答」；过程在 outline 侧板。
         break
       case 'tool-call':
-        if (ASSIGN_TOOLS.has(e.name)) { raw.push(peerEntry(e.id, at, assignPeer(e))); break }
-        // L-7 R2：完整 args 与 result 原样带出（production/model 覆盖层据此附 ToolResultCard，
-        // 展开工具行可见输出/错误详情）；summary 仍是单行预览。
-        raw.push({
-          kind: 'tool-call', id: e.id, timestampMs: ts(at), name: e.name, status: e.status,
-          summary: toolSummary(e.name, e.args, e.result),
-          args: e.args, result: e.result, decision: e.decision,
-        })
+        // T22：普通工具行无条件不进主 transcript（Qz 的 tool-call 分支；ASSIGN_TOOLS 转编排
+        // peer 不变）。工具状态/args/result 的可见性全部由 T21 的 outline 面板承接
+        //（L-7 R2 的完整 args/result 随主聊天工具卡一并退场）。
+        if (ASSIGN_TOOLS.has(e.name)) raw.push(peerEntry(e.id, at, assignPeer(e)))
         break
       case 'notice':
         raw.push({ kind: 'notice', id: e.id, timestampMs: ts(at), content: e.text })
@@ -119,10 +139,13 @@ export function toRawEntries(
     }
   }
   if (streaming !== null && streaming.text !== '') {
-    // P6-03：首工具后的流式正文是中间 / 尾段（turn/end 才升 result），落 thinking 行——进行中气泡 ≤1（BRIEF D1）
-    raw.push(out.streamingAs === 'thinking'
-      ? { kind: 'thinking', id: 'live-stream', timestampMs: Date.now(), text: streaming.text }
-      : { kind: 'message', id: 'live-stream', timestampMs: Date.now(), role: 'assistant', author: agentName, content: streaming.text, isStreaming: true })
+    // T22 流式取舍（0.79.3 RE 题 1(f)）：首工具后的正文在 turn/end 前分不清中间轮还是终答
+    //（P6-03），流式期不显示、turn/end 后作为 result 一次出现——先显示再消失会闪；过程期间
+    // 的可见反馈是 typing 点 + 侧栏状态（T23 换状态行），流式过程在 outline（live-stream 尾条）。
+    // streamingAs==='text'（首答流）照旧实时显示。
+    if (out.streamingAs !== 'thinking') {
+      raw.push({ kind: 'message', id: 'live-stream', timestampMs: Date.now(), role: 'assistant', author: agentName, content: streaming.text, isStreaming: true })
+    }
   }
   return raw
 }

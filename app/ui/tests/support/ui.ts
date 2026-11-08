@@ -71,21 +71,44 @@ export function reasoningTextCall(reasoning: string, text: string, paceMs = 120)
 
 export interface Env { rt: SdkRuntime; shell: ShellLaunch; page: Page; stop(): Promise<void> }
 
+/** T7be：置 seen → 整页 reload → 等 __pbotsDev（launchProduct / waitProductReady 共用）。
+ * reload 后 gate 在新加载里必判 shell（消「壳已用旧 seen 打开引导、storage 写入关不掉」竞态）。 */
+async function ensureOnboardingSeen(page: Page): Promise<void> {
+  await page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
+  await page.evaluate(() => { try { window.localStorage.setItem('pbots.shim.onboarding-seen', '1') } catch { /* ignore */ } }).catch(() => {})
+  await page.reload()
+  await page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
+}
+
 /** 产品就绪 = 主 bot 已进侧栏（shim roster 拉完，M1 已通）。 */
 export async function waitProductReady(page: Page, timeout = 60_000): Promise<void> {
+  // T7be：直接 launchShell 的 spec（market/settings 等）自己走首启路径——若壳已用旧 seen
+  // 打开引导，storage 写入+reloadRoster 都关不掉它，只有整页 reload 能撤。seen 判定前先等
+  // __pbotsDev（避免在应用加载前读到别的文档）；不再调 reloadRoster（reload 后 gate 自然建 main）。
+  try {
+    await page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
+    if (await page.evaluate(() => window.localStorage.getItem('pbots.shim.onboarding-seen') !== '1').catch(() => false)) {
+      await ensureOnboardingSeen(page)
+    }
+  } catch { /* ignore */ }
   await expect(page.locator('.sand-agent-item').first()).toBeVisible({ timeout })
+  await expect(page.locator('.sand-onboarding')).toHaveCount(0) // T7be 哨兵：引导层必须不在
 }
 
 /**
  * 起 fake runtime + 壳。dataDir 两侧同源（P5-25 起会话 cwd = $PBOTS_DATA_DIR/workspaces/<sid>，
  * workspaces.spec launchAligned 同款），会话工作区路径可在测试侧直接派生。
  */
-export async function launchProduct(opts: ShellOptions & { ready?: boolean; patch?: string } = {}): Promise<Env> {
-  const { ready = true, patch, ...shellOpts } = opts
+export async function launchProduct(opts: ShellOptions & { ready?: boolean; patch?: string; onboardingFirst?: boolean } = {}): Promise<Env> {
+  const { ready = true, patch, onboardingFirst = false, ...shellOpts } = opts
   const home = shellOpts.home ?? tmkdir('bot-p554-')
   const rt = await launchSdkRuntime({ patch: patch ?? `${PRESETS_PATCH}:${fakeOverlayPath()}`, cwd: tmkdir('bot-u21-ws-'), dataDir: join(home, 'data') })
   const shell = await launchShell({ ...shellOpts, home, env: { PBOTS_DSH_HANDOFF: rt.handoff, ...shellOpts.env } })
-  if (ready) await waitProductReady(shell.page)
+  // T26：真首启（未 seen+空 roster）进 onboarding、不建 main bot——常规 e2e 测的是引导
+  // 之后的产品面：页面起来后置 seen 并触发 roster 重载（补建 main bot）；onboarding 专项
+  // 用 onboardingFirst:true 自测真首启三态。
+  if (!onboardingFirst) await ensureOnboardingSeen(shell.page) // T26b #2 → T7be 抽共用
+  if (ready) await waitProductReady(shell.page) // 内含引导计零哨兵（T7be），原独立哨兵等价删除
   return { rt, shell, page: shell.page, async stop() { await shell.stop(); await rt.stop() } }
 }
 
@@ -130,6 +153,22 @@ export async function openBot(page: Page, title: string): Promise<void> {
   await expect(botItem(page, title)).toHaveAttribute('data-active', 'true')
 }
 
+/** T21：侧栏行右键 → 菜单「Show full conversation」打开 outline 面板（真实菜单点击，不 evaluate）。
+ * 同名多行（未命名 bot 都叫 New chat）时优先 data-active 行。 */
+export async function openOutline(page: Page, botTitle: string): Promise<Locator> {
+  const rows = botItem(page, botTitle)
+  const row = (await rows.count()) > 1 ? page.locator(`.sand-agent-item[data-active="true"][aria-label="${botTitle}"]`).first() : rows.first()
+  await row.click({ button: 'right' })
+  await page.locator('[aria-label="Agent actions"] [role="menuitem"]', { hasText: 'Show full conversation' }).click()
+  const panel = page.locator('aside.sand-outline-panel')
+  await expect(panel).toBeVisible({ timeout: 15_000 })
+  return panel
+}
+
+/** T22：工具行只在 outline 面板（主 transcript 不再渲染 tool-call；0.79.3 COORD Qz）。
+ * 断言前先 openOutline（T21 已证面板开着时事件实时更新）。 */
+export const toolRows = (page: Page): Locator => page.locator('.sand-outline-panel .sand-outline-item[data-kind="tool-call"]')
+
 export const transcript = (page: Page): Locator => page.locator('.sand-virtual-transcript')
 export const assistantRows = (page: Page): Locator => page.locator('.sand-virtual-transcript .sand-transcript-row[data-role="assistant"]')
 /** 流式中的正文（shim entries.ts live-stream 条目的 prose；行本身还含隐藏的作者 / 时间 span）。 */
@@ -137,7 +176,6 @@ export const streamingRow = (page: Page): Locator => page.locator('.sand-transcr
 /** 定稿的 bot 正文 prose（非 live）。 */
 export const finalAssistant = (page: Page): Locator =>
   page.locator('.sand-virtual-transcript .sand-transcript-row[data-role="assistant"]:not([data-entry-id="live-stream"]) .sand-message-prose')
-export const toolRows = (page: Page): Locator => page.locator('.sand-outline-item[data-kind="tool-call"]')
 export const permissionDock = (page: Page): Locator => page.locator('[aria-label="Local tool permissions"]')
 export const composer = (page: Page): Locator => page.locator('.sand-prompt-shell .ProseMirror[contenteditable="true"]')
 

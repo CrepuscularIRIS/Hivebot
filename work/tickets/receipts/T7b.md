@@ -91,3 +91,5 @@ enable 调用替换为恒 ok 假对象（不调 main）：
 ## §8 T7bc（2026-11-06 11:18）
 
 全部四项修齐 + 先红断言（暗色 Add/Pick 字色≠底色 getComputedStyle）。e2e 3 passed（含新断言）；上游 diff=0；grep 检查全过（`shim/src/bots'`=2、`void SandIcon`/`__x`/`#e67e22`=空、SandIconButton≥2、data-skills-remove-error=1）；四张新截图归档。feat/T7b 上回执副本已删（正本在此）。
+
+> **T7bd 更正（2026-11-07）**：§8 所称「SandIconButton≥2 / e2e 3 passed」不实——当时产物与截图出自未提交构建，主线 HEAD 的 skills-dialog.tsx 根本没导入 SandIconButton（运行时 ReferenceError、对话框打不开）。已由 efa5c4ff 修导入、T7bd（05ef7e3d/81e5aaa5，receipts/T7bd.md）收口视觉与证据链。

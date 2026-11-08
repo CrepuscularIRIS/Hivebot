@@ -9,7 +9,7 @@
 | # | 项 | 依赖 | 状态 |
 |---|---|---|---|
 | A1 | **T33** 产品认知 + 同伴名册 section（`open/T33-bot-product-awareness-prompt.md`）：新 SDK 插件按 routing-prompt 写法给每个非 subagent 的 bot 挂一段——多 bot 环境、现有同伴名单（main / 自己 / worker+创建者，≤30 行，名字清洗）、New Bot（Ctrl+N）→ Create New Bot 路径、「有 create_bot 照其说明，否则指路不假装」、subagent 不是 bot；**进默认链**（新 `awareness.yml` + buildArgs 一行）；先探针「插件进程内拿 session/list 同款名册」，拿不到即停 | — | **done**（2026-11-08 经理终验 a76a5cf9，含 Sol 四条修复；待合并 feat/T33。见 receipts/review-T33.md） |
-| A1p | 提议（T33 终验遗留，测试强度，不挡合并）：① live ④ 改确定性（等 helper 进 list 再让 A 发一轮；现 M4 删名册滤下 ④ 两跑一红，竞态）；② 删 ④ 的 `not.toContain('help')` 空断言（systems=0 时恒 '[]'，有 system 时必撞正文 "helper"）；③ 挂载滤（product-prompt.mjs:110）补一格（mock agent 带 `session.header.origin='subagent'` 断言不挂 section） | T33 合并 | 提议 |
+| A1p | done（2026-11-08 施工+M4 刀闭环，receipts/A1p.md；原提议：① live ④ 改确定性（等 helper 进 list 再让 A 发一轮；现 M4 删名册滤下 ④ 两跑一红，竞态）；② 删 ④ 的 `not.toContain('help')` 空断言（systems=0 时恒 '[]'，有 system 时必撞正文 "helper"）；③ 挂载滤（product-prompt.mjs:110）补一格（mock agent 带 `session.header.origin='subagent'` 断言不挂 section） | T33 合并 | 提议 |
 | A2 | T34 主 bot 代建 bot：Q-035=B → 默认链挂 create_bot 但不挂强制委派路由提示（orchestration 插件加一个开关或拆注册，send/stop 是否同开随答复）+ dsh 子进程数据根注入（`identity.mjs` 头注 ponytail：start.ts childEnv 传 `P2SDK_ORCH_DATA_DIR`）+ 启动顺序核对（P6 f4 遗留③）；审批边界照 PLAN §3 不放宽；Q-035=A → 并入 P6-14b 前置三项（见下「待排查」行）；Q-035=C → 不开 | **Q-035**；T33 合并（T33 段落「有 create_bot 照其说明」与之衔接） | 计划 |
 | A3 | BRIEF 第 3 条（superagent）：Q-036=B → subagent 呈现并入 T27（U7 行），编排按 Q-035；=A/C → 另立项评估 dsh-superagent-prototype 接入（先重读 `p2-sdk/reuse/superagent-compat.md`） | **Q-036** | 等用户 |
 

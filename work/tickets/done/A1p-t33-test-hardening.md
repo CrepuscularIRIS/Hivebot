@@ -4,7 +4,7 @@
 > 来源：queue A1p 行（T33 终验「不挡合并」遗留）
 > 分支 / 作业目录：集成分支直接改
 > claimed：2026-11-08 03:0x main (GLM 5.3)
-> accepted：
+> accepted：2026-11-08 03:1x（机械单三件+M4 刀，回执 receipts/A1p.md）
 
 ## 三件
 1. live ④ 确定性化：subagent 轮后**等 helper 进 list**（轮询 session/list 至 4 项，≤15s）再让 A 发一轮断言 system/message 的名册不含 helper title——消「两跑一红」竞态（M4 删名册滤后此格必红）

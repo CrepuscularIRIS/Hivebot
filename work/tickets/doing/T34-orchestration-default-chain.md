@@ -33,6 +33,7 @@
    - `app/sdk/tests/unit/start.test.ts`（patch 数 6→7、位置断言、childEnv 新格）
    - `app/sdk/tests/unit/orchestration-default-chain-live.test.ts`（新）
    - `app/sdk/tests/support/runtime.ts`（bots.json 骨架播种，见下「回归面」）
+   - `app/sdk/tests/support/sandbox-home.ts`（仅把 PARENT 导出为 `TEST_HOMES_PARENT` 供播种守卫用——任务 C 2026-11-08 经理追加）
    - 仅当验收 5 的 UI spec 因同名桩工具变红：`app/ui/tests/support/p6-peer-plugin.mjs`（最小改动，回执写清改了什么、为什么）
    - `work/**`（回执、LOG）
    别的不碰——不改 orchestration 插件逻辑、不改 envelope fail-closed 语义、不改 awareness、不改 UI 产品代码、不改启动器。超出就停下写进回执存疑项。

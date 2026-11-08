@@ -4,10 +4,11 @@
 // barrier channel touches $P2SDK_HOME/gates/<gateId> and opens no port.
 import { spawn, type ChildProcess } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, sep } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { tmkdir } from './tmp-sweep.ts'
+import { TEST_HOMES_PARENT } from './sandbox-home.ts'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
 
 const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -67,7 +68,9 @@ export async function launchRuntime(opts: LaunchOptions = {}): Promise<Runtime> 
   // → 不写（绝不碰真实 ~/.config/pbots-ui）；已存在 → 不覆盖。
   if (opts.env?.P2SDK_ORCH_DATA_DIR === undefined) {
     const dataRoot = opts.env?.PBOTS_DATA_DIR ?? join(opts.env?.HOME ?? process.env.HOME ?? '', '.config', 'pbots-ui')
-    if (dataRoot.startsWith(tmpdir())) {
+    // T34 任务C：测试 HOME 根（决策 8）在仓内 .test-homes 而非 /tmp——一并认；
+    // sep 防前缀误判（/tmpfoo ≠ /tmp 下）
+    if ([tmpdir(), TEST_HOMES_PARENT].some((r) => dataRoot.startsWith(r + sep))) {
       const botsJson = join(dataRoot, 'bots.json')
       if (!existsSync(botsJson)) {
         mkdirSync(dataRoot, { recursive: true })

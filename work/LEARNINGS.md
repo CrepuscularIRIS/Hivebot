@@ -163,3 +163,4 @@
 - **改共享 helper 语义后全部验收必须重跑**（T7beb 漏验收 4）：「只改了一小段」不成立——T7bec 就是漏跑的那格必现红。验收清单当轮全跑完才算施工完。
 - **合并回测只跑「边界内文件」会漏 mock 期望测试**（T7d→H7r2 抓出）：T7d 给 `workspace_ensure` 加两条预建 mkdir，合并回测只跑六件边界内测试，`unit/workspace.test.ts` 的 argv 序列断言红了一整天没人看见。规则：合并回测按 L51 跑整包；至少 `grep -rl <改动模块名> app/*/tests` 把所有引用该模块的测试带上。
 - **全量开跑前先看 `uptime`**（H7r2 load>20 叠 GPU 训练）：结果虽收，过程违 CLAUDE.md §5；load≥8 就等，双全量尤甚。
+- **测试 HOME 不在 /tmp 下**（T34 任务 C）：`uniqueTestHome()` 根是 `/home/lingxufeng/bot/.test-homes`（决策 8），不是 `os.tmpdir()`。任何「只在临时目录下才动手」的测试守卫都要把两根都放进白名单，否则对 e2e 静默不生效——T34 播种因此漏掉，envelope 把根会话当 worker 拒委派，表现为「90s 没观察到子会话模型调用」。排查委派类红先抓根会话 toolResult（fake requests.jsonl），一条 `pbots/forbidden` 就能直接定位。

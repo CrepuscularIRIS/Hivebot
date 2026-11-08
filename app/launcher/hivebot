@@ -106,7 +106,7 @@ cleanup() {
     kill -KILL "$DSH_PID" 2>/dev/null
   fi
   case "${HANDOFF:-}" in
-    "$TMPDIR"/p2sdk-handoff-*|/tmp/p2sdk-handoff-*) rm -rf "$HANDOFF" ;;
+    "${TMPDIR:-/tmp}"/p2sdk-handoff-*|/tmp/p2sdk-handoff-*) rm -rf "$HANDOFF" ;;
   esac
   exit "$rc"
 }

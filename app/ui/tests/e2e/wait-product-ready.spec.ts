@@ -25,7 +25,7 @@ test('T7be：引导已开时 waitProductReady 撤引导、View agent settings �
   }
 })
 
-// T7beb：D10c1 双 main 机制钉死——立即调 helper（不先等引导打开）重复 5 次，
+// T7beb：D10c1 双 main 机制钉死——立即调 helper（不先等引导打开）重复 10 次，
 // 直接数持久层顶层会话（滤 subagent 与子会话），比批跑等 strict violation 更直接。
 test('T7beb: 立即调 helper ×10 → 每轮恰 1 个顶层会话、侧栏一个 New chat', { timeout: 300_000 }, async () => {
   for (let i = 1; i <= 10; i++) {

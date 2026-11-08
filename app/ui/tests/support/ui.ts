@@ -73,7 +73,7 @@ export interface Env { rt: SdkRuntime; shell: ShellLaunch; page: Page; stop(): P
 
 /** T7be：置 seen → 整页 reload → 等 __pbotsDev（launchProduct / waitProductReady 共用）。
  * reload 后 gate 在新加载里必判 shell（消「壳已用旧 seen 打开引导、storage 写入关不掉」竞态）。 */
-async function ensureOnboardingSeen(page: Page): Promise<void> {
+async function ensureOnboardingSeen(page: Page, settle = true): Promise<void> { // T7bec：settle=false（launchProduct ready:false）跳过落定轮询——GU-1 注入 api 抛错时 roster 永远起不来，不该等满 30s
   await page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
   await page.evaluate(() => { try { window.localStorage.setItem('pbots.shim.onboarding-seen', '1') } catch { /* ignore */ } }).catch(() => {})
   // T7beb：reload 前先让旧文档把主 bot 落定——置 seen 后旧文档读到 seen=1+空 roster 会
@@ -81,12 +81,14 @@ async function ensureOnboardingSeen(page: Page): Promise<void> {
   // （D10c1，1/25≈4%）。expect.poll 真异步轮询（review 中1：waitForFunction 不 await
   // async predicate——Promise 恒 truthy 首次即 fulfill，250ms 从未驱动）；每轮主动
   // reloadRoster（置 seen 后旧文档不会自动再拉）。超时 expect.poll 抛。
-  await expect.poll(async () => await page.evaluate(async () => {
-    const dev = (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void>; state?: { meta?: { mainBotId?: string | null } } } }).__pbotsDev
-    if (!dev?.reloadRoster) return false
-    await dev.reloadRoster().catch(() => {})
-    return dev.state?.meta?.mainBotId != null
-  }), { timeout: 30_000, intervals: [250, 500, 1000] }).toBe(true)
+  if (settle) {
+    await expect.poll(async () => await page.evaluate(async () => {
+      const dev = (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void>; state?: { meta?: { mainBotId?: string | null } } } }).__pbotsDev
+      if (!dev?.reloadRoster) return false
+      await dev.reloadRoster().catch(() => {})
+      return dev.state?.meta?.mainBotId != null
+    }), { timeout: 30_000, intervals: [250, 500, 1000] }).toBe(true)
+  }
   await page.reload()
   await page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
 }
@@ -118,7 +120,7 @@ export async function launchProduct(opts: ShellOptions & { ready?: boolean; patc
   // T26：真首启（未 seen+空 roster）进 onboarding、不建 main bot——常规 e2e 测的是引导
   // 之后的产品面：页面起来后置 seen 并触发 roster 重载（补建 main bot）；onboarding 专项
   // 用 onboardingFirst:true 自测真首启三态。
-  if (!onboardingFirst) await ensureOnboardingSeen(shell.page) // T26b #2 → T7be 抽共用
+  if (!onboardingFirst) await ensureOnboardingSeen(shell.page, ready) // T26b #2 → T7be 抽共用；T7bec：ready:false（GU-1 类）跳过落定轮询
   if (ready) await waitProductReady(shell.page) // 内含引导计零哨兵（T7be）
   if (!onboardingFirst) await expect(shell.page.locator('.sand-onboarding')).toHaveCount(0) // T7be review：独立哨兵恢复——ready:false 调用方（resilience/theme-flash）不走 waitProductReady，仍需守
   return { rt, shell, page: shell.page, async stop() { await shell.stop(); await rt.stop() } }

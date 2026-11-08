@@ -152,3 +152,4 @@
 - **miniconda 的 python playwright 会抢 PATH**：repo 里 `sh scripts/run-e2e.sh` 直接 exec playwright，which 命中 miniconda 版就报 `error: unknown command 'test'`——前置 `PATH="$PWD/node_modules/.bin:$PATH"`。
 - **T26b 合并的回归面远超合并回测覆盖**：gate 改「未 seen+空 roster 不建 main」后，所有裸 `launchShell` 的 spec（不走 `launchProduct`/`waitProductReady`）首启必进 onboarding、`.sand-agent-item` 恒 0。T7bd 验收撞出 skills-picker/t7b-shot/grok-dead-entries 三个；另有 persona/shim/ws-write/questions-answer/m2-*/restore/skills-enable/shell 五件待扫（清单在 T7bd 回执）。根修=裸 spec 换 `waitProductReady`。
 - **e2e 期望清单要跟着特性单走**：grok-dead-entries U4′ 行菜单清单在 T21 加「Show full conversation」后过时——加活入口的单应顺手 grep 死入口清单 spec。
+- **（经理 T7bd 终验更正上条）`waitProductReady` 不是完整兜底**：只写 storage + reloadRoster，若壳已用旧 seen 打开引导，引导层会一直盖住主区（裸壳 12 次中 5 次复现，主区按钮点不到）。凡后续有 `page.reload()` 的 spec（如走 `createBots`）自愈，没有的会偶发红。根修走 T7be（helper 内置 seen 后整页 reload + `.sand-onboarding` 计零）；修好前裸壳 spec 别只靠它。

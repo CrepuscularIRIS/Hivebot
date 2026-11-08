@@ -4,7 +4,7 @@
 > 来源：queue 5d（T12 计划行）；DESIGN-ssh-composition D7；T4 回执 §5-1；Q-034（「重新连接」按钮要不要做，默认 C = 本单不做按钮）
 > 分支 / 作业目录：feat/T12a @ /tmp/bot-wt/T12a（两个包各一处小改，worktree 防撞后台验收）
 > claimed：2026-11-07 21:1x main (GLM 5.3) @ feat/T12a（起点 f0c31c54）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-07 e0880a00（manager Opus 5.5 终验；中2 裁定=第二会话格改纯观测，产品侧记 queue 5d″）
 
 ## 经理立项探针（纯读文件，2026-11-07）
 1. **现状文案**：`app/ui/renderer/session/reduce.ts:132-139` `endNotice` 对任何 error 都是 `回复失败：<message>`（tone danger）。断连时用户看到「回复失败：SSH connection is closed」，没说那一步可能已经做了。

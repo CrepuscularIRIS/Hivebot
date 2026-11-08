@@ -21,3 +21,11 @@ $ for i in 1 2 3; do …run-e2e.sh tests/e2e/wait-product-ready.spec.ts …
 ## 状态
 - 新格保留（绿的回归守卫：直接数持久层顶层会话，比 strict violation 直接）
 - 按 T7be 终验预案：「先红 3 次都绿 → 机制不对，T7be 放行，D10c1 转产品侧单」——请经理终裁并执行放行/转单
+
+## 终裁后续做（2026-11-07 21:3x–21:4x——先红以经理证据为准）
+- 终裁：T7be 不放行——经理重跑复现「第3轮 New chat 行数 Expected: 1 Received: 2」（evidence/T7beb/manager-rerun-wpr1-red.log）；1/25≈4%，施工 0/15 属漏检。T7beb 继续。
+- 新格循环 5→10；修前再跑 5 次（50 个全新 home）全绿 `2 passed`×5——仍未抽中（4%/home × 50 抽不中概率 ≈13%，正常范围）；**先红采经理证据**。
+- 修（ui.ts ensureOnboardingSeen）：写 seen 后、reload 前 `waitForFunction`（polling 250ms，≤30s）每轮 `await __pbotsDev.reloadRoster()` 至 `state.meta.mainBotId != null`——超时 waitForFunction 直接抛（TimeoutError），reload 前置失败不吞。
+- 提交：8469b3b1（helper 修+循环×10 同一提交）；验收 2（修后连跑 5 次）：`2 passed (31.8/31.6/31.4/31.3/31.3s)` ×5
+- 验收 3（三 spec 批 10 轮）：后台运行中（~18 分钟），完成后补逐轮计数
+- 验收 4/5：排队（批跑完）

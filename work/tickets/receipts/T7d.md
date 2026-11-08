@@ -48,3 +48,27 @@ Vk2 刀（删派生段）：✘ '批准后 .dsh/skills 仍写不进' expected tr
 回归五件（write-outside/tiers-policy/guard-fs/skill-write-card/sandbox-wrapper）：Test Files 5 passed / Tests 48 passed
 approval 全量（含高条场景）：Tests 6 passed (6)
 ```
+
+## T7db（2026-11-07 21:4x–21:5x——父目录改名绕过收口）
+
+### 先红（7e205f91 上，原样）
+```
+AssertionError: 改名 .dsh 后仍写不进新根: expected true to be false（approval.test.ts:567）
+——mv .dsh .dsh_x && mkdir -p .dsh/skills/y && echo > 写成：经理 bwrap 探针复现的绕过在 e2e 钉死
+```
+
+### 实现（bwrap-wrap.py 派生段，提交 7a47b9f4 + 注释补 01feab1f）
+- 每 bind：`--bind <ws>/.dsh <ws>/.dsh` + `--ro-bind <ws>/.dsh/skills …`（.agents 同）——父目录自绑成挂载点（不可 mv/rm，内部照旧可写），根 ro-bind 后挂覆盖写权限
+- `os.path.realpath(x) == x` 否则 `die()`（符号链接拒绝——防 makedirs 被引到工作区外）；makedirs OSError 走 `die()`（自带 bwrap: 前缀——T7d 终验 LOW 项顺带修）
+- dry-run：不落盘、argv 报完整形状
+
+### 验收（原样尾部）
+```
+approval：Tests 6 passed (6)（含改名场景四断言：新根写不进 ×2 + 父目录没被搬走 ×2）
+sandbox-wrapper：Tests 15 passed (15)（新断言：挂载序 ws<父绑<ro-bind<再遮、dry-run 不落盘 .dsh 不建、符号链接→非零+bwrap: 前缀+目标下无 skills）
+回归四件：Test Files 4 passed / Tests 34 passed
+Vh 刀（删父目录自绑）：✘ '改名 .dsh 后仍写不进新根' expected true to be false → git checkout 还原 → 15 passed
+```
+
+### 施工事故记录（如实）
+首次 Vh 刀跑在未提交实现上，`git checkout` 还原时把实现一并抹掉（T32c 同款——LEARNINGS「变异刀前本体先提交」再犯一次，已重放实现并先提交后重跑刀闭环）。事故不影响刀的有效性：两次 Vh 红输出一致、还原后复绿均在提交态验证。

@@ -57,7 +57,7 @@ AssertionError: 改名 .dsh 后仍写不进新根: expected true to be false（a
 ——mv .dsh .dsh_x && mkdir -p .dsh/skills/y && echo > 写成：经理 bwrap 探针复现的绕过在 e2e 钉死
 ```
 
-### 实现（bwrap-wrap.py 派生段，提交 7a47b9f4 + 注释补 01feab1f）
+### 实现（bwrap-wrap.py 派生段，实现提交 01feab1f + 注释补 d77ee0bb（首版注释被刀 checkout 误抹重补））
 - 每 bind：`--bind <ws>/.dsh <ws>/.dsh` + `--ro-bind <ws>/.dsh/skills …`（.agents 同）——父目录自绑成挂载点（不可 mv/rm，内部照旧可写），根 ro-bind 后挂覆盖写权限
 - `os.path.realpath(x) == x` 否则 `die()`（符号链接拒绝——防 makedirs 被引到工作区外）；makedirs OSError 走 `die()`（自带 bwrap: 前缀——T7d 终验 LOW 项顺带修）
 - dry-run：不落盘、argv 报完整形状

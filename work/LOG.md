@@ -1184,3 +1184,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 定向回测：ui 四件 75 passed；sdk ssh-bash 6 passed
 - T12a 链：经理立项（探针推翻 D7 两处）→真帧 e2e→先红→实现→Sol 中3（修2交1）→终验通过（经理亲跑三刀各红2格）
 - 中2 裁定：第二会话纯观测；断后远端 60s 无回包记 queue 5d″ 提议（修法取决于 Q-034）
+## 2026-11-07 · merge T7d/T7db（两轮返修终验通过后合并）
+- feat/T7d @5eea4da8 → 主线（--no-ff，无冲突）
+- 定向回测：approval 6 + sandbox-wrapper 15 + 回归四件 34 passed
+- T7d 链：预建两落点+binds 派生 ro-bind → 终验1 不通过（fail-closed+断言严谨）→ T7db（父目录 mv 绕过：自绑挂载点）→ 复审（islink 前查）→ 终验2 通过（经理亲跑真 wrapper 三抽查+dry-run 裁定照跑前查）
+- 记录：queue 7e″ 检查与挂载间竞争窗（低，不开单）；fa59d8ec 红态提交已如实记

@@ -78,15 +78,15 @@ async function ensureOnboardingSeen(page: Page): Promise<void> {
   await page.evaluate(() => { try { window.localStorage.setItem('pbots.shim.onboarding-seen', '1') } catch { /* ignore */ } }).catch(() => {})
   // T7beb：reload 前先让旧文档把主 bot 落定——置 seen 后旧文档读到 seen=1+空 roster 会
   // session/create，reload 若砍在 create 与 meta patch 之间，新文档再建一个 → 双 main
-  // （D10c1，1/25≈4%）。轮询 reloadRoster 至 mainBotId 非 null（单飞合并进行中拉取；
-  // 建好且 meta patch 后旧文档任何拉取都幂等，reload 再砍不出孤儿）。超时**抛**不吞。
-  const settled = await page.waitForFunction(async () => {
+  // （D10c1，1/25≈4%）。expect.poll 真异步轮询（review 中1：waitForFunction 不 await
+  // async predicate——Promise 恒 truthy 首次即 fulfill，250ms 从未驱动）；每轮主动
+  // reloadRoster（置 seen 后旧文档不会自动再拉）。超时 expect.poll 抛。
+  await expect.poll(async () => await page.evaluate(async () => {
     const dev = (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void>; state?: { meta?: { mainBotId?: string | null } } } }).__pbotsDev
     if (!dev?.reloadRoster) return false
     await dev.reloadRoster().catch(() => {})
     return dev.state?.meta?.mainBotId != null
-  }, undefined, { timeout: 30_000, polling: 250 })
-  if (!settled) throw new Error('ensureOnboardingSeen: mainBotId 未在 30s 内落定（reload 前置失败）')
+  }), { timeout: 30_000, intervals: [250, 500, 1000] }).toBe(true)
   await page.reload()
   await page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
 }

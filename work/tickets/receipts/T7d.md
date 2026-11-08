@@ -2,8 +2,8 @@
 
 提交链（feat/T7d，先吸收主线 076e753e——T11 已合、workspace.mjs 可用）：
 - `e92ef98c`（前轮 wip）：bwrap-wrap.py binds 派生 skill 根 ro-bind + mintWorkspace 预建
-- `<远端预建 sha>`：workspace.mjs workspace_ensure 追加两目录 mkdir（幂等）
-- `<测试 sha>`：wrapper 单测新 describe + approval.test.ts 新用例
+- `29388431`：workspace.mjs workspace_ensure 追加两目录 mkdir（幂等）
+- `57c25afd`：wrapper 单测新 describe + approval.test.ts 新用例
 
 ## 先红（原样输出；时序说明：wip 先做了修复未留施工前红，用 Vk 态（删派生段）等价补跑）
 ```

@@ -4,7 +4,7 @@
 > 来源：Q-035=A（全开）、Q-036=B；`work/bot-product-awareness/PLAN.md` §3；`work/p6-orchestration/PLAN.md:74`（P6-14b）
 > 分支 / 作业目录：feat/T34 @ /tmp/bot-wt/T34
 > claimed：2026-11-08 03:3x main (GLM 5.3) @ feat/T34（起点 b959388d）
-> accepted：
+> accepted：2026-11-08 0de49c88（manager Opus 5.5 终验；验收 6 采信回执、7 合并后由主 agent 做；⑤ 环境泄漏格转 T34b）
 
 ## 目标
 生产启动（启动器、不带 P2SDK_PATCH）的主 bot 有 `create_bot` / `send_to_bot` / `stop_bot` 和路由提示（强制委派），worker 照 P6 信封受限；SDK 插件读的 bots.json 与 UI main 写的是同一个文件。

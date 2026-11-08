@@ -145,3 +145,4 @@
 - **e2e worktree 起手三件**：app/ui 与 app/sdk 各 pnpm install --prefer-offline（node_modules 不随 worktree）；跑 e2e 前必 build；隔离 HOME/TMPDIR 先 mkdir -p（mktemp 模板对不存在目录报错）。
 - **vitest coverage-v8 在 ui 仓仍不可用**（P7 F1 同款）：customProviderModule 指向 sdk pnpm 深处可载入但覆盖计 0%（模块 id 对不上）。需要覆盖率时用手工核算表+记录工具问题，别再烧轮次调工具。
 - **面板/对话框等 role=dialog 组件开着会吃 Esc 与指针**（遮罩）——测试链里后续还有 Esc/点击交互时，用完即点 Close。
+- **变异刀前本体必须先提交**：T32c 首轮 Vi 刀后还原误用 `git checkout --`，把未提交的 spec 本体改动整抹（变异刀只该动产品文件，但还原操作分不清哪个文件属于本体）——正序：本体提交→刀在提交之上改→checkout 还原永远安全。

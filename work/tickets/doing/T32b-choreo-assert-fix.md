@@ -5,6 +5,7 @@
 > 分支 / 作业目录：继续 feat/T32 @ /tmp/bot-wt/T32（从 42be0b33 起）
 > claimed：2026-11-07 main (GLM 53) @ feat/T32 续修（施工开始时填：日期、起点 SHA）
 > accepted：
+> 验收：2026-11-07 @9eeed1e7 **返修** → T32c（F1/F2 成立；R1 侧栏底部未盖、退场 heading id 与 F5 缺，见 review-T32.md「T32b 终验」）
 
 ## 目标
 修掉 attribution 中列卡「被盖」的真因：隐形角色挡住了点击。同时让 T32 工单要求的每条断言真的存在、真的会红。

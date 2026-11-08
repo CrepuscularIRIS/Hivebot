@@ -520,6 +520,11 @@ it('T7d: 批准后的 bash 写 skill 根仍失败（ro-bind 挂载点不可写�
     await waitForTurnEnds(stream.frames, 2)
     expect(existsSync(pwn1), '批准后 .dsh/skills 仍写不进（ro-bind）').toBe(false)
     expect(existsSync(pwn2), '批准后 .agents/skills 仍写不进（ro-bind）').toBe(false)
+    // 验收 2 字面证据：tool-result isError + Read-only file system（退出非零由 shell 通道回传）
+    const reqs = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8').trim().split('\n')
+      .map((l) => JSON.parse(l) as { toolResults?: Array<{ isError: boolean; text: string }> })
+    const texts = reqs.flatMap((r) => r.toolResults ?? []).map((r) => (r.isError ? `[isError] ${r.text}` : r.text)).join('\n')
+    expect(texts.match(/Read-only file system/g)?.length ?? 0, '两次写根都 Read-only file system').toBeGreaterThanOrEqual(2)
     stream.stop()
   } finally {
     feed.close()

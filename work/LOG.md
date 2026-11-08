@@ -1189,3 +1189,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 定向回测：approval 6 + sandbox-wrapper 15 + 回归四件 34 passed
 - T7d 链：预建两落点+binds 派生 ro-bind → 终验1 不通过（fail-closed+断言严谨）→ T7db（父目录 mv 绕过：自绑挂载点）→ 复审（islink 前查）→ 终验2 通过（经理亲跑真 wrapper 三抽查+dry-run 裁定照跑前查）
 - 记录：queue 7e″ 检查与挂载间竞争窗（低，不开单）；fa59d8ec 红态提交已如实记
+## 2026-11-07 · T7be 链收口（helper 直落主线，无分支合并）
+- T7be（竞态根修）→T7beb（reload 前真轮询）→T7bec（settle 参数化）三张终验全过挪 done
+- 终验=主线回测（经理重跑）：resilience 4 passed（GU-1 3.1s）、resilience+theme-flash+onboarding 16×2、wait-product-ready 2×2、三 spec 批 5 passed；build exit 0
+- 链上教训两条进 LEARNINGS：waitForFunction 不 await async predicate（playwright-core coreBundle:25707）；改 helper 语义后全部验收必须重跑（T7beb 漏验收 4 致返修一轮）
+- 7b⁵′（主 bot 建立非原子）维持提议，触发条件未触发

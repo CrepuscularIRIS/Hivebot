@@ -1,3 +1,7 @@
+# HANDOFF · 2026-11-07 23:1x（**HANDOFF 待办清单全清**）
+
+> 快照：哨兵清单（T7b、T9a、T7c、T16、T9b、T10、T11、T12、T8、L5-a、H7）**全部 done**。今日收口：T32 全链（三轮）、T7bd/T7be-T7bec 链（四轮）、T7d/T7db、T12a、H7 DONE（双全量 816×2 互踩 0）。全仓已推 GitHub（74d35a71）。剩三类：**等用户**——Q-034（ssh 断连重连按钮 A 整体重启/B 只重启 SDK/C 不做【推荐】；另有 T27 编排研究结论、Q-033 追认）；**低优先提议行**（queue：T7bf 对比度 WCAG、T7bg 12 裸 spec 扫描、5d″ 断后远端无回包超时、7b⁵′ 主 bot 建立非原子、7e″ wrapper TOCTOU 窗、⑪ hand-off 编舞/根背景色）；**低优先计划**（T17d launcher 测试面收尾）。生产实例健康。三条硬教训今日入 LEARNINGS：变异刀先决检查（git log 确认在提交）、waitForFunction 不 await async predicate、改 helper 后验收当轮全跑。
+
 # HANDOFF · 2026-11-07 17:3x（UI 复刻链主单全部收口）
 
 > 快照：T20-T28b 共 20 单合并主线（含全部返修单）。用户反馈的 UI 三大件+onboarding 全链（landing→六步→三页→hand-off 自动建主 bot+2 模板 bot 各自介绍）+创建对话框 0.79.3 Thn 版式全部落地。剩：T28bb（一行——already 分支 return）、T32（B 段编舞+提议⑩⑩）、T27（等用户编排结论）、T7bd/T7d/T12/T17d/H7 老单按序。Q-033 按 A 落地待追认。T31 搁置。生产实例健康。下一步建议：T28bb 秒修合并→T32 立项（或按用户偏好插单）。

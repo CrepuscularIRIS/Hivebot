@@ -4,7 +4,7 @@
 > 来源：T7c 已知缺口——shell-ask 判定 `targets` 落 `.dsh/skills`/`.agents/skills` 出卡，但 **bash 路径不经过 targets**：`cat > .dsh/skills/x/SKILL.md` 零卡写成
 > 分支 / 作业目录：feat/T7d @ /tmp/bot-wt/T7d
 > claimed：2026-11-06 23:4x（前轮）；2026-11-07 20:3x 续（吸收主线后完工）
-> accepted：
+> accepted：2026-11-07 920b840f（manager Opus 5.5 任务 B；T7d+T7db 整链，见 receipts/review-T7d.md「T7db 终验」）
 
 ## 目标
 bot 用 bash 写自己的 skill 根必须失败（挂载点不可写），与 write/edit 出卡同语义。

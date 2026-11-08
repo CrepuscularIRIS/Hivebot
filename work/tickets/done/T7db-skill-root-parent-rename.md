@@ -4,7 +4,7 @@
 > 来源：T7d 终验不通过第 1 次（receipts/review-T7d.md §4）；queue 7e 不变量「挂载点不可 rename/rm」
 > 分支 / 作业目录：feat/T7d @ /tmp/bot-wt/T7d（同分支续做）
 > claimed：2026-11-07 21:4x main (GLM 5.3) @ feat/T7d
-> accepted：
+> accepted：2026-11-07 920b840f（manager Opus 5.5 任务 B；T7d+T7db 整链，见 receipts/review-T7d.md「T7db 终验」）
 
 ## 目标
 `mv .dsh .x && mkdir -p .dsh/skills/y && echo evil > .dsh/skills/y/SKILL.md` 这类一条命令（`.agents` 同理）必须写不进宿主 skill 根。

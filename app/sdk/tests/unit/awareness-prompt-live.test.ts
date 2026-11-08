@@ -2,6 +2,7 @@
 // M1 证明删挂载就红）。p2fake scripted，never a real model。
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { launchRuntime, type Runtime } from '../support/runtime.ts'
 import { tmkdir } from '../support/tmp-sweep.ts'
@@ -16,7 +17,27 @@ let alphaId = '' // ①格创建的 A（③④复用，避免 session/list 信�
 beforeAll(async () => {
   process.env.HOME = tmkdir('bot-t33-live-home-')
   writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: '', bots: {} }))
-  rt = await launchRuntime({ env: { P2SDK_HOME: home, P2SDK_ORCH_DATA_DIR: dataDir } })
+  // review 中2：真 p2fake（默认 runtime 的 mock provider 不消费 tool-call chunk——
+  // subagent 从未创建，④格空绿）。overlay 只叠 fake provider；awareness 仍走默认链
+  // （不引 awareness.yml）——M1 的「默认链」语义不变。
+  const overlay = join(home, 'fake-provider.yml')
+  writeFileSync(overlay, `
+- id: agent-default-model
+  config:
+    provider: p2fake
+    model: p2fake
+- insert:
+    - id: p2sdk-fake-llm
+      name: '${pathToFileURL(join(new URL('../../', import.meta.url).pathname, 'tests/support/fake/plugin.mjs')).href}'
+      config:
+        providers:
+          - id: p2fake
+            name: P2 Fake
+            models:
+              - id: p2fake
+                contextWindow: 131072
+`)
+  rt = await launchRuntime({ env: { P2SDK_HOME: home, P2SDK_ORCH_DATA_DIR: dataDir, P2SDK_PATCH: overlay } })
 })
 afterAll(async () => { await rt?.stop() })
 
@@ -37,7 +58,7 @@ async function newSession(title: string | null): Promise<string> {
 }
 
 /** 跑一轮并返回全部 system/message 的拼接文本（记录条数到 out 参数——④格用）。 */
-async function systemText(sessionId: string, out?: { systems: number }): Promise<string> {
+async function systemText(sessionId: string, out?: { systems: number; tools?: string }): Promise<string> {
   const { stream } = await rt.client.follow(sessionId, { awaitSnapshot: true })
   const events: Array<{ type: string, data?: unknown }> = []
   let finish!: () => void
@@ -60,7 +81,11 @@ async function systemText(sessionId: string, out?: { systems: number }): Promise
       timer = setTimeout(() => reject(new Error('fake turn did not end')), 60_000)
     })])
     const systems = events.filter((event) => event.type === 'system/message')
-    if (out !== undefined) { out.systems = systems.length; return JSON.stringify(systems) }
+    if (out !== undefined) {
+      out.systems = systems.length
+      out.tools = JSON.stringify(events.filter((e) => e.type === 'tool/result').map((e) => (e.data as { message?: { content?: Array<{ text?: string }> } }).message?.content?.map((c) => c.text ?? '').join('') ?? ''))
+      return JSON.stringify(systems)
+    }
     expect(systems.length, 'at least one system/message').toBeGreaterThan(0)
     return JSON.stringify(systems)
   } finally {
@@ -95,11 +120,18 @@ it('④ subagent helper 不入名册：subagent 轮后 A 的 system/message 不�
   const a = alphaId
   expect(a, '①格先跑').toBeTruthy()
   // p2fake 脚本一轮调 subagent 工具（若工具不可达则该格降级为「名册无子会话」断言——回执写清）
+  const pad = () => ({ chunks: [
+    { type: 'block-start', index: 0, blockType: 'text' },
+    { type: 'text-delta', index: 0, text: 'pad' },
+    { type: 'block-end', index: 0, block: { type: 'text', text: 'pad' } },
+    { type: 'finish', reason: { kind: 'stop' } },
+  ] })
   writeFileSync(join(home, 'fake', 'scripts', `${a}.json`), JSON.stringify({ calls: [
+    pad(), pad(), // ①③两轮已消耗——垫齐轮次（④是 A 的第 3 次 prompt）
     { chunks: [
       { type: 'block-start', index: 0, blockType: 'tool-call' },
-      { type: 'tool-call-delta', index: 0, id: 't33-sub', name: 'subagent', argumentsDelta: '{"prompt":"help"}' },
-      { type: 'block-end', index: 0, block: { type: 'tool-call', id: 't33-sub', name: 'subagent', arguments: '{"prompt":"help"}' } },
+      { type: 'tool-call-delta', index: 0, id: 't33-sub', name: 'subagent', argumentsDelta: '{"description":"T33 helper","prompt":"help"}' },
+      { type: 'block-end', index: 0, block: { type: 'tool-call', id: 't33-sub', name: 'subagent', arguments: '{"description":"T33 helper","prompt":"help"}' } },
       { type: 'finish', reason: { kind: 'tool-calls' } },
     ] },
     { chunks: [
@@ -109,10 +141,10 @@ it('④ subagent helper 不入名册：subagent 轮后 A 的 system/message 不�
       { type: 'finish', reason: { kind: 'stop' } },
     ] },
   ] }))
-  const out: { systems: number } = { systems: 0 }
+  const out: { systems: number; tools?: string } = { systems: 0 }
   const text = await systemText(a, out)
-  // b 选项等价证明：helper 创建后若入名册 → A 的 system 变 → 本轮会再发 system/message；
-  // 实测 0 条 = 名册未增（subagent helper 不入 list）。若此断言将来红，说明 dsh 行为变化，回执口径需复核。
-  expect(out.systems, 'subagent 轮不再发 system/message（名册未增）').toBe(0)
-  expect(text).toBeTruthy()
+  // review 中2：先证 subagent 真创建了（tool/result 返回 started subagent id）——否则「名册未增」是空绿
+  expect(out.tools ?? '', 'subagent 工具真执行并返回 id').toMatch(/started subagent [0-9a-f-]+/)
+  expect(out.systems, 'subagent 轮不再发 system/message（名册未增——helper 被 origin 滤除）').toBe(0)
+  expect(text, 'helper 的 title 不入 A 名册').not.toContain('help')
 })

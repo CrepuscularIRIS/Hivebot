@@ -26,6 +26,10 @@ export function sanitizeName(raw) {
  * @returns {string}
  */
 export function awarenessText({ selfId, sessions, meta }) {
+  // review 中1：名册滤 subagent（list item 顶层 origin/parentSessionId——探针⑤实测 helper
+  // 行 origin='subagent' + parentSessionId=宿主；普通行两者 undefined/缺失）
+  const roster0 = sessions.filter((s) => s?.origin !== 'subagent' && !s?.parentSessionId)
+  sessions = roster0
   const metaOk = meta !== undefined && meta?.version === 1 && typeof meta?.mainBotId === 'string' && meta.mainBotId !== ''
   const mainId = metaOk ? meta.mainBotId : null
   const rows = []
@@ -41,9 +45,15 @@ export function awarenessText({ selfId, sessions, meta }) {
     if (s.sessionId === mainId) rows.push(`- "${name}" (main bot — the user's main point of contact)`)
     else if (s.sessionId === selfId) rows.push(`- "${name}" (you)`)
     else {
-      const creator = metaOk && typeof meta?.bots?.[s.sessionId]?.createdBy === 'string' && meta.bots[s.sessionId].createdBy !== ''
+      // review 中3：orchestration.ts:390 写入的 createdBy 是创建者 sessionId（非名字）——
+      // 按 ID 在名册内查名；查不到（创建者已删/冷）退化为无标注行，不显示裸 ID
+      const creatorId = metaOk && typeof meta?.bots?.[s.sessionId]?.createdBy === 'string' && meta.bots[s.sessionId].createdBy !== ''
         ? meta.bots[s.sessionId].createdBy : null
-      rows.push(creator !== null ? `- "${name}" (worker created by "${sanitizeName(creator)}")` : `- "${name}"`)
+      const creatorName = creatorId !== null
+        ? (sessions.find((x) => x.sessionId === creatorId)?.projections?.values?.title ?? sessions.find((x) => x.sessionId === creatorId)?.title ?? null)
+        : null
+      rows.push(creatorName !== null && sanitizeName(creatorName) !== 'Untitled bot'
+        ? `- "${name}" (worker created by "${sanitizeName(creatorName)}")` : `- "${name}"`)
     }
   }
   const roster = rows.length > 0 ? `${rows.join('\n')}${hidden > 0 ? `\n…and ${hidden} more.` : ''}` : '- (no other bots yet)'
@@ -80,16 +90,24 @@ export function registerProductPrompt(ctx) {
   // text() 每次组装再 kick 一轮异步刷新兜底（下一次组装即新鲜——BRIEF 第 1 条语义）。
   const cache = { items: [] }
   let refreshing = false
+  let dirty = false // review 中4：刷新在途时新请求不丢——完成后补刷（否则旧列表落缓存后的事件永不生效）
   const refresh = () => {
-    if (refreshing) return
+    if (refreshing) { dirty = true; return }
     refreshing = true
-    ctx.sessionController.list().then((out) => { cache.items = out?.items ?? [] }).catch(() => {}).finally(() => { refreshing = false })
+    ctx.sessionController.list().then((out) => { cache.items = out?.items ?? [] }).catch(() => {}).finally(() => {
+      refreshing = false
+      if (dirty) { dirty = false; refresh() }
+    })
   }
   refresh()
   const applied = new Map()
   const remove = (id) => { applied.get(id)?.(); applied.delete(id) }
   const attach = (agent) => {
     if (applied.has(agent.id)) return
+    // review 中1：subagent helper 不挂认知段（header.origin/parentSession——探针⑤实测；
+    // subagent 不是 bot、不进侧栏，认知段只描述 bot 生态）
+    const h = agent?.session?.header ?? {}
+    if (h.origin === 'subagent' || h.parentSession) return
     applied.set(agent.id, agent.ctx.systemPrompt.section({
       name: AWARENESS_SECTION,
       order: (agent.ctx.systemPrompt.getSectionOrder('TEAM_POLICY') ?? 0) + 1,

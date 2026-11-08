@@ -129,11 +129,21 @@ const updateTool = (view: SessionView, callId: string, patch: Partial<Extract<Ti
   items: view.items.map((item) => (item.kind === 'tool' && item.callId === callId ? { ...item, ...patch } : item)),
 })
 
+/** T12a：ssh 断连专用文案（真帧：reason.error.message='SSH connection is closed'，
+ * tool/result 另有 'outcome is unknown'——见 receipts/T12a.md 第 1 步实测）。 */
+export const SSH_LOST_NOTICE = '电脑连接已断开。上一步可能已执行，也可能没执行——先看看结果再决定要不要重试。重新打开 Hivebot 即可重新连接。'
+
 function endNotice(turn: unknown, reason: AnyRecord): TimelineItem | null {
   const kind = str(reason.kind) ?? 'unknown'
   if (kind === 'completed') return null
   const id = `end-${String(turn)}`
   if (kind === 'aborted' || kind === 'interrupted' || kind === 'cancelled') return { kind: 'notice', id, tone: 'muted', text: '已停止' }
+  // ponytail: 整体 stringify 找串而非取字段——串是上游固定的（dsh-ssh lib/index.js:243），
+  // 字段位置上游可能变。上限：用户自己的报错文本里恰好含这两串会误判（概率低，可接受）。
+  const raw = JSON.stringify(reason)
+  if (raw.includes('SSH connection is closed') || raw.includes('outcome is unknown')) {
+    return { kind: 'notice', id, tone: 'danger', text: SSH_LOST_NOTICE }
+  }
   const message = str(reason.message) ?? str(rec(reason.error).message) ?? kind
   return { kind: 'notice', id, tone: 'danger', text: `回复失败：${message}` }
 }

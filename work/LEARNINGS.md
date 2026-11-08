@@ -145,3 +145,10 @@
 - **e2e worktree 起手三件**：app/ui 与 app/sdk 各 pnpm install --prefer-offline（node_modules 不随 worktree）；跑 e2e 前必 build；隔离 HOME/TMPDIR 先 mkdir -p（mktemp 模板对不存在目录报错）。
 - **vitest coverage-v8 在 ui 仓仍不可用**（P7 F1 同款）：customProviderModule 指向 sdk pnpm 深处可载入但覆盖计 0%（模块 id 对不上）。需要覆盖率时用手工核算表+记录工具问题，别再烧轮次调工具。
 - **面板/对话框等 role=dialog 组件开着会吃 Esc 与指针**（遮罩）——测试链里后续还有 Esc/点击交互时，用完即点 Close。
+
+## 2026-11-07（T32b 返修）
+- **断言段插入先对齐「当下在哪一步」**：给 walk 测试插段时只看锚点注释不看流程位置——观察器段插在 steps 循环后，实际已在 jobs 页，点的 Next 是 jobs→role 却断 cd heading，红得像「onboarding 退出」（aria 树里的主应用文字是被引导层盖住的侧栏，不是退出证据）。改法：插入前先数清楚此前每次 click 各前进到哪页。
+- **history.back() 不适用于无历史条目的 SPA 引导层**：walk 换步是组件 state 不是路由跳转，history.back() 会把整页退到上一个 URL（about:blank/上一站）——「回到前一步」用 UI Back 钮，或把断言挪到初到该页时做（后者更省）。
+- **miniconda 的 python playwright 会抢 PATH**：repo 里 `sh scripts/run-e2e.sh` 直接 exec playwright，which 命中 miniconda 版就报 `error: unknown command 'test'`——前置 `PATH="$PWD/node_modules/.bin:$PATH"`。
+- **T26b 合并的回归面远超合并回测覆盖**：gate 改「未 seen+空 roster 不建 main」后，所有裸 `launchShell` 的 spec（不走 `launchProduct`/`waitProductReady`）首启必进 onboarding、`.sand-agent-item` 恒 0。T7bd 验收撞出 skills-picker/t7b-shot/grok-dead-entries 三个；另有 persona/shim/ws-write/questions-answer/m2-*/restore/skills-enable/shell 五件待扫（清单在 T7bd 回执）。根修=裸 spec 换 `waitProductReady`。
+- **e2e 期望清单要跟着特性单走**：grok-dead-entries U4′ 行菜单清单在 T21 加「Show full conversation」后过时——加活入口的单应顺手 grep 死入口清单 spec。

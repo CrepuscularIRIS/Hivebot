@@ -6,7 +6,7 @@
 > 排期：现在可做；ui e2e 与 T32c 等同刻只跑一套
 > claimed：
 > accepted：（2026-11-07 终验 @ 5db7d1d9 不通过 第 1 次 → T7beb；见 review/review-T7be.md「T7be 终验」）
-> 失败计数：1
+> 失败计数：2（第 2 次 = T7beb 终验 2026-11-07 @ 87e517c0 不通过 → T7bec；本次 B 兼 C 重规划，方案不变、范围收窄）
 
 ## 目标
 裸 `launchShell` 后调 `waitProductReady`，不管壳此前是否已用旧 seen 打开引导，返回时引导层必须不在、主区可点。

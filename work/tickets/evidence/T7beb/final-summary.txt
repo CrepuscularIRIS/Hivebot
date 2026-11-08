@@ -1,0 +1,19 @@
+HEAD 87e517c0 start 22:09:27  22:09:27 up 5 days, 23:40,  1 user,  load average: 7.62, 6.14, 5.45
+build exit 0
+wpr1:   2 passed (31.8s) 
+wpr2:   2 passed (32.0s) 
+wpr3:   2 passed (32.7s) 
+wpr4:   2 passed (31.9s) 
+wpr5:   2 passed (31.5s) 
+batch1:   5 passed (1.9m)  newchat2=0
+batch2:   5 passed (1.7m)  newchat2=0
+batch3:   5 passed (1.8m)  newchat2=0
+batch4:   5 passed (1.8m)  newchat2=0
+batch5:   5 passed (1.8m)  newchat2=0
+batch6:   5 passed (1.8m)  newchat2=0
+batch7:   5 passed (1.8m)  newchat2=0
+batch8:   5 passed (1.8m)  newchat2=0
+batch9:   5 passed (1.8m)  newchat2=0
+batch10:   5 passed (1.7m)  newchat2=0
+acc4:   1 failed   15 passed (2.4m) 
+end 22:32:23  22:32:23 up 6 days, 3 min,  1 user,  load average: 5.36, 5.47, 5.56

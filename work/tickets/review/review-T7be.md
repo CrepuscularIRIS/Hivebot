@@ -76,3 +76,34 @@ T7be 自身目标（撤已开引导）复验仍通过；但它的 helper 整页 
 1. 先红以经理证据为准（`evidence/T7beb/manager-rerun-wpr1-red.log`），不再因施工方未复现停手。
 2. 新格循环 5 → 10（同格，提高单次灵敏度）；改 helper 前跑该 spec 最多 5 次，见红即止，原样贴；5 次都绿也照样往下修（回执写一句）。
 3. 验收 2 改为：改后连跑 **5 次**每次 `2 passed`（50 个全新 home）。验收 3（10 轮批跑）、4、5 不变。
+
+## T7beb 终验（manager Opus 5.5，2026-11-07 22:0x–22:3x，HEAD 87e517c0，load 5.4–7.6）
+
+**结论：不通过 → 修复单 `open/T7bec-settle-skip-ready-false.md`。T7be、T7beb 都留在 open，不挪 done，不放行合并。**
+T7be 链失败计数到 2（T7be 1 次，T7beb 本轮 1 次）：本段兼做 C 重规划——根因已查清，方案不变，只把范围收窄到一处，不需要重拆。
+
+### Sol 中1 核实：CONFIRMED，已修且语义正确
+- `playwright-core@1.64.1/lib/coreBundle.js:25707` `const success = predicate(); if (success) fulfill(success)`——没有 await，async predicate 返回的 Promise 恒 truthy，第一次调用就 fulfill。8469b3b1 的轮询其实只发了一次 `reloadRoster`，然后立即 reload。
+- 修复 a31b1ea5：`expect.poll`（`playwright/lib/matchers/expect.js:4754 pollAgainstDeadline` 每轮 `await raceAgainstDeadline(callback)`）→ 回调里 `await page.evaluate(async …)` → 页面内 `await reloadRoster()`（单飞会并入进行中的那次拉取）→ 读 `state.meta.mainBotId`（`data.ts:686` 实时 getter）。`mainBotId` 只在 `metaApi patch` ok 之后才赋值（`data.ts:363-367`），所以「非 null」等价于「主 bot 已持久化」，之后的拉取都幂等——判据成立。`expect` 从 `playwright/test` 导入（ui.ts:4），`.poll` 可用。死代码已删。
+- 改动面：`git diff f6e95a5a..HEAD -- app/` 只有 ui.ts（+11）和 wait-product-ready.spec.ts（循环 5→10），合规。
+
+### 经理重跑（expect.poll 版；原样见 `evidence/T7beb/final/`、`final-summary.txt`）
+```
+build exit 0
+wpr1..5:   2 passed (31.8/32.0/32.7/31.9/31.5s)        ← 验收 2 ✓（50 个全新 home）
+batch1..10 (grok-dead-entries+settings+market): 5 passed ×10，New chat 计 2 = 0   ← 验收 3 ✓
+acc4 (resilience+theme-flash+onboarding):  1 failed  15 passed (2.4m)            ← 验收 4 ✗
+  ✘ resilience.spec.ts:15 [GU-1] pbots:api 全路径注入抛错 (32.0s)
+    Expected: true / Received: false — Timeout 30000ms exceeded while waiting on the predicate
+    at ensureOnboardingSeen (ui.ts:89) ← launchProduct (ui.ts:121) ← resilience.spec.ts:16
+git status --short app/ui → 空
+```
+- 关于「3 轮 + 首轮 10 轮」怎么采信：**首轮 10 轮不采信**（它跑的是假轮询版，相当于「发一次 reloadRoster 就 reload」，证明不了修复）。本轮在真轮询版上补满 10 轮，0 红；再加上 wpr 修后 10 次（施工 5 + 经理 5，共 100 个 home，按修前 4%/home 算全绿概率 ≈0.017），双 main 消除的证据够了。**D10c1 这部分算通过**，queue 7b⁵′ 开单触发条件 ① 没有触发。
+
+### 验收 4 失败：真回归，必现，不是抽样问题
+- GU-1 注入所有 api 抛错 → `reloadRoster` 永远失败 → `mainBotId` 永远 null → 新加的 settle 轮询必定超时 30s 并抛出（这正是 T7beb 要求的「超时要抛」）。`launchProduct` 对 `!onboardingFirst` 的调用方无条件走 `ensureOnboardingSeen`（ui.ts:121），连 `ready:false` 也一样。
+- 首轮假轮询版恰好绕过了这个问题：只发一次就 reload，不等结果；回执里的「16 passed」就是在那一版上跑的。review 修复后施工方只重跑了验收 2 和 3 轮批跑，**验收 4 没重跑**——流程缺口：改了 helper 语义，就得重跑全部验收。
+- 根因是语义：`ready:false` 的意思是「调用方不要求产品就绪」（GU-1 要的就是 roster 起不来），而 settle 的前提恰好是「主 bot 能建成」。对 ready:false 做 settle 本身就是错的，问题不在超时长短。
+
+### 修法（T7bec，最小）
+`ensureOnboardingSeen(page, settle = true)`；`launchProduct` 传 `settle: ready`；`waitProductReady` 照旧 settle。ready:false 的两个调用方：resilience:16（roster 故意起不来）不需要 settle；theme-flash:172（同 home 第二次启动，主 bot 早已持久化，没有双建窗口）也不需要。ready:true 的路径和裸壳路径不受影响，所以验收 2、3 的结论直接沿用，不重跑 10 轮。

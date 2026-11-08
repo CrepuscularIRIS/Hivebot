@@ -181,7 +181,7 @@ function Walk({ bridge, client, computerReadiness, computerStatus, finish, isAcc
   const sceneOf = (s: Step): string => (s === 'role' || s === 'attribution' || s === 'connect' ? SCENE_AS[s] : s) // T32：SCENE_AS 映射（原内联三元）
   const sceneStep = sceneOf(step)
   return <div className="sand-onboarding" data-platform="linux" data-step={sceneStep} data-step-index={String(onboardingStepIndex(sceneStep as 'tools'))} data-theme={document.documentElement.dataset.theme ?? 'light'} role="main">
-    <SceneCast avatarTarget={null} demoBeat={demoBeat} draft={draft} isAvatarLanded={false} jobsBeat={jobsBeat} meetBeat={meetBeat} renderCharacter={undefined} step={sceneStep} /> // T32：beat 分开传（view.tsx:223）
+    <SceneCast avatarTarget={null} demoBeat={demoBeat} draft={draft} isAvatarLanded={false} jobsBeat={jobsBeat} meetBeat={meetBeat} renderCharacter={undefined} step={sceneStep} /> {/* T32：beat 分开传（view.tsx:223） */}
     {exiting !== null ? <Framed exiting key={`exit-${exiting}`} step={exiting}>{bodyOf(exiting)}</Framed> : null}
     <Framed key={step} step={step}>{bodyOf(step)}</Framed>
   </div>

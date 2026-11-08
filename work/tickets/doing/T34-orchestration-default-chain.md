@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-08 | 施工：main (GLM 5.3)
 > 来源：Q-035=A（全开）、Q-036=B；`work/bot-product-awareness/PLAN.md` §3；`work/p6-orchestration/PLAN.md:74`（P6-14b）
 > 分支 / 作业目录：feat/T34 @ /tmp/bot-wt/T34
-> claimed：
+> claimed：2026-11-08 03:3x main (GLM 5.3) @ feat/T34（起点 b959388d）
 > accepted：
 
 ## 目标

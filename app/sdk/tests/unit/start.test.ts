@@ -129,9 +129,9 @@ describe('buildArgs', () => {
     expect(args[args.indexOf('--port') + 1]).toBe('4599')
     const patches = args.filter((_, i) => args[i - 1] === '--patch')
     expect(patches[0].endsWith('profile/patches/p2sdk.yml')).toBe(true)
-    expect(patches, 'p2sdk.yml + approval.yml + market.yml + runtime patch + extras').toHaveLength(5)
-    expect(patches[3]).toBe('/tmp/h/runtime-patch.yml')
-    expect(patches[4]).toBe('/tmp/x.yml')
+    expect(patches, 'p2sdk.yml + approval.yml + market.yml + awareness.yml + runtime patch + extras').toHaveLength(6)
+    expect(patches[4]).toBe('/tmp/h/runtime-patch.yml')
+    expect(patches[5]).toBe('/tmp/x.yml')
   })
 
   // T-12 (REVIEW R3/R5/R13): the shell-ask approval policy ships in the
@@ -141,7 +141,7 @@ describe('buildArgs', () => {
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_PATCH: '/tmp/x.yml' })
     const patches = buildArgs(cfg, '/tmp/h/runtime-patch.yml').filter((_, i, a) => a[i - 1] === '--patch')
     expect(patches[1].endsWith(join('profile', 'patches', 'approval.yml')), `second patch is approval.yml (got ${patches[1]})`).toBe(true)
-    expect(patches, 'p2sdk.yml, approval.yml, market.yml, runtime patch, extras').toHaveLength(5)
+    expect(patches, 'p2sdk.yml, approval.yml, market.yml, awareness.yml, runtime patch, extras').toHaveLength(6)
   })
 
   // P5-58：market.yml（plugin-market + p2temp 两个 insert 行）进默认链——生产启动
@@ -151,6 +151,14 @@ describe('buildArgs', () => {
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock' })
     const patches = buildArgs(cfg, '/tmp/h/runtime-patch.yml').filter((_, i, a) => a[i - 1] === '--patch')
     expect(patches[2].endsWith(join('profile', 'patches', 'market.yml')), `third patch is market.yml (got ${patches[2]})`).toBe(true)
+  })
+
+  // T33：awareness.yml（产品认知提示段）进默认链，位置在 market.yml 之后、runtime patch 之前。
+  it('mounts profile/patches/awareness.yml by default after market.yml and before the runtime patch', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock' })
+    const patches = buildArgs(cfg, '/tmp/h/runtime-patch.yml').filter((_, i, a) => a[i - 1] === '--patch')
+    expect(patches[3].endsWith(join('profile', 'patches', 'awareness.yml')), `fourth patch is awareness.yml (got ${patches[3]})`).toBe(true)
+    expect(patches[4], 'runtime patch comes after awareness.yml').toBe('/tmp/h/runtime-patch.yml')
   })
 })
 

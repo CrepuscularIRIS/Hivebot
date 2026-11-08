@@ -347,3 +347,7 @@
 - 推荐理由：① 是面向 GitHub 团队协作的另一种产品形态，和现在的桌面聊天体验交集小；②③ 就是原版 0.79.3 里「主 bot 协调其他 bot + 子任务可见」那一块。
 - 默认：用户未答前按 B。
 - 答复：
+
+## 拍板记录（2026-11-08 03:2x，用户）
+- **Q-035 = A 全开**：「Grok Bot 本身就是一个主 Bot+一对小 Bot」——orchestration 全量开闸（含主 bot 强制委派路由）。
+- **Q-036 = B**：用户记忆中的 SuperAgent = 主 bot 的协调角色（主 Bot + 一群小 Bot 架构），非 dsh-superagent-prototype；subagent 并入 T27、编排按 Q-035=A 走。

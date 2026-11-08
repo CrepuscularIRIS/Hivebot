@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T32 经理终验（feat/T32 @ 42be0b33）不通过，见 `receipts/review-T32.md`
 > 分支 / 作业目录：继续 feat/T32 @ /tmp/bot-wt/T32（从 42be0b33 起）
-> claimed：（施工开始时填：日期、起点 SHA）
+> claimed：2026-11-07 main (GLM 53) @ feat/T32 续修（施工开始时填：日期、起点 SHA）
 > accepted：
 
 ## 目标

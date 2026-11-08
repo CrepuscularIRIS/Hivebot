@@ -32,3 +32,11 @@ $ for i in 1 2 3; do …run-e2e.sh tests/e2e/wait-product-ready.spec.ts …
 - 验收 3（三 spec 批 10 轮，后台跑原样）：`5 passed (1.8m)`×6 + `(1.7m)`×4——**D10c1 0 红**（旧比例 3/11；10 轮全绿 p≈0.04）
 - 验收 4：resilience+theme-flash+onboarding → **16 passed (1.9m)**
 - 验收 5：`git status --short app/ui` 空；T7beb 自身改动恰 ui.ts+wait-product-ready.spec 两文件（diff 范围内另含 T12a 合并文件，基准说明）
+
+## review 修复（2026-11-07 22:0x——Sol 中1：轮询没真轮询）
+- 缺口：waitForFunction 的 predicate 是 async 函数——本地 playwright-core（coreBundle.js:25703-25715）`const success = predicate(); if (success) fulfill` **不 await**：Promise 恒 truthy → 首次调用即 fulfill，`polling:250` 从未驱动后续轮询；`if (!settled)` 检查的是 handle 对象恒 truthy（不可达死代码）。修复实际效果=「发一次 reloadRoster 就 reload」——10 轮 0 红有概率假象成分（4% 事件 10 轮全绿 p≈0.66）。
+- 修：`expect.poll`（每轮 await 回调）+ `intervals: [250,500,1000]`，每轮主动 `reloadRoster`（置 seen 后旧文档不会自动再拉）+查 `mainBotId != null`；超时 expect.poll 抛。死代码删。
+```
+修后验收 2 重跑：2 passed (31.7/31.7/31.4/31.7/31.4s) ×5
+三 spec 批抽 3 轮：5 passed (1.8m)/(1.7m)/(1.8m)（完整 10 轮留终验复核）
+```

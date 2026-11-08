@@ -71,17 +71,28 @@ export function reasoningTextCall(reasoning: string, text: string, paceMs = 120)
 
 export interface Env { rt: SdkRuntime; shell: ShellLaunch; page: Page; stop(): Promise<void> }
 
+/** T7be：置 seen → 整页 reload → 等 __pbotsDev（launchProduct / waitProductReady 共用）。
+ * reload 后 gate 在新加载里必判 shell（消「壳已用旧 seen 打开引导、storage 写入关不掉」竞态）。 */
+async function ensureOnboardingSeen(page: Page): Promise<void> {
+  await page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
+  await page.evaluate(() => { try { window.localStorage.setItem('pbots.shim.onboarding-seen', '1') } catch { /* ignore */ } }).catch(() => {})
+  await page.reload()
+  await page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
+}
+
 /** 产品就绪 = 主 bot 已进侧栏（shim roster 拉完，M1 已通）。 */
 export async function waitProductReady(page: Page, timeout = 60_000): Promise<void> {
-  // T30：launchProduct 已置 seen+reload；直接 launchShell 的 spec（market/settings 等）自己
-  // 走首启路径——这里兜底置 seen（若未置）再等（onboarding 打开时 agent 恒 0）。
+  // T7be：直接 launchShell 的 spec（market/settings 等）自己走首启路径——若壳已用旧 seen
+  // 打开引导，storage 写入+reloadRoster 都关不掉它，只有整页 reload 能撤。seen 判定前先等
+  // __pbotsDev（避免在应用加载前读到别的文档）；不再调 reloadRoster（reload 后 gate 自然建 main）。
   try {
+    await page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
     if (await page.evaluate(() => window.localStorage.getItem('pbots.shim.onboarding-seen') !== '1').catch(() => false)) {
-      await page.evaluate(() => window.localStorage.setItem('pbots.shim.onboarding-seen', '1')).catch(() => {})
-      await page.evaluate(() => (window as unknown as { __pbotsDev?: { reloadRoster?(): Promise<void> } }).__pbotsDev?.reloadRoster?.()).catch(() => {})
+      await ensureOnboardingSeen(page)
     }
   } catch { /* ignore */ }
   await expect(page.locator('.sand-agent-item').first()).toBeVisible({ timeout })
+  await expect(page.locator('.sand-onboarding')).toHaveCount(0) // T7be 哨兵：引导层必须不在
 }
 
 /**
@@ -96,16 +107,8 @@ export async function launchProduct(opts: ShellOptions & { ready?: boolean; patc
   // T26：真首启（未 seen+空 roster）进 onboarding、不建 main bot——常规 e2e 测的是引导
   // 之后的产品面：页面起来后置 seen 并触发 roster 重载（补建 main bot）；onboarding 专项
   // 用 onboardingFirst:true 自测真首启三态。
-  if (!onboardingFirst) {
-    // T26b #2：置 seen 后整页 reload——gate 在新加载里必判 shell（消 1/3 竞态残留），
-    // 末尾断言 onboarding 节点为 0 让未来竞态显式红。
-    await shell.page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
-    await shell.page.evaluate(() => { try { window.localStorage.setItem('pbots.shim.onboarding-seen', '1') } catch { /* ignore */ } }).catch(() => {})
-    await shell.page.reload()
-    await shell.page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 30_000 }).catch(() => {})
-  }
-  if (ready) await waitProductReady(shell.page)
-  if (!onboardingFirst) await expect(shell.page.locator('.sand-onboarding')).toHaveCount(0) // T26b #2：竞态哨兵
+  if (!onboardingFirst) await ensureOnboardingSeen(shell.page) // T26b #2 → T7be 抽共用
+  if (ready) await waitProductReady(shell.page) // 内含引导计零哨兵（T7be），原独立哨兵等价删除
   return { rt, shell, page: shell.page, async stop() { await shell.stop(); await rt.stop() } }
 }
 

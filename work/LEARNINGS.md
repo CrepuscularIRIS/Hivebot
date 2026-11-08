@@ -161,3 +161,5 @@
 - **变异刀先决检查（三次事故后根治）**：动刀前必须 `git log --oneline -1 -- <改动文件>` 确认改动已在提交里（或 git diff 为空）——否则 checkout 还原会连实现一起抹掉。T32c/T7db 两日三犯（注释/实现/重放各一次）。另外批量 python replace 后必须验证生效（grep 关键新行），静默不匹配会误提交红态。
 - **waitForFunction 不 await async predicate**（T7beb Sol 证）：playwright-core coreBundle:25707 `const success = predicate(); if (success) fulfill`——async 函数返回的 Promise 恒 truthy，首次调用即结束，`polling` 从未驱动。需要真异步轮询用 `expect.poll`（每轮 await 回调）。
 - **改共享 helper 语义后全部验收必须重跑**（T7beb 漏验收 4）：「只改了一小段」不成立——T7bec 就是漏跑的那格必现红。验收清单当轮全跑完才算施工完。
+- **合并回测只跑「边界内文件」会漏 mock 期望测试**（T7d→H7r2 抓出）：T7d 给 `workspace_ensure` 加两条预建 mkdir，合并回测只跑六件边界内测试，`unit/workspace.test.ts` 的 argv 序列断言红了一整天没人看见。规则：合并回测按 L51 跑整包；至少 `grep -rl <改动模块名> app/*/tests` 把所有引用该模块的测试带上。
+- **全量开跑前先看 `uptime`**（H7r2 load>20 叠 GPU 训练）：结果虽收，过程违 CLAUDE.md §5；load≥8 就等，双全量尤甚。

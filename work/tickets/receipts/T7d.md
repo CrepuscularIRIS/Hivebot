@@ -37,3 +37,4 @@ write-outside + tiers-policy + guard-fs：Test Files 3 passed (3) / Tests 25 pas
 
 ## 边界外记录
 - ui 侧 skills-enable.spec 主动加验：卡 `.sand-agent-item` 60s（T26b gate 裸 launchShell 回归第 13 个受害者，T7bg 清单）——与 T7d 无关未修。T7d 的产品链验证由 approval e2e（真 dsh 会话 + 真 bwrap 沙箱）覆盖。
+- 追加：退出码字面断言（requests.jsonl toolResults 含 `Read-only file system` ×2）→ 6 passed；T7c 出卡回归 skill-write-card **9 passed**（write/edit 出卡链不变）

@@ -1194,3 +1194,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 终验=主线回测（经理重跑）：resilience 4 passed（GU-1 3.1s）、resilience+theme-flash+onboarding 16×2、wait-product-ready 2×2、三 spec 批 5 passed；build exit 0
 - 链上教训两条进 LEARNINGS：waitForFunction 不 await async predicate（playwright-core coreBundle:25707）；改 helper 语义后全部验收必须重跑（T7beb 漏验收 4 致返修一轮）
 - 7b⁵′（主 bot 建立非原子）维持提议，触发条件未触发
+## 2026-11-07 · H7 DONE（HANDOFF 清单全清）
+- 第 3 轮双全量并行实证：一轮对称红（T7d 欠账 workspace.test，修 92f842e7）→ 二轮干净基线 816 passed ×2（73 files 全过）、互踩签名 0（ECONNRESET/socket hang up 四日志全 0）、守护测试全绿——经理裁定 DONE（四份 json 逐份抽验+并行时间重叠证实）
+- 偏差三条记录在案：双树 HEAD 字面不同（sdk 零差异）、workers=8 无旁证、load>20 不当惯例（证据更强但不可复制）
+- 工作树清理：H7 系四树+已合并施工树 T12a/T32/T7d
+- **HANDOFF 待办清单（T7b、T9a、T7c、T16、T9b、T10、T11、T12、T8、L5-a、H7）全部 done**；剩：Q-034（用户拍板：重连按钮 A/B/C，推荐 C）、T7bf/T7bg/5d″/7b⁵′/7e″ 等低优先提议行、T17d 低优先计划行、T27 等用户编排结论

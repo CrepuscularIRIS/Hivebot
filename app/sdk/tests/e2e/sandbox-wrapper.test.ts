@@ -145,14 +145,22 @@ describe('T7d/T7db：skill 根 ro-bind（binds 派生——bash 写 skill 根必
     expect(existsSync(join(bare, '.dsh/skills')), '真跑补建 .dsh/skills').toBe(true)
     expect(existsSync(join(bare, '.agents/skills')), '真跑补建 .agents/skills').toBe(true)
   })
-  it('T7db：.dsh 是指向别处的符号链接 → 退出非零、bwrap: 前缀、目标下不建 skills', () => {
+  it('T7db：.dsh 是符号链接（悬空与指向已存在目录两态）→ 退出非零、bwrap: 前缀、目标下不建 skills', () => {
     const ws = tmkdir('t7db-sym-')
     const outside = tmkdir('t7db-outside-')
+    mkdirSync(join(outside, '.dsh'), { recursive: true }) // 已存在可写、无 skills——review 中1 的真场景
     symlinkSync(join(outside, '.dsh'), join(ws, '.dsh'))
     const res = runWrapper(['--home', '/tmp/t7d-nohome', ...profileArgs(ws), '--', '/bin/true'])
     expect(res.status, 'symlink 拒绝退出非零').not.toBe(0)
     expect(res.stderr.startsWith('bwrap: '), 'bwrap: 前缀').toBe(true)
-    expect(existsSync(join(outside, '.dsh', 'skills')), '链接目标下没建 skills').toBe(false)
+    expect(existsSync(join(outside, '.dsh', 'skills')), '链接目标下没建 skills（makedirs 前已拒）').toBe(false)
+    // 悬空链接态：同样拒绝（islink 前查兜住——旧实现靠 makedirs 撞悬空失败属巧合）
+    const ws2 = tmkdir('t7db-dangling-')
+    const nowhere = join(tmkdir('t7db-nowhere-'), '.dsh')
+    symlinkSync(nowhere, join(ws2, '.dsh'))
+    const res2 = runWrapper(['--home', '/tmp/t7d-nohome', ...profileArgs(ws2), '--', '/bin/true'])
+    expect(res2.status, '悬空链接同样拒绝').not.toBe(0)
+    expect(existsSync(nowhere), '悬空目标未被创建').toBe(false)
   })
 })
 

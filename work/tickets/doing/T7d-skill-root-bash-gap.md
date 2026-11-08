@@ -3,7 +3,7 @@
 > 开单：main 照 queue 7e 行 + T7c 回执 §6 风险 1 转实体 | 日期：2026-11-06 | 施工：main (GLM 5.3)
 > 来源：T7c 已知缺口——shell-ask 判定 `targets` 落 `.dsh/skills`/`.agents/skills` 出卡，但 **bash 路径不经过 targets**：`cat > .dsh/skills/x/SKILL.md` 零卡写成
 > 分支 / 作业目录：feat/T7d @ /tmp/bot-wt/T7d
-> claimed：2026-11-06 23:4x
+> claimed：2026-11-06 23:4x（前轮）；2026-11-07 20:3x 续（吸收主线后完工）
 > accepted：
 
 ## 目标

@@ -119,6 +119,10 @@ async function mintWorkspace(
   const workspace = join(dataDir, 'workspaces', botId)
   try {
     await mkdir(workspace, { recursive: true })
+    // T7d：预建 skill 根（wrapper 从 binds 派生 ro-bind 只读覆盖——目录在，
+    // bash 写 .dsh/skills/.agents/skills 才会撞只读挂载点）
+    await mkdir(join(workspace, '.dsh', 'skills'), { recursive: true })
+    await mkdir(join(workspace, '.agents', 'skills'), { recursive: true })
   } catch (error) {
     return { ok: false, error: { code: 'pbots/storage', message: `workspace mkdir failed for "${workspace}": ${String(error)}` } }
   }

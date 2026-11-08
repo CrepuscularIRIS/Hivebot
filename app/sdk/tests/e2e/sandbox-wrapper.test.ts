@@ -5,7 +5,7 @@
 // 决策 4：解释器 /usr/bin/python3 -I；PLAN P5-01 ⑤ 的两格在 sandbox-hardened.test.ts
 // 里再经真实 launcher + fake bash 各证一遍。
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -104,6 +104,63 @@ describe('挂载序（dry-run，PLAN P5-01 挂载顺序逐段）', () => {
     // 末尾 -- 与命令
     expect(argv.at(-1)).toBe('true')
     expect(argv.includes('--')).toBe(true)
+  })
+})
+
+describe('T7d/T7db：skill 根 ro-bind（binds 派生——bash 写 skill 根必败；父目录自绑防改名）', () => {
+  it('挂载序：ws 重 bind < 父目录自绑 < 根 ro-bind < 再遮；缺根 fail-closed 补建（真跑）', () => {
+    const ws = tmkdir('t7d-ws-')
+    mkdirSync(join(ws, '.dsh/skills'), { recursive: true })
+    mkdirSync(join(ws, '.agents/skills'), { recursive: true })
+    const never = join(ws, '.condarc')
+    writeFileSync(never, 'x')
+    const argv = dryRun(['--home', '/tmp/t7d-nohome', '--never', never, ...profileArgs(ws), '--', '/bin/sh', '-c', 'true'])
+    const dsh = join(ws, '.dsh/skills')
+    const ag = join(ws, '.agents/skills')
+    const wsAt = argv.indexOf(ws)
+    const dshAt = argv.indexOf(dsh)
+    const agAt = argv.indexOf(ag)
+    expect(dshAt).toBeGreaterThan(wsAt) // 后挂载覆盖 --bind 写权限
+    expect(agAt).toBeGreaterThan(wsAt)
+    expect(argv[dshAt - 1]).toBe('--ro-bind')
+    expect(argv[agAt - 1]).toBe('--ro-bind')
+    const remaskAt = argv.indexOf(never)
+    expect(dshAt).toBeLessThan(remaskAt)
+    expect(agAt).toBeLessThan(remaskAt)
+    // T7db 挂载序：--bind ws < --bind ws/.dsh < --ro-bind ws/.dsh/skills < 再遮（.agents 同）
+    const dshDirAt = argv.indexOf(join(ws, '.dsh'))
+    expect(dshDirAt).toBeGreaterThan(wsAt)
+    expect(dshDirAt).toBeLessThan(dshAt)
+    expect(argv[dshDirAt - 1]).toBe('--bind')
+    expect(dshAt).toBeLessThan(remaskAt)
+    // review 高1（fail-closed）+ T7db：目录缺失也追加（真跑先补建；dry-run 报完整形状且不落盘）
+    const bare = tmkdir('t7d-bare-')
+    const argv2 = dryRun(['--home', '/tmp/t7d-nohome', ...profileArgs(bare), '--', '/bin/sh', '-c', 'true'])
+    expect(argv2.includes(join(bare, '.dsh/skills'))).toBe(true)
+    expect(argv2.includes(join(bare, '.agents/skills'))).toBe(true)
+    expect(existsSync(join(bare, '.dsh')), 'dry-run 不落盘（.dsh 不建）').toBe(false)
+    // 真跑（非 dry）：目录被补建
+    const res2 = runWrapper(['--home', '/tmp/t7d-nohome', ...profileArgs(bare), '--', '/bin/true'])
+    expect(res2.status, `real run succeeds:\n${res2.stderr}`).toBe(0)
+    expect(existsSync(join(bare, '.dsh/skills')), '真跑补建 .dsh/skills').toBe(true)
+    expect(existsSync(join(bare, '.agents/skills')), '真跑补建 .agents/skills').toBe(true)
+  })
+  it('T7db：.dsh 是符号链接（悬空与指向已存在目录两态）→ 退出非零、bwrap: 前缀、目标下不建 skills', () => {
+    const ws = tmkdir('t7db-sym-')
+    const outside = tmkdir('t7db-outside-')
+    mkdirSync(join(outside, '.dsh'), { recursive: true }) // 已存在可写、无 skills——review 中1 的真场景
+    symlinkSync(join(outside, '.dsh'), join(ws, '.dsh'))
+    const res = runWrapper(['--home', '/tmp/t7d-nohome', ...profileArgs(ws), '--', '/bin/true'])
+    expect(res.status, 'symlink 拒绝退出非零').not.toBe(0)
+    expect(res.stderr.startsWith('bwrap: '), 'bwrap: 前缀').toBe(true)
+    expect(existsSync(join(outside, '.dsh', 'skills')), '链接目标下没建 skills（makedirs 前已拒）').toBe(false)
+    // 悬空链接态：同样拒绝（islink 前查兜住——旧实现靠 makedirs 撞悬空失败属巧合）
+    const ws2 = tmkdir('t7db-dangling-')
+    const nowhere = join(tmkdir('t7db-nowhere-'), '.dsh')
+    symlinkSync(nowhere, join(ws2, '.dsh'))
+    const res2 = runWrapper(['--home', '/tmp/t7d-nohome', ...profileArgs(ws2), '--', '/bin/true'])
+    expect(res2.status, '悬空链接同样拒绝').not.toBe(0)
+    expect(existsSync(nowhere), '悬空目标未被创建').toBe(false)
   })
 })
 

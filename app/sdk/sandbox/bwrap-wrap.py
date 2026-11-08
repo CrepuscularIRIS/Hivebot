@@ -351,6 +351,34 @@ def main():
         if os.path.isdir(p):
             out += ['--ro-bind', p, p]
             policies_mounted.append(p)
+    # T7d/T7db：skill 根只读覆盖——bash 写 .dsh/skills/.agents/skills 必须失败（挂载
+    # 点不可写/rename/rm；与 write/edit 的审阅卡同语义）。从 binds（会话工作区
+    # per-bot）派生，bwrap 挂载序：ws 重 bind → 父目录自绑（成挂载点，不可 mv/rm，
+    # 父目录内照旧可写）→ 根 ro-bind（后挂载覆盖父绑写权限）→ 再遮。
+    # review 高1（fail-closed）：缺根不跳过——真跑先补建（旧工作区/restore 不经
+    # 预建，缺根时 bash 可 mkdir+写绕过）；dry-run 只报完整形状不落盘。skill 要
+    # 可见可读，不进 remask 集。
+    # T7db：符号链接拒绝——realpath 必须等于自身（防宿主侧 makedirs 被 bot 早先
+    # 种下的链接引到工作区外建目录/挂载别处）；makedirs 的 OSError 走 die（bwrap: 前缀）。
+    dry_here = bool(os.environ.get('BWRAP_WRAP_DRY_RUN'))  # dry 在后文才定义——局部判环境（同语义）
+    for b in binds:
+        for parent, sub in (('.dsh', '.dsh/skills'), ('.agents', '.agents/skills')):
+            pdir = os.path.join(b, parent)
+            root = os.path.join(b, sub)
+            # T7db review 中1：链接拒绝在 makedirs **之前**（islink 悬空/非悬空全兜——
+            # 否则 .dsh 链到已存在可写目录时 skills 先建到外面才 die，宿主副作用已发生）
+            for x in (pdir, root):
+                if os.path.islink(x):
+                    die(f'symlink refused: {x} -> {os.path.realpath(x)}')
+            if not os.path.isdir(root) and not dry_here:
+                try:
+                    os.makedirs(root, exist_ok=True)
+                except OSError as e:
+                    die(f'makedirs {root} failed: {e}')
+            for x in (pdir, root):  # 创建后复查（防中途被换成链接）
+                if not dry_here and (os.path.islink(x) or os.path.realpath(x) != x):
+                    die(f'symlink refused: {x} -> {os.path.realpath(x)}')
+            out += ['--bind', pdir, pdir, '--ro-bind', root, root]
     # 再遮（v2.1）：硬 NEVER 根与 mask 根落在任何挂回/重 bind 目录之下 → 最后再遮一次
     mounted = binds + tools_mounted + policies_mounted
     remask = set()

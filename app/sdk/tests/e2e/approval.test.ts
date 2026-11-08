@@ -490,3 +490,88 @@ it('R1: a model-side shell cannot derive or find the launch token', async () => 
     await rt.stop()
   }
 })
+
+// T7d：bash 写 skill 根必须失败（挂载点不可写）——与 write/edit 出卡同语义。缺口：shell-ask
+// 的 targets 判定对 cat>/heredoc 形态漏判 → 零卡直写（T7c 已知）。修复=预建两 skill 根 +
+// bwrap-wrap.py 从 binds 派生 --ro-bind。本用例模拟预建后世界：批准（allowed-once）执行
+// bash 写两根——文件仍不存在（ro-bind 挡，Read-only file system）。Vk 态（删派生段）红。
+it('T7d: 批准后的 bash 写 skill 根仍失败（ro-bind 挂载点不可写）', async () => {
+  const rt = await launchApprovalRuntime()
+  const feed = await openEvents(rt)
+  try {
+    const s1 = await createSessionAt(rt.client, rt.home)
+    for (const sub of ['.dsh/skills', '.agents/skills']) mkdirSync(join(rt.home, 'workspace', sub), { recursive: true })
+    const pwn1 = join(rt.home, 'workspace', '.dsh/skills/pwn.md')
+    const pwn2 = join(rt.home, 'workspace', '.agents/skills/pwn.md')
+    rt.writeScript(s1, [
+      bashCall(`cat > ${pwn1} <<'EOF'\nevil\nEOF\n`),
+      textCall('dsh 写完'),
+      bashCall(`echo evil > ${pwn2}`),
+      textCall('agents 写完'),
+    ])
+    const stream = await follow(rt.client, s1)
+    await sendPrompt(rt.client, s1, '写 dsh 根')
+    const asked1 = await waitForApproval(feed, s1, 1)
+    await feed.answer(asked1, 'allowed-once')
+    await waitForTurnEnds(stream.frames, 1)
+    await sendPrompt(rt.client, s1, '写 agents 根')
+    const asked2 = await waitForApproval(feed, s1, 2)
+    await feed.answer(asked2, 'allowed-once')
+    await waitForTurnEnds(stream.frames, 2)
+    expect(existsSync(pwn1), '批准后 .dsh/skills 仍写不进（ro-bind）').toBe(false)
+    expect(existsSync(pwn2), '批准后 .agents/skills 仍写不进（ro-bind）').toBe(false)
+    // review 中1 修：按 toolCallId 去重取各 call 最终结果——两条 bash 写命令各自 isError 且含只读诊断
+    const reqs = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8').trim().split('\n')
+      .map((l) => JSON.parse(l) as { toolResults?: Array<{ toolCallId: string | null; isError: boolean; text: string }> })
+    const byCall = new Map<string, { isError: boolean; text: string }>()
+    for (const r of reqs) for (const t of r.toolResults ?? []) if (t.toolCallId) byCall.set(t.toolCallId, { isError: t.isError, text: t.text })
+    const ro = [...byCall.values()].filter((t) => t.text.includes('Read-only file system'))
+    expect(ro.length, '两条写命令各自 Read-only（按 callId 去重）').toBe(2)
+    // isError 不作契约：dsh 对 bash 非零退出可作正常输出回传（stderr 在 text）——写不进由文件
+    // 不存在 + 只读诊断双证；探针见回执（一条 isError=true 一条 false）
+    // review 高1 场景：旧工作区（未经预建、两根不存在）——bash 一条命令 mkdir+写也必败（fail-closed 补建后挂 ro）
+    const s2 = await (await import('./approval-legacy-ws.ts')).createLegacySession(rt)
+    const legacyPwn = join(rt.home, 'legacy-ws', '.dsh/skills/x/pwn.md')
+    rt.writeScript(s2, [
+      bashCall(`mkdir -p ${join(rt.home, 'legacy-ws', '.dsh/skills/x')} && echo evil > ${legacyPwn}`),
+      textCall('旧区写完'),
+    ])
+    const stream2 = await follow(rt.client, s2)
+    await sendPrompt(rt.client, s2, '旧区写')
+    const asked3 = await waitForApproval(feed, s2, 1)
+    await feed.answer(asked3, 'allowed-once')
+    await waitForTurnEnds(stream2.frames, 1)
+    expect(existsSync(legacyPwn), '旧工作区 mkdir+写一条命令也写不进').toBe(false)
+    stream2.stop()
+    // T7db：改名父目录绕过——mv .dsh 后自建新根写入（.agents 同理）必须仍写不进
+    const s3 = await (await import('./approval-legacy-ws.ts')).createLegacySession(rt)
+    const dshMoved = join(rt.home, 'legacy-ws', '.dsh_x')
+    const pwnMoved = join(rt.home, 'legacy-ws', '.dsh/skills/y/SKILL.md')
+    const agMoved = join(rt.home, 'legacy-ws', '.agents_x')
+    const pwnAg = join(rt.home, 'legacy-ws', '.agents/skills/y/SKILL.md')
+    rt.writeScript(s3, [
+      bashCall(`cd ${join(rt.home, 'legacy-ws')} && mv .dsh .dsh_x && mkdir -p .dsh/skills/y && echo evil > .dsh/skills/y/SKILL.md`),
+      textCall('改名 dsh'),
+      bashCall(`cd ${join(rt.home, 'legacy-ws')} && mv .agents .agents_x && mkdir -p .agents/skills/y && echo evil > .agents/skills/y/SKILL.md`),
+      textCall('改名 agents'),
+    ])
+    const stream3 = await follow(rt.client, s3)
+    await sendPrompt(rt.client, s3, '改名 dsh 根')
+    const asked4 = await waitForApproval(feed, s3, 1)
+    await feed.answer(asked4, 'allowed-once')
+    await waitForTurnEnds(stream3.frames, 1)
+    await sendPrompt(rt.client, s3, '改名 agents 根')
+    const asked5 = await waitForApproval(feed, s3, 2)
+    await feed.answer(asked5, 'allowed-once')
+    await waitForTurnEnds(stream3.frames, 2)
+    expect(existsSync(pwnMoved), '改名 .dsh 后仍写不进新根').toBe(false)
+    expect(existsSync(dshMoved), '.dsh 没被搬走（父目录自绑=挂载点不可 rename）').toBe(false)
+    expect(existsSync(pwnAg), '改名 .agents 后仍写不进新根').toBe(false)
+    expect(existsSync(agMoved), '.agents 没被搬走').toBe(false)
+    stream3.stop()
+    stream.stop()
+  } finally {
+    feed.close()
+    await rt.stop()
+  }
+})

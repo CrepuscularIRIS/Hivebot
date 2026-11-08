@@ -1171,3 +1171,5 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 回执三方合并（review 修复节+经理验收节双保留）；合并后回测：unit grok-shim+fold **233 passed**；e2e onboarding+kickstart+bots **19 passed**
 - T28bb 一行修复单遗留（already 分支 return 位置——单账号不触发，不阻塞）
 - T28b 全链：经理立项（探针纠 queue 两处）→施工→review 1M（介绍失败停链）→修复→终验（变异两刀）→合并
+- 2026-11-07 20:2x T7bd 终验通过（经理连跑 skills-picker+t7b-shot ×3 轮 3 passed、settings+dead-entries 3 passed、check diff=0；四图目检过）。主线提交 05ef7e3d/81e5aaa5/136d1a7c。衍生：T7be（waitProductReady 竞态——施工完 01a5e63f，Sol 审查中）、T7bf（对比度断言 WCAG）、T7bg（12 裸 spec 扫描）。
+- 2026-11-07 20:2x T32c 施工完（feat/T32 @ c4a794cd+8a6bb0a3：z4 盖账号圆/药丸、退场 heading id、末排间距、Vg 失败信息见角色 class；三刀红/全文件 6 passed/vitest 233/kickstart+bots 13/check diff=0；两图亲验左下角干净）——经理终验中（第三次，不过挪 blocked）。

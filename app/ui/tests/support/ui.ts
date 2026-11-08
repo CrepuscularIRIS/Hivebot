@@ -108,7 +108,8 @@ export async function launchProduct(opts: ShellOptions & { ready?: boolean; patc
   // 之后的产品面：页面起来后置 seen 并触发 roster 重载（补建 main bot）；onboarding 专项
   // 用 onboardingFirst:true 自测真首启三态。
   if (!onboardingFirst) await ensureOnboardingSeen(shell.page) // T26b #2 → T7be 抽共用
-  if (ready) await waitProductReady(shell.page) // 内含引导计零哨兵（T7be），原独立哨兵等价删除
+  if (ready) await waitProductReady(shell.page) // 内含引导计零哨兵（T7be）
+  if (!onboardingFirst) await expect(shell.page.locator('.sand-onboarding')).toHaveCount(0) // T7be review：独立哨兵恢复——ready:false 调用方（resilience/theme-flash）不走 waitProductReady，仍需守
   return { rt, shell, page: shell.page, async stop() { await shell.stop(); await rt.stop() } }
 }
 

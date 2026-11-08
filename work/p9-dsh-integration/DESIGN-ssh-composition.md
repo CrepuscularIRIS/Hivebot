@@ -355,3 +355,14 @@
 **改定**：D11 要证的是「**dsh** 被强杀 → ssh master 与 helper 退出、目录只剩空壳」（与 T4 receipts §43 的观测同一对象）。「launcher 被强杀 → dsh 存活」是 T-13 既定行为，⑪ 前半照它断言、不当缺陷。孤儿 dsh 由谁收（产品里 Electron main 重启时）不在 T9 范围；若要管，另立单。
 
 **D8 补记**：T9ab ⑧ 绿不构成「工具面无 workflow」的证据——断言对象是 `requests.jsonl.userTexts`，fake（`tests/support/fake/plugin.mjs:132-150`）不记工具清单；删光三条 PTC 禁行 ⑧ 仍绿（经理 MW 变异）。T9ac 第 1–2 步补观测后再定。
+
+---
+
+## r5 · T12 立项探针（2026-11-07，manager 执笔，纯读文件）
+
+D7 三处前提与代码不符，按下面改定（工单 `open/T12a-ssh-disconnect-notice.md`）：
+1. **「main 在事件流里看到固定串」不成立**：main 的常驻 `$events` 只入账审批/提问（`app/ui/main/dsh/ledger.ts:11-14`），turn/end 只在 renderer 的 `session/follow` 里（shim `data.ts:292-316`）。认串放 renderer 的 `endNotice`，不碰 main。
+2. **「复用 launcher 重启路径」——没有这条路径**：`app/launcher/hivebot` 起 SDK 一次、SDK 退就收 UI（第 6 步），DESIGN-launcher §76 明写不做重启；`start.ts main()` 只跑一轮 `startRuntime`；Electron main 只连不启（拿不到 key）。按本节原话「没有现成路径就停下」→ 按钮拆成 T12b，交 **Q-034**（默认 C：不做按钮，文案提示重开 Hivebot）。
+3. **全局离线态删掉**：断的是远端工具，LLM 在宿主，聊天照常可用；整体置离线会挡掉还能用的功能。
+4. ⑦a 「喂 T4 回执两条原样事件」改为喂 **web 组合真帧**（T4 是 headless 事件格式）；⑦b 的「bot B 不被打断」随不重启自然成立，不单测。
+5. queue 5a⁗（ready 后 socket hang up）不是同一层，且产品侧已被 `connect.ts` U-17 退避重连吸收，不并入。

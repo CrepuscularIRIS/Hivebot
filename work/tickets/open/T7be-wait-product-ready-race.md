@@ -5,8 +5,8 @@
 > 分支 / 作业目录：直接在集成分支 `docs/rebuild-p6-p5-plan`（只改测试 helper + 新增一格 spec，小单）
 > 排期：现在可做；ui e2e 与 T32c 等同刻只跑一套
 > claimed：
-> accepted：
-> 失败计数：0
+> accepted：（2026-11-07 终验 @ 5db7d1d9 不通过 第 1 次 → T7beb；见 review/review-T7be.md「T7be 终验」）
+> 失败计数：1
 
 ## 目标
 裸 `launchShell` 后调 `waitProductReady`，不管壳此前是否已用旧 seen 打开引导，返回时引导层必须不在、主区可点。

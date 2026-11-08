@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：T7beb 终验不通过（review/review-T7be.md「T7beb 终验」）；T7be 链失败计数 2，本单即重规划结果
 > 分支 / 作业目录：直接在集成分支 `docs/rebuild-p6-p5-plan`
-> claimed：
+> claimed：2026-11-07 22:3x main (GLM 5.3) @ 集成分支（起点 87e517c0 后）
 > accepted：
 > 失败计数：0（T7be 链：2——本单再失败就停手、整链挪 blocked 交用户）
 

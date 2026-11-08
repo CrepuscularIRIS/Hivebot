@@ -25,6 +25,6 @@
 | 单 | 内容 | 状态 |
 |---|---|---|
 | T33 | 产品认知 + 同伴名册 section（默认链） | done（2026-11-08 经理终验 a76a5cf9，待合并 feat/T33） |
-| T34 | 编排开闸（Q-035=A）：orchestration.yml 进默认链 + `DSH_PBOTS_DATA_DIR` 数据根注入 + harness 播种 + 在场断言 + 生产真建 worker 旁证 | open（2026-11-08 立项，`tickets/open/T34-orchestration-default-chain.md`） |
+| T34 | 编排开闸（Q-035=A）：orchestration.yml 进默认链 + `DSH_PBOTS_DATA_DIR` 数据根注入 + harness 播种 + 在场断言 + 生产真建 worker 旁证 | done（2026-11-08 经理终验 0de49c88，`tickets/done/T34-orchestration-default-chain.md`；待合并+生产旁证 7；⑤ 泄漏格补测 T34b） |
 | T35 | 生产模型路由复测（替 P6-22 定案） | 计划，T34 合并后 |
 | — | superagent 归属 | 等 Q-036；subagent 部分并入 T27 |

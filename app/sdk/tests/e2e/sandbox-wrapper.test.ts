@@ -127,10 +127,16 @@ describe('T7d：skill 根 ro-bind（binds 派生——bash 写 skill 根必败�
     const remaskAt = argv.indexOf(never)
     expect(dshAt).toBeLessThan(remaskAt)
     expect(agAt).toBeLessThan(remaskAt)
-    // 目录缺失（预建前的旧工作区）：不追加、wrapper 照常出 argv
+    // review 高1（fail-closed）：目录缺失也追加（真跑先补建；dry-run 报完整形状）
     const bare = tmkdir('t7d-bare-')
     const argv2 = dryRun(['--home', '/tmp/t7d-nohome', ...profileArgs(bare), '--', '/bin/sh', '-c', 'true'])
-    expect(argv2.some((a) => String(a).includes('.dsh/skills') || String(a).includes('.agents/skills'))).toBe(false)
+    expect(argv2.includes(join(bare, '.dsh/skills'))).toBe(true)
+    expect(argv2.includes(join(bare, '.agents/skills'))).toBe(true)
+    // 真跑（非 dry）：目录被补建
+    const res2 = runWrapper(['--home', '/tmp/t7d-nohome', ...profileArgs(bare), '--', '/bin/true'])
+    expect(res2.status, `real run succeeds:\n${res2.stderr}`).toBe(0)
+    expect(existsSync(join(bare, '.dsh/skills')), '真跑补建 .dsh/skills').toBe(true)
+    expect(existsSync(join(bare, '.agents/skills')), '真跑补建 .agents/skills').toBe(true)
   })
 })
 

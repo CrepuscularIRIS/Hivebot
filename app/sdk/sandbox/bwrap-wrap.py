@@ -353,13 +353,16 @@ def main():
             policies_mounted.append(p)
     # T7d：skill 根只读覆盖——bash 写 .dsh/skills/.agents/skills 必须失败（挂载
     # 点不可写/rename/rm；与 write/edit 的审阅卡同语义）。从 binds（会话工作区
-    # per-bot）派生，bwrap 挂载序：后 --ro-bind 覆盖前 --bind 的写权限。目录
-    # 缺失跳过（mintWorkspace 预建后必在）。不进 remask 集：skill 要可见可读。
+    # per-bot）派生，bwrap 挂载序：后 --ro-bind 覆盖前 --bind 的写权限。
+    # review 高1（fail-closed）：缺根不跳过——真跑先补建（旧工作区/restore 不经
+    # 预建，缺根时 bash 可 mkdir+写绕过）；dry-run 只报完整形状不落盘。skill 要
+    # 可见可读，不进 remask 集。
     for b in binds:
         for sub in ('.dsh/skills', '.agents/skills'):
             root = os.path.join(b, sub)
-            if os.path.isdir(root):
-                out += ['--ro-bind', root, root]
+            if not os.path.isdir(root) and not os.environ.get('BWRAP_WRAP_DRY_RUN'):  # dry 在后文才定义——此处直接判环境（同语义）
+                os.makedirs(root, exist_ok=True)
+            out += ['--ro-bind', root, root]
     # 再遮（v2.1）：硬 NEVER 根与 mask 根落在任何挂回/重 bind 目录之下 → 最后再遮一次
     mounted = binds + tools_mounted + policies_mounted
     remask = set()

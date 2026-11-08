@@ -520,11 +520,29 @@ it('T7d: 批准后的 bash 写 skill 根仍失败（ro-bind 挂载点不可写�
     await waitForTurnEnds(stream.frames, 2)
     expect(existsSync(pwn1), '批准后 .dsh/skills 仍写不进（ro-bind）').toBe(false)
     expect(existsSync(pwn2), '批准后 .agents/skills 仍写不进（ro-bind）').toBe(false)
-    // 验收 2 字面证据：tool-result isError + Read-only file system（退出非零由 shell 通道回传）
+    // review 中1 修：按 toolCallId 去重取各 call 最终结果——两条 bash 写命令各自 isError 且含只读诊断
     const reqs = readFileSync(join(rt.home, 'fake', 'requests.jsonl'), 'utf8').trim().split('\n')
-      .map((l) => JSON.parse(l) as { toolResults?: Array<{ isError: boolean; text: string }> })
-    const texts = reqs.flatMap((r) => r.toolResults ?? []).map((r) => (r.isError ? `[isError] ${r.text}` : r.text)).join('\n')
-    expect(texts.match(/Read-only file system/g)?.length ?? 0, '两次写根都 Read-only file system').toBeGreaterThanOrEqual(2)
+      .map((l) => JSON.parse(l) as { toolResults?: Array<{ toolCallId: string | null; isError: boolean; text: string }> })
+    const byCall = new Map<string, { isError: boolean; text: string }>()
+    for (const r of reqs) for (const t of r.toolResults ?? []) if (t.toolCallId) byCall.set(t.toolCallId, { isError: t.isError, text: t.text })
+    const ro = [...byCall.values()].filter((t) => t.text.includes('Read-only file system'))
+    expect(ro.length, '两条写命令各自 Read-only（按 callId 去重）').toBe(2)
+    // isError 不作契约：dsh 对 bash 非零退出可作正常输出回传（stderr 在 text）——写不进由文件
+    // 不存在 + 只读诊断双证；探针见回执（一条 isError=true 一条 false）
+    // review 高1 场景：旧工作区（未经预建、两根不存在）——bash 一条命令 mkdir+写也必败（fail-closed 补建后挂 ro）
+    const s2 = await (await import('./approval-legacy-ws.ts')).createLegacySession(rt)
+    const legacyPwn = join(rt.home, 'legacy-ws', '.dsh/skills/x/pwn.md')
+    rt.writeScript(s2, [
+      bashCall(`mkdir -p ${join(rt.home, 'legacy-ws', '.dsh/skills/x')} && echo evil > ${legacyPwn}`),
+      textCall('旧区写完'),
+    ])
+    const stream2 = await follow(rt.client, s2)
+    await sendPrompt(rt.client, s2, '旧区写')
+    const asked3 = await waitForApproval(feed, s2, 1)
+    await feed.answer(asked3, 'allowed-once')
+    await waitForTurnEnds(stream2.frames, 1)
+    expect(existsSync(legacyPwn), '旧工作区 mkdir+写一条命令也写不进').toBe(false)
+    stream2.stop()
     stream.stop()
   } finally {
     feed.close()

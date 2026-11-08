@@ -38,3 +38,13 @@ write-outside + tiers-policy + guard-fs：Test Files 3 passed (3) / Tests 25 pas
 ## 边界外记录
 - ui 侧 skills-enable.spec 主动加验：卡 `.sand-agent-item` 60s（T26b gate 裸 launchShell 回归第 13 个受害者，T7bg 清单）——与 T7d 无关未修。T7d 的产品链验证由 approval e2e（真 dsh 会话 + 真 bwrap 沙箱）覆盖。
 - 追加：退出码字面断言（requests.jsonl toolResults 含 `Read-only file system` ×2）→ 6 passed；T7c 出卡回归 skill-write-card **9 passed**（write/edit 出卡链不变）
+
+## review 修复（2026-11-07 20:5x——Sol 高1/中1）
+- **高1（fail-closed）**：isdir 跳过=旧工作区（restore 只恢复 preset 不补根，既有 bot 永久裸奔）+ bash 一条命令 `mkdir && echo >` 可自建绕过。修：派生段缺根**不跳过**——真跑先 `os.makedirs(exist_ok=True)` 再挂 ro-bind（dry-run 只报完整形状不落盘）。既有工作区首次沙箱启动即获保护。
+- **中1（断言严谨）**：退出码断言改按 toolCallId 去重——两条写命令各自 text 含 `Read-only file system`（探针：一条 isError=true 一条 false——dsh 对 bash 非零退出可作正常输出回传，isError 非本单契约，回执记）。
+- 新增高条 e2e 场景：legacy 工作区（无预建）`mkdir -p && echo >` 一条命令 allowed-once 后仍写不进（s2 独立 follow——首版误等 s1 流红在 turn/end #3，已修）。
+```
+Vk2 刀（删派生段）：✘ '批准后 .dsh/skills 仍写不进' expected true to be false → 还原 → approval 6 + wrapper 14 passed
+回归五件（write-outside/tiers-policy/guard-fs/skill-write-card/sandbox-wrapper）：Test Files 5 passed / Tests 48 passed
+approval 全量（含高条场景）：Tests 6 passed (6)
+```

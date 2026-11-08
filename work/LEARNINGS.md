@@ -159,3 +159,5 @@
 - **变异刀前本体必须先提交**：T32c 首轮 Vi 刀后还原误用 `git checkout --`，把未提交的 spec 本体改动整抹（变异刀只该动产品文件，但还原操作分不清哪个文件属于本体）——正序：本体提交→刀在提交之上改→checkout 还原永远安全。
 >>>>>>> feat/T32
 - **变异刀先决检查（三次事故后根治）**：动刀前必须 `git log --oneline -1 -- <改动文件>` 确认改动已在提交里（或 git diff 为空）——否则 checkout 还原会连实现一起抹掉。T32c/T7db 两日三犯（注释/实现/重放各一次）。另外批量 python replace 后必须验证生效（grep 关键新行），静默不匹配会误提交红态。
+- **waitForFunction 不 await async predicate**（T7beb Sol 证）：playwright-core coreBundle:25707 `const success = predicate(); if (success) fulfill`——async 函数返回的 Promise 恒 truthy，首次调用即结束，`polling` 从未驱动。需要真异步轮询用 `expect.poll`（每轮 await 回调）。
+- **改共享 helper 语义后全部验收必须重跑**（T7beb 漏验收 4）：「只改了一小段」不成立——T7bec 就是漏跑的那格必现红。验收清单当轮全跑完才算施工完。

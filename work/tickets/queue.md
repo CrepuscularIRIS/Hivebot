@@ -2,7 +2,19 @@
 
 顺序由 manager 维护；`open/` 只放现在就能做的单。下表是计划，状态以工单所在目录为准。
 
-## UI 复刻链（0.79.3）——2026-11-07 立项，**最高优先**（用户：「先做 UI 部分」）
+## bot 产品认知（`work/bot-product-awareness/`）——2026-11-08 立项，**最高优先**（用户正在用产品，实测反馈）
+
+**2026-11-08 manager 任务 A（立项）**：探针结论见 `bot-product-awareness/PLAN.md` §1。要点：bot 的系统提示里没有任何多 bot 说明；主 bot 派活建 bot 的编排（create_bot / send_to_bot / stop_bot + Workers 分组）**早已建好但闸门关着**（`orchestration.yml` 不在 `start.ts buildArgs` 默认链，= P6-14b），且带「强制委派」路由提示；subagent 工具默认 preset 一直都有；「superagent」有歧义（Q-001=b 移出的 dsh-superagent-prototype vs subagent vs 编排）。
+
+| # | 项 | 依赖 | 状态 |
+|---|---|---|---|
+| A1 | **T33** 产品认知 + 同伴名册 section（`open/T33-bot-product-awareness-prompt.md`）：新 SDK 插件按 routing-prompt 写法给每个非 subagent 的 bot 挂一段——多 bot 环境、现有同伴名单（main / 自己 / worker+创建者，≤30 行，名字清洗）、New Bot（Ctrl+N）→ Create New Bot 路径、「有 create_bot 照其说明，否则指路不假装」、subagent 不是 bot；**进默认链**（新 `awareness.yml` + buildArgs 一行）；先探针「插件进程内拿 session/list 同款名册」，拿不到即停 | — | **open** |
+| A2 | T34 主 bot 代建 bot：Q-035=B → 默认链挂 create_bot 但不挂强制委派路由提示（orchestration 插件加一个开关或拆注册，send/stop 是否同开随答复）+ dsh 子进程数据根注入（`identity.mjs` 头注 ponytail：start.ts childEnv 传 `P2SDK_ORCH_DATA_DIR`）+ 启动顺序核对（P6 f4 遗留③）；审批边界照 PLAN §3 不放宽；Q-035=A → 并入 P6-14b 前置三项（见下「待排查」行）；Q-035=C → 不开 | **Q-035**；T33 合并（T33 段落「有 create_bot 照其说明」与之衔接） | 计划 |
+| A3 | BRIEF 第 3 条（superagent）：Q-036=B → subagent 呈现并入 T27（U7 行），编排按 Q-035；=A/C → 另立项评估 dsh-superagent-prototype 接入（先重读 `p2-sdk/reuse/superagent-compat.md`） | **Q-036** | 等用户 |
+
+**施工序**：T33 现在就做（与 UI 链剩余单不碰同文件：只动 `app/sdk` 新文件 + start.ts 一行）。T33 合并后主 agent 在生产实例里问主 bot 一句「现在有哪些别的 bot？怎么新建一个？」，原样回复记 LOG。
+
+## UI 复刻链（0.79.3）——2026-11-07 立项（用户：「先做 UI 部分」）
 
 **2026-11-07 manager 任务 A（立项）**：输入 `work/grok-0.79.3-re/RE-UI-0.79.3.md` + BRIEF §用户体验反馈。关键发现：**0.18 移植里大部分零件已经在了，只是没接数据或被 shim 关掉**——「Full conversation」侧板（view + provider + 行菜单入口）在，shim 对 `getConversationOutline` 回 `[]`；程序化 SVG 吉祥物（39 状态 + 活动→状态映射，P5-56 已接 `currentActivity`）在，但 bot 记录 `shape/color` 恒 null（`shim/src/agents.ts:43`）；onboarding 电影化分镜（meet→computer-demo→jobs→tools→create→hand-off，含 3 个演示 bot）在，shim `onboarding.getSeen` 恒 true（`shim/src/desktop.ts:197`）把它跳过了。所以链子按「先接现成的、再补 0.79.3 增量」排，自建只剩状态行短语引擎。参照图统一来自 T20（R3 桩挂 0.79.3），T20 渲不出的场景退回 RE 文字 + 标未验证。编排层（subagent / 跨 bot）用户在研究，T27 不开。
 
@@ -22,7 +34,7 @@
 | U5c | T32 onboarding B 段：3 演示 bot 编舞（0.18 scene.ts 是否够用）、beat 轴逐帧对照、T20 S5 onboarding 亮暗参照全套（含引导期间侧栏是否被覆盖；create 步版式现散——色板/角色重叠，见 ours/onboarding-create.light.png）；演示 bot 走 T25 `kickstart:false`。（2026-11-07 T28 立项注：Q-033 若按 A 落地，create 步退出 walk，「create 步版式」这一项作废；view 已复制进覆盖层，编舞改动做在覆盖层上，上游 scene.ts 仍不动） | T26 done、T20 S5、T28 | **done**（2026-11-07 经理立项 `open/T32-onboarding-choreo.md`：探针——SCENE_AS 效果已生效（内联三元，常量无消费者），撞版根因是 T28c 自拟版心；退场动画缺；侧栏未盖根因 sidebar z-index:1；create 版式作废（已出 walk）；④ visCheck 对 role/attribution 空转。范围：退场动画 + 三页改 0.79.3 静态版心数值 + 盖侧栏 + 提议⑩断言；S5 参照可选时间盒 1h。终验 1 @42be0b33 返修→T32b；终验 2 @9eeed1e7 返修→T32c；终验 3 @c4a794cd **通过**，T32/T32b/T32c 挪 done，待合并（见 review-T32.md「T32c 终验」）） |
 | U6 | **T25** 建后自我介绍（kickstart）（`open/T25-kickstart-intro.md`；原计划行编号 T26）：shim `createBot` 成功后发 `session/prompt`，提示用 `<bot_introduction_request>` 标签包裹，按内容在 entries/outline 隐藏（照 0.79.3 `NF`/`wxt` 的内容匹配写法；原文「对应 wxt」不准，wxt 只认 flight 表单）；失败落 notice「Your Bot couldn't introduce itself」（`G4TlI/`）；`kickstart:false` 抑制（0.79.3 无 UI 开关，是代码路径自动抑制；留给 T26） | T22、T24 | **done**（2026-11-07 验收通过，待合并） |
 | U6b | T31「Help me create a Bot」接线（从原 U6 拆出）：卡片点了以后交给主 bot 代建（0.79.3 `isBotBuilderRequested`；服务端行为，先探我们怎么映射，比如给主 bot 发一条引导 prompt） | T30（卡片先渲染）、T25 | **搁置**（2026-11-07 T30 探针：卡只在 flag 版 Ahn 对话框里，默认版 Thn 没有；前提「T30 先渲染卡片」不成立。要做须连 Ahn 整套——标题「Create a Bot」、use 卡等——另立项，等用户提） |
-| U7 | T27 subagent / 跨 bot 呈现：outline per-subagent tab（`agent.raw.subagents` + 2s 轮询）、任务卡（Subagent/Shell/Cloud 三 icon）、跨 bot 消息改 message+fromAgent/toAgent | **等用户编排层研究结论**（BRIEF §用户体验反馈 2）；先要探针：dsh subagent 子会话事件能否从 SDK 拿到 | 阻塞（不开单） |
+| U7 | T27 subagent / 跨 bot 呈现：outline per-subagent tab（`agent.raw.subagents` + 2s 轮询）、任务卡（Subagent/Shell/Cloud 三 icon）、跨 bot 消息改 message+fromAgent/toAgent | **等用户编排层研究结论**（BRIEF §用户体验反馈 2）；先要探针：dsh subagent 子会话事件能否从 SDK 拿到。（2026-11-08 补：`bot-product-awareness` BRIEF 第 3 条是本行输入之一，见 Q-036；主 bot 派活编排的现状见该 slug PLAN §1-2/3） | 阻塞（不开单） |
 | U8 | **T28** onboarding 后半（`open/T28-onboarding-rest.md`；含原 T26c）：walk 改成 0.79.3 的 `landing→meet→computer-demo→jobs→role→attribution→connect→hand-off`，**tools/create 在 0.79.3 已移出 walk**（app `Qge=new Set(['tools','create'])`），hand-off 自动建主 bot 并带 role creatorContext；三页文案逐字对照 `work/grok-0.79.3-re/onboarding-0793-extract.json`；view 复制改造进覆盖层 | T26 done；Q-033（默认 A 可先做） | **done**（2026-11-07 T28+T28c 经理终验通过 @feat/T28 7f6cb06d，待合并；首验 @7c22aadb 返修→T28c） |
 | U8b | **T28b** 选 role 后自动建 2 个模板 bot（`done/T28b-role-usecase-bots.md`）：42 模板入仓（`onboarding-templates-0793.ts`，extract 逐条对照），`roleUseCaseBots(role)` 取 je 原序前 2 条（9 role×2=18 条实际用到），name=模板名、description=职责+" "+creatorContext、templateId、isAutomatic；hand-off 时序 = 主 bot seen→介绍→模板 bot 逐个建+介绍（0.79.3 odr `w/C/S` @4541941），不挡进主界面。**探针纠正**：模板 bot 的 origin 也是 `'user'`（de=Xu），不需要新 origin 分支；shim 改三处：pendingKickstart 改 Map+`finishKickstart(sid)`、带 templateId 不 patch mainBotId、介绍提示带名字；finish 链先 await reloadRoster（防 roster 快照覆盖新 bot 的竞态）。原版受实验开关控制，默认开（Q-033 第 2 点） | T28 done | **done**（2026-11-07 经理验收 @11d205fd；遗留修复单 T28bb：`open/T28bb-already-branch-return.md`，已在 open/，不阻塞合并） |
 

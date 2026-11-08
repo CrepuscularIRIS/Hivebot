@@ -72,3 +72,12 @@ Vh 刀（删父目录自绑）：✘ '改名 .dsh 后仍写不进新根' expecte
 
 ### 施工事故记录（如实）
 首次 Vh 刀跑在未提交实现上，`git checkout` 还原时把实现一并抹掉（T32c 同款——LEARNINGS「变异刀前本体先提交」再犯一次，已重放实现并先提交后重跑刀闭环）。事故不影响刀的有效性：两次 Vh 红输出一致、还原后复绿均在提交态验证。
+
+### T7db 复审修复（2026-11-07 21:2x——Sol 中1：链接拒绝在 makedirs 之后）
+- 缺口：`.dsh` 链到**已存在可写**目录时 `makedirs` 先在外部建 skills 才 die（宿主副作用已发生）；旧测试用悬空链接（makedirs 撞悬空失败）绿属巧合。
+- 修：islink 前查（悬空/非悬空全兜，makedirs **之前** die）+ 创建后复查（islink or realpath）；测试改真场景（已存在 outside/.dsh 无 skills）+ 补悬空态。
+```
+Vi 刀（删前查）：✘ '链接目标下没建 skills（makedirs 前已拒）' expected true to be false——缺口 e2e 复现
+还原 → sandbox-wrapper 15 passed；approval 6 passed
+```
+- 施工事故（第三次同款，如实）：修复后未提交即跑 Vi 刀→checkout 抹修复；重放时 replace 匹配旧注释版静默未生效又误提交红态一轮——Edit 精确插入后绿态提交、刀在提交上闭环。LEARNINGS「先提交再动刀」已三次触犯，根治写进本回执：**变异刀的先决检查=git log 确认改动已在提交里，否则禁止动刀**。

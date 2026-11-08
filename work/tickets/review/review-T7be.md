@@ -107,3 +107,29 @@ git status --short app/ui → 空
 
 ### 修法（T7bec，最小）
 `ensureOnboardingSeen(page, settle = true)`；`launchProduct` 传 `settle: ready`；`waitProductReady` 照旧 settle。ready:false 的两个调用方：resilience:16（roster 故意起不来）不需要 settle；theme-flash:172（同 home 第二次启动，主 bot 早已持久化，没有双建窗口）也不需要。ready:true 的路径和裸壳路径不受影响，所以验收 2、3 的结论直接沿用，不重跑 10 轮。
+
+## T7bec 终验（manager Opus 5.5，2026-11-07 22:44–22:53，HEAD 27f0bc40，load 5.9–7.6）
+
+**结论：通过。T7be + T7beb + T7bec 三张一起挪到 done/（accepted 2026-11-07 27f0bc40），T7be 链结束，可以合并。**
+
+### 经理重跑（隔离 HOME/TMPDIR/死 DBus，先 build；原样见 `evidence/T7bec/`）
+```
+build exit 0
+res    (resilience):                           4 passed (43.8s)；GU-1 :15 ✓ 3.1s     ← 验收 2 时长门槛 <15s ✓
+acc2a  (resilience+theme-flash+onboarding):   16 passed (1.9m)；GU-1 3.5s
+acc2b  (同上第 2 次):                          16 passed (1.9m)；GU-1 3.0s          ← 验收 2 ✓
+wpr1/wpr2 (wait-product-ready):                2 passed (31.6s) ×2                  ← 验收 3 ✓
+batch  (grok-dead-entries+settings+market):    5 passed (1.9m)                      ← 验收 4 ✓
+git status --short app/ui → 空                                                       ← 验收 5 ✓
+```
+和回执逐项一致（回执 GU-1 3.1s / 16×2 / 2×2 / 5）。验收 1 的先红没有重跑：修复前的必现红经理已有自己的证据（`evidence/T7beb/final/acc4.log`，GU-1 在 ui.ts:89 处 32.0s 超时），回执 32.2s 的形态与之相同。
+
+### 审点
+1. **改动范围**：`git diff 87e517c0..HEAD -- app/` 恰好是 `tests/support/ui.ts`（settle 参数 + `if (settle)` 包裹 + launchProduct 传参）和 `wait-product-ready.spec.ts:28` 注释「5 次→10 次」一行，后者与 `i <= 10` 对齐。没有动产品代码，没有动其他 spec。✓
+2. **ready:true 路径逐字等价**：diff 里 expect.poll 的回调、`timeout: 30_000`、`intervals`、`.toBe(true)` 都没改，只是外面套了一层 `if (settle)`，缩进跟着变。launchProduct 的 ready:true 调用传 true；waitProductReady:104 的调用不带参数，走默认 true。✓
+3. **settle=false 时其余步骤照旧**：首次等 `__pbotsDev`、写 seen、`page.reload()`、再等 `__pbotsDev` 都在 if 外面，照常执行。GU-1 之后的断言（session/list 调用 ≥3、`.sand-shell` 可见、没有 "Couldn't render"、事件循环活着）和 launchProduct:125 的引导计零哨兵，靠的正是 seen 加 reload，不靠被跳过的 settle。theme-flash:172 在同一 home 第二次启动，主 bot 早已持久化，不需要 settle。onboarding 系列走 `onboardingFirst:true`，根本不进 ensureOnboardingSeen。✓
+4. **超时不被吞**：if 块里的 expect.poll 没加 `.catch`，ready:true 路径超时照旧抛到 launchProduct。（附注，不阻塞：waitProductReady:101-106 原本就有 `try{…}catch{}` 包住 ensureOnboardingSeen，裸壳路径的 settle 超时会被吞掉。这一段是 T7be/T7beb 时期就有的，不是本单引入的。被吞以后，后面还有 `.sand-agent-item` 可见和 `.sand-onboarding` 计零两道断言兜底，所以测试不会假绿。不开单。）
+5. **流程缺口已补**：回执贴了 1–5 的全部输出，改了 helper 语义之后重跑了全部验收，T7beb 时漏掉的那一步这次补上了。
+
+### 沿用
+D10c1 双 main 消除的证据沿用 T7beb 终验：wpr 共 100 个 home 加 10 轮批跑，0 红。queue 7b⁵′（产品侧主 bot 建立非原子）维持提议，开单触发条件都没有触发。

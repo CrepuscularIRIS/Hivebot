@@ -6,6 +6,7 @@
 > 排期：现在可做；ui e2e 与 T32c 等同刻只跑一套
 > claimed：
 > accepted：（2026-11-07 终验 @ 5db7d1d9 不通过 第 1 次 → T7beb；见 review/review-T7be.md「T7be 终验」）
+> accepted：2026-11-07 27f0bc40（T7be+T7beb+T7bec 链终验通过，见 review/review-T7be.md「T7bec 终验」）
 > 失败计数：2（第 2 次 = T7beb 终验 2026-11-07 @ 87e517c0 不通过 → T7bec；本次 B 兼 C 重规划，方案不变、范围收窄）
 
 ## 目标

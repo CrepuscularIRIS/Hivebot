@@ -6,6 +6,7 @@
 > 排期：现在可做；ui e2e 同刻只跑一套
 > claimed：
 > accepted：（2026-11-07 终验 @ 87e517c0 不通过 第 1 次 → T7bec：D10c1 双 main 已消（10 轮 0 红），验收 4 resilience GU-1 必现超时；见 review/review-T7be.md「T7beb 终验」）
+> accepted：2026-11-07 27f0bc40（T7be+T7beb+T7bec 链终验通过，见 review/review-T7be.md「T7bec 终验」）
 > 失败计数：1（T7be 链：2）
 
 ## 目标

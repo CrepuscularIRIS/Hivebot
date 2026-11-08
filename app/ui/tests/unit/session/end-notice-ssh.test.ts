@@ -21,11 +21,17 @@ describe('T12a ssh 断连 endNotice（真帧）', () => {
     const v = run([{ type: 'event', event: { type: 'turn/end', data: { turn: 3, reason: { kind: 'error', message: 'boom' } } } }])
     expect(v.items.at(-1)).toEqual({ kind: 'notice', id: 'end-3', tone: 'danger', text: '回复失败：boom' })
   })
-  it('foldTurns：ssh 断连回合仍判 error（文案改动不绕过 turn-fold.ts:73-76）', () => {
-    const v = run([TOOL_RESULT_SSH_RAW, TURN_END_SSH_RAW])
-    const folded = foldTurns(v.items, { hasMore: false })
-    const seg = folded.entries.at(-1)
-    expect(seg?.source).toBe('reduce')
-    expect((seg as { tone?: string }).tone).toBe('danger') // turn-fold.ts:73-76 判回合 error 的判据
+  it('foldTurns：ssh 断连回合仍判 error——尾段不升 result 气泡（turn-fold (b) 格同判据）', () => {
+    // 真帧链 + 尾文：tool/result（真帧）→ assistant/message 尾文 → turn/end（真帧，error）
+    const v = run([
+      { type: 'event', event: { type: 'tool/call', data: { turn: 1, step: 1, callId: 't10-a229ef', name: 'bash', arguments: '{"command":"printf go > started; sleep 30"}' } } },
+      TOOL_RESULT_SSH_RAW,
+      { type: 'event', event: { type: 'assistant/message', data: { turn: 1, step: 2, message: { content: [{ type: 'text', text: '尾文' }] } } } },
+      TURN_END_SSH_RAW,
+    ])
+    const folded = foldTurns(v.items, { hasMore: false, running: false })
+    expect(folded.entries.find((e) => e.id === 't1-s2')?.kind, '尾文保持 thinking（不升 result 气泡——error 回合判据 turn-fold.ts:73-76）').toBe('thinking')
+    const nc = folded.entries.find((e) => e.kind === 'notice')
+    expect(nc).toMatchObject({ id: 'end-1', tone: 'danger', text: SSH_LOST_NOTICE, source: 'reduce' })
   })
 })

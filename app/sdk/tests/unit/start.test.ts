@@ -129,9 +129,9 @@ describe('buildArgs', () => {
     expect(args[args.indexOf('--port') + 1]).toBe('4599')
     const patches = args.filter((_, i) => args[i - 1] === '--patch')
     expect(patches[0].endsWith('profile/patches/p2sdk.yml')).toBe(true)
-    expect(patches, 'p2sdk.yml + approval.yml + market.yml + awareness.yml + runtime patch + extras').toHaveLength(6)
-    expect(patches[4]).toBe('/tmp/h/runtime-patch.yml')
-    expect(patches[5]).toBe('/tmp/x.yml')
+    expect(patches, 'p2sdk.yml + approval.yml + market.yml + awareness.yml + orchestration.yml + runtime patch + extras').toHaveLength(7)
+    expect(patches[5]).toBe('/tmp/h/runtime-patch.yml')
+    expect(patches[6]).toBe('/tmp/x.yml')
   })
 
   // T-12 (REVIEW R3/R5/R13): the shell-ask approval policy ships in the
@@ -141,7 +141,7 @@ describe('buildArgs', () => {
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_PATCH: '/tmp/x.yml' })
     const patches = buildArgs(cfg, '/tmp/h/runtime-patch.yml').filter((_, i, a) => a[i - 1] === '--patch')
     expect(patches[1].endsWith(join('profile', 'patches', 'approval.yml')), `second patch is approval.yml (got ${patches[1]})`).toBe(true)
-    expect(patches, 'p2sdk.yml, approval.yml, market.yml, awareness.yml, runtime patch, extras').toHaveLength(6)
+    expect(patches, 'p2sdk.yml, approval.yml, market.yml, awareness.yml, orchestration.yml, runtime patch, extras').toHaveLength(7)
   })
 
   // P5-58：market.yml（plugin-market + p2temp 两个 insert 行）进默认链——生产启动
@@ -158,7 +158,27 @@ describe('buildArgs', () => {
     const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock' })
     const patches = buildArgs(cfg, '/tmp/h/runtime-patch.yml').filter((_, i, a) => a[i - 1] === '--patch')
     expect(patches[3].endsWith(join('profile', 'patches', 'awareness.yml')), `fourth patch is awareness.yml (got ${patches[3]})`).toBe(true)
-    expect(patches[4], 'runtime patch comes after awareness.yml').toBe('/tmp/h/runtime-patch.yml')
+    expect(patches[5], 'runtime patch comes after orchestration.yml').toBe('/tmp/h/runtime-patch.yml')
+  })
+
+  // T34：orchestration.yml（编排开闸）进默认链——awareness 之后、runtime patch 之前；patch 总数 7。
+  it('mounts profile/patches/orchestration.yml by default after awareness.yml and before the runtime patch', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock' })
+    const patches = buildArgs(cfg, '/tmp/h/runtime-patch.yml').filter((_, i, a) => a[i - 1] === '--patch')
+    expect(patches, '无 extras 场景恰 6：p2sdk/approval/market/awareness/orchestration/runtime').toHaveLength(6)
+    expect(patches[4].endsWith(join('profile', 'patches', 'orchestration.yml')), `fifth patch is orchestration.yml (got ${patches[4]})`).toBe(true)
+    expect(patches[5], 'runtime patch comes after orchestration.yml').toBe('/tmp/h/runtime-patch.yml')
+  })
+
+  // T34 childEnv：数据根以 DSH_PBOTS_DATA_DIR 注入（P2SDK_* 不被上游擦除会泄路径——决策 15）。
+  it('childEnv injects DSH_PBOTS_DATA_DIR from PBOTS_DATA_DIR without leaking P2SDK_* or PBOTS_DATA_DIR', () => {
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', PBOTS_DATA_DIR: '/tmp/x-t34' })
+    const env = childEnv(cfg, { HOME: '/tmp/h' }) as Record<string, string>
+    expect(env.DSH_PBOTS_DATA_DIR, 'DSH_ 键注入').toBe('/tmp/x-t34')
+    expect(env.PBOTS_DATA_DIR, 'PBOTS_DATA_DIR 不进子 env').toBeUndefined()
+    for (const [k, v] of Object.entries(env)) {
+      if (k.startsWith('P2SDK_')) expect(v, `P2SDK_* 键 ${k} 不得携带数据根`).not.toBe('/tmp/x-t34')
+    }
   })
 })
 

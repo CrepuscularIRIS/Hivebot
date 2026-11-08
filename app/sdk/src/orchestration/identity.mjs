@@ -25,8 +25,13 @@ export const BOTS_JSON = 'bots.json'
  * @returns {string}
  */
 export function orchDataDir(env = process.env) {
+  // T34：生产链经 start.ts childEnv 注入 DSH_PBOTS_DATA_DIR（DSH_* 被上游工具子进程
+  // 擦除——不泄数据根给 bash，P5-01 决策 15；P2SDK_* 无此待遇故弃用）。P2SDK_ORCH_DATA_DIR
+  // 保留给测试显式叠加；PBOTS_DATA_DIR 兜底（不经 childEnv 的场景）；最后 HOME 默认。
   const explicit = env.P2SDK_ORCH_DATA_DIR
   if (explicit !== undefined && explicit !== '') return explicit
+  const dsh = env.DSH_PBOTS_DATA_DIR
+  if (dsh !== undefined && dsh !== '') return dsh
   const pbots = env.PBOTS_DATA_DIR
   if (pbots !== undefined && pbots !== '') return pbots
   const home = env.HOME ?? homedir()

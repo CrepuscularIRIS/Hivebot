@@ -3,8 +3,9 @@
 // examples/lib client, and exposes release(gateId): the cross-process
 // barrier channel touches $P2SDK_HOME/gates/<gateId> and opens no port.
 import { spawn, type ChildProcess } from 'node:child_process'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { tmkdir } from './tmp-sweep.ts'
 import { connect, type DshClient } from '../../examples/lib/client.mjs'
@@ -59,6 +60,21 @@ export async function launchRuntime(opts: LaunchOptions = {}): Promise<Runtime> 
   // P5-01: opts.env 可覆盖 P2SDK_HOME（沙箱用例把 DSH_HOME 放进测试树）；返回值与
   // 子进程 env 必须同源，fake 脚本目录（$DSH_HOME/fake）才找得到。
   const home = opts.env?.P2SDK_HOME ?? tmkdir('p2sdk-runtime-')
+  // T34 回归播种：orchestration 进默认链后每个 bot 都过信封，envelope 对 bots.json
+  // 缺失按 unknown→worker 拒（subagent/后台 bash 全没了）。生产无碍（main 先写骨架，
+  // VERIFY-P6-14f4 已证），但不起 UI main 的 SDK 测试数据目录里没这个文件。规则：
+  // 编排测试自管身份（P2SDK_ORCH_DATA_DIR 已设）→ 不播；目标目录不在 os.tmpdir() 下
+  // → 不写（绝不碰真实 ~/.config/pbots-ui）；已存在 → 不覆盖。
+  if (opts.env?.P2SDK_ORCH_DATA_DIR === undefined) {
+    const dataRoot = opts.env?.PBOTS_DATA_DIR ?? join(opts.env?.HOME ?? process.env.HOME ?? '', '.config', 'pbots-ui')
+    if (dataRoot.startsWith(tmpdir())) {
+      const botsJson = join(dataRoot, 'bots.json')
+      if (!existsSync(botsJson)) {
+        mkdirSync(dataRoot, { recursive: true })
+        writeFileSync(botsJson, JSON.stringify({ version: 1 }))
+      }
+    }
+  }
   // T-01.f3 R1: credentials hand off through a separate random dir that never
   // enters the dsh child environment (start.ts drops P2SDK_HANDOFF there).
   const handoff = tmkdir('p2sdk-handoff-')

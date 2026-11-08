@@ -50,3 +50,29 @@
 ### 裁定 2：UNKNOWN 超时吞错 —— 不改，不算返修项
 - `page.evaluate(...).catch(() => false)` 防的是导航瞬间「Execution context was destroyed」，保留合理。
 - `waitForFunction(__pbotsDev).catch` 吞超时：吞后末尾 `sand-agent-item` 可见 + `sand-onboarding` 计零两条断言照样红，只是报错位置往后挪、少了根因。属诊断质量，不影响正确性；不单独开单。T7beb 若顺手改 ensureOnboardingSeen 的等待，**不要求**、也不禁止把这两个 `.catch` 去掉（去掉时回执写一句）。
+
+## T7be 终裁（manager Opus 5.5，2026-11-07 21:3x，HEAD eb22fe16，load 2.5–3.5）
+
+**结论：预案不执行——T7be 不放行，T7beb 不改判，继续施工（修法照单）。** T7be 失败计数维持 1（本轮不是新失败：T7beb 是按单停手待裁，不是返修失败）。
+
+### 经理加跑（app/ui，隔离 HOME/TMPDIR/DBus，PATH 前置本地 .bin，先 build；原样见 `evidence/T7beb/`）
+```
+wpr1:   1 failed   1 passed (11.7s)      ← T7beb 格「第3轮 New chat 行数 Expected: 1 Received: 2」(spec:43)
+wpr2:   2 passed (17.0s)
+batch1..5 (grok-dead-entries+settings+market): 5 passed ×5
+```
+- **先红成立**：helper 未改、全新 home、只走「立即 helper → reload → helper」就出两个 "New chat"——正是 T7beb 机制预言的失败形态（侧栏计 2），不是别的红。施工方 3 次（15 home）全绿只是没抽中：合计 1/25 home ≈ 4%/home，0/15 的概率 ≈ 0.54，不能据此说机制不对。
+- 预案「3 次都绿 → 机制不对」写的门槛太松（3 次 15 home 对 4% 级事件没有鉴别力），这是经理上轮的错，不是施工方的。
+- D10c1 批跑本轮 0/5 红，合计 3/16 ≈ 19%；数据支持「低频、时序敏感」，不改裁定。
+
+### 裁定 1：T7be 不放行
+T7be 自身目标（撤已开引导）复验仍通过；但它的 helper 整页 reload 制造的双 main 已被 T7be 自己的 spec 抓到红，修法在 ui.ts 边界内且很小（T7beb 边界第 2 条）。放行等于把一个已证实、可在测试侧修掉的 4%/home 双建带进所有裸壳 spec。T7be+T7beb 仍按原单「通过后一起挪 done」。
+
+### 裁定 2：D10c1 / 产品侧——维持 queue 提议（7b⁵′），不开单
+- 测试侧双建由 T7beb 消；产品侧（`data.ts:359-365` create 与 meta patch 非原子、跨文档无幂等）生产触发要「建主 bot 当口刷新/崩溃」，面窄，仍低优先。
+- 触发开单的条件（任一）：① T7beb 修后 D10c1 批跑 10 轮仍有「New chat 2 elements」红（说明双建另有非 helper 源，如 shell2 重启路径）；② 任何真实使用出现重复主 bot / 多个未命名 "New chat"；③ T8 e2e 收口或对外发布前清账。
+
+### T7beb 施工补充（已写进工单「经理终裁补充」节，覆盖原边界 3 末条「3 次都绿就停」）
+1. 先红以经理证据为准（`evidence/T7beb/manager-rerun-wpr1-red.log`），不再因施工方未复现停手。
+2. 新格循环 5 → 10（同格，提高单次灵敏度）；改 helper 前跑该 spec 最多 5 次，见红即止，原样贴；5 次都绿也照样往下修（回执写一句）。
+3. 验收 2 改为：改后连跑 **5 次**每次 `2 passed`（50 个全新 home）。验收 3（10 轮批跑）、4、5 不变。

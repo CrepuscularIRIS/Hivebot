@@ -42,3 +42,9 @@ D10c1 只在批跑里约 1/4 红，单看它绿说明不了修好。新格把「
 ## 产出
 - `tests/support/ui.ts`、`tests/e2e/wait-product-ready.spec.ts`、`receipts/T7beb.md`（先红原样 + 验收 1–5 原样输出，验收 3 列 10 轮逐轮计数）
 - 通过后 T7be + T7beb 一起挪 done
+
+## 经理终裁补充（2026-11-07 21:3x，HEAD eb22fe16；见 review/review-T7be.md「T7be 终裁」）
+- 先红**已成立**：经理重跑该 spec 2 次，1 次红「第3轮 New chat 行数 Expected: 1 Received: 2」（`work/tickets/evidence/T7beb/manager-rerun-wpr1-red.log`）。边界 3 末条「3 次都绿就停」作废——施工方 0/15 是没抽中（约 4%/home）。
+- 新格循环次数 5 → **10**。改 helper 前跑该 spec 最多 5 次，见红即止并原样贴；5 次都绿也继续修（回执写一句，先红以经理证据为准）。
+- 验收 2 改为：改后同命令连跑 **5 次**，每次 `2 passed`。其余验收不变。
+- 回执 `receipts/T7beb.md` 在现有内容后追加，不删「先红未复现」节（如实保留）。

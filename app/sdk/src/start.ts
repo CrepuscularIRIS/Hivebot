@@ -156,6 +156,9 @@ export function buildArgs(cfg: StartConfig, runtimePatch: string): string[] {
     // 缺省空目录 = 诚实空态（不是桩）。测试再显式链 market.yml 时同 id insert
     // 行整行替换，无副作用（market-source.yml 同款语义）。
     '--patch', join(PKG_ROOT, 'profile', 'patches', 'market.yml'),
+    // T33：awareness.yml（产品认知提示段）进默认链——生产启动器不带 P2SDK_PATCH，
+    // 不进默认链=「测试绿生产没有」（P6 编排的教训，见工单「为什么这样验收」）。
+    '--patch', join(PKG_ROOT, 'profile', 'patches', 'awareness.yml'),
     '--patch', runtimePatch,
   ]
   for (const p of cfg.extraPatches) args.push('--patch', p)

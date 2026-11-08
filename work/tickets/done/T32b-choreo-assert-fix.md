@@ -4,7 +4,7 @@
 > 来源：T32 经理终验（feat/T32 @ 42be0b33）不通过，见 `receipts/review-T32.md`
 > 分支 / 作业目录：继续 feat/T32 @ /tmp/bot-wt/T32（从 42be0b33 起）
 > claimed：2026-11-07 main (GLM 53) @ feat/T32 续修（施工开始时填：日期、起点 SHA）
-> accepted：
+> accepted：2026-11-07 c4a794cd（经理 T32c 终验通过，见 receipts/review-T32.md「T32c 终验」）
 > 验收：2026-11-07 @9eeed1e7 **返修** → T32c（F1/F2 成立；R1 侧栏底部未盖、退场 heading id 与 F5 缺，见 review-T32.md「T32b 终验」）
 
 ## 目标

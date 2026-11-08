@@ -4,7 +4,7 @@
 > 来源：queue U5c/T32 计划行 + 提议⑩（T28c 终验）+ T26 合并时记的两条遗留（LOG.md:1150、review-T26.md:34「引导期间侧栏未盖 / create 版式散」）
 > 分支 / 作业目录：feat/T32 @ /tmp/bot-wt/T32（从 docs/rebuild-p6-p5-plan 本立项提交起；T28b/T28bb 已并入）
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T32（施工开始时由主 agent 填：日期、起点 SHA）
-> accepted：（经理验收通过时填：日期、HEAD）
+> accepted：2026-11-07 c4a794cd（随 T32c 终验通过）
 > 验收 1：2026-11-07 @42be0b33 **返修** → T32b（见 receipts/review-T32.md）
 > 验收 2：2026-11-07 @9eeed1e7 **返修** → T32c（第 2 次不过；T32c 再不过挪 blocked 重拆）
 

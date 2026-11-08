@@ -57,3 +57,39 @@ F1/F2（真因 pointer-events、撤豁免、744、overlap 真算）这次做对�
 
 ## 顺带：主仓脏截图
 主仓 `/home/lingxufeng/bot`（docs/rebuild-p6-p5-plan）有 12 张 `work/grok-0.79.3-re/ours/onboarding-*.png` 处于未提交修改状态，是旧版 shot-t32 用绝对 OUT 时写进去的。合并 feat/T32 前，主 agent 应先 `git checkout -- work/grok-0.79.3-re/ours/` 丢掉它们，否则会和合并冲突。
+
+# T32c 终验（2026-11-07，feat/T32 @ c4a794cd 本体 / 8a6bb0a3 回执，起点 9eeed1e7）
+
+结论：**通过**。T32 / T32b / T32c 三张单一起挪 `done/`，accepted `2026-11-07 c4a794cd`。
+上轮的 R1、退场 heading id、F5、两条 LOW 都已落实，经理亲跑和变异抽验全部吻合。回执的行号表和截图描述仍不合格（见文末），但这些都是记录问题，对应的东西经理已逐项亲验，不因此卡单。
+
+## 经理亲跑（20:21 load 4.84，没有撞上其他 e2e）
+- 先从 HEAD `pnpm run build` 重建（BUILD_EXIT=0），产物 `out/renderer/assets/index-aIjafGSZ.css` 里有 `.sand-onboarding{z-index:4`
+- onboarding：`6 passed (29.6s)`，④ 11.7s ✓
+- kickstart + bots：`13 passed (48.0s)` ✓
+- vitest grok-shim + fold：`Test Files 17 passed (17)`，`Tests 233 passed (233)` ✓
+- renderer-grok check：`upstream diff=0: 332 files` ✓
+- 改动范围 `git diff --stat 9eeed1e7..8a6bb0a3`：只有 css 一个文件（+2/−2）、onboarding.spec、work/**、12 张截图，没有越界 ✓
+
+## 变异抽验（两刀都由经理亲手做，做完 checkout 还原，重建后 ④ `1 passed`）
+- **Vi**（z-index 4 改回 2）：`Error: meet acct 点被引导层盖住`，spec:89 红 ✓。先红的是 onb 断言，失败信息里没有命中元素的 class，只能从 label `acct` 看出是账号圆这个点。工单要求「能看到 account 或药丸」，这个程度够用（LOW 观察，不返修）
+- **Vg**（删 :9 pointer-events）：`".sand-onboarding__attribution-choices button[7] 出框或被遮(sand-onboarding__cast-hero)"` ✓。上轮这里是 SVGAnimatedString，现已修好
+- Vj 没重跑：它改的是 spec 的记录逻辑，有 :109 的断言文本兜底；回执里有原样红输出，采信
+
+## 逐条核实
+| 项 | 结论 |
+|---|---|
+| R1 z-index | css:5 `z-index: 4`，注释写的是「≥ account/plugins 的 z3」，原注释已从 :9 挪回来，:9 换成 pointer-events 自己的说明 ✓。经理复查 grep：overrides 和 production 下只有 t7b z1000、dead-entries z20、production z3000 三处。又扫了上游 frontend/src 的全部 css：z200 是 `.sand-outline-panel`（产品面，引导期不可达，dead-entries 已把它压到 z20）；computer shell 的 z40/z5 在引导层自己的层叠上下文里；chat-input-dock 是 z3，低于 4。结论成立 ✓ |
+| 侧栏三点 | spec:83-93 coveredAt 测 (140,ih/2)、(34,ih-32)、(160,ih-34)，排除集含 `.sand-agents-sidebar__plugins-entry`；meet 在 :95、role 在 :187 调用 ✓。Vi 证明这几个点真能红 ✓ |
+| 退场 heading id | exitsCd 记 `{anim, heading}`；:108 断 anim，:109 断 `sand-onboarding-meet-heading`；role→attribution 在 :202 断 anim、:203 断 `sand-onboarding-role-heading` ✓ |
+| F5 | :151 采 bLast/fBtnTop，:162 断 `bLast ≤ fBtnTop−8`；role 在 :184、attribution 在 :208 传入 `lastGap:true` ✓。找不到 fBtn 时取 −1，会红不会空转 ✓ |
+| LOW visCheck / idleOk | :134-136 已改为 getAttribute('class')，空时 fallback 到 cast closest；idleOk 已删 ✓ |
+| 截图 | 12 张 mtime 20:19:57–20:20:08，本体提交在 20:18:20，是修复后拍的 ✓。经理亲看 7 张：meet.light、attribution.dark、attribution.light、role.light、connect.dark、computer-demo.dark、jobs.light。左下角都没有 P 圆，也没有 Connect apps 药丸 ✓。role 9 卡 3×3；attribution 12 卡 3 列×4 排；三个 teammate 在标题两侧和上方，不压卡 ✓ |
+
+## 回执问题（记录在案，不返修）
+1. **行号表与实物不符**。工单验收 3 要求「附 grep -n 原样输出、只写已存在的东西」，回执没贴 spec 的 grep 原样输出，行号也大多是抄工单里的旧行号或者猜的。正确行号见上表，经理用 `grep -n "coveredAt\|heading id\|lastGap\|bLast\|fBtnTop\|getAttribute('class')\|idleOk"` 亲取：83/95/108/109/135/144/152/162/184/187/203/208。具体出入：回执写 :97 实为 :95，:190→:187，:94/:102-103→:102/:108-109，:186-187→:202-203，:150-151→:162，:170/:196→:184/:208。**三轮里回执与实物不符是同一个毛病**，建议施工方以后写回执行号时先跑 grep，再从输出里复制
+2. 截图逐张描述只有 2 张写全，其余是「同版式」一笔带过，同样没达到验收 4 的字面要求。经理已亲看 7 张补上
+
+## 观察（不属于 T32 范围）
+- attribution.dark 的 12 张卡在暗色下几乎看不到边框，只剩文字；亮色版有边框。可能是暗色边框对比度太低，主线 T7bf 正在做对比度断言，合并后可以顺带核对。0.79.3 暗色没有参照图，这次不判
+- 合并注意：本分支改了 `work/LEARNINGS.md`，主仓工作区里这个文件也有未提交修改，合并前要先处理掉，避免冲突。上轮提到的主仓 12 张脏截图也要先 `git checkout -- work/grok-0.79.3-re/ours/`

@@ -5,7 +5,7 @@
 > 分支 / 作业目录：继续 feat/T32 @ /tmp/bot-wt/T32（从 9eeed1e7 起）
 > 失败计数：T32 组第 2 次不过（42be0b33、9eeed1e7）。**本单再不过，T32 挪 `blocked/` 重拆**
 > claimed：2026-11-07 19:4x main (GLM 5.3) @ feat/T32（起点 9eeed1e7）
-> accepted：
+> accepted：2026-11-07 c4a794cd（经理 T32c 终验通过，见 receipts/review-T32.md「T32c 终验」）
 
 ## 目标
 引导页真正整窗盖住侧栏，包括左下角的账号圆和 Connect apps 药丸；补上 T32/T32b 写明却没做的两条断言。

@@ -80,24 +80,33 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
     await expect(page.locator('#sand-onboarding-meet-heading')).toBeVisible({ timeout: 15_000 })
     // T28c：meet 页 cast 有角色子节点（T26 画面回归；aria-hidden 舞台层用 DOM 断言）
     await expect.poll(() => page.evaluate(() => document.querySelectorAll('.sand-onboarding__cast > div').length), { timeout: 10_000 }).toBeGreaterThan(0)
+    const coveredAt = async (label: string): Promise<void> => { // T32c：三点——(140,ih/2) 中点 + (34,ih-32) 账号圆 + (160,ih-34) Connect apps 药丸
+      const pts = await page.evaluate(() => {
+        const probe = (x: number, y: number) => { const hit = document.elementFromPoint(x, y); return { onb: hit?.closest('.sand-onboarding') != null, sb: hit?.closest('.sand-agents-sidebar, .sand-agents-sidebar__account, .sand-agents-sidebar__plugins-entry') != null, what: hit?.getAttribute?.('class')?.slice(0, 30) ?? hit?.tagName ?? 'null' } }
+        return { mid: probe(140, window.innerHeight / 2), acct: probe(34, window.innerHeight - 32), pill: probe(160, window.innerHeight - 34) }
+      })
+      for (const [k, p] of Object.entries(pts)) {
+        expect(p.onb, `${label} ${k} 点被引导层盖住`).toBe(true)
+        expect(p.sb, `${label} ${k} 点不落侧栏/account/药丸(${p.what})`).toBe(false)
+      }
+    }
     // T32b ⑩a：meet 页标题 opacity=1（进场完）+侧栏被引导层盖住
     await expect.poll(() => page.evaluate(() => getComputedStyle(document.querySelector('#sand-onboarding-meet-heading')!).opacity), { timeout: 10_000 }).toBe('1')
-    const meetCov = await page.evaluate(() => { const hit = document.elementFromPoint(140, window.innerHeight / 2); return { onb: hit?.closest('.sand-onboarding') != null, sidebar: hit?.closest('.sand-agents-sidebar') != null } })
-    expect(meetCov.onb, 'meet 页侧栏被引导层盖住').toBe(true)
-    expect(meetCov.sidebar).toBe(false)
+    await coveredAt('meet')
     await page.evaluate(() => { (document.querySelector('.sand-onboarding__cast') as HTMLElement).__t32 = 1 }) // T32b F4：meet 打标→connect 验仍在（跨步不重挂）
     // T32b：meet→computer-demo 退场层（第二段）——首次前进即 meet→cd，观察器随点击启动
     const exitsCd = await page.evaluate(() => new Promise<unknown[]>((resolve) => {
       const seen: unknown[] = []
       const root = document.querySelector('.sand-onboarding')!
       const obs = new MutationObserver(() => {
-        document.querySelectorAll('.sand-onboarding__step[aria-hidden="true"]').forEach((el) => { seen.push((el as HTMLElement).style.animation) })
+        document.querySelectorAll('.sand-onboarding__step[aria-hidden="true"]').forEach((el) => { seen.push({ anim: (el as HTMLElement).style.animation, heading: el.querySelector('h1, [id^="sand-onboarding"]')?.id ?? el.querySelector('main')?.getAttribute('aria-labelledby') ?? '' }) })
       })
       obs.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-hidden'] })
       setTimeout(() => { obs.disconnect(); resolve(seen) }, 1200)
       ;([...document.querySelectorAll('.sand-onboarding__step:not([aria-hidden]) button')] as HTMLButtonElement[]).find((b) => b.textContent === 'Next')?.click()
     }))
-    expect(JSON.stringify(exitsCd), 'meet→cd 退场').toContain('sand-onboarding-step-exit')
+    expect(JSON.stringify(exitsCd), 'meet→cd 退场 anim').toContain('sand-onboarding-step-exit')
+    expect(JSON.stringify(exitsCd), 'meet→cd 退场层含旧步 heading id').toContain('sand-onboarding-meet-heading')
     await expect(page.locator('#sand-onboarding-computer-demo-heading')).toBeVisible({ timeout: 20_000 })
     await expect(page.locator('.sand-onboarding__step[aria-hidden="true"]')).toHaveCount(0, { timeout: 1000 }) // 退场层 1s 内消失
     // T32b ⑩b：computer-demo 底栏第一钮 Next、第二钮 Back（进场后）
@@ -122,21 +131,25 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
           const cx = r.x + r.width / 2, cy = r.y + r.height / 2
           const hit = document.elementFromPoint(cx, cy)
           const inVp = r.x >= 0 && r.y >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight
-          return hit != null && (hit === el || el.contains(hit)) && inVp ? null : `${selArg}[${i}] 出框或被遮(${hit ? String((hit as HTMLElement).className).slice(0, 25) : 'null'})`
+          const cls = hit?.getAttribute?.('class') ?? ''
+          const cast = hit?.closest('[class^="sand-onboarding__cast-"]')?.getAttribute('class') ?? ''
+          const what = cls.slice(0, 30) || cast.slice(0, 40) || hit?.tagName || 'null'
+          return hit != null && (hit === el || el.contains(hit)) && inVp ? null : `${selArg}[${i}] 出框或被遮(${what})`
         }).filter(Boolean)
       }, sel)
       expect(bad, `${sel} 必须全部可见`).toEqual([])
       const n = await page.locator(sel).count()
       expect(n, `${sel} 恰 ${expectCount}`).toBe(expectCount)
     }
-    const geo = async (cls: string, opts: { w?: number; cols3?: boolean }): Promise<void> => {
+    const geo = async (cls: string, opts: { w?: number; cols3?: boolean; lastGap?: boolean }): Promise<void> => {
       const g = await page.evaluate((c) => {
         const h1 = document.querySelector(`${c} h1`)!.getBoundingClientRect()
         const grp = document.querySelector(`${c} [role="radiogroup"], ${c} [role="list"]`)!.getBoundingClientRect()
         const btns = [...document.querySelectorAll(`${c} [role="radiogroup"] button, ${c} [role="list"] [role="listitem"]`)].map((b) => b.getBoundingClientRect())
+        const fBtn = document.querySelector(`${c} .sand-onboarding__footer button`)?.getBoundingClientRect()
         const foot = document.querySelector(`${c} .sand-onboarding__footer`)!.getBoundingClientRect()
         const sec = document.querySelector(c)!.getBoundingClientRect()
-        return { h1Top: h1.top, h1Cx: h1.x + h1.width / 2, grpTop: grp.top, grpCx: grp.x + grp.width / 2, grpW: grp.width, b0: Math.round(btns[0]?.top ?? -1), b2: Math.round(btns[2]?.top ?? -1), b3: Math.round(btns[3]?.top ?? -1), footTop: foot.top, secH: sec.height, ih: window.innerHeight, iw: window.innerWidth }
+        return { h1Top: h1.top, h1Cx: h1.x + h1.width / 2, grpTop: grp.top, grpCx: grp.x + grp.width / 2, grpW: grp.width, b0: Math.round(btns[0]?.top ?? -1), b2: Math.round(btns[2]?.top ?? -1), b3: Math.round(btns[3]?.top ?? -1), bLast: Math.round(btns[btns.length - 1]?.bottom ?? -1), fBtnTop: Math.round(fBtn?.top ?? -1), footTop: foot.top, secH: sec.height, ih: window.innerHeight, iw: window.innerWidth }
       }, cls)
       expect(g.secH, `${cls} section 满视口（M1 修后）`).toBeGreaterThanOrEqual(g.ih - 2) // M2：section 覆盖断言——12px 偏移无处藏
       expect(Math.abs(g.h1Top - (g.ih / 2 - 264)), `${cls} h1 top（视口基准）`).toBeLessThanOrEqual(2)
@@ -146,6 +159,7 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
       if (opts.w !== undefined) expect(Math.abs(g.grpW - opts.w), `${cls} grp width`).toBeLessThanOrEqual(2)
       if (opts.cols3 === true) { expect(g.b0, `${cls} 前 3 同排`).toBe(g.b2); expect(g.b3, `${cls} 第 4 换排`).toBeGreaterThan(g.b0) }
       expect(Math.abs(g.footTop - (g.ih / 2 + 240)), `${cls} footer top`).toBeLessThanOrEqual(2)
+      if (opts.lastGap === true) expect(g.bLast, `${cls} 末排卡 bottom ≤ 底栏首钮 top−8`).toBeLessThanOrEqual(g.fBtnTop - 8)
     }
     const castOk = async (): Promise<void> => {
       const r = await page.evaluate(() => {
@@ -156,7 +170,6 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
         const hero = document.querySelector('.sand-onboarding__cast-hero') as HTMLElement | null
         const cards = [...document.querySelectorAll('.sand-onboarding__step:not([aria-hidden]) [role="radiogroup"] button, .sand-onboarding__step:not([aria-hidden]) .sand-onboarding__footer button')].map((b) => b.getBoundingClientRect().toJSON())
         const overlap = mates.filter((m) => !m.missing).some((m) => cards.some((c) => !(m.box.right < c.x || c.right < m.box.x || m.box.bottom < c.y || c.bottom < m.box.y)))
-        const idleOk = mates.every((m) => m.missing || document.querySelector(`.sand-onboarding__cast-${m.id}`)?.getAttribute('data-character-state') === 'idle') // T32b：state 在角色元素自身（view.tsx:96）
         return { mates, heroOpacity: hero === null ? 'n/a' : getComputedStyle(hero).opacity, overlap }
       })
       for (const m of r.mates) expect(m.missing, `${m.id} cast 在`).toBe(false)
@@ -168,12 +181,10 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
     }
     await visCheck('.sand-onboarding__role-choices button', 9)
     await visCheck('.sand-onboarding__role h1', 1)
-    await geo('.sand-onboarding__role', { w: 624, cols3: true })
+    await geo('.sand-onboarding__role', { w: 624, cols3: true, lastGap: true })
     await page.waitForTimeout(900)
     await castOk()
-    const covered = await page.evaluate(() => { const hit = document.elementFromPoint(140, window.innerHeight / 2); return { onb: hit?.closest('.sand-onboarding') != null, sidebar: hit?.closest('.sand-agents-sidebar') != null } })
-    expect(covered.onb, 'role 页侧栏位置被引导层盖住').toBe(true)
-    expect(covered.sidebar).toBe(false)
+    await coveredAt('role')
     await page.locator('[data-choice="engineering"]').click() // 先选——选中后前进钮才是 Next（未选是 Skip）
     const exits = await page.evaluate(() => new Promise<unknown[]>((resolve) => {
       const seen: unknown[] = []
@@ -189,11 +200,12 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
     }))
     expect(exits.length, 'role→attribution 有退场层').toBeGreaterThan(0)
     expect(JSON.stringify(exits)).toContain('sand-onboarding-step-exit')
+    expect(JSON.stringify(exits), 'role→attribution 退场层含旧步 heading id').toContain('sand-onboarding-role-heading')
     await expect(page.locator('#sand-onboarding-attribution-heading')).toBeVisible({ timeout: 20_000 })
     await expect(page.locator('#sand-onboarding-attribution-heading')).toHaveText('How did you first hear about Grok Bot?')
     await page.waitForTimeout(350) // 进场动画 200ms+进场期 elementFromPoint 命中旧层 span——稳定后再检
     await visCheck('.sand-onboarding__attribution-choices button', 12)
-    await geo('.sand-onboarding__attribution', { w: 744, cols3: true })
+    await geo('.sand-onboarding__attribution', { w: 744, cols3: true, lastGap: true })
     await page.waitForTimeout(900)
     await castOk()
     // attribution 无选择 Skip（tertiary 主钮）

@@ -2,11 +2,11 @@
  * 标题 top calc(50% - 264px)（Rt=-264，与 tools 同位）；选项块 pin top -147（gn/bn）；
  * role stacked=卡片内图标上文字下、grid 3 列 624 宽；attribution grid 3 列 744 宽；
  * 底栏 top calc(50% + 200px) 再 translateY(40px)（sand-t9j73）。 */
-.sand-onboarding { z-index: 2; }
+.sand-onboarding { z-index: 4; } /* T32c：≥ account/plugins 的 z3（p5-55:74/125——二者是侧栏兄弟、不受侧栏 z1 上下文约束）；仍远低于 UpdateRequired/AccessCover 等 z≥3000 层 */
 /* T32b：三页（role/attribution/connect）上角色不接收鼠标——0.79.3 仅可见且盯指针的角色可交互
  *（chunk-onboarding-flow @11376/@13822），三页无此态角色；0.18 的全可交互（view.css:20）让透明 hero
  * 挡住卡片中心点击。hero 在三页 opacity 0 但 pointer-events 仍在——真 bug。 */
-.sand-onboarding[data-step="tools"] .sand-onboarding__cast > div { pointer-events: none; } /* T32 #1d：盖住侧栏（production.css 侧栏 z-index:1；不压 UpdateRequired/AccessCover 等 z≥3000 层） */
+.sand-onboarding[data-step="tools"] .sand-onboarding__cast > div { pointer-events: none; } /* T32c R1 配套：三页无 gazing 角色→角色不接指针（0.79.3 @13822/@11376） */
 /* 三页 section 与上游 meet/jobs/tools 同款定位（view.css:12 inset:0 absolute）——
  * 上游 .sand-onboarding__step{grid-area:1/1}+main{height:100%} 已就位，这里不重复 */
 .sand-onboarding__role, .sand-onboarding__attribution, .sand-onboarding__connect { inset: 0; overflow: hidden; position: absolute; }

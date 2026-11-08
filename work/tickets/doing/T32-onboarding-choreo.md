@@ -5,6 +5,7 @@
 > 分支 / 作业目录：feat/T32 @ /tmp/bot-wt/T32（从 docs/rebuild-p6-p5-plan 本立项提交起；T28b/T28bb 已并入）
 > claimed：2026-11-07 main (GLM 5.3) @ feat/T32（施工开始时由主 agent 填：日期、起点 SHA）
 > accepted：（经理验收通过时填：日期、HEAD）
+> 验收 1：2026-11-07 @42be0b33 **返修** → T32b（见 receipts/review-T32.md）
 
 ## 目标
 首启引导的画面和 0.79.3 一致：换步时旧页淡出，三页（role / attribution / connect）的标题、选项块、底栏落在 0.79.3 的位置，3 个演示 bot 停在标题上方的空白处、不压卡片，引导整窗盖住侧栏。另外把提议⑩列出的 e2e 断言补上，做到删掉 css 时测试会红。

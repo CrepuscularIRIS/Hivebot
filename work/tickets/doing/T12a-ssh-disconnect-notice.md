@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-07 | 施工：main (GLM 5.3)
 > 来源：queue 5d（T12 计划行）；DESIGN-ssh-composition D7；T4 回执 §5-1；Q-034（「重新连接」按钮要不要做，默认 C = 本单不做按钮）
 > 分支 / 作业目录：feat/T12a @ /tmp/bot-wt/T12a（两个包各一处小改，worktree 防撞后台验收）
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：2026-11-07 21:1x main (GLM 5.3) @ feat/T12a（起点 f0c31c54）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 经理立项探针（纯读文件，2026-11-07）

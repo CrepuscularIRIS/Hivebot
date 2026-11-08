@@ -357,12 +357,20 @@ def main():
     # review 高1（fail-closed）：缺根不跳过——真跑先补建（旧工作区/restore 不经
     # 预建，缺根时 bash 可 mkdir+写绕过）；dry-run 只报完整形状不落盘。skill 要
     # 可见可读，不进 remask 集。
+    dry_here = bool(os.environ.get('BWRAP_WRAP_DRY_RUN'))  # dry 在后文才定义——局部判环境（同语义）
     for b in binds:
-        for sub in ('.dsh/skills', '.agents/skills'):
+        for parent, sub in (('.dsh', '.dsh/skills'), ('.agents', '.agents/skills')):
+            pdir = os.path.join(b, parent)
             root = os.path.join(b, sub)
-            if not os.path.isdir(root) and not os.environ.get('BWRAP_WRAP_DRY_RUN'):  # dry 在后文才定义——此处直接判环境（同语义）
-                os.makedirs(root, exist_ok=True)
-            out += ['--ro-bind', root, root]
+            if not os.path.isdir(root) and not dry_here:
+                try:
+                    os.makedirs(root, exist_ok=True)
+                except OSError as e:
+                    die(f'makedirs {root} failed: {e}')
+            for x in (pdir, root):
+                if not dry_here and os.path.realpath(x) != x:
+                    die(f'symlink refused: {x} -> {os.path.realpath(x)}')
+            out += ['--bind', pdir, pdir, '--ro-bind', root, root]
     # 再遮（v2.1）：硬 NEVER 根与 mask 根落在任何挂回/重 bind 目录之下 → 最后再遮一次
     mounted = binds + tools_mounted + policies_mounted
     remask = set()

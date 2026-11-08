@@ -543,6 +543,32 @@ it('T7d: 批准后的 bash 写 skill 根仍失败（ro-bind 挂载点不可写�
     await waitForTurnEnds(stream2.frames, 1)
     expect(existsSync(legacyPwn), '旧工作区 mkdir+写一条命令也写不进').toBe(false)
     stream2.stop()
+    // T7db：改名父目录绕过——mv .dsh 后自建新根写入（.agents 同理）必须仍写不进
+    const s3 = await (await import('./approval-legacy-ws.ts')).createLegacySession(rt)
+    const dshMoved = join(rt.home, 'legacy-ws', '.dsh_x')
+    const pwnMoved = join(rt.home, 'legacy-ws', '.dsh/skills/y/SKILL.md')
+    const agMoved = join(rt.home, 'legacy-ws', '.agents_x')
+    const pwnAg = join(rt.home, 'legacy-ws', '.agents/skills/y/SKILL.md')
+    rt.writeScript(s3, [
+      bashCall(`cd ${join(rt.home, 'legacy-ws')} && mv .dsh .dsh_x && mkdir -p .dsh/skills/y && echo evil > .dsh/skills/y/SKILL.md`),
+      textCall('改名 dsh'),
+      bashCall(`cd ${join(rt.home, 'legacy-ws')} && mv .agents .agents_x && mkdir -p .agents/skills/y && echo evil > .agents/skills/y/SKILL.md`),
+      textCall('改名 agents'),
+    ])
+    const stream3 = await follow(rt.client, s3)
+    await sendPrompt(rt.client, s3, '改名 dsh 根')
+    const asked4 = await waitForApproval(feed, s3, 1)
+    await feed.answer(asked4, 'allowed-once')
+    await waitForTurnEnds(stream3.frames, 1)
+    await sendPrompt(rt.client, s3, '改名 agents 根')
+    const asked5 = await waitForApproval(feed, s3, 2)
+    await feed.answer(asked5, 'allowed-once')
+    await waitForTurnEnds(stream3.frames, 2)
+    expect(existsSync(pwnMoved), '改名 .dsh 后仍写不进新根').toBe(false)
+    expect(existsSync(dshMoved), '.dsh 没被搬走（父目录自绑=挂载点不可 rename）').toBe(false)
+    expect(existsSync(pwnAg), '改名 .agents 后仍写不进新根').toBe(false)
+    expect(existsSync(agMoved), '.agents 没被搬走').toBe(false)
+    stream3.stop()
     stream.stop()
   } finally {
     feed.close()

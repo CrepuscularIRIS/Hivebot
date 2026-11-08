@@ -365,13 +365,18 @@ def main():
         for parent, sub in (('.dsh', '.dsh/skills'), ('.agents', '.agents/skills')):
             pdir = os.path.join(b, parent)
             root = os.path.join(b, sub)
+            # T7db review 中1：链接拒绝在 makedirs **之前**（islink 悬空/非悬空全兜——
+            # 否则 .dsh 链到已存在可写目录时 skills 先建到外面才 die，宿主副作用已发生）
+            for x in (pdir, root):
+                if os.path.islink(x):
+                    die(f'symlink refused: {x} -> {os.path.realpath(x)}')
             if not os.path.isdir(root) and not dry_here:
                 try:
                     os.makedirs(root, exist_ok=True)
                 except OSError as e:
                     die(f'makedirs {root} failed: {e}')
-            for x in (pdir, root):
-                if not dry_here and os.path.realpath(x) != x:
+            for x in (pdir, root):  # 创建后复查（防中途被换成链接）
+                if not dry_here and (os.path.islink(x) or os.path.realpath(x) != x):
                     die(f'symlink refused: {x} -> {os.path.realpath(x)}')
             out += ['--bind', pdir, pdir, '--ro-bind', root, root]
     # 再遮（v2.1）：硬 NEVER 根与 mask 根落在任何挂回/重 bind 目录之下 → 最后再遮一次

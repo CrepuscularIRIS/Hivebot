@@ -1173,3 +1173,9 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - T28b 全链：经理立项（探针纠 queue 两处）→施工→review 1M（介绍失败停链）→修复→终验（变异两刀）→合并
 - 2026-11-07 20:2x T7bd 终验通过（经理连跑 skills-picker+t7b-shot ×3 轮 3 passed、settings+dead-entries 3 passed、check diff=0；四图目检过）。主线提交 05ef7e3d/81e5aaa5/136d1a7c。衍生：T7be（waitProductReady 竞态——施工完 01a5e63f，Sol 审查中）、T7bf（对比度断言 WCAG）、T7bg（12 裸 spec 扫描）。
 - 2026-11-07 20:2x T32c 施工完（feat/T32 @ c4a794cd+8a6bb0a3：z4 盖账号圆/药丸、退场 heading id、末排间距、Vg 失败信息见角色 class；三刀红/全文件 6 passed/vitest 233/kickstart+bots 13/check diff=0；两图亲验左下角干净）——经理终验中（第三次，不过挪 blocked）。
+## 2026-11-07 · merge T32（三轮终验通过后合并）
+- feat/T32 @842cae07 → 主线 c80da102（--no-ff；回执 add/add 冲突按分支侧保留解决——主线无那两段）
+- 定向回测：build exit 0；onboarding+kickstart+bots **17 passed (1.5m)**
+- T32 全链：立项→T32 施工→Sol 审 2M 修复→终验1 不通过（T32b：pointer-events 根因/撤豁免/⑩a⑩b/connect 三全套）→终验2 不通过（T32c：z4 盖账号圆/退场 heading id/末排间距/Vg 失败信息带角色 class）→终验3 通过（经理亲跑 6+13+233+diff=0、亲刀 Vi/Vg、亲看 7 图）
+- 记录在案不返修：回执行号表与实物有出入（抄工单旧行号）、截图逐张描述只写全 2 张——三轮同毛病，经理已核实物
+- 观察项（T32 范围外）：attribution 暗色卡边框几乎看不见——T7bf 对比度断言合并后顺带核对

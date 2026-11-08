@@ -1205,3 +1205,12 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - T33 链：用户实测反馈 BRIEF → 经理立项（发现编排层已就绪未开闸）→ 探针五轮（title 在 projections.values/插件形态/sessionController.list/renamed 事件/helper header）→ 施工 → Sol 四 CONFIRMED（subagent 滤/④空绿/createdBy ID/dirty）→ 修复 → 终验通过（经理核 dsh 上游锚点）
 - A1p 提议（不挡合并）：④确定性化/删恒真断言/挂载滤补格；T34 等 Q-035
 - T33 生产旁证（经理指示步骤 2）：重启实例载入新代码（旧实例 TERM 优雅收、handoff 清、新实例 ready@37845）→ 经 API 问主 bot「有哪些别的 bot/怎么新建」→ **原样回复**：正确列出三 bot（含「**A —— 就是我**」(you) 标注与主 bot 识别）+ 指路「侧边栏 New Bot 按钮 / Ctrl+N / Create New Bot 对话框（名称、外观、More options）」——提示段被真实模型读到并正确使用
+## 2026-11-08 · T34 合并+生产旁证 7（Q-035=A 编排开闸全链落地）
+- feat/T34 @0de49c88 → 主线（--no-ff ×2：本体+终验产物）；定向回测 9 文件 **103 passed**
+- 终验通过（accepted 0de49c88）；回执两处不实被经理抓出（⑤格改标签/④宽松正则）→ **T34b** 补 env 探针+收紧
+- 生产旁证（重启实例 ready@45355 后）：
+  - b. 主 bot（session-3815ae）被要求「新建 T34 Probe 写 hello.txt」→ **create_bot 真调用**，返回 sessionId session-12ac8537…+name+assignmentId（err=false）
+  - c. bots.json bots[12ac8537].createdBy===3815ae ✓；session/list 有「T34 Probe」✓；workspaces/session-12ac8537…/hello.txt 内容 **hi** ✓；主 bot 转述「已创建并开始工作…Workers 分组…会汇报」✓
+  - 首次误发 BCD（非主 bot）——其如实指路（Ctrl+N）恰好旁证 T33 认知段+信封边界正确
+  - d. 截图未做（API 旁证已足；用户可在桌面自视 Workers 分组的 T34 Probe——探针 bot 可在 UI 删）
+  - e. 模型：**glm-5.3-flash**（start.ts 缺省；env 无覆盖）→ queue A2b（T35 输入）

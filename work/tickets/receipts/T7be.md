@@ -29,3 +29,8 @@ $ env HOME=$T/home TMPDIR=$T/tmp DBUS=… PATH=本地bin … run-e2e.sh tests/e2
 - `ensureOnboardingSeen(page)`（ui.ts）：置 seen → 整页 reload → 等 __pbotsDev——launchProduct（原 :102-105 四行）与 waitProductReady 共用
 - `waitProductReady`：seen 判定前先等 __pbotsDev（避免在应用加载前读到别的文档）；seen 未置走 ensureOnboardingSeen；末尾 `expect(.sand-onboarding).toHaveCount(0)` 哨兵；不再调 reloadRoster（reload 后 gate 自然建 main）
 - `launchProduct`：原独立哨兵（:108）与 waitProductReady 内哨兵等价，删（grep 证无 `ready:false + !onboardingFirst` 调用方组合）
+
+## review 修复（2026-11-07 20:2x）
+- **CONFIRMED 中1（哨兵删除不等价）**：回执 grep 结论错误——只查了 onboarding.spec 的 ready:false（6 处都有 onboardingFirst），漏了 `resilience.spec.ts:16`、`theme-flash.spec.ts:172` 两个 `ready:false` 且未设 onboardingFirst 的调用方（后者自行调 helper、前者完全不调——删除后该路径无引导计零保护）。已修：launchProduct 恢复 `!onboardingFirst` 独立哨兵（waitProductReady 内哨兵保留，双保险）。修复提交见 review-T7be 记录。
+- UNKNOWN 超时吞错（建议同步失败直接抛）：不动——catch 初衷是页面导航瞬间的 evaluate 竞态错，直接抛会放大 flake；末尾 DOM 断言仍守得住（Sol REFUTED 第 2 条自证）。留经理裁定。
+- D10c1 候选机制修正（Sol 补充）：另一候选在 shell1——`__pbotsDev` 在 shim start 前发布（index.ts:73-74），旧文档可能在 seen 写入后建 main，紧接 reload 启动新文档，data.ts:331-335 单飞只覆盖单文档。运行证据仍缺，维持交裁定。

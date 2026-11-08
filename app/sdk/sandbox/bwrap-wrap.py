@@ -351,12 +351,15 @@ def main():
         if os.path.isdir(p):
             out += ['--ro-bind', p, p]
             policies_mounted.append(p)
-    # T7d：skill 根只读覆盖——bash 写 .dsh/skills/.agents/skills 必须失败（挂载
+    # T7d/T7db：skill 根只读覆盖——bash 写 .dsh/skills/.agents/skills 必须失败（挂载
     # 点不可写/rename/rm；与 write/edit 的审阅卡同语义）。从 binds（会话工作区
-    # per-bot）派生，bwrap 挂载序：后 --ro-bind 覆盖前 --bind 的写权限。
+    # per-bot）派生，bwrap 挂载序：ws 重 bind → 父目录自绑（成挂载点，不可 mv/rm，
+    # 父目录内照旧可写）→ 根 ro-bind（后挂载覆盖父绑写权限）→ 再遮。
     # review 高1（fail-closed）：缺根不跳过——真跑先补建（旧工作区/restore 不经
     # 预建，缺根时 bash 可 mkdir+写绕过）；dry-run 只报完整形状不落盘。skill 要
     # 可见可读，不进 remask 集。
+    # T7db：符号链接拒绝——realpath 必须等于自身（防宿主侧 makedirs 被 bot 早先
+    # 种下的链接引到工作区外建目录/挂载别处）；makedirs 的 OSError 走 die（bwrap: 前缀）。
     dry_here = bool(os.environ.get('BWRAP_WRAP_DRY_RUN'))  # dry 在后文才定义——局部判环境（同语义）
     for b in binds:
         for parent, sub in (('.dsh', '.dsh/skills'), ('.agents', '.agents/skills')):

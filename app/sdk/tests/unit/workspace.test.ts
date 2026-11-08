@@ -42,7 +42,10 @@ describe('T11 p2sdk/workspace_ensure', () => {
     const out = await svc.workspace_ensure({ botId: 'bot-123' })
     expect(out).toEqual({ path: '/remote/root/workspaces/bot-123', canonical: '/remote/root/workspaces/bot-123' })
     expect(calls[0]).toEqual(['mkdir', '-p', '--', '/remote/root/workspaces/bot-123'])
-    expect(calls[1]).toEqual(['readlink', '-f', '--', '/remote/root/workspaces/bot-123'])
+    // T7d：远端 skill 根预建（幂等 mkdir ×2，固定 argv 无 shell）——合并回测漏此文件，H7 双树对称红抓出
+    expect(calls[1]).toEqual(['mkdir', '-p', '--', '/remote/root/workspaces/bot-123/.dsh/skills'])
+    expect(calls[2]).toEqual(['mkdir', '-p', '--', '/remote/root/workspaces/bot-123/.agents/skills'])
+    expect(calls[3]).toEqual(['readlink', '-f', '--', '/remote/root/workspaces/bot-123'])
   })
 
   it('P2 收口：canonical 越界拒；界内链接形态回传 canonical', async () => {

@@ -18,7 +18,7 @@ function Foot({ back, forward, selected, forwardLabel }: { back(): void; forward
 
 function ChoiceGrid({ step, choices, selectedId, onPick, layout }: { step: string; choices: readonly RoleChoice[]; selectedId: string | null; onPick(id: string): void; layout: 'stacked' | 'inline' }) {
   return (
-    <div aria-label={step} className={`sand-onboarding__${step}-choices`} data-layout={layout} role="radiogroup" style={layout === 'inline' ? { display: 'flex', flexWrap: 'wrap', gap: 8 } : { display: 'grid', gap: 8 }}>
+    <div aria-label={step} className={`sand-onboarding__${step}-choices`} data-layout={layout} role="radiogroup">
       {choices.map((c) => (
         <button aria-checked={selectedId === c.id} data-choice={c.id} key={c.id} onClick={() => onPick(c.id)} role="radio" type="button">
           <span>{c.label}</span>

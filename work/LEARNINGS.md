@@ -145,6 +145,7 @@
 - **e2e worktree 起手三件**：app/ui 与 app/sdk 各 pnpm install --prefer-offline（node_modules 不随 worktree）；跑 e2e 前必 build；隔离 HOME/TMPDIR 先 mkdir -p（mktemp 模板对不存在目录报错）。
 - **vitest coverage-v8 在 ui 仓仍不可用**（P7 F1 同款）：customProviderModule 指向 sdk pnpm 深处可载入但覆盖计 0%（模块 id 对不上）。需要覆盖率时用手工核算表+记录工具问题，别再烧轮次调工具。
 - **面板/对话框等 role=dialog 组件开着会吃 Esc 与指针**（遮罩）——测试链里后续还有 Esc/点击交互时，用完即点 Close。
+<<<<<<< HEAD
 
 ## 2026-11-07（T32b 返修）
 - **断言段插入先对齐「当下在哪一步」**：给 walk 测试插段时只看锚点注释不看流程位置——观察器段插在 steps 循环后，实际已在 jobs 页，点的 Next 是 jobs→role 却断 cd heading，红得像「onboarding 退出」（aria 树里的主应用文字是被引导层盖住的侧栏，不是退出证据）。改法：插入前先数清楚此前每次 click 各前进到哪页。
@@ -154,3 +155,6 @@
 - **e2e 期望清单要跟着特性单走**：grok-dead-entries U4′ 行菜单清单在 T21 加「Show full conversation」后过时——加活入口的单应顺手 grep 死入口清单 spec。
 - **（经理 T7bd 终验更正上条）`waitProductReady` 不是完整兜底**：只写 storage + reloadRoster，若壳已用旧 seen 打开引导，引导层会一直盖住主区（裸壳 12 次中 5 次复现，主区按钮点不到）。凡后续有 `page.reload()` 的 spec（如走 `createBots`）自愈，没有的会偶发红。根修走 T7be（helper 内置 seen 后整页 reload + `.sand-onboarding` 计零）；修好前裸壳 spec 别只靠它。
 - **变异刀前本体必须先提交**（T32c 事故）：还原误用 `git checkout --` 抹掉未提交本体改动——正序：本体提交→刀在提交之上改→checkout 还原永远安全。
+=======
+- **变异刀前本体必须先提交**：T32c 首轮 Vi 刀后还原误用 `git checkout --`，把未提交的 spec 本体改动整抹（变异刀只该动产品文件，但还原操作分不清哪个文件属于本体）——正序：本体提交→刀在提交之上改→checkout 还原永远安全。
+>>>>>>> feat/T32

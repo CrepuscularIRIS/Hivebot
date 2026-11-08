@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-08 | 施工：main (GLM 5.3)
 > 来源：work/bot-product-awareness/BRIEF.md 第 1、2 条（第 3 条只带一句 subagent 说明，其余归 Q-036 / T27）；探针结论见 work/bot-product-awareness/PLAN.md §1
 > 分支 / 作业目录：feat/T33 @ /tmp/bot-wt/T33
-> claimed：（施工开始时由主 agent 填：日期、起点 SHA）
+> claimed：2026-11-08 01:5x main (GLM 5.3) @ feat/T33（起点 114bcc5a）
 > accepted：（经理验收通过时填：日期、HEAD）
 
 ## 目标

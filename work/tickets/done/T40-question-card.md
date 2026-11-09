@@ -4,7 +4,7 @@
 > 来源：`work/exp-polish/BRIEF.md` 2026-11-09 追加段（「原版即规格…找出没集成的完整清单」）→ `work/exp-polish/AUDIT-0.79.3.md` K2 / 场景 1（queue E4）。顺带落地 P5-33（`work/p5-parity/RE-question-card.md` 的下游）。
 > 分支 / 作业目录：feat/T40 @ /tmp/bot-wt/T40（从集成分支 docs/rebuild-p6-p5-plan 起）
 > claimed：2026-11-09 main (GLM 5.3) @ feat/T40
-> accepted：
+> accepted：2026-11-09 @ 3bd9a250（manager Opus 5.5，T40+T40b 合并终验）
 
 ## 目标
 bot 调 `ask_user_question` 时，它的对话流里出现原版的提问卡（问题 + 选项按钮 + 自定义输入 + 关闭）；点一个选项或输入后回车，答案经已有的 M1 结构化作答分支交给 dsh，bot 接着干。现在什么卡都不出，回合一直挂着。

@@ -4,7 +4,7 @@
 > 来源：T40 终验不通过第 1 次（`receipts/T40.receipt.md`「T40 终验」段 F1–F4）
 > 分支 / 作业目录：feat/T40 @ /tmp/bot-wt/T40（接着 92f1a3a7 提交）
 > claimed：2026-11-09 main (GLM 5.3) @ feat/T40
-> accepted：
+> accepted：2026-11-09 @ 3bd9a250（manager Opus 5.5，T40+T40b 合并终验）
 
 ## 目标
 用户点提问卡右上角的 X（Dismiss question），这张卡变成 Dismissed 态并一直保持；整批最后一题被关掉时答案照常交给 dsh。现在点 X 卡会弹回可作答，最后一题的情形下卡变成「看着能答、怎么点都失败」。

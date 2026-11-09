@@ -34,3 +34,8 @@
 1. 架构不动（T34 现有形态正确）
 2. **术语**：bot=用户额外创建的独立 DSH 会话（各有 main agent，bot 间对等通信=SuperAgent.main↔各 bot.main）；主 agent 内部派生的=**worker（即 subagent）**——create_bot 建出来的不叫 bot
 3. **显示**：dsh 原生 subagent 目前隐藏（不进侧栏）——要显示出来归入 Workers 分组（=worker）——两种编排系统在**呈现层统一**
+
+## 2026-11-08 06:1x 三次补充（用户）：显示范围收窄
+> 其他的bot的subagent不用显示, 就是主agent的subagent可以显示.
+
+**约束**：仅主 agent（mainBotId）的 subagent 显示进 Workers 分组；其他 bot 的 helper 不显示（过滤=origin==='subagent' 且 parentSession===mainBotId）。

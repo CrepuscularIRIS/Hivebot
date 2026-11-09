@@ -49,7 +49,7 @@ describe('orchestration routing section on installed SystemPrompt', () => {
     expect(await prompt(agents[0])).toContain(ROUTING_PROMPT)
     for (const agent of [agents[1], agents[2], undefined]) expect(await prompt(agent)).not.toContain('## Coordinating workers')
     expect(ROUTING_SECTION).toBe('pbots:orchestration-routing')
-    expect(createHash('sha256').update(ROUTING_PROMPT).digest('hex')).toBe('8bc4ea57810cbfcc2ac21c6cb4a510449df88c174dd22efc0d753bea81f04fc8')
+    expect(createHash('sha256').update(ROUTING_PROMPT).digest('hex')).toBe('5b2386805baae62b4fcc0c17af1a3052d7450860dfc12f2bd060a74bb40ccdd5')
     expect(ROUTING_PROMPT).toMatch(/^You are the main bot:/)
     expect(ROUTING_PROMPT).not.toMatch(/\b(quick|simple|small)\b/i)
     expect(ROUTING_PROMPT).toContain('write, edit, or bash')
@@ -108,5 +108,16 @@ describe('orchestration routing section on installed SystemPrompt', () => {
     listeners.get('dispose')!()
     expect(await prompt(agents[0])).not.toContain(ROUTING_PROMPT)
     expect(listeners.size).toBe(0)
+  })
+})
+
+
+// T37：文案不含旧叫法——worker 不叫 bot；subagent 不再说「看不见」（ROUTING_PROMPT 已于文件头导入）
+import { CREATE_BOT_DESCRIPTION } from '../../src/orchestration/create.mjs'
+describe('T37 术语', () => {
+  it('ROUTING_PROMPT 与 CREATE_BOT_DESCRIPTION 不含 worker bot / not visible', () => {
+    expect(ROUTING_PROMPT).not.toContain('worker bot')
+    expect(CREATE_BOT_DESCRIPTION).not.toContain('worker bot')
+    expect(ROUTING_PROMPT + CREATE_BOT_DESCRIPTION).not.toContain('not visible')
   })
 })

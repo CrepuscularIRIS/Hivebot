@@ -244,6 +244,6 @@ describe('stop_bot args and barrel', () => {
     expect(orchestration.STOP_BOT_TOOL).toBe('stop_bot')
     expect(orchestration.STOP_BOT_TOOL).toBe(STOP_BOT_TOOL)
     expect(typeof orchestration.registerStopBot).toBe('function')
-    expect(orchestration.STOP_BOT_DESCRIPTION).toContain('Stop a worker bot')
+    expect(orchestration.STOP_BOT_DESCRIPTION).toContain('Stop a worker')
   })
 })

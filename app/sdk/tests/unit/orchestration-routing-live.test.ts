@@ -28,7 +28,7 @@ writeFileSync(overlay, `
               - id: p2fake
                 contextWindow: 131072
 `)
-const marker = 'You are the main bot: you talk with the user and hand their hands-on work to worker bots.'
+const marker = 'You are the main bot: you talk with the user and hand their hands-on work to workers.'
 let rt: Runtime
 beforeAll(async () => {
   process.env.HOME = tmkdir('bot-p622-live-home-')

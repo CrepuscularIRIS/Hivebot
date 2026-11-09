@@ -4,7 +4,7 @@
 > 来源：T36 终验（`receipts/T36.receipt.md`「终验」第 3/4/5/6/7 条）
 > 分支 / 作业目录：feat/T36 @ /tmp/bot-wt/T36（接 506cbfa4 继续提交，不新开分支）
 > claimed：2026-11-08 08:2x main (GLM 5.3) @ feat/T36
-> accepted：
+> accepted：2026-11-08 manager (Opus 5.5) @ 0ada98d0（feat/T36，T36b 复验通过）
 
 ## 目标
 T36 的 helper 进 Workers 在**生产换主路径**下也只显示当前主 bot 的 helper；helper 名字用 label；测试真的守住名字与换主。

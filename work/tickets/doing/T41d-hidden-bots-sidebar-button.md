@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-09 | 施工：main (GLM 5.3)
 > 来源：`receipts/T41c.acceptance.md`。T41c 第 1 次验收不通过；本单是第 2 次，再失败就走任务 C
 > 分支 / 作业目录：feat/T41 @ /tmp/bot-wt/T41（在 9acca0d2 上继续提交）
-> claimed：
+> claimed：2026-11-09 main (GLM 5.3) @ feat/T41 续
 > accepted：
 
 ## 目标

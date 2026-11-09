@@ -20,6 +20,7 @@ import { activityOf, toAgentRecord } from './agents'
 import type { CoordinatorDeps } from './coordinator'
 import { botConfigOf, type PbotsUi, type Recipe } from './bots'
 import { aggregateOf, previewOf, rankOf, sectionsOf, viewFacts, type PeerMeta, type SectionRecord, type WorkerFacts } from './workers'
+import { toWidget, toAnswer, batchComplete, type WidgetQ } from './questions' // T40
 
 type AnyRecord = Record<string, unknown>
 const rec = (v: unknown): AnyRecord => (typeof v === 'object' && v !== null ? v as AnyRecord : {})
@@ -116,6 +117,8 @@ export interface DevSurface {
   closeEvents(): void
   /** 故障注入：下一次 method 调用直接返回该错误（一次性）。 */
   failNext(method: string, code?: string, message?: string): void
+  /** T40 测试口：直灌一条 $events 帧给 onEventsItem（生产走 socket feed；单测环境无 carrier）。 */
+  testFeedEvent(item: unknown): void
 }
 
 export function createShimData(opts: ShimDataOptions): ShimData {
@@ -132,6 +135,12 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   let held: string | null = null // T39：被 hold 的 worker（打开时在 Workers rank<4，或经回报卡 focus 打开）——sections 用它而非 active（点 Done 行不跳组）
   let focusedFrom: string | null = null // T39：最近一次 pbotsUi.focus 的 id（回报卡 Open/Messaging——GU-P6-15-r1 f1 语义）
   const peers = new Map<string, PeerMeta>() // 编排条目 entryId → 元数据（pbotsUi.peer）
+  // T40：提问批 eventId → 批状态。answered 结构化（review 中3：dismiss 不再用用户可输入的哨兵串）；
+  // entryIndex 提供不拆字符串的 entryId→(批,题) 路由（review 高：qid 含 '-' 时 regex 贪婪拆错）。
+  type QAnswer = { kind: 'answer'; value: string } | { kind: 'dismiss' }
+  interface QuestionBatch { agentId: string; ids: string[]; widgets: WidgetQ[]; answered: Map<string, QAnswer>; dismissed: boolean; sent: boolean }
+  const questionBatches = new Map<string, QuestionBatch>()
+  const questionEntryIndex = new Map<string, { eventId: string; qid: string }>()
   const unknownTried = new Set<string>() // 触发过一次 roster 重拉的未知 sid（其他 bot 的 helper 不进 list 消费面，不反复拉）
   const models = new Map<string, string>() // #5 成功后的本地值（快照下一轮才投影）
   const uiListeners = new Set<() => void>()
@@ -247,6 +256,47 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     return raw
   }
 
+  /** T40：整批发送（结构化答案→dsh；dismiss=selected 空无 custom——review 中3）。 */
+  const sendBatch = async (eventId: string, batch: { ids: string[]; widgets: WidgetQ[]; answered: Map<string, { kind: 'answer'; value: string } | { kind: 'dismiss' }> }): Promise<{ ok: boolean; error?: { message?: string } }> => {
+    const answers = batch.ids.map((id) => {
+      const a = batch.answered.get(id)
+      const widget = batch.widgets.find((w) => w.id === id)!
+      if (a === undefined || a.kind === 'dismiss') return { id, selected: [] }
+      return toAnswer(id, widget, a.value)
+    })
+    const res = await api('$events/result', { clientId: eventsClientId, eventId, outcome: { kind: 'result', value: { answers } } })
+    return res
+  }
+
+  /** T40：该 bot 的提问 widget 卡（批内顺序，追加在 askEntries 同层）。 */
+  const questionEntries = (agentId: string): RawEntry[] => {
+    const out: RawEntry[] = []
+    for (const [eventId, batch] of questionBatches) {
+      if (batch.agentId !== agentId) continue
+      for (const w of batch.widgets) {
+        revision += 1
+        const answered = batch.answered.get(w.id)
+        const entry: RawEntry = {
+          kind: 'send-message',
+          id: `q-${eventId}-${w.id}`,
+          timestampMs: Date.now(),
+          message: {
+            type: 'widget',
+            widget: { prompt: w.prompt, ...(w.helpText !== undefined ? { helpText: w.helpText } : {}), options: w.options.map((o) => ({ label: o.label, ...(o.description !== undefined ? { description: o.description } : {}), ...(o.value !== undefined ? { value: o.value } : {}) })), allowCustom: true },
+          },
+          // 0.18 契约：respondedValue/widgetDismissed 在 **entry 顶层**（protocol.ts:190-191；review 中2——
+          // 原放 message 内被投影丢弃，成功提交后 UI 不显已答态）
+          ...(answered?.kind === 'answer' ? { respondedValue: answered.value } : {}),
+          // T40b F2：单题 dismiss 也关卡（adapter replaceEntries 每次推送重建——entry 不带就弹回）；
+          // 整批 cancel 同。answered=answer 的题不盖（answered 态优先于 dismissed）。
+          ...((batch.dismissed && answered?.kind !== 'answer') || answered?.kind === 'dismiss' ? { widgetDismissed: true } : {}),
+        }
+        out.push(entry)
+      }
+    }
+    return out
+  }
+
   const askEntries = (agentId: string): RawEntry[] => {
     const out: RawEntry[] = []
     for (const [eventId, ask] of asks) {
@@ -277,7 +327,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
 
   const entriesOf = (agentId: string): RawEntry[] => {
     const view = views.get(agentId)
-    if (view === undefined || !view.loaded) return [...createNotice(agentId), ...askEntries(agentId)]
+    if (view === undefined || !view.loaded) return [...createNotice(agentId), ...askEntries(agentId), ...questionEntries(agentId)]
     const pending = pendingNonce.get(agentId)
     const main = collectPeers(serialize({
       items: view.items, hasMore: view.hasMore, running: view.running, streaming: view.streaming,
@@ -285,7 +335,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       ...(pending !== undefined ? { clientNonce: pending } : {}),
     }))
     if (pending !== undefined && main.some((e) => e.clientNonce === pending)) pendingNonce.delete(agentId)
-    return [...main, ...createNotice(agentId), ...askEntries(agentId)]
+    return [...main, ...createNotice(agentId), ...askEntries(agentId), ...questionEntries(agentId)]
   }
 
   // 首个 openAgentTail 回值之前不推该 bot 的 transcript 快照：上游 openAgent 见 entriesByAgent 已有条目就不再取 tail，
@@ -438,7 +488,21 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     }
     if (it.type === 'cancel' && typeof it.eventId === 'string') {
       asks.delete(it.eventId)
+      const qb = questionBatches.get(it.eventId)
+      if (qb !== undefined) { qb.dismissed = true; pushTranscript(qb.agentId) }
       push.agents()
+      return
+    }
+    if (it.type === 'waterfall' && it.event === 'user-questions/request' && typeof it.eventId === 'string') {
+      // T40：一批问题 → 每题一张 widget 卡（0.18 protocol projectWidget 形状）；作答走 respondToWidget
+      const qs = Array.isArray(rec(it.request).questions) ? rec(it.request).questions as unknown[] : []
+      const widgets = qs.map((q) => toWidget(rec(q))).filter((w) => w.id !== '')
+      if (widgets.length > 0) {
+        questionBatches.set(it.eventId, { agentId: String(it.agentId ?? ''), ids: widgets.map((w) => w.id), widgets, answered: new Map(), dismissed: false, sent: false })
+        for (const w of widgets) questionEntryIndex.set(`q-${it.eventId}-${w.id}`, { eventId: it.eventId, qid: w.id })
+        pushTranscript(String(it.agentId ?? ''))
+        push.agents()
+      }
       return
     }
     if (it.type === 'emit' && Array.isArray(it.args)) {
@@ -545,6 +609,52 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       const res = await api('session/prompt', { request: { requestId: nonce, sessionId: agentId, mode: 'queue', content: [{ type: 'text', text: prompt }] } })
       if (!res.ok) throw new Error(res.error?.message ?? 'session/prompt failed')
       return { accepted: true }
+    },
+    respondToWidget: async (input) => {
+      // T40：entryId→批/题经 questionEntryIndex（review 高：不拆字符串——qid 含 '-' 时 regex 贪婪拆错）
+      const route = questionEntryIndex.get(input.entryId)
+      if (route === undefined) throw new Error(`not a question card: ${input.entryId}`)
+      const { eventId, qid } = route
+      const batch = questionBatches.get(eventId)
+      if (batch === undefined) throw new Error(`question batch gone: ${eventId}`)
+      if (batch.dismissed || batch.sent) throw new Error('question already settled')
+      const widget = batch.widgets.find((w) => w.id === qid)
+      if (widget === undefined) throw new Error(`unknown question: ${qid}`)
+      batch.answered.set(qid, { kind: 'answer', value: input.value })
+      pushTranscript(batch.agentId)
+      if (batchComplete(batch.ids, batch.answered)) {
+        const res = await sendBatch(eventId, batch)
+        if (!res.ok) { // M1 失败不吞：回滚本题+重推 transcript（卡回可作答——review 中4）+向调用方上抛
+          batch.answered.delete(qid)
+          pushTranscript(batch.agentId)
+          throw new Error(res.error?.message ?? '$events/result failed')
+        }
+        batch.sent = true
+      }
+      push.agents()
+      return { accepted: true } // review 中2：0.18 adapter 要求 accepted===true（null 会 rollback）
+    },
+    dismissWidget: async (input) => {
+      const route = questionEntryIndex.get(input.entryId)
+      if (route === undefined) return
+      const { eventId, qid } = route
+      const batch = questionBatches.get(eventId)
+      if (batch === undefined || batch.dismissed || batch.sent) return
+      const widget = batch.widgets.find((w) => w.id === qid)
+      if (widget === undefined) return
+      batch.answered.set(qid, { kind: 'dismiss' })
+      pushTranscript(batch.agentId)
+      if (batchComplete(batch.ids, batch.answered)) {
+        const res = await sendBatch(eventId, batch)
+        if (!res.ok) { // review 中4：dismiss 末题失败同样回滚+上抛（不再吞）
+          batch.answered.delete(qid)
+          pushTranscript(batch.agentId)
+          throw new Error(res.error?.message ?? '$events/result failed')
+        }
+        batch.sent = true
+      }
+      push.agents()
+      return { accepted: true } // T40b：与 respondToWidget 同形（契约 record）
     },
     resolvePermission: async (input) => {
       answers.push({ eventId: input.requestId, value: input.dshValue })
@@ -727,6 +837,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     get state() { return { order: [...order], meta: { mainBotId, createdBy: { ...createdBy } }, views: Object.fromEntries(views) } },
     get sections() { return sections() },
     reloadRoster: () => loadRoster(), // T26：onboarding 完成/skip 后补建 main bot 的入口（onboarding-view 生产调用，非仅测试）
+    testFeedEvent: (item: unknown) => { onEventsItem(item) },
     finishKickstart: async (sid?: string) => {
       // T28b：按 sid 消费（0.79.3 kickstartAwaitingFirstMessage(agentId)）——无参取全部（向后兼容旧 dev 面）
       const targets = sid === undefined ? [...pendingKickstart.keys()] : [sid]

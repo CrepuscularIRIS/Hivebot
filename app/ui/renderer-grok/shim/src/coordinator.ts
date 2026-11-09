@@ -23,6 +23,9 @@ export interface CoordinatorDeps {
   updateAgent(args: Record<string, unknown>): Promise<unknown>
   /** T21：outline 侧板拉取（data.ts 注入——items 来自当前 view）。 */
   outline?(id: string): unknown[]
+  /** T40：widget 作答/关掉（data.ts 注入——提问卡的攒批与 $events/result）。 */
+  respondToWidget(args: { entryId: string; value: string; agentId: string }): Promise<unknown>
+  dismissWidget(args: { entryId: string; agentId: string }): Promise<void>
 }
 
 const TEACH_IDLE = { state: 'idle', agentId: null, startedAtMs: null, maxDurationMs: 600_000 }
@@ -137,6 +140,18 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
         }
         case 'createAgent': return reply(requestId, await deps.createAgent(args))
         case 'updateAgent': return reply(requestId, await deps.updateAgent(args))
+        // T40：widget 卡作答/关掉（0.18 widget-interactions 的两个方法——提问卡经此回 dsh）
+        case 'respondToWidget': return reply(requestId, await deps.respondToWidget({
+          entryId: typeof args.entryId === 'string' ? args.entryId : '',
+          value: typeof args.value === 'string' ? args.value : '',
+          agentId: typeof args.agentId === 'string' ? args.agentId : '',
+        }))
+        case 'dismissWidget': {
+          // T40b F1：契约 reply:"record"（rpc/coordinator.ts:103）——null 会被 transport 判 MALFORMED、
+          // adapter rollback（X 钮弹回）。统一回 {accepted:true}（与 respondToWidget 同形）。
+          await deps.dismissWidget({ entryId: typeof args.entryId === 'string' ? args.entryId : '', agentId: typeof args.agentId === 'string' ? args.agentId : '' })
+          return reply(requestId, { accepted: true })
+        }
         default: {
           const value = defaultReply(method, deps, args)
           if (value !== undefined) return reply(requestId, value)

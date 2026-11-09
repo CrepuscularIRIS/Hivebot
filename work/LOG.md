@@ -1243,3 +1243,7 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - launcher 加 `PBOTS_PET` 显式透传（4f1c7ad3）；生产实例重启（PBOTS_PET=1）——**宠物窗未见**：electron 主进程 environ 无 PBOTS_PET（launcher bash 有、env 白名单行也有——透传链最后一跳丢失，原因未明，待查；下次重启再验或改 main 兜底读 launcher 文件）。
 - T41d 根因双实锤：底栏 absolute 来自 p5-55-layout.css:74/:90；对话框 28px 来自产物 .sand-exx8yu{height:28px} 撞容器。
 - T34b2 开出（经理读码定案）：⑤ 卡点是测试自身 follow 解构 bug（{stream,snapshot} 当流迭代+catch 吞异常）——一行修。
+
+## 2026-11-09 · merge T34b+T34b2（⑤ 环境泄漏探针落地）
+- merge `feat/T34b`：④ 断言收紧 pbots/forbidden + ⑤ 环境泄漏探针真跑真绿（follow {stream,snapshot} 解构修复——经理读码定案；先红用临加 P2SDK_PBOTS_LEAK_PROBE 泄漏键证判定力，原方案换键会令 ①② 崩——工单写错，经理追认偏差）——经理验收 @ 68e6ce96；主仓回测 6 passed。
+- P5-01 决策 15（数据根不进模型环境）从静态论证（上游 scrub DSH_*）升级为运行时守卫：任何键名的数据根泄漏进 bash env 都会被 ⑤ 抓红。

@@ -132,6 +132,16 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   let createdBy: Record<string, string> = {} // workerId → creatorId（M3 bots[id].createdBy）
   let helpersOfMain: Record<string, string> = {} // T36：主 bot 的 subagent helperId → parentId（session/list 顶层 origin/parentSessionId）
   let active: string | null = null // chat-header 当前打开的 bot（worker 打开即已读）
+  // T41：侧栏隐藏（localStorage pbots.shim.hidden-agents，坏值回 []——UI 偏好丢了不致命，不进 M3）
+  const hiddenKey = 'pbots.shim.hidden-agents'
+  const readHidden = (): Set<string> => {
+    try {
+      const raw = JSON.parse(window.localStorage.getItem(hiddenKey) ?? '[]')
+      return new Set(Array.isArray(raw) && raw.every((v: unknown) => typeof v === 'string') ? raw : [])
+    } catch { return new Set() }
+  }
+  let hidden = readHidden()
+  const writeHidden = (next: Set<string>): void => { try { window.localStorage.setItem(hiddenKey, JSON.stringify([...next])) } catch { /* 私有模式等：静默 */ } }
   let held: string | null = null // T39：被 hold 的 worker（打开时在 Workers rank<4，或经回报卡 focus 打开）——sections 用它而非 active（点 Done 行不跳组）
   let focusedFrom: string | null = null // T39：最近一次 pbotsUi.focus 的 id（回报卡 Open/Messaging——GU-P6-15-r1 f1 语义）
   const peers = new Map<string, PeerMeta>() // 编排条目 entryId → 元数据（pbotsUi.peer）
@@ -247,6 +257,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       // D10c 侧栏角标：失效 bot 的预览行（0.18 行内 lastMessagePreview 槽）；P6-15 worker 行的状态预览
       ...(configOf(id)?.readOnly === true ? { preview: CONNECTOR_UNAVAILABLE } : overlay.preview !== undefined ? { preview: overlay.preview } : {}),
       ...(avatarOf(id) !== null ? { avatarShape: avatarOf(id)!.shape, avatarColor: avatarOf(id)!.color } : {}), // T24
+      isHidden: hidden.has(id), // T41：raw 带标记 → 上游 visibleAgents 过滤 + Hidden Bots 对话框
     })
   }
 
@@ -666,6 +677,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       push.agents()
     },
     setAgentUnread: (id, value) => { if (value) unread.add(id); else unread.delete(id); push.agents() },
+    setAgentHidden: (id, value) => { if (value) hidden.add(id); else hidden.delete(id); writeHidden(hidden); push.agents() }, // T41
     createAgent: async (args) => {
       // T26：onboarding create 步的实参（model.ts makeOnboardingCreateRequest：origin:'user'
       // + isKickstartRequested + name/avatarShape/avatarColor）——直建不走新建对话框（chooser

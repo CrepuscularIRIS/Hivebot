@@ -152,7 +152,7 @@ test('U4′：死入口隐藏清单逐条生效 + 主视图遍历零死入口', 
     // 模块覆盖：sidebar（剥 onDuplicateAgent/onRequestDeleteAgent/onShowFullConversation）+ row-actions model（滤 Hide from sidebar）
     await page.locator('.sand-agent-item', { hasText: AGENT_NAME }).click({ button: 'right' })
     const rowMenu = await visibleTexts(page, '[aria-label="Agent actions"] [role=menuitem]')
-    expect(rowMenu).toEqual(['Edit Profile', 'Show full conversation', 'Move to new section', 'Pin', 'Mark as Unread', 'Copy conversation ID']) // T7bd：T21 加的活入口补进清单
+    expect(rowMenu).toEqual(['Edit Profile', 'Show full conversation', 'Move to new section', 'Pin', 'Mark as Unread', 'Copy conversation ID', 'Hide from sidebar']) // T41：删 P5-52 过滤——上游产出序（agentRowActions 尾位）
     await page.keyboard.press('Escape')
     // CSS 覆盖：账户菜单只剩 Settings / About（Help Center / Send Feedback / Log out 屏蔽）
     await page.click('button[aria-label="Account"]')
@@ -187,7 +187,6 @@ test('U4′：死入口隐藏清单逐条生效 + 主视图遍历零死入口', 
     await expect(pane.locator('button[aria-label="Edit agent avatar"]')).toHaveCount(0) // 未 ready 时不渲染，ready 时被 CSS 屏蔽
       .catch(async () => expect(pane.locator('button[aria-label="Edit agent avatar"]')).toBeHidden())
     await page.screenshot({ path: join(EVIDENCE, 'info-pane-light.png') })
-
     // ---- ② 主视图遍历：零死入口 ----
     const dead: string[] = []
     const tested = new Set<string>()

@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-09 | 施工：main (GLM 5.3)
 > 来源：`work/exp-polish/BRIEF.md` 2026-11-09 追加段（「原版即规格…找出没集成的完整清单」）→ `work/exp-polish/AUDIT-0.79.3.md` K2 / 场景 1（queue E4）。顺带落地 P5-33（`work/p5-parity/RE-question-card.md` 的下游）。
 > 分支 / 作业目录：feat/T40 @ /tmp/bot-wt/T40（从集成分支 docs/rebuild-p6-p5-plan 起）
-> claimed：
+> claimed：2026-11-09 main (GLM 5.3) @ feat/T40
 > accepted：
 
 ## 目标

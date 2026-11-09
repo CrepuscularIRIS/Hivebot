@@ -2,6 +2,23 @@
 
 顺序由 manager 维护；`open/` 只放现在就能做的单。下表是计划，状态以工单所在目录为准。
 
+## 桌宠 + Windows 分发（`work/exp-polish/BRIEF.md`「追加二」）——2026-11-09 立项
+
+**2026-11-09 manager 任务 A（纯读探针）**：
+- **桌宠**：dsh-pet 三形态都不能原样进来——插件形态要在 dsh host 里拿凭证聊天（peer `dsh-credentials`、依赖 openai/anthropic SDK）、路由挂 dsh web 端口无鉴权、桌面窗由 host 侧起（Windows 连 Ubuntu 时宠物会跑到 Ubuntu 桌面）；standalone 不连 dsh，只能旁挂喂 `POST /work-status`（两份 Electron、点了回不到 bot）。定「复用资产不复用壳」：抄 9 个透明 WebM + 六档状态表（dsh-pet `shared/work-status.ts` / `assets/config.jsonc`），自己开一个受限透明窗。事件源**不用新开 dsh 接口**：shim 现成的 `factsOf` + `rankOf`（审批 > 在跑 > 出错 > 新结果 > 空闲）就是宠物的优先级；只缺 dsh-pet 的「整理（tool/result）」一档。路线选择留 Q-044（默认 A = 本方案）。
+- **Windows exe**：`app/ui` 没有打包器；electron-builder（dsh 官方桌面版与 dsh-pet 都用）Linux→Windows 可行（本机 wine-11.0、Electron win32 zip 可下）。架构定「**薄客户端**」：main 本就只是 dsh 的 HTTP+WS 客户端（`main/dsh/connect.ts`），SDK / bwrap / bash 启动器 / LLM key 全留 Ubuntu；Windows 侧只跑界面 + 系统自带 `ssh.exe` 开隧道。**T9 系 ssh 组合不适用**（那是 host 在本机、工具到远端，会把 SDK 和 key 搬到 Windows）；但 T11 的「远端工作区」分支（`orchestrate.ts` 的 `sshRemoteRoot()` → `p2sdk/workspace_ensure` RPC，`workspace.mjs` 用 `ctx.subprocess` 本地执行同样成立）正好复用。Windows 前提与签名问题见 Q-045。
+
+| # | 项 | 依赖 | 状态 |
+|---|---|---|---|
+| P1 | **T45a** 桌宠骨架（`open/T45a-desktop-pet-skeleton.md`）：透明置顶 200×200 窗 + shim `petStateOf` → `pbots:pet-state` → main（只转 state 枚举）→ 宠物窗；默认大肥鱼 9 个 WebM；拖动 / 单击拉起主窗 / 右键 Hide；单测 ①–⑩ + V1–V4 + e2e `data-state` 序列 + 六态透明截图。新渲染进程 + 新 IPC → 施工后**单独派 reviewer** | — | **open** |
+| P2 | T45b 形象库 + 导入：scout G 汇总的各家形象（claude/glm/chatgpt/grok/dots/muse，去登录、只收本地）→ 多形象切换；本地导入兼容 Petdex `pet.json` + `spritesheet.webp/png`（8×9 / v2 8×11，192×208/格）与 dsh-pet 式 WebM 目录；导入包限大小/帧数/类型、防路径穿越、不执行包内 JS（scout F :127）；持久化：宠物开关、位置、所选形象（`$PBOTS_DATA_DIR` 一个小 json）；自有 Hivebot 形象替换 CC BY-NC-SA 鱼作对外默认 | T45a 回执、scout G（**已到**：`work/research-reposcan/scout-g-characters.md` §四 v1 名单——私用：大肥鱼 WebM、现有 Grok SVG 角色、Claude Code Crab / Claude酱 二选一、GLM 社区包（Petdex atlas）；特色位 OpenMoji robot / Kenney CC0；dots / Muse / ChatGPT 只留空位不硬切宣传图） | 计划（T45a 回执后写单） |
+| P3 | 提议（未开单）T45c 打磨：Q 弹 / 甩抛 / 漫游 / 闲置 N 分钟睡觉（`睡觉-开始/循环/起来`）/ 随机待机链——按需从 dsh-pet（MIT 代码）逐模块复制改造；点宠物打开领头 bot（等 T42 修 `pbots:open-worker` 接收端）；气泡显示「正在做什么」（只用 tool 名 / todo 文案，经脱敏） | T45a、T42 | 提议 |
+| W1 | **T46a** Windows 安装包打包链（`open/T46a-win-exe-packaging.md`）：electron-builder NSIS 按用户装；asar 白名单（只 `out/**` + package.json + ws）+ 变异；产物不外传；Windows 实机由用户点开 | — | **open**（与 T45a 不撞文件，可并行） |
+| W2 | T46c Ubuntu 侧 `hivebot serve`：launcher 加只起 SDK、不起 Electron、常驻到 TERM 的模式；本机模式也挂 `p2sdk/workspace_ensure`（remoteRoot = 本机 `$PBOTS_DATA_DIR`），handoff 写 `remote-root`；打印一行可被 `ssh host hivebot serve --status` 读的 `base-url` 端口（token 不打到日志）；验收在 `launcher.spec.ts` 加格 | T46a | 计划 |
+| W3 | T46b Windows 连 Ubuntu：main 读 `remote.json`（只一个 ssh host 别名，形状 `^[A-Za-z0-9._@-]+$`）→ 固定 argv 起 `ssh -N -o BatchMode=yes -L 127.0.0.1:<随机>:127.0.0.1:<port>` + 一次 `ssh host <固定命令>` 取 base-url/launch-token **进内存不落盘**→ 复用 `DshConnection`；main 侧走 T11 远端工作区分支；skills API 按 T11c 拒；断开走 T12a 提示。Linux 上用 T2 私有 sshd 夹具做 e2e，Windows 只差 `ssh.exe` 路径；**安全/协议单 → 单独派 reviewer** | T46c、T11c（skills 拒，未开单）、**Q-045** | 计划 |
+
+**施工序**：T45a ‖ T46a 并行（GLM 两路）→ T45a 单派 reviewer、T46a 攒批 → 经理任务 B → scout G 回来后写 T45b；T46a 通过 + 用户答 Q-045 → T46c → T46b。
+
 ## 体验打磨轮（`work/exp-polish/`）——2026-11-09 立项，**最高优先**（用户：「先打磨体验」，SSH 推迟）
 
 **2026-11-09 manager 任务 A（第一批 = BRIEF 第 1、2 项）**：① 「点击里面只显示 2 个 + worker 跳」根因是 `sectionsOf` 把**当前打开的** worker 一律放进 Workers（GU-P6-15-r1 f1 的修法没区分「回报卡 Open」和「侧栏点 Done 行」），侧栏点 Done 行 → 行跳上 Workers、Done 少一个；生产会话头旁证：主 bot 名下 4 个（T34 Probe + 3 helper），3 个在折叠 Done、txt helper 未读在 Workers，与用户描述对得上。② computer / browser use：我们**没有**这两类工具（dsh CUA 仅 macOS + PTC；生产工具表只有 web_fetch），图片块在 reduce 被丢——出测试清单，不开修单。第 3-6 项在 scout E/F 调研中，结果回来再拆。

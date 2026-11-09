@@ -2,3 +2,7 @@
 grok-bot-0.18-reconstructed	https://github.com/b-nnett/grok-bot-0.18-reconstructed	a9f633e	无 LICENSE（重构自闭源产物，私用）	2026-08-23（快照，不作依赖）	前端外形与分层参照（p1-re）
 dsh-superagent-prototype	https://github.com/deepseek-ai/dsh-superagent-prototype	6337fc8	MIT	2026-10-31（研究原型）	后端底座（p2-sdk）
 deepseek-harness	https://github.com/deepseek-ai/deepseek-harness	ce7073d512	MIT	2026-10-30（活跃）	后端底座 dsh（p2-sdk）
+Bai-Cute__big-blue-fish-desktop-pet	https://github.com/Bai-Cute/big-blue-fish-desktop-pet	6281a90d91e5507debe3da02b853ebc9c932b0fa	代码 Apache-2.0；角色素材须另审上游 CC BY-NC-SA 4.0	2026-11-06（#19 有 owner 回应）	形象与桌宠 UX 侦察（scout-g，只读）
+PC2005-cloud__dsh-pet	https://github.com/PC2005-cloud/dsh-pet	c25386848f70f6e40902e4376f6e7b1e196bc326	代码 MIT；大肥鱼形象 CC BY-NC-SA 4.0	2026-11-09	形象包格式与原始许可（scout-g，只读）
+crafter-station__petdex	https://github.com/crafter-station/petdex	31c0aee7f4fb387774b87d40e8047dc0f9cea94b	代码 MIT；宠物素材逐包授权，manifest 不含许可	2026-10-10	精灵图目录与 Claude/GLM 社区形象（scout-g，只读）
+QCYTSN__dsh-dafeiyu	https://github.com/QCYTSN/dsh-dafeiyu	084323845ab82b68d5388d5c638bec09d8544a8a	代码 MIT；帧素材声称 MIT 与上游角色 NC-SA 冲突待核	2026-10-29	WebP 帧包与来源链（scout-g，只读）

@@ -2,6 +2,21 @@
 
 顺序由 manager 维护；`open/` 只放现在就能做的单。下表是计划，状态以工单所在目录为准。
 
+## 体验打磨轮（`work/exp-polish/`）——2026-11-09 立项，**最高优先**（用户：「先打磨体验」，SSH 推迟）
+
+**2026-11-09 manager 任务 A（第一批 = BRIEF 第 1、2 项）**：① 「点击里面只显示 2 个 + worker 跳」根因是 `sectionsOf` 把**当前打开的** worker 一律放进 Workers（GU-P6-15-r1 f1 的修法没区分「回报卡 Open」和「侧栏点 Done 行」），侧栏点 Done 行 → 行跳上 Workers、Done 少一个；生产会话头旁证：主 bot 名下 4 个（T34 Probe + 3 helper），3 个在折叠 Done、txt helper 未读在 Workers，与用户描述对得上。② computer / browser use：我们**没有**这两类工具（dsh CUA 仅 macOS + PTC；生产工具表只有 web_fetch），图片块在 reduce 被丢——出测试清单，不开修单。第 3-6 项在 scout E/F 调研中，结果回来再拆。
+
+| # | 项 | 依赖 | 状态 |
+|---|---|---|---|
+| E1 | **T39** 侧栏点行不换组（`open/T39-workers-no-jump-on-click.md`）：hold 只给「打开时本在 Workers」或「经 pbotsUi.focus 打开」的 worker；新单测 4 格（①② 施工前红）+ 3 变异 + p6-workers e2e 回归 + 生产点 3 次截图 | — | **open** |
+| E1b | Q-038 若答 B（Done 默认展开 / 读完不自动归档）→ 改 sidebar.tsx 取反或 sectionsOf 归档条件，一张小单 | Q-038 | 计划（默认 A 不做） |
+| E2 | 测试清单 `work/exp-polish/COMPUTER-USE-TEST-PLAN.md`（A 浏览 6 项 / B 电脑 6 项 / C 过程回传 6 项）：主 agent 在生产实例逐行跑，结果写回清单「实测」列 + `evidence/CU/` | — | **可做**（不是工单，主 agent 直接跑；跑完派经理任务 A 拆单） |
+| E2a | （预计）图片回传断点：`reduce.ts` tool/result 收 image 块 + outline 行展开显示（B3/B4/C3）；交付卡（B5）。等 E2 实测确认再写单 | E2 | 计划 |
+| E2b | （预计）能力缺口：web_search / 浏览器操作 / bot 自己的电脑——先查 dsh-mcp-client + 在维护的浏览器 MCP（搬运阶梯第 1 级），并入 BRIEF 第 4 项功能匹配 | E2、scout E/F | 计划 |
+| E3 | BRIEF 第 3-6 项（scout 覆盖度 / 功能匹配 / 提示词微调 / 桌宠房间社区） | scout E/F | 等调研 |
+
+**施工序**：T39 现在就做（只碰 shim data.ts + 新测试，与在飞单不撞文件）‖ 主 agent 同时可跑 E2 清单（只用生产实例，不改代码；T39 合并重启前跑完 A/B 段，免得重启打断回合）。T39 可与下一批攒着派 reviewer。
+
 ## worker 呈现统一 + 术语（`bot-product-awareness` 二次澄清 + `worker-ui-polish`）——2026-11-08 立项，**最高优先**
 
 **2026-11-08 manager 任务 A**：用户定案「架构不动；bot = 用户自己建的会话，主 bot 派生的 = worker / subagent；主 bot 的 subagent 要显示进 Workers（其他 bot 的不显示）」。探针：helper 会话头**持久化**（dsh-subagent `childSessionMeta`），在 session/list 里永久留存、回合结束不销毁 → 没有闪烁问题，反而只增不减，靠现成 Done 折叠兜住；名字在 projection `subagent.label`（= 调用时的 description）；shim 只需放开 `data.ts:342` 过滤 + 统一 `creatorOf`；新 helper 走现成的「未知 sid → 重拉 roster」通道。**发现安全缺口**：M3 防提升只拒 createdBy，helper 进侧栏后可被「Set as main bot」设为主 bot → 并入 T36。工具名 `create_bot` 不改（历史卡渲染、authority、T35 判分都按名），只改文案。偏离原版：0.79.3 subagent 不进侧栏（只在 outline tab / 任务卡），按用户定案走。

@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-08 | 施工：main (GLM 5.3)
 > 来源：`work/bot-product-awareness/BRIEF.md`「二次澄清（定案）」第 3 条 + 协调者转达的用户补充（2026-11-08）：**只有主 bot 的 subagent 进 Workers；其他 bot 的 subagent 不显示**
 > 分支 / 作业目录：feat/T36 @ /tmp/bot-wt/T36（自当前主线开；T34b 不碰同文件，可并行）
-> claimed：
+> claimed：2026-11-08 06:3x main (GLM 5.3) @ feat/T36（起点 a68b966b）
 > accepted：
 
 ## 目标

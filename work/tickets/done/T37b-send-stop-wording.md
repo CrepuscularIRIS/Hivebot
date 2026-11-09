@@ -4,7 +4,7 @@
 > 来源：T37 终验第 5 条（`receipts/T37.receipt.md`）；T37 存疑 1
 > 分支 / 作业目录：feat/T37b，小改动不开 worktree（只碰 SDK 两处描述 + 测试）
 > claimed：2026-11-08 08:5x main (GLM 5.3) @ feat/T37b
-> accepted：
+> accepted：2026-11-08 manager (Opus 5.5) @ 706b7d9b（主线，并后追认）
 
 ## 目标
 模型看到的 `send_to_bot` / `stop_bot` 工具描述里，不再把 worker 叫 bot，也不再说 subagent「在 Workers 里看不见」。

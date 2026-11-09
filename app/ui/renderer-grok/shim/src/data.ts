@@ -135,9 +135,12 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   let held: string | null = null // T39：被 hold 的 worker（打开时在 Workers rank<4，或经回报卡 focus 打开）——sections 用它而非 active（点 Done 行不跳组）
   let focusedFrom: string | null = null // T39：最近一次 pbotsUi.focus 的 id（回报卡 Open/Messaging——GU-P6-15-r1 f1 语义）
   const peers = new Map<string, PeerMeta>() // 编排条目 entryId → 元数据（pbotsUi.peer）
-  // T40：提问批 eventId → {agentId, ids 顺序, widgets, answered(qid→value), dismissed}
-  interface QuestionBatch { agentId: string; ids: string[]; widgets: WidgetQ[]; answered: Map<string, string>; dismissed: boolean; sent: boolean }
+  // T40：提问批 eventId → 批状态。answered 结构化（review 中3：dismiss 不再用用户可输入的哨兵串）；
+  // entryIndex 提供不拆字符串的 entryId→(批,题) 路由（review 高：qid 含 '-' 时 regex 贪婪拆错）。
+  type QAnswer = { kind: 'answer'; value: string } | { kind: 'dismiss' }
+  interface QuestionBatch { agentId: string; ids: string[]; widgets: WidgetQ[]; answered: Map<string, QAnswer>; dismissed: boolean; sent: boolean }
   const questionBatches = new Map<string, QuestionBatch>()
+  const questionEntryIndex = new Map<string, { eventId: string; qid: string }>()
   const unknownTried = new Set<string>() // 触发过一次 roster 重拉的未知 sid（其他 bot 的 helper 不进 list 消费面，不反复拉）
   const models = new Map<string, string>() // #5 成功后的本地值（快照下一轮才投影）
   const uiListeners = new Set<() => void>()
@@ -253,6 +256,18 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     return raw
   }
 
+  /** T40：整批发送（结构化答案→dsh；dismiss=selected 空无 custom——review 中3）。 */
+  const sendBatch = async (eventId: string, batch: { ids: string[]; widgets: WidgetQ[]; answered: Map<string, { kind: 'answer'; value: string } | { kind: 'dismiss' }> }): Promise<{ ok: boolean; error?: { message?: string } }> => {
+    const answers = batch.ids.map((id) => {
+      const a = batch.answered.get(id)
+      const widget = batch.widgets.find((w) => w.id === id)!
+      if (a === undefined || a.kind === 'dismiss') return { id, selected: [] }
+      return toAnswer(id, widget, a.value)
+    })
+    const res = await api('$events/result', { clientId: eventsClientId, eventId, outcome: { kind: 'result', value: { answers } } })
+    return res
+  }
+
   /** T40：该 bot 的提问 widget 卡（批内顺序，追加在 askEntries 同层）。 */
   const questionEntries = (agentId: string): RawEntry[] => {
     const out: RawEntry[] = []
@@ -260,20 +275,21 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       if (batch.agentId !== agentId) continue
       for (const w of batch.widgets) {
         revision += 1
-        const answeredValue = batch.answered.get(w.id)
-        out.push({
+        const answered = batch.answered.get(w.id)
+        const entry: RawEntry = {
           kind: 'send-message',
           id: `q-${eventId}-${w.id}`,
           timestampMs: Date.now(),
           message: {
             type: 'widget',
             widget: { prompt: w.prompt, ...(w.helpText !== undefined ? { helpText: w.helpText } : {}), options: w.options.map((o) => ({ label: o.label, ...(o.description !== undefined ? { description: o.description } : {}), ...(o.value !== undefined ? { value: o.value } : {}) })), allowCustom: true },
-            ...(answeredValue !== undefined ? { respondedValue: answeredValue } : {}),
-            ...(batch.dismissed || batch.sent ? { widgetDismissed: batch.dismissed && !batch.answered.has(w.id) } : {}),
           },
-          // shim 侧作答路由键（coordinator respondToWidget 由此找回批）
-          pbotsQuestion: { eventId, qid: w.id },
-        } as RawEntry)
+          // 0.18 契约：respondedValue/widgetDismissed 在 **entry 顶层**（protocol.ts:190-191；review 中2——
+          // 原放 message 内被投影丢弃，成功提交后 UI 不显已答态）
+          ...(answered?.kind === 'answer' ? { respondedValue: answered.value } : {}),
+          ...(batch.dismissed ? { widgetDismissed: true } : {}),
+        }
+        out.push(entry)
       }
     }
     return out
@@ -481,6 +497,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       const widgets = qs.map((q) => toWidget(rec(q))).filter((w) => w.id !== '')
       if (widgets.length > 0) {
         questionBatches.set(it.eventId, { agentId: String(it.agentId ?? ''), ids: widgets.map((w) => w.id), widgets, answered: new Map(), dismissed: false, sent: false })
+        for (const w of widgets) questionEntryIndex.set(`q-${it.eventId}-${w.id}`, { eventId: it.eventId, qid: w.id })
         pushTranscript(String(it.agentId ?? ''))
         push.agents()
       }
@@ -592,49 +609,47 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       return { accepted: true }
     },
     respondToWidget: async (input) => {
-      // T40：entryId 即卡 id `q-<eventId>-<qid>`——找回批，攒答案；整批齐发一次 $events/result
-      const m = /^q-(.+)-(.+)$/.exec(input.entryId)
-      if (m === null) throw new Error(`not a question card: ${input.entryId}`)
-      const eventId = m[1]!, qid = m[2]!
+      // T40：entryId→批/题经 questionEntryIndex（review 高：不拆字符串——qid 含 '-' 时 regex 贪婪拆错）
+      const route = questionEntryIndex.get(input.entryId)
+      if (route === undefined) throw new Error(`not a question card: ${input.entryId}`)
+      const { eventId, qid } = route
       const batch = questionBatches.get(eventId)
       if (batch === undefined) throw new Error(`question batch gone: ${eventId}`)
       if (batch.dismissed || batch.sent) throw new Error('question already settled')
       const widget = batch.widgets.find((w) => w.id === qid)
       if (widget === undefined) throw new Error(`unknown question: ${qid}`)
-      batch.answered.set(qid, input.value)
+      batch.answered.set(qid, { kind: 'answer', value: input.value })
       pushTranscript(batch.agentId)
       if (batchComplete(batch.ids, batch.answered)) {
-        const answers = batch.ids.map((id) => toAnswer(id, batch.widgets.find((w) => w.id === id)!, batch.answered.get(id)!))
-        const res = await api('$events/result', { clientId: eventsClientId, eventId, outcome: { kind: 'result', value: { answers } } })
-        if (!res.ok) { // M1 失败不吞：卡回可作答（回执⑦）
+        const res = await sendBatch(eventId, batch)
+        if (!res.ok) { // M1 失败不吞：回滚本题+重推 transcript（卡回可作答——review 中4）+向调用方上抛
           batch.answered.delete(qid)
+          pushTranscript(batch.agentId)
           throw new Error(res.error?.message ?? '$events/result failed')
         }
         batch.sent = true
       }
       push.agents()
-      return null
+      return { accepted: true } // review 中2：0.18 adapter 要求 accepted===true（null 会 rollback）
     },
     dismissWidget: async (input) => {
-      // T40：整批作废？不——0.18 dismissWidget 是单卡；dsh 语义 skip=selected 空。为保「整批一次交」，
-      // dismiss 该题记为跳过（空 selected）；若其余都已答则触发整批发送。
-      const m = /^q-(.+)-(.+)$/.exec(input.entryId)
-      if (m === null) return
-      const eventId = m[1]!, qid = m[2]!
+      const route = questionEntryIndex.get(input.entryId)
+      if (route === undefined) return
+      const { eventId, qid } = route
       const batch = questionBatches.get(eventId)
       if (batch === undefined || batch.dismissed || batch.sent) return
       const widget = batch.widgets.find((w) => w.id === qid)
       if (widget === undefined) return
-      batch.answered.set(qid, '__dismissed__')
+      batch.answered.set(qid, { kind: 'dismiss' })
       pushTranscript(batch.agentId)
       if (batchComplete(batch.ids, batch.answered)) {
-        const answers = batch.ids.map((id) => {
-          const v = batch.answered.get(id)!
-          if (v === '__dismissed__') return { id, selected: [] }
-          return toAnswer(id, batch.widgets.find((w) => w.id === id)!, v)
-        })
-        const res = await api('$events/result', { clientId: eventsClientId, eventId, outcome: { kind: 'result', value: { answers } } })
-        if (res.ok) batch.sent = true
+        const res = await sendBatch(eventId, batch)
+        if (!res.ok) { // review 中4：dismiss 末题失败同样回滚+上抛（不再吞）
+          batch.answered.delete(qid)
+          pushTranscript(batch.agentId)
+          throw new Error(res.error?.message ?? '$events/result failed')
+        }
+        batch.sent = true
       }
       push.agents()
     },

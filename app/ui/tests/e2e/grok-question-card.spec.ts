@@ -45,9 +45,11 @@ test('T40 提问卡：两题卡出现→作答→终答含答案', { timeout: 24
     await ui.evaluate((s) => (window as unknown as { pbots: { api(m: string, a?: unknown): Promise<unknown> } }).pbots.api('session/prompt', { request: { requestId: `t40-${Date.now()}`, sessionId: s, mode: 'queue', content: [{ type: 'text', text: 'ask me' }] } }), sid)
     // 卡出现（0.18 widget.tsx 根 class=sand-widget）
     await expect(ui.locator('.sand-widget')).toHaveCount(2, { timeout: 30_000 })
-    // 点第 1 题选项 Blue；第 2 题 Skip（0 选项卡的唯一钮）
+    // 点第 1 题选项 Blue；第 2 题（0 选项卡）自定义输入 hello 回车——custom 语义（工单原文）
     await ui.locator('.sand-widget button', { hasText: 'Blue' }).first().click()
-    await ui.locator('.sand-widget button', { hasText: 'Skip' }).first().click()
+    const customInput = ui.locator('.sand-widget input, .sand-widget textarea').first()
+    await customInput.fill('hello')
+    await customInput.press('Enter')
     // fake 第二轮收到的工具结果含答案 → 终答出现
     await expect(ui.locator('.ProseMirror[contenteditable="true"]')).toBeVisible()
     // requests.jsonl 里 toolResults 是嵌套转义 JSON——parse 后断（q1 Blue / q2 skip）
@@ -62,9 +64,9 @@ test('T40 提问卡：两题卡出现→作答→终答含答案', { timeout: 24
     await expect.poll(async () => JSON.stringify(await readAnswers()), { timeout: 45_000 }).toContain('Blue')
     const trs = await readAnswers()
     const ans = trs.find((t) => t.toolCallId === 't40a')?.text ?? ''
-    expect(ans).toContain('q1')
-    expect(ans).toContain('Blue')
-    expect(ans).toContain('q2')
+    const parsed = JSON.parse(ans) as { answers: Array<{ id: string; selected: string[]; custom?: string }> }
+    expect(parsed.answers.find((a) => a.id === 'q1')?.selected).toEqual(['Blue'])
+    expect(parsed.answers.find((a) => a.id === 'q2')).toEqual({ id: 'q2', selected: [], custom: 'hello' })
   } finally {
     await shell?.stop()
     await rt.stop()

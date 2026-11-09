@@ -3,7 +3,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('pet', {
   onState(cb: (state: string) => void): void {
-    ;((window as unknown as { __petListenersInRenderer?: Array<(s: string) => void> }).__petListenersInRenderer ??= []).push(cb) // e2e 截图驱动口（仅渲染进程内存）
+    // T45c M4：测试钩子已删（contextIsolation 下主世界本就读不到，原钩子无效）——e2e 一律经 main 侧 webContents.send 驱动
     ipcRenderer.on('pet:state', (_e, v) => { cb(String((v ?? {}).state ?? 'idle')) })
   },
   click(): void { ipcRenderer.send('pet:click') },

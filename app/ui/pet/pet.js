@@ -26,21 +26,32 @@ const render = () => {
   const s = current
   play(base(s), !ONCE.has(s))
 }
-V.addEventListener('ended', () => { overriding = null; render() })
+V.addEventListener('ended', () => {
+  overriding = null
+  // T45c M1：一次动画（error/success）播完不驻留末帧——回 idle 待机循环并同步 data-state
+  if (ONCE.has(current)) { current = 'idle'; document.body.dataset.state = 'idle' }
+  render()
+})
 window.pet.onState((s) => { current = s; document.body.dataset.state = s; if (!overriding) render() })
 // 点击 vs 拖动（<4px 算点击；不用 -webkit-app-region: drag——收不到点击）
 let down = null
-addEventListener('pointerdown', (e) => { down = { x: e.screenX, y: e.screenY }; document.body.classList.add('dragging') })
+const endPointer = (e) => { // T45c M2：所有松手/取消路径第一步先清 down——松手后 move 不再跟随
+  down = null
+  document.body.classList.remove('dragging')
+  if (overriding === 'drag') { overriding = null; render(); return true }
+  return false
+}
+addEventListener('pointerdown', (e) => { down = { x: e.screenX, y: e.screenY }; document.body.classList.add('dragging'); try { document.body.setPointerCapture(e.pointerId) } catch { /* 不支持则靠 window 级事件 */ } })
+addEventListener('pointercancel', (e) => { endPointer(e) })
+addEventListener('lostpointercapture', () => { if (down !== null) endPointer(null) })
 addEventListener('pointermove', (e) => {
   if (down === null) return
   const dx = e.screenX - down.x, dy = e.screenY - down.y
   if (Math.abs(dx) > 3 || Math.abs(dy) > 3) { overriding = 'drag'; render(); window.pet.move(Math.round(dx), Math.round(dy)); down = { x: e.screenX, y: e.screenY } }
 })
 addEventListener('pointerup', () => {
-  document.body.classList.remove('dragging')
-  if (overriding === 'drag') { overriding = null; render(); return }
+  if (endPointer(null)) return // 拖动结束
   overriding = 'click'; play(CLICK, false); window.pet.click()
-  down = null
 })
 addEventListener('contextmenu', (e) => { e.preventDefault(); window.pet.menu() })
 render() // 初始动画（onState 未到前的待机）

@@ -114,10 +114,13 @@ describe('orchestration routing section on installed SystemPrompt', () => {
 
 // T37：文案不含旧叫法——worker 不叫 bot；subagent 不再说「看不见」（ROUTING_PROMPT 已于文件头导入）
 import { CREATE_BOT_DESCRIPTION } from '../../src/orchestration/create.mjs'
+import { SEND_TO_BOT_DESCRIPTION } from '../../src/orchestration/send.mjs'
+import { STOP_BOT_DESCRIPTION } from '../../src/orchestration/stop.mjs'
 describe('T37 术语', () => {
-  it('ROUTING_PROMPT 与 CREATE_BOT_DESCRIPTION 不含 worker bot / not visible', () => {
-    expect(ROUTING_PROMPT).not.toContain('worker bot')
-    expect(CREATE_BOT_DESCRIPTION).not.toContain('worker bot')
-    expect(ROUTING_PROMPT + CREATE_BOT_DESCRIPTION).not.toContain('not visible')
+  it('四个描述均不含 worker bot / Workers bot / that bot / not visible（T37b 扩）', () => {
+    const all = [ROUTING_PROMPT, CREATE_BOT_DESCRIPTION, SEND_TO_BOT_DESCRIPTION, STOP_BOT_DESCRIPTION].join(' ')
+    for (const bad of ['worker bot', 'Workers bot', 'that bot', 'not visible']) {
+      expect(all, `不得含 "${bad}"`).not.toContain(bad)
+    }
   })
 })

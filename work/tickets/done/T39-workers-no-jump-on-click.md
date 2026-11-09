@@ -3,8 +3,8 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-09 | 施工：main (GLM 5.3)
 > 来源：`work/exp-polish/BRIEF.md` 第 1 项（用户原话「我这怎么在ui里面点击里面, 就显示2个, 而且worker还在跳跃? 这个是不合理的」）
 > 分支 / 作业目录：feat/T39 @ /tmp/bot-wt/T39（从集成分支 docs/rebuild-p6-p5-plan 起）
-> claimed：
-> accepted：
+> claimed：2026-11-09 main (GLM 5.3) @ feat/T39
+> accepted：2026-11-09 fb5170c7（manager 复合审查+终验；生产截图旁证待合并后补，见回执）
 
 ## 目标
 侧栏里**点一下**某个 worker / helper 行，只是打开它，不让它换组。现在点 Done 里的行，它会立刻跳到上面的 Workers 组（Workers 组凭空出现、Done 少一个）；再点另一个，前一个掉回 Done、新的又跳上去。

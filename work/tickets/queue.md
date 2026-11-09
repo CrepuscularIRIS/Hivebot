@@ -8,7 +8,7 @@
 
 | # | 项 | 依赖 | 状态 |
 |---|---|---|---|
-| E1 | **T39** 侧栏点行不换组（`open/T39-workers-no-jump-on-click.md`）：hold 只给「打开时本在 Workers」或「经 pbotsUi.focus 打开」的 worker；新单测 4 格（①② 施工前红）+ 3 变异 + p6-workers e2e 回归 + 生产点 3 次截图 | — | **open** |
+| E1 | **T39** 侧栏点行不换组（`done/T39-workers-no-jump-on-click.md`）：hold 只给「打开时本在 Workers」或「经 pbotsUi.focus 打开」的 worker；新单测 4 格（①② 施工前红）+ 3 变异 + p6-workers e2e 回归 + 生产点 3 次截图 | — | **done**（2026-11-09 终验 fb5170c7；待合并+生产截图） |
 | E1b | Q-038 若答 B（Done 默认展开 / 读完不自动归档）→ 改 sidebar.tsx 取反或 sectionsOf 归档条件，一张小单 | Q-038 | 计划（默认 A 不做） |
 | E2 | 测试清单 `work/exp-polish/COMPUTER-USE-TEST-PLAN.md`（A 浏览 6 项 / B 电脑 6 项 / C 过程回传 6 项）：主 agent 在生产实例逐行跑，结果写回清单「实测」列 + `evidence/CU/` | — | **可做**（不是工单，主 agent 直接跑；跑完派经理任务 A 拆单） |
 | E2a | （预计）图片回传断点：`reduce.ts` tool/result 收 image 块 + outline 行展开显示（B3/B4/C3）；交付卡（B5）。等 E2 实测确认再写单 | E2 | 计划 |

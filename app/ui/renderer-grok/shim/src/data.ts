@@ -129,6 +129,8 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   let createdBy: Record<string, string> = {} // workerId → creatorId（M3 bots[id].createdBy）
   let helpersOfMain: Record<string, string> = {} // T36：主 bot 的 subagent helperId → parentId（session/list 顶层 origin/parentSessionId）
   let active: string | null = null // chat-header 当前打开的 bot（worker 打开即已读）
+  let held: string | null = null // T39：被 hold 的 worker（打开时在 Workers rank<4，或经回报卡 focus 打开）——sections 用它而非 active（点 Done 行不跳组）
+  let focusedFrom: string | null = null // T39：最近一次 pbotsUi.focus 的 id（回报卡 Open/Messaging——GU-P6-15-r1 f1 语义）
   const peers = new Map<string, PeerMeta>() // 编排条目 entryId → 元数据（pbotsUi.peer）
   const unknownTried = new Set<string>() // 触发过一次 roster 重拉的未知 sid（其他 bot 的 helper 不进 list 消费面，不反复拉）
   const models = new Map<string, string>() // #5 成功后的本地值（快照下一轮才投影）
@@ -205,7 +207,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     const all = [...new Set(order.filter(isWorker).map((id) => creatorOf(id)!))]
     return mainBotId !== null && all.includes(mainBotId) ? [mainBotId, ...all.filter((c) => c !== mainBotId)] : all
   }
-  const sections = (): SectionRecord[] | null => sectionsOf(creators().map((creatorId) => ({ creatorId, workers: workersOf(creatorId).map(factsOf) })), active)
+  const sections = (): SectionRecord[] | null => sectionsOf(creators().map((creatorId) => ({ creatorId, workers: workersOf(creatorId).map(factsOf) })), held) // T39：传 held 不传 active——侧栏点 Done 行不换组；active 只影响已读语义
   let sectionsSig = 'null'
 
   const workerOverlay = (id: string): { waitingReason?: string; preview?: string; unread?: boolean } => {
@@ -693,7 +695,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       return res
     },
     cancel: (id) => api('session/cancel', { request: { sessionId: id } }),
-    focus: (id) => opts.focus?.(id),
+    focus: (id) => { focusedFrom = id; opts.focus?.(id) }, // T39：记录来源（回报卡 Open 等——setActive 据此 hold）
     workerRank: (id) => (isWorker(id) ? rankOf(factsOf(id)) : null),
     peer: (id) => peers.get(id) ?? null,
     agentName: (id) => (summaries[id] === undefined ? null : agentName(id)),
@@ -703,11 +705,14 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     },
     setActive(id) {
       const left = active
+      // T39：hold 判定在清 unread 前——行换组只因自己状态变，不因被点。
+      // hold 条件（工单定案）：打开那一刻它本来就在 Workers（rank<4），或经 pbotsUi.focus（回报卡 Open——
+      // GU-P6-15-r1 f1：从折叠 Done 外打开已读 worker 时行别藏死）。侧栏点 Done 行：不 hold，留原位。
+      held = isWorker(id) && (rankOf(factsOf(id)) < 4 || focusedFrom === id) ? id
+        : (left !== null && held === left && isWorker(id) === false ? null : held)
+      if (left !== null && held === left && left !== id) held = null // 离开被 hold 的 worker：解除（此刻归档）
+      focusedFrom = null
       active = id
-      // 打开 worker = 已读；离开一个已读 worker → 它此刻才归档进 Done；
-      // 打开已读 worker（如回报卡 Open）→ 回 Workers 尾——sections 随 active 变就必须重推（GU-P6-15-r1 f1：
-      // 原来只在「打开未读」时推，打开已读 worker 不推，行留在折叠的 Done 里永远点不亮）。
-      // sig 未变时 wire 的 sectionsSig 守卫去重，多推无副作用。
       if (isWorker(id)) unread.delete(id)
       if (isWorker(id) || (left !== null && left !== id && isWorker(left))) push.agents()
     },

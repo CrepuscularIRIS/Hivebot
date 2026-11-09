@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-08 | 施工：main (GLM 5.3)
 > 来源：T37 终验第 5 条（`receipts/T37.receipt.md`）；T37 存疑 1
 > 分支 / 作业目录：feat/T37b，小改动不开 worktree（只碰 SDK 两处描述 + 测试）
-> claimed：
+> claimed：2026-11-08 08:5x main (GLM 5.3) @ feat/T37b
 > accepted：
 
 ## 目标

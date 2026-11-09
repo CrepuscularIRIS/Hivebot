@@ -125,9 +125,78 @@ it('④ 信封 fail closed：worker 调 subagent 被拒、无新会话', { timeo
   for (let i = 0; i < 60 && events.filter((e) => e.type === 'tool/result').length < calls1; i += 1) await new Promise((r) => setTimeout(r, 500))
   stream.cancel(); void drain
   const toolResults = events.filter((e) => e.type === 'tool/result').map((e) => JSON.stringify((e.data as { message?: { isError?: boolean, content?: Array<{ text?: string }> } }).message ?? {}))
-  expect(toolResults.join('\n'), 'subagent 调用被拒（信封）').toMatch(/isError.{0,20}true|refus|denied|forbidden|worker/i)
+  expect(toolResults.join('\n'), 'subagent 调用被拒（信封）').toContain('pbots/forbidden') // T34b：收紧到信封真实错误码（envelope-live 同款）
   const after = ((await rt.client.call('session/list', { _request: {} }) as { items?: unknown[] }).items ?? []).length
   expect(after, '无新增子会话').toBe(before)
+})
+
+// T34b 边界 4：⑤ 骨架已搭（审批应答已通 answered=1），卡在 session/follow 流不推 turn 事件（$events 流全程正常、
+// api-session/status true→false 俱到而 turn 数组恒空——疑与 ② 对同一 mainId 的 follow 复用相关）。按工单「搭不起来就
+// 停下写回执」处理：不删格不改恒真，skip 保留骨架，卡点详 receipts/T34b.receipt.md
+it.skip('⑤ 环境泄漏探针：主 bot bash env 不含数据根与 DSH_PBOTS_DATA_DIR（P5-01 决策 15）', { timeout: 120_000 }, async () => {
+  // interactions:'answer' 客户端 + $events 流（tiers-policy.test.ts:80-93 同法）——审批卡应答 allowed-once
+  const { connect } = await import('../../examples/lib/client.mjs')
+  const { readFileSync } = await import('node:fs')
+  const baseUrl = readFileSync(join(rt.handoff, 'base-url'), 'utf8').trim()
+  const token = readFileSync(join(rt.handoff, 'launch-token'), 'utf8').trim()
+  const ansClient = await connect({ baseUrl, token, interactions: 'answer' })
+  const evStream = await ansClient.socket.open('$events', {})
+  const frames: Array<Record<string, unknown>> = []
+  const drained = (async () => { for await (const f of evStream) frames.push(f as Record<string, unknown>) })().catch(() => {})
+  const evItem = (f: Record<string, unknown>): Record<string, unknown> => (f.item ?? f) as Record<string, unknown>
+  await new Promise<void>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('$events ready 未到')), 10_000)
+    const poll = (): void => { if (frames.some((f) => evItem(f).type === 'ready')) { clearTimeout(t); resolve(); return } setTimeout(poll, 100) }
+    poll()
+  })
+  const clientId = String(evItem(frames.find((f) => evItem(f).type === 'ready') ?? {}).clientId ?? '')
+  // 主 bot 会话：一轮 bash env（挂审批）→ 批准 → 收尾 text
+  const args = JSON.stringify({ command: 'env', description: 'leak probe' })
+  const bashTurn = { chunks: [
+    { type: 'block-start', index: 0, blockType: 'tool-call' },
+    { type: 'tool-call-delta', index: 0, id: 't34-leak', name: 'bash', argumentsDelta: args.slice(0, 5) },
+    { type: 'tool-call-delta', index: 0, id: 't34-leak', name: 'bash', argumentsDelta: args.slice(5) },
+    { type: 'block-end', index: 0, block: { type: 'tool-call', id: 't34-leak', name: 'bash', arguments: args } },
+    { type: 'finish', reason: { kind: 'tool-calls' } },
+  ] }
+  const textTurn = { chunks: [
+    { type: 'block-start', index: 0, blockType: 'text' },
+    { type: 'text-delta', index: 0, text: 'ok' },
+    { type: 'block-end', index: 0, block: { type: 'text', text: 'ok' } },
+    { type: 'finish', reason: { kind: 'stop' } },
+  ] }
+  // P5-03 游标账：mainId 已耗 2 个 call（①1 次 + ②mainView 1 次）——先垫 2 个占位，⑤ 的回合是第 3 次
+  const padTurn = { chunks: [
+    { type: 'block-start', index: 0, blockType: 'text' },
+    { type: 'text-delta', index: 0, text: 'pad' },
+    { type: 'block-end', index: 0, block: { type: 'text', text: 'pad' } },
+    { type: 'finish', reason: { kind: 'stop' } },
+  ] }
+  writeFileSync(join(home, 'fake', 'scripts', `${mainId}.json`), JSON.stringify({ calls: [padTurn, padTurn, bashTurn, textTurn] }))
+  const follow = await rt.client.follow(mainId, { awaitSnapshot: true })
+  const turn: Array<Record<string, unknown>> = []
+  const td = (async () => { for await (const f of follow) { const e = (f as { event?: Record<string, unknown> }).event; if (e) turn.push(e) } })().catch(() => {})
+  await rt.client.call('session/prompt', { request: { requestId: `t34leak-${Date.now()}`, sessionId: mainId, mode: 'queue', content: [{ type: 'text', text: 'print env' }] } })
+  const answered = new Set<string>()
+  const deadline = Date.now() + 60_000
+  for (;;) {
+    for (const f of [...frames]) {
+      const it = evItem(f)
+      if (it.type === 'waterfall' && it.event === 'approval/request' && it.agentId === mainId && typeof it.eventId === 'string' && !answered.has(it.eventId)) {
+        answered.add(it.eventId)
+        await ansClient.call('$events/result', { clientId, eventId: it.eventId, outcome: { kind: 'result', value: 'allowed-once' } })
+      }
+    }
+    if (turn.some((e) => e.type === 'turn/end')) break
+    if (Date.now() > deadline) throw new Error(`turn/end 未到；answered=${answered.size}；turn 尾部：${JSON.stringify(turn.slice(-6)).slice(0, 500)}；events 流尾部：${JSON.stringify(frames.slice(-6).map((f) => { const i = evItem(f); return { t: i.type, e: i.event, aid: i.agentId != null ? String(i.agentId).slice(0, 12) : undefined } }))}`)
+    await new Promise((r) => setTimeout(r, 200))
+  }
+  for (let i = 0; i < 60 && turn.filter((e) => e.type === 'tool/result').length < 1; i += 1) await new Promise((r) => setTimeout(r, 500))
+  follow.cancel(); void td; evStream.cancel(); void drained; ansClient.close()
+  const envOut = turn.filter((e) => e.type === 'tool/result').map((e) => JSON.stringify((e.data as { message?: { content?: Array<{ text?: string }> } }).message ?? {})).join('\n')
+  expect(envOut, '真拿到了 env 输出（防恒真）').toContain('PATH=')
+  expect(envOut, '数据根不进 bash 环境').not.toContain(dataDir)
+  expect(envOut, 'DSH_PBOTS_DATA_DIR 不进 bash 环境').not.toContain('DSH_PBOTS_DATA_DIR')
 })
 
 describe('T34 orchDataDir 四分支（mock 直测——identity 覆盖补）', () => {

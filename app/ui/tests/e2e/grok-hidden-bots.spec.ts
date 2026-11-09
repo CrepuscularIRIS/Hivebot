@@ -45,13 +45,31 @@ async function runOnce(scheme: 'light' | 'dark'): Promise<void> {
     await expect(page.locator('.sand-agent-item', { hasText: 'Hide me bot' }), 'reload 后仍隐藏').toHaveCount(0, { timeout: 15_000 })
     await expect(page.locator('[aria-label="1 hidden bots"]')).toBeVisible({ timeout: 15_000 })
 
-    // T41c ③：徽标按钮整块可点（中心点命中的是自身/子孙，不被 footer 遮挡）——须在对话框打开前测（modal 遮罩会挡）
+    // T41c/T41d ③：徽标按钮整块可点——须在对话框打开前测（modal 遮罩会挡）
     const hitSelf = await page.locator('[aria-label="1 hidden bots"]').evaluate((el) => {
       const r = el.getBoundingClientRect()
       const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
       return e != null && (e === el || el.contains(e))
     })
     expect(hitSelf, '徽标中心不被遮挡').toBe(true)
+    // T41d ③a：整颗按钮可见——「Hidden Bots」文字在侧栏内 visible
+    const btn = page.getByRole('button', { name: /Hidden Bots/ })
+    await expect(btn.getByText('Hidden Bots')).toBeVisible()
+    // T41d ③b：boundingBox 完整在视口内且在侧栏列内
+    const box = await btn.boundingBox()
+    const sidebarBox = await page.locator('.sand-agents-sidebar').boundingBox()
+    expect(box, '按钮有盒').not.toBeNull()
+    expect(box!.y, '按钮顶在视口内').toBeGreaterThanOrEqual(0)
+    expect(box!.y + box!.height, '按钮底不超视口').toBeLessThanOrEqual(820)
+    expect(box!.x, '按钮在侧栏列内（左）').toBeGreaterThanOrEqual(sidebarBox!.x - 1)
+    expect(box!.x + box!.width, '按钮在侧栏列内（右）').toBeLessThanOrEqual(sidebarBox!.x + sidebarBox!.width + 1)
+    // T41d ③c：四角内缩 2px + 中心共 5 点 elementFromPoint 全命中按钮自身/子孙
+    const five = await btn.evaluate((el) => {
+      const r = el.getBoundingClientRect()
+      const pts = [[r.x + 2, r.y + 2], [r.x + r.width - 2, r.y + 2], [r.x + 2, r.y + r.height - 2], [r.x + r.width - 2, r.y + r.height - 2], [r.x + r.width / 2, r.y + r.height / 2]]
+      return pts.map(([x, y]) => { const e = document.elementFromPoint(x, y); return e != null && (e === el || el.contains(e)) })
+    })
+    expect(five.every(Boolean), '五点全命中（四角+中心）').toBe(true)
 
     // 点开 Hidden Bots 对话框 → Unhide → 行回来
     await page.locator('[aria-label="1 hidden bots"]').click()
@@ -62,6 +80,10 @@ async function runOnce(scheme: 'light' | 'dark'): Promise<void> {
     // T41c ②：样式来自原版值（padding 非零——0.18 tokens 的 spacing 档，回执对照）
     const pad = await dialog.evaluate((el) => getComputedStyle(el).paddingTop)
     expect(Number.parseFloat(pad), 'dialog 有内边距（非贴边）').toBeGreaterThanOrEqual(12)
+    // T41d ④：只有一条时列表不滚动
+    const list = dialog.locator('.sand-hidden-chats__list')
+    const scroll = await list.evaluate((el) => ({ sh: el.scrollHeight, ch: el.clientHeight }))
+    expect(scroll.sh, '一条时 scrollHeight ≤ clientHeight（不出滚动）').toBeLessThanOrEqual(scroll.ch)
     await page.screenshot({ path: join(EVIDENCE, `dialog.${scheme}.png`) })
     await dialog.locator('button', { hasText: 'Unhide' }).first().click()
     await expect(page.locator('.sand-agent-item', { hasText: 'Hide me bot' }), 'Unhide 后行回来').toBeVisible({ timeout: 15_000 })

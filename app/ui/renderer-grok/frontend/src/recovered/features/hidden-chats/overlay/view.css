@@ -51,9 +51,12 @@
   flex-direction: column;
   align-items: stretch;
   padding: var(--cursor-spacing-4, 16px);
+  height: fit-content; /* 0.18 原子类缺失导致 grid cell 协商压高（实测 140 < 内容）——按内容取高 */
 }
-/* 0.18 原子类（78zum5 等）部分缺产物：column 子层显式满宽，防宽度沿内容逐层收缩 */
+/* 0.18 原子类部分缺产物：column 子层显式满宽防收缩；body 容器撞上图标尺寸类
+   .sand-exx8yu{height:28px}（产物实测）——显式 auto 解钉（0.18 里该容器应为内容自适应） */
 .sand-hidden-chats-dialog > * { width: 100%; }
+.sand-hidden-chats-dialog > div:not(header) { height: auto !important; }
 .sand-hidden-chats-dialog > header {
   display: flex;
   align-items: flex-start;
@@ -67,10 +70,14 @@
 .sand-hidden-chats-dialog > header p {
   margin: 0;
 }
+.sand-hidden-chats-dialog > div:not(header) { min-height: 0; flex: none; }
 .sand-hidden-chats__list {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  height: auto;
+  min-height: 0;
+  max-height: min(420px, 60vh);
 }
 .sand-hidden-chats__open {
   display: flex;

@@ -15,6 +15,27 @@
 | E2b | （预计）能力缺口：web_search / 浏览器操作 / bot 自己的电脑——先查 dsh-mcp-client + 在维护的浏览器 MCP（搬运阶梯第 1 级），并入 BRIEF 第 4 项功能匹配 | E2、scout E/F | 计划 |
 | E3 | BRIEF 第 3-6 项（scout 覆盖度 / 功能匹配 / 提示词微调 / 桌宠房间社区） | scout E/F | 等调研 |
 
+**2026-11-09 manager 任务 A（BRIEF 追加段「原版即规格，穷举功能面」）**：审计 `work/exp-polish/AUDIT-0.79.3.md`——85 个功能面：已接线 30 / 部分 9 / 未接线 24 / 不适用·阻塞 22。**更正前提**：`frontend/src/recovered/` 是 0.18 重构树（276 文件），不是 0.79.3；0.79.3 只有 `/tmp/grokbot-0.79.3/` 打包产物 + RE-FULL。「没集成」几乎都不是缺 UI——0.18 ProductionRenderer 已挂载几乎全部 feature，是被 shim 回空 / 覆盖剥 prop / CSS 藏掉。第一批按 价值 × 成本 排 5 张（E4–E8）：
+
+| # | 项 | 依赖 | 状态 |
+|---|---|---|---|
+| E4 | **T40** 提问卡（`open/T40-question-card.md`）：shim 消费 `user-questions/request` → 0.18 widget 卡；respondToWidget / dismissWidget → 整批一次 `$events/result {answers}`；单测 7 格（①② 施工前红）+ 3 变异 + 新 e2e。**现网 bot 调 ask_user_question 会挂住**。协议单 → 单独派 reviewer | — | **open** |
+| E5 | **T41** 隐藏 bot + Hidden Bots 恢复（`open/T41-hide-bots.md`）：去掉 row-actions 过滤 + `setAgentHiddenFromSidebar` handler + localStorage 持久；隐藏的 worker 不进组；dead-entries :155 行菜单清单补 Hide | — | **open**（可与 T40 并行，coordinator.ts 相邻行三方合并） |
+| E6 | **T42** 每 bot Notifications 开关 + 回完 / 等你时系统通知（草稿 `work/exp-polish/next/T42-bot-notifications.md`）：0.79.3 默认开；统一 main 发；**顺带修 P6-18 点击通道 `pbots:open-worker` 没有接收端**（点 worker 通知只拉前台不打开）。动 preload/main → 单独派 reviewer | T40 合并（同改 data.ts） | 草稿 → T40 回执后挪 open |
+| E7 | **T43** 交付卡（草稿 `next/T43-deliverables.md`）：present → 终答 `attachments` 条（图片 / PDF / 下载）；main 新读文件口，realpath 围栏在 `workspaces/<botId>`、魔数判图、不提供默认程序打开。安全单 → 单独派 reviewer | T42 | 草稿 |
+| E8 | **T44** 用户附件（草稿 `next/T44-user-attachments.md`）：Attach / 粘贴 / 拖放 → prompt 图片块；历史回看要 `session/attachment` 进 M1 | **Q-039**；探针 P1–P3 | 草稿（等 Q-039） |
+| E4b | 提议（不开单）：多选题卡 + composer 直接答题（0.79.3「Type your answer, or talk about something else」） | T40 | 提议 |
+| E9 | Routines 面板（0.18 automations/routines 2.3k 行 ↔ dsh-tool-schedule）：列 / 建 / 暂停 / 立即跑 + 对话流 automation 卡 | **Q-039** | 计划 |
+| E10 | Async tasks 面板（行菜单 Show async tasks）：helper 部分可从 session/list 出；shell 部分要 job.list | Q-039（shell 部分）；T27 结论 | 计划 |
+| E11 | 回复 / 引用某条消息（transcript 覆盖去掉 `onReply` 剥离；引用文本拼进 prompt + 本地记引用关系） | — | 计划 |
+| E12 | 表情回应（0.79.3 回应会唤醒 bot：「On a reaction」触发） | 先查 dsh 有无对应输入 | 计划 |
+| E13 | 自建侧栏分组重启不丢（desktop.ts:226-229 落盘 + 与 Workers 合成段共存） | — | 计划 |
+| E14 | 头像上传（0.18 avatar-editor；AI 生成看 Q-042） | Q-042 | 计划 |
+| E15 | 代码块语法高亮（0.79.3 shiki） | — | 计划（低） |
+| — | 不排：@ 提及、Pop Out、emoji、线程、回滚、链接预览、连接器卡、全局搜索、听写（Q-041）、bot 电脑（Q-040）、中文界面（Q-043） | 见 AUDIT §3 | 提议 |
+
+**施工序（E 批）**：T40 ‖ T41 现在就做（都小，GLM 两路并行 ≤3）→ T40 合并后挪 T42 → T42 后 T43 → Q-039 答了再做 T44 探针。T40、T42、T43 各自单独派 reviewer（协议 / IPC / 文件读）；T41 攒批。E2 实测照旧可与施工并行。
+
 **施工序**：T39 现在就做（只碰 shim data.ts + 新测试，与在飞单不撞文件）‖ 主 agent 同时可跑 E2 清单（只用生产实例，不改代码；T39 合并重启前跑完 A/B 段，免得重启打断回合）。T39 可与下一批攒着派 reviewer。
 
 ## worker 呈现统一 + 术语（`bot-product-awareness` 二次澄清 + `worker-ui-polish`）——2026-11-08 立项，**最高优先**

@@ -93,6 +93,9 @@ const VIEWS: Record<string, (page: Page) => Promise<void>> = {
 }
 
 async function reset(page: Page): Promise<void> {
+  // T41b：段②遍历会点行菜单每一项（含 Hide from sidebar——把 P5-52 probe 藏了）；
+  // reset 清掉隐藏偏好，reload 后行回来
+  await page.evaluate(() => { try { window.localStorage.removeItem('pbots.shim.hidden-agents') } catch { /* ignore */ } })
   await page.reload()
   await page.locator('.sand-agent-item', { hasText: AGENT_NAME }).click({ timeout: 60_000 })
   await expect(page.locator('.sand-virtual-transcript pre')).toHaveCount(1, { timeout: 30_000 })

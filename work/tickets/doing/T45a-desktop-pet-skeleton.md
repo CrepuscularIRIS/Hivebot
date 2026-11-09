@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-09 | 施工：main (GLM 5.3)
 > 来源：`work/exp-polish/BRIEF.md`「2026-11-09 追加二」第 1 项（「可以加入试试看，然后代替原来的 bot 效果」）；scout F `work/research-reposcan/scout-f-pet-room-community.md` §一、:117-127。queue「桌宠 + Windows 分发」节 P1。
 > 分支 / 作业目录：feat/T45a @ /tmp/bot-wt/T45a（新文件为主；`main/index.ts`、`preload/index.ts`、`shim/src/data.ts` 各加几行接线）
-> claimed：
+> claimed：2026-11-09 main (GLM 5.3) @ feat/T45a
 > accepted：
 
 ## 目标

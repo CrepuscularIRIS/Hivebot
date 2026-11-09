@@ -4,7 +4,7 @@
 > 来源：`receipts/T41.acceptance.md`「回执 §5 核实结论」
 > 分支 / 作业目录：feat/T41 @ /tmp/bot-wt/T41（接着同一分支提交）
 > claimed：2026-11-09 main (GLM 5.3) @ feat/T41 续
-> accepted：
+> accepted：2026-11-09 6e125666（经理任务 B，见 receipts/T41b.acceptance.md）
 
 ## 根因（经理已定，不用再查）
 段② 遍历会**点**行菜单里每一项。T41 放回的「Hide from sidebar」排最后一项，点了就真把 `P5-52 probe` 藏了（`u4-traverse.tsv`：`Hide from sidebar … rpc=setAgentHiddenFromSidebar … ok`），下一个视图的 `reset()` reload 后找不到该行 → 超时。不是上游自动发帧，不是产品缺陷。

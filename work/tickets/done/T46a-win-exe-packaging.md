@@ -4,7 +4,7 @@
 > 来源：`work/exp-polish/BRIEF.md`「2026-11-09 追加二」第 5 项（「模仿一个 dsh 类似的安装内容，做一个 windows 的 exe 启动包，后续我会在 windows 连接到 Ubuntu 去测试」）。queue「桌宠 + Windows 分发」节 W1。
 > 分支 / 作业目录：feat/T46a @ /tmp/bot-wt/T46a（只碰 app/ui 的打包配置，与 T45a 不撞文件，可并行）
 > claimed：2026-11-09 main (GLM 5.3) @ feat/T46a // worktree /tmp/bot-wt/T46a
-> accepted：
+> accepted：2026-11-09 dc864c0b（经理任务 B，见 receipts/T46ac.acceptance.md）
 
 ## 目标
 在这台 Ubuntu 上一条命令打出 Windows x64 的 NSIS 安装包 `Hivebot-Setup-<版本>.exe`（按用户安装、建开始菜单 / 桌面快捷方式、可卸载）。装好后双击能起 Hivebot 窗口（此时还没接后端，显示「未连接」的空壳——接 Ubuntu 是 T46b/T46c）。包里**只有界面**：没有 SDK、没有 launcher、没有任何凭证。

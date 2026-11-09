@@ -4,7 +4,7 @@
 > 来源：`work/exp-polish/BRIEF.md`「2026-11-09 追加二」第 1 项（「可以加入试试看，然后代替原来的 bot 效果」）；scout F `work/research-reposcan/scout-f-pet-room-community.md` §一、:117-127。queue「桌宠 + Windows 分发」节 P1。
 > 分支 / 作业目录：feat/T45a @ /tmp/bot-wt/T45a（新文件为主；`main/index.ts`、`preload/index.ts`、`shim/src/data.ts` 各加几行接线）
 > claimed：
-> accepted：
+> accepted：2026-11-09 manager (Opus 5.5) @ feat/T45a 7749653b（见 receipts/T45c.acceptance.md）
 
 ## 目标
 Hivebot 启动后桌面右下角出现一只透明背景、置顶的大肥鱼。它的动作跟着 bot 状态走：有 bot 在等你批准或回答 → 踱步张望；有 bot 在跑 → 思考冒泡 / 忙碌点按；跑完 → 雀跃庆祝一次；出错 → 垂头叹气一次；都闲着 → 待机呼吸。能拖着走；单击挥手并把 Hivebot 主窗拉到前台；右键能「Hide pet」（只管本次运行）。

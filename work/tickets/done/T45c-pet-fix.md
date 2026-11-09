@@ -4,7 +4,7 @@
 > 来源：T45a 修复单。审查 `receipts/T45a.review.md` M1–M4 已经核实全部属实，另有经理补查的漏交验收项，见 `receipts/T45a.acceptance.md`
 > 分支 / 作业目录：继续 feat/T45a @ /tmp/bot-wt/T45a（在 e2662092 上追加提交）
 > claimed：2026-11-09 main (GLM 5.3) @ feat/T45a 续
-> accepted：
+> accepted：2026-11-09 manager (Opus 5.5) @ feat/T45a 7749653b（见 receipts/T45c.acceptance.md）
 
 ## 目标
 宠物页的行为符合 T45a 规格：一次动画播完回 idle，松手后停止跟随。e2e 和截图真能区分各个状态，「恒 idle」实现必须红。

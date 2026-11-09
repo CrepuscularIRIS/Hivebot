@@ -4,7 +4,7 @@
 > 来源：T46a 验收（`receipts/T46a.acceptance.md`「缺口」）——工单 T46a 验收 3ⓒ 的禁项没被脚本执行
 > 分支 / 作业目录：feat/T46a @ /tmp/bot-wt/T46a（接着同一分支提交）
 > claimed：
-> accepted：
+> accepted：2026-11-09 dc864c0b（经理任务 B，见 receipts/T46ac.acceptance.md）
 
 ## 目标
 `scripts/check-win-package.mjs` 的 ⓒ 现在只按前缀放行 `out/**`，`out/` 里的 `*.map`、`.env` 会被放过（经理探针：往现包 `out/` 塞 `index.js.map` + `.env` 重 pack，校验 `OK 73 条` exit 0）。补上显式禁项，让「不带 sourcemap / 不带 env」由校验守住，而不是只靠 yml 一行 `!out/**/*.map`。

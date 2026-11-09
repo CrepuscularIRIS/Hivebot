@@ -4,7 +4,7 @@
 > 来源：`receipts/T46ab.acceptance.md`「缺口」
 > 分支 / 作业目录：feat/T46a @ /tmp/bot-wt/T46a（接着同一分支提交）
 > claimed：
-> accepted：
+> accepted：2026-11-09 dc864c0b（经理任务 B，见 receipts/T46ac.acceptance.md）
 
 ## 目标
 `forbidden()` 的第三项 `p.startsWith('.env')` 判整条路径，只管根层；`out/.env.local`、`out/renderer/.env.production` 放过（经理探针实证）。改成对**最后一段**判：`=== '.env'` 或 `startsWith('.env.')`。

@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-09 | 施工：main (GLM 5.3)
 > 来源：`work/exp-polish/AUDIT-0.79.3.md` S7 / 场景 2（queue E5）。BRIEF 2026-11-09 追加段「原版即规格」。
 > 分支 / 作业目录：feat/T41 @ /tmp/bot-wt/T41（从集成分支起；与 T40 同碰 `coordinator.ts` 的 switch，相邻行，合并时三方合并）
-> claimed：
+> claimed：2026-11-09 main (GLM 5.3) @ feat/T41 // worktree /tmp/bot-wt/T41
 > accepted：
 
 ## 目标

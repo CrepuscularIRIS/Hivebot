@@ -37,16 +37,16 @@ test('T45c 桌宠真状态链 + 六态截图', async () => {
   const rt = await launchSdkRuntime({ patch: `${PRESETS_PATCH}:${fakeOverlayPath()}:${peerOverlayPath()}`, dataDir })
   // 先 seed 后起壳（p6-notify 同序）：W 必须是 worker（createdBy）——worker 完成才标未读进 rank3（普通 bot 完成已读不进）
   const M = randomUUID()
-  const W = randomUUID()
-  const W2 = randomUUID()
+  const W = randomUUID()   // 审批挂起档（waiting）
+  const W3 = randomUUID()  // gate 挂住档（thinking 稳定断言 → 放行后完成未读供 success）
   await rt.client.call('session/create', { request: { sessionId: M } })
   await rt.client.call('session/rename', { request: { sessionId: M, title: 'Main Bot' } })
   await rt.client.call('session/create', { request: { sessionId: W } })
   await rt.client.call('session/rename', { request: { sessionId: W, title: 'T45c approver' } })
-  await rt.client.call('session/create', { request: { sessionId: W2 } })
-  await rt.client.call('session/rename', { request: { sessionId: W2, title: 'T45c runner' } })
+  await rt.client.call('session/create', { request: { sessionId: W3 } })
+  await rt.client.call('session/rename', { request: { sessionId: W3, title: 'T45c runner' } })
   mkdirSync(dataDir, { recursive: true })
-  writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: M, recipes: {}, bots: { [W]: { createdBy: M }, [W2]: { createdBy: M } } }))
+  writeFileSync(join(dataDir, 'bots.json'), JSON.stringify({ version: 1, mainBotId: M, recipes: {}, bots: { [W]: { createdBy: M }, [W3]: { createdBy: M } } }))
   let shell: Awaited<ReturnType<typeof launchShell>> | undefined
   try {
     shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff, PBOTS_PET: '1' }, home })
@@ -90,8 +90,12 @@ test('T45c 桌宠真状态链 + 六态截图', async () => {
       toolCall('bash', { command: 'echo t45c', description: 'probe' }, 't45c-c1'),
       textCall(['done']),
     ])
-    rt.writeScriptCalls(W2, [textCall(['All green, probe passed.'])])
-    await rt.client.call('p615/control', { request: { op: 'deliver', sessionId: W, id: 'pbots-assign:t45c', text: 'Run the probe.', source: { kind: 'pbots-main', assignmentId: 't45c', mainBotId: null } } })
+    rt.writeScriptCalls(W3, [textCall(['Working on the probe…'], { gateId: 't45c-think-gate' })])
+    // thinking 稳定档：W3 gate 挂住（text 流停在 gate 文件前）→ rank1 running 无工具 → 稳定 thinking
+    await rt.client.call('p615/control', { request: { op: 'deliver', sessionId: W3, id: 'pbots-assign:t45c3', text: 'Run the probe.', source: { kind: 'pbots-main', assignmentId: 't45c3', mainBotId: null } } })
+    await expectState('thinking', 45_000) // gate 挂着不会走——真推导+转发链上的稳定档（区别于末尾 main 驱动）
+    await petPage!.screenshot({ path: '/home/lingxufeng/bot/work/exp-polish/evidence/T45a/thinking.png', omitBackground: true })
+    await rt.client.call('p615/control', { request: { op: 'deliver', sessionId: W, id: 'pbots-assign:t45c', text: 'Answer the approval.', source: { kind: 'pbots-main', assignmentId: 't45c', mainBotId: null } } })
     // rt 侧 $events 流（T40 旁证同法）：抓 W 的审批 eventId + 流 clientId（$events/result 须同连接）
     const evStream = await rt.client.socket.open('$events', {})
     const evWait = (async (): Promise<{ eventId: string; clientId: string }> => {
@@ -102,29 +106,20 @@ test('T45c 桌宠真状态链 + 六态截图', async () => {
         const f = r.value as Record<string, unknown>
         const item = (f.item ?? f) as Record<string, unknown>
         if (item.type === 'ready' && typeof item.clientId === 'string') clientId = item.clientId
-        if (item.type === 'waterfall' && item.event === 'approval/request' && typeof item.eventId === 'string') return { eventId: item.eventId, clientId }
+        if (item.type === 'waterfall' && item.event === 'approval/request' && typeof item.eventId === 'string' && item.agentId === W) return { eventId: item.eventId, clientId }
       }
     })()
 
     // 依次：审批挂起 → waiting（稳定态，轮询等它；之前的 thinking/working 顺带记录，捕到即验动画）
-    // 真回合的瞬时中间态（thinking/working——fake 时序里可能只存在一两帧）只记录不锁动画：
-    // currentSrc 断言对溜走的态注定超时；两档的动画断言由末尾 main 驱动段覆盖。
-    const seen = new Set<string>(['idle'])
-    const waitEnd = Date.now() + 30_000
-    while (Date.now() < waitEnd) {
-      const st = String(await body.getAttribute('data-state'))
-      seen.add(st)
-      if (st === 'waiting') break
-      await new Promise((r) => setTimeout(r, 150))
-    }
     await expectState('waiting', 5_000) // 审批挂起档（工作状态-原地踱步张望）
     await petPage!.screenshot({ path: '/home/lingxufeng/bot/work/exp-polish/evidence/T45a/waiting.png', omitBackground: true })
 
     // 后台批准（$events/result，同流连接）——不开 W 会话，保住完成时的未读新结果
     const { eventId, clientId } = await evWait
     await rt.client.call('$events/result', { clientId, eventId, outcome: { kind: 'result', value: 'allowed-once' } })
-    // W1 审批完成链不产生未读（实测 chunkCount=1 completed 归 Done）；success 档走 W2（纯 textCall 完成即未读——p6-workers Researcher 同款）
-    await rt.client.call('p615/control', { request: { op: 'deliver', sessionId: W2, id: 'pbots-assign:t45c2', text: 'Run and report.', source: { kind: 'pbots-main', assignmentId: 't45c2', mainBotId: null } } })
+    // 放行 W3 gate（touch $home/gates/<id>）→ W3 完成未读 rank3 → success（真链，非 main 驱动）
+    mkdirSync(join(rt.home, 'gates'), { recursive: true })
+    writeFileSync(join(rt.home, 'gates', 't45c-think-gate'), '1')
     await rt.client.call('$events/result', { clientId, eventId, outcome: { kind: 'result', value: 'allowed-once' } })
     // 原子单帧捕获：data-state 与 currentSrc 同一次 evaluate 读（雀跃动画仅 ~1-2s，分两次读会漏）
     let ok = false
@@ -161,7 +156,7 @@ test('T45c 桌宠真状态链 + 六态截图', async () => {
     await ui.mouse.move(700, 400).catch(() => {})
 
     // 其余三态（thinking/working/error）：main 驱动（状态链语义已由上方真回合断言守，此处为视觉证据）
-    for (const st of ['thinking', 'working', 'error']) {
+    for (const st of ['working', 'error']) { // thinking 已由真链稳定断言+截图；此处两态为视觉证据
       await drivePet(shell.app, st)
       await expectState(st, 10_000)
       const out = '/home/lingxufeng/bot/work/exp-polish/evidence/T45a/' + st + '.png'
@@ -169,7 +164,6 @@ test('T45c 桌宠真状态链 + 六态截图', async () => {
       await petPage!.screenshot({ path: out, omitBackground: true })
     }
     // 记录真回合中实际出现过的中间态（回执写明；fake 时序可能跳过 thinking/working）
-    console.log('[T45c] states seen in real turn:', [...seen].join(','))
   } finally {
     await shell?.stop()
     await rt.stop()

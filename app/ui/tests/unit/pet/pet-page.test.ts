@@ -48,6 +48,29 @@ describe('T45c 宠物页行为', () => {
     p.L.pointermove!({ screenX: 40, screenY: 0, buttons: 0 })
     expect(p.log.filter((x) => x.startsWith('move(')), '松手后零 move').toEqual([])
   })
+  it('⑭ 点击动画结束不吞状态：success → 点击 → 点击 ended → 仍 success（重播）→ 状态动画 ended → idle', () => {
+    const p = mk()
+    p.L.state!('success')
+    p.L.pointerdown!({ screenX: 0, screenY: 0 })
+    p.L.pointerup!({}) // <4px：点击（overriding='click'，播挥手）
+    expect(p.V.currentSrc.includes(encodeURIComponent('点击回应')), '点击动画在播').toBe(true)
+    p.VL.ended!() // 挥手播完——恢复 current 态（success 重播），不得清成 idle
+    expect(p.body.dataset.state, '点击 ended 后仍 success').toBe('success')
+    expect(fileName(p.V), '重播雀跃').toBe('工作状态-雀跃庆祝.webm')
+    p.VL.ended!() // 状态动画自身结束 → 消费 ONCE → idle
+    expect(p.body.dataset.state).toBe('idle')
+    expect(fileName(p.V)).toBe('待机呼吸休闲.webm')
+  })
+  it('⑮ 点击期间收到新状态：thinking → 点击 → onState(error) → 点击 ended → error 真播（不被吞）', () => {
+    const p = mk()
+    p.L.state!('thinking')
+    p.L.pointerdown!({ screenX: 0, screenY: 0 })
+    p.L.pointerup!({})
+    p.L.state!('error') // 点击动画（overriding='click'）期间状态更新——onState 因 overriding 跳过 render
+    p.VL.ended!() // 挥手播完 → render → current=error 播垂头（不被 ended 吞成 idle）
+    expect(p.body.dataset.state).toBe('error')
+    expect(fileName(p.V), 'error 动画真播').toBe('工作状态-垂头叹气冒汗.webm')
+  })
   it('⑬ pointercancel 与 pointerup 同样终止拖动', () => {
     const p = mk()
     p.L.pointerdown!({ screenX: 0, screenY: 0 })

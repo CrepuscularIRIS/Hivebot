@@ -27,9 +27,11 @@ const render = () => {
   play(base(s), !ONCE.has(s))
 }
 V.addEventListener('ended', () => {
+  // T45c M1 + 审查 M1'：区分结束的是点击动画还是状态动画——点击动画结束恢复 current 态
+  //（若 current 是 error/success 会重播一次再由下一次 ended 消费）；仅状态动画自身结束才消费 ONCE 回 idle
+  const wasClick = overriding === 'click'
   overriding = null
-  // T45c M1：一次动画（error/success）播完不驻留末帧——回 idle 待机循环并同步 data-state
-  if (ONCE.has(current)) { current = 'idle'; document.body.dataset.state = 'idle' }
+  if (!wasClick && ONCE.has(current)) { current = 'idle'; document.body.dataset.state = 'idle' }
   render()
 })
 window.pet.onState((s) => { current = s; document.body.dataset.state = s; if (!overriding) render() })

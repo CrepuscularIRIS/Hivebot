@@ -31,7 +31,7 @@ const invalidArgs = (message: string): SkillsResult => fail('invalid-args', mess
 
 // RE Q4：slug——小写字母数字 + 连字符段
 const NAME_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-const BOT_ID_RE = /^[A-Za-z0-9_-]{1,128}$/
+export const BOT_ID_RE = /^[A-Za-z0-9_-]{1,128}$/
 // RE Q4 硬数字：256,000 字符（按字符不按字节）、每 bot 250 条
 const MAX_SKILL_CHARS = 256_000
 const MAX_BOT_SKILLS = 250

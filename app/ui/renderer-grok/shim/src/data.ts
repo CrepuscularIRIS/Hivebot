@@ -21,6 +21,7 @@ import type { CoordinatorDeps } from './coordinator'
 import { botConfigOf, type PbotsUi, type Recipe } from './bots'
 import { aggregateOf, previewOf, rankOf, sectionsOf, viewFacts, type PeerMeta, type SectionRecord, type WorkerFacts } from './workers'
 import { toWidget, toAnswer, batchComplete, type WidgetQ } from './questions' // T40
+import { petStateOf, type PetState } from './pet' // T45a
 
 type AnyRecord = Record<string, unknown>
 const rec = (v: unknown): AnyRecord => (typeof v === 'object' && v !== null ? v as AnyRecord : {})
@@ -218,6 +219,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   }
   const sections = (): SectionRecord[] | null => sectionsOf(creators().map((creatorId) => ({ creatorId, workers: workersOf(creatorId).map(factsOf) })), held) // T39：传 held 不传 active——侧栏点 Done 行不换组；active 只影响已读语义
   let sectionsSig = 'null'
+  let lastPet: { state: PetState; botId: string | null } = { state: 'idle', botId: null } // T45a 去重
 
   const workerOverlay = (id: string): { waitingReason?: string; preview?: string; unread?: boolean } => {
     if (isWorker(id)) {
@@ -877,6 +879,12 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         // FINAL §2-3：上游只在收到 host-settings{fields:['sidebarSections']} 时重拉 sections——成员 / 档位变了才推
         const sig = JSON.stringify(sections())
         if (sig !== sectionsSig) { sectionsSig = sig; target.sections?.() }
+        // T45a：桌宠状态（去重：同 (state,botId) 不重发；换 bot 的 success 再庆祝一次）
+        const pet = petStateOf(order.map((id) => ({ id, facts: factsOf(id), view: { loaded: views.get(id)?.loaded === true, runningTool: views.get(id)?.items.some((i) => i.kind === 'tool' && i.status === 'running') === true } })))
+        if (pet.state !== lastPet.state || pet.botId !== lastPet.botId) {
+          lastPet = pet
+          try { (window as unknown as { pbots?: { window?: { setPetState?(v: { state: PetState; botId: string | null }): void } } }).pbots?.window?.setPetState?.(pet) } catch { /* 宠物窗不在（PBOTS_PET=0）——静默 */ }
+        }
       }
       push.transcript = target.transcript
       push.outline = target.outline

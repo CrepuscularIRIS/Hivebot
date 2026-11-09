@@ -39,7 +39,7 @@ const MIME: Readonly<Record<string, string>> = {
   '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml', '.json': 'application/json',
   '.woff2': 'font/woff2', '.png': 'image/png', '.ico': 'image/x-icon',
-  '.map': 'application/json',
+  '.map': 'application/json', '.webm': 'video/webm',
 }
 
 /** 最小 CSP（G2-r2 附加 2）：防同源 XSS 自答审批；U-22 完整化。 */
@@ -202,6 +202,19 @@ async function main(): Promise<void> {
   restoreThemeSource(themeFile) // P5-61.f1 ③：建窗前，overlay / 窗口底色首帧即跟偏好
   const mainWindow = createMainWindow(preload)
   mainWindow.once('ready-to-show', () => { mainWindow.show(); ready.setWindowReady() })
+
+  // T45a：桌宠窗（PBOTS_PET=1 才建；e2e 缺省关——不改变既有用例的窗口数）。ready 后建，
+  // 随主窗退出销毁。宠物窗只收状态枚举（ipc 校验见 main/pet/ipc.ts）。
+  let petWindow: import('electron').BrowserWindow | undefined
+  if (process.env.PBOTS_PET === '1') {
+    const { createPetWindow } = await import('./pet/window')
+    const { registerPetIpc } = await import('./pet/ipc')
+    petWindow = createPetWindow(resolve(__dirname, '..', 'preload', 'pet.cjs'))
+    registerPetIpc(mainWindow, petWindow)
+    petWindow.once('ready-to-show', () => { petWindow?.show() })
+    await petWindow.loadURL(`${SCHEME}://app/pet/index.html`)
+    mainWindow.on('closed', () => { if (petWindow !== undefined && !petWindow.isDestroyed()) petWindow.destroy() })
+  }
 
   const handoff = process.env.PBOTS_DSH_HANDOFF
   let dsh: DshConnection | undefined

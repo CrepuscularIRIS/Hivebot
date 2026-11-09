@@ -45,7 +45,9 @@ if (!needsWs && mainJs.includes('ws')) {
 // ⓒ 白名单：每个条目都得落在三片之一
 // 目录节点（out、node_modules、node_modules/ws）是白名单片的父目录，一并放行
 const allowed = (p) => p === 'package.json' || p === 'out' || p === 'node_modules' || p === 'node_modules/ws' || p.startsWith('out/') || p.startsWith('node_modules/ws/')
-const bad = entries.filter((p) => !allowed(p))
+// T46ab：白名单片内的禁令（工单 3ⓒ）——sourcemap 与 .env 在哪一层都不许（含 out/ 内）
+const forbidden = (p) => p.endsWith('.map') || p.split('/').some((seg) => seg === '.env') || p.startsWith('.env')
+const bad = entries.filter((p) => !allowed(p) || forbidden(p))
 if (bad.length > 0) fail(`ⓒ 非白名单条目 ${bad.length} 个：${bad.slice(0, 10).join(', ')}${bad.length > 10 ? ' …' : ''}`)
 
 // ⓓ resources/ 下只许 app.asar 与 electron-builder 自带文件（app-update.yml / elevate.exe 等 NSIS 侧不在这——win-unpacked/resources 检查）

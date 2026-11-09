@@ -1224,3 +1224,9 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 实例重启 ready@40141（载 T39）——**生产旁证 6（连点 3 行截图）待用户侧栏亲验**：点 Done 行不再跳组（Workers 行数/顺序应稳定）；API 侧证据已齐（held 语义单测四格）
 - scout E 收：功能普查非全覆盖——**MuseAI/dsh-museai-tavern 关联确认**、computer/browser/语音/头像/产物页有缺；dsh 10 包 0.2.2-rc.1 核实；Top10 差价清单在报告
 - scout F 收：桌宠最短路径=dsh-pet(5,921★)接入；房间窄 MVP 1-2 周；社区先 Petdex 兼容
+## 2026-11-09 · merge T40（两轮返修终验通过后合并）+ 生产旁证 7
+- feat/T40 @3bd9a250 → 主线（--no-ff）；回归 grok-shim+m1+shell **353 passed**；e2e question-card+questions-answer **2 passed**；截图 dismissed.light 回仓
+- 终验：V4 亲放红尾（null≠{accepted:true}）；豁免 coverage（工具缺）/V1-V3 V5 摘要（以后回执必须贴原样红）；T40c（卡贴对话底）+E4″（卡视觉）开出
+- 生产旁证（重启 ready@35055 后）：主 bot 被要求「用 ask_user_question 问我想要红色还是蓝色，然后按我的回答写一句话」→ **提问卡到**（q=你想要红色还是蓝色？ options=红色/蓝色）→ 作答「蓝色」（同流 $events/result ok=true）→ 终答：**「你选了蓝色，那这句话是：沉静如海的蓝色，是这个午后最温柔的选择」**——提到蓝 ✓
+  - 旁证脚本坑三连（记档）：$events 需 interactions=answer；clientId 归属流所在连接（MuxStream 是 async 迭代非 items 数组——单流迭代抓 ready+waterfall，作答同连接 client.call）
+- T40 全链：审计 K2→立项→施工→Sol 高1中4→修复→终验1（⑫层缺失+宕机丢证据）→T40b 两轮→复审 0 高 0 中→终验通过

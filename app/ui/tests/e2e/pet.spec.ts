@@ -153,9 +153,6 @@ test('T45c 桌宠真状态链 + 六态截图', async () => {
       for (const w of BrowserWindow.getAllWindows()) if (!w.webContents.getURL().includes('/pet/')) return w.isFocused()
       return false
     }), { timeout: 10_000 }).toBe(true)
-      state: (window as unknown as { __pbotsDev?: { state?: { order?: string[] } } }).__pbotsDev?.state?.order?.map((id) => id.slice(0, 8)),
-      bots: (window as unknown as { __pbotsDev?: { bots?: unknown[] } }).__pbotsDev?.bots?.map((b) => { const o = b as Record<string, unknown>; return { id: String(o.sessionId ?? '').slice(0, 8), running: o.running, turnEnded: o.turnEnded, endReason: o.endReason, asked: o.asked, chunkCount: o.chunkCount } }),
-    })).catch((e) => String(e)))
     expect(ok, '原子捕获 success 档（雀跃动画+解码就绪）').toBe(true)
     expect(seq.join(','), '批准后序列含 success').toContain('success')
     expect(seq.join(','), 'M1：success 一次动画后回 idle（非驻留末帧）').toMatch(/success.*idle/)

@@ -4,7 +4,7 @@
 > 来源：`work/exp-polish/AUDIT-0.79.3.md` S7 / 场景 2（queue E5）。BRIEF 2026-11-09 追加段「原版即规格」。
 > 分支 / 作业目录：feat/T41 @ /tmp/bot-wt/T41（从集成分支起；与 T40 同碰 `coordinator.ts` 的 switch，相邻行，合并时三方合并）
 > claimed：2026-11-09 main (GLM 5.3) @ feat/T41 // worktree /tmp/bot-wt/T41
-> accepted：
+> accepted：2026-11-09 dd93ac50（经理任务 B，见 receipts/T41d.acceptance.md）
 
 ## 目标
 侧栏行菜单出现原版的「Hide from sidebar」。隐藏后行从侧栏消失（含 Workers / Done 组），侧栏底部出现「Hidden Bots N」按钮，点开对话框能看、能打开、能 Unhide；重启后隐藏状态还在。删除被 P6-24 卡着，这是现在唯一能把试验 bot / 用完的 worker 收起来的办法。

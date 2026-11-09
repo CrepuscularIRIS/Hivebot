@@ -4,7 +4,7 @@
 > 来源：`receipts/T41b.acceptance.md`「截图核实」
 > 分支 / 作业目录：feat/T41 @ /tmp/bot-wt/T41（接着同一分支提交）
 > claimed：2026-11-09 main (GLM 5.3) @ feat/T41 续
-> accepted：
+> accepted：2026-11-09 dd93ac50（经理任务 B，见 receipts/T41d.acceptance.md）
 
 ## 现象（经理亲眼看 T41b 四张截图，`work/exp-polish/evidence/T41/`）
 1. **对话框**（`dialog.{light,dark}.png`）：标题/说明贴边无内边距；关闭钮 × 掉到正文下方单独一行；条目行只剩头像缩写「HM」与「Unhide」叠在一起，**bot 名字看不见**，底部被裁。藏两个以上 bot 时用户分不清哪个是哪个。

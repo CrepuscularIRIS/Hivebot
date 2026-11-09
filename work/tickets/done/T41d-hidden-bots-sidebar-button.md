@@ -4,7 +4,7 @@
 > 来源：`receipts/T41c.acceptance.md`。T41c 第 1 次验收不通过；本单是第 2 次，再失败就走任务 C
 > 分支 / 作业目录：feat/T41 @ /tmp/bot-wt/T41（在 9acca0d2 上继续提交）
 > claimed：2026-11-09 main (GLM 5.3) @ feat/T41 续
-> accepted：
+> accepted：2026-11-09 dd93ac50（经理任务 B，见 receipts/T41d.acceptance.md）
 
 ## 目标
 侧栏的「Hidden Bots [1]」按钮整颗看得见、点得到，位置与原版一致。断言要测整颗按钮，不能只测徽标上的一个点。

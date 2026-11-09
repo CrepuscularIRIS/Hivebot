@@ -2,6 +2,7 @@ packages:
   - '.'
   - 'renderer-grok'
 allowBuilds:
+  electron-winstaller: false  # T46a: Squirrel 不用（NSIS 路线），pnpm add 自动写入的占位改 false
   esbuild: true
   node: true
 

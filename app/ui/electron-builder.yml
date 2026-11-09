@@ -12,8 +12,8 @@ files:
   - out/**
   - package.json
 asar: true
-# ws 是运行时唯一依赖（main 里 require("ws")），选「打进 asar」（边界 2-a：不改 Linux 构建链）
-includeSubNodeDependencies: true
+# ws 是运行时唯一依赖（main 里 require("ws")），选「打进 asar」（边界 2-a：不改 Linux 构建链）——
+# 26.18.0 起生产依赖默认进 asar，无需显式开关
 win:
   target:
     - nsis

@@ -325,8 +325,8 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     const values = rec(rec(item.projections).values)
     return {
       sessionId: String(item.sessionId),
-      title: typeof values.title === 'string' && values.title !== '' ? values.title
-        : (typeof rec(values.subagent).label === 'string' && rec(values.subagent).label !== '' ? rec(values.subagent).label : null), // T36：helper 名回落 label（description）
+      title: typeof rec(values.subagent).label === 'string' && rec(values.subagent).label !== '' ? rec(values.subagent).label // T36b：helper label 优先（description——主 bot 起的名；dsh 自动 title 是拼接串）
+        : (typeof values.title === 'string' && values.title !== '' ? values.title : null),
       preset: typeof values.agentPreset === 'string' ? values.agentPreset : null,
       running: item.running === true,
       updatedAt: typeof item.updatedAt === 'number' ? item.updatedAt : Date.now(),
@@ -347,22 +347,17 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     if (!meta.ok) throw new Error(`bots-meta: ${meta.error?.message ?? ''}`)
     // T36：主 bot 的 subagent helper 也进 roster（Workers 分组）——仅 parent===mainBotId 的；
     // 嵌套 helper（parent 是 helper）、worker 的 helper、其他 bot 的 helper 一律仍滤（用户定案）。
-    const listedEarly = rec(meta.value).mainBotId
-    const helperCandidates: Array<{ sid: string; parent: string }> = [] // T36 review 中1：候选先收，终值 main 定后筛
+    const helperCandidates: Array<Record<string, unknown>> = [] // T36b：helper 只收候选（全文件唯一 parent===mainBotId 判定在终值重筛处）
     const items = (rec(list.value).items as unknown[] | undefined ?? []).map(rec)
       .filter((i) => {
         if (typeof i.sessionId !== 'string') return false
         if (i.origin !== 'subagent' && i.parentSessionId === undefined) return true // 顶层会话照旧
         if (i.origin === 'subagent' && typeof i.parentSessionId === 'string') {
-          helperCandidates.push({ sid: i.sessionId, parent: i.parentSessionId }) // 先收候选（终值 main 定后筛——review 中1）
-          return i.parentSessionId === listedEarly && listedEarly !== ''
+          helperCandidates.push(i) // 只收候选，资格在终值 mainBotId 定后判（一律不在此入 summaries）
         }
         return false
       })
       .map(summaryOf)
-    let helperOf: Record<string, string> = {}
-    for (const h of helperCandidates) if (h.parent === listedEarly && listedEarly !== '') helperOf[h.sid] = h.parent
-    helpersOfMain = helperOf
     const listed = rec(meta.value).mainBotId
     recipes = rec(rec(meta.value).recipes) as unknown as Record<string, Recipe>
     createdBy = createdByOf(meta.value)
@@ -390,20 +385,20 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     } else {
       mainBotId = listed
     }
-    // T36 review 中1：helper 资格随**最终** main 同步——按终值 mainBotId 重筛候选，
-    // 不再合格的 helper 从 summaries/order 清除（旧 main 的 helper 不残留；新 main 的既有 helper 此刻并入）
-    if (mainBotId !== null) {
-      helperOf = {}
-      for (const h of helperCandidates) if (h.parent === mainBotId) helperOf[h.sid] = h.parent
-      helpersOfMain = helperOf
-      // review 中1：不合格 helper 两处清——nextSummaries（本次误收的）与旧 order（前次合格、本次换主后
-      // 不合格的——filter 已把它们挡在 items 外，但 R9 merge 会把旧 order 并回）
-      const rawItems = ((list.value as { items?: Array<{ sessionId: string, origin?: string, parentSessionId?: string }> }).items ?? [])
-      for (const sid of Object.keys(nextSummaries)) {
-        const raw = rawItems.find((i) => i.sessionId === sid)
-        if (raw?.origin === 'subagent' && helperOf[sid] === undefined) delete nextSummaries[sid]
+    // T36b：helper 资格全文件唯一判定处——按终值 mainBotId 重筛候选：合格者 summary 入册，
+    // 不合格者（换主后旧 main 的）从 summaries/order 双清（R9 merge 会把旧 order 并回）
+    {
+      const helperOf: Record<string, string> = {}
+      for (const h of helperCandidates) {
+        const parent = h.parentSessionId
+        if (parent === mainBotId && mainBotId !== null) { // 唯一判定
+          helperOf[String(h.sessionId)] = String(parent)
+          nextSummaries[String(h.sessionId)] = summaryOf(h)
+        }
       }
-      const nowBad = rawItems.filter((i) => i.origin === 'subagent' && helperOf[i.sessionId] === undefined).map((i) => i.sessionId)
+      helpersOfMain = helperOf
+      const nowBad = helperCandidates.map((h) => String(h.sessionId)).filter((sid) => helperOf[sid] === undefined)
+      for (const sid of nowBad) { delete nextSummaries[sid] }
       if (nowBad.length > 0) order = order.filter((id) => !nowBad.includes(id))
     }
     // 顺序首载定序后冻结（R9）：主 bot 置顶，其余按 updatedAt；后续只并入新 session（review 中1 改造时误删，复原）
@@ -686,6 +681,9 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         mainBotId = id
         order = [id, ...order.filter((x) => x !== id)]
         push.agents()
+        // T36b：换主后重拉 roster——新主的 helper 不在上次 summaries（且其 sid 可能已进 unknownTried
+        // 不会再自动触发）；失败只记 log 不改 setMain 返回值（patch 已落盘）。await 让测试可等。
+        await loadRoster().catch((e) => log(`[shim] setMain roster refresh failed: ${String(e)}`))
       }
       return res
     },

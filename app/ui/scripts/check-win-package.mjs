@@ -46,7 +46,8 @@ if (!needsWs && mainJs.includes('ws')) {
 // 目录节点（out、node_modules、node_modules/ws）是白名单片的父目录，一并放行
 const allowed = (p) => p === 'package.json' || p === 'out' || p === 'node_modules' || p === 'node_modules/ws' || p.startsWith('out/') || p.startsWith('node_modules/ws/')
 // T46ab：白名单片内的禁令（工单 3ⓒ）——sourcemap 与 .env 在哪一层都不许（含 out/ 内）
-const forbidden = (p) => p.endsWith('.map') || p.split('/').some((seg) => seg === '.env') || p.startsWith('.env')
+// T46ac：.env 系按文件名（最后一段）判——整条路径判只管根层，子目录 .env.local/.env.production 会漏
+const forbidden = (p) => p.endsWith('.map') || p.split('/').some((seg) => seg === '.env' || seg.startsWith('.env.'))
 const bad = entries.filter((p) => !allowed(p) || forbidden(p))
 if (bad.length > 0) fail(`ⓒ 非白名单条目 ${bad.length} 个：${bad.slice(0, 10).join(', ')}${bad.length > 10 ? ' …' : ''}`)
 

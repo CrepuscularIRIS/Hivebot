@@ -3,19 +3,30 @@ import { describe, expect, it, vi } from 'vitest'
 
 const evt = (sender: unknown, frame: unknown) => ({ sender, senderFrame: frame }) as never
 
-// 注：ipcMain/menu/screen 需 mock electron——见下方 vi.mock
+// 注：ipcMain/menu/screen/BrowserWindow 需 mock electron——见下方 vi.mock
 vi.mock('electron', () => {
   const listeners = (globalThis as { __petListeners?: Map<string, (e: unknown, v?: unknown) => void> }).__petListeners ?? new Map()
   ;(globalThis as { __petListeners?: Map<string, (e: unknown, v?: unknown) => void> }).__petListeners = listeners
+  const ctorCalls: Array<Record<string, unknown>> = []
+  ;(globalThis as { __petWinCtorCalls?: Array<Record<string, unknown>> }).__petWinCtorCalls = ctorCalls
+  const BrowserWindow = function (this: unknown, opts: Record<string, unknown>) {
+    ctorCalls.push(opts)
+    return {
+      setPosition: () => {},
+      webContents: { setWindowOpenHandler: () => {}, on: () => {} },
+    }
+  }
   return {
     ipcMain: { on: (ch: string, fn: (e: unknown, v?: unknown) => void) => { listeners.set(ch, fn) } },
     Menu: { buildFromTemplate: () => ({ popup: () => {} }) },
-    screen: { getDisplayNearestPoint: () => ({ workArea: { x: 0, y: 0, width: 1920, height: 1080 } }) },
+    screen: { getPrimaryDisplay: () => ({ workArea: { x: 0, y: 0, width: 1920, height: 1080 } }), getDisplayNearestPoint: () => ({ workArea: { x: 0, y: 0, width: 1920, height: 1080 } }) },
+    BrowserWindow,
     __listeners: listeners,
   }
 })
 
 import { registerPetIpc, petInvalidCount } from '../../../main/pet/ipc'
+import { createPetWindow } from '../../../main/pet/window'
 import { __listeners } from 'electron'
 
 const rigReal = () => {
@@ -64,5 +75,23 @@ describe('T45a pet ipc', () => {
     __listeners.get('pet:move')!(evt(r.petWC, r.petFrame), { dx: 1.5, dy: 0 })
     __listeners.get('pet:move')!(evt(r.petWC, r.petFrame), { dx: 5, dy: 'x' })
     expect(petInvalidCount()).toBeGreaterThanOrEqual(3)
+  })
+  it('⑩ 建窗安全面：transparent 置顶小窗 + webPreferences 全锁 + 定位 workArea 右下', () => {
+    const ctorCalls = (globalThis as { __petWinCtorCalls?: Array<Record<string, unknown>> }).__petWinCtorCalls!
+    const before = ctorCalls.length
+    createPetWindow('/x/pet.cjs')
+    expect(ctorCalls.length, '恰好建一窗').toBe(before + 1)
+    const o = ctorCalls[ctorCalls.length - 1]! as Record<string, { sandbox?: boolean } & Record<string, unknown>>
+    expect(o.transparent).toBe(true)
+    expect(o.frame).toBe(false)
+    expect(o.alwaysOnTop).toBe(true)
+    expect(o.skipTaskbar).toBe(true)
+    const wp = o.webPreferences as Record<string, unknown>
+    expect(wp.sandbox).toBe(true)
+    expect(wp.nodeIntegration).toBe(false)
+    expect(wp.contextIsolation).toBe(true)
+    expect(wp.webSecurity).toBe(true)
+    expect(wp.webviewTag).toBe(false)
+    expect(wp.devTools).toBe(false)
   })
 })

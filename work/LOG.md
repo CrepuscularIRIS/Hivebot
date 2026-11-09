@@ -1214,3 +1214,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
   - 首次误发 BCD（非主 bot）——其如实指路（Ctrl+N）恰好旁证 T33 认知段+信封边界正确
   - d. 截图未做（API 旁证已足；用户可在桌面自视 Workers 分组的 T34 Probe——探针 bot 可在 UI 删）
   - e. 模型：**glm-5.3-flash**（start.ts 缺省；env 无覆盖）→ queue A2b（T35 输入）
+## 2026-11-08 · T36 生产旁证 6（API 层；UI 截图待合并重启后）
+- 主 bot 调 subagent → helper ff2e1966 创建：parent=mainBotId ✓、label="统计工作区文件数量"（description 原样，中文 ✓）
+- helpers 盘点：3 个——2 个 MAIN（含用户自玩的「研究linux.do封号与GPT 6.2消息」）+1 个 OTHER（BCD 之前建的 Write hello.txt）——shim 过滤 parent!==mainBotId 后侧栏只应显示 MAIN 两个
+- **Q-037 第 2 点事实**：直接向 helper 发 prompt 被拒——`session/agent-busy: "subagent Sessions require their durable parent address; use subagent delivery for this child session"`（dsh 层设计：helper 须经 parent 的 subagent 通道送信——不能直接聊，非 bug）
+- UI 截图（Workers 分组出现 helper 行）待 T36 合并+重启实例后补

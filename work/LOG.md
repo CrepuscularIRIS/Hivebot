@@ -1236,3 +1236,10 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - T45c 二审（Sol）：M1' 点击动画 ended 吞状态动画、M3' 真链未验收 thinking/working → 均修（7749653b）：ended 区分 wasClick；e2e 用 W3 gate 挂住档稳定断言 thinking+截图，success 由 W3 放行完成供给（删 W2）——15 格 + e2e 26.1s 绿。
 - T41c 施工（9acca0d2）：Hidden Bots 对话框布局（0.18 原子类不在产物 CSS，作用域补布局/tokens 值）+三断言；发现 ③ 断言须在对话框打开前测（modal 遮罩）。对话框/徽标三症状消除，回归 3 passed。
 - 待办：T45c/T41c 经理终验 → T45a+T45c 合并（PBOTS_PET=1 重启实例）→ T41+T41c 合并；T34b ⑤ 格调试（60s turn/end 未到——审批应答链待查）。
+
+## 2026-11-09 · merge T41 系 + T45a 生产旁证（PBOTS_PET=1 重启）+ launcher 透传
+- merge `feat/T41`（70b1ca76）：T41+T41b+T41c+T41d 隐藏 bot 全链（行菜单 Hide/Hidden Bots 对话框/侧栏按钮入位/五点断言）——经理验收 @ dd93ac50；回测 build+e2e 4 passed（hidden-bots+dead-entries+p6-workers）。
+- merge `feat/T45a`（a1a76fad）：桌宠骨架+T45c 返修（经理验收 @ 7749653b）——回测 15 单测+4 e2e 全绿。
+- launcher 加 `PBOTS_PET` 显式透传（4f1c7ad3）；生产实例重启（PBOTS_PET=1）——**宠物窗未见**：electron 主进程 environ 无 PBOTS_PET（launcher bash 有、env 白名单行也有——透传链最后一跳丢失，原因未明，待查；下次重启再验或改 main 兜底读 launcher 文件）。
+- T41d 根因双实锤：底栏 absolute 来自 p5-55-layout.css:74/:90；对话框 28px 来自产物 .sand-exx8yu{height:28px} 撞容器。
+- T34b2 开出（经理读码定案）：⑤ 卡点是测试自身 follow 解构 bug（{stream,snapshot} 当流迭代+catch 吞异常）——一行修。

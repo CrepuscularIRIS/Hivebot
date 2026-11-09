@@ -287,7 +287,9 @@ export function createShimData(opts: ShimDataOptions): ShimData {
           // 0.18 契约：respondedValue/widgetDismissed 在 **entry 顶层**（protocol.ts:190-191；review 中2——
           // 原放 message 内被投影丢弃，成功提交后 UI 不显已答态）
           ...(answered?.kind === 'answer' ? { respondedValue: answered.value } : {}),
-          ...(batch.dismissed ? { widgetDismissed: true } : {}),
+          // T40b F2：单题 dismiss 也关卡（adapter replaceEntries 每次推送重建——entry 不带就弹回）；
+          // 整批 cancel 同。answered=answer 的题不盖（answered 态优先于 dismissed）。
+          ...((batch.dismissed && answered?.kind !== 'answer') || answered?.kind === 'dismiss' ? { widgetDismissed: true } : {}),
         }
         out.push(entry)
       }
@@ -652,6 +654,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         batch.sent = true
       }
       push.agents()
+      return { accepted: true } // T40b：与 respondToWidget 同形（契约 record）
     },
     resolvePermission: async (input) => {
       answers.push({ eventId: input.requestId, value: input.dshValue })

@@ -147,8 +147,10 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
           agentId: typeof args.agentId === 'string' ? args.agentId : '',
         }))
         case 'dismissWidget': {
+          // T40b F1：契约 reply:"record"（rpc/coordinator.ts:103）——null 会被 transport 判 MALFORMED、
+          // adapter rollback（X 钮弹回）。统一回 {accepted:true}（与 respondToWidget 同形）。
           await deps.dismissWidget({ entryId: typeof args.entryId === 'string' ? args.entryId : '', agentId: typeof args.agentId === 'string' ? args.agentId : '' })
-          return reply(requestId, null)
+          return reply(requestId, { accepted: true })
         }
         default: {
           const value = defaultReply(method, deps, args)

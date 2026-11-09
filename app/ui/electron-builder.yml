@@ -10,6 +10,7 @@ directories:
 # 这里显式只留 out/** 与 package.json；生产依赖 node_modules/ws 由 electron-builder 自动追加。
 files:
   - out/**
+  - "!out/**/*.map"   # ⓒ sourcemap 不进包（源码路径泄露 + 体积）
   - package.json
 asar: true
 # ws 是运行时唯一依赖（main 里 require("ws")），选「打进 asar」（边界 2-a：不改 Linux 构建链）——
@@ -18,9 +19,11 @@ win:
   target:
     - nsis
 nsis:
+  artifactName: Hivebot-Setup-${version}.${ext}
   oneClick: false          # 向导式（dsh 同款），可改安装目录
   perMachine: false        # 按用户装，不要管理员
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
   # 无代码签名证书（Q-045）：SmartScreen 首次会拦，用户点「更多信息 → 仍要运行」
+publish: false

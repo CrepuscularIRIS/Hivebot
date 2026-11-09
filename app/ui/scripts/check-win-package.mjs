@@ -15,7 +15,7 @@ if (!existsSync(asarPath)) {
 }
 let entries
 try {
-  entries = listPackage(asarPath) // 相对路径数组，如 'out/main/index.js'、'package.json'
+  entries = listPackage(asarPath).map((p) => p.replace(/^\//, '')) // listPackage 带前导 /，剥掉
 } catch (e) {
   console.error(`FAIL asar 读不了：${e instanceof Error ? e.message : String(e)}`)
   process.exit(1)
@@ -43,12 +43,15 @@ if (!needsWs && mainJs.includes('ws')) {
 }
 
 // ⓒ 白名单：每个条目都得落在三片之一
-const bad = entries.filter((p) => !(p === 'package.json' || p.startsWith('out/') || p.startsWith('node_modules/ws/')))
+// 目录节点（out、node_modules、node_modules/ws）是白名单片的父目录，一并放行
+const allowed = (p) => p === 'package.json' || p === 'out' || p === 'node_modules' || p === 'node_modules/ws' || p.startsWith('out/') || p.startsWith('node_modules/ws/')
+const bad = entries.filter((p) => !allowed(p))
 if (bad.length > 0) fail(`ⓒ 非白名单条目 ${bad.length} 个：${bad.slice(0, 10).join(', ')}${bad.length > 10 ? ' …' : ''}`)
 
 // ⓓ resources/ 下只许 app.asar 与 electron-builder 自带文件（app-update.yml / elevate.exe 等 NSIS 侧不在这——win-unpacked/resources 检查）
 const resDir = resolve(dist, 'win-unpacked/resources')
-const extra = readdirSync(resDir).filter((f) => f !== 'app.asar' && f !== 'app-update.yml')
+// elevate.exe = electron-builder NSIS 自带的卸载提升件（perMachine:false 也会带）
+const extra = readdirSync(resDir).filter((f) => !['app.asar', 'app-update.yml', 'elevate.exe'].includes(f))
 if (extra.length > 0) fail(`ⓓ resources/ 多了：${extra.join(', ')}`)
 
 if (process.exitCode === 1) {

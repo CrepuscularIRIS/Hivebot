@@ -20,6 +20,8 @@ export interface AgentInput {
   /** T24：创建对话框选的形象（记录输出 avatarShape/avatarColor；未选 = null → 上游按 agentId 哈希回落）。 */
   avatarShape?: string | null
   avatarColor?: string | null
+  /** T41：侧栏隐藏（localStorage 偏好；上游 ProductionRenderer 按 isHidden 过滤 visibleAgents）。 */
+  isHidden?: boolean
 }
 
 export function toAgentRecord(input: AgentInput): Record<string, unknown> {
@@ -49,7 +51,7 @@ export function toAgentRecord(input: AgentInput): Record<string, unknown> {
     dataUrl: null,
     awaitingUserResponse: input.waitingReason !== undefined ? { reason: input.waitingReason }
       : input.awaitingApproval === true ? { reason: 'local-tool-permission' } : null,
-    isHiddenFromSidebar: false,
+    isHiddenFromSidebar: input.isHidden === true, // T41：0.79.3 缺省 false（@3282068 isHiddenFromSidebar:o?.isHiddenFromSidebar??!1）
     notificationsEnabled: true,
   }
 }

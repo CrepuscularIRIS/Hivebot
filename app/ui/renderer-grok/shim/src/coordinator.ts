@@ -26,6 +26,8 @@ export interface CoordinatorDeps {
   /** T40：widget 作答/关掉（data.ts 注入——提问卡的攒批与 $events/result）。 */
   respondToWidget(args: { entryId: string; value: string; agentId: string }): Promise<unknown>
   dismissWidget(args: { entryId: string; agentId: string }): Promise<void>
+  /** T41：侧栏隐藏（data.ts 注入——localStorage 偏好 + raw 标记）。 */
+  setAgentHidden(id: string, value: boolean): void
 }
 
 const TEACH_IDLE = { state: 'idle', agentId: null, startedAtMs: null, maxDurationMs: 600_000 }
@@ -130,6 +132,11 @@ export function createCoordinatorServer(deps: CoordinatorDeps, makePair: PortPai
             agentId: typeof args.agentId === 'string' ? args.agentId : '',
             entryId: typeof args.entryId === 'string' ? args.entryId : '',
           })
+          return reply(requestId, null)
+        }
+        case 'setAgentHiddenFromSidebar': {
+          // T41：行菜单 Hide from sidebar / Hidden Bots 对话框 Unhide（0.18 mutation-controller 两个方向都走此方法）
+          if (typeof args.id === 'string') deps.setAgentHidden(args.id, args.isHidden === true)
           return reply(requestId, null)
         }
         case 'setAgentUnread': {

@@ -324,3 +324,14 @@ div:has(> div > .sand-agents-sidebar[data-sidebar-collapsed="true"]) > .sand-age
   border: 0 !important; border-radius: 16px !important;
   box-shadow: 0 0 0 .5px var(--sand-border-secondary-translucent), 0 6px 18px var(--sand-shadow-card) !important;
 }
+
+
+/* T41d：Hidden Bots 按钮（Renderer 层 grid 正常流）被本文件的底栏 absolute 布局（:74/:90）
+   视觉覆盖——入同一布局层：钉在底栏（bottom:16 高 36）上方一排，同 z 档。 */
+button:has([aria-label$=" hidden bots"]) {
+  position: absolute !important;
+  left: 16px !important;
+  right: 17px !important;
+  bottom: 56px !important;
+  z-index: 3 !important;
+}

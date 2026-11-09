@@ -203,6 +203,19 @@ async function main(): Promise<void> {
   const mainWindow = createMainWindow(preload)
   mainWindow.once('ready-to-show', () => { mainWindow.show(); ready.setWindowReady() })
 
+  // T45a：桌宠窗（PBOTS_PET=1 才建；e2e 缺省关——不改变既有用例的窗口数）。ready 后建，
+  // 随主窗退出销毁。宠物窗只收状态枚举（ipc 校验见 main/pet/ipc.ts）。
+  let petWindow: import('electron').BrowserWindow | undefined
+  if (process.env.PBOTS_PET === '1') {
+    const { createPetWindow } = await import('./pet/window')
+    const { registerPetIpc } = await import('./pet/ipc')
+    petWindow = createPetWindow(resolve(__dirname, '..', 'preload', 'pet.cjs'))
+    registerPetIpc(mainWindow, petWindow)
+    petWindow.once('ready-to-show', () => { petWindow?.show() })
+    await petWindow.loadURL(`${SCHEME}://app/pet/index.html`)
+    mainWindow.on('closed', () => { if (petWindow !== undefined && !petWindow.isDestroyed()) petWindow.destroy() })
+  }
+
   const handoff = process.env.PBOTS_DSH_HANDOFF
   let dsh: DshConnection | undefined
   let dshStart: Promise<number> | undefined

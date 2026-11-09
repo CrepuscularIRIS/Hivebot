@@ -8,3 +8,5 @@ const to = resolve('out/renderer')
 if (!existsSync(resolve(from, 'shim.iife.js'))) throw new Error(`stage-renderer: ${from} has no shim.iife.js (run pnpm -C renderer-grok build)`)
 rmSync(to, { recursive: true, force: true })
 cpSync(from, to, { recursive: true })
+// T45a：宠物页（index.html + pet.js + assets/fish）拷到 out/renderer/pet/
+cpSync(resolve('pet'), resolve(to, 'pet'), { recursive: true })

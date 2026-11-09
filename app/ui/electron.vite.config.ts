@@ -20,8 +20,8 @@ export default defineConfig({
     root: 'preload',
     build: {
       outDir: resolve('out/preload'),
-      lib: { entry: 'index.ts' },
-      rollupOptions: { output: { entryFileNames: 'index.cjs', format: 'cjs' } },
+      lib: { entry: { index: 'index.ts', pet: 'pet.ts' } }, // T45a：宠物 preload 第二入口
+      rollupOptions: { output: { entryFileNames: '[name].cjs', format: 'cjs' } },
     },
     plugins: [externalizeDepsPlugin()],
   },

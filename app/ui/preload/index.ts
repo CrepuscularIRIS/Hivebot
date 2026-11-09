@@ -36,6 +36,10 @@ if (isAppMainFrame) {
       setTheme: (theme: { preference: string; resolved: string }): void => {
         ipcRenderer.send('pbots:theme', { preference: theme.preference, resolved: theme.resolved })
       },
+      /** T45a：桌宠状态下推（main 校验 state 枚举+botId 形状；只收主窗主 frame）。 */
+      setPetState: (value: { state: string; botId: string | null }): void => {
+        ipcRenderer.send('pbots:pet-state', value)
+      },
     },
   })
   installMuxPortRelay()

@@ -3,3 +3,4 @@ coverage/
 node_modules/
 test-results/
 test-output/
+dist-app/

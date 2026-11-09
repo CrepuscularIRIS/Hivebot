@@ -19,13 +19,16 @@
     "build": "electron-vite build && pnpm -C renderer-grok build && node scripts/stage-renderer.mjs",
     "test": "vitest run",
     "test:e2e": "sh scripts/run-e2e.sh",
-    "test:compare-app": "NODE_PATH=$PWD/node_modules sh scripts/run-e2e.sh -c ../../work/p5-parity/harness/compare/app.config.ts"
+    "test:compare-app": "NODE_PATH=$PWD/node_modules sh scripts/run-e2e.sh -c ../../work/p5-parity/harness/compare/app.config.ts",
+    "dist:win": "electron-builder --win --x64"
   },
   "dependencies": {
     "ws": "8.22.1"
   },
   "devDependencies": {
+    "@electron/asar": "4.3.1",
     "electron": "44.7.0",
+    "electron-builder": "26.18.0",
     "electron-vite": "6.0.0",
     "playwright": "1.64.1",
     "typescript": "^5.9.3",

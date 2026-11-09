@@ -1219,3 +1219,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - helpers 盘点：3 个——2 个 MAIN（含用户自玩的「研究linux.do封号与GPT 6.2消息」）+1 个 OTHER（BCD 之前建的 Write hello.txt）——shim 过滤 parent!==mainBotId 后侧栏只应显示 MAIN 两个
 - **Q-037 第 2 点事实**：直接向 helper 发 prompt 被拒——`session/agent-busy: "subagent Sessions require their durable parent address; use subagent delivery for this child session"`（dsh 层设计：helper 须经 parent 的 subagent 通道送信——不能直接聊，非 bug）
 - UI 截图（Workers 分组出现 helper 行）待 T36 合并+重启实例后补
+## 2026-11-09 · merge T39（终验通过）+ scout E/F 收
+- feat/T39 @fb5170c7 → 主线（--no-ff）；grok-shim 205 passed 回测；复合评审（Sol+经理一轮）通过——不阻塞两条：:713 真分支无测试守（覆盖工具缺失）、:712/:713 可合并行（记录）
+- 实例重启 ready@40141（载 T39）——**生产旁证 6（连点 3 行截图）待用户侧栏亲验**：点 Done 行不再跳组（Workers 行数/顺序应稳定）；API 侧证据已齐（held 语义单测四格）
+- scout E 收：功能普查非全覆盖——**MuseAI/dsh-museai-tavern 关联确认**、computer/browser/语音/头像/产物页有缺；dsh 10 包 0.2.2-rc.1 核实；Top10 差价清单在报告
+- scout F 收：桌宠最短路径=dsh-pet(5,921★)接入；房间窄 MVP 1-2 周；社区先 Petdex 兼容

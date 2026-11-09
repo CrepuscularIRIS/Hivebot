@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-09 | 施工：main (GLM 5.3)
 > 来源：T40 终验不通过第 1 次（`receipts/T40.receipt.md`「T40 终验」段 F1–F4）
 > 分支 / 作业目录：feat/T40 @ /tmp/bot-wt/T40（接着 92f1a3a7 提交）
-> claimed：
+> claimed：2026-11-09 main (GLM 5.3) @ feat/T40
 > accepted：
 
 ## 目标

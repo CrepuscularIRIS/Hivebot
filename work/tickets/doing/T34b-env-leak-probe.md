@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-08 | 施工：main (GLM 5.3)
 > 来源：T34 终验（`receipts/T34.receipt.md`「T34 终验」存疑 1、2）；原单 `done/T34-orchestration-default-chain.md` 验收 2 ④⑤
 > 分支 / 作业目录：feat/T34b（自 T34 合并后的主线开），小改动可不开 worktree
-> claimed：
+> claimed：2026-11-09 main (GLM 5.3) @ feat/T34b // worktree /tmp/bot-wt/T34b
 > accepted：
 
 ## 目标

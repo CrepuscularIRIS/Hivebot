@@ -103,6 +103,8 @@ export interface DevSurface {
   /** 已 follow 的会话视图（D1/D2：preset / chunkCount / turnEnded / cwd …）。 */
   readonly bots: SessionView[]
   readonly state: { order: string[]; meta: { mainBotId: string | null; createdBy: Record<string, string> }; views: Record<string, SessionView> }
+  /** T36：侧栏 sections 快照（Workers/Done 分组——测试断言面；sectionsOf 的派生结果）。 */
+  readonly sections: SectionRecord[] | null
   /** T26：重载 roster（onboarding 完成/skip 后——首启未建 main，seen 落盘后此调用补建）。 */
   reloadRoster(): Promise<void>
   /** T26b：发 onboarding 延后的 kickstart 介绍（生产调用——onboarding-view 的 finish 链，非仅测试）。 */
@@ -125,9 +127,10 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   let mainBotId: string | null = null
   let recipes: Record<string, Recipe> = {}
   let createdBy: Record<string, string> = {} // workerId → creatorId（M3 bots[id].createdBy）
+  let helpersOfMain: Record<string, string> = {} // T36：主 bot 的 subagent helperId → parentId（session/list 顶层 origin/parentSessionId）
   let active: string | null = null // chat-header 当前打开的 bot（worker 打开即已读）
   const peers = new Map<string, PeerMeta>() // 编排条目 entryId → 元数据（pbotsUi.peer）
-  const unknownTried = new Set<string>() // 触发过一次 roster 重拉的未知 sid（subagent 等永远不在 list 里的不反复拉）
+  const unknownTried = new Set<string>() // 触发过一次 roster 重拉的未知 sid（其他 bot 的 helper 不进 list 消费面，不反复拉）
   const models = new Map<string, string>() // #5 成功后的本地值（快照下一轮才投影）
   const uiListeners = new Set<() => void>()
   let uiVersion = 0
@@ -165,7 +168,8 @@ export function createShimData(opts: ShimDataOptions): ShimData {
 
   const agentName = (id: string): string => {
     const s = summaries[id]
-    return s !== undefined && s.title !== null && s.title !== '' ? s.title : NEW_CHAT
+    if (s !== undefined && s.title !== null && s.title !== '') return s.title
+    return helpersOfMain[id] !== undefined ? 'Subagent' : NEW_CHAT // T36 review 中3：helper 无名回落 Subagent（不冒充 New chat）
   }
 
   const configOf = (id: string) => (summaries[id] === undefined && !views.has(id) ? null : botConfigOf({
@@ -177,8 +181,10 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   }))
 
   // ---- P6-15 worker 投影 ----
-  const isWorker = (id: string): boolean => createdBy[id] !== undefined && summaries[id] !== undefined
-  const workersOf = (creatorId: string): string[] => order.filter((id) => createdBy[id] === creatorId && summaries[id] !== undefined)
+  /** T36：创建者统一判定——M3 createdBy（create_bot 的 worker）或主 bot 的 subagent helper。 */
+  const creatorOf = (id: string): string | undefined => createdBy[id] ?? helpersOfMain[id]
+  const isWorker = (id: string): boolean => creatorOf(id) !== undefined && summaries[id] !== undefined
+  const workersOf = (creatorId: string): string[] => order.filter((id) => creatorOf(id) === creatorId && summaries[id] !== undefined)
   const askReason = (ask: Ask): string => {
     const tool = views.get(ask.agentId)?.items.find((i) => i.kind === 'tool' && i.callId === ask.callId)
     return askText(ask, tool?.kind === 'tool' ? tool.args : undefined)
@@ -196,7 +202,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   }
   /** 创建者次序：当前主 bot 在前，其余（换主之前的旧主）按 roster 顺序。 */
   const creators = (): string[] => {
-    const all = [...new Set(order.filter(isWorker).map((id) => createdBy[id]!))]
+    const all = [...new Set(order.filter(isWorker).map((id) => creatorOf(id)!))]
     return mainBotId !== null && all.includes(mainBotId) ? [mainBotId, ...all.filter((c) => c !== mainBotId)] : all
   }
   const sections = (): SectionRecord[] | null => sectionsOf(creators().map((creatorId) => ({ creatorId, workers: workersOf(creatorId).map(factsOf) })), active)
@@ -319,7 +325,8 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     const values = rec(rec(item.projections).values)
     return {
       sessionId: String(item.sessionId),
-      title: typeof values.title === 'string' && values.title !== '' ? values.title : null,
+      title: typeof rec(values.subagent).label === 'string' && rec(values.subagent).label !== '' ? rec(values.subagent).label // T36b：helper label 优先（description——主 bot 起的名；dsh 自动 title 是拼接串）
+        : (typeof values.title === 'string' && values.title !== '' ? values.title : null),
       preset: typeof values.agentPreset === 'string' ? values.agentPreset : null,
       running: item.running === true,
       updatedAt: typeof item.updatedAt === 'number' ? item.updatedAt : Date.now(),
@@ -338,8 +345,18 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     const [list, meta] = await Promise.all([api('session/list', { _request: {} }), metaApi('get')])
     if (!list.ok) throw new Error(`session/list: ${list.error?.message ?? ''}`)
     if (!meta.ok) throw new Error(`bots-meta: ${meta.error?.message ?? ''}`)
+    // T36：主 bot 的 subagent helper 也进 roster（Workers 分组）——仅 parent===mainBotId 的；
+    // 嵌套 helper（parent 是 helper）、worker 的 helper、其他 bot 的 helper 一律仍滤（用户定案）。
+    const helperCandidates: Array<Record<string, unknown>> = [] // T36b：helper 只收候选（全文件唯一 parent===mainBotId 判定在终值重筛处）
     const items = (rec(list.value).items as unknown[] | undefined ?? []).map(rec)
-      .filter((i) => typeof i.sessionId === 'string' && i.origin !== 'subagent' && i.parentSessionId === undefined)
+      .filter((i) => {
+        if (typeof i.sessionId !== 'string') return false
+        if (i.origin !== 'subagent' && i.parentSessionId === undefined) return true // 顶层会话照旧
+        if (i.origin === 'subagent' && typeof i.parentSessionId === 'string') {
+          helperCandidates.push(i) // 只收候选，资格在终值 mainBotId 定后判（一律不在此入 summaries）
+        }
+        return false
+      })
       .map(summaryOf)
     const listed = rec(meta.value).mainBotId
     recipes = rec(rec(meta.value).recipes) as unknown as Record<string, Recipe>
@@ -368,7 +385,23 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     } else {
       mainBotId = listed
     }
-    // 顺序首载定序后冻结（R9）：主 bot 置顶，其余按 updatedAt；后续只并入新 session
+    // T36b：helper 资格全文件唯一判定处——按终值 mainBotId 重筛候选：合格者 summary 入册，
+    // 不合格者（换主后旧 main 的）从 summaries/order 双清（R9 merge 会把旧 order 并回）
+    {
+      const helperOf: Record<string, string> = {}
+      for (const h of helperCandidates) {
+        const parent = h.parentSessionId
+        if (parent === mainBotId && mainBotId !== null) { // 唯一判定
+          helperOf[String(h.sessionId)] = String(parent)
+          nextSummaries[String(h.sessionId)] = summaryOf(h)
+        }
+      }
+      helpersOfMain = helperOf
+      const nowBad = helperCandidates.map((h) => String(h.sessionId)).filter((sid) => helperOf[sid] === undefined)
+      for (const sid of nowBad) { delete nextSummaries[sid] }
+      if (nowBad.length > 0) order = order.filter((id) => !nowBad.includes(id))
+    }
+    // 顺序首载定序后冻结（R9）：主 bot 置顶，其余按 updatedAt；后续只并入新 session（review 中1 改造时误删，复原）
     const rest = Object.values(nextSummaries).filter((s) => s.sessionId !== mainBotId).sort((a, b) => b.updatedAt - a.updatedAt)
     summaries = nextSummaries
     order = order.length === 0 ? [mainBotId!, ...rest.map((s) => s.sessionId)] : [...new Set([mainBotId!, ...order, ...rest.map((s) => s.sessionId)])]
@@ -648,6 +681,9 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         mainBotId = id
         order = [id, ...order.filter((x) => x !== id)]
         push.agents()
+        // T36b：换主后重拉 roster——新主的 helper 不在上次 summaries（且其 sid 可能已进 unknownTried
+        // 不会再自动触发）；失败只记 log 不改 setMain 返回值（patch 已落盘）。await 让测试可等。
+        await loadRoster().catch((e) => log(`[shim] setMain roster refresh failed: ${String(e)}`))
       }
       return res
     },
@@ -684,6 +720,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     get sockets() { return dev.sockets },
     get bots() { return [...views.values()] },
     get state() { return { order: [...order], meta: { mainBotId, createdBy: { ...createdBy } }, views: Object.fromEntries(views) } },
+    get sections() { return sections() },
     reloadRoster: () => loadRoster(), // T26：onboarding 完成/skip 后补建 main bot 的入口（onboarding-view 生产调用，非仅测试）
     finishKickstart: async (sid?: string) => {
       // T28b：按 sid 消费（0.79.3 kickstartAwaitingFirstMessage(agentId)）——无参取全部（向后兼容旧 dev 面）

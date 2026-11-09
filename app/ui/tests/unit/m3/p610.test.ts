@@ -232,6 +232,36 @@ describe('M3 patch anti-promotion (验收 ④)', () => {
     expect(ok.ok).toBe(true)
     store.close()
   })
+
+  // T36：subagent helper（session/list item 带 origin/parentSessionId）不得被设为主 bot——
+  // helper 进侧栏后「Set as main bot」够得着它（防提升新攻击面，同 #20 口径）。
+  it('T36 rejects promoting a subagent helper to main', async () => {
+    const dir = tmkdir('bot-p610-t36-')
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    await store.patchMainBotId('session-main')
+    const dsh = mockDsh({
+      'session/list': () => ({ ok: true, value: { items: [
+        { sessionId: 'session-main' },
+        { sessionId: 'session-plain' },
+        { sessionId: 'session-h1', origin: 'subagent', parentSessionId: 'session-main' },
+      ] } }),
+      'agentPresets/list': () => ({ ok: true, value: { presets: [] } }),
+    })
+    const m3 = registerM3Meta({ dsh, store })
+    const patch = (mainBotId: string) => m3.handler({ op: 'patch', mainBotId })
+    const bad = await patch('session-h1')
+    expect(bad.ok).toBe(false)
+    if (!bad.ok) {
+      expect(bad.error.code).toBe('pbots/invalid-args')
+      expect(bad.error.message).toContain('subagent helper')
+    }
+    // helper 拒绝后 mainBotId 未被写入（仍 session-main）
+    expect((store.read() as { mainBotId?: string }).mainBotId, 'helper patch 不落盘').toBe('session-main')
+    const still = await patch('session-plain')
+    expect(still.ok).toBe(true)
+    store.close()
+  })
 })
 
 // ---- deriveBots 防御性过滤（验收 ⑫ 正对象：worker session 不在列表 → 跳过 + 1 行日志） ----

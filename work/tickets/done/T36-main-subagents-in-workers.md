@@ -3,8 +3,8 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-08 | 施工：main (GLM 5.3)
 > 来源：`work/bot-product-awareness/BRIEF.md`「二次澄清（定案）」第 3 条 + 协调者转达的用户补充（2026-11-08）：**只有主 bot 的 subagent 进 Workers；其他 bot 的 subagent 不显示**
 > 分支 / 作业目录：feat/T36 @ /tmp/bot-wt/T36（自当前主线开；T34b 不碰同文件，可并行）
-> claimed：
-> accepted：
+> claimed：2026-11-08 06:3x main (GLM 5.3) @ feat/T36（起点 a68b966b）
+> accepted：2026-11-08 manager (Opus 5.5) @ 0ada98d0（feat/T36，T36b 复验通过）
 
 ## 目标
 主 bot 用 dsh `subagent` 工具开出的 helper 会话，出现在侧栏主 bot 的 Workers / Done 分组里，和 `create_bot` 建的 worker 同一套呈现（运行中 / 卡住 / 未读 → Workers，读完 → Done 折叠）。

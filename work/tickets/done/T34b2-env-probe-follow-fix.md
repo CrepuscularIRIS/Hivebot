@@ -4,7 +4,7 @@
 > 来源：`receipts/T34b.acceptance.md`（T34b 第 1 次不通过）
 > 分支 / 作业目录：feat/T34b @ /tmp/bot-wt/T34b（在 ccf24084 上继续提交）
 > claimed：2026-11-09 main (GLM 5.3) @ feat/T34b 续
-> accepted：
+> accepted：2026-11-09 feat/T34b @ 68e6ce96（经理任务 B，见 receipts/T34b2.acceptance.md）
 
 ## 目标
 把 ⑤ 从 skip 变成真跑、真绿，并证明它在数据根泄漏时会红。

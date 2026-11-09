@@ -4,7 +4,7 @@
 > 来源：T34 终验（`receipts/T34.receipt.md`「T34 终验」存疑 1、2）；原单 `done/T34-orchestration-default-chain.md` 验收 2 ④⑤
 > 分支 / 作业目录：feat/T34b（自 T34 合并后的主线开），小改动可不开 worktree
 > claimed：2026-11-09 main (GLM 5.3) @ feat/T34b // worktree /tmp/bot-wt/T34b
-> accepted：
+> accepted：2026-11-09 feat/T34b @ 68e6ce96（经理任务 B，见 receipts/T34b2.acceptance.md）
 
 ## 目标
 补上 T34 工单验收 2 ⑤（施工未做、回执把 ⑤ 改标成 orchDataDir 四分支，未按工单「成本过高就停下写回执」记录），并把 ④ 的宽松正则收紧到信封真实错误码。

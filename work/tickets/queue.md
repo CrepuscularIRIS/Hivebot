@@ -8,12 +8,15 @@
 
 | # | 项 | 依赖 | 状态 |
 |---|---|---|---|
-| W1 | **T36** 主 bot 的 subagent 进 Workers（`open/T36-main-subagents-in-workers.md`）：shim roster 收 `parentSessionId===mainBotId` 的 helper、`creatorOf` 统一、名字取 label；M3 防提升补 helper；安全/存储单 → 施工后派 reviewer | — | **open** |
-| W2 | **T37** 术语文案（`open/T37-worker-terminology.md`）：ROUTING_PROMPT / create·stop 描述 / awareness 段 / M3 报错里「worker bot」→「worker」，subagent「看不见」改成真实差别（不能要审批）；文案逐字定稿；工具名不改 | — | **open**（与 T36 并行，不同文件） |
+| W1 | **T36** 主 bot 的 subagent 进 Workers（`open/T36-main-subagents-in-workers.md`）：shim roster 收 `parentSessionId===mainBotId` 的 helper、`creatorOf` 统一、名字取 label；M3 防提升补 helper；安全/存储单 → 施工后派 reviewer | — | **doing**（2026-11-08 终验不通过：生产 setMain 不重拉/名字空测试 → T36b） |
+| W1b | **T36b** T36 返修（`feat/T36` worktree 内 `open/T36b-helper-followups.md`）：setMain 成功后重拉 roster、helper 名字 label 优先、删冗余 parent 判定、补名字/换主真测试 | T36 | **open** |
+| W1c | Q-037 第 2 点落地（helper 行输入框：B 只读提示 / C 经主 bot 转达）——生产实测 dsh 拒直发 | **Q-037** | 计划（等用户） |
+| W2 | **T37** 术语文案（`done/T37-worker-terminology.md`）：ROUTING_PROMPT / create·stop 描述 / awareness 段 / M3 报错里「worker bot」→「worker」，subagent「看不见」改成真实差别（不能要审批）；文案逐字定稿；工具名不改 | — | **done**（2026-11-08 经理追认 8c95ed03；未审先并为流程偏差） |
+| W2b | **T37b** send/stop 描述漏网两句（`open/T37b-send-stop-wording.md`）：逐字定稿 + 四描述统一禁词格 | T37 | **open**（与 T36b 并行，不同文件） |
 | W3 | T38 Workers UI 打磨（`worker-ui-polish/BRIEF.md`）：worker / helper 行名字呈现、Workers 分组与回报卡字号间距对照 0.79.3 参照图（`grok-0.79.3-re/ref/`）+ 用户 bug 清单。等：① T36 合并（helper 行进来后再一起看版式，否则做两遍）② 用户列 bug（工单留「用户补充」节）。主 agent 拿到用户清单后派经理任务 A 拆，名字/字体与各 bug 按一 bug 一单拆 | T36 合并；用户 bug 清单 | 计划 |
-| W4 | T35（下表 A2b）须排在 **T37 合并之后**：复测要测定稿文案 | T37 | 计划（改依赖） |
+| W4 | T35（下表 A2b）须排在 **T36 + T37b 都并入主线之后**：复测要测定稿文案 | T36、T37b | 计划（改依赖） |
 
-**施工序**：T36 ‖ T37 并行（≤2）→ T36 派 reviewer（T37 可同批）→ 经理任务 B → 合并 → 主 agent 生产旁证（T36 验收 6）→ 拿用户 bug 清单开 T38。Q-037 默认 A，不阻塞 T36。
+**施工序（2026-11-08 终验后改）**：T36b ‖ T37b 并行 → 经理复验（一轮两单）→ T36 合并（m3-meta 三方合并）→ T37b 合并 → 生产旁证 6 → 主线 push（须用户授权）。原序：T36 ‖ T37 并行（≤2）→ T36 派 reviewer（T37 可同批）→ 经理任务 B → 合并 → 主 agent 生产旁证（T36 验收 6）→ 拿用户 bug 清单开 T38。Q-037 默认 A，不阻塞 T36。
 
 ## bot 产品认知（`work/bot-product-awareness/`）——2026-11-08 立项，**最高优先**（用户正在用产品，实测反馈）
 

@@ -4,7 +4,7 @@
 > 来源：`work/bot-product-awareness/BRIEF.md`「二次澄清（定案）」第 2 条（bot = 用户自己建的独立会话；主 bot 派生的 = worker / subagent，create_bot 建的不叫 bot）+ 第 3 条（主 bot 的 subagent 要显示在 Workers，见 T36）
 > 分支 / 作业目录：feat/T37，小改动不开 worktree（只碰 SDK 文案 + 一处 M3 错误文案；`m3-meta/index.ts` 与 T36 都碰但不同行，后合并的一方三方合并）
 > claimed：2026-11-08 07:2x main (GLM 5.3) @ feat/T37
-> accepted：
+> accepted：2026-11-08 8c95ed03（经理追认：主 agent 未审先并，见回执「终验」；漏网两句转 T37b）
 
 ## 目标
 模型看到的提示词与用户能看到的报错里，不再把 `create_bot` 建出来的东西叫「bot」；也不再说「subagent 在 Workers 里看不见」（T36 之后主 bot 的 subagent 看得见了）。

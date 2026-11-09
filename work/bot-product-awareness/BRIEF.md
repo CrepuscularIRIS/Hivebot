@@ -39,3 +39,8 @@
 > 其他的bot的subagent不用显示, 就是主agent的subagent可以显示.
 
 **约束**：仅主 agent（mainBotId）的 subagent 显示进 Workers 分组；其他 bot 的 helper 不显示（过滤=origin==='subagent' 且 parentSession===mainBotId）。
+
+## 2026-11-08 用户补充约束（主 agent 转达，经理立项 T36 时纳入）
+> 只有主 agent（main bot）的 subagent 显示进 Workers 分组；其他 bot 的 subagent 不显示。
+
+落地：T36 过滤条件 = `origin==='subagent' && parentSessionId===mainBotId`（嵌套 helper、worker 的 helper、其他 bot 的 helper 都不显示）。叫法修正 = T37。

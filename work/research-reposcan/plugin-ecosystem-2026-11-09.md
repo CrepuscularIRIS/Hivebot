@@ -16,7 +16,7 @@
 2. **dpharness.com/best 2026-11 月榜 105 项**：安装检查+实装验证+下载量+综合分，每月重算。
 3. **bruc3van/awesome-dsh-plugin 补充 44 项** + 热榜 4 项（billion-context、dsh-windows-mcp、dsh-session-superagent、cc-safety-net）。
 
-全文见用户原始贴文（本文件为存档摘要 + 偏好提炼；逐项安装验证时回读原文，原文已在本会话 2026-11-09 消息中）。
+全文存档于同目录 `plugin-ecosystem-2026-11-09-source.md`（用户落的原文）；本文件为摘要 + 偏好提炼。
 
 ## 与现有工作的接口
 

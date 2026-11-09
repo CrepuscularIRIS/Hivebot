@@ -29,7 +29,7 @@ writeFileSync(overlay, `
                 contextWindow: 131072
 `)
 const PERSONA_MARK = 'You are a coding agent powered by'
-const ROUTING_MARK = 'You are the main bot: you talk with the user and hand their hands-on work to worker bots.'
+const ROUTING_MARK = 'You are the main bot: you talk with the user and hand their hands-on work to workers.'
 const AWARE_MARK = '## This app and the other bots'
 
 let rt: Runtime

@@ -121,7 +121,7 @@ export function registerM3Meta(deps: M3Deps): M3Handle {
     // bot——只收紧、不放宽。
     try {
       if (store.read().bots?.[mainBotId] !== undefined) {
-        return invalidArgs(`mainBotId ${JSON.stringify(mainBotId)} is a worker bot (createdBy set); workers cannot be promoted to main (CONTRACT #20)`)
+        return invalidArgs(`mainBotId ${JSON.stringify(mainBotId)} is a worker (createdBy set); workers cannot be promoted to main (CONTRACT #20)`)
       }
     } catch (error) {
       return { ok: false, error: { code: 'pbots/storage', message: `bots.json unreadable: ${String(error)}`, details: {} } }

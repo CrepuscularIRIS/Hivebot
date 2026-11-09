@@ -155,3 +155,12 @@ describe('T33 registerProductPrompt/readMeta（mock ctx 分支盖）', () => {
     plugin.dispose()
   })
 })
+
+
+describe('T37 awareness 术语', () => {
+  it('段落不含 do not appear in the sidebar；含 Workers group', () => {
+    const text = awarenessText({ selfId: 's', sessions: [], meta: undefined })
+    expect(text).not.toContain('do not appear in the sidebar')
+    expect(text).toContain("Workers group")
+  })
+})

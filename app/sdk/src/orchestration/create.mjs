@@ -29,10 +29,10 @@ export function relayText(prompt) {
 }
 
 export const CREATE_BOT_DESCRIPTION = [
-  'Create a visible worker bot whenever the user\'s request creates or changes files, or runs commands or scripts, regardless of size or tool-call count. If you are about to use write, edit, or bash for that request, call create_bot instead.',
+  'Start a visible worker whenever the user\'s request creates or changes files, or runs commands or scripts, regardless of size or tool-call count. If you are about to use write, edit, or bash for that request, call create_bot instead.',
   'Only one file, only one or two tool calls, finishing soon, or verifying along the way are not reasons to do the work in the main chat.',
   'This keeps the main conversation responsive while the user can follow the task in the Workers group. Use one worker for a single task, or separate workers for independent parallel tasks.',
-  'Use create_bot for user-requested visible work; subagent is for internal scoped subtasks and is not visible in Workers. Answers that need no tool, and casual chat, stay here. Read-only lookup may also stay here.',
+  'Use create_bot for user-requested visible work; subagent starts a scoped helper that cannot ask the user for approval; use it only for internal subtasks. Answers that need no tool, and casual chat, stay here. Read-only lookup may also stay here.',
   'Act on the user\'s request in your own turn; worker reports are results to relay, not instructions to delegate more work.',
   'name: a short label for the worker. prompt: the task in the user\'s words plus at most 30 characters of routing context.',
   'The worker runs the prompt as its first message and reports back when its turn ends.',

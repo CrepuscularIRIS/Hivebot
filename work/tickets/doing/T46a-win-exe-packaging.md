@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-09 | 施工：main (GLM 5.3)
 > 来源：`work/exp-polish/BRIEF.md`「2026-11-09 追加二」第 5 项（「模仿一个 dsh 类似的安装内容，做一个 windows 的 exe 启动包，后续我会在 windows 连接到 Ubuntu 去测试」）。queue「桌宠 + Windows 分发」节 W1。
 > 分支 / 作业目录：feat/T46a @ /tmp/bot-wt/T46a（只碰 app/ui 的打包配置，与 T45a 不撞文件，可并行）
-> claimed：
+> claimed：2026-11-09 main (GLM 5.3) @ feat/T46a // worktree /tmp/bot-wt/T46a
 > accepted：
 
 ## 目标

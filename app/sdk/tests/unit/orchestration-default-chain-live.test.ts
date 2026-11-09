@@ -130,10 +130,7 @@ it('④ 信封 fail closed：worker 调 subagent 被拒、无新会话', { timeo
   expect(after, '无新增子会话').toBe(before)
 })
 
-// T34b 边界 4：⑤ 骨架已搭（审批应答已通 answered=1），卡在 session/follow 流不推 turn 事件（$events 流全程正常、
-// api-session/status true→false 俱到而 turn 数组恒空——疑与 ② 对同一 mainId 的 follow 复用相关）。按工单「搭不起来就
-// 停下写回执」处理：不删格不改恒真，skip 保留骨架，卡点详 receipts/T34b.receipt.md
-it.skip('⑤ 环境泄漏探针：主 bot bash env 不含数据根与 DSH_PBOTS_DATA_DIR（P5-01 决策 15）', { timeout: 120_000 }, async () => {
+it('⑤ 环境泄漏探针：主 bot bash env 不含数据根与 DSH_PBOTS_DATA_DIR（P5-01 决策 15）', { timeout: 120_000 }, async () => {
   // interactions:'answer' 客户端 + $events 流（tiers-policy.test.ts:80-93 同法）——审批卡应答 allowed-once
   const { connect } = await import('../../examples/lib/client.mjs')
   const { readFileSync } = await import('node:fs')
@@ -173,9 +170,10 @@ it.skip('⑤ 环境泄漏探针：主 bot bash env 不含数据根与 DSH_PBOTS_
     { type: 'finish', reason: { kind: 'stop' } },
   ] }
   writeFileSync(join(home, 'fake', 'scripts', `${mainId}.json`), JSON.stringify({ calls: [padTurn, padTurn, bashTurn, textTurn] }))
-  const follow = await rt.client.follow(mainId, { awaitSnapshot: true })
+  const { stream: follow } = await rt.client.follow(mainId, { awaitSnapshot: true }) // T34b2：follow 返回 {stream,snapshot}——取 stream（原把对象当流迭代，异常又被 catch 吞成恒空）
   const turn: Array<Record<string, unknown>> = []
-  const td = (async () => { for await (const f of follow) { const e = (f as { event?: Record<string, unknown> }).event; if (e) turn.push(e) } })().catch(() => {})
+  const followErr: string[] = []
+  const td = (async () => { for await (const f of follow) { const e = (f as { event?: Record<string, unknown> }).event; if (e) turn.push(e) } })().catch((e) => { followErr.push(String(e)) })
   await rt.client.call('session/prompt', { request: { requestId: `t34leak-${Date.now()}`, sessionId: mainId, mode: 'queue', content: [{ type: 'text', text: 'print env' }] } })
   const answered = new Set<string>()
   const deadline = Date.now() + 60_000
@@ -188,7 +186,7 @@ it.skip('⑤ 环境泄漏探针：主 bot bash env 不含数据根与 DSH_PBOTS_
       }
     }
     if (turn.some((e) => e.type === 'turn/end')) break
-    if (Date.now() > deadline) throw new Error(`turn/end 未到；answered=${answered.size}；turn 尾部：${JSON.stringify(turn.slice(-6)).slice(0, 500)}；events 流尾部：${JSON.stringify(frames.slice(-6).map((f) => { const i = evItem(f); return { t: i.type, e: i.event, aid: i.agentId != null ? String(i.agentId).slice(0, 12) : undefined } }))}`)
+    if (Date.now() > deadline) throw new Error(`turn/end 未到；answered=${answered.size}；followErr=${followErr.join(';') || 'none'}；turn 尾部：${JSON.stringify(turn.slice(-6)).slice(0, 500)}`)
     await new Promise((r) => setTimeout(r, 200))
   }
   for (let i = 0; i < 60 && turn.filter((e) => e.type === 'tool/result').length < 1; i += 1) await new Promise((r) => setTimeout(r, 500))

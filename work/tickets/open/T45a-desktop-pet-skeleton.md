@@ -48,7 +48,7 @@ Hivebot 启动后桌面右下角出现一只透明背景、置顶的大肥鱼。
 2. 先写失败测试：`tests/unit/grok-shim/pet.test.ts` ①–⑥（下方），看它红再写 `pet.ts`。
 3. 资产出处：`app/ui/pet/assets/fish/SOURCE.md` 写 `来源: https://github.com/PC2005-cloud/dsh-pet@c25386848f70f6e40902e4376f6e7b1e196bc326:dsh-pet/assets/webm/<文件>`、代码 MIT、**角色形象 CC BY-NC-SA 4.0（不可商用；原型「溟月」@上善无形，女仆鲸鱼娘设计 @ZipZipPipe；衍生须附 https://github.com/PC2005-cloud/dsh-pet）**；commit 正文同样写来源。这是私用可以，对外分发前要换自有形象（记 T45b）。
 4. 测试走隔离 HOME / TMPDIR，DBus 指向不存在路径；只跑下面列的 e2e，不跑全量。
-5. 不做：形象切换 / 导入、持久化开关与位置、点宠物打开具体 bot、气泡文字、物理（Q 弹 / 甩抛 / 漫游 / 睡觉）、鼠标穿透透明区、多屏 DPI 调优——分别在 T45b / T45c / T42 之后。
+5. 不做：形象切换 / 导入、持久化开关与位置、点宠物打开具体 bot、气泡文字、物理（Q 弹 / 甩抛 / 漫游 / 睡觉）、鼠标穿透透明区、多屏 DPI 调优——分别在 T45b / T45d（原写 T45c，编号已让给返修单）/ T42 之后。
 
 ## 验收（写命令，不写感觉）
 所有命令在 `app/ui` 下；vitest 带 `--config.verify-deps-before-run=false`（pnpm）。

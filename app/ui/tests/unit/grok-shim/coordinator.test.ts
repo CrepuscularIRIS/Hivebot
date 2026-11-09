@@ -79,6 +79,8 @@ const baseDeps = (over: Partial<CoordinatorDeps> = {}): CoordinatorDeps => ({
   setAgentUnread: () => {},
   createAgent: () => Promise.resolve({ id: 'new' }),
   updateAgent: () => Promise.resolve(null),
+  respondToWidget: () => Promise.resolve({ accepted: true }),
+  dismissWidget: () => Promise.resolve({ accepted: true }), // T40b：deps 面
   ...over,
 })
 
@@ -189,6 +191,19 @@ describe('T21 · getConversationOutline 分派', () => {
     const value = await call(client, frames, 'getConversationOutline', { id: 'ag_9' })
     expect(seen).toEqual(['ag_9'])
     expect(value).toEqual([{ kind: 'user', id: 'u1', text: 'hi' }])
+    client.close()
+  })
+})
+
+
+// T40b ⑫：coordinator 层回包契约（rpc record——F1 修复守卫；deps 直调看不见此层）
+describe('T40b widget 回包（coordinator 层）', () => {
+  it('respondToWidget / dismissWidget 均 reply ok 且 value 逐字 {accepted:true}', async () => {
+    const { client, frames } = handshake(baseDeps())
+    const r1 = await call(client, frames, 'respondToWidget', { entryId: 'q-ev1-q1', value: 'No', agentId: 'ag_main' })
+    expect(r1).toEqual({ accepted: true }) // call resolve 的即 outcome.value
+    const r2 = await call(client, frames, 'dismissWidget', { entryId: 'q-ev1-q1', agentId: 'ag_main' })
+    expect(r2).toEqual({ accepted: true })
     client.close()
   })
 })

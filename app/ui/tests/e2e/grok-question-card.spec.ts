@@ -27,20 +27,24 @@ test('T40 提问卡：两题卡出现→作答→终答含答案', { timeout: 24
       { id: 'q1', question: 'Which color?', options: [{ label: 'Red' }, { label: 'Blue' }] },
       { id: 'q2', question: 'Anything to note?', options: [] },
     ] })
+    const args2 = JSON.stringify({ questions: [ { id: 'q3', question: 'Dismiss me?', options: [{ label: 'Yes' }] } ] })
+    const askTurn = (tid: string, ag: string) => ({ chunks: [
+      { type: 'block-start', index: 0, blockType: 'tool-call' },
+      { type: 'tool-call-delta', index: 0, id: tid, name: 'ask_user_question', argumentsDelta: ag.slice(0, 5) },
+      { type: 'tool-call-delta', index: 0, id: tid, name: 'ask_user_question', argumentsDelta: ag.slice(5) },
+      { type: 'block-end', index: 0, block: { type: 'tool-call', id: tid, name: 'ask_user_question', arguments: ag } },
+      { type: 'finish', reason: { kind: 'tool-calls' } },
+    ] })
+    const textTurn = (t: string) => ({ chunks: [
+      { type: 'block-start', index: 0, blockType: 'text' },
+      { type: 'text-delta', index: 0, text: t },
+      { type: 'block-end', index: 0, block: { type: 'text', text: t } },
+      { type: 'finish', reason: { kind: 'stop' } },
+    ] })
     writeFileSync(join(dir, `${sid}.json`), JSON.stringify({ calls: [
-      { chunks: [
-        { type: 'block-start', index: 0, blockType: 'tool-call' },
-        { type: 'tool-call-delta', index: 0, id: 't40a', name: 'ask_user_question', argumentsDelta: args.slice(0, 5) },
-        { type: 'tool-call-delta', index: 0, id: 't40a', name: 'ask_user_question', argumentsDelta: args.slice(5) },
-        { type: 'block-end', index: 0, block: { type: 'tool-call', id: 't40a', name: 'ask_user_question', arguments: args } },
-        { type: 'finish', reason: { kind: 'tool-calls' } },
-      ] },
-      { chunks: [
-        { type: 'block-start', index: 0, blockType: 'text' },
-        { type: 'text-delta', index: 0, text: 'done' },
-        { type: 'block-end', index: 0, block: { type: 'text', text: 'done' } },
-        { type: 'finish', reason: { kind: 'stop' } },
-      ] },
+      askTurn('t40a', args),
+      askTurn('t40b', args2),
+      textTurn('done'),
     ] }))
     await ui.evaluate((s) => (window as unknown as { pbots: { api(m: string, a?: unknown): Promise<unknown> } }).pbots.api('session/prompt', { request: { requestId: `t40-${Date.now()}`, sessionId: s, mode: 'queue', content: [{ type: 'text', text: 'ask me' }] } }), sid)
     // 卡出现（0.18 widget.tsx 根 class=sand-widget）
@@ -50,6 +54,14 @@ test('T40 提问卡：两题卡出现→作答→终答含答案', { timeout: 24
     const customInput = ui.locator('.sand-widget input, .sand-widget textarea').first()
     await customInput.fill('hello')
     await customInput.press('Enter')
+    await expect(ui.locator('.sand-widget--resolved')).toHaveCount(2, { timeout: 15_000 })
+    // 第二批（q3）：X dismiss → dismissed 态 3s 不弹回（F1+F2）
+    await expect(ui.locator('.sand-widget')).toHaveCount(3, { timeout: 20_000 })
+    await ui.locator('button[aria-label="Dismiss question"]').last().click()
+    await expect(ui.locator('.sand-widget--dismissed')).toHaveCount(1, { timeout: 10_000 })
+    await ui.waitForTimeout(3000)
+    await expect(ui.locator('.sand-widget--dismissed'), '3s 后仍 dismissed').toHaveCount(1)
+    await ui.screenshot({ path: '/home/lingxufeng/bot/work/exp-polish/evidence/T40/dismissed.light.png' })
     // fake 第二轮收到的工具结果含答案 → 终答出现
     await expect(ui.locator('.ProseMirror[contenteditable="true"]')).toBeVisible()
     // requests.jsonl 里 toolResults 是嵌套转义 JSON——parse 后断（q1 Blue / q2 skip）
@@ -62,11 +74,19 @@ test('T40 提问卡：两题卡出现→作答→终答含答案', { timeout: 24
       } catch { return [] }
     }
     await expect.poll(async () => JSON.stringify(await readAnswers()), { timeout: 45_000 }).toContain('Blue')
+    await expect(ui.getByText('done', { exact: true }).last()).toBeVisible({ timeout: 30_000 })
     const trs = await readAnswers()
-    const ans = trs.find((t) => t.toolCallId === 't40a')?.text ?? ''
-    const parsed = JSON.parse(ans) as { answers: Array<{ id: string; selected: string[]; custom?: string }> }
-    expect(parsed.answers.find((a) => a.id === 'q1')?.selected).toEqual(['Blue'])
-    expect(parsed.answers.find((a) => a.id === 'q2')).toEqual({ id: 'q2', selected: [], custom: 'hello' })
+    // requests.jsonl 每轮携带历史 toolResults——按 toolCallId 取**最后**一次出现
+    const lastOf = (tid: string): { answers: Array<{ id: string; selected: string[]; custom?: string }> } | undefined => {
+      let hit: { answers: Array<{ id: string; selected: string[]; custom?: string }> } | undefined
+      for (const t of trs) if (t.toolCallId === tid) { try { hit = JSON.parse(t.text ?? '{}') } catch { /* skip */ } }
+      return hit
+    }
+    const b1 = lastOf('t40a')!
+    const b2 = lastOf('t40b')?.answers?.[0]
+    expect(b1.answers.find((a) => a.id === 'q1')?.selected).toEqual(['Blue'])
+    expect(b1.answers.find((a) => a.id === 'q2')).toEqual({ id: 'q2', selected: [], custom: 'hello' })
+    expect(b2 ?? {}, `dismiss=空 selected（实际 ${JSON.stringify(b2)}）`).toEqual({ id: 'q3', selected: [] })
   } finally {
     await shell?.stop()
     await rt.stop()

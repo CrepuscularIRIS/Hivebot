@@ -1230,3 +1230,9 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 生产旁证（重启 ready@35055 后）：主 bot 被要求「用 ask_user_question 问我想要红色还是蓝色，然后按我的回答写一句话」→ **提问卡到**（q=你想要红色还是蓝色？ options=红色/蓝色）→ 作答「蓝色」（同流 $events/result ok=true）→ 终答：**「你选了蓝色，那这句话是：沉静如海的蓝色，是这个午后最温柔的选择」**——提到蓝 ✓
   - 旁证脚本坑三连（记档）：$events 需 interactions=answer；clientId 归属流所在连接（MuxStream 是 async 迭代非 items 数组——单流迭代抓 ready+waterfall，作答同连接 client.call）
 - T40 全链：审计 K2→立项→施工→Sol 高1中4→修复→终验1（⑫层缺失+宕机丢证据）→T40b 两轮→复审 0 高 0 中→终验通过
+
+## 2026-11-09 · merge T46a/ab/ac + T41c 施工
+- merge `feat/T46a`（728d3194）：Windows 打包链三单（T46a Setup.exe 116MB / T46ab .map+.env 禁令 / T46ac .env.local basename 判）——经理验收 @ dc864c0b；合并后回测链 install→build→dist:win→check 全绿（MERGE_RETRO_OK）。
+- T45c 二审（Sol）：M1' 点击动画 ended 吞状态动画、M3' 真链未验收 thinking/working → 均修（7749653b）：ended 区分 wasClick；e2e 用 W3 gate 挂住档稳定断言 thinking+截图，success 由 W3 放行完成供给（删 W2）——15 格 + e2e 26.1s 绿。
+- T41c 施工（9acca0d2）：Hidden Bots 对话框布局（0.18 原子类不在产物 CSS，作用域补布局/tokens 值）+三断言；发现 ③ 断言须在对话框打开前测（modal 遮罩）。对话框/徽标三症状消除，回归 3 passed。
+- 待办：T45c/T41c 经理终验 → T45a+T45c 合并（PBOTS_PET=1 重启实例）→ T41+T41c 合并；T34b ⑤ 格调试（60s turn/end 未到——审批应答链待查）。

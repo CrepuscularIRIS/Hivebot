@@ -113,9 +113,15 @@ export function registerM3Meta(deps: M3Deps): M3Handle {
     // W1 R4：上游 list(_request, signal) 的参数名是 _request——壳形态 {_request:{}}（VERIFY-U-15 终裁）
     const list = await safeRpc(deps.dsh, 'session/list', { _request: {} })
     if (!list.ok) return stepFailed('session/list', list.error)
-    const items = (list.value as { items?: Array<{ sessionId: string }> }).items ?? []
-    if (!items.some((item) => item.sessionId === mainBotId)) {
+    const items = (list.value as { items?: Array<{ sessionId: string, origin?: string, parentSessionId?: string }> }).items ?? []
+    const target = items.find((item) => item.sessionId === mainBotId)
+    if (target === undefined) {
       return invalidArgs(`mainBotId ${JSON.stringify(mainBotId)} is not in session/list`)
+    }
+    // T36 防提升（helper 进侧栏后的新攻击面）：subagent helper 不得被设为主 bot——它是权限
+    // 收窄、审批自动拒的会话，设为主后主 bot 从此不可用。worker 拒绝见下（CONTRACT #20 同口径）。
+    if (target.origin === 'subagent' || target.parentSessionId !== undefined) {
+      return invalidArgs(`mainBotId ${JSON.stringify(mainBotId)} is a subagent helper (origin/parentSessionId set); helpers cannot be promoted to main (T36)`)
     }
     // P6-10 验收 ④（#20 防提升，CONTRACT v1.5）：worker（带 createdBy）不得被设为主
     // bot——只收紧、不放宽。

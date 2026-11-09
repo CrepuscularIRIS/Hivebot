@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-08 | 施工：main (GLM 5.3)
 > 来源：T36 终验（`receipts/T36.receipt.md`「终验」第 3/4/5/6/7 条）
 > 分支 / 作业目录：feat/T36 @ /tmp/bot-wt/T36（接 506cbfa4 继续提交，不新开分支）
-> claimed：
+> claimed：2026-11-08 08:2x main (GLM 5.3) @ feat/T36
 > accepted：
 
 ## 目标

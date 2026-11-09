@@ -17,3 +17,12 @@
 
 ## 期望
 用户能与 bot 用自然语言完成「看看其他 bot / 建一个新 bot / 调 superagent」，bot 要么知道并指路，要么有工具能做。
+
+## 2026-11-08 05:4x 追加：SuperAgent 架构重定义（用户，T27 方向输入）
+> superagent不是说我们让他创建一个subagent,他就去做的. bot的定义是superagent的边界与dsh本身的其他小bot之间的. 注意dsh之间, superagent非之间, superagent理解为一种心流状态的编排 …因为现在是superagent是一个非常复杂的主工作员工. 而其他的bot是简单员工. bot之间的信息应该流通于superagent的main agent与其他的dsh的main agent之间才对. 而不是superagent本身的编排系统. 因为很可能是独立的. 或者还有一个思路, 就是dsh本身作为bot, superagent创建的几个worker和router机制, 这个本身是否和dsh一致? 就是现在是两种编排系统.
+
+**要点**：
+1. SuperAgent ≠ 主 bot 内部的编排工具（create_bot 那套）——是横跨 bot 的「心流状态编排」层
+2. bot = 独立 DSH 实例（各有自己的 main agent，简单员工）；SuperAgent = 复杂主协调员工
+3. bot 间信息流：SuperAgent.main ↔ 各 DSH.main **对等通信**，不经 superagent 内部编排系统
+4. 疑问：现状两种编排系统（T34 orchestration 插件 vs dsh 原生 subagent）是否同构、如何统一

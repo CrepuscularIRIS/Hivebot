@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-09 | 施工：main (GLM 5.3)
 > 来源：`work/exp-polish/BRIEF.md` 第 1 项（用户原话「我这怎么在ui里面点击里面, 就显示2个, 而且worker还在跳跃? 这个是不合理的」）
 > 分支 / 作业目录：feat/T39 @ /tmp/bot-wt/T39（从集成分支 docs/rebuild-p6-p5-plan 起）
-> claimed：
+> claimed：2026-11-09 main (GLM 5.3) @ feat/T39
 > accepted：
 
 ## 目标

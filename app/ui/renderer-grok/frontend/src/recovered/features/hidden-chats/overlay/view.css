@@ -41,3 +41,49 @@
 .sand-hidden-chats__open { flex: 1; gap: 10px; min-width: 0; text-align: left; }
 .sand-hidden-chats__unhide { padding: 6px 8px; color: var(--cursor-text-secondary); }
 .sand-hidden-chats__unhide:hover { color: var(--cursor-text-primary); }
+
+
+/* T41c：0.18 的对话框布局由原子类（.sand-1348h9v/.sand-z9dl7a/.sand-yamay9 等）承担，定义
+   在 0.18 构建产物 CSS（本机无 0.18 安装可拆；0.78.1 类名每版重排不可直接引用）。按重构树
+   plugins/overlay/browser.css 先例：作用域限定补布局，数值全部取 --cursor-* tokens。 */
+.sand-hidden-chats-dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: var(--cursor-spacing-4, 16px);
+}
+/* 0.18 原子类（78zum5 等）部分缺产物：column 子层显式满宽，防宽度沿内容逐层收缩 */
+.sand-hidden-chats-dialog > * { width: 100%; }
+.sand-hidden-chats-dialog > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--cursor-spacing-2, 8px);
+  margin-bottom: var(--cursor-spacing-3, 12px);
+}
+.sand-hidden-chats-dialog > header h2 {
+  margin: 0 0 var(--cursor-spacing-1, 4px);
+}
+.sand-hidden-chats-dialog > header p {
+  margin: 0;
+}
+.sand-hidden-chats__list {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.sand-hidden-chats__open {
+  display: flex;
+  width: 100%;
+}
+.sand-hidden-chats__open > span:first-child {
+  flex: none;
+}
+.sand-hidden-chats__open > span:last-child {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

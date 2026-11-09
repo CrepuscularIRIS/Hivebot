@@ -1,4 +1,4 @@
-// T41b 验收 5：真页面走完整一圈——右键 Hide → 行消失+徽标 → 对话框 Unhide → 行回来 → reload 持久。
+// T41b 验收 5 + T41c 视觉断言：右键 Hide → 行消失+徽标 → 对话框（名字可见/原版内边距）→ Unhide → 行回来 → reload 持久。
 import { expect, test } from 'playwright/test'
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
@@ -45,10 +45,23 @@ async function runOnce(scheme: 'light' | 'dark'): Promise<void> {
     await expect(page.locator('.sand-agent-item', { hasText: 'Hide me bot' }), 'reload 后仍隐藏').toHaveCount(0, { timeout: 15_000 })
     await expect(page.locator('[aria-label="1 hidden bots"]')).toBeVisible({ timeout: 15_000 })
 
+    // T41c ③：徽标按钮整块可点（中心点命中的是自身/子孙，不被 footer 遮挡）——须在对话框打开前测（modal 遮罩会挡）
+    const hitSelf = await page.locator('[aria-label="1 hidden bots"]').evaluate((el) => {
+      const r = el.getBoundingClientRect()
+      const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
+      return e != null && (e === el || el.contains(e))
+    })
+    expect(hitSelf, '徽标中心不被遮挡').toBe(true)
+
     // 点开 Hidden Bots 对话框 → Unhide → 行回来
     await page.locator('[aria-label="1 hidden bots"]').click()
     const dialog = page.locator('[role=dialog]')
     await expect(dialog).toBeVisible({ timeout: 15_000 })
+    // T41c ①：对话框里 bot 名字可见（藏多个时认得出哪个是哪个）
+    await expect(dialog.getByText('Hide me bot')).toBeVisible()
+    // T41c ②：样式来自原版值（padding 非零——0.18 tokens 的 spacing 档，回执对照）
+    const pad = await dialog.evaluate((el) => getComputedStyle(el).paddingTop)
+    expect(Number.parseFloat(pad), 'dialog 有内边距（非贴边）').toBeGreaterThanOrEqual(12)
     await page.screenshot({ path: join(EVIDENCE, `dialog.${scheme}.png`) })
     await dialog.locator('button', { hasText: 'Unhide' }).first().click()
     await expect(page.locator('.sand-agent-item', { hasText: 'Hide me bot' }), 'Unhide 后行回来').toBeVisible({ timeout: 15_000 })

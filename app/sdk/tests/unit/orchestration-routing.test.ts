@@ -112,9 +112,8 @@ describe('orchestration routing section on installed SystemPrompt', () => {
 })
 
 
-// T37：文案不含旧叫法——worker 不叫 bot；subagent 不再说「看不见」
+// T37：文案不含旧叫法——worker 不叫 bot；subagent 不再说「看不见」（ROUTING_PROMPT 已于文件头导入）
 import { CREATE_BOT_DESCRIPTION } from '../../src/orchestration/create.mjs'
-import { ROUTING_PROMPT } from '../../src/orchestration/routing-prompt.mjs'
 describe('T37 术语', () => {
   it('ROUTING_PROMPT 与 CREATE_BOT_DESCRIPTION 不含 worker bot / not visible', () => {
     expect(ROUTING_PROMPT).not.toContain('worker bot')

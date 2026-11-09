@@ -26,3 +26,11 @@
 2. bot = 独立 DSH 实例（各有自己的 main agent，简单员工）；SuperAgent = 复杂主协调员工
 3. bot 间信息流：SuperAgent.main ↔ 各 DSH.main **对等通信**，不经 superagent 内部编排系统
 4. 疑问：现状两种编排系统（T34 orchestration 插件 vs dsh 原生 subagent）是否同构、如何统一
+
+## 2026-11-08 06:0x 二次澄清（用户，定案）：不改架构，是术语与显示
+> 不用修改架构, 是目前的架构, bot是额外的创建, 而主agent的叫做worker或者subagent 我们需要把subagent显示出来, 这个是worker, 架构1是对等, 但是bot的定义出错了.
+
+**定案**：
+1. 架构不动（T34 现有形态正确）
+2. **术语**：bot=用户额外创建的独立 DSH 会话（各有 main agent，bot 间对等通信=SuperAgent.main↔各 bot.main）；主 agent 内部派生的=**worker（即 subagent）**——create_bot 建出来的不叫 bot
+3. **显示**：dsh 原生 subagent 目前隐藏（不进侧栏）——要显示出来归入 Workers 分组（=worker）——两种编排系统在**呈现层统一**

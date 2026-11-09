@@ -49,7 +49,7 @@ describe('orchestration routing section on installed SystemPrompt', () => {
     expect(await prompt(agents[0])).toContain(ROUTING_PROMPT)
     for (const agent of [agents[1], agents[2], undefined]) expect(await prompt(agent)).not.toContain('## Coordinating workers')
     expect(ROUTING_SECTION).toBe('pbots:orchestration-routing')
-    expect(createHash('sha256').update(ROUTING_PROMPT).digest('hex')).toBe('8bc4ea57810cbfcc2ac21c6cb4a510449df88c174dd22efc0d753bea81f04fc8')
+    expect(createHash('sha256').update(ROUTING_PROMPT).digest('hex')).toBe('5b2386805baae62b4fcc0c17af1a3052d7450860dfc12f2bd060a74bb40ccdd5')
     expect(ROUTING_PROMPT).toMatch(/^You are the main bot:/)
     expect(ROUTING_PROMPT).not.toMatch(/\b(quick|simple|small)\b/i)
     expect(ROUTING_PROMPT).toContain('write, edit, or bash')

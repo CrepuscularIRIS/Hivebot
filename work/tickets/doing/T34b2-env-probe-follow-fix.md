@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-09 | 施工：main (GLM 5.3)
 > 来源：`receipts/T34b.acceptance.md`（T34b 第 1 次不通过）
 > 分支 / 作业目录：feat/T34b @ /tmp/bot-wt/T34b（在 ccf24084 上继续提交）
-> claimed：
+> claimed：2026-11-09 main (GLM 5.3) @ feat/T34b 续
 > accepted：
 
 ## 目标

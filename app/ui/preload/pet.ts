@@ -2,7 +2,10 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('pet', {
-  onState(cb: (state: string) => void): void { ipcRenderer.on('pet:state', (_e, v) => { cb(String((v ?? {}).state ?? 'idle')) }) },
+  onState(cb: (state: string) => void): void {
+    ;((window as unknown as { __petListenersInRenderer?: Array<(s: string) => void> }).__petListenersInRenderer ??= []).push(cb) // e2e 截图驱动口（仅渲染进程内存）
+    ipcRenderer.on('pet:state', (_e, v) => { cb(String((v ?? {}).state ?? 'idle')) })
+  },
   click(): void { ipcRenderer.send('pet:click') },
   move(dx: number, dy: number): void { ipcRenderer.send('pet:move', { dx, dy }) },
   menu(): void { ipcRenderer.send('pet:menu') },

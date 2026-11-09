@@ -39,7 +39,7 @@ const MIME: Readonly<Record<string, string>> = {
   '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml', '.json': 'application/json',
   '.woff2': 'font/woff2', '.png': 'image/png', '.ico': 'image/x-icon',
-  '.map': 'application/json',
+  '.map': 'application/json', '.webm': 'video/webm',
 }
 
 /** 最小 CSP（G2-r2 附加 2）：防同源 XSS 自答审批；U-22 完整化。 */

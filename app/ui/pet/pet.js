@@ -15,8 +15,8 @@ let current = 'idle'
 let overriding = null // 'click' | 'drag' | null
 const base = (s) => ANIM[s] ?? ANIM.idle
 const play = (name, loop) => {
-  if (V.currentSrc.endsWith(name) && V.loop === loop) return
-  V.src = `assets/fish/${encodeURIComponent(name)}`
+  if (V.currentSrc.endsWith(encodeURIComponent(name)) && V.loop === loop) return
+  V.src = `assets/fish/${name}` // 协议 handler 原样路径（中文文件名不编码——encodeURIComponent 会 404）
   V.loop = loop
   V.play().catch(() => {})
 }
@@ -43,3 +43,4 @@ addEventListener('pointerup', () => {
   down = null
 })
 addEventListener('contextmenu', (e) => { e.preventDefault(); window.pet.menu() })
+render() // 初始动画（onState 未到前的待机）

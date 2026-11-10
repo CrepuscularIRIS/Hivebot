@@ -1254,3 +1254,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 发布链：`scripts/publish-hivebot.sh <dir>` 排除式 rsync（幂等可重复）；完整 UI modpack 拼装（0.18 差异 patch 化）留 Windows 线开单。
 - SSH 系列列入 todo（queue「Windows 研发线」节，T46c 优先级提升）——用户后续在 Windows 做研发。
 - 公开仓转 **public**（用户指示）；开发历史上云：CHANGELOG.md（1186 提交全量按日分组，敏感词抽查干净——命中均为 CSS token 术语）+ DEVLOG.md（77 个 merge 里程碑批次=工单闭环史）；发布链自动携带，以后发布即更新。
+
+## 2026-11-10 · merge T46c（hivebot serve）
+- merge `feat/T46c`：serve 常驻模式（零 Electron、HIVEBOT-SERVE 状态行 token 不出、--status 锁前只读、TERM 全清）——经理验收 @ cd79980f；回测 1 passed、零进程残留。
+- 经理验收发现锁冲突分支不分模式（serve 与桌面互踩）等三条 → **T46cb**（挡 T46b 不挡本合并）。
+- 教训记档：e2e 一律 run-e2e.sh（裸 playwright 弹真实桌面事故一次）；worktree 期禁 git stash（回执用了 stash 做对照——被经理提醒）。

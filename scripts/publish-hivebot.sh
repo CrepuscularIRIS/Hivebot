@@ -35,6 +35,8 @@ rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SRC"/ "$DST"/
 cp "$SRC/install.sh" "$DST/install.sh" && chmod +x "$DST/install.sh"
 rm -rf "$DST/docs" && cp -r "$SRC/docs-public" "$DST/docs"
 cp "$SRC/docs-public/README.md" "$DST/README.md"
+cp "$SRC/docs-public/CHANGELOG.md" "$DST/CHANGELOG.md"
+cp "$SRC/docs-public/DEVLOG.md" "$DST/DEVLOG.md"
 cp "$SRC/docs-public/LICENSE" "$DST/LICENSE"
 # publish 脚本自身进公开仓（供复现发布）
 mkdir -p "$DST/scripts"

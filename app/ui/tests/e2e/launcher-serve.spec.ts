@@ -32,7 +32,7 @@ async function startServe(home: string): Promise<{ child: ReturnType<typeof spaw
   const deadline = Date.now() + 90_000
   for (;;) {
     const m = out.match(/HIVEBOT-SERVE (\{[^\n]*\})/)
-    if (m !== null) return { child, line: JSON.parse(m[1]!) as Record<string, string> }
+    if (m !== null) return { child, line: JSON.parse(m[1]!) as Record<string, string>, allOut: () => out }
     if (child.exitCode !== null) throw new Error(`serve 早退 code=${child.exitCode}：${out.slice(-500)}`)
     if (Date.now() > deadline) throw new Error(`serve 90s 未出状态行：${out.slice(-500)}`)
     await new Promise((r) => setTimeout(r, 300))
@@ -59,7 +59,9 @@ test('T46c hivebot serve：常驻/状态行/--status/TERM 清理', async () => {
   const home = tmkdir('bot-t46c-')
   mkdirSync(join(home, 'tmp'), { recursive: true })
   const serveJson = join(home, 'state', 'hivebot', 'serve.json')
-  const { child, line } = await startServe(home)
+  const serve = await startServe(home)
+  const { child, line } = serve
+  try {
 
   // ① 无 Electron 进程（ps 全树无 electron）
   const electronCount = await new Promise<number>((resolve) => {
@@ -76,9 +78,10 @@ test('T46c hivebot serve：常驻/状态行/--status/TERM 清理', async () => {
   expect(line.base_url ?? '').toMatch(/^http:\/\/127\.0\.0\.1:\d+/)
   expect(line.handoff ?? '').toContain('p2sdk-handoff-')
   expect(JSON.stringify(line)).not.toContain('token')
-  const tokenVal = readFileSync(join(String(line.handoff), 'launch-token'), 'utf8').trim() // T46cb ②加强：真值不外泄
-  for (const surface of [JSON.stringify(line)]) expect(surface).not.toContain(tokenVal)
-  expect(existsSync(serveJson), 'serve.json 已写').toBe(true)
+  const tokenVal = readFileSync(join(String(line.handoff), 'launch-token'), 'utf8').trim() // W2b ②：五个面全不含真值
+  const surfaces1 = [JSON.stringify(line), serve.allOut(), readFileSync(join(home, 'state', 'hivebot', 'serve.json'), 'utf8')]
+  for (const sf of surfaces1) expect(sf).not.toContain(tokenVal)
+  expect(existsSync(serveJson), "serve.json 已写").toBe(true)
 
   // ④ --status 同格式行（token 不出）
   const st = await statusLine(home)
@@ -86,6 +89,7 @@ test('T46c hivebot serve：常驻/状态行/--status/TERM 清理', async () => {
   expect(st.out).toContain('HIVEBOT-SERVE {')
   expect(st.out).toContain(line.base_url!)
   expect(st.out).not.toContain('token')
+  expect(st.out, '④ 面：--status 输出无 token 真值').not.toContain(tokenVal)
 
   // ⑤ serve 在跑时再起 serve → 幂等：exit 0 打同一行；零 Electron；原实例 serve.json 还在
   {
@@ -98,6 +102,7 @@ test('T46c hivebot serve：常驻/状态行/--status/TERM 清理', async () => {
     })
     expect(dup.code, '重复 serve exit 0').toBe(0)
     expect(dup.out).toContain(line.base_url!)
+    expect(dup.out, '⑤ 面：重复 serve 输出无 token').not.toContain(tokenVal)
     expect(existsSync(serveJson), '原实例 serve.json 还在').toBe(true)
   }
   // ⑥ serve 在跑时起普通 hivebot → exit≠0、stderr 含 serve、零 Electron
@@ -141,5 +146,15 @@ test('T46c hivebot serve：常驻/状态行/--status/TERM 清理', async () => {
   expect(m7, '⑦ 状态前缀行存在').not.toBeNull()
   expect(() => JSON.parse(m7![1]!), '⑦ 合法 JSON').not.toThrow()
   expect(JSON.parse(m7![1]!).running).toBe(false)
-  rmSync(home, { recursive: true, force: true })
+  } finally {
+    // W2b：断言红也收——serve 没退就 TERM→等→KILL；dsh 残留 KILL；清 home
+    if (child.exitCode === null) {
+      process.kill(child.pid!, 'SIGTERM')
+      for (let i = 0; i < 100 && child.exitCode === null; i += 1) await new Promise((r) => setTimeout(r, 300))
+      if (child.exitCode === null) { try { process.kill(child.pid!, 'SIGKILL') } catch { /* 已退 */ } }
+    }
+    const dshPid = Number.parseInt(String(line.pid ?? '0'), 10)
+    if (dshPid > 0 && existsSync(`/proc/${dshPid}`)) { try { process.kill(dshPid, 'SIGKILL') } catch { /* 已退 */ } }
+    rmSync(home, { recursive: true, force: true })
+  }
 })

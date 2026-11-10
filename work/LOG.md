@@ -1268,3 +1268,7 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - merge feat/W2b（ae31a322）：launcher-serve try/finally+五面 token——回测 1 passed 残留 0。
 - merge feat/T11c（b63b840a）：skills 远端拒+remoteRoot 单处定义——回测 118 passed。
 - T46d 第 1 次验收不通过：LF 漏拒（grep 按行匹配看不见换行——remote-root 中间 LF → 两行半截 JSON 带 token exit 0，经理手测抓到）+ LANG=C 中文误拒 → T46db（LC_ALL=C tr -d 一行检查+⑬ 加 LF/制表符/中文三格）。
+
+## 2026-11-10 · merge T46d+T46db（serve --connect+workspace）；T46b 解锁
+- merge `feat/T46d`：--connect 一条命令拿齐（tr -d 单行校验：控制字符含 LF/DEL/双引号/反斜杠拒，空格/中文放行，locale 无关）+P2SDK_WORKSPACE_ROOT 挂 workspace RPC（探针实证真落盘）+符号链接可调——经理复验 @ ade0b34d（LANG=C 双语区手测矩阵）。回测：e2e 1 passed、start.test 48、残留 0。
+- **T46b 解锁开工**（Windows 侧最后一块：remote.json→ssh.exe 隧道→自动重连）。

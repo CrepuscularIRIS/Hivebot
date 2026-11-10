@@ -92,15 +92,23 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
       const c = spawn(srv.binDir + '/ssh', ['-o', 'BatchMode=yes', '--', 'pbots-ssh-test', `cat ${serveLine.handoff}/launch-token`], { stdio: ['ignore', 'pipe', 'inherit'] })
       c.stdout!.setEncoding('utf8'); c.stdout!.on('data', (x: string) => { o += x }); c.on('exit', (rc) => { rc === 0 ? res(o.trim()) : rej(new Error('cat')) })
     })
+    // 审查2 修：Electron 主进程（app.process()）而非 runner；完整扫描（不截断）；覆盖独立 HOME
+    const elecProc = shell.app.process()
+    const elecPid = elecProc.pid
+    let elecOut = ''
+    elecProc.stdout?.on('data', (c: Buffer) => { elecOut += c.toString() })
+    elecProc.stderr?.on('data', (c: Buffer) => { elecOut += c.toString() })
     const winFiles: string[] = []
-    const walk = (d: string): void => { for (const f of readdirSync(d)) { const p = join(d, f); try { if (require('node:fs').statSync(p).isDirectory()) walk(p); else winFiles.push(readFileSync(p, 'utf8').slice(0, 100000)) } catch { /* 二进制跳过 */ } } }
+    const walk = (d: string): void => { for (const f of readdirSync(d)) { const p = join(d, f); try { if (require('node:fs').statSync(p).isDirectory()) walk(p); else winFiles.push(readFileSync(p, 'utf8')) } catch { /* 二进制跳过 */ } } }
     walk(winData)
+    walk(join(root, 'win-home')) // 独立 HOME（崩溃文件等落盘面）
     const procSurfaces: string[] = []
-    for (const pid of [process.pid, ...pidsFromLog()]) {
+    for (const pid of [elecPid, ...pidsFromLog()]) {
       try { procSurfaces.push(readFileSync('/proc/' + pid + '/cmdline', 'utf8')) } catch { /* 已退 */ }
-      try { procSurfaces.push(readFileSync(`/proc/${pid}/environ`, 'utf8')) } catch { /* 已退 */ }
+      try { procSurfaces.push(readFileSync('/proc/' + pid + '/environ', 'utf8')) } catch { /* 已退 */ }
     }
-    for (const sf of [...winFiles, readFileSync(argvLog, 'utf8'), ...procSurfaces]) expect(sf, '② 面不含 token').not.toContain(tokenVal)
+    await new Promise((r) => setTimeout(r, 300)) // 流缓冲
+    for (const sf of [...winFiles, readFileSync(argvLog, 'utf8'), elecOut, ...procSurfaces]) expect(sf, '② 面不含 token').not.toContain(tokenVal)
 
     // ③ argv 钉死：恰两行
     const lines = argvLines()
@@ -166,9 +174,15 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
       rmSync(argvLog)
       writeFileSync(argvLog, '')
       const shell4 = await launchShell({ home: join(root, 'no8-home'), env: { PBOTS_DATA_DIR: winData, PATH: `${wrapDir}:${process.env.PATH ?? ''}`, DBUS_SESSION_BUS_ADDRESS: 'unix:path=' + join(root, 'dead-bus'), PBOTS_DSH_START_TIMEOUT_MS: '5000' } })
+      // 审查3 修：超时分支 reject——API 必须真返回（错误也算），永挂会红
       const t0 = Date.now()
-      await Promise.race([api(shell4.page, 'session/list', { _request: {} }).catch(() => {}), new Promise((r) => setTimeout(r, 14_000))])
-      expect(Date.now() - t0 < 15_000, '⑧ M1 15s 内返回').toBe(true)
+      const r8 = await Promise.race([
+        api(shell4.page, 'session/list', { _request: {} }).then((x) => ({ kind: 'api' as const, x }), (e: unknown) => ({ kind: 'throw' as const, e })),
+        new Promise<never>((_, rej) => setTimeout(() => rej(new Error('⑧ M1 挂死')), 15_000)),
+      ]).catch((e: unknown) => ({ kind: 'timeout' as const, e }))
+      expect(Date.now() - t0 < 15_500, '⑧ M1 15s 内返回').toBe(true)
+      expect(r8.kind, '⑧ API 实际返回（错误也算，不永挂）').not.toBe('timeout')
+      expect(r8.kind === 'api' ? r8.x.ok : false, '⑧ 返回的是错误（serve 没在跑）').toBe(false)
       const ls = argvLines()
       expect(ls.length, '⑧ 只有 connect 一次').toBe(1)
       expect(ls[0].includes('-N'), '⑧ 无隧道行').toBe(false)

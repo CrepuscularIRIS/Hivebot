@@ -99,11 +99,14 @@ describe('T46b argv 钉死', () => {
 
 // T46b 任务C：waitPort——截止时间内轮询（隧道 -L 绑定是异步的，单次 connect 会在未绑定时立即 false）
 describe('T46b waitPort 轮询', () => {
-  it('端口 600ms 后才 listen → 3000ms 内 true（单次实现会立即 false）', async () => {
-    const s = require('node:net').createServer() as import('node:net').Server
-    setTimeout(() => s.listen(0, '127.0.0.1'), 600)
-    await new Promise<void>((r) => s.once('listening', r)) // 等 listen 才知道端口
-    const port = (s.address() as { port: number }).port
+  it('端口 600ms 后才 listen → 3000ms 内 true（并发启动：先占端口再关，waitPort 与延迟 listen 赛跑）', async () => {
+    const net = require('node:net') as typeof import('node:net')
+    const s0 = net.createServer()
+    await new Promise<void>((r) => { s0.listen(0, '127.0.0.1', () => r()) })
+    const port = (s0.address() as { port: number }).port
+    await new Promise<void>((r) => s0.close(() => r())) // 端口已定且无人 listen
+    const s = net.createServer()
+    setTimeout(() => { s.listen(port, '127.0.0.1') }, 600) // waitPort 等待期间才出现
     const ok = await waitPort(port, 3000)
     expect(ok, '600ms 后出现的端口能等到').toBe(true)
     s.close()

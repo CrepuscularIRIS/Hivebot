@@ -114,25 +114,35 @@ export async function openRemote(cfg: RemoteConfig, opts: { bin?: string } = {})
   let closed = false
   let tunnel: ReturnType<typeof spawn> | undefined
   let backoffMs = 1000
+  let restartTimer: ReturnType<typeof setTimeout> | undefined
+  let firstUp = false
+  const scheduleRestart = (): void => {
+    if (closed || restartTimer !== undefined) return // 有界退避：同刻只挂一个重连定时器（error+exit 可能连发）
+    const wait = backoffMs
+    backoffMs = Math.min(backoffMs * 2, 30_000)
+    restartTimer = setTimeout(() => { restartTimer = undefined; startTunnel() }, wait)
+  }
+  const onTunnelGone = (): void => {
+    if (closed) return
+    if (!firstUp) { closed = true; throw new Error(ERR) } // 审查1：首起失败（spawn error/秒退）→ 固定错误
+    // ponytail: 指数退避重起；应用强杀时 Windows 上 ssh.exe 成孤儿（根治要 Job Object，先记上限）
+    scheduleRestart()
+  }
   const startTunnel = (): void => {
     if (closed) return
     tunnel = spawn(bin, tunnelArgv(cfg.host, localPort, remotePort), { stdio: 'ignore', env: process.env })
-    tunnel.on('exit', () => {
-      if (closed) return
-      // ponytail: 指数退避重起；应用强杀时 Windows 上 ssh.exe 成孤儿（根治要 Job Object，先记上限）
-      const wait = backoffMs
-      backoffMs = Math.min(backoffMs * 2, 30_000)
-      setTimeout(startTunnel, wait)
-    })
+    tunnel.on('error', () => onTunnelGone()) // 审查1：ENOENT/资源不足等 spawn 失败同路处理
+    tunnel.on('exit', () => onTunnelGone())
   }
   startTunnel()
   // ponytail: 「先 listen 再 close」的空闲端口有竞态（极小窗内别人占走）；-L 已带 ExitOnForwardFailure，隧道会退由重起兜
-  const up = await waitPort(localPort, 15_000, () => tunnel?.exitCode === null)
-  if (!up && !closed) { closed = true; tunnel?.kill('SIGTERM'); throw new Error(ERR) }
+  const up = await waitPort(localPort, 15_000, () => tunnel?.exitCode === null && tunnel?.connected !== false).catch((e: unknown) => { if (!closed) { closed = true } throw e })
+  firstUp = up
+  if (!up && !closed) { closed = true; tunnel?.kill('SIGTERM'); if (restartTimer !== undefined) clearTimeout(restartTimer); throw new Error(ERR) }
   return {
     baseUrl: `http://127.0.0.1:${localPort}`,
     token,
     remoteRoot,
-    close(): void { closed = true; tunnel?.kill('SIGTERM') },
+    close(): void { closed = true; if (restartTimer !== undefined) clearTimeout(restartTimer); tunnel?.kill('SIGTERM') },
   }
 }

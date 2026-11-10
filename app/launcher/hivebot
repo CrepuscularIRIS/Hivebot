@@ -56,11 +56,9 @@ if [ "${1:-}" = "serve" ] && [ "${2:-}" = "--connect" ]; then
     REMOTE_V="$(cat "$HANDOFF_P/remote-root" 2>/dev/null)"
     [ -n "$TOKEN_V" ] && [ -n "$REMOTE_V" ] || fail_connect
     case "$TOKEN_V" in *[!A-Za-z0-9._~-]*) fail_connect ;; esac
-    # T46d 审查修：print 白名单（控制字符全拒、普通空格放行）+反斜杠+双引号——全走 grep（bash 引号语义在 case/[[ ]] 里对单个反斜杠有版本歧义，Sol 实测漏拒）
-    if [ -z "$REMOTE_V" ] \
-      || printf '%s' "$REMOTE_V" | grep -q '[^[:print:]]' \
-      || printf '%s' "$REMOTE_V" | grep -qF '\' \
-      || printf '%s' "$REMOTE_V" | grep -qF '"'; then fail_connect; fi
+    # T46db：删掉坏字符后与原值不同就拒——tr 不分行所以 LF 抓得到；LC_ALL=C 与语言环境无关（中文路径放行）。
+    # 集合：控制字符 \000-\037、DEL \177、双引号、反斜杠（空串已在上面拒）
+    [ "$(printf '%s' "$REMOTE_V" | LC_ALL=C tr -d '\000-\037\177"\\')" = "$REMOTE_V" ] || fail_connect
     printf 'HIVEBOT-CONNECT {"base_url":"%s","token":"%s","remote_root":"%s","version":1}\n' "$BASE_URL" "$TOKEN_V" "$REMOTE_V"
     exit 0
   fi

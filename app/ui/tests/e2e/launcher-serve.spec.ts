@@ -233,7 +233,7 @@ test('T46c hivebot serve：常驻/状态行/--status/TERM 清理', async () => {
     const setServe = (hf: string): void => {
       writeFileSync(join(staleDir, 'serve.json'), JSON.stringify({ version: 1, base_url: 'http://127.0.0.1:1', handoff: hf, pid: process.pid, started_at: 'x' }))
     }
-    for (const bad of ['a\\q', 'a\rb', 'a\u0001b', '', 'a"b']) {
+    for (const bad of ['a\\q', 'a\rb', 'a\u0001b', '', 'a"b', 'a\nb', 'a\tb']) { // T46db：+LF/TAB（LF 是先红格）
       const hf = mkHf(bad)
       setServe(hf)
       const r = await connectLine(home)
@@ -247,6 +247,13 @@ test('T46c hivebot serve：常驻/状态行/--status/TERM 清理', async () => {
     const okr = await connectLine(home)
     expect(okr.code, '⑬ 空格路径 exit 0').toBe(0)
     expect(okr.out).toContain('"remote_root":"/srv/my data"')
+    // T46db：放行输出是单行（去尾换行后无 \n——LF 混入则这里抓到）
+    expect(okr.out.replace(/\n$/, ''), '⑬ 单行输出').not.toContain('\n')
+    // 中文路径放行（locale 无关）
+    const hf3 = mkHf('/srv/中文\n')
+    setServe(hf3)
+    const okr3 = await connectLine(home)
+    expect(okr3.code, '⑬ 中文路径 exit 0（LANG=C 也不误拒）').toBe(0)
   }
   } finally {
     // W2b：断言红也收——serve 没退就 TERM→等→KILL；dsh 残留 KILL；清 home

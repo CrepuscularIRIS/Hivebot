@@ -10,6 +10,7 @@
 // ponytail: 检查与写入之间 bot 并发 ln -s 仍可竞争（TOCTOU）——Node 无 openat/O_NOFOLLOW
 // 逐层打开的现成 API；出现真实攻击面时再换底层。
 import { randomUUID } from 'node:crypto'
+import { remoteRoot } from '../remote-root'
 import { lstat, mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
@@ -262,6 +263,7 @@ async function opDisable(dataDir: string, botId: string, name: string): Promise<
 /** 注册：main/index.ts 里 ipcMain.handle('pbots:skills', (e, req) => { assertSender(e); return h(req) })。 */
 export function registerSkills(deps: SkillsDeps): SkillsHandle {
   const handler = async (req: unknown): Promise<SkillsResult> => {
+    if (remoteRoot() !== undefined) return fail('remote-mode', 'Skills are not available while Hivebot uses a remote computer.') // T11c：远端工作区（ssh/Windows 客户端）三 op 一视同仁，不碰本机文件系统
     if (typeof req !== 'object' || req === null) return invalidArgs('req must be an object')
     const { op } = req as { op?: unknown }
     if (op === 'list' || op === 'enable' || op === 'disable') {

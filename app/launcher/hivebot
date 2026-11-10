@@ -31,11 +31,11 @@ if [ "${1:-}" = "serve" ] && [ "${2:-}" = "--status" ]; then
     BASE_URL="$(sed -n 's/.*"base_url":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
     HANDOFF_P="$(sed -n 's/.*"handoff":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
     PID_P="$(sed -n 's/.*"pid":\([0-9]*\).*/\1/p' "$SERVE_JSON")"
-    kill -0 "${PID_P:-0}" 2>/dev/null || { echo "HIVEBOT-SERVE {"stale":true}" >&2; exit 1; }
+    kill -0 "${PID_P:-0}" 2>/dev/null || { printf '%s\n' 'HIVEBOT-SERVE {"stale":true}' >&2; exit 1; }
     printf 'HIVEBOT-SERVE {"base_url":"%s","handoff":"%s","pid":%s,"version":1}\n' "$BASE_URL" "$HANDOFF_P" "$PID_P"
     exit 0
   fi
-  echo "HIVEBOT-SERVE {"running":false}" >&2
+  printf '%s\n' 'HIVEBOT-SERVE {"running":false}' >&2
   exit 1
 fi
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}"
@@ -61,9 +61,28 @@ if [ "${1:-}" != "serve" ]; then
 fi
 mkdir -p "$LOG_DIR" "$P2SDK_HOME" "$PBOTS_DATA_DIR"
 
-# ── 1 锁（双开 = 聚焦已有窗口后退出）──
+# ── 1 锁（双开 = 聚焦已有窗口后退出；T46cb：serve 与桌面按模式分流，锁冲突不起 Electron）──
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
+  # T46cb：锁被占——serve.json 活着说明 serve 在跑（读同一状态文件，不依赖锁内容）
+  SERVE_ALIVE=0
+  if [ -f "$SERVE_JSON" ]; then
+    SPID="$(sed -n 's/.*"pid":\([0-9]*\).*/\1/p' "$SERVE_JSON")"
+    [ -n "${SPID:-}" ] && kill -0 "$SPID" 2>/dev/null && SERVE_ALIVE=1
+  fi
+  if [ "${1:-}" = "serve" ]; then
+    if [ "$SERVE_ALIVE" = 1 ]; then
+      # 重复 serve = 幂等：打同一行状态后 exit 0（Windows 侧可直接复用）
+      BASE_URL="$(sed -n 's/.*"base_url":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
+      HANDOFF_P="$(sed -n 's/.*"handoff":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
+      printf 'HIVEBOT-SERVE {"base_url":"%s","handoff":"%s","pid":%s,"version":1}\n' "$BASE_URL" "$HANDOFF_P" "$SPID"
+      exit 0
+    fi
+    die "已有桌面实例在跑，serve 需先关闭桌面" # exit 1
+  fi
+  if [ "$SERVE_ALIVE" = 1 ]; then
+    die "serve 模式在跑，先 TERM serve 进程再开桌面"
+  fi
   # 已有实例：只起 Electron（单实例锁聚焦），不带 handoff、不带凭证
   env -u P2SDK_LLM_API_KEY -u LITELLM_MASTER_KEY -u DEEPSEEK_API_KEY -u OPENAI_API_KEY -u ANTHROPIC_API_KEY \
     PBOTS_DATA_DIR="$PBOTS_DATA_DIR" "$ELECTRON_BIN" "$@" "$UI_ENTRY" >>"$LOG_DIR/ui.log" 2>&1 9>&- &

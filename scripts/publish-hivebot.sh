@@ -24,6 +24,10 @@ RSYNC_EXCLUDES=(
   '--exclude=*.log' '--exclude=.test-homes'
   '--exclude=app/ui/renderer-grok/.build'
   '--exclude=CLAUDE.md'          # 私有主控文件
+  # ── 私仓根杂物（历史探针产物）──
+  '--exclude=panels' '--exclude=x-*' '--exclude=vfy-*' '--exclude=run*.log'
+  '--exclude=docs-public'         # 以 docs/ 名义进公开仓，不重复
+  '--exclude=.playwright-cli' '--exclude=.vendor-tmp'
 )
 
 rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SRC"/ "$DST"/

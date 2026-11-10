@@ -1253,3 +1253,4 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 公开仓 CrepuscularIRIS/Hivebot @ eaf93387：411 文件（app/sdk 172+ui 自写层+测试 240+打包链）+ install.sh（一键：依赖+外部资源拉取）+ pack/manifest.json（0.18 上游 a9f633e 钉版、dsh-pet webm c253868 挑选）+ docs（LICENSE-SCOPE 四分类/PRIVATE-LAYER 拼装指引）。
 - 发布链：`scripts/publish-hivebot.sh <dir>` 排除式 rsync（幂等可重复）；完整 UI modpack 拼装（0.18 差异 patch 化）留 Windows 线开单。
 - SSH 系列列入 todo（queue「Windows 研发线」节，T46c 优先级提升）——用户后续在 Windows 做研发。
+- 公开仓转 **public**（用户指示）；开发历史上云：CHANGELOG.md（1186 提交全量按日分组，敏感词抽查干净——命中均为 CSS token 术语）+ DEVLOG.md（77 个 merge 里程碑批次=工单闭环史）；发布链自动携带，以后发布即更新。

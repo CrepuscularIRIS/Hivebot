@@ -1263,3 +1263,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 ## 2026-11-10 · merge T46cb（锁冲突分流）
 - merge `feat/T46cb`：serve 幂等/桌面互斥双向分流、--status 合法 JSON、token 真值断言——经理验收 @ 7d2aab58（经理亲放两把变位红+反方向手测）；回测 1 passed、进程残留 0（6 个施工遗留 serve 已 reap）。
 - **T46b 解除阻塞**：T46c/T46cb 均合并、Q-045 定案——下一步派经理任务 A 立项（含 T11c skills 拆单 + W2b spec try/finally 前置小单）。
+
+## 2026-11-10 · merge W2b+T11c；T46db 开出
+- merge feat/W2b（ae31a322）：launcher-serve try/finally+五面 token——回测 1 passed 残留 0。
+- merge feat/T11c（b63b840a）：skills 远端拒+remoteRoot 单处定义——回测 118 passed。
+- T46d 第 1 次验收不通过：LF 漏拒（grep 按行匹配看不见换行——remote-root 中间 LF → 两行半截 JSON 带 token exit 0，经理手测抓到）+ LANG=C 中文误拒 → T46db（LC_ALL=C tr -d 一行检查+⑬ 加 LF/制表符/中文三格）。

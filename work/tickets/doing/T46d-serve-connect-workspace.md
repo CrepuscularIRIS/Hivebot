@@ -5,7 +5,7 @@
 > 分支 / 作业目录：feat/T46d @ /tmp/bot-wt/T46d（作业目录先 setup + build）
 > 依赖：W2b 先合（本单在同一份 spec 里加格）
 > claimed：2026-11-10 main (GLM 5.3)
-> accepted：
+> accepted：（2026-11-10 第 1 次不通过 @ eb9cb0b8 → open/T46db，见 receipts/T46d.acceptance.md）
 
 ## 目标
 Windows 客户端（T46b）只用**一条固定的 ssh 命令**就能拿到连接所需的全部信息，并且在 serve 模式下建 bot 时工作区落在 Ubuntu 上。

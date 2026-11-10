@@ -4,7 +4,7 @@
 > 来源：T11 工单第 4 条（终验拆出，queue 5c′ 行）；T46b 的前置（Windows 客户端同样是远端工作区）
 > 分支 / 作业目录：feat/T11c（小改，可不建 worktree）
 > claimed：2026-11-10 main (GLM 5.3)
-> accepted：
+> accepted：2026-11-10 fb1e3da5（receipts/T11c.acceptance.md）
 
 ## 目标
 工作区在另一台机器上时（ssh 模式，以及之后 T46b 的 Windows 客户端），`pbots:skills` 的 list / enable / disable 不再去读写本机 `<dataDir>/workspaces/…`（那里根本没有 bot 目录，现状报误导性的 `not-found`），而是统一返回一个固定错误。

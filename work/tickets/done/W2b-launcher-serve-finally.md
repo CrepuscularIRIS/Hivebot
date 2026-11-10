@@ -3,8 +3,8 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-10 | 施工：main (GLM 5.3)
 > 来源：T46cb 验收存疑 1（`receipts/T46cb.acceptance.md` §53）；queue「桌宠 + Windows 分发」W2b 行
 > 分支 / 作业目录：直接在集成分支（只改一个测试文件，机械）
-> claimed：
-> accepted：
+> claimed：2026-11-10 main (GLM 5.3)
+> accepted：2026-11-10 997308ad（receipts/W2b.acceptance.md）
 
 ## 目标
 `launcher-serve.spec.ts` 中途断言红时，第一个 `hivebot serve` 和它的 SDK/dsh 照样被收掉；T46cb 定案要求的 ② 「token 真值不外泄」从一个面补到四个面。

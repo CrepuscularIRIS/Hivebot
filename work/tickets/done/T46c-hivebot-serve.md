@@ -4,7 +4,7 @@
 > 来源：queue「桌宠 + Windows 分发」W2；用户 2026-11-09 定案（Q-045 解除阻塞：假 SSH 方案，Windows 虚拟机实测）
 > 分支 / 作业目录：feat/T46c @ /tmp/bot-wt/T46c
 > claimed：2026-11-09 main (GLM 5.3)
-> accepted：
+> accepted：2026-11-10 cd79980f（manager；遗留 → open/T46cb）
 
 ## 目标
 `app/launcher/hivebot serve`：只起 SDK、不起 Electron、常驻到 TERM/SIGINT 优雅退出。stdout 打印一行**机器可读**状态行（含 base-url 端口；launch-token **不进** stdout/stderr，留在 handoff 文件），供 Windows 侧 `ssh host hivebot serve --status` 读取。远程工作区（`p2sdk/workspace_ensure` + remote-root 进 handoff）留 T46b 对接，本单不接。

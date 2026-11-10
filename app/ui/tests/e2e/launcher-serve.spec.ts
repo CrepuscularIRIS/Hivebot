@@ -76,6 +76,8 @@ test('T46c hivebot serve：常驻/状态行/--status/TERM 清理', async () => {
   expect(line.base_url ?? '').toMatch(/^http:\/\/127\.0\.0\.1:\d+/)
   expect(line.handoff ?? '').toContain('p2sdk-handoff-')
   expect(JSON.stringify(line)).not.toContain('token')
+  const tokenVal = readFileSync(join(String(line.handoff), 'launch-token'), 'utf8').trim() // T46cb ②加强：真值不外泄
+  for (const surface of [JSON.stringify(line)]) expect(surface).not.toContain(tokenVal)
   expect(existsSync(serveJson), 'serve.json 已写').toBe(true)
 
   // ④ --status 同格式行（token 不出）
@@ -85,6 +87,40 @@ test('T46c hivebot serve：常驻/状态行/--status/TERM 清理', async () => {
   expect(st.out).toContain(line.base_url!)
   expect(st.out).not.toContain('token')
 
+  // ⑤ serve 在跑时再起 serve → 幂等：exit 0 打同一行；零 Electron；原实例 serve.json 还在
+  {
+    const dup = await new Promise<{ code: number; out: string }>((resolve) => {
+      const c = spawn('bash', [LAUNCHER, 'serve'], { cwd: REPO, env: { ...process.env, HOME: home, XDG_STATE_HOME: join(home, 'state'), XDG_CONFIG_HOME: join(home, 'config'), P2SDK_PROVIDER: 'mock', TMPDIR: join(home, 'tmp'), DBUS_SESSION_BUS_ADDRESS: `unix:path=${home}/dead-bus`, PBOTS_PET: '0' }, stdio: ['ignore', 'pipe', 'pipe'] })
+      let o = ''
+      c.stdout!.setEncoding('utf8'); c.stderr!.setEncoding('utf8')
+      c.stdout!.on('data', (x: string) => { o += x }); c.stderr!.on('data', (x: string) => { o += x })
+      c.on('exit', (code) => resolve({ code: code ?? -1, out: o }))
+    })
+    expect(dup.code, '重复 serve exit 0').toBe(0)
+    expect(dup.out).toContain(line.base_url!)
+    expect(existsSync(serveJson), '原实例 serve.json 还在').toBe(true)
+  }
+  // ⑥ serve 在跑时起普通 hivebot → exit≠0、stderr 含 serve、零 Electron
+  {
+    const desk = await new Promise<{ code: number; out: string }>((resolve) => {
+      const c = spawn('bash', [LAUNCHER], { cwd: REPO, env: { ...process.env, HOME: home, XDG_STATE_HOME: join(home, 'state'), XDG_CONFIG_HOME: join(home, 'config'), P2SDK_PROVIDER: 'mock', TMPDIR: join(home, 'tmp'), DBUS_SESSION_BUS_ADDRESS: `unix:path=${home}/dead-bus` }, stdio: ['ignore', 'pipe', 'pipe'] })
+      let o = ''
+      c.stdout!.setEncoding('utf8'); c.stderr!.setEncoding('utf8')
+      c.stdout!.on('data', (x: string) => { o += x }); c.stderr!.on('data', (x: string) => { o += x })
+      c.on('exit', (code) => resolve({ code: code ?? -1, out: o }))
+    })
+    expect(desk.code, '桌面被 serve 挡：exit≠0').not.toBe(0)
+    expect(desk.out).toContain('serve')
+    await new Promise((r) => setTimeout(r, 800))
+    const n = await new Promise<number>((resolve) => {
+      const ps2 = spawn('bash', ['-c', `ps -eo cmd= | grep -c "^${REPO}/app/ui/node_modules/.pnpm/electron@[^ ]*electron.*out/main/index.js" || true`], { stdio: ['ignore', 'pipe', 'inherit'] })
+      let n2 = ''
+      ps2.stdout!.setEncoding('utf8')
+      ps2.stdout!.on('data', (c2: string) => { n2 += c2 })
+      ps2.on('exit', () => resolve(Number.parseInt(n2.trim() || '0', 10)))
+    })
+    expect(n, '⑥ 零 Electron').toBe(0)
+  }
   // ③ TERM → serve.json 删、SDK 收走、退出
   process.kill(child.pid!, 'SIGTERM')
   const deadline = Date.now() + 30_000
@@ -98,8 +134,12 @@ test('T46c hivebot serve：常驻/状态行/--status/TERM 清理', async () => {
     expect(alive, 'dsh 进程已收走').toBe(false)
   }
 
-  // --status 在不跑时 exit 1
+  // --status 在不跑时 exit 1；⑦ stderr 是合法 JSON（截掉前缀可 parse）
   const st2 = await statusLine(home)
   expect(st2.code).toBe(1)
+  const m7 = st2.out.match(/HIVEBOT-SERVE (\{[^\n]*\})/)
+  expect(m7, '⑦ 状态前缀行存在').not.toBeNull()
+  expect(() => JSON.parse(m7![1]!), '⑦ 合法 JSON').not.toThrow()
+  expect(JSON.parse(m7![1]!).running).toBe(false)
   rmSync(home, { recursive: true, force: true })
 })

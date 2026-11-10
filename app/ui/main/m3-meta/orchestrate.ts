@@ -5,7 +5,8 @@
 // （目录建好），renderer 传入即拒——缺省 cwd 继承 SDK runtime 启动目录会让初始工作区
 // 覆盖仓库/SDK 目录（R4 §4 纠偏）；header.cwd 不可变，事后无法缩小。
 import { randomUUID } from 'node:crypto'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
+import { remoteRoot as remoteRootOf } from '../remote-root'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { normalizedConnectors, presetIdOf } from './preset-id'
@@ -77,21 +78,7 @@ function resolveDataDir(opts: GateOptions): string | undefined {
   return fromEnv !== undefined && fromEnv !== '' ? fromEnv : undefined
 }
 
-/**
- * ssh 模式信息（T11/D5）：Electron main 只连不启 SDK——启动器经 handoff 目录
- * （PBOTS_DSH_HANDOFF）传递 ssh-mode/remote-root（start.ts handoff 插件写，
- * 0600）。无该文件=本机模式，mintWorkspace 走原路径。
- */
-function sshRemoteRoot(): string | undefined {
-  const handoff = process.env.PBOTS_DSH_HANDOFF
-  if (!handoff) return undefined
-  try {
-    if (!existsSync(join(handoff, 'ssh-mode'))) return undefined
-    return readFileSync(join(handoff, 'remote-root'), 'utf8').trim() || undefined
-  } catch {
-    return undefined // 读失败按本机处理（fail 到原路径的 mkdir 会给出可见错误）
-  }
-}
+// T11c：sshRemoteRoot 搬至 main/remote-root.ts（单处定义，T46b 在彼处扩内存来源）
 
 /**
  * mint botId 并建工作区。本机：建 <dataDir>/workspaces/<botId>（原路径，逐字不变）。
@@ -104,7 +91,7 @@ async function mintWorkspace(
   callSdk?: (method: string, request: object) => Promise<unknown>,
 ): Promise<{ ok: true; botId: string; workspace: string } | { ok: false; error: { code: string; message: string } }> {
   const botId = mintBotId()
-  const remoteRoot = sshRemoteRoot()
+  const remoteRoot = remoteRootOf()
   if (remoteRoot !== undefined) {
     if (callSdk === undefined) {
       return { ok: false, error: { code: 'pbots/storage', message: `ssh mode (remoteRoot ${remoteRoot}) but no SDK call channel for workspace_ensure` } }

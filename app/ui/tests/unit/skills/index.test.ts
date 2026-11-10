@@ -253,3 +253,40 @@ describe('T7a pbots:skills', () => {
     expect(stagingEmpty(dataDir, 't')).toBe(true)
   })
 })
+
+// T11c：远端工作区（ssh-mode 在 handoff）下 skills 三 op 统一拒；只有 remote-root（T46d serve）不拒
+describe('T11c skills 远端模式', () => {
+  const h = registerSkills({ dataDir: makeData({ a: [['alpha']] }) })
+  it('ⓐ ssh-mode 在 → list/enable/disable 全 pbots/remote-mode（本机路径本可成功）', async () => {
+    const hb = tmkdir('bot-t11c-hb-')
+    writeFileSync(join(hb, 'ssh-mode'), '1')
+    writeFileSync(join(hb, 'remote-root'), '/remote\n')
+    const prev = process.env.PBOTS_DSH_HANDOFF
+    process.env.PBOTS_DSH_HANDOFF = hb
+    try {
+      const msg = 'Skills are not available while Hivebot uses a remote computer.'
+      const reqs = [h.handler({ op: 'list', botId: 'a' }), h.handler({ op: 'enable', botId: 'a', fromBotId: 'a', name: 'alpha' }), h.handler({ op: 'disable', botId: 'a', name: 'alpha' })] as Array<Promise<SkillsResult>>
+      for (const p of reqs) {
+        const x = await p
+        expect(x.ok).toBe(false)
+        if (!x.ok) { expect(x.error.code).toBe('pbots/remote-mode'); expect(x.error.message).toBe(msg) }
+      }
+    } finally {
+      if (prev === undefined) delete process.env.PBOTS_DSH_HANDOFF
+      else process.env.PBOTS_DSH_HANDOFF = prev
+    }
+  })
+  it('ⓑ 只有 remote-root（T46d serve 的 handoff 形状）→ list 照常 ok', async () => {
+    const hb = tmkdir('bot-t11c-hb-')
+    writeFileSync(join(hb, 'remote-root'), '/local-serve\n')
+    const prev = process.env.PBOTS_DSH_HANDOFF
+    process.env.PBOTS_DSH_HANDOFF = hb
+    try {
+      const r = await h.handler({ op: 'list', botId: 'a' })
+      expect(r.ok, '本机 serve 不拒').toBe(true)
+    } finally {
+      if (prev === undefined) delete process.env.PBOTS_DSH_HANDOFF
+      else process.env.PBOTS_DSH_HANDOFF = prev
+    }
+  })
+})

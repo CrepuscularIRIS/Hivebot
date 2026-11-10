@@ -15,7 +15,9 @@
 #   且 /proc 核 cmdline）→ 删本次 handoff。双开 = 已有实例聚焦（Electron 单实例锁）。
 set -u
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# T46d：经符号链接调用（~/.local/bin/hivebot）也能定位仓库——readlink -f 解真实路径
+SELF_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+REPO_ROOT="$(cd "$(dirname "$SELF_PATH")/../.." && pwd)"
 SDK_LAUNCHER="$REPO_ROOT/app/sdk/scripts/start.mjs"
 NODE_BIN="$REPO_ROOT/app/sdk/node_modules/.bin/node"
 ELECTRON_BIN="$REPO_ROOT/app/ui/node_modules/electron/dist/electron"
@@ -23,6 +25,47 @@ UI_ENTRY="$REPO_ROOT/app/ui/out/main/index.js"
 UI_SHIM="$REPO_ROOT/app/ui/out/renderer/shim.iife.js"
 
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+# ── serve --status：只读状态文件，不需要锁（在锁段前）──
+SERVE_JSON="${XDG_STATE_HOME:-$HOME/.local/state}/hivebot/serve.json"
+if [ "${1:-}" = "serve" ] && [ "${2:-}" = "--status" ]; then
+  if [ -f "$SERVE_JSON" ]; then
+    BASE_URL="$(sed -n 's/.*"base_url":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
+    HANDOFF_P="$(sed -n 's/.*"handoff":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
+    PID_P="$(sed -n 's/.*"pid":\([0-9]*\).*/\1/p' "$SERVE_JSON")"
+    kill -0 "${PID_P:-0}" 2>/dev/null || { printf '%s\n' 'HIVEBOT-SERVE {"stale":true}' >&2; exit 1; }
+    printf 'HIVEBOT-SERVE {"base_url":"%s","handoff":"%s","pid":%s,"version":1}\n' "$BASE_URL" "$HANDOFF_P" "$PID_P"
+    exit 0
+  fi
+  printf '%s\n' 'HIVEBOT-SERVE {"running":false}' >&2
+  exit 1
+fi
+# ── serve --connect：一条固定命令拿齐 base_url/token/remote_root（T46d——token 唯一出 stdout 的地方）──
+if [ "${1:-}" = "serve" ] && [ "${2:-}" = "--connect" ]; then
+  if [ -f "$SERVE_JSON" ]; then
+    BASE_URL="$(sed -n 's/.*"base_url":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
+    HANDOFF_P="$(sed -n 's/.*"handoff":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
+    PID_P="$(sed -n 's/.*"pid":\([0-9]*\).*/\1/p' "$SERVE_JSON")"
+    fail_connect() { printf '%s\n' 'HIVEBOT-CONNECT {"error":"handoff-incomplete"}' >&2; exit 1; }
+    kill -0 "${PID_P:-0}" 2>/dev/null || { printf '%s\n' 'HIVEBOT-CONNECT {"stale":true}' >&2; exit 1; }
+    case "$HANDOFF_P" in
+      */p2sdk-handoff-*) ;; *) fail_connect ;;
+    esac
+    [ -f "$HANDOFF_P/launch-token" ] && [ -f "$HANDOFF_P/remote-root" ] || fail_connect
+    TOKEN_V="$(cat "$HANDOFF_P/launch-token" 2>/dev/null)"
+    REMOTE_V="$(cat "$HANDOFF_P/remote-root" 2>/dev/null)"
+    [ -n "$TOKEN_V" ] && [ -n "$REMOTE_V" ] || fail_connect
+    case "$TOKEN_V" in *[!A-Za-z0-9._~-]*) fail_connect ;; esac
+    # T46db：删掉坏字符后与原值不同就拒——tr 不分行所以 LF 抓得到；LC_ALL=C 与语言环境无关（中文路径放行）。
+    # 集合：控制字符 \000-\037、DEL \177、双引号、反斜杠（空串已在上面拒）
+    [ "$(printf '%s' "$REMOTE_V" | LC_ALL=C tr -d '\000-\037\177"\\')" = "$REMOTE_V" ] || fail_connect
+    printf 'HIVEBOT-CONNECT {"base_url":"%s","token":"%s","remote_root":"%s","version":1}\n' "$BASE_URL" "$TOKEN_V" "$REMOTE_V"
+    exit 0
+  fi
+  printf '%s\n' 'HIVEBOT-CONNECT {"running":false}' >&2
+  exit 1
+fi
+
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}"
 HB_DIR="$STATE_DIR/hivebot"
 LOG_DIR="$HB_DIR/logs"
@@ -38,14 +81,36 @@ die() { printf 'hivebot: %s\n' "$*" >&2; exit 1; }
 for f in "$NODE_BIN" "$SDK_LAUNCHER"; do
   [ -e "$f" ] || die "缺 $f——先跑: pnpm --config.verify-deps-before-run=false -C app/sdk setup"
 done
-for f in "$ELECTRON_BIN" "$UI_ENTRY" "$UI_SHIM"; do
-  [ -e "$f" ] || die "缺 $f——先跑: pnpm --config.verify-deps-before-run=false -C app/ui setup && pnpm --config.verify-deps-before-run=false -C app/ui build"
-done
+# T46c：serve 模式只起 SDK，不需要 Electron/UI 产物
+if [ "${1:-}" != "serve" ]; then
+  for f in "$ELECTRON_BIN" "$UI_ENTRY" "$UI_SHIM"; do
+    [ -e "$f" ] || die "缺 $f——先跑: pnpm --config.verify-deps-before-run=false -C app/ui setup && pnpm --config.verify-deps-before-run=false -C app/ui build"
+  done
+fi
 mkdir -p "$LOG_DIR" "$P2SDK_HOME" "$PBOTS_DATA_DIR"
 
-# ── 1 锁（双开 = 聚焦已有窗口后退出）──
+# ── 1 锁（双开 = 聚焦已有窗口后退出；T46cb：serve 与桌面按模式分流，锁冲突不起 Electron）──
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
+  # T46cb：锁被占——serve.json 活着说明 serve 在跑（读同一状态文件，不依赖锁内容）
+  SERVE_ALIVE=0
+  if [ -f "$SERVE_JSON" ]; then
+    SPID="$(sed -n 's/.*"pid":\([0-9]*\).*/\1/p' "$SERVE_JSON")"
+    [ -n "${SPID:-}" ] && kill -0 "$SPID" 2>/dev/null && SERVE_ALIVE=1
+  fi
+  if [ "${1:-}" = "serve" ]; then
+    if [ "$SERVE_ALIVE" = 1 ]; then
+      # 重复 serve = 幂等：打同一行状态后 exit 0（Windows 侧可直接复用）
+      BASE_URL="$(sed -n 's/.*"base_url":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
+      HANDOFF_P="$(sed -n 's/.*"handoff":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
+      printf 'HIVEBOT-SERVE {"base_url":"%s","handoff":"%s","pid":%s,"version":1}\n' "$BASE_URL" "$HANDOFF_P" "$SPID"
+      exit 0
+    fi
+    die "已有桌面实例在跑，serve 需先关闭桌面" # exit 1
+  fi
+  if [ "$SERVE_ALIVE" = 1 ]; then
+    die "serve 模式在跑，先 TERM serve 进程再开桌面"
+  fi
   # 已有实例：只起 Electron（单实例锁聚焦），不带 handoff、不带凭证
   env -u P2SDK_LLM_API_KEY -u LITELLM_MASTER_KEY -u DEEPSEEK_API_KEY -u OPENAI_API_KEY -u ANTHROPIC_API_KEY \
     PBOTS_DATA_DIR="$PBOTS_DATA_DIR" "$ELECTRON_BIN" "$@" "$UI_ENTRY" >>"$LOG_DIR/ui.log" 2>&1 9>&- &
@@ -56,6 +121,9 @@ if ! flock -n 9; then
   wait "$SECOND_PID" 2>/dev/null || true
   exit 0
 fi
+
+# ── T46d：serve 模式在起 SDK 前挂 workspace 根（Windows 建 bot 的工作区落 Ubuntu 本盘）──
+[ "${1:-}" = "serve" ] && export P2SDK_WORKSPACE_ROOT="$PBOTS_DATA_DIR"
 
 # ── 2 凭证（白名单 0600 文件；不 source）──
 SDK_ENV_KEYS=""
@@ -105,6 +173,7 @@ cleanup() {
      && grep -q 'bin\.js' "/proc/$DSH_PID/cmdline" 2>/dev/null; then
     kill -KILL "$DSH_PID" 2>/dev/null
   fi
+  rm -f "${SERVE_JSON:-}" 2>/dev/null
   case "${HANDOFF:-}" in
     "${TMPDIR:-/tmp}"/p2sdk-handoff-*|/tmp/p2sdk-handoff-*) rm -rf "$HANDOFF" ;;
   esac
@@ -133,6 +202,23 @@ DSH_PID="$(sed -n 's/^p2sdk: dsh pid //p' "$LOG_DIR/sdk.log" | tail -1)"
 if [ "$READY" -ne 1 ]; then
   tail -20 "$LOG_DIR/sdk.log" >&2
   die "SDK 未就绪（90s）——上方为 sdk.log 尾部"
+fi
+
+# ── 4b serve 模式：只起 SDK 常驻，不起 Electron（T46c——Windows 客户端前置）──
+if [ "${1:-}" = "serve" ]; then
+  BASE_URL="$(sed -n 's/^\[p2sdk\] ready \(http[^ ]*\).*/\1/p' "$LOG_DIR/sdk.log" | tail -1)"
+  mkdir -p "$(dirname "$SERVE_JSON")"
+  printf '{"version":1,"base_url":"%s","handoff":"%s","pid":%s,"started_at":"%s"}\n' \
+    "$BASE_URL" "$HANDOFF" "${DSH_PID:-0}" "$(date -Is)" > "$SERVE_JSON"
+  printf 'HIVEBOT-SERVE {"base_url":"%s","handoff":"%s","pid":%s,"version":1}\n' "$BASE_URL" "$HANDOFF" "${DSH_PID:-0}"
+  # 常驻到 TERM/INT（既有 trap→cleanup：SDK TERM→KILL、handoff 清理、serve.json 删）
+  trap 'rm -f "$SERVE_JSON"; cleanup; exit 0' TERM INT
+  set +e
+  wait "$SDK_PID"
+  RC=$?
+  rm -f "$SERVE_JSON"
+  CLEANUP_RC="$RC" cleanup
+  exit "$RC"
 fi
 
 # ── 5 Electron（剥五凭证键；"$@" 在入口前=Chromium 开关透传）──

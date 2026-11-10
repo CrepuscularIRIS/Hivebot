@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { readRemoteConfig, parseConnectLine, connectArgv, tunnelArgv, sshBin } from '../../../main/remote/ssh'
+import { readRemoteConfig, parseConnectLine, connectArgv, tunnelArgv, sshBin, waitPort } from '../../../main/remote/ssh'
 
 const tmp = (): string => mkdtempSync(join(tmpdir(), 'bot-t46b-unit-'))
 const dirs: string[] = []
@@ -94,4 +94,29 @@ describe('T46b argv 钉死', () => {
     expect(sshBin('win32', { SystemRoot: 'C:\\Windows' })).toBe('C:\\Windows\\System32\\OpenSSH\\ssh.exe')
     expect(sshBin('linux', {})).toBe('ssh')
   })
+})
+
+
+// T46b 任务C：waitPort——截止时间内轮询（隧道 -L 绑定是异步的，单次 connect 会在未绑定时立即 false）
+describe('T46b waitPort 轮询', () => {
+  it('端口 600ms 后才 listen → 3000ms 内 true（单次实现会立即 false）', async () => {
+    const s = require('node:net').createServer() as import('node:net').Server
+    setTimeout(() => s.listen(0, '127.0.0.1'), 600)
+    await new Promise<void>((r) => s.once('listening', r)) // 等 listen 才知道端口
+    const port = (s.address() as { port: number }).port
+    const ok = await waitPort(port, 3000)
+    expect(ok, '600ms 后出现的端口能等到').toBe(true)
+    s.close()
+  }, 10_000)
+  it('端口从不 listen → 800ms 后 false 且耗时 ≥700ms', async () => {
+    // 占一个端口再关掉（无人 listen）
+    const s = require('node:net').createServer() as import('node:net').Server
+    await new Promise<void>((r) => { s.listen(0, '127.0.0.1', () => r()) })
+    const port = (s.address() as { port: number }).port
+    await new Promise<void>((r) => s.close(() => r()))
+    const t0 = Date.now()
+    const ok = await waitPort(port, 800)
+    expect(ok).toBe(false)
+    expect(Date.now() - t0, '轮询到截止（不是立即返回）').toBeGreaterThanOrEqual(700)
+  }, 10_000)
 })

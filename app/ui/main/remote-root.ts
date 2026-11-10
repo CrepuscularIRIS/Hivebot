@@ -6,11 +6,13 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-/** T46b：Windows 远程模式直灌内存值（优先于 handoff 文件判定）。 */
-let memRoot: string | undefined
-export function setRemoteRoot(root: string | undefined): void { memRoot = root }
+/** T46b：Windows 远程模式直灌内存值（优先于 handoff 文件判定）。
+ * 挂 globalThis——打包器拆 chunk 时本模块可能被内联成两份（set 与读各一），模块级 let 会双实例。 */
+const G = globalThis as { __hivebotRemoteRoot?: string }
+export function setRemoteRoot(root: string | undefined): void { G.__hivebotRemoteRoot = root }
 
 export function remoteRoot(): string | undefined {
+  const memRoot = G.__hivebotRemoteRoot
   if (memRoot !== undefined) return memRoot
   const handoff = process.env.PBOTS_DSH_HANDOFF
   if (!handoff) return undefined

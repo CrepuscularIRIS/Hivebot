@@ -70,12 +70,20 @@ function freePort(): Promise<number> {
   })
 }
 
-function canConnect(port: number, timeoutMs: number): Promise<boolean> {
-  return new Promise((resolve) => {
-    const t = setTimeout(() => { s.destroy(); resolve(false) }, timeoutMs)
-    const s = netConnect(port, '127.0.0.1', () => { clearTimeout(t); s.destroy(); resolve(true) })
-    s.on('error', () => { clearTimeout(t); resolve(false) })
-  })
+/** 截止时间内每 ~200ms 试连一次（任务C：-L 绑定是异步的，单次 connect 会在未绑定时立即 ECONNREFUSED）。
+ * alive 可选：隧道进程已退就提前放弃。导出供单测。 */
+export async function waitPort(port: number, deadlineMs: number, alive?: () => boolean): Promise<boolean> {
+  const deadline = Date.now() + deadlineMs
+  for (;;) {
+    if (await new Promise<boolean>((resolve) => {
+      const t = setTimeout(() => { s.destroy(); resolve(false) }, Math.min(500, Math.max(1, deadline - Date.now())))
+      const s = netConnect(port, '127.0.0.1', () => { clearTimeout(t); s.destroy(); resolve(true) })
+      s.on('error', () => { clearTimeout(t); resolve(false) })
+    })) return true
+    if (Date.now() >= deadline) return false
+    if (alive !== undefined && !alive()) return false
+    await new Promise((r) => setTimeout(r, 200))
+  }
 }
 
 /** 跑一次 ssh 命令收 stdout（64KiB 上限；20s 超时）。失败抛固定文案（不含 stdout）。 */
@@ -119,7 +127,7 @@ export async function openRemote(cfg: RemoteConfig, opts: { bin?: string } = {})
   }
   startTunnel()
   // ponytail: 「先 listen 再 close」的空闲端口有竞态（极小窗内别人占走）；-L 已带 ExitOnForwardFailure，隧道会退由重起兜
-  const up = await canConnect(localPort, 15_000)
+  const up = await waitPort(localPort, 15_000, () => tunnel?.exitCode === null)
   if (!up && !closed) { closed = true; tunnel?.kill('SIGTERM'); throw new Error(ERR) }
   return {
     baseUrl: `http://127.0.0.1:${localPort}`,

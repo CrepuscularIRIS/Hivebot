@@ -7,6 +7,7 @@ import { join, resolve } from 'node:path'
 import { tmkdir } from '../support/tmp-sweep.ts'
 import { startUiSshServer, type UiSshServer } from '../support/ssh-fixture.ts'
 import { launchShell } from '../support/launch.ts'
+import { waitProductReady } from '../support/ui.ts'
 
 const REPO = resolve(__dirname, '../../../..')
 const LAUNCHER = join(REPO, 'app/launcher/hivebot')
@@ -105,7 +106,7 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
     const lines = argvLines()
     expect(lines.length, '③ 恰两次 ssh').toBe(2)
     const [l1, l2] = lines.map((l) => l.replace(/^\d+ /, '').split(' '))
-    expect(l1).toEqual(['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', '--', 'pbots-ssh-test', '~/.local/bin/hivebot serve --connect'])
+    expect(l1!.join(' '), '③ connect argv（远端命令含空格按整串比）').toBe('-o BatchMode=yes -o ConnectTimeout=10 -- pbots-ssh-test ~/.local/bin/hivebot serve --connect')
     const P = Number(serveLine.base_url!.match(/:(\d+)$/)![1])
     const Lm = l2!.join(' ').match(/-L 127\.0\.0\.1:(\d+):127\.0\.0\.1:(\d+)/)
     expect(Lm, '③ 隧道 -L 在').not.toBeNull()
@@ -113,7 +114,7 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
     expect(l2).toEqual(['-N', '-o', 'BatchMode=yes', '-o', 'ExitOnForwardFailure=yes', '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=3', '-L', `127.0.0.1:${Lm![1]}:127.0.0.1:${P}`, '--', 'pbots-ssh-test'])
 
     // ④ skills 拒
-    const sk = await api(page, 'skills', { op: 'list', botId }) as { ok: boolean; error?: { code?: string; message?: string } }
+    const sk = await page.evaluate((bid) => (window as unknown as { pbots: { skills(req: { op: 'list'; botId: string }): Promise<{ ok: boolean; error?: { code?: string; message?: string } }> } }).pbots.skills({ op: 'list', botId: bid }), botId) as { ok: boolean; error?: { code?: string; message?: string } }
     expect(sk.ok, '④ skills 拒').toBe(false)
     expect(sk.error?.code).toBe('pbots/remote-mode')
     expect(sk.error?.message).toBe('Skills are not available while Hivebot uses a remote computer.')
@@ -149,14 +150,19 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
       const t0 = Date.now()
       const r3 = await Promise.race([api(shell3.page, 'session/list', { _request: {} }), new Promise<never>((_, rej) => setTimeout(() => rej(new Error('挂死')), 15_000))]).catch((e) => e)
       expect(Date.now() - t0 < 15_000, '⑦ M1 15s 内返回').toBe(true)
+      const tReady = Date.now()
+      const readyOk = await shell3.page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 15_000 }).then(() => true, () => false)
+      expect(readyOk && Date.now() - tReady < 15_000, '⑦ 页面 boot 完成（restore 放行，UI 不永久卡）').toBe(true)
       expect(argvLines().length, '⑦ 零 ssh').toBe(before)
       await shell3.stop()
     }
 
     // ⑧ serve 没在跑：只有 connect 一次、无隧道、不挂死
     {
+      // 真停 serve：TERM ssh 客户端不够（dsh detached 成孤儿）——远端按 serve.json 的 pid 收 dsh + TERM serve bash
+      const stopPid = await new Promise<string>((res) => { let o = ''; const c = spawn(srv.binDir + '/ssh', ['-o', 'BatchMode=yes', '--', 'pbots-ssh-test', 'p=$(sed -n \'s/.*"pid":\\([0-9]*\\).*/\\1/p\' ~/.local/state/hivebot/serve.json); [ -n "$p" ] && kill $p; sleep 0.3; rm -f ~/.local/state/hivebot/serve.json; echo done'], { stdio: ['ignore', 'pipe', 'inherit'] }); c.stdout!.setEncoding('utf8'); c.stdout!.on('data', (x: string) => { o += x }); c.on('exit', () => res(o)) })
       serveSsh.kill('SIGTERM')
-      await new Promise((r) => setTimeout(r, 2000))
+      await new Promise((r) => setTimeout(r, 2500))
       rmSync(argvLog)
       writeFileSync(argvLog, '')
       const shell4 = await launchShell({ home: join(root, 'no8-home'), env: { PBOTS_DATA_DIR: winData, PATH: `${wrapDir}:${process.env.PATH ?? ''}`, DBUS_SESSION_BUS_ADDRESS: 'unix:path=' + join(root, 'dead-bus'), PBOTS_DSH_START_TIMEOUT_MS: '5000' } })
@@ -174,6 +180,8 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
     serveSsh.kill('SIGTERM')
     await new Promise((r) => setTimeout(r, 1000))
     await srv.stopServer()
+    // 任务C：远端 serve 链（serve.sh→hivebot serve→start.mjs→dsh）经 TERM 本地 ssh 收不掉——bot-reap 按 root 清
+    try { require('node:child_process').execFileSync(join(REPO, 'scripts', 'bot-reap'), ['--match', root]) } catch { /* 尽力 */ }
     rmSync(root, { recursive: true, force: true })
   }
 })

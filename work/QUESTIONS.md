@@ -433,7 +433,7 @@
 - 默认：A。
 - 答复：
 
-## Q-045 [open] Windows 连 Ubuntu 测试：确认架构 + 你那边要准备什么
+## Q-045 [answered] Windows 连 Ubuntu 测试：确认架构 + 你那边要准备什么
 - slug：exp-polish ｜ 类型：需求与范围 ｜ 阻塞：阻塞 T46b（不阻塞 T46a 打包） ｜ 提出：2026-11-09
 - 背景：Windows 上的 exe 只放界面；bot 的后端、沙箱、模型 key 全留在 Ubuntu，exe 通过 SSH 隧道连过去（key 不进 exe，Windows 侧不执行 bot 的命令）。
 - 需要你确认 / 准备：
@@ -443,4 +443,13 @@
 - A（推荐）：照上面做，未签名，SSH 免密。
 - B：要签名（请提供证书方式）/ 要别的连接方式（请说明）。
 - 默认：A。
+- 答复：2026-11-09 用户定案（记录见 tickets/queue.md）：A——免密 key、未签名可接受；测试用本机私有 sshd（T2 夹具）模拟，实机在 Windows 虚拟机上做。
+
+## Q-046 [open] Windows 客户端：Ubuntu 上的后端谁来开，bot 列表要不要两边共用
+- slug：exp-polish ｜ 类型：需求与范围 ｜ 阻塞：不阻塞（T46b 按默认 A 施工） ｜ 提出：2026-11-10
+- 背景：Windows 上的 Hivebot 通过 SSH 连 Ubuntu 上常驻的 `hivebot serve`。两件事需要你定：
+  1. **后端谁开**。A（推荐）：你在 Ubuntu 上先开着 `hivebot serve`（终端 / tmux），Windows 打开时只连；没开就提示「Ubuntu 上的 Hivebot 服务没在运行」。B：Windows 打开时若发现没开，自动在 Ubuntu 上后台起一个（关 Windows 后它继续跑，要你自己去关）。A 简单、不会在 Ubuntu 上留下你不知道的进程；B 省一步。
+  2. **bot 列表**。A（推荐）：Windows 上的 bot 列表存在 Windows 本地，和 Ubuntu 桌面版各是各的（bot 的工作区文件都在 Ubuntu 上）。B：两边看到同一份列表——要额外做同步，而且两边不能同时开（现在 serve 和 Ubuntu 桌面本来就互斥）。
+- 另：Ubuntu 上需要一次性做 `ln -s ~/bot/app/launcher/hivebot ~/.local/bin/hivebot`（Windows 固定用这个路径找 Hivebot）。
+- 默认：1=A，2=A。
 - 答复：

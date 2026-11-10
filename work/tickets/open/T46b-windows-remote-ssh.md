@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-10 | 施工：main (GLM 5.3)
 > 来源：queue「桌宠 + Windows 分发」W3 行；Q-045（已定案：T2 私有 sshd 夹具模拟 + 用户 Windows 虚拟机实机）
 > 分支 / 作业目录：feat/T46b @ /tmp/bot-wt/T46b（先 setup + build）
-> **blocked：等 T46d 合并**（T11c 2026-11-10 已验收；T46d 第 1 次不通过 → T46db）。原文：等 T11c、T46d 合并（本单用 T11c 的 `main/remote-root.ts` 和 T46d 的 `serve --connect` / serve 模式工作区 RPC）。两单合并后主 agent 挪到 open/ 开工。
+> 解锁：2026-11-10 T46d+T46db 验收过 @ ade0b34d（T11c 已合并）。**前提：feat/T46d 先合并进主线**，再从主线开 feat/T46b。
 > claimed：
 > accepted：
 

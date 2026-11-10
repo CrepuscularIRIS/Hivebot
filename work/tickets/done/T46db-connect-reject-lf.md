@@ -4,8 +4,8 @@
 > 来源：T46d 验收（`receipts/T46d.acceptance.md` §3）——经理手测探针
 > 分支 / 作业目录：feat/T46d @ /tmp/bot-wt/T46d（接着 eb9cb0b8 提交）
 > 失败计数：T46d 第 1 次不通过
-> claimed：
-> accepted：
+> claimed：2026-11-10 main (GLM 5.3)
+> accepted: 2026-11-10 ade0b34d（receipts/T46d.acceptance.md §6）
 
 ## 目标
 remote-root 里只要有任何控制字符（含 LF）、双引号或反斜杠，`serve --connect` 就走 `handoff-incomplete`，stdout 一个字节都不打。和语言环境无关。

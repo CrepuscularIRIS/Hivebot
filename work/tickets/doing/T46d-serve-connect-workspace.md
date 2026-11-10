@@ -4,7 +4,7 @@
 > 来源：T46b 立项（queue「桌宠 + Windows 分发」W3 行）；T46c 移交项「工作区 / remote-root 留 T46b 对接」
 > 分支 / 作业目录：feat/T46d @ /tmp/bot-wt/T46d（作业目录先 setup + build）
 > 依赖：W2b 先合（本单在同一份 spec 里加格）
-> claimed：
+> claimed：2026-11-10 main (GLM 5.3)
 > accepted：
 
 ## 目标

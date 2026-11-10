@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-10 | 施工：main (GLM 5.3)
 > 来源：T11 工单第 4 条（终验拆出，queue 5c′ 行）；T46b 的前置（Windows 客户端同样是远端工作区）
 > 分支 / 作业目录：feat/T11c（小改，可不建 worktree）
-> claimed：
+> claimed：2026-11-10 main (GLM 5.3)
 > accepted：
 
 ## 目标

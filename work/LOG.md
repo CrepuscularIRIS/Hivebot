@@ -1247,3 +1247,9 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 ## 2026-11-09 · merge T34b+T34b2（⑤ 环境泄漏探针落地）
 - merge `feat/T34b`：④ 断言收紧 pbots/forbidden + ⑤ 环境泄漏探针真跑真绿（follow {stream,snapshot} 解构修复——经理读码定案；先红用临加 P2SDK_PBOTS_LEAK_PROBE 泄漏键证判定力，原方案换键会令 ①② 崩——工单写错，经理追认偏差）——经理验收 @ 68e6ce96；主仓回测 6 passed。
 - P5-01 决策 15（数据根不进模型环境）从静态论证（上游 scrub DSH_*）升级为运行时守卫：任何键名的数据根泄漏进 bash env 都会被 ⑤ 抓红。
+
+## 2026-11-09 · 公开仓上线（用户拍板：合规公开 + modpack 式一键安装）
+- 许可证四分类扫描（memory 硬约束流程）：自有（sdk/ui 自写层/launcher，MIT）/ MIT 上游引用（@deepseek-ai npm）/ 0.18 移植（frontend+source+assets+harness，无许可证→排除）/ 桌宠形象（CC BY-NC-SA→排除）；secret 扫描干净。
+- 公开仓 CrepuscularIRIS/Hivebot @ eaf93387：411 文件（app/sdk 172+ui 自写层+测试 240+打包链）+ install.sh（一键：依赖+外部资源拉取）+ pack/manifest.json（0.18 上游 a9f633e 钉版、dsh-pet webm c253868 挑选）+ docs（LICENSE-SCOPE 四分类/PRIVATE-LAYER 拼装指引）。
+- 发布链：`scripts/publish-hivebot.sh <dir>` 排除式 rsync（幂等可重复）；完整 UI modpack 拼装（0.18 差异 patch 化）留 Windows 线开单。
+- SSH 系列列入 todo（queue「Windows 研发线」节，T46c 优先级提升）——用户后续在 Windows 做研发。

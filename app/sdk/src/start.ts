@@ -54,6 +54,8 @@ export interface StartConfig {
   extraMaskRoots: string[]
   /** T9a：ssh 模式五件套（全给=ssh 模式；全空=本机模式不变）。P2SDK_SSH_NODE=远端 node 绝对路径。 */
   ssh?: { host: string; remoteRoot: string; helper: string; helperHash: string; node: string; remoteHome?: string }
+  /** T46d：serve 模式（本机+env 设）挂 p2sdk-workspace 的根；ssh 模式忽略（ssh.remoteRoot 优先）。 */
+  workspaceRoot?: string
   /** T9a：P2SDK_SSH_* 给了但不齐（resolveConfig 时记录；validateStart 消费后不再用）。 */
   sshMissing?: string[]
 }
@@ -88,6 +90,7 @@ export function resolveConfig(env: NodeJS.ProcessEnv = process.env): StartConfig
     dataDirExplicit: Boolean(env.PBOTS_DATA_DIR),
     extraMaskRoots: (env.P2SDK_SANDBOX_MASK ?? '').split(':').filter(Boolean),
     ssh: readSshConfig(env),
+    workspaceRoot: env.P2SDK_WORKSPACE_ROOT?.trim() || undefined, // T46d
     sshMissing: sshMissingKeys(env),
   }
 }
@@ -221,6 +224,7 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
   // ssh 模式标记（T9b containment 读它；本单只设不读）
   // T9ae（审查 C4）：继承来的 MODE 也先删，下一行按 cfg.ssh 重设——本机 bot 不因
   // launcher 环境残留的 MODE 被 approval.yml 条件禁用误伤 workflow
+  delete child.P2SDK_WORKSPACE_ROOT // T46d：launcher-only（照 PBOTS_DATA_DIR 的做法）
   const sshKeys = ['P2SDK_SSH_HOST', 'P2SDK_SSH_REMOTE_ROOT', 'P2SDK_SSH_HELPER', 'P2SDK_SSH_HELPER_HASH', 'P2SDK_SSH_NODE', 'P2SDK_SSH_REMOTE_HOME', 'P2SDK_SSH_MODE']
   for (const k of sshKeys) delete child[k]
   if (cfg.ssh !== undefined) child.P2SDK_SSH_MODE = '1'
@@ -427,9 +431,20 @@ export function writeRuntimePatch(cfg: StartConfig): string {
       config:
         dir: ${yamlScalar(cfg.handoff)}${cfg.ssh !== undefined ? `
         sshMode: 'ssh'
-        remoteRoot: ${yamlScalar(cfg.ssh.remoteRoot)}` : ''}
+        remoteRoot: ${yamlScalar(cfg.ssh.remoteRoot)}` : cfg.workspaceRoot !== undefined ? `
+        remoteRoot: ${yamlScalar(cfg.workspaceRoot)}` : ''}
 `)
   if (cfg.ssh === undefined) {
+    // T46d：serve 模式（本机+P2SDK_WORKSPACE_ROOT）挂 workspace RPC（ssh 模式走 sshRows 里的同款行）
+    if (cfg.workspaceRoot !== undefined) {
+      rows.push(`\
+- insert:
+    - id: p2sdk-workspace
+      name: ${yamlScalar(fileUrl(join(PKG_ROOT, 'src', 'p2sdk', 'workspace.mjs')))}
+      config:
+        remoteRoot: ${yamlScalar(cfg.workspaceRoot)}
+`)
+    }
     // 本机模式：行为与改前逐字相同（T9a 验收 2-② 钉住）
     rows.push(sandboxRow(cfg))
     rows.push(fsSandboxRow(cfg))

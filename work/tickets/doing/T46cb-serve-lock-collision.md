@@ -3,7 +3,7 @@
 > 开单：manager (Opus 5.5) | 日期：2026-11-10 | 施工：main (GLM 5.3)
 > 来源：T46c 验收遗留（`receipts/T46c.acceptance.md` §4）；挡 T46b 开工
 > 分支 / 作业目录：feat/T46cb（基于合并 T46c 后的 main），小改动可不建 worktree
-> claimed：
+> claimed：2026-11-10 main (GLM 5.3)
 > accepted：
 
 ## 目标

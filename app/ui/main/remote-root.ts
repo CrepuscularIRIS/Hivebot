@@ -6,7 +6,12 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+/** T46b：Windows 远程模式直灌内存值（优先于 handoff 文件判定）。 */
+let memRoot: string | undefined
+export function setRemoteRoot(root: string | undefined): void { memRoot = root }
+
 export function remoteRoot(): string | undefined {
+  if (memRoot !== undefined) return memRoot
   const handoff = process.env.PBOTS_DSH_HANDOFF
   if (!handoff) return undefined
   try {

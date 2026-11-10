@@ -192,7 +192,13 @@ async function main(): Promise<void> {
     app.quit()
     return
   }
-  const ready = createReadyGate()
+  const handoffEarly = process.env.PBOTS_DSH_HANDOFF // T46b：提前读（remoteCfg 判定要在 gate 前）
+  // T46b：remote.json（Windows/Linux 连远端 serve）——handoff 优先；无 handoff 且无 remote.json 走原「未配置」路径
+  const dataDirEarly = process.env.PBOTS_DATA_DIR ?? app.getPath('userData')
+  const { readRemoteConfig, openRemote } = await import('./remote/ssh')
+  const { setRemoteRoot } = await import('./remote-root')
+  const remoteCfg = handoffEarly ? undefined : readRemoteConfig(dataDirEarly)
+  const ready = createReadyGate({ dshConfigured: Boolean(handoffEarly) || remoteCfg !== undefined })
   await app.whenReady()
   const appRoot = process.env.PBOTS_APP_ROOT ?? resolve(__dirname, '..', 'renderer')
   protocol.handle(SCHEME, (request) => serveAppDocument(request, resolve(appRoot)))
@@ -216,7 +222,7 @@ async function main(): Promise<void> {
     mainWindow.on('closed', () => { if (petWindow !== undefined && !petWindow.isDestroyed()) petWindow.destroy() })
   }
 
-  const handoff = process.env.PBOTS_DSH_HANDOFF
+  const handoff = handoffEarly
   let dsh: DshConnection | undefined
   let dshStart: Promise<number> | undefined
   if (handoff) {
@@ -231,6 +237,21 @@ async function main(): Promise<void> {
     // U-28 R3/R4：setDshReady 与恢复编排挪到 wireRestoreOnReconnect 的连接成功事件；
     // 此行仅作 spike 桥路径的 unhandledRejection 防护保留。
     void dshStart.then(() => {}, () => {})
+  } else if (remoteCfg !== undefined) {
+    // T46b：远程 serve 模式——ssh 取连接信息 + 隧道；token 只进 DshConnection（内存）
+    try {
+      const remote = await openRemote(remoteCfg)
+      setRemoteRoot(remote.remoteRoot)
+      dsh = new DshConnection({ baseUrl: remote.baseUrl, token: remote.token, interactions: 'answer' })
+      dshStart = dsh.start()
+      void dshStart.then(() => {}, () => {})
+      app.on('will-quit', remote.close)
+      process.on('exit', remote.close) // 兜底：will-quit 未到（异常退出）时也收隧道
+    } catch (error) {
+      // 固定文案（可含 host，不含 ssh stdout——可能有 token）；dsh 保持 undefined，restore 放行防 M1/M2 挂死
+      console.error(`remote: ssh connect to ${remoteCfg.host} failed (${String(error instanceof Error ? error.message : error)})`)
+      ready.setRestoreSettled([])
+    }
   }
 
   const assertSender = (event: Parameters<typeof assertPbotsSender>[0]): void =>

@@ -70,6 +70,10 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
     },
   })
   const page = shell.page
+  // 审查2 补：启动后立刻挂（① 之前的输出也要收）
+  let elecOutAll = ''
+  shell.app.process().stdout?.on('data', (c: Buffer) => { elecOutAll += c.toString() })
+  shell.app.process().stderr?.on('data', (c: Buffer) => { elecOutAll += c.toString() })
 
   const argvLines = (): string[] => readFileSync(argvLog, 'utf8').split('\n').filter((l) => l.length > 0)
   const pidsFromLog = (): number[] => argvLines().map((l) => Number.parseInt(l.split(' ')[0]!, 10)).filter((n) => Number.isFinite(n))
@@ -95,9 +99,6 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
     // 审查2 修：Electron 主进程（app.process()）而非 runner；完整扫描（不截断）；覆盖独立 HOME
     const elecProc = shell.app.process()
     const elecPid = elecProc.pid
-    let elecOut = ''
-    elecProc.stdout?.on('data', (c: Buffer) => { elecOut += c.toString() })
-    elecProc.stderr?.on('data', (c: Buffer) => { elecOut += c.toString() })
     const winFiles: string[] = []
     const walk = (d: string): void => { for (const f of readdirSync(d)) { const p = join(d, f); try { if (require('node:fs').statSync(p).isDirectory()) walk(p); else winFiles.push(readFileSync(p, 'utf8')) } catch { /* 二进制跳过 */ } } }
     walk(winData)
@@ -108,7 +109,7 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
       try { procSurfaces.push(readFileSync('/proc/' + pid + '/environ', 'utf8')) } catch { /* 已退 */ }
     }
     await new Promise((r) => setTimeout(r, 300)) // 流缓冲
-    for (const sf of [...winFiles, readFileSync(argvLog, 'utf8'), elecOut, ...procSurfaces]) expect(sf, '② 面不含 token').not.toContain(tokenVal)
+    for (const sf of [...winFiles, readFileSync(argvLog, 'utf8'), elecOutAll, ...procSurfaces]) expect(sf, '② 面不含 token').not.toContain(tokenVal)
 
     // ③ argv 钉死：恰两行
     const lines = argvLines()
@@ -154,7 +155,9 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
       const badData = join(root, 'bad-data'); mkdirSync(badData, { recursive: true })
       writeFileSync(join(badData, 'remote.json'), JSON.stringify({ host: '-Fevil' }))
       const before = argvLines().length
+      let err7 = ''
       const shell3 = await launchShell({ home: join(root, 'bad-home'), env: { PBOTS_DATA_DIR: badData, PATH: `${wrapDir}:${process.env.PATH ?? ''}`, DBUS_SESSION_BUS_ADDRESS: 'unix:path=' + join(root, 'dead-bus'), PBOTS_DSH_START_TIMEOUT_MS: '5000' } })
+      shell3.app.process().stderr?.on('data', (c: Buffer) => { err7 += c.toString() })
       const t0 = Date.now()
       const r3 = await Promise.race([api(shell3.page, 'session/list', { _request: {} }), new Promise<never>((_, rej) => setTimeout(() => rej(new Error('挂死')), 15_000))]).catch((e) => e)
       expect(Date.now() - t0 < 15_000, '⑦ M1 15s 内返回').toBe(true)
@@ -162,6 +165,7 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
       const readyOk = await shell3.page.waitForFunction(() => (window as unknown as { __pbotsDev?: unknown }).__pbotsDev !== undefined, undefined, { timeout: 15_000 }).then(() => true, () => false)
       expect(readyOk && Date.now() - tReady < 15_000, '⑦ 页面 boot 完成（restore 放行，UI 不永久卡）').toBe(true)
       expect(argvLines().length, '⑦ 零 ssh').toBe(before)
+      if (err7.length > 0) expect(err7, '⑦ stderr 固定文案（流可读时）').toContain('remote:') // 流不可读（playwright 内部消费）时由零 ssh+M1 返回+boot 三断言守
       await shell3.stop()
     }
 
@@ -173,8 +177,10 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
       await new Promise((r) => setTimeout(r, 2500))
       rmSync(argvLog)
       writeFileSync(argvLog, '')
+      let err8 = ''
       const shell4 = await launchShell({ home: join(root, 'no8-home'), env: { PBOTS_DATA_DIR: winData, PATH: `${wrapDir}:${process.env.PATH ?? ''}`, DBUS_SESSION_BUS_ADDRESS: 'unix:path=' + join(root, 'dead-bus'), PBOTS_DSH_START_TIMEOUT_MS: '5000' } })
       // 审查3 修：超时分支 reject——API 必须真返回（错误也算），永挂会红
+      shell4.app.process().stderr?.on('data', (c: Buffer) => { err8 += c.toString() })
       const t0 = Date.now()
       const r8 = await Promise.race([
         api(shell4.page, 'session/list', { _request: {} }).then((x) => ({ kind: 'api' as const, x }), (e: unknown) => ({ kind: 'throw' as const, e })),
@@ -183,6 +189,7 @@ test('T46b Windows 客户端经 ssh 连 Ubuntu serve（①-⑧）', async () => 
       expect(Date.now() - t0 < 15_500, '⑧ M1 15s 内返回').toBe(true)
       expect(r8.kind, '⑧ API 实际返回（错误也算，不永挂）').not.toBe('timeout')
       expect(r8.kind === 'api' ? r8.x.ok : false, '⑧ 返回的是错误（serve 没在跑）').toBe(false)
+      if (err8.length > 0) expect(err8, '⑧ stderr 固定文案（流可读时）').toContain('remote:') // 同 ⑦
       const ls = argvLines()
       expect(ls.length, '⑧ 只有 connect 一次').toBe(1)
       expect(ls[0].includes('-N'), '⑧ 无隧道行').toBe(false)

@@ -2,8 +2,8 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
-import { readRemoteConfig, parseConnectLine, connectArgv, tunnelArgv, sshBin, waitPort } from '../../../main/remote/ssh'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { readRemoteConfig, parseConnectLine, connectArgv, tunnelArgv, sshBin, waitPort, openRemote } from '../../../main/remote/ssh'
 
 const tmp = (): string => mkdtempSync(join(tmpdir(), 'bot-t46b-unit-'))
 const dirs: string[] = []
@@ -122,4 +122,59 @@ describe('T46b waitPort 轮询', () => {
     expect(ok).toBe(false)
     expect(Date.now() - t0, '轮询到截止（不是立即返回）').toBeGreaterThanOrEqual(700)
   }, 10_000)
+})
+
+
+// T46b 任务C(二)：openRemote 的隧道三态——慢绑定等得到、秒退不假活、ENOENT 不 uncaught
+describe('T46b openRemote 隧道三态', () => {
+  const uncaught: unknown[] = []
+  const prevHandler = process.listenerCount('uncaughtException')
+  beforeAll(() => { process.on('uncaughtException', (e) => { uncaught.push(e) }) })
+  afterAll(() => { process.removeAllListeners('uncaughtException'); if (prevHandler > 0) process.on('uncaughtException', () => {}) })
+  it('慢绑定（600ms 后才监听）→ openRemote 成功且 baseUrl 可连', async () => {
+    const net = require('node:net') as typeof import('node:net')
+    const fs = require('node:fs') as typeof import('node:fs')
+    const os = require('node:os') as typeof import('node:os')
+    const srv = net.createServer()
+    await new Promise<void>((r) => { srv.listen(0, '127.0.0.1', () => r()) })
+    const remotePort = (srv.address() as { port: number }).port
+    const stub = fs.mkdtempSync(join(os.tmpdir(), 't46b-stub3-')) + '/ssh-stub.cjs'
+    fs.writeFileSync(stub, [
+      'const n = require("node:net")',
+      `const LINE = 'HIVEBOT-CONNECT ' + JSON.stringify({ base_url: 'http://127.0.0.1:${remotePort}', token: 'abcdefABCDEF123456_-~x', remote_root: '/srv', version: 1 })`,
+      'if (process.argv[2] === "-N") {',
+      '  // 隧道：600ms 后在本地 -L 端口上起真监听，把连接双向桥到远端口',
+      '  const lp = Number(process.argv[process.argv.indexOf("-L") + 1].split(":")[1])',
+      '  setTimeout(() => {',
+      `    n.createServer((c) => { const u = n.connect(${remotePort}, '127.0.0.1'); c.pipe(u); u.pipe(c); c.on('error', () => {}); u.on('error', () => c.destroy()) }).listen(lp, '127.0.0.1')`,
+      '  }, 600)',
+      '} else { console.log(LINE) }',
+      '',
+    ].join('\n'))
+    const h = await openRemote({ host: 'h' }, { bin: 'node ' + stub })
+    const lp = Number(new URL(h.baseUrl).port)
+    const ok = await new Promise<boolean>((res) => { const s2 = net.connect(lp, '127.0.0.1', () => { s2.destroy(); res(true) }); s2.on('error', () => res(false)) })
+    expect(ok, '转发口真可连').toBe(true)
+    h.close()
+    srv.close()
+  }, 20_000)
+  it('隧道秒退（-N 立即 exit 1）→ openRemote 抛固定错误（不返回死端口、不 uncaught）', async () => {
+    const fs = require('node:fs') as typeof import('node:fs')
+    const os = require('node:os') as typeof import('node:os')
+    const stub = fs.mkdtempSync(join(os.tmpdir(), 't46b-stub4-')) + '/ssh-stub.cjs'
+    fs.writeFileSync(stub, [
+      `const LINE = 'HIVEBOT-CONNECT ' + JSON.stringify({ base_url: 'http://127.0.0.1:9', token: 'abcdefABCDEF123456_-~x', remote_root: '/srv', version: 1 })`,
+      'if (process.argv[2] === "-N") process.exit(1)',
+      'else console.log(LINE)',
+      '',
+    ].join('\n'))
+    const before = uncaught.length
+    await expect(openRemote({ host: 'h' }, { bin: 'node ' + stub })).rejects.toThrow(/remote: invalid/)
+    expect(uncaught.length, '无 uncaught（回调 throw 洞）').toBe(before)
+  }, 20_000)
+  it('ENOENT（bin 不存在）→ openRemote 抛固定错误、不 uncaught', async () => {
+    const before = uncaught.length
+    await expect(openRemote({ host: 'h' }, { bin: 'node /nonexistent-ssh-stub-xyz.cjs' })).rejects.toThrow(/remote: invalid/)
+    expect(uncaught.length, '无 uncaught').toBe(before)
+  }, 20_000)
 })

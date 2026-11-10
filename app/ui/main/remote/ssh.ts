@@ -89,7 +89,8 @@ export async function waitPort(port: number, deadlineMs: number, alive?: () => b
 /** 跑一次 ssh 命令收 stdout（64KiB 上限；20s 超时）。失败抛固定文案（不含 stdout）。 */
 function sshOnce(bin: string, argv: string[], onSpawn?: (pid: number | undefined) => void): Promise<string> {
   return new Promise((resolve, reject) => {
-    const child = spawn(bin, argv, { stdio: ['ignore', 'pipe', 'ignore'], env: process.env })
+    const binParts = bin.split(' ') // 测试 stub 可带 'node x.cjs' 前缀
+    const child = spawn(binParts[0]!, [...binParts.slice(1), ...argv], { stdio: ['ignore', 'pipe', 'ignore'], env: process.env })
     onSpawn?.(child.pid)
     let out = ''
     const timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error(ERR)) }, 20_000)
@@ -116,6 +117,7 @@ export async function openRemote(cfg: RemoteConfig, opts: { bin?: string } = {})
   let backoffMs = 1000
   let restartTimer: ReturnType<typeof setTimeout> | undefined
   let firstUp = false
+  let tunnelGone = false // 任务C(二)：error/exit 都置——waitPort 的存活探测与首起失败判定都看它
   const scheduleRestart = (): void => {
     if (closed || restartTimer !== undefined) return // 有界退避：同刻只挂一个重连定时器（error+exit 可能连发）
     const wait = backoffMs
@@ -123,22 +125,29 @@ export async function openRemote(cfg: RemoteConfig, opts: { bin?: string } = {})
     restartTimer = setTimeout(() => { restartTimer = undefined; startTunnel() }, wait)
   }
   const onTunnelGone = (): void => {
-    if (closed) return
-    if (!firstUp) { closed = true; throw new Error(ERR) } // 审查1：首起失败（spawn error/秒退）→ 固定错误
+    tunnelGone = true
+    if (closed || !firstUp) return // 任务C(二)：回调里不 throw（传不到 await 方、成 uncaught）也不碰 closed——首起失败交给 waitPort→!up→openRemote 抛
     // ponytail: 指数退避重起；应用强杀时 Windows 上 ssh.exe 成孤儿（根治要 Job Object，先记上限）
     scheduleRestart()
   }
   const startTunnel = (): void => {
     if (closed) return
-    tunnel = spawn(bin, tunnelArgv(cfg.host, localPort, remotePort), { stdio: 'ignore', env: process.env })
-    tunnel.on('error', () => onTunnelGone()) // 审查1：ENOENT/资源不足等 spawn 失败同路处理
+    tunnelGone = false
+    const binParts = bin.split(' ')
+    tunnel = spawn(binParts[0]!, [...binParts.slice(1), ...tunnelArgv(cfg.host, localPort, remotePort)], { stdio: 'ignore', env: process.env })
+    tunnel.on('error', () => onTunnelGone()) // ENOENT/资源不足等 spawn 失败同路
     tunnel.on('exit', () => onTunnelGone())
   }
   startTunnel()
   // ponytail: 「先 listen 再 close」的空闲端口有竞态（极小窗内别人占走）；-L 已带 ExitOnForwardFailure，隧道会退由重起兜
-  const up = await waitPort(localPort, 15_000, () => tunnel?.exitCode === null && tunnel?.connected !== false).catch((e: unknown) => { if (!closed) { closed = true } throw e })
+  const up = await waitPort(localPort, 15_000, () => !tunnelGone).catch((e: unknown) => { if (!closed) { closed = true } throw e })
   firstUp = up
-  if (!up && !closed) { closed = true; tunnel?.kill('SIGTERM'); if (restartTimer !== undefined) clearTimeout(restartTimer); throw new Error(ERR) }
+  if (!up) { // 任务C(二)：首起失败（隧道 error/秒退→tunnelGone→waitPort 提前 false，或 15s 没通）——这里抛，调用方拿到固定错误
+    closed = true
+    tunnel?.kill('SIGTERM')
+    if (restartTimer !== undefined) clearTimeout(restartTimer)
+    throw new Error(ERR)
+  }
   return {
     baseUrl: `http://127.0.0.1:${localPort}`,
     token,

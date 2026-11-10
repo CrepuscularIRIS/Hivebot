@@ -1,0 +1,81 @@
+# Dev Log
+
+> 里程碑批次（每条 = 一张工单从施工到经理验收合并的完整闭环）。工单制：主 agent 施工 → reviewer（独立厂商）审查 → 经理（Opus）验收 → 合并+回测。
+
+- **5f21e680** feat(p4-ui): merge U-15 dev-min D1 end-to-end (W1 consumer exit)
+- **ce6f93e4** fix(p4-ui): merge U-17 dsh connect retry + bounded rpc + dead-socket eviction
+- **9100e995** feat(p4-ui): merge U-21 P-A roster+dialog and P-B conversation flow (R0 self-written renderer)
+- **9f4f4101** chore(p4-ui): merge U-00.fN drop dead dsh links + submodule, add markdown deps, fix loadURL abort
+- **ddd7881a** feat(p4-ui): merge U-22 P-B closeout - offline hardening, markdown+shiki, D2/D4 gates
+- **27e528c6** feat(p4-ui): merge U-23 P-D settings info-pane and P-C market page (W2 final pages)
+- **1c0373ce** fix(p4-ui): merge U-28 L-5 A-group recovery chain fixes (R1-R6)
+- **b87eaebd** fix(p4-ui): merge U-29 L-5 B+C fixes - deadline rejection, M3 guards, test env (R7/R8/R9+O1/O2)
+- **b67a10c8** feat(p5): merge P5-55 (+f1) - 0.78.1 visual closure (app-vs-ref open=0) with two-button primary fix
+- **4ed90aee** fix(p6): merge P6-10.f2+f2a review 修复链（四方向 10+2 项）
+- **8e59bdd8** fix(p6): merge P6-26 文件读取 fd 身份绑定（读侧 TOCTOU 关闭 + 软链工作目录修复）
+- **c5fbb6f6** feat(p7): merge P7-F1 操作账本（含 f1 撕裂修复）
+- **6904c26b** feat(p7): merge P7-F2 来源分类+H1 授权+受限管理桥（含 f1 否定冲突修复）
+- **39e7d106** test(p6): merge workflow 根审批测试适配
+- **b0c683e7** fix(p7): 合并F1持久化关闭修复并记录独立覆盖验收
+- **814177eb** feat(p5): merge P5-28 提问作答 main 分支（结构化 answers 严格校验+同批 id+二答拒，VERIFY PASS @14ba8f8）
+- **bb971d14** feat(p6): merge T-taint goal/schedule来源回合污染判定（VERIFY PASS @f848661，R2-1定案推翻经差分证明）
+- **6c335e3e** fix(p5): merge P5-28.f1 四发现修复（并发守卫/稀疏拒/钩子门控/非法批次闭环，VERIFY PASS @68d38b5）
+- **389dbc07** feat(p6): merge T-taint.f1 send/stop接coordinatorTainted+classify补字段（VERIFY PASS @ad4d70d，14b污染暴露前置闭合）
+- **6f7e58bb** test(p5): merge P5-H3 TEST_HOME 运行级唯一化（VERIFY 1/2/3/5/6/7 PASS，第4项口径机器不可行另立H7/H8）
+- **58069e0d** merge: T1 unit/support/market/examples 裸 mkdtemp 归零（manager 任务B验收通过，receipts/T1.md）
+- **9e52a5a4** merge: T2系 ssh 测试夹具三笔（本体+有效性返修+生命周期返修，含复核轮修复）——manager任务B终验通过
+- **89f69325** merge: T4 dsh headless + ssh 族真组合（manager任务B终验通过）
+- **fe8c4f61** merge: T6 skill 根收口 + 对话存 skill 真组合（manager任务B终验通过）
+- **da5042b0** merge: T14 结案（REFUTED 非缺陷：测试装置数据根分叉）——SDK层三格+UI对齐回归双留档
+- **2d33ebe5** merge: T7a 整枝——skill 启用 API（本体+T7ab 符号链接收口+T7ac list/staging 层+终验前置），BRIEF 验收②后端全通
+- **43648f09** merge: T8+T8b e2e mkdtemp → tmkdir（22+2 文件，~77 处机械替换）
+- **486b8f49** merge: T7c 整枝——skill 写入审阅卡（本体+T7cb符号链接+T7cc真造never子代理）
+- **7c4abe88** merge: feat/T9a——产品启动器 ssh 组合骨架（L8-d，T9a 链四单终验通过）
+- **eea0965c** merge: feat/T7ce——skill 根过 fs.resolve（审查 C1，T7c 链补丁）
+- **74bb601c** merge: feat/T9ae——runtime patch 插值 yamlScalar + 本机清继承 P2SDK_SSH_MODE（审查 C3+C4）
+- **8450b660** merge: feat/T16——dsh 依赖升 0.2.2-rc.1 + 三件安全修补 + 锚点重定（T16+T16b 终验通过）
+- **ec204dd9** merge: feat/T9af——guard extraNeverTools 归 apply 闭包（审查 C2）
+- **4b159475** merge: feat/T9b——fs-zone-ssh 五写入口 + guard 远端根 + containment 词法化 + remoteHome 校验（三单终验通过）
+- **3ca13534** merge: feat/T10——远端 bash 套 wrapper（sandbox-zone-ssh，T10+T10b 终验通过）
+- **d290edce** merge: 主线同步（T10 合并后）——T9b4b 基于最新主线
+- **f5f2147b** merge: feat/T9b4——guard remoteHome 校验随插件释放而停（审查 C1 修复链闭环）
+- **94495c40** merge: feat/T7b——Skills 段 + Pick from your skills 对话框（功能版，Q-030=先合并后修）
+- **94da6af2** merge: feat/T17——产品启动器 app/launcher/hivebot（终验通过，本机体验入口）
+- **6107361a** merge: feat/T11——main 侧远端工作区（复验通过：⑧恢复+canonical 存档+P2 收口）
+- **1500fdb3** merge: feat/T17b——启动器测试面 oracle+三修（终验通过：M2′M3M4M5′M6M7 六刀咬合）
+- **3655a079** chore(tickets): T22 认领合入（工单文件）
+- **6697c899** chore: 合入 T22 回执（receipts/disposition/截图清单）
+- **7ecc083b** merge: T21+T22——outline 侧板接数据 + 主聊天只留首答终答（经理终验通过）
+- **f097146a** chore: 同步 T20b 工单
+- **74cbeda0** merge: T23 状态行短语引擎（经理终验通过）
+- **8d4afb17** merge: T20+T20b 0.79.3 参照台与事实表（经理终验通过）
+- **951d5148** chore: 同步 T24b 工单
+- **8f60a7d1** merge: T24+T24b 创建对话框形象选择（经理复验通过）
+- **45e6e8a2** merge: T29 删 ToolResultCard 死路径（机械单——unit 180/check diff=0/范围 3 文件）
+- **6d378b7c** merge: T25 kickstart 自我介绍（经理终验通过）
+- **b7e4eb48** chore: 同步 T26b 工单
+- **8b5597ed** merge: T26+T26b onboarding A 段（经理合并验收通过）
+- **cbf950ad** chore: 同步 T28c 工单
+- **6344af2a** merge: T28+T28c onboarding 后半（经理合并验收通过）
+- **e344dcc7** chore: 同步 T30b
+- **7dc72db8** chore: 同步 T30c
+- **27845ce8** merge: T30+T30b+T30c 对话框 0.79.3 Thn 版式（经理终验通过——暗色三处拆 T30d 后续）
+- **813d38b5** chore: 同步 T30db
+- **8bf33695** merge: T30d+T30db 暗色对话框三处 token（经理终验通过）
+- **34aa7d20** merge: T28b roleUseCaseBots+42 模板（经理终验通过——T28bb 一行修复单遗留）
+- **076e753e** merge: 吸收主线（T11 已合——workspace.mjs 可用）——T7d 续做前置
+- **c80da102** merge: T32 onboarding 编舞+版式断言全链（T32/T32b/T32c 三轮终验通过）
+- **924da88c** merge: T12a ssh 断连专用通知（真帧喂测终验通过）
+- **06067717** merge: T7d/T7db bash 写 skill 根收口（预建+ro-bind+父目录自绑+链接拒绝，两轮返修终验通过）
+- **49b19769** merge: T33 产品认知提示段（终验通过）——每个 bot 知道同伴名册与建 bot 路径
+- **da04ea85** merge: T34 编排开闸（Q-035=A 终验通过）——orchestration 进默认链，主 bot 获 SuperAgent 帽
+- **1819accb** merge: T34 终验产物（挪done+T34b工单）补并
+- **8c95ed03** merge: T37 术语文案（待经理追认）——worker 不叫 bot/subagent 看不见说法改掉
+- **706b7d9b** merge: T37b send/stop 漏网叫法（待经理复验）
+- **ac9405b3** merge: T36 主 bot subagent 进 Workers（T36+T36b 两轮复验通过）
+- **05b0741f** merge: T39 点 Done 行不跳组（终验通过）——sections 传 held 非 active
+- **76b3ce9e** merge: T40 提问卡（T40+T40b 两轮返修终验通过）——bot 提问出卡可答，回合不再挂死
+- **728d3194** merge: T46a+T46ab+T46ac Windows 打包链（Hivebot-Setup-0.1.0.exe 116MB、白名单+禁令校验、NSIS 按用户装）——经理三单验收 @ dc864c0b
+- **a1a76fad** merge: T45a+T45c 桌宠骨架+返修——经理验收 @ 7749653b（工单冲突保留 done/ 版本）
+- **70b1ca76** merge: T41+T41b+T41c+T41d 隐藏 bot + Hidden Bots 恢复——经理验收 @ dd93ac50
+- **7dbfbb91** merge: T34b+T34b2 ⑤ 环境泄漏探针+④ 断言收紧——经理验收 @ 68e6ce96

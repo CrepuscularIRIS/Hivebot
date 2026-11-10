@@ -1272,3 +1272,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 ## 2026-11-10 · merge T46d+T46db（serve --connect+workspace）；T46b 解锁
 - merge `feat/T46d`：--connect 一条命令拿齐（tr -d 单行校验：控制字符含 LF/DEL/双引号/反斜杠拒，空格/中文放行，locale 无关）+P2SDK_WORKSPACE_ROOT 挂 workspace RPC（探针实证真落盘）+符号链接可调——经理复验 @ ade0b34d（LANG=C 双语区手测矩阵）。回测：e2e 1 passed、start.test 48、残留 0。
 - **T46b 解锁开工**（Windows 侧最后一块：remote.json→ssh.exe 隧道→自动重连）。
+
+## 2026-11-10 · merge T46b（Windows ssh 连 Ubuntu serve）——三验两修收官
+- merge `feat/T46b`（经理第 3 轮复验 @ c7a2e967）：remote.json→ssh 固定 argv→`serve --connect` 一条命令拿齐→隧道+指数退避重连→token 七面不外泄；两轮终验抓出 waitPort alive 的 connected 语义洞+回调 throw 洞（均探针实证后修）。回测（新构建）：remote 单测 21、remote-ssh e2e 八格 23.7s、launcher-serve 1p、skills+m3 118p，残留 0。
+- **SSH 线全部收官**：T46c serve/T46cb 锁分流/T46d --connect/T46db 校验/T11c skills 拒/W2b 防泄漏/T46b 客户端——Windows 虚拟机实机清单在 T46b 回执（Ubuntu 符号链接+serve 常驻；Windows ssh config+remote.json；建 bot 落 Ubuntu；关应用收 ssh.exe；杀 ssh 30s 自愈）。
+- 遗留：ssh-workspace ⑤c 主线回归红（T11 合并时绿、后被某次合并弄坏——已记提议单开排查）；bin.split 测试口子（SystemRoot 带空格才触发，低优提议）；launcher.spec 既有红家族。

@@ -274,7 +274,7 @@
 
 ## Windows 研发线（用户 2026-11-09 指示：「后续我会在 windows 做类似的研发工作. 将 ssh 列入 todo」）
 - **T46c `hivebot serve`（W2，已有工单草稿）**：Ubuntu 侧只起 SDK 不起 Electron + 常驻——Windows 研发的前置，优先级提升。
-- **launcher.spec 既有红修复单（待开）**：7 failed/2 passed 超时类（①②④⑤）——主仓基线就红（近批合并未回归该 spec；T46c 对照 stash 确认无增量红）。排查方向：Electron 版本升级/时序/Xvfb 环境。
+- **launcher.spec 既有红修复单（待开）**：7 failed/2 passed 超时类（①②④⑤）——主仓基线就红（近批合并未回归该 spec；T46c 对照 stash 确认无增量红）。排查方向：Electron 版本升级/时序/Xvfb 环境；**ssh-workspace.spec ⑤c 同族**（主 bot 委派 worker 60s 轮询超时，T11c 对照主仓一致无增量）。
 - **T46b Windows 连 Ubuntu（W3）**：ssh.exe 隧道 + remote.json（Q-045 已定案：T2 夹具模拟 + Windows 虚拟机实机）。
 - 用户将在 Windows 上做类似研发——Windows 侧工作环境（Git/Node/pnpm/构建链）等 exe 装好后按需开单。
 

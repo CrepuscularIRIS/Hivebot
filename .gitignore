@@ -1,0 +1,16 @@
+repos/*/
+node_modules/
+dist/
+*.log
+.env
+.env.*
+# p5 起调研探针的运行时产物（含临时 token / credentials），绝不入库
+work/*/evidence/**/handoff/
+work/*/evidence/**/runtime/
+work/*/evidence/**/*.lock
+# P5-01 决策 8：沙箱类测试 HOME（/home/lingxufeng/bot/.test-homes/p5-<任务>）
+.test-homes/
+work/p7-admin/evidence/review-e5ff286/B-env/
+.playwright-cli/
+.playwright-mcp/
+.vendor-tmp/

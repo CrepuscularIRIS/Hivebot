@@ -1,0 +1,24 @@
+{
+  "name": "hivebot",
+  "version": "0.1.0",
+  "description": "Hivebot 资源清单（modpack 式）——公开仓只含自有代码；外部资源由 install.sh 按此清单拉取到本地拼装私用完整版。",
+  "resources": [
+    {
+      "id": "grok-bot-0.18-reconstructed",
+      "why": "UI 移植层的上游源（frontend/ 与 source/ 协议层）。无许可证，只作本地依赖拉取，不随本仓分发。",
+      "repo": "https://github.com/b-nnett/grok-bot-0.18-reconstructed",
+      "pin": "a9f633e",
+      "into": "vendor/grok-bot-0.18-reconstructed"
+    },
+    {
+      "id": "dsh-pet-webm",
+      "why": "桌宠动画资产。代码 MIT、形象 CC BY-NC-SA 4.0（不可商用分发）——私用可，商用前换形象。",
+      "repo": "https://github.com/PC2005-cloud/dsh-pet",
+      "pin": "c253868",
+      "pick": "dsh-pet/assets/webm/*",
+      "into": "app/ui/pet/assets/fish/",
+      "mapping": "见 app/ui/pet/assets/fish/SOURCE.md（中文文件名逐字对应六态+点击+拖拽）"
+    }
+  ],
+  "notes": "0.18 树与 source/ 的本地增量（shim 接线层之外的补丁）不在本仓；完整拼装指南见 docs/PRIVATE-LAYER.md（Windows 线开发中）。"
+}

@@ -1,0 +1,11 @@
+packages:
+  - '.'
+  - 'renderer-grok'
+allowBuilds:
+  electron-winstaller: false  # T46a: Squirrel 不用（NSIS 路线），pnpm add 自动写入的占位改 false
+  esbuild: true
+  node: true
+
+# dsh client 保留集经 link: 协议指向 vendor/deepseek-harness 的已构建包
+# （submodule 内自装依赖并 build:lib:client 后才可 import，见
+# work/p4-ui/SPIKE.md 的 bootstrap 一条命令）。

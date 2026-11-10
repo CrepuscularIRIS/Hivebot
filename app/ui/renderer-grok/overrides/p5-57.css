@@ -1,0 +1,213 @@
+/* P5-57 · 新 UI 面样式（ours，定稿 work/p5-parity/ui/P5-57-final.md）：市场 overlay、新建对话框、配置面板段、停止钮。
+ * 数值出处 RE-visual-078-values.md：D1 容器 / D2 头部 / D3 tablist / B9 药丸钮；token 全走 P5-55 色板（亮暗同源）。
+ * 类名一律 pb-* 前缀（不与上游 stylex 原子类竞争，无需 !important），只有沿用上游类 .sand-plugins-dialog 的外壳例外。 */
+
+/* ======== 共用：对话框外壳（D1：r14、1px stroke-secondary、elevated、无阴影；开场 .97→1 + fade 200ms ease-sharp）======== */
+.sand-plugins-dialog.pb-market,
+dialog.pb-dialog {
+  box-sizing: border-box; margin: auto; padding: 0;
+  color: var(--sand-text-primary); background: var(--cursor-bg-elevated, var(--sand-bg-elevated));
+  border: 1px solid var(--cursor-stroke-secondary); border-radius: 14px; box-shadow: none; /* R2 D1 实测 14（色板 --cursor-radius-xl 现值 12，不借用） */
+  font: 400 14px/20px var(--sand-font-family, system-ui, sans-serif);
+  animation: pb-dialog-in 200ms cubic-bezier(.165, .84, .44, 1) both;
+}
+dialog.pb-dialog::backdrop { background: var(--cursor-bg-scrim, rgba(0, 0, 0, .32)); }
+@keyframes pb-dialog-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sand-plugins-dialog.pb-market, dialog.pb-dialog { animation: none; } }
+:is(.pb-market, .pb-dialog, .pb-pane) :is(button, input, select, [role="tab"]):focus-visible { outline: 2px solid var(--cursor-stroke-focused, var(--sand-border-focus-primary)); outline-offset: 1px; }
+
+.pb-note, .pb-muted { color: var(--sand-text-secondary); font-size: 13px; line-height: 18px; margin: 0; }
+.pb-warn { color: var(--sand-text-warn-primary); font-size: 13px; margin: 0; }
+.pb-error { color: var(--sand-text-danger-primary); font-size: 13px; margin: 0; }
+.pb-link { padding: 0; border: 0; background: none; color: var(--sand-text-accent-primary); font: inherit; cursor: pointer; }
+.pb-link:hover { text-decoration: underline; }
+/* P5-41.f1 ④ 原生表单最小对齐：与市场搜索框 / composer 同族——secondary 填充、无硬边框、半像素描边、r12；
+ * select 去原生外观换 chevron（currentColor 遮罩，亮暗同源）。原生控件本身（下拉弹层、radio/checkbox 字形）仍是平台的，进签收单。 */
+.pb-select,
+.sand-agent-settings :is(input[type="text"], textarea) {
+  box-sizing: border-box; min-height: 36px; padding: 8px 12px; border: 0; border-radius: 12px; outline: 0;
+  background: var(--sand-bg-secondary); color: var(--sand-text-primary); font: inherit; font-size: 14px; line-height: 20px;
+  box-shadow: inset 0 0 0 .5px var(--sand-border-tertiary-translucent);
+  transition: box-shadow .12s ease-out;
+}
+.pb-select {
+  appearance: none; padding-right: 32px; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--sand-text-tertiary) 50%), linear-gradient(135deg, var(--sand-text-tertiary) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%; background-size: 5px 5px; background-repeat: no-repeat;
+}
+.pb-select option { background: var(--sand-bg-elevated); color: var(--sand-text-primary); }
+.sand-agent-settings :is(input[type="text"], textarea) { width: 100%; margin: 4px 0 8px; }
+.sand-agent-settings textarea { min-height: 72px; resize: none; }
+:is(.pb-select, .sand-agent-settings input[type="text"], .sand-agent-settings textarea)::placeholder { color: var(--sand-text-tertiary); }
+:is(.pb-select, .sand-agent-settings input[type="text"], .sand-agent-settings textarea):focus-visible { outline: 0 !important; box-shadow: 0 0 0 2px var(--cursor-stroke-focused, var(--sand-border-focus-primary)); }
+.pb-select:disabled { opacity: .6; cursor: default; }
+
+/* ======== ① 市场（D1 容器 900×700 / D2 头部 48 / D3 tablist）======== */
+.sand-plugins-dialog.pb-market {
+  position: relative; display: grid; grid-template-rows: auto auto auto minmax(0, 1fr);
+  width: min(900px, calc(100vw - 32px)); height: min(700px, calc(100vh - 96px)); overflow: clip;
+}
+.pb-market__head { display: flex; align-items: center; gap: 4px; height: 48px; box-sizing: border-box; padding: 10px 48px 10px 10px; }
+.pb-market__head h2 { margin: 0 0 0 6px; font-size: 15px; font-weight: 600; line-height: 20px; }
+.pb-market .sand-plugins-dialog__close { position: absolute !important; top: 10px !important; right: 10px !important; left: auto !important; } /* 原子类 :not(#\#) 压位 */
+/* 遮罩：ProductionRenderer overlay 帧取 var(--cursor-bg-scrim)，色板未定义 → 透明；0.78.1 市场实测整窗压暗约 50% 黑 */
+div:has(> .pb-market) { background: rgba(0, 0, 0, .5) !important; }
+.pb-offline { margin: 0 16px 8px; padding: 6px 12px; border-radius: 10px; background: var(--sand-bg-warn-secondary); color: var(--sand-text-warn-primary); font-size: 13px; }
+.pb-market__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 0 16px 10px; }
+.pb-search {
+  display: flex; flex: 1 1 280px; align-items: center; gap: 8px; min-width: 0; height: 32px; padding: 0 12px;
+  border-radius: 9999px; background: var(--sand-bg-secondary); color: var(--sand-text-tertiary);
+}
+.pb-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--sand-text-primary); font: inherit; font-size: 13px; }
+.pb-search:focus-within { box-shadow: 0 0 0 2px var(--cursor-stroke-focused, var(--sand-border-focus-primary)); }
+.pb-market .pb-search input:focus-visible { outline: none !important; } /* 外层 pill 已画焦点环 */
+.pb-market__scroll { overflow: auto; padding: 4px 16px 16px; border-top: 1px solid var(--sand-border-tertiary-translucent); }
+
+.pb-list { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 8px 0 0; list-style: none; }
+/* R-04 §1.2 sand-plugins-row：图标 40 + 名称 + 副题 + trailing（右侧动作区） */
+.pb-row { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 0 8px 0 0; border-radius: 12px; }
+.pb-row:hover { background: var(--sand-bg-hover); }
+.pb-row__open {
+  display: flex; flex: 1 1 auto; align-items: center; gap: 12px; min-width: 0; padding: 10px 8px; border: 0; border-radius: 12px;
+  background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.pb-row__open--static { cursor: default; }
+.pb-row__main { display: flex; flex-direction: column; min-width: 0; }
+.pb-row__title { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-row__desc { color: var(--sand-text-secondary); font-size: 13px; line-height: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-row__trailing, .pb-row__action { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.pb-mono {
+  display: grid; place-items: center; flex-shrink: 0; border-radius: 8px; font-weight: 600;
+  background: var(--sand-bg-secondary); color: var(--sand-text-secondary); box-shadow: inset 0 0 0 .5px var(--sand-border-tertiary-translucent);
+}
+/* ✓Connected 徽标（HAt：check 12 + Connected）；Not available / Not supported 状态徽标（role=status） */
+.pb-added { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; color: var(--sand-text-secondary); font-size: 13px; font-weight: 500; }
+.pb-status { flex-shrink: 0; color: var(--sand-text-secondary); font-size: 13px; } /* P5-41.f1：tertiary 亮色 3.96 <4.5；R-04 无该文字色值（VAt 未取到），改 secondary */
+.pb-status--danger { color: var(--sand-text-danger-primary); }
+.pb-fail { flex-shrink: 1; min-width: 0; color: var(--sand-text-danger-primary); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
+/* 已装预览条（R-04 §1.2 sand-plugins__installed-preview：≤4 图标堆叠 18px + 计数 + chevron-right 12） */
+.pb-installed-preview {
+  display: inline-flex; align-items: center; gap: 8px; margin: 10px 0 2px 8px; padding: 6px 10px 6px 8px; border: 0; border-radius: 9999px;
+  background: var(--sand-bg-secondary); color: var(--sand-text-secondary); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: background-color .12s ease-out;
+}
+.pb-installed-preview:hover { background: var(--sand-bg-secondary-hover, var(--sand-bg-hover)); color: var(--sand-text-primary); }
+.pb-installed-preview__stack { display: inline-flex; }
+.pb-installed-preview__stack > .pb-mono { border-radius: 5px; box-shadow: 0 0 0 1.5px var(--cursor-bg-elevated, var(--sand-bg-elevated)); }
+.pb-installed-preview__stack > .pb-mono + .pb-mono { margin-left: -5px; }
+.pb-section-title { margin: 12px 8px 0; color: var(--sand-text-secondary); font-size: 12px; font-weight: 600; }
+.pb-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 8px 0; }
+
+/* 详情（R-04 §2.1：单列页；头 = 图标 56 + 标题块 + 动作，下接描述与卡片） */
+.pb-detail { display: flex; flex-direction: column; gap: 16px; max-width: 680px; padding: 16px 8px 8px; }
+.pb-detail__head { display: flex; align-items: center; gap: 14px; }
+.pb-detail__titles { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.pb-detail__title { margin: 0; font-size: 18px; font-weight: 600; line-height: 24px; }
+.pb-detail__desc { margin: 0; color: var(--sand-text-primary); }
+.pb-detail__action { display: flex; flex-shrink: 0; align-items: center; }
+.pb-card { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 16px; background: var(--sand-bg-secondary); }
+.pb-card h4 { margin: 0; font-size: 13px; font-weight: 600; color: var(--sand-text-secondary); }
+.pb-card--action { align-items: flex-start; }
+.pb-info { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.pb-info__row { display: flex; gap: 12px; font-size: 13px; line-height: 18px; }
+.pb-info__row dt { width: 96px; flex-shrink: 0; color: var(--sand-text-secondary); }
+.pb-info__row dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.pb-note--danger { color: var(--sand-text-danger-primary); }
+.pb-doc__text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 20px; color: var(--sand-text-primary); }
+
+.pb-skeleton { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; }
+.pb-skeleton__row { height: 44px; border-radius: 12px; background: var(--sand-bg-secondary); animation: pb-pulse 1.4s ease-in-out infinite; }
+@keyframes pb-pulse { 50% { opacity: .5; } }
+@media (prefers-reduced-motion: reduce) { .pb-skeleton__row { animation: none; } }
+.pb-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 56px 16px; text-align: center; }
+.pb-empty__title { font-weight: 500; }
+
+/* ======== ② 新建对话框（原生 <dialog>，外观同 D1）======== */
+dialog.pb-dialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 96px); overflow: auto; }
+.pb-dialog__body { display: flex; flex-direction: column; gap: 14px; padding: 6px 20px 20px; }
+.pb-dialog__head { display: flex; align-items: center; justify-content: space-between; height: 48px; margin: 0 -10px 0 0; }
+.pb-dialog__head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.pb-dialog__note { margin: -6px 0 0; color: var(--sand-text-secondary); font-size: 13px; }
+.pb-field { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.pb-field > legend, .pb-field__label { padding: 0; margin-bottom: 6px; color: var(--sand-text-secondary); font-size: 12px; font-weight: 500; }
+.pb-option {
+  display: grid; grid-template-columns: 18px minmax(0, 1fr); column-gap: 10px; align-items: center;
+  padding: 6px 10px; border-radius: 10px; cursor: pointer;
+}
+.pb-option:hover { background: var(--sand-bg-hover); }
+.pb-option[data-disabled] { cursor: default; opacity: .75; }
+.pb-option input { margin: 0; accent-color: var(--sand-text-primary); }
+.pb-option__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.pb-option__desc { grid-column: 2; color: var(--sand-text-secondary); font-size: 12px; line-height: 16px; }
+.pb-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+
+/* ======== ② 配置面板段（info pane，上游 .sand-agent-settings 之后）======== */
+.pb-pane { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 0 12px 16px; }
+.pb-pane > .sand-info-pane__section-heading { margin-top: 8px; }
+.pb-pane-alert {
+  display: flex; align-items: flex-start; gap: 8px; align-self: stretch; padding: 10px 12px; border-radius: 12px;
+  background: var(--sand-bg-warn-secondary); color: var(--sand-text-warn-primary); font-size: 13px; line-height: 18px;
+}
+.pb-pane-row { display: flex; align-items: center; gap: 6px; align-self: stretch; min-width: 0; font-size: 13px; }
+.pb-pane-row .ui-icon { color: var(--sand-icon-tertiary); }
+.pb-pane-key { color: var(--sand-text-secondary); flex-shrink: 0; }
+.pb-pane-val { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.pb-pane-val--danger { color: var(--sand-text-danger-primary); text-decoration: line-through; }
+.pb-pane-flag { flex-shrink: 0; padding: 1px 6px; border-radius: 9999px; background: var(--sand-bg-danger-secondary); color: var(--sand-text-danger-primary); font-size: 11px; font-weight: 500; }
+.pb-pane-text { margin: 0; color: var(--sand-text-secondary); font-size: 12px; line-height: 16px; }
+.pb-pane-field { display: flex; flex-direction: column; gap: 4px; align-self: stretch; align-items: flex-start; }
+.pb-pane-field .pb-select { align-self: stretch; }
+.pb-pane-status { color: var(--sand-text-tertiary); font-size: 12px; line-height: 16px; }
+.pb-pane-status--danger { color: var(--sand-text-danger-primary); }
+
+/* ======== ③ 停止钮（会话头 trailing）======== */
+.pb-stop { display: inline-flex; align-items: center; gap: 8px; -webkit-app-region: no-drag; app-region: no-drag; }
+.pb-stop__error { color: var(--sand-text-danger-primary); font-size: 12px; }
+.pb-market__hint { padding: 10px 8px 0; }
+
+/* ======== T24 · 新建对话框形象区（13 形状 5/5/3 + 11 色板 + 58px 预览）======== */
+.pb-character { display: flex; flex-direction: column; align-items: center; gap: 10px; } /* T30：grid 改列 flex——名字框/预览按序纵排 */
+.pb-character__preview { display: inline-flex; }
+.pb-character__shapes { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-width: calc(5 * 40px + 4 * 6px); } /* 5/5/3：恰放 5 个/行（T24b：220px 差 4px 致 4/4/4/1），末行 3 个随 justify 居中 */
+.pb-character__shape { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: none; border-radius: 8px; background: transparent; cursor: pointer; padding: 4px; }
+.pb-character__shape[aria-pressed="true"] { background: color-mix(in srgb, var(--sand-text-secondary, #1c1c1c) 12%, transparent); }
+.pb-character__colors { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; max-width: calc(6 * 24px + 5 * 16px); row-gap: 16px; } /* T30b：24 直径/中心距 40（gap16）——ref 实测 */
+.pb-character__color { width: 24px; height: 24px; border-radius: 9999px; border: 2px solid transparent; cursor: pointer; padding: 0; }
+.pb-character__color[aria-pressed="true"] { border-color: var(--sand-text-secondary, #1c1c1c); }
+
+/* ======== T30 · 0.79.3 Thn 版式：预览 96/名字框/More options 折叠 ======== */
+.pb-dialog.pb-new-bot { width: 440px; }
+.pb-name-input { border: none; border-bottom: 1px solid var(--sand-border, #1c1c1c1f); font-size: 15px; padding: 8px 4px 10px; text-align: center; width: 100%; background: transparent; outline: none; }
+.pb-more { border: none; margin-top: 4px; }
+.pb-more > summary { color: var(--sand-text-secondary, #1c1c1cad); cursor: pointer; font-size: 13px; list-style: none; padding: 6px 0; text-align: center; }
+.pb-more > summary::marker { content: ''; }
+.pb-more[open] > summary { margin-bottom: 8px; }
+/* 形状钮 pitch 57/图形 36（ref 实测）——5/5/3 断言的 max-width 同步 */
+.pb-character__shapes { max-width: calc(5 * 57px + 4 * 6px); }
+.pb-character__shape { height: 57px; width: 57px; }
+/* 选中态：形状去灰底（描边在 ShapeGlyph 画）；色板 outline 外环 */
+.pb-character__shape[aria-pressed="true"] { background: transparent; }
+.pb-character__color[aria-pressed="true"] { border-color: transparent; outline: 1px solid var(--sand-text-secondary, #1c1c1c); outline-offset: 2px; }
+
+/* T30b：头部/底栏分隔线 + 名字框圆角灰边（ref）+ 暗 Create 对比 */
+.pb-dialog__head { border-bottom: 1px solid var(--sand-border, #1c1c1c1f); }
+.pb-dialog__actions { border-top: 1px solid var(--sand-border, #1c1c1c1f); }
+.pb-name-input { border: 1px solid var(--sand-border, #1c1c1c2e); border-radius: 9px; padding: 8px 12px; }
+.pb-name-input:focus { border-color: var(--sand-text-secondary, #1c1c1cad); outline: none; }
+
+/* T30c：名字框压全局 focus 圈（box-shadow+outline 双保险） */
+.pb-name-input:focus, .pb-name-input:focus-visible { box-shadow: none !important; outline: none !important; border-color: var(--sand-text-secondary, #1c1c1cad) !important; }
+/* T30d #2：暗分隔线——--cursor-line/--sand-border 在此上下文均未定义（探针 UNDEF），暗色给显式亮线 */
+.pb-dialog__head { border-bottom: 1px solid #1c1c1c2e; }
+.pb-dialog__actions { border-top: 1px solid #1c1c1c2e; }
+[data-theme="cursor-dark"] .pb-dialog__head { border-bottom-color: #ffffff2e; }
+[data-theme="cursor-dark"] .pb-dialog__actions { border-top-color: #ffffff2e; }
+/* T30d #1：暗 Create 白底黑字（探针：SandButton primary 原子类赢过 T30c 规则——!important 提权；
+   仅对话框内此钮，不动全局 primary token） */
+[data-theme="cursor-dark"] .pb-dialog__actions [data-action="create-bot"]:not([disabled]) { background: #ffffff !important; color: #1c1c1c !important; border-color: #ffffff !important; transition: none !important; }
+/* T30db #2：disabled→enabled 的 background-color transition 在截图/快速态拍出 205（computed 已 255）——transition none 消掉中间帧 */
+
+/* T30d #3：贴纸边双层 token（ref light=白 3px+灰 1px；ref dark 实测=浅灰环 48-78 on bg31） */
+[data-theme=cursor-dark] .pb-dialog__actions [data-action=create-bot]:not([disabled]) span { color: #1c1c1c !important; } /* T30db：文字色在 span 上（原子类 var #2e2e2e） */
+.pb-character { --pb-sticker-gray: #1c1c1c59; --pb-sticker-surface: #ffffff; }
+[data-theme="cursor-dark"] .pb-character { --pb-sticker-gray: #565656; --pb-sticker-surface: #1f1f1f; }

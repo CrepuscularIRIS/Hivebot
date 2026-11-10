@@ -1,0 +1,102 @@
+/* P6-15 / P6-16 · worker 分组与两侧 transcript 的样式（ours，定稿 work/p6-orchestration/ui/P6-15-16-FINAL.md）。
+ * token 只用 --sand-*（p5-55-palette.css，0.78.1 亮暗原值；FINAL §2-1：renderer-grok 没有 --dsw-*）。
+ * 侧栏选择器挂上游 .sand-agents-section（原子类 :not(#\#) 压位，需 !important）；transcript 卡片一律 pb-* 前缀。 */
+
+/* ======== 侧栏：合成 section ======== */
+/* 主 bot 自己那组与 __agents__ 不要 header（ponytail: CSS 藏 header——上游 section 必带 header，组只是为了排位） */
+.sand-agents-section:is([data-section-id^="pbots:main:"], [data-section-id="__agents__"]) > .sand-agents-section__header { display: none !important; }
+/* Workers / Done 挂在主 bot 行下：缩进 + 左侧 1px 竖线近似原版 d8e 连线 */
+.sand-agents-section:is([data-section-id^="pbots:workers:"], [data-section-id^="pbots:done:"]) {
+  margin-inline-start: 14px !important; padding-inline-start: 6px !important;
+  border-inline-start: 1px solid var(--sand-border-tertiary-translucent) !important;
+}
+
+/* 列表是 grid（view.css .sand-agents-list）：多个 section 时默认 align-content:stretch 会把空余高度分给每组，组间拉出大空白 */
+.sand-agents-list:has(> .sand-agents-section[data-section-id^="pbots:"]) { align-content: start !important; }
+/* 组标题：小号次级文字（上游未设字号，继承 16px 比行名还大） */
+.sand-agents-section[data-section-id^="pbots:"] > .sand-agents-section__header {
+  height: 28px !important; padding: 6px 8px 4px !important;
+  font-size: 12px !important; line-height: 16px !important; font-weight: 500 !important; color: var(--sand-text-tertiary) !important;
+}
+/* 运行中 worker 的活动行（上游 .sand-agent-item__activity 只给颜色，不给字号）：与预览同级 */
+.sand-agents-section[data-section-id^="pbots:"] .sand-agent-item__activity {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 12px; line-height: 16px; color: var(--sand-text-accent-primary);
+}
+
+/* ======== Messaging 行（与工具行同形，复用 .sand-outline-item*）======== */
+.pb-assign__row { display: flex; align-items: center; width: 100%; box-sizing: border-box; border: 0; background: transparent; color: inherit; font: inherit; text-align: start; }
+button.pb-assign__row { cursor: pointer; }
+button.pb-assign__row:focus-visible { outline: 2px solid var(--sand-border-focus-primary); outline-offset: -2px; }
+.pb-assign__row[aria-disabled="true"]:hover { background: transparent !important; }
+.pb-assign .sand-outline-item__preview { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-assign[data-status="pending"] .pb-assign__icon { animation: sand-outline-item-spin .9s linear infinite; }
+.pb-assign[data-status="failed"] .pb-assign__icon,
+.pb-assign[data-status="failed"] .sand-outline-item__label { color: var(--sand-text-danger-primary) !important; }
+.pb-assign__go { margin-inline-start: auto; color: var(--sand-text-tertiary); flex: none; }
+
+/* ======== 来源消息：assistant 泳道（左列，与气泡同宽上限 560）======== */
+.pb-peer-row { display: flex; justify-content: flex-start; margin-top: 12px !important; }
+.pb-peer { box-sizing: border-box; width: 100%; max-width: 560px; border-radius: 12px; color: var(--sand-text-primary); font-size: 13px; line-height: 18px; }
+.pb-peer button { font: inherit; }
+.pb-peer button:focus-visible { outline: 2px solid var(--sand-border-focus-primary); outline-offset: 1px; }
+.pb-peer__avatar { display: inline-flex; flex: none; width: 16px; height: 16px; align-items: center; justify-content: center; }
+.pb-peer__avatar--blank { border-radius: 50%; background: var(--sand-bg-secondary); }
+.pb-report__time { margin-inline-start: auto; flex: none; color: var(--sand-text-tertiary); font-size: 12px; }
+
+/* 回报卡：记录 / 数据（elevated 底 + 1px 边框，不是气泡填充） */
+.pb-report { padding: 10px 12px; background: var(--sand-bg-elevated); border: 1px solid var(--sand-border-tertiary-translucent); }
+.pb-report__head { display: flex; align-items: center; gap: 6px; min-height: 20px; }
+.pb-report__name { font-weight: 500; color: var(--sand-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.pb-report__sep { color: var(--sand-text-tertiary); }
+.pb-report__state { display: inline-flex; align-items: center; gap: 5px; flex: none; }
+[data-tone="success"] .pb-report__state { color: var(--sand-text-success-primary); }
+[data-tone="danger"] .pb-report__state { color: var(--sand-text-danger-primary); }
+[data-tone="warn"] .pb-report__state { color: var(--sand-text-warn-primary); }
+[data-tone="muted"] .pb-report__state { color: var(--sand-text-tertiary); }
+.pb-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+.pb-dot[data-hollow] { background: transparent; box-shadow: inset 0 0 0 1.5px var(--sand-text-quaternary); }
+.pb-mark { flex: none; }
+.pb-report__text {
+  margin: 6px 0 0; color: var(--sand-text-secondary); font-size: 13px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
+}
+.pb-report__text[data-expanded] { display: block; -webkit-line-clamp: none; }
+.pb-report__foot { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 6px; }
+.pb-report__foot:empty { display: none; }
+.pb-report__more { margin-inline-end: auto; padding: 0; border: 0; background: none; color: var(--sand-text-tertiary); cursor: pointer; font-size: 12px; }
+.pb-report__more:hover { color: var(--sand-text-secondary); }
+.pb-report__open {
+  display: inline-flex; align-items: center; gap: 2px; padding: 4px 8px; margin: -4px -8px; border: 0; border-radius: 8px;
+  background: transparent; color: var(--sand-text-accent-primary); font-weight: 500; cursor: pointer;
+}
+.pb-report__open:hover { background: var(--sand-bg-secondary-hover); }
+/* ask 项仍待决：warn 底（单项铺满卡内，合批铺满该行） */
+.pb-report:has(> .pb-report__item[data-pending]) { background: var(--sand-bg-warn-secondary); }
+
+/* 合批：头 + 每项一行（h32、r8，与 outline 行同族） */
+.pb-report__batch-head { display: flex; align-items: center; padding: 0 2px 4px; color: var(--sand-text-tertiary); font-size: 12px; font-weight: 500; }
+.pb-report__row {
+  display: flex; align-items: center; gap: 8px; width: calc(100% + 12px); min-height: 32px; margin: 0 -6px; padding: 0 6px; box-sizing: border-box;
+  border: 0; border-radius: 8px; background: transparent; color: inherit; text-align: start;
+}
+button.pb-report__row { cursor: pointer; }
+button.pb-report__row:hover { background: var(--sand-bg-secondary-hover); }
+.pb-report__row[data-pending] { background: var(--sand-bg-warn-secondary); }
+.pb-report__row .pb-report__name { flex: none; max-width: 40%; }
+.pb-report__preview { flex: 1 1 0; min-width: 0; color: var(--sand-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-report__go { flex: none; color: var(--sand-text-tertiary); }
+
+/* 任务卡（worker 侧，来自主 bot）：accent 左边线 + accent 浅底 = 这个 worker 收到的指令 */
+.pb-task { padding: 8px 12px 10px; background: var(--sand-bg-accent-secondary); border-inline-start: 2px solid var(--sand-border-accent-primary); border-radius: 4px 12px 12px 4px; }
+.pb-task__head { display: flex; align-items: center; gap: 6px; min-height: 20px; color: var(--sand-text-tertiary); font-size: 12px; }
+.pb-task__from { padding: 0; border: 0; background: none; color: var(--sand-text-accent-primary); font-weight: 500; font-size: 12px; }
+button.pb-task__from { cursor: pointer; }
+button.pb-task__from:hover { text-decoration: underline; }
+.pb-task__text { margin: 4px 0 0; color: var(--sand-text-primary); font-size: 14px; line-height: 22px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* GU-P6-15-r1 ④：不放慢、直接停——pending 行改静态图标（p5-57.css 同款 animation: none） */
+  .pb-assign[data-status="pending"] .pb-assign__icon { animation: none; }
+  .pb-report__open, button.pb-report__row { transition: none; }
+}

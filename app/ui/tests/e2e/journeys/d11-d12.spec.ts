@@ -1,0 +1,128 @@
+// U-31 全旅程收尾（PLAN U-31 ②③；P5-54 起跑在 renderer-grok 上）：D12① 生产 build 下 renderer 网络日志里 pbots-app:// 以外请求数
+// === 0（含 127.0.0.1，任何 http(s)/ws(s) 即 FAIL）；window + DOM 全文搜 launch token 命中 0；
+// D12② DOM 无 Sign in / computer / SSH / billing；D11/D9 DOM 复扫（会话设置无改 preset / 连接器入口、无 never 类）；
+// D12③ 截图存证：4 页（会话 / 插件市场 overlay / 设置 overlay / 会话设置 pane）× 亮暗共 8 张 → gitignored app/ui/test-output/U-31/。
+// 0.18 的账户区是本地 profile（Pbots · pbots-local@pbots.local，菜单只剩 Settings / About，P5-52），不是登录入口。
+import { expect, test, type Page } from 'playwright/test'
+import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
+import { launchShell } from '../../support/launch.ts'
+import { fakeOverlayPath, launchSdkRuntime } from '../../support/sdk-runtime.ts'
+import { MARKET_SOURCE_PATCH, serveMarket } from '../../support/connectors.ts'
+import { PRESETS_PATCH, createBots, evidenceOut, finalAssistant, openBot, send, textCall, waitProductReady } from '../../support/ui.ts'
+
+const EVIDENCE = evidenceOut('U-31')
+const FORBIDDEN = ['sign in', 'log out', 'computer', 'ssh', 'billing', 'danger-full-access', '始终允许']
+
+// P5-57：footer 入口文案 Connect apps，按类取
+const openPlugins = async (page: Page): Promise<void> => {
+  await page.locator('.sand-agents-sidebar__plugins').click()
+  await expect(page.locator('[data-market]')).toBeVisible()
+}
+async function openSettings(page: Page): Promise<void> {
+  await page.click('button[aria-label="Account"]')
+  await page.locator('[role=menuitem]', { hasText: 'Settings' }).click()
+  await expect(page.locator('.sand-settings-panel')).toBeVisible({ timeout: 15_000 })
+}
+
+test('D12①/② + D11/D9 DOM + 8 张截图：零外网请求、token 零泄漏、禁区词零命中、4 页亮暗存证', async () => {
+  test.setTimeout(240_000)
+  const server = await serveMarket()
+  const rt = await launchSdkRuntime({
+    patch: `${MARKET_SOURCE_PATCH}:${PRESETS_PATCH}:${fakeOverlayPath()}`,
+    cwd: tmkdir('bot-u31-ws-'),
+    env: { P2SDK_MARKET_SOURCE_INDEXES: `${server.realUrl} ${server.localUrl}` },
+  })
+  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })
+  const env = { rt, shell, page: shell.page, async stop() { await shell.stop(); await rt.stop(); await server.close() } }
+  try {
+    const { page } = env
+    await waitProductReady(page)
+    const [a] = await createBots(page, [{ title: 'U31-A', preset: 'p2-alpha' }])
+    await openBot(page, 'U31-A')
+    rt.writeScriptCalls(a!, [textCall(['U-31 旅程页存证回复。'])])
+    await send(page, '打个招呼')
+    await expect(finalAssistant(page).last()).toHaveText('U-31 旅程页存证回复。', { timeout: 30_000 })
+
+    // ---- D12①：renderer 网络日志（挂监听后重载 = 完整一轮页面加载 + 交互请求）----
+    const urls: string[] = []
+    page.on('request', (req) => { urls.push(req.url()) })
+    await page.reload()
+    await waitProductReady(page)
+    await openPlugins(page)
+    await page.waitForTimeout(800)
+    // P5-57：市场列表是第三方目录数据（描述里可能有 computer / ssh 等词），禁区词只扫产品外壳：剔除条目列表
+    await expect(page.locator('[data-market-list]')).toBeVisible({ timeout: 20_000 })
+    const pluginsText = (await page.locator('[data-market]').evaluate((el) => {
+      const copy = el.cloneNode(true) as HTMLElement
+      copy.querySelector('[data-market-list]')?.remove()
+      return `${document.body.innerText}\n${copy.innerText}`.replace((el as HTMLElement).innerText, copy.innerText)
+    })).toLowerCase()
+    await page.keyboard.press('Escape')
+    await openSettings(page)
+    // P5-31 起设置不渲染「Execution on Local Computer」下拉与团队 ceiling 文案（L-AP 档位不归 renderer），扫描不再剔除任何文案
+    const settingsText = (await page.locator('.sand-settings-panel').innerText()).toLowerCase()
+    expect(settingsText).not.toContain('execution on local computer')
+    expect(settingsText).not.toContain("team's admin")
+    await page.locator('.sand-settings-panel__close').click()
+    await openBot(page, 'U31-A')
+    await page.click('button[aria-label="View agent settings"]')
+    const pane = page.locator('aside.sand-info-pane[data-open]')
+    await expect(pane).toBeVisible()
+    const paneText = (await pane.innerText()).toLowerCase()
+    const historical = await page.evaluate(() => performance.getEntriesByType('resource').map((e) => e.name))
+    const all = [...urls, ...historical]
+    expect(all.length, '收集到网络请求（非空证据）').toBeGreaterThan(0)
+    const foreign = all.filter((u) => !u.startsWith('pbots-app://') && !u.startsWith('data:'))
+    expect(foreign, `pbots-app:// 以外的请求必须为 0（got ${JSON.stringify(foreign.slice(0, 5))}）`).toEqual([])
+
+    // token 零泄漏：DOM 全文 + window 上序列化可见的 dev 状态 + 顶层标量
+    const domHtml = await page.evaluate(() => document.documentElement.outerHTML)
+    const devJson = await page.evaluate(() => JSON.stringify((window as unknown as { __pbotsDev?: { state: unknown } }).__pbotsDev?.state ?? null))
+    expect(domHtml.includes(rt.token), 'DOM 全文不含 launch token').toBe(false)
+    expect(devJson.includes(rt.token), 'window dev 状态不含 launch token').toBe(false)
+    const windowScan = await page.evaluate(() => {
+      const parts: string[] = []
+      for (const key of Object.keys(window)) {
+        try { const v = (window as unknown as Record<string, unknown>)[key]; if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') parts.push(String(v)) } catch { /* getter 抛错跳过 */ }
+      }
+      return parts.join('\n')
+    })
+    expect(windowScan.includes(rt.token), 'window 顶层标量不含 launch token').toBe(false)
+
+    // ---- D12② / D9 / D11 DOM 扫描（会话页 + 插件 overlay + 设置 overlay + 会话设置 pane）----
+    const bodyText = (await page.locator('body').innerText()).toLowerCase()
+    for (const [scope, text] of [['body', bodyText], ['plugins', pluginsText], ['settings', settingsText], ['pane', paneText]] as const) {
+      for (const word of FORBIDDEN) expect(text, `${scope} 不应出现「${word}」（D12②/D9）`).not.toContain(word)
+    }
+    // D11（P5-57 起 pane 只读展示 preset / 连接器）：没有改 preset / 连接器 / 权限的入口——配置段无输入控件，唯一 select 是 Model；无权限词
+    expect(paneText, 'D11 pane 不应出现 permission').not.toContain('permission')
+    const config = pane.locator('[data-pane-config]')
+    await expect(config.locator('input, textarea, [role=checkbox], [role=radio]')).toHaveCount(0)
+    await expect(config.locator('select')).toHaveCount(1)
+    await expect(config.locator('select[data-pane-model]')).toHaveCount(1)
+
+    // ---- D12③：4 页 × 亮/暗 8 张截图 ----
+    const shots = async (name: string): Promise<void> => {
+      for (const mode of ['light', 'dark'] as const) {
+        await page.emulateMedia({ colorScheme: mode })
+        await expect(page.locator('html')).toHaveAttribute('data-theme', `cursor-${mode}`)
+        await page.screenshot({ path: join(EVIDENCE, `${name}-${mode}.png`) })
+      }
+      await page.emulateMedia({ colorScheme: 'light' })
+    }
+    await shots('info-pane') // 第 4 页：会话设置 pane（此刻正开着）
+    await page.keyboard.press('Escape')
+    await openSettings(page)
+    await shots('settings') // 第 3 页：设置 overlay
+    await page.locator('.sand-settings-panel__close').click()
+    await openPlugins(page)
+    await page.waitForTimeout(500)
+    await shots('market') // 第 2 页：插件市场 overlay
+    await page.keyboard.press('Escape')
+    await openBot(page, 'U31-A')
+    await shots('session') // 第 1 页：会话
+  } finally {
+    await env.stop()
+  }
+})

@@ -1,0 +1,38 @@
+{
+  "name": "pbots-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "pbots Electron shell (P4 U-00 skeleton)",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=24.9.0 <25",
+      "onFail": "download"
+    }
+  },
+  "main": "out/main/index.js",
+  "scripts": {
+    "setup": "pnpm install --frozen-lockfile && node node_modules/electron/install.js",
+    "postinstall": "node node_modules/electron/install.js",
+    "start": "electron-vite preview",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build && pnpm -C renderer-grok build && node scripts/stage-renderer.mjs",
+    "test": "vitest run",
+    "test:e2e": "sh scripts/run-e2e.sh",
+    "test:compare-app": "NODE_PATH=$PWD/node_modules sh scripts/run-e2e.sh -c ../../work/p5-parity/harness/compare/app.config.ts",
+    "dist:win": "electron-builder --win --x64"
+  },
+  "dependencies": {
+    "ws": "8.22.1"
+  },
+  "devDependencies": {
+    "@electron/asar": "4.3.1",
+    "electron": "44.7.0",
+    "electron-builder": "26.18.0",
+    "electron-vite": "6.0.0",
+    "playwright": "1.64.1",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.3",
+    "vitest": "5.0.5"
+  }
+}

@@ -269,3 +269,8 @@
 - （T10 终验提议）read-only 档 wrapper 不盖 /tmp：`bwrap-wrap.py:345` 只在 profile 自带 `--tmpfs /tmp` 时才加，read-only profile 不带 → 沙箱内可见 `/tmp/dsh-ssh-*` helper 端点目录（经理删 mode 那刀里数到 45 个）。默认 preset 走不到（只有 workspace-write / dfa），仅部署设 `DSH_PERMISSION_MODE=read-only` 时出现。候选：sandbox-zone-ssh 在 profile 段缺 `--tmpfs /tmp` 时补上（read-only 下是私有临时 tmpfs，不落盘）＋ ④c 加 read-only 格。归 T13 或单开。
 - （T9b 终验提议）`ssh-product.test.ts` 卫生：②d 失败态（launchRuntime 意外 resolve）要 stop 已起 runtime，否则泄漏 5 进程；②b 格名去掉「先红/现在能读到正文」、删恒 0 的 `asked`。下一张碰 ssh-product 的单顺手。
 - （T36b 复验提议，低）`data.ts` 换主竞态：`ui.setMain` 撞上换主前已起飞的 `rosterFlight` 时，`loadRoster()` 复用读旧 meta 的那次，`mainBotId` 被写回旧主、新主 helper 不出现（T36 前已存在）。候选：setMain 里等在飞的结束后再起一次新拉取。用户遇到或下一张碰 setMain 的单顺手。
+
+## Windows 研发线（用户 2026-11-09 指示：「后续我会在 windows 做类似的研发工作. 将 ssh 列入 todo」）
+- **T46c `hivebot serve`（W2，已有工单草稿）**：Ubuntu 侧只起 SDK 不起 Electron + 常驻——Windows 研发的前置，优先级提升。
+- **T46b Windows 连 Ubuntu（W3，等 Q-045）**：ssh.exe 隧道 + remote.json。
+- 用户将在 Windows 上做类似研发——Windows 侧工作环境（Git/Node/pnpm/构建链）等 exe 装好后按需开单。

@@ -5,7 +5,7 @@
 > 分支 / 作业目录：feat/T46b @ /tmp/bot-wt/T46b（先 setup + build）
 > 解锁：2026-11-10 T46d+T46db 验收过 @ ade0b34d（T11c 已合并）。**前提：feat/T46d 先合并进主线**，再从主线开 feat/T46b。
 > claimed：2026-11-10 main (GLM 5.3)
-> accepted：
+> accepted：2026-11-10 c7a2e967（manager 任务 B 第 3 轮，见 receipts/T46b.acceptance.md 末节）
 
 ## 目标
 Electron main 在没有 `PBOTS_DSH_HANDOFF`、但数据目录里有 `remote.json` 时：用一条固定 ssh 命令拿到 base-url / token / 远端根，起一条 ssh 本地端口转发，把现成的 `DshConnection` 指到转发端口上。token 只在内存里，ssh 隧道的生命期 = 应用的生命期。
@@ -96,3 +96,45 @@ remote.json → ssh argv、token 生命周期、子进程生命周期都在本�
 - `app/ui/main/remote/ssh.ts`、`app/ui/main/remote-root.ts`、`app/ui/main/index.ts`
 - `app/ui/tests/unit/remote/ssh.test.ts`、`app/ui/tests/e2e/remote-ssh.spec.ts`（必要时 `tests/support/ssh-fixture.ts` 小改）
 - 回执 `work/tickets/receipts/T46b.receipt.md`（含 Windows 实机清单）
+
+## 任务 C 重规划（manager Opus 5.5，2026-11-10，@ 566d53fb）——**方向不变，单点修复；失败计数 1**
+
+### 根因（经理亲自复现，两轮探针）
+不是 Electron spawn 怪癖，是 `main/remote/ssh.ts` 的 **`canConnect` 只连一次**：隧道刚 spawn、端口还没绑，`net.connect` 立刻 `ECONNREFUSED`（实测 2ms）→ `on('error')` 直接 `resolve(false)` → `openRemote` 抛 ERR 并 SIGTERM 隧道。15s 超时形同虚设。
+- 证据 1：e2e 全程 3.5s 就在 ① 红——等不了 15s 的「等端口」。
+- 证据 2：wrap 包装给隧道加 `-vvv -E sshv-$$.log`，**隧道的 -vvv 日志根本没生成**（进程起来就被杀）；connect 那条 `-vvv` 日志 Exit status 0，stdout（token 打码后 od 过）形状完全合法，parse 通过；sshd 侧这一轮隧道连 TCP 都没到——上一轮的「[preauth] closed」只是 kill 落在握手中途。
+- 「手动三连全通」是因为手动/探针自己轮询了端口，没走 `canConnect`。回执的三个方向（Electron 最小复现 / node:net 自建 proxy / e2e 降级）**全部驳回**：问题不在子进程层。
+
+### 修复（原单内施工，不开新单号）
+1. **先红**：`tests/unit/remote/ssh.test.ts` 加两格（导出等待函数，如 `waitPort(port, deadlineMs)`）：
+   - 端口 600ms 后才 listen → 在 deadline（给 3000ms）内返回 `true`（**现状红**：立即 false）；
+   - 从不 listen → deadline（给 800ms）后返回 `false`，且耗时 ≥ 700ms（防「立即 false」回潮）。
+2. **绿**：`canConnect` 改成截止时间内每 ~200ms 重试一次，连上即 true；另外隧道进程已退出时提前放弃（不必傻等满 15s）。最少代码，别引依赖。
+3. **spec 卫生（实锤泄漏）**：`remote-ssh.spec.ts` 的 finally 只 kill 本地 ssh 客户端，远端 ForceCommand 下的 `serve.sh → hivebot serve → start.mjs → dsh web` 整串成孤儿（经理查到 13 组 `/tmp/bot-t46b-e2e-*` / `/tmp/bot-t46b-probe-*` 残留）。finally 在 `rmSync` 前加 `execFileSync(join(REPO,'scripts','bot-reap'), ['--match', root])`（root 必须在 `/tmp/bot-` 下——tmkdir 用默认 TMPDIR 即可，别把 TMPDIR 指到沙箱白名单外）。
+4. 其余定案、argv、验收 1–6 **全部不变**。
+
+### 追加验收
+- 变异（并入验收 4）：`waitPort` 改回单次连接 → 新单测「延迟 listen」红；去掉「隧道已退提前放弃」→ 不要求红（只是快慢）。
+- 跑完 spec 后验收 6 必须真为空（先清旧孤儿：`~/bot/scripts/bot-reap --match bot-t46b-`，再跑）。
+
+### 已知上限（记 ponytail 注释，不在本单修）
+`await openRemote` 在 `loadURL` 之前：Windows 上 ssh 慢时主窗口最长 ~35s 不出现（20s connect + 15s 隧道），无任何提示。常见情况 1–3s，先接受；提议已记 queue。
+
+## 任务 C（二）（manager Opus 5.5，2026-11-10，@ 9b157da0）——**终验不过；失败计数 2；方向不变，单点修**
+详见 `receipts/T46b.acceptance.md`。两处根因都在 `openRemote` 的隧道监听，外加 e2e 跑在旧构建上。
+
+### 修复（原单内施工）
+1. **先红**（`tests/unit/remote/ssh.test.ts`，用 `openRemote({host:'h'},{bin:<临时假 ssh 脚本>})`，脚本按 argv 含 `-N` 分流；connect 分支打印合法 `HIVEBOT-CONNECT` 行；同时挂 `process.on('uncaughtException')` 计数，断言为 0）：
+   - 慢绑定：隧道分支 `sleep 0.6` 后才 listen `-L` 的本地端口 → `openRemote` **resolve**（HEAD 红：313ms reject）；
+   - 隧道秒退：隧道分支 `exit 255` → **reject 固定 ERR**、uncaught 0；
+   - 隧道 ENOENT：connect 分支末尾 `rm -f "$0"` → 隧道 spawn ENOENT → **reject 固定 ERR**、uncaught 0（HEAD 红：resolve 死端口 + uncaught 1）。
+2. **绿**（最少改动）：
+   - alive 去掉 `tunnel.connected`（那是 IPC 标志，无 IPC 恒 false）。改成一个 `gone` 标志：`error`/`exit` 都置 `gone = true`，alive = `() => !gone`；`startTunnel` 每次起新进程先 `gone = false`。
+   - `onTunnelGone` **不 throw、不碰 `closed`**：`if (closed || !firstUp) return`，首起失败只靠 waitPort 返回 false 后 `openRemote` 自己的 throw（async 内，能传到 await 者）。`:141` 条件改为 `if (!up)`。
+3. **e2e 必须跑在当前构建上**：回执里 e2e 前贴 `pnpm build`（或 `electron-vite build`）原样尾部，再贴 `grep -l "<本次改动独有的标识串>" out/main/*.js` 命中。
+4. **②/⑦/⑧ 补**：`shell.app.process()` 的 stdout/stderr 监听挪到 `launchShell` 返回后立即挂（启动期 openRemote 那段要收进来）；⑦⑧ 各断言 stderr 含 `remote: ssh connect to` 固定前缀且不含 token。
+
+### 追加验收（并入验收 4/3）
+- V7：alive 恢复 `&& tunnel?.connected !== false` → 慢绑定格红；V8：onTunnelGone 恢复 `throw` → ENOENT 格红。
+- 验收 3 八格全绿（当前构建）；验收 5 回归三件全跑；验收 6 残留 0。
+- V5 已裁：接受空刀，不再要求。

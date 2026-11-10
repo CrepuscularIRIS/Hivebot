@@ -164,3 +164,7 @@
 - **合并回测只跑「边界内文件」会漏 mock 期望测试**（T7d→H7r2 抓出）：T7d 给 `workspace_ensure` 加两条预建 mkdir，合并回测只跑六件边界内测试，`unit/workspace.test.ts` 的 argv 序列断言红了一整天没人看见。规则：合并回测按 L51 跑整包；至少 `grep -rl <改动模块名> app/*/tests` 把所有引用该模块的测试带上。
 - **全量开跑前先看 `uptime`**（H7r2 load>20 叠 GPU 训练）：结果虽收，过程违 CLAUDE.md §5；load≥8 就等，双全量尤甚。
 - **测试 HOME 不在 /tmp 下**（T34 任务 C）：`uniqueTestHome()` 根是 `/home/lingxufeng/bot/.test-homes`（决策 8），不是 `os.tmpdir()`。任何「只在临时目录下才动手」的测试守卫都要把两根都放进白名单，否则对 e2e 静默不生效——T34 播种因此漏掉，envelope 把根会话当 worker 拒委派，表现为「90s 没观察到子会话模型调用」。排查委派类红先抓根会话 toolResult（fake requests.jsonl），一条 `pbots/forbidden` 就能直接定位。
+- **「等端口可连」不能是单次 connect**（T46b 任务 C）：`net.connect` 到未绑定端口 2ms 就 ECONNREFUSED，单次连接 + 超时 = 立即失败，超时参数形同虚设。施工侧 25 轮排除法都在查子进程/环境，没回头看自己的等待函数——卡住时先用 `ssh -vvv -E` 之类给**被杀方**留日志：日志都没生成 = 它刚起就被我们自己杀了。
+- **夹具 ForceCommand 下起的远端常驻进程，kill 本地 ssh 客户端收不走**（T46b）：spec finally 必须 `bot-reap --match <root>`；临时根要在 bot-reap 白名单（`/tmp/bot-` 等）下，否则连 reap 都拒。
+- **e2e 绿 ≠ HEAD 绿：先确认 out/ 是当前源码构建**（T46b 终验）：审查返修改了 `main/` 却没重建，「八格全绿」跑的是上一版代码，重建后 ① 直接红。回执贴 e2e 前必须贴 build 尾部 + `grep -l <本次独有标识> out/main/*.js` 命中。
+- **`ChildProcess.connected` 是 IPC 通道标志**，无 IPC 的 spawn 恒 `false`——不能当「进程还活着」用；活着看 `exitCode===null && signalCode===null` 或自己在 error/exit 里记标志。**事件回调里 throw 传不到 await 的调用方**（变 uncaughtException），首起失败要在 async 主链里抛。

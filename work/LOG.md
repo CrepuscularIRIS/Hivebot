@@ -1259,3 +1259,7 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - merge `feat/T46c`：serve 常驻模式（零 Electron、HIVEBOT-SERVE 状态行 token 不出、--status 锁前只读、TERM 全清）——经理验收 @ cd79980f；回测 1 passed、零进程残留。
 - 经理验收发现锁冲突分支不分模式（serve 与桌面互踩）等三条 → **T46cb**（挡 T46b 不挡本合并）。
 - 教训记档：e2e 一律 run-e2e.sh（裸 playwright 弹真实桌面事故一次）；worktree 期禁 git stash（回执用了 stash 做对照——被经理提醒）。
+
+## 2026-11-10 · merge T46cb（锁冲突分流）
+- merge `feat/T46cb`：serve 幂等/桌面互斥双向分流、--status 合法 JSON、token 真值断言——经理验收 @ 7d2aab58（经理亲放两把变位红+反方向手测）；回测 1 passed、进程残留 0（6 个施工遗留 serve 已 reap）。
+- **T46b 解除阻塞**：T46c/T46cb 均合并、Q-045 定案——下一步派经理任务 A 立项（含 T11c skills 拆单 + W2b spec try/finally 前置小单）。

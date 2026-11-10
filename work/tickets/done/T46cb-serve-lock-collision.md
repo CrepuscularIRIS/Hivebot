@@ -4,7 +4,7 @@
 > 来源：T46c 验收遗留（`receipts/T46c.acceptance.md` §4）；挡 T46b 开工
 > 分支 / 作业目录：feat/T46cb（基于合并 T46c 后的 main），小改动可不建 worktree
 > claimed：2026-11-10 main (GLM 5.3)
-> accepted：
+> accepted：2026-11-10 7d2aab58（receipts/T46cb.acceptance.md）
 
 ## 目标
 锁已被占时：`hivebot serve` 不再走「双开聚焦」分支（现在会拉起 Electron，退出码 0，也不打状态行）；普通 `hivebot` 碰到正在跑的 serve 时，也不再弹一个连不上 SDK、15 秒后被杀的窗口。

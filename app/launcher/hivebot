@@ -15,7 +15,9 @@
 #   且 /proc 核 cmdline）→ 删本次 handoff。双开 = 已有实例聚焦（Electron 单实例锁）。
 set -u
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# T46d：经符号链接调用（~/.local/bin/hivebot）也能定位仓库——readlink -f 解真实路径
+SELF_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+REPO_ROOT="$(cd "$(dirname "$SELF_PATH")/../.." && pwd)"
 SDK_LAUNCHER="$REPO_ROOT/app/sdk/scripts/start.mjs"
 NODE_BIN="$REPO_ROOT/app/sdk/node_modules/.bin/node"
 ELECTRON_BIN="$REPO_ROOT/app/ui/node_modules/electron/dist/electron"
@@ -38,6 +40,30 @@ if [ "${1:-}" = "serve" ] && [ "${2:-}" = "--status" ]; then
   printf '%s\n' 'HIVEBOT-SERVE {"running":false}' >&2
   exit 1
 fi
+# ── serve --connect：一条固定命令拿齐 base_url/token/remote_root（T46d——token 唯一出 stdout 的地方）──
+if [ "${1:-}" = "serve" ] && [ "${2:-}" = "--connect" ]; then
+  if [ -f "$SERVE_JSON" ]; then
+    BASE_URL="$(sed -n 's/.*"base_url":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
+    HANDOFF_P="$(sed -n 's/.*"handoff":"\([^"]*\)".*/\1/p' "$SERVE_JSON")"
+    PID_P="$(sed -n 's/.*"pid":\([0-9]*\).*/\1/p' "$SERVE_JSON")"
+    fail_connect() { printf '%s\n' 'HIVEBOT-CONNECT {"error":"handoff-incomplete"}' >&2; exit 1; }
+    kill -0 "${PID_P:-0}" 2>/dev/null || { printf '%s\n' 'HIVEBOT-CONNECT {"stale":true}' >&2; exit 1; }
+    case "$HANDOFF_P" in
+      */p2sdk-handoff-*) ;; *) fail_connect ;;
+    esac
+    [ -f "$HANDOFF_P/launch-token" ] && [ -f "$HANDOFF_P/remote-root" ] || fail_connect
+    TOKEN_V="$(cat "$HANDOFF_P/launch-token" 2>/dev/null)"
+    REMOTE_V="$(cat "$HANDOFF_P/remote-root" 2>/dev/null)"
+    [ -n "$TOKEN_V" ] && [ -n "$REMOTE_V" ] || fail_connect
+    case "$TOKEN_V" in *[!A-Za-z0-9._~-]*) fail_connect ;; esac
+    case "$REMOTE_V" in ''|*'"'*|*'\\'*|*' '*|*$'\t'*|*$'\n'*) fail_connect ;; esac
+    printf 'HIVEBOT-CONNECT {"base_url":"%s","token":"%s","remote_root":"%s","version":1}\n' "$BASE_URL" "$TOKEN_V" "$REMOTE_V"
+    exit 0
+  fi
+  printf '%s\n' 'HIVEBOT-CONNECT {"running":false}' >&2
+  exit 1
+fi
+
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}"
 HB_DIR="$STATE_DIR/hivebot"
 LOG_DIR="$HB_DIR/logs"
@@ -93,6 +119,9 @@ if ! flock -n 9; then
   wait "$SECOND_PID" 2>/dev/null || true
   exit 0
 fi
+
+# ── T46d：serve 模式在起 SDK 前挂 workspace 根（Windows 建 bot 的工作区落 Ubuntu 本盘）──
+[ "${1:-}" = "serve" ] && export P2SDK_WORKSPACE_ROOT="$PBOTS_DATA_DIR"
 
 # ── 2 凭证（白名单 0600 文件；不 source）──
 SDK_ENV_KEYS=""

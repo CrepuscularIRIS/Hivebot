@@ -530,3 +530,34 @@ describe('writeRuntimePatch · sandbox 行 (P5-01 决策 4)', () => {
     expect(yaml).toContain(join(dir, 'data'))
   })
 })
+
+// T46d：serve 模式（本机+P2SDK_WORKSPACE_ROOT）挂 p2sdk-workspace；ssh 模式优先；未设逐字不变
+describe('writeRuntimePatch · T46d workspace 行（serve 模式）', () => {
+  it('ⓐ 本机+env 设 /x/data → patch 含 id: p2sdk-workspace 且 remoteRoot: /x/data；handoff 行有 remoteRoot 无 sshMode', () => {
+    const dir = tmkdir('p2sdk-t46d-')
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, PBOTS_DATA_DIR: join(dir, 'data'), P2SDK_WORKSPACE_ROOT: '/x/data' })
+    mkdirSync(join(dir, 'data'), { recursive: true })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yaml).toContain('- id: p2sdk-workspace')
+    expect(yaml).toContain("remoteRoot: '/x/data'")
+    expect(yaml).toMatch(/id: p2sdk-handoff[\s\S]*?remoteRoot: '\/x\/data'/)
+    expect(yaml).not.toContain('sshMode')
+  })
+  it('ⓑ env 未设 → 本机 patch 与改前逐字相同（无 p2sdk-workspace 行、handoff 无 remoteRoot）', () => {
+    const dir = tmkdir('p2sdk-t46d-')
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, PBOTS_DATA_DIR: join(dir, 'data') })
+    mkdirSync(join(dir, 'data'), { recursive: true })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yaml).not.toContain('p2sdk-workspace')
+    expect(yaml).not.toMatch(/id: p2sdk-handoff[\s\S]*?remoteRoot/)
+  })
+  it('ⓒ ssh 与 env 同时设 → 只有 ssh 的 remoteRoot（env 忽略），sshMode 在', () => {
+    const dir = tmkdir('p2sdk-t46d-')
+    const cfg = resolveConfig({ P2SDK_PROVIDER: 'mock', P2SDK_HOME: dir, PBOTS_DATA_DIR: join(dir, 'data'), P2SDK_WORKSPACE_ROOT: '/x/data', P2SDK_SSH_HOST: 'h', P2SDK_SSH_REMOTE_ROOT: '/home/u', P2SDK_SSH_HELPER: '/r/h.js', P2SDK_SSH_HELPER_HASH: 'b'.repeat(64), P2SDK_SSH_NODE: '/r/node' })
+    mkdirSync(join(dir, 'data'), { recursive: true })
+    const yaml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yaml).not.toContain("remoteRoot: '/x/data'")
+    expect(yaml).toContain('sshMode')
+    expect(yaml).toContain("remoteRoot: '/home/u'")
+  })
+})

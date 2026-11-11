@@ -278,6 +278,9 @@
 - **T46b Windows 连 Ubuntu（W3）**：ssh.exe 隧道 + remote.json（Q-045 已定案：T2 夹具模拟 + Windows 虚拟机实机）。
 - 用户将在 Windows 上做类似研发——Windows 侧工作环境（Git/Node/pnpm/构建链）等 exe 装好后按需开单。
 
+## 通用连接线（用户 2026-11-11 指示：「后续的 todo 会是 cloudflare 这种做通用的连接」）
+- **Cloudflare 通用连接（待开题）**：SSH 线（同网直连）Win11 实机四项全绿后，下一步做公网通用连接——Cloudflare Tunnel/Access 中继，Windows 客户端经公网域名连任意 Ubuntu serve，不要求同局域网（NAT/异地可用）。待用户开题后立项拆单；候选落点：remote.json 的 host 换 cloudflared 端点、隧道层经 cloudflared 而非裸 ssh.exe。
+
 **2026-11-09 用户定案（Q-045 全解）**：假 SSH 方案——本机私有 sshd（T2 夹具：一次性密钥+随机端口）模拟「Windows→Ubuntu Server」整条链；Windows **虚拟机**→本机做实机验证。免密 key（夹具即答案）/实机时机（虚拟机阶段）/SmartScreen（已接受）三问全部落定，T46b 解除阻塞。
 - （T46b 任务 C 提议，低）remote 模式 `await openRemote` 挡在 `loadURL` 前：ssh 慢时主窗口最长 ~35s 不出现、无提示。候选：先 loadURL、M1 走 ready 闸门等 dsh（需 registerM1Api 支持迟到的 dsh）。Windows 实机若觉得慢再开单。
 - （T46b 验收提议，中）`ssh-workspace.spec.ts` ⑤c 红（`boot 主 bot 在（60s 轮询）` :190）——T46d 基线 @ ade0b34d 同红，T11 合并时是绿：主线某次合并后回归，需单开排查单（先二分 842c5883 之前的合并）。

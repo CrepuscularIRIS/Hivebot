@@ -1277,3 +1277,12 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - merge `feat/T46b`（经理第 3 轮复验 @ c7a2e967）：remote.json→ssh 固定 argv→`serve --connect` 一条命令拿齐→隧道+指数退避重连→token 七面不外泄；两轮终验抓出 waitPort alive 的 connected 语义洞+回调 throw 洞（均探针实证后修）。回测（新构建）：remote 单测 21、remote-ssh e2e 八格 23.7s、launcher-serve 1p、skills+m3 118p，残留 0。
 - **SSH 线全部收官**：T46c serve/T46cb 锁分流/T46d --connect/T46db 校验/T11c skills 拒/W2b 防泄漏/T46b 客户端——Windows 虚拟机实机清单在 T46b 回执（Ubuntu 符号链接+serve 常驻；Windows ssh config+remote.json；建 bot 落 Ubuntu；关应用收 ssh.exe；杀 ssh 30s 自愈）。
 - 遗留：ssh-workspace ⑤c 主线回归红（T11 合并时绿、后被某次合并弄坏——已记提议单开排查）；bin.split 测试口子（SystemRoot 带空格才触发，低优提议）；launcher.spec 既有红家族。
+
+## 2026-11-11 · T46b Windows 实机验收四项全绿（Win11 VM 真机贯通）
+- **环境**：QEMU/KVM Win11 26100（ms secboot 固件+swtpm，~/vm-store），guest sshd 装好+防火墙放行，双向 SSH 免密；主线 202f0c48 构建 Hivebot-Setup-0.1.0.exe 静默装；UI 经 schtasks /it 交互任务拉起（ssh Session 0 起 Electron 秒退）；serve 隔离 HOME /tmp/vm-serve-home（P2SDK_PROVIDER=mock，pid 129914）+ serve.json 拷真实 HOME（connect 分支不碰锁，用户桌面实例零冲突）。
+- **①建 bot 落远端 ✓**：VNC 键盘走完 0.79.3 六步 walk（meet→computer-demo→jobs→role→attribution→connect；后三屏 Tab 到 Skip 主钮+Enter，全跳过）→ hand-off 自动 createAgent 经隧道真实落盘：宿主 workspaces/ 出现 session-77da7d75-…（含 .dsh/skills、.agents/skills 骨架）；隧道 ESTAB 由 serve pid 129914 持有。UI 进主界面（Message/New chat）。
+- **②杀 ssh 自愈 ✓**：taskkill 隧道 ssh(1124) → 10s 内新 ssh(8304)+宿主新连接 48426↔43421 ESTAB。
+- **③关应用收隧道 ✓**：taskkill Hivebot.exe（4 进程）→ VM 内 ssh.exe 归零、宿主 43421 无连接。
+- **④坏 host 零 ssh ✓**：remote.json 改 hivebot-nonexistent 重启 → 应用活（pid 6552）但零 ssh.exe 零连接；恢复 host 重启后隧道复通（ssh 2992，47016↔43421）。
+- 证据图：work/t46b-ws-created-vm.png（建 bot 后主界面）、t46b-badhost-ui.png、t46b-final-goodhost.png（恢复终态）。
+- **SSH 线至此实机闭环**：argv 规格（System32 绝对路径+五个 -o+-L+--）此前已逐字比对一致。

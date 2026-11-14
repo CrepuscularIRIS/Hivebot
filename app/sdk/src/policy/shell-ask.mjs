@@ -64,6 +64,7 @@ import { dirname, join } from 'node:path'
 import { isPathUnder } from './containment.mjs'
 import { noteZoneVerdict, resolveTargets } from './resolve.mjs'
 import { claimLivePermit, validateRequest } from './request-net.mjs'
+import { createGrants } from '../p2sdk/connector-grants.mjs'
 
 /** 严格更宽表，来源: deepseek-harness@ce7073d packages/sandbox/sandbox/src/escalation.ts WIDER_MODES。 */
 const STRICTLY_WIDER = {
@@ -198,6 +199,8 @@ export function apply(ctx, config = {}) {
   const policyStatePaths = Array.isArray(cfg.policyStatePaths) ? cfg.policyStatePaths : []
   const handoffDir = typeof cfg.handoff === 'string' && cfg.handoff.length > 0 ? cfg.handoff : undefined
   const permitDir = typeof cfg.permitDir === 'string' && cfg.permitDir.length > 0 ? cfg.permitDir : undefined
+  // T73b：standing-grants 门（config 缺省 → null → 门不启用，一律出卡，行为同改前）
+  const grants = typeof cfg.standingGrantsPath === 'string' && cfg.standingGrantsPath.length > 0 ? createGrants({ path: cfg.standingGrantsPath }) : null
   let cachedInstance
   const instanceId = () => {
     if (cachedInstance !== undefined) return cachedInstance
@@ -257,7 +260,31 @@ export function apply(ctx, config = {}) {
     const id = exec.agent?.session?.header?.id
     return typeof id === 'string' ? id : undefined
   }
+  // T73b2：approval/request 的 request.agent 与 exec.agent 同构（jsonrpc-server 取
+  // request.agent.session.id 同源）
+  const sessionHeaderIdLike = (req) => {
+    const id = req?.agent?.session?.header?.id ?? req?.agent?.session?.id
+    return typeof id === 'string' ? id : undefined
+  }
 
+  // T73b2：待答随审批结局即清（批准/拒绝/取消/不可用都算结局）。approval/request 是
+  // dsh 公开 waterfall（dsh-user-approval decide() 触发；jsonrpc/acp 以 ctx.on 挂钩）。
+  // prepend 挂最外层——UI 应答者（不调 next）在内层给出结局，本层 await next() 的
+  // finally 在结局返回/抛错两路都执行（Q-057=B：用户答完的卡不能再翻成永久授权）。
+  if (grants !== null) {
+    ctx.on('approval/request', async (req, next) => {
+      try {
+        return await next()
+      } finally {
+        const name = typeof req?.toolName === 'string' ? req.toolName : ''
+        if (name.startsWith('mcp__')) {
+          const sid2 = sessionHeaderIdLike(req)
+          const server = name.split('__')[1]
+          if (sid2 !== undefined && server !== undefined) grants.consumePending(sid2, server)
+        }
+      }
+    }, { prepend: true })
+  }
   ctx.on('tools/pre-execute', async (exec, next) => {
     const ask = (reason) => {
       // P6-26t: UI argText extracts command/path, not code/script. Keep the full
@@ -351,7 +378,32 @@ export function apply(ctx, config = {}) {
     // next() 静默放行（绕过「连接器一律出卡」与 A9 ② fail-closed）。
     const kind = tiers[exec.name] ?? (typeof exec.name === 'string' && exec.name.startsWith('mcp__') ? tiers.mcp ?? tiers.default : tiers.default)
     if (kind === 'allow' || kind === 'ask') {
-      return kind === 'allow' ? next() : ask(ASK.mcp)
+      if (kind === 'allow') return next()
+      // T73b：standing grant 门——这个 bot 对这个连接器有「始终允许」记录直放；
+      // 没有先登记待答再出卡（remember 只认活卡）。粒度 bot×连接器（header.id ×
+      // mcp__<serverName>__<tool> 中段），原版锚 RE-CONNECTOR-GRANT §2.2。
+      if (typeof exec.name === 'string' && exec.name.startsWith('mcp__') && grants !== null) {
+        const sid = sessionHeaderId(exec)
+        const serverName = exec.name.split('__')[1]
+        if (sid !== undefined && serverName !== undefined && grants.judge(sid, serverName) === 'allow') return next()
+        // T73b 审中①：只登记「真活卡」——ask() 在 never 会话返回 deny（无卡可答），
+        // 登记必须发生在确认 kind==='ask' 之后，否则没出过卡也能被 remember。
+        const asked = ask(ASK.mcp)
+        if (asked.kind === 'ask' && sid !== undefined && serverName !== undefined) {
+          grants.markPending(sid, serverName)
+          // T73b2 四审中①：decide() 对 signal 预取消直接返回、等待中 abort 走独立
+          // onAbort——两路都不经 waterfall 的 finally。此处补：预取消立即消费；后续
+          // abort 监听消费（once；consumePending 幂等，正常结局后监听器残留至 signal
+          // GC 无害）。
+          const sig = exec.signal
+          if (sig?.aborted === true) grants.consumePending(sid, serverName)
+          else if (sig !== undefined && typeof sig.addEventListener === 'function') {
+            sig.addEventListener('abort', () => grants.consumePending(sid, serverName), { once: true })
+          }
+        }
+        return asked
+      }
+      return ask(ASK.mcp)
     }
     if (kind === 'sandbox-allow') {
       return policyStateValid(policyStatePaths, instanceId()) ? next() : ask(ASK.bash)

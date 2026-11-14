@@ -787,3 +787,56 @@ describe('T7ce: skill roots are canonicalised like the targets', () => {
     expect(await l({ name: 'write', arguments: { file_path: join(ws, 'notes.md'), content: 'x' } }, next), '门开态普通文件放行（正对照）').toBe(nextResult)
   })
 })
+
+
+// T73b2 四审中①：signal 取消两路（预取消 / 等待中 abort）不走 waterfall finally——
+// markPending 侧必须补消费。观察面：connector-grants 同 path 单例的 remember。
+describe('T73b2 signal 取消消费（standing-grants 门开启时）', () => {
+  const grantsConfig = (): { config: object; grantsPath: string } => {
+    const root = tmkdir('t73b2-unit-')
+    const handoff = join(root, 'handoff')
+    mkdirSync(handoff, { recursive: true })
+    writeFileSync(join(handoff, 'launch-token'), 'unit-token\n')
+    const grantsPath = join(root, 'standing-grants.json')
+    return { config: { handoff, policyStatePaths: [], standingGrantsPath: grantsPath }, grantsPath }
+  }
+  const mcpExec = (signal?: AbortSignal): object => ({
+    name: 'mcp__server-memory-30e6e77d__create_entities',
+    arguments: {},
+    agent: { session: { header: { id: 'session-unit-bot' } } },
+    ...(signal === undefined ? {} : { signal }),
+  })
+  const pendingListener = (config: object): { listeners: RecordedListener[] } => {
+    const ctx = fakeCtx(undefined, undefined, false)
+    plugin.apply(ctx as never, config as never)
+    return ctx as unknown as { listeners: RecordedListener[] }
+  }
+  const remember = async (grantsPath: string): Promise<boolean> => {
+    const { createGrants } = await import('../../src/p2sdk/connector-grants.mjs') as never as { createGrants: (o: { path: string }) => { remember(a: string, b: string): { ok: boolean } } }
+    return createGrants({ path: grantsPath }).remember('session-unit-bot', 'server-memory-30e6e77d').ok
+  }
+
+  it('① 预取消（signal.aborted）→ markPending 即刻被消费，remember refused', async () => {
+    const { config, grantsPath } = grantsConfig()
+    const ctx = pendingListener(config)
+    const pre = ctx.listeners.find((l) => l.event === 'tools/pre-execute')!.listener as (exec: object, next: () => unknown) => Promise<unknown>
+    await pre(mcpExec(AbortSignal.abort()), next)
+    expect(await remember(grantsPath), '预取消的卡不是活卡').toBe(false)
+  })
+
+  it('② 等待中 abort → onAbort 消费，remember refused（换连接器避免已授权直放绕过）', async () => {
+    const { config, grantsPath } = grantsConfig()
+    const ctx = pendingListener(config)
+    const pre = ctx.listeners.find((l) => l.event === 'tools/pre-execute')!.listener as (exec: object, next: () => unknown) => Promise<unknown>
+    const controller = new AbortController()
+    await pre(mcpExec(controller.signal), next)
+    expect(await remember(grantsPath), 'abort 前活卡期 remember 合法').toBe(true)
+    // 第二个连接器的新卡（若用同一连接器，judge 会因已授权直放——测不到 abort）
+    const exec2 = { ...mcpExec(), name: 'mcp__server-fs-aaaa1111__read_file' }
+    const controller2 = new AbortController()
+    await pre({ ...exec2, signal: controller2.signal }, next)
+    controller2.abort()
+    const { createGrants } = await import('../../src/p2sdk/connector-grants.mjs') as never as { createGrants: (o: { path: string }) => { remember(a: string, b: string): { ok: boolean } } }
+    expect(createGrants({ path: grantsPath }).remember('session-unit-bot', 'server-fs-aaaa1111').ok, '等待中 abort 的卡不能再 remember').toBe(false)
+  })
+})

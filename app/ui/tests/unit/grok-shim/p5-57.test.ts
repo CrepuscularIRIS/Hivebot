@@ -1,5 +1,7 @@
 // P5-57 · 新 UI 面的纯逻辑：bot 配置投影（D10c / D11）、市场三分类 + 文案（P-C P4/P5、U-26 ① wrapper 名）、
 // 「New bot with this configuration」预填（D13–D15）、失效 bot 的侧栏预览（shim 记录投影 → 0.18 projectRendererAgent）。
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { botConfigOf } from '../../../renderer-grok/shim/src/bots'
 import { toAgentRecord } from '../../../renderer-grok/shim/src/agents'
@@ -78,5 +80,34 @@ describe('pbots-ui 投影小工具', () => {
     expect(text({ 'zh-CN': '中', en: 'En' })).toBe('En')
     expect(text('s')).toBe('s')
     expect(monogram('@scope/pkg')).toBe('P')
+  })
+})
+
+// T71：Connect 页去 DSH 字眼——源码契约格（本文件无 DOM 渲染基建；DOM 真行为由
+// market.spec / t69 / t58 e2e 路径断言覆盖，此处钉源码面防漏网，与验收 3 grep 同面）。
+describe('T71 Connect 页源码契约（DSH 字眼不上主页）', () => {
+  const src = readFileSync(join(__dirname, '..', '..', '..', 'renderer-grok', 'overrides', 'modules', 'market-surface.tsx'), 'utf8')
+
+  it('① Index sources 入口唯一（Installed 底部），主页 tools 段无此钮', () => {
+    const hits = src.split('data-action="manage-index-sources"').length - 1
+    expect(hits, 'manage-index-sources 恰一次（Installed 底部）').toBe(1)
+  })
+
+  it("② unsupported = Couldn't connect + details 折叠；browse 无 npm 说明", () => {
+    expect(src).toContain("Couldn't connect")
+    expect(src).toContain('<details')
+    expect(src).toContain('data-install-error="not-bundle"')
+    expect(src, '无 npm install coordinates 说明').not.toContain('no npm install coordinates')
+  })
+
+  it('④ T71c：Installed 入口无条件追加（错误/骨架/空/列表任何态 sourcesBtn 都在）', () => {
+    expect(src, '无条件追加形态').toContain('body = <>{body}{sourcesBtn}</>')
+    expect(src, '不再有 length===0 条件追加（错误态漏入口的根因）').not.toContain('if (m.bundles !== null && m.bundles.length === 0) body = <>{body}{sourcesBtn}</>')
+  })
+
+  it('③ 用户可见面无 Your plugins / npm / bundle / No catalog 字眼', () => {
+    for (const banned of ['Your plugins', 'no npm install coordinates', 'connector bundle', 'No catalog configured']) {
+      expect(src, `源码不含 ${banned}`).not.toContain(banned)
+    }
   })
 })

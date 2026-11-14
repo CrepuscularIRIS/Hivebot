@@ -164,3 +164,24 @@ describe('T37 awareness 术语', () => {
     expect(text).toContain("Workers group")
   })
 })
+
+describe('T80 名字行（0.18 assembly:105-106 原句，awarenessText 段首）', () => {
+  it('T80① self 有非空 title → 段首两行名字行（0.18 逐句）', () => {
+    const text = awarenessText({ selfId: 's-self', sessions: [sess('s-self', '新闻播报')], meta: undefined })
+    expect(text).toContain('Your agent name is "新闻播报". If the user asks for your name, answer with "新闻播报".')
+    // 段首（在名册之前）
+    expect(text.indexOf('Your agent name is')).toBeLessThan(text.indexOf('Bots and workers'))
+  })
+  it('T80② title 带注入字符 → 名字行走 sanitizeName 清洗（无 <>"）', () => {
+    const evil = 'Ev"il<bo`t>'
+    const text = awarenessText({ selfId: 's-self', sessions: [sess('s-self', evil)], meta: undefined })
+    expect(text).toContain('Your agent name is "Evilbot".')
+    expect(text).not.toMatch(/Your agent name is "[^"]*[<>`]/)
+  })
+  it('T80③ title 缺失/Untitled bot → 无名字行', () => {
+    const a = awarenessText({ selfId: 's-self', sessions: [sess('s-self', null)], meta: undefined })
+    expect(a).not.toContain('Your agent name is')
+    const b = awarenessText({ selfId: 's-self', sessions: [sess('s-self', 'Untitled bot')], meta: undefined })
+    expect(b).not.toContain('Your agent name is')
+  })
+})

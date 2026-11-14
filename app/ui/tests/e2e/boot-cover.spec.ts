@@ -16,9 +16,9 @@ test('就绪：封面收起、不挡点击；原版 app 图标资产可加载；
     await botItem(page, MAIN_TITLE).click() // 封面若残留会拦截命中（actionability 超时）
     const ok = await page.evaluate(async () => { const r = await fetch('./assets/app-icon-C7NKj2u7.png'); return r.ok && (r.headers.get('content-type') ?? '').startsWith('image/') })
     expect(ok).toBe(true)
-    // 顺带：默认 profile 没挂 market 插件（listIndexes 404）→ 市场是「未配目录源」空态，不是报错
+    // 顺带：默认 profile 没挂 market 插件（listIndexes 404）→ 开箱是内置目录（T71 起无源空态不可达），不是报错
     await page.locator('.sand-agents-sidebar__plugins').click()
-    await expect(page.locator('[data-market-empty]')).toContainText('No catalog configured')
+    await expect(page.locator('[data-market-list] .pb-row').first()).toBeVisible({ timeout: 20_000 })
     await expect(page.locator('[data-market] [role=alert]')).toHaveCount(0)
   } finally {
     await env.stop()

@@ -14,10 +14,31 @@ import { CarrierSocket, pageEnv } from '../../../renderer/carrier'
 import { newDevSocket, PageMux, type DevSocketHandle, type MuxStream } from '../../../renderer/carrier/mux'
 import { initView, olderItemsOf, reduceFollow, type SessionView } from '../../../renderer/session/reduce'
 import { avatarOf, saveAvatar } from './avatars'
-import { askText, isKickstartEntry, kickstartPrompt, serialize, permissionEntry, type RawEntry } from './entries'
+import { askText, isKickstartEntry, isKickstartTitle, kickstartPrompt, serialize, permissionEntry, type RawEntry } from './entries'
 import { toOutlineItems } from './outline'
 import { activityOf, toAgentRecord } from './agents'
 import type { CoordinatorDeps } from './coordinator'
+
+// T73c：连接器卡的 always 标记（卡侧 remember 成功后 noteConnectorAlways(eventId)；
+// resolvePermission 时据此把回显区分为 always / allow-once）。内存态，不落盘。
+const connectorAlways = new Set<string>()
+export function noteConnectorAlways(eventId: string): void { connectorAlways.add(eventId) }
+
+/** T73c：serverName（带 -hash8 尾）→ picks 显示名；查不到回 serverName。
+ *  hash 不可逆且 renderer 无 node:crypto——用结构匹配：剥 -[0-9a-f]{8}$ 尾后对
+ *  picks 包名末段/包含比对（picks 是上架集合的同步子集；第三方装的回 serverName）。 */
+/** picks 上架表（market-picks 仅 type 依赖 market-store——无模块环，静态安全）。 */
+import { PICKS as CONNECTOR_PICKS } from '../../overrides/modules/market-picks'
+const connectorPicks = (): Array<{ name: string; title: string }> => CONNECTOR_PICKS as unknown as Array<{ name: string; title: string }>
+
+export function connectorDisplayNameOf(serverName: string, picks: Array<{ name: string; title: string }>): string {
+  const stem = serverName.replace(/-[0-9a-f]{8}$/, '')
+  for (const p of picks) {
+    const tail = p.name.split('/').pop() ?? p.name
+    if (tail === stem || p.name.includes(stem)) return p.title
+  }
+  return serverName
+}
 import { botConfigOf, type PbotsUi, type Recipe } from './bots'
 import { aggregateOf, previewOf, rankOf, sectionsOf, viewFacts, type PeerMeta, type SectionRecord, type WorkerFacts } from './workers'
 import { toWidget, toAnswer, batchComplete, type WidgetQ } from './questions' // T40
@@ -39,24 +60,29 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 export function askPendingOf(
   workerId: string,
   eventId: string | null,
-  asks: ReadonlyMap<string, { agentId: string }>,
+  asks: ReadonlyMap<string, { agentId: string; outcome?: string }>, // T73c 四审：类型补 outcome（过滤读取三处——TS2339）
   view?: SessionView,
 ): boolean {
   if (eventId !== null) {
     const byEvent = asks.get(eventId)
-    if (byEvent !== undefined) return byEvent.agentId === workerId
+    if (byEvent !== undefined) return byEvent.agentId === workerId && byEvent.outcome === undefined // T73c 三审②：终态/在途不算待答
     const callId = view?.asked[eventId]
     if (callId !== undefined) return view!.items.some((i) => i.kind === 'tool' && i.callId === callId && i.awaiting && i.decision === null)
     return false
   }
   let mine = false
-  for (const a of asks.values()) if (a.agentId === workerId) mine = true
+  for (const a of asks.values()) if (a.agentId === workerId && a.outcome === undefined) mine = true // T73c 三审②
   return mine
 }
 
 interface ApiResult { ok: boolean; value?: unknown; error?: { code: string; message: string } }
 interface Summary { sessionId: string; title: string | null; preset: string | null; running: boolean; updatedAt: number }
-interface Ask { agentId: string; callId: string | null; toolName: string; reason: string | null; at: number }
+interface Ask { agentId: string; callId: string | null; toolName: string; reason: string | null; at: number
+  /** T73c：连接器卡终态回显（bash/文件卡仍答完即删、无此字段）。answering =
+   * 作答 RPC 在途（审①竞态：follow 的 approval/decided 可能先于 $events/result 返回到
+   * ——在途与终态同样不是「等待中」，删除/待答判定一律排除）。
+   */
+  outcome?: 'always' | 'allow-once' | 'skipped' | 'answering' }
 
 const HISTORY_PAGE = 40
 /** tail 回值时 follow 快照还没到：回这个探针游标，首次取更早页时再按 live 窗口定（transcriptWindow）。 */
@@ -159,8 +185,10 @@ export function createShimData(opts: ShimDataOptions): ShimData {
   const uiChanged = (): void => { uiVersion += 1; for (const l of [...uiListeners]) l() }
   const views = new Map<string, SessionView>()
   const unread = new Set<string>()
-  const asks = new Map<string, Ask>() // eventId → pending 审批
+  const asks = new Map<string, Ask>()
+ // eventId → pending 审批
   const pendingNonce = new Map<string, string>() // agentId → 待补记 clientNonce（按消息身份 source.rpcId 绑定，L-7 R4 f2）
+  const acceptedNonce = new Map<string, string>() // agentId → 最近一次受理成功的 nonce（T81a 审中①：重试同 nonce 不再 cancel——重试是补发不是新消息，cancel 会误杀已受理 turn）
   const createNotices = new Map<string, string>() // agentId → 新建 bot 的非致命失败通知（首条用户消息前展示，L-7 O4）
   /** T26b #4：onboarding create 步登记的延后介绍（seen 落盘后由 finishKickstart 发）。 */
   const pendingKickstart = new Map<string, string>() // T28b：按 sid 存（原单槽——模板 bot 会同时挂多个）
@@ -212,10 +240,10 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     return askText(ask, tool?.kind === 'tool' ? tool.args : undefined)
   }
   const factsOf = (id: string): WorkerFacts => {
-    const ask = [...asks.values()].find((a) => a.agentId === id)
+    const ask = [...asks.values()].find((a) => a.agentId === id && a.outcome === undefined) // 三审②：直接过滤——旧终态不遮新待答
     return {
       id,
-      blockedReason: ask === undefined ? null : askReason(ask),
+      blockedReason: ask === undefined || ask.outcome !== undefined ? null : askReason(ask), // 审③：终态不作待答
       running: views.get(id)?.running ?? summaries[id]?.running === true,
       unread: unread.has(id),
       ...viewFacts(views.get(id)),
@@ -254,7 +282,7 @@ export function createShimData(opts: ShimDataOptions): ShimData {
         ? activityOf(views.get(id)!)
         : (summaries[id]?.running === true ? { kind: 'thinking' } : null),
       updatedAt: summaries[id]?.updatedAt ?? Date.now(),
-      awaitingApproval: [...asks.values()].some((a) => a.agentId === id),
+      awaitingApproval: [...asks.values()].some((a) => a.agentId === id && a.outcome === undefined), // 审③：终态不算等待
       ...(overlay.waitingReason !== undefined ? { waitingReason: overlay.waitingReason } : {}),
       // D10c 侧栏角标：失效 bot 的预览行（0.18 行内 lastMessagePreview 槽）；P6-15 worker 行的状态预览
       ...(configOf(id)?.readOnly === true ? { preview: CONNECTOR_UNAVAILABLE } : overlay.preview !== undefined ? { preview: overlay.preview } : {}),
@@ -318,7 +346,14 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       // 完整动作按同 callId 工具行实参现算（approval/request 先于工具行到达时退 reason，下一次推送补上）
       const tool = views.get(agentId)?.items.find((i) => i.kind === 'tool' && i.callId === ask.callId)
       const command = askText(ask, tool?.kind === 'tool' ? tool.args : undefined)
-      out.push(permissionEntry({ id: `perm-${eventId}`, requestId: eventId, scope: opts.authId, revision, at: ask.at, command }))
+      // T73c：mcp 工具的卡带只读 connector 标注（bash/文件卡零变化）
+      const isMcp = ask.toolName.startsWith('mcp__')
+      const serverName = isMcp ? ask.toolName.split('__')[1] ?? null : null
+      out.push(permissionEntry({
+        id: `perm-${eventId}`, requestId: eventId, scope: opts.authId, revision, at: ask.at, command,
+        status: ask.outcome === 'answering' ? undefined : ask.outcome, // 三审①：在途仍投影 pending（卡不消失）；终态照实
+        ...(serverName !== null ? { connector: { serverName, displayName: connectorDisplayNameOf(serverName, connectorPicks()) } } : {}),
+      }))
     }
     return out
   }
@@ -366,7 +401,9 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     // 已在会话流里定局的审批（main deadline 代答 / 别处作答后 $events 不再发 cancel）从 dock 收掉——旧 store 同口径
     for (const [eventId, ask] of asks) {
       if (ask.agentId === agentId && ask.callId !== null
-        && view.items.some((i) => i.kind === 'tool' && i.callId === ask.callId && (i.decision !== null || i.status !== 'running'))) asks.delete(eventId)
+        && view.items.some((i) => i.kind === 'tool' && i.callId === ask.callId && (i.decision !== null || i.status !== 'running'))
+        // T73c 审①：连接器终态保留（回显）——只在未作答（无 outcome）时收；bash/文件照删
+        && ask.outcome === undefined) asks.delete(eventId)
     }
     pushTranscript(agentId)
     push.agents() // running/activity 随 view 变化（persona 动态）
@@ -388,10 +425,13 @@ export function createShimData(opts: ShimDataOptions): ShimData {
 
   const summaryOf = (item: AnyRecord): Summary => {
     const values = rec(rec(item.projections).values)
+    const label = typeof rec(values.subagent).label === 'string' && rec(values.subagent).label !== '' ? rec(values.subagent).label : null
+    const title = typeof values.title === 'string' && values.title !== '' ? values.title : null
     return {
       sessionId: String(item.sessionId),
-      title: typeof rec(values.subagent).label === 'string' && rec(values.subagent).label !== '' ? rec(values.subagent).label // T36b：helper label 优先（description——主 bot 起的名；dsh 自动 title 是拼接串）
-        : (typeof values.title === 'string' && values.title !== '' ? values.title : null),
+      // T60：label/title 吃了 kickstart 提示原文（dsh 自动标题=第一条 user 消息）→ 置 null（toAgentRecord 回落 New chat，agents.ts:30）
+      title: label !== null && !isKickstartTitle(label) ? label // T36b：helper label 优先（description——主 bot 起的名；dsh 自动 title 是拼接串）
+        : (title !== null && !isKickstartTitle(title) ? title : null),
       preset: typeof values.agentPreset === 'string' ? values.agentPreset : null,
       running: item.running === true,
       updatedAt: typeof item.updatedAt === 'number' ? item.updatedAt : Date.now(),
@@ -619,8 +659,16 @@ export function createShimData(opts: ShimDataOptions): ShimData {
       // 序列化按 rpcId 绑定到对应消息；发送失败不删（歧义场景下回执仍会到达并按 rpcId 命中，
       // 同文本旧消息不可能误拿 nonce）。
       if (typeof args.clientNonce === 'string') pendingNonce.set(agentId, args.clientNonce)
+      // T81a supersede（0.18 send-turn-dispatch:132 同语义）：发消息即顶掉运行中的 turn——
+      // 先 session/cancel（上游 turn 级原语：打断 active turn、半截 interruptedBlocks 保留、
+      // pending inbox 不丢）；idle 时幂等 no-op（accepted:true 实测）。catch 吞=通道异常不挡发送。
+      // 审中①：重试（clientNonce===上次受理成功的 nonce）是补发，不 cancel——否则把已受理
+      // 任务误杀且 prompt 被 requestId 去重回 accepted，无新 turn。
+      const isRetry = typeof args.clientNonce === 'string' && acceptedNonce.get(agentId) === args.clientNonce
+      if (!isRetry) await api('session/cancel', { request: { sessionId: agentId } }).catch(() => undefined)
       const res = await api('session/prompt', { request: { requestId: nonce, sessionId: agentId, mode: 'queue', content: [{ type: 'text', text: prompt }] } })
       if (!res.ok) throw new Error(res.error?.message ?? 'session/prompt failed')
+      if (typeof args.clientNonce === 'string') acceptedNonce.set(agentId, args.clientNonce)
       return { accepted: true }
     },
     respondToWidget: async (input) => {
@@ -671,11 +719,30 @@ export function createShimData(opts: ShimDataOptions): ShimData {
     },
     resolvePermission: async (input) => {
       answers.push({ eventId: input.requestId, value: input.dshValue })
-      const res = await api('$events/result', { clientId: eventsClientId, eventId: input.requestId, outcome: { kind: 'result', value: input.dshValue } })
-      if (!res.ok) throw new Error(res.error?.message ?? '$events/result failed')
-      const ask = asks.get(input.requestId)
-      asks.delete(input.requestId)
-      if (ask !== undefined) pushTranscript(ask.agentId)
+      // 审①竞态：RPC 在途先标 answering（follow 的 approval/decided 可能先到——在途不可
+      // 被「已定局」删除，也不算等待中）；失败回滚 pending（卡可再答）。
+      const preAsk = asks.get(input.requestId)
+      if (preAsk !== undefined && preAsk.toolName.startsWith('mcp__')) preAsk.outcome = 'answering'
+      try {
+        const res = await api('$events/result', { clientId: eventsClientId, eventId: input.requestId, outcome: { kind: 'result', value: input.dshValue } })
+        if (!res.ok) throw new Error(res.error?.message ?? '$events/result failed')
+        const ask = asks.get(input.requestId)
+        // T73c：连接器卡答完留只读回显（内存态）；bash/文件卡照旧答完即删。
+        if (ask !== undefined && ask.toolName.startsWith('mcp__')) {
+          ask.outcome = connectorAlways.has(input.requestId) ? 'always' : input.dshValue === 'allowed-once' ? 'allow-once' : 'skipped'
+          connectorAlways.delete(input.requestId)
+        } else {
+          asks.delete(input.requestId)
+        }
+        if (ask !== undefined) pushTranscript(ask.agentId)
+      } catch (e) {
+        if (preAsk !== undefined && preAsk.outcome === 'answering') {
+          preAsk.outcome = undefined
+          pushTranscript(preAsk.agentId) // 三审①：回滚后推送恢复——可重试的卡回到界面
+          push.agents()
+        }
+        throw e
+      }
       push.agents()
     },
     setAgentUnread: (id, value) => { if (value) unread.add(id); else unread.delete(id); push.agents() },

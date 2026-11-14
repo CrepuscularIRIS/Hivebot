@@ -73,7 +73,7 @@ function StatusLine() {
   return createPortal(
     <div className="sand-status-line" data-role="assistant" data-activity={kind} data-exiting={b.exitUntil !== null || undefined}>
       <span className="sand-status-line__avatar"><AgentAvatar agentId={activeAgent.id ?? ''} color={activeAgent.avatarColor} shape={activeAgent.avatarShape} currentActivity={activeAgent.activity} isRunning size="sm" /></span>
-      {out.text !== null ? <span className="sand-activity-label__text">{out.text}</span> : null}
+      {out.text !== null ? <span className="sand-activity-label__text" data-text={out.text}>{out.text}</span> : null}
       {out.elapsed !== null ? <span className="sand-activity-elapsed">· {out.elapsed}</span> : null}
     </div>,
     scroller,

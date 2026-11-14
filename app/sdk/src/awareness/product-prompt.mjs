@@ -57,7 +57,15 @@ export function awarenessText({ selfId, sessions, meta }) {
     }
   }
   const roster = rows.length > 0 ? `${rows.join('\n')}${hidden > 0 ? `\n…and ${hidden} more.` : ''}` : '- (no other bots yet)'
+  // T80 名字行（0.18 assembly:105-106 逐句）：self 有真名才加（Untitled/缺失不加）
+  const self = sessions.find((x) => x.sessionId === selfId)
+  const selfName = self !== undefined ? sanitizeName(self.title ?? self.projections?.values?.title ?? null) : 'Untitled bot'
+  const nameLine = selfName !== 'Untitled bot'
+    ? `Your agent name is "${selfName}". If the user asks for your name, answer with "${selfName}".\n\n`
+    : ''
   return `## This app and the other bots
+
+${nameLine}You are one of several bots in a desktop app. Each bot is a separate conversation with its own workspace folder. Bots do not share conversation history, and you cannot see what other bots are doing.
 
 You are one of several bots in a desktop app. Each bot is a separate conversation with its own workspace folder. Bots do not share conversation history, and you cannot see what other bots are doing.
 

@@ -49,16 +49,22 @@ function expectFail(res: ConnectionRpcResult): { code: string; message: string; 
 }
 
 describe('M1 白名单（C §2 业务表）', () => {
-  it('白名单恰为 C §2 表的 16 个 M1 方法（Q-spike：无增行）', () => {
+  it('白名单恰为 C §2 表的 16 个 M1 方法 + T51 setIndexes + T49 配置口 5 法 + T73b 两法（24 个）', () => {
     expect([...M1_ALLOW].sort()).toEqual([
       '$events/result',
       'agentPresets/list',
+      'credentials/describe',
+      'credentials/set',
+      'credentials/unset',
+      'p2sdk/connector_grants_clear',
+      'p2sdk/connector_grants_remember',
       'p2temp/session.createWithConnectors',
       'pluginManager/installBundle',
       'pluginManager/listBundles',
       'pluginMarket/listIndexes',
       'pluginMarket/readEntryDetail',
       'pluginMarket/search',
+      'pluginMarket/setIndexes',
       'session/cancel',
       'session/create',
       'session/events',
@@ -67,6 +73,8 @@ describe('M1 白名单（C §2 业务表）', () => {
       'session/prompt',
       'session/rename',
       'session/selectModel',
+      'settings/describe',
+      'settings/mutate',
     ])
   })
 
@@ -122,6 +130,31 @@ describe('D9 硬拒层（永久判据，独立于白名单）', () => {
     // 非目标方法不受影响
     expect(d9DeniedReason('session/prompt', { request: {} })).toBeUndefined()
     expect(d9DeniedReason('commands/execute', { command: 'ls -la' })).toBeUndefined()
+  })
+})
+
+describe('§2.2 T51 setIndexes 目录源参数守卫（invalid-args）', () => {
+  it.each([
+    ['非数组 urls', { urls: 'http://x' }],
+    ['缺 urls', {}],
+    ['超 20 项', { urls: Array.from({ length: 21 }, (_, i) => `http://x/${i}/index.json`) }],
+    ['含非字符串', { urls: ['http://x/index.json', 42] }],
+    ['含 undefined（T51c R5：find 与未找到同值）', { urls: [undefined, 'https://a.example/index.json'] }],
+    ['含空串', { urls: [''] }],
+    ['超 2048 字符项', { urls: [`http://x/${'a'.repeat(2100)}/index.json`] }],
+  ])('%s → pbots/invalid-args，dsh 计数 === 0', async (_name, args) => {
+    const { api, dsh } = makeApi()
+    const res = await api({ method: 'pluginMarket/setIndexes', args })
+    expect(expectFail(res).code).toBe('pbots/invalid-args')
+    expect(dsh.apiCount).toBe(0)
+  })
+
+  it('合法 {urls:[…]}（≤20 项、每项非空 ≤2048）→ 透传 dsh（计数 1）', async () => {
+    const { api, dsh } = makeApi()
+    const res = await api({ method: 'pluginMarket/setIndexes', args: { urls: ['http://127.0.0.1:1/index.json'] } })
+    expect(res).toEqual({ ok: true, value: null })
+    expect(dsh.apiCount).toBe(1)
+    expect(dsh.calls[0]).toEqual({ method: 'pluginMarket/setIndexes', args: { urls: ['http://127.0.0.1:1/index.json'] } })
   })
 })
 
@@ -617,5 +650,171 @@ describe('rpc 抛错兜底（GU-1）', () => {
     const res = await api({ method: '$events/result', args: { clientId: 'cli-1', eventId: 'ev-1', outcome: { kind: 'result', value: 'rejected' } } })
     expect(expectFail(res).code).toBe('pbots/unavailable')
     expect(ledger.pendingEvents().map((e) => e.eventId)).toEqual(['ev-1'])
+  })
+})
+
+// ---- T49：DSH 配置口窄门（Q-047「直接抄DSH的配置」；放行依据 2026-11-11 用户原话）----
+// credentials 三法 + settings/describe + settings/mutate（探针实测 update 在 llm-pi-ai 上
+// 因 p2sdk.yml !!js 节点恒炸，DSH Models 页官方写法即 mutate——receipts/T49-probe.receipt.md）。
+describe('T49 DSH 配置口窄门', () => {
+  const okCred = (ref: string): unknown => ({ ref, value: 'sk-t49' })
+  it('① credentials/set 合法引用（当前路由 apiKeyEnv）→ 透传 dsh，返回不含 value', async () => {
+    const { api, dsh } = makeApi({ ok: true, value: undefined })
+    const res = await api({ method: 'credentials/set', args: okCred('P2SDK_LLM_API_KEY') })
+    expect(res.ok).toBe(true)
+    expect(dsh.calls.length).toBe(1)
+    expect(JSON.stringify(res)).not.toContain('sk-t49')
+  })
+  it('② 非法引用名 / 非 llm 引用（GITHUB_TOKEN、DSH_SECRET、小写）→ forbidden，dsh 计数 0', async () => {
+    const { api, dsh } = makeApi({ ok: true, value: {} })
+    for (const ref of ['GITHUB_TOKEN', 'DSH_MASTER_KEY', 'lower_case', 'P2SDK_LLM_API_KEY;rm', 'llm-pi-ai/litellm']) {
+      const res = await api({ method: 'credentials/set', args: okCred(ref) })
+      expect(expectFail(res).code).toBe('pbots/forbidden')
+    }
+    expect(dsh.calls.length).toBe(0)
+  })
+  it('③ credentials/describe：>64 个引用名 → invalid-args；≤64 且形状合法 → 透传', async () => {
+    const { api, dsh } = makeApi({ ok: true, value: {} })
+    const many = Array.from({ length: 65 }, (_, i) => `REF_${i}`)
+    const bad = await api({ method: 'credentials/describe', args: { refs: many } })
+    expect(expectFail(bad).code).toBe('pbots/invalid-args')
+    const badShape = await api({ method: 'credentials/describe', args: { refs: 'P2SDK_LLM_API_KEY' } })
+    expect(expectFail(badShape).code).toBe('pbots/invalid-args')
+    const good = await api({ method: 'credentials/describe', args: { refs: ['P2SDK_LLM_API_KEY', 'MYROUTE_API_KEY'] } })
+    expect(good.ok).toBe(true)
+    expect(dsh.calls.length).toBe(1)
+  })
+  it('④ credentials/* 回包字段过滤：上游多出 value 字段 → main 丢弃（防上游加宽）', async () => {
+    const { api } = makeApi({ ok: true, value: { P2SDK_LLM_API_KEY: { configured: true, source: 'file', writable: true, value: 'sk-leak' } } })
+    const res = await api({ method: 'credentials/describe', args: { refs: ['P2SDK_LLM_API_KEY'] } })
+    expect(res.ok).toBe(true)
+    expect(JSON.stringify(res)).not.toContain('sk-leak')
+    expect(JSON.stringify(res)).toContain('"source":"file"')
+  })
+  it('⑤ settings/mutate 非 llm-pi-ai 命名空间 → forbidden；ops 不在 providers 路径 → forbidden；形状/apiKeyEnv 恶意 → invalid', async () => {
+    const { api, dsh } = makeApi({ ok: true, value: {} })
+    const wrongNs = await api({ method: 'settings/mutate', args: { ns: 'agent-default-model', ops: [{ op: 'set', path: ['provider'], value: 'x' }] } })
+    expect(expectFail(wrongNs).code).toBe('pbots/forbidden')
+    const wrongPath = await api({ method: 'settings/mutate', args: { ns: 'llm-pi-ai', ops: [{ op: 'set', path: ['retryPolicy'], value: {} }] } })
+    expect(expectFail(wrongPath).code).toBe('pbots/forbidden')
+    // 分支补全（验收 4 精神：改动分支全覆盖）
+    const notArray = await api({ method: 'settings/mutate', args: { ns: 'llm-pi-ai', ops: 'x' } })
+    expect(expectFail(notArray).code).toBe('pbots/invalid-args')
+    const wrongOp = await api({ method: 'settings/mutate', args: { ns: 'llm-pi-ai', ops: [{ op: 'merge', path: ['providers', 'x'], value: {} }] } })
+    expect(expectFail(wrongOp).code).toBe('pbots/forbidden')
+    const unsetOk = await api({ method: 'settings/mutate', args: { ns: 'llm-pi-ai', ops: [{ op: 'unset', path: ['providers', 'x'] }] } })
+    expect(unsetOk.ok).toBe(true)
+    const badValue = await api({ method: 'settings/mutate', args: { ns: 'llm-pi-ai', ops: [{ op: 'set', path: ['providers', 'x'], value: 'str' }] } })
+    expect(expectFail(badValue).code).toBe('pbots/invalid-args')
+    const badEnv = await api({ method: 'settings/mutate', args: { ns: 'llm-pi-ai', ops: [{ op: 'set', path: ['providers', 'x'], value: { apiKeyEnv: 'GITHUB_TOKEN' } }] } })
+    expect(expectFail(badEnv).code).toBe('pbots/forbidden')
+    const emptyValue = await api({ method: 'credentials/set', args: { ref: 'P2SDK_LLM_API_KEY', value: '' } })
+    expect(expectFail(emptyValue).code).toBe('pbots/invalid-args')
+    const unset = await api({ method: 'credentials/unset', args: { ref: 'P2SDK_LLM_API_KEY' } })
+    expect(unset.ok).toBe(true)
+    expect(dsh.calls.length).toBe(2) // mutate unset + credentials unset（此前透传的 unsetOk 一次）
+  })
+  it('⑤b（经理守卫）mutate 的 apiKeyEnv 为 GITHUB_TOKEN / 别的 route 的名 → forbidden，dsh 计数 0；litellm 两种合法名都过', async () => {
+    const { api, dsh } = makeApi({ ok: true, value: {} })
+    const github = await api({ method: 'settings/mutate', args: { ns: 'llm-pi-ai', ops: [{ op: 'set', path: ['providers', 'myroute'], value: { apiKeyEnv: 'GITHUB_TOKEN', api: 'openai-completions' } }] } })
+    expect(expectFail(github).code).toBe('pbots/forbidden')
+    const foreign = await api({ method: 'settings/mutate', args: { ns: 'llm-pi-ai', ops: [{ op: 'set', path: ['providers', 'routea'], value: { apiKeyEnv: 'ROUTEB_API_KEY', api: 'openai-completions' } }] } })
+    expect(expectFail(foreign).code).toBe('pbots/forbidden')
+    expect(dsh.calls.length).toBe(0)
+    const derivedOk = await api({ method: 'settings/mutate', args: { ns: 'llm-pi-ai', ops: [{ op: 'set', path: ['providers', 'routea'], value: { apiKeyEnv: 'ROUTEA_API_KEY', api: 'openai-completions' } }] } })
+    expect(derivedOk.ok).toBe(true)
+    const litellmDefault = await api({ method: 'settings/mutate', args: { ns: 'llm-pi-ai', ops: [{ op: 'set', path: ['providers', 'litellm'], value: { apiKeyEnv: 'P2SDK_LLM_API_KEY', api: 'openai-completions' } }] } })
+    expect(litellmDefault.ok).toBe(true)
+    expect(dsh.calls.length).toBe(2)
+  })
+  it('⑥ settings/update / replace / openSettingsDocument → forbidden（探针定论：写口只开 mutate）', async () => {
+    const { api, dsh } = makeApi({ ok: true, value: {} })
+    for (const m of ['settings/update', 'settings/replace', 'settings/openSettingsDocument']) {
+      const res = await api({ method: m, args: { ns: 'llm-pi-ai' } })
+      expect(expectFail(res).code).toBe('pbots/forbidden')
+    }
+    expect(dsh.calls.length).toBe(0)
+  })
+  it('⑦ 既有 D9 全集照旧拒：account、/permission、configForms；credentials 表外方法（credentials/list）仍拒', async () => {
+    const { api, dsh } = makeApi({ ok: true, value: {} })
+    for (const m of ['account/describe', '/permission/grant', 'configForms/list', 'credentials/list', 'credentials/export']) {
+      const res = await api({ method: m, args: {} })
+      expect(expectFail(res).code).toBe('pbots/forbidden')
+    }
+    expect(dsh.calls.length).toBe(0)
+  })
+  it('⑧ 失败路径错误信息与日志不含传入 value 原文（key 只进不出）', async () => {
+    const { api, logs } = makeApi({ ok: false, error: { code: 'credential-rejected', message: 'provider refused', details: {} } })
+    const res = await api({ method: 'credentials/set', args: okCred('P2SDK_LLM_API_KEY') })
+    expect(expectFail(res).code).toBe('credential-rejected')
+    expect(JSON.stringify(logs)).not.toContain('sk-t49')
+    expect(JSON.stringify(res)).not.toContain('sk-t49')
+  })
+})
+
+// ---- T49b：可写引用名与 mutate 派生同源（Sol M1 + 经理补：route 字母开头）----
+describe('T49b 引用名与派生同源', () => {
+  const mutateRoute = (api: { (req: { method: string; args: unknown }): Promise<{ ok: boolean }> }, route: string): Promise<unknown> =>
+    api({ method: 'settings/mutate', args: { ns: 'llm-pi-ai', ops: [{ op: 'set', path: ['providers', route], value: { api: 'openai-completions' } }] } })
+  it('① my-route / my_route / a-b-c：mutate 成功后同派生名 credentials/set 不被 forbidden（桩计数 1）', async () => {
+    const { api, dsh } = makeApi({ ok: true, value: {} })
+    for (const route of ['my-route', 'my_route', 'a-b-c']) {
+      const mut = await mutateRoute(api as never, route)
+      expect(mut.ok).toBe(true)
+      const derived = `${route.toUpperCase().replace(/[^A-Z0-9]+/g, '_')}_API_KEY`
+      const setRes = await api({ method: 'credentials/set', args: { ref: derived, value: `sk-${route}` } })
+      expect(setRes.ok, `${route} → ${derived} 应可写`).toBe(true)
+    }
+    expect(dsh.calls.length).toBe(6) // 3 mutate + 3 set 全透传
+  })
+  it('② 数字开头 route（1abc）mutate → forbidden；DSH_X_API_KEY set → forbidden', async () => {
+    const { api, dsh } = makeApi({ ok: true, value: {} })
+    const mut = await mutateRoute(api as never, '1abc')
+    expect(expectFail(mut as never).code).toBe('pbots/forbidden')
+    const setRes = await api({ method: 'credentials/set', args: { ref: 'DSH_X_API_KEY', value: 'sk' } })
+    expect(expectFail(setRes).code).toBe('pbots/forbidden')
+    expect(dsh.calls.length).toBe(0)
+  })
+  it('③ 性质：deriveKeyRef(样本 route) 必过 set/unset 守卫（结构保证）', async () => {
+    const { api, dsh } = makeApi({ ok: true, value: {} })
+    for (const route of ['litellm', 'minimax-cn', 'openrouter2', 'x', 'a-b-c_d', 'deepseek-official', 'z9']) {
+      const derived = `${route.toUpperCase().replace(/[^A-Z0-9]+/g, '_')}_API_KEY`
+      const setRes = await api({ method: 'credentials/set', args: { ref: derived, value: 'sk' } })
+      expect(setRes.ok, `route=${route} 派生 ${derived} 应可写`).toBe(true)
+    }
+    expect(dsh.calls.length).toBe(7)
+  })
+})
+
+
+describe('T73b 连接器 standing-grants 窄门', () => {
+  it('remember：{request:{botId,serverName}} 单键好形状放行；裸形/多余键/坏形状拒且 dsh 计数 0（T73c 边界 5：gateway 要 request 包裹——裸形过 M1 到 gateway 也必失败）', async () => {
+    const { api, dsh } = makeApi()
+    const ok1 = await api({ method: 'p2sdk/connector_grants_remember', args: { request: { botId: 'session-89122f7f-a17e-4a2f-bb2a-9800d13bc11b', serverName: 'server-memory-30e6e77d' } } })
+    expect(ok1.ok).toBe(true)
+    expect(dsh.apiCount).toBe(1)
+    for (const bad of [
+      { botId: 'session-89122f7f-a17e-4a2f-bb2a-9800d13bc11b', serverName: 'server-memory-30e6e77d' }, // 裸形（旧口径——T73b 遗留错形）
+      { request: { botId: '../evil', serverName: 'server-memory-30e6e77d' } },
+      { request: { botId: 'b', serverName: 'mem ../../x' } },
+      { request: { botId: '', serverName: '' } },
+      { request: { botId: 'b', serverName: 'x'.repeat(33) } },
+      { request: { botId: 'b', serverName: 'server-memory-30e6e77d' }, extra: 1 }, // 多余键
+    ]) {
+      const res = await api({ method: 'p2sdk/connector_grants_remember', args: bad })
+      expect(res.ok, JSON.stringify(bad)).toBe(false)
+      expect(expectFail(res).code).toBe('pbots/invalid-args')
+    }
+    expect(dsh.apiCount, '坏形状不进 dsh').toBe(1)
+  })
+
+  it('clear：无参放行；带参拒', async () => {
+    const { api, dsh } = makeApi()
+    const ok1 = await api({ method: 'p2sdk/connector_grants_clear', args: {} })
+    expect(ok1.ok).toBe(true)
+    const bad = await api({ method: 'p2sdk/connector_grants_clear', args: { x: 1 } })
+    expect(bad.ok).toBe(false)
+    expect(expectFail(bad).code).toBe('pbots/invalid-args')
+    expect(dsh.apiCount).toBe(1)
   })
 })

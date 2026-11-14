@@ -3,6 +3,7 @@ import { tmpdir, userInfo } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
+  createStdoutGate,
   DEFAULT_LLM_BASE_URL,
   DEFAULT_MODEL,
   buildArgs,
@@ -12,6 +13,7 @@ import {
   mockReplayOverride,
   normalizeApiBase,
   resolveConfig as resolveConfigRaw,
+  seedDefaultRoute,
   validateStart,
   writeRuntimePatch,
 } from '../../src/start.ts'
@@ -90,9 +92,8 @@ describe('resolveConfig', () => {
 })
 
 describe('validateStart (acceptance ③)', () => {
-  it('real provider without P2SDK_LLM_API_KEY fails naming the variable', () => {
-    const err = validateStart(resolveConfig({}))
-    expect(err).toContain('P2SDK_LLM_API_KEY')
+  it('T50a 反转：real provider without key no longer blocks boot（请求时才报 MISSING_CREDENTIAL）', () => {
+    expect(validateStart(resolveConfig({}))).toBeNull()
   })
 
   it('mock provider does not require the key', () => {
@@ -387,38 +388,15 @@ describe('isReadyLine', () => {
 })
 
 describe('main', () => {
-  it('exits 1 before spawning when the real provider key is missing', async () => {
-    const errors: string[] = []
-    const original = process.stderr.write
-    process.stderr.write = ((chunk: unknown) => {
-      errors.push(String(chunk))
-      return true
-    }) as typeof process.stderr.write
-    try {
-      const env = { P2SDK_LLM_API_KEY: '' }
-      const previous: Record<string, string | undefined> = {}
-      for (const key of Object.keys(env)) {
-        previous[key] = process.env[key]
-        process.env[key] = env[key]
-      }
-      delete process.env.P2SDK_LLM_API_KEY
-      delete process.env.P2SDK_PROVIDER
-      // P5-H1：main() 无参时内部 resolveConfig() 触发 handoff 兜底 mkdtemp（登记簿
-      // 不可见）；显式给一个登记过的 handoff，被测的仍是 API key 校验失败路径
-      const prevHandoff = process.env.P2SDK_HANDOFF
-      process.env.P2SDK_HANDOFF = tmkdir('p2sdk-handoff-')
-      const code = await main()
-      expect(code).toBe(1)
-      expect(errors.join('')).toContain('P2SDK_LLM_API_KEY')
-      if (prevHandoff === undefined) delete process.env.P2SDK_HANDOFF
-      else process.env.P2SDK_HANDOFF = prevHandoff
-      for (const [key, value] of Object.entries(previous)) {
-        if (value === undefined) delete process.env[key]
-        else process.env[key] = value
-      }
-    } finally {
-      process.stderr.write = original
-    }
+  // T50a 反转：原「无 key exits 1 before spawning」语义消亡（现在就要启动）。无 key 的
+  // 行为链=validateStart null（上面反转格）+ main 打一行 WARN（stderr，由 e2e launcher.spec
+  // ③a 真进程验证「stderr 恰一行含 Settings → Models」）+ 请求时 MISSING_CREDENTIAL（§0 探针帧）。
+  // 这里只保底：real 无 key 的 resolveConfig 形态确实会进 WARN 分支（provider real + apiKey 空）。
+  it('T50a：real without key resolves to the WARN path (provider real, apiKey unset)', () => {
+    const cfg = resolveConfig({})
+    expect(cfg.provider).toBe('real')
+    expect(cfg.apiKey).toBeUndefined()
+    expect(validateStart(cfg)).toBeNull()
   })
 })
 
@@ -561,3 +539,195 @@ describe('writeRuntimePatch · T46d workspace 行（serve 模式）', () => {
     expect(yaml).toContain("remoteRoot: '/home/u'")
   })
 })
+
+// ---- T49a：默认 litellm 路由搬出 p2sdk.yml——启动种子经 settings/mutate 写 user 层 ----
+describe('T49a seedDefaultRoute（首启种子，T51 env 口径）', () => {
+  const baseCfg = (over: Partial<StartConfig> = {}): StartConfig => resolveConfigRaw({
+    P2SDK_PROVIDER: 'real', P2SDK_LLM_API_KEY: 'k', P2SDK_HOME: join(tmkdir('t49a-home-'), ''), P2SDK_HANDOFF: tmkdir('t49a-ho-'),
+    ...over as never,
+  })
+  const stub = (userHasLitellm: boolean) => {
+    const calls: Array<{ method: string; args: unknown }> = []
+    return {
+      calls,
+      client: {
+        async call(method: string, args?: unknown): Promise<unknown> {
+          calls.push({ method, args })
+          if (method === 'settings/describe') {
+            const user = userHasLitellm ? { providers: { litellm: { baseURL: 'http://user-changed/v1' } } } : {}
+            return { namespaces: [{ ns: 'llm-pi-ai', user, value: {}, base: {}, schema: { uid: 1, refs: {} } }] }
+          }
+          if (method === 'settings/mutate') return { ns: 'llm-pi-ai' }
+          throw new Error(`unexpected ${method}`)
+        },
+        close(): void {},
+      },
+    }
+  }
+  it('① user 层无 litellm → 恰一条 mutate：op=set path=[providers,litellm] 值=cfg 解析结果', async () => {
+    const cfg = baseCfg()
+    const { calls, client } = stub(false)
+    await seedDefaultRoute(client as never, cfg)
+    const mutates = calls.filter((c) => c.method === 'settings/mutate')
+    expect(mutates.length).toBe(1)
+    const ops = (mutates[0]!.args as { ns: string; ops: Array<{ op: string; path: string[]; value: Record<string, unknown> }> }).ops
+    expect((mutates[0]!.args as { ns: string }).ns).toBe('llm-pi-ai')
+    expect(ops.length).toBe(1)
+    expect(ops[0]!.op).toBe('set')
+    expect(ops[0]!.path).toEqual(['providers', 'litellm'])
+    expect(ops[0]!.value.api).toBe('openai-completions')
+    expect(ops[0]!.value.baseURL).toBe(normalizeApiBase(cfg.llmBaseUrl))
+    expect(ops[0]!.value.apiKeyEnv).toBe('P2SDK_LLM_API_KEY')
+    expect(ops[0]!.value.models).toEqual([{ id: cfg.model, contextWindow: 131072 }])
+  })
+  it('② user 层已有 litellm（用户改过 baseURL）→ 不发 mutate（不覆盖）', async () => {
+    const { calls, client } = stub(true)
+    await seedDefaultRoute(client as never, baseCfg())
+    expect(calls.filter((c) => c.method === 'settings/mutate').length).toBe(0)
+    expect(calls.filter((c) => c.method === 'settings/describe').length).toBe(1)
+  })
+  it('③ mock → 一概不发（describe 也不发）', async () => {
+    const { calls, client } = stub(false)
+    const cfg = baseCfg()
+    const mockCfg = { ...cfg, provider: 'mock' } as StartConfig
+    await seedDefaultRoute(client as never, mockCfg)
+    expect(calls.length).toBe(0)
+  })
+  it('④ writeRuntimePatch mock 分支覆盖 agent-default-model 为 mock/mock（p2sdk.yml 静态化 litellm 后 mock 靠它）', () => {
+    const cfg = baseCfg()
+    const mockCfg = { ...cfg, provider: 'mock' } as StartConfig
+    const yml = readFileSync(writeRuntimePatch(mockCfg), 'utf8')
+    expect(yml).toContain('id: agent-default-model')
+    expect(yml).toContain('provider: mock')
+  })
+})
+
+// ---- T49ab（Sol M2/M3/M4）：default model 跟种子 / mutate 带 revision / ready 行在种子之后 ----
+describe('T49ab', () => {
+  it('① real：runtime-patch 含 agent-default-model 行且 model=cfg.model（P2SDK_LLM_MODEL=custom-review-model）', () => {
+    const cfg = resolveConfigRaw({ P2SDK_PROVIDER: 'real', P2SDK_LLM_API_KEY: 'k', P2SDK_HOME: join(tmkdir('t49ab-h-'), ''), P2SDK_HANDOFF: tmkdir('t49ab-ho-'), P2SDK_LLM_MODEL: 'custom-review-model' })
+    const yml = readFileSync(writeRuntimePatch(cfg), 'utf8')
+    expect(yml).toContain('id: agent-default-model')
+    expect(yml).toContain('provider: litellm')
+    expect(yml).toContain(`model: 'custom-review-model'`) // yamlScalar 带引号（同款输出）
+  })
+  it('② seed 发出的 mutate 带 describe 回的 revision；③ 冲突(settings-conflict)后重读已有 litellm → 放弃（不再写）', async () => {
+    const cfg = resolveConfigRaw({ P2SDK_PROVIDER: 'real', P2SDK_LLM_API_KEY: 'k', P2SDK_HOME: join(tmkdir('t49ab-h2-'), ''), P2SDK_HANDOFF: tmkdir('t49ab-ho2-') })
+    // ② revision 透传
+    {
+      const calls: Array<{ method: string; args: unknown }> = []
+      const client = {
+        async call(method: string, args?: unknown): Promise<unknown> {
+          calls.push({ method, args })
+          if (method === 'settings/describe') return { namespaces: [{ ns: 'llm-pi-ai', user: {}, revision: 7 }] }
+          if (method === 'settings/mutate') return { ns: 'llm-pi-ai' }
+          throw new Error(`unexpected ${method}`)
+        },
+        close(): void {},
+      }
+      await seedDefaultRoute(client as never, cfg)
+      const mut = calls.find((c) => c.method === 'settings/mutate')!.args as { expectedRevision?: number; ops: unknown[] }
+      expect(mut.expectedRevision, 'wire 键名 expectedRevision（DSH settings.mutate 第三参）').toBe(7)
+    }
+    // ③ 冲突一次 → 重读已有 litellm → 放弃
+    {
+      let describeCount = 0
+      const mutates: unknown[] = []
+      const client = {
+        async call(method: string, args?: unknown): Promise<unknown> {
+          if (method === 'settings/describe') {
+            describeCount += 1
+            // 首读无路由；冲突后重读已有（用户并发写了）
+            const user = describeCount === 1 ? {} : { providers: { litellm: { baseURL: 'http://user-edited/v1' } } }
+            return { namespaces: [{ ns: 'llm-pi-ai', user, revision: describeCount }] }
+          }
+          if (method === 'settings/mutate') {
+            mutates.push(args)
+            const err = new Error('settings-conflict') as Error & { code?: string }
+            err.code = 'settings-conflict'
+            throw err
+          }
+          throw new Error(`unexpected ${method}`)
+        },
+        close(): void {},
+      }
+      await seedDefaultRoute(client as never, cfg)
+      expect(mutates.length, '只试写一次，冲突后放弃').toBe(1)
+      expect(describeCount).toBe(2)
+    }
+  })
+  it('④ stdoutGate：real 持有到 release 才放行（含 ready 行的 chunk 不得提前外泄）；exit 兜底 flush', async () => {
+    const gate = createStdoutGate(false)
+    const out: string[] = []
+    gate.push('boot line\n', (s) => out.push(s))
+    gate.push('[p2sdk] ready http://127.0.0.1:1 t\n', (s) => out.push(s))
+    gate.push('later line\n', (s) => out.push(s))
+    expect(out.join('')).toBe('') // 未 release：一概不出（M4 的核心）
+    gate.release((s) => out.push(s))
+    expect(out.join('')).toContain('[p2sdk] ready')
+    expect(out.join('')).toContain('later line')
+    gate.push('after release\n', (s) => out.push(s))
+    expect(out.join('')).toContain('after release')
+  })
+  it('⑤ stdoutGate(mock)：ready 行立即放行（不持有、不需要 release）', async () => {
+    const gate = createStdoutGate(true)
+    const out: string[] = []
+    gate.push('[p2sdk] ready http://127.0.0.1:1 t\n', (s) => out.push(s))
+    expect(out.join('')).toContain('[p2sdk] ready')
+  })
+})
+
+// ---- T49ac：种子失败时退出 flush 不得放出 ready 行（假 ready 会骗过 launcher）----
+describe('T49ac gate exit 不放 ready 行', () => {
+  it('① 未 release 时 flushOnExit：boot/错误行照出，ready 行被丢；已 release 后 flushOnExit 不重复输出', async () => {
+    const gate = createStdoutGate(false)
+    let out = ''
+    const w = (s: string): void => { out += s }
+    gate.push('dsh: boot line\n', w)
+    gate.push('[p2sdk] ready http://127.0.0.1:1 tok\n', w)
+    gate.push('\r[p2sdk] ready http://127.0.0.1:1 tok\n', w) // Sol:前导 CR 变体（解析器 trim 后认）
+    gate.push('some error detail\n', w)
+    expect(out).toBe('')
+    gate.flushOnExit(w)
+    expect(out).toContain('dsh: boot line')
+    expect(out).toContain('some error detail')
+    expect(out, '退出 flush 丢 ready 行（launcher 唯一就绪契约，种子失败不得出现）').not.toContain('[p2sdk] ready')
+    const before = out
+    gate.flushOnExit(w)
+    expect(out).toBe(before) // 已 release：无重复
+  })
+  it('② seed 抛错（mutate 被拒：llm-pi-ai 插件被 patch 禁用）→ main 拒启：全程 stdout 无 ready 行、退出码非 0', { timeout: 90_000 }, async () => {
+    // 集成单测（真起 start.mjs）：gateway 可达、ready 行已到（gate 持有中）、种子的 mutate
+    // 被上游拒（No configurable plugin entry）→ main 拒启——这正是 launcher 会被假 ready
+    // 骗过的那条失败路径（hivebot:196-198 先 grep ready 再查存活）。
+    const { spawn } = await import('node:child_process')
+    const { writeFileSync: wf } = await import('node:fs')
+    const home = mkdtdir()
+    const handoff = mkdtdir()
+    const patch = mkdtdir()
+    wf(join(patch, 'nollm.yml'), '- id: llm-pi-ai\n  disabled: true\n')
+    const child = spawn(process.execPath, [join(PKG_ROOT_FOR_TEST, 'scripts', 'start.mjs')], {
+      env: {
+        ...process.env,
+        P2SDK_PROVIDER: 'real', P2SDK_LLM_API_KEY: 'k', P2SDK_HOME: home, P2SDK_HANDOFF: handoff,
+        P2SDK_PORT: '0', P2SDK_PATCH: join(patch, 'nollm.yml'), P2SDK_READY_TIMEOUT_MS: '30000',
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    let stdout = ''
+    let stderr = ''
+    child.stdout!.setEncoding('utf8'); child.stdout!.on('data', (c: string) => { stdout += c })
+    child.stderr!.setEncoding('utf8'); child.stderr!.on('data', (c: string) => { stderr += c })
+    const code = await new Promise<number>((r) => { child.on('exit', (c) => r(c ?? 0)); setTimeout(() => { try { child.kill('SIGKILL') } catch { /* */ } }, 85_000) })
+    expect(code, '种子失败拒启：退出码 1').toBe(1)
+    // Sol 增量复审 MINOR:必须证明真走到了种子失败分支(而非参数校验等早退)
+    expect(stderr, 'stderr 含种子失败签名').toContain('seeding default llm route failed')
+    expect(stderr).toContain('No configurable plugin entry')
+    expect(stdout, '全程 stdout 无 ready 行（退出 flush 丢行生效——launcher 唯一就绪契约）').not.toContain('[p2sdk] ready')
+  })
+})
+
+// 小工具：测试内临时目录 + 环境透传最小化
+import { join as joinForTools } from 'node:path'
+function mkdtdir(): string { return tmkdir('t49ac-') }
+const PKG_ROOT_FOR_TEST = joinForTools(__dirname, '..', '..')

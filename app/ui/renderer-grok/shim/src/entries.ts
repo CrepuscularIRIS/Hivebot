@@ -42,6 +42,12 @@ export function kickstartPrompt(o: { name?: string; setup?: string }): string {
 
 export const KICKSTART_PROMPT = kickstartPrompt({})
 
+/** T60：dsh 自动标题会取第一条 user 消息——kickstart 提示被截断成标题（无闭合标签，
+ * isKickstartPrompt 认不出）。前缀判定（工单边界 3）：中缀（用户自起名照带）不算泄漏。 */
+export function isKickstartTitle(title: string): boolean {
+  return title.startsWith('<bot_introduction_request>')
+}
+
 /** 只认标签不认正文（T30 往里加名字时旧会话照样认得出）。 */
 export function isKickstartPrompt(text: string | undefined | null): boolean {
   const t = (text ?? '').trim()
@@ -131,7 +137,10 @@ export function toRawEntries(
         if (ASSIGN_TOOLS.has(e.name)) raw.push(peerEntry(e.id, at, assignPeer(e)))
         break
       case 'notice':
-        raw.push({ kind: 'notice', id: e.id, timestampMs: ts(at), content: e.text })
+        // T50a：缺 key 引导 notice 带 action，透传给视图层出按钮
+        raw.push(e.action === undefined
+          ? { kind: 'notice', id: e.id, timestampMs: ts(at), content: e.text }
+          : { kind: 'notice', id: e.id, timestampMs: ts(at), content: e.text, action: e.action })
         break
       case 'peer':
         raw.push(peerEntry(e.id, at, e.peer.kind === 'report' ? { kind: 'report', items: e.peer.items } : { kind: 'task', fromId: e.peer.fromId, text: e.peer.text }))
@@ -158,7 +167,9 @@ function peerEntry(id: string, at: number | undefined, meta: PeerMeta): RawEntry
 /** 审批卡 entry（pending 态）。status 词表：pending|always|never|denied|expired|allow-once。 */
 export function permissionEntry(input: {
   id: string; requestId: string; scope: string; revision: number; at?: number
-  command: string; status?: 'pending' | 'allow-once' | 'denied'
+  command: string; status?: 'pending' | 'allow-once' | 'denied' | 'always' | 'skipped'
+  /** T73c：连接器卡只读标注（mcp__ 工具才有；bash/文件卡不带）。 */
+  connector?: { serverName: string; displayName: string }
 }): RawEntry {
   return {
     kind: 'send-message',
@@ -171,6 +182,7 @@ export function permissionEntry(input: {
         status: input.status ?? 'pending',
         action: { kind: 'run-command', command: input.command },
         target: { kind: 'local-computer' },
+        ...(input.connector === undefined ? {} : { connector: input.connector }),
       },
     },
     permissionScope: input.scope,

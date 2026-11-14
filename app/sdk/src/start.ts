@@ -7,7 +7,9 @@
  *
  * Environment:
  *   P2SDK_PROVIDER       'real' (default) | 'mock'
- *   P2SDK_LLM_API_KEY    required for the real provider; never logged
+ *   P2SDK_LLM_API_KEY    optional since T50a: real provider without a key boots
+ *                        with a WARN; the first request fails MISSING_CREDENTIAL
+ *                        and the UI points to Settings → Models. Never logged.
  *   P2SDK_LLM_BASE_URL   LiteLLM root, default http://127.0.0.1:4001
  *   P2SDK_LLM_MODEL      default glm-5.3-flash (verified alias on local LiteLLM)
  *   P2SDK_HOME           runtime home, default <pkg>/.dsh (launcher-side only:
@@ -21,8 +23,9 @@
  *   P2SDK_PATCH          colon-separated extra `--patch` overlays (absolute paths)
  */
 import { spawn } from 'node:child_process'
+import { parse as YAML__parse } from 'yaml'
 import { randomUUID } from 'node:crypto'
-import { closeSync, fstatSync, linkSync, mkdirSync, mkdtempSync, openSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync, writeSync } from 'node:fs'
+import { appendFileSync, closeSync, existsSync, fstatSync, lstatSync, linkSync, mkdirSync, mkdtempSync, openSync, readFileSync, readlinkSync, renameSync, rmSync, statSync, symlinkSync, unlinkSync, writeFileSync, writeSync } from 'node:fs'
 import { tmpdir, userInfo } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -116,10 +119,9 @@ export function sshMissingKeys(env: NodeJS.ProcessEnv): string[] {
 }
 
 /** Pre-flight validation; a non-null string is the user-facing error. */
+// T50a：不再因缺 P2SDK_LLM_API_KEY 拒启 real 模式——无 key 可启动，请求时报
+// llm-pi-ai MISSING_CREDENTIAL（§0 探针帧），UI 引导去 Settings → Models 填 key。
 export function validateStart(cfg: StartConfig): string | null {
-  if (cfg.provider === 'real' && !cfg.apiKey) {
-    return 'P2SDK_LLM_API_KEY is not set: the real provider requires it. Export P2SDK_LLM_API_KEY, or run with P2SDK_PROVIDER=mock.'
-  }
   for (const p of cfg.extraPatches) {
     if (!isAbsolute(p)) return `extra patch path must be absolute (got "${p}"); set P2SDK_PATCH to absolute paths`
   }
@@ -379,6 +381,7 @@ function shellAskRow(cfg: StartConfig): string {
     handoff: ${yamlScalar(cfg.handoff)}
     permitDir: ${yamlScalar(join(cfg.dataDirs[0] ?? cfg.home, 'network-permits'))}
     policyStatePaths:${list(cfg.dataDirs.map((d) => join(d, 'policy-state.json')))}
+    standingGrantsPath: ${yamlScalar(join(cfg.dataDirs[0] ?? cfg.home, 'standing-grants.json'))} # T73b：standing-grants 门（与 service 行同一推导）
 `
 }
 
@@ -404,9 +407,63 @@ function requestNetRow(cfg: StartConfig): string {
  * absolute plugin specifiers because the $DSH_HOME profile workspace has no
  * node_modules to resolve package names against.
  */
+/** T49ab（Sol M4）：stdout 闸门——real 模式下 dsh 的 `[p2sdk] ready` 行不得早于种子完成
+ * 外泄（launcher app/launcher/hivebot:197 正是等这行起 UI，窗口期连上的客户端
+ * routableProviders 为空）。real：全部 stdout 缓冲，release() 一次性放行；mock：直通。
+ * 子进程退出时兜底 flush（错误诊断可见）。 */
+export interface StdoutGate {
+  push(chunk: string, write: (s: string) => void): void
+  release(write: (s: string) => void): void
+  flushOnExit(write: (s: string) => void): void
+}
+
+export function createStdoutGate(isMock: boolean): StdoutGate {
+  let released = isMock
+  let buffered = ''
+  return {
+    push(chunk, write) {
+      if (released) { write(chunk); return }
+      buffered += chunk
+    },
+    release(write) {
+      if (released) return
+      released = true
+      if (buffered !== '') write(buffered)
+      buffered = ''
+    },
+    // T49ac：退出兜底放行诊断行但**丢掉 ready 行**——launcher（hivebot:196-198）先 grep
+    // ready 行再查进程存活，种子失败的拒启若让 ready 行落进 sdk.log，会被判成已就绪去起
+    // UI / 写 serve.json 指向死 runtime。ready 行是唯一就绪契约，只许 release()（种子成功）放。
+    flushOnExit(write) {
+      if (released) return
+      released = true
+      // Sol 增量复审:前导 CR/空格/带尾注的 ready 行(:630 解析器 trim 后认、launcher
+      // hivebot:197 的非锚定 grep 也认)都要滤——口径取最宽松的消费者(grep 子串):
+      // 「任何消费者能认作 ready 的行」一律不放。
+      const kept = buffered.split('\n').filter((line) => !/\[p2sdk\] ready http/.test(line)).join('\n')
+      if (kept !== '') write(kept.endsWith('\n') || kept === '' ? kept : `${kept}\n`)
+      buffered = ''
+    },
+  }
+}
+
 export function writeRuntimePatch(cfg: StartConfig): string {
   const path = join(cfg.home, 'runtime-patch.yml')
   const rows: string[] = []
+  // T49a/T49ab：p2sdk.yml 的 agent-default-model 静态化为 litellm 后由这里整行覆盖——
+  // mock 用 mock/mock；real 用 cfg.model（P2SDK_LLM_MODEL 可变，默认选择必须跟种子同模型，
+  // 否则 catalog 只有自定义模型而 default 指向不存在的那台——Sol M2）。
+  rows.push(cfg.provider === 'mock' ? `\
+- id: agent-default-model
+  config:
+    provider: mock
+    model: mock
+` : `\
+- id: agent-default-model
+  config:
+    provider: litellm
+    model: ${yamlScalar(cfg.model)}
+`)
   if (cfg.provider === 'mock') {
     rows.push(`\
 - insert:
@@ -445,6 +502,15 @@ export function writeRuntimePatch(cfg: StartConfig): string {
         remoteRoot: ${yamlScalar(cfg.workspaceRoot)}
 `)
     }
+    // T73b：连接器 standing-grants RPC（remember/clear）——本机模式挂；standingGrantsPath
+    // 与 shell-ask 行同一推导（单例共享待答表）。ssh 模式数据根在远端，本单不覆盖。
+    rows.push(`\
+- insert:
+    - id: p2sdk-connector-grants
+      name: ${yamlScalar(fileUrl(join(PKG_ROOT, 'src', 'p2sdk', 'connector-grants.mjs')))}
+      config:
+        standingGrantsPath: ${yamlScalar(join(cfg.dataDirs[0] ?? cfg.home, 'standing-grants.json'))}
+`)
     // 本机模式：行为与改前逐字相同（T9a 验收 2-② 钉住）
     rows.push(sandboxRow(cfg))
     rows.push(fsSandboxRow(cfg))
@@ -901,6 +967,154 @@ export interface RuntimeHandle {
   guardFailed(): string | null
 }
 
+/**
+ * T51: mount plugin-market in the profile's *bundle* layer (profiles/web), not a
+ * --patch overlay. dsh's settings.update refuses to write any entry that an
+ * overlay row defines ("Configuration … is overridden by a home patch or
+ * command-line overlay"), and that refusal is what kept the market at the dead
+ * "No catalog configured" state: pluginMarket/setIndexes could never persist.
+ * Bundle rows are not overlays, so the settings write goes through — probe v8/v9
+ * (work/settings-connectors/evidence/T51/step0v*.txt). Idempotent: creates the
+ * missing workspace files, appends the bundle to the manifest only when absent,
+ * (re)links node_modules entries, and seeds P2SDK_MARKET_INDEXES sources into the
+ * user patch layer only while that layer has no plugin-market config (env as
+ * first-run seed, never overriding user-added sources).
+ */
+export function ensureMarketBundle(home: string, seedIndexes: string[]): void {
+  const ws = join(home, 'profiles', 'web')
+  mkdirSync(ws, { recursive: true })
+  const ensure = (file: string, content: string): void => {
+    const p = join(ws, file)
+    if (!existsSync(p)) writeFileSync(p, content)
+  }
+  // Workspace skeleton as dsh itself generates it (observed @ 0.2.2-rc.1).
+  ensure('pnpm-workspace.yaml', 'packages:\n  - .\n\nnodeLinker: hoisted\nautoInstallPeers: false\n')
+  ensure('cordis.yml', '[]\n')
+  // T51b: the user patch layer carries user state (market sources today, the
+  // model routing config once T49 lands) — a fresh workspace is the only case
+  // where writing the seed wholesale is safe; an existing file is only ever
+  // appended to (see seedMarketIndexes).
+  const userPatchPath = join(ws, 'cordis.patch.yml')
+  if (!existsSync(userPatchPath)) writeFileSync(userPatchPath, seedIndexes.length > 0 ? marketSeedDoc(seedIndexes) : '[]\n')
+  const manifestPath = join(ws, 'package.json')
+  let manifest: { name?: string; private?: boolean; dependencies?: Record<string, string>; dsh?: { profile?: { bundles?: string[] } } }
+  try {
+    manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  } catch (error) {
+    // T51c R3: 只有 ENOENT 才是"首建"；读坏/解析坏的 manifest 可能仍装着用户依赖——
+    // 原样保留、本次不挂 bundle（市场退空态，SDK 照常启动），绝不整写覆盖。
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') manifest = { name: 'dsh-profile-web', private: true, dependencies: {} }
+    else {
+      process.stderr.write(`WARN p2sdk: ${manifestPath} is unreadable (${String(error).slice(0, 120)}); leaving the market unmounted this boot\n`)
+      seedMarketIndexes(userPatchPath, seedIndexes)
+      return
+    }
+  }
+  const bundles = manifest.dsh?.profile?.bundles ?? ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app']
+  if (!bundles.includes('hivebot-market-bundle')) {
+    manifest.dsh = { ...(manifest.dsh ?? {}), profile: { ...(manifest.dsh?.profile ?? {}), bundles: [...bundles, 'hivebot-market-bundle'] } }
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
+  }
+  // Resolution chain: the local bundle package and the real dsh-plugin-market
+  // package, both symlinked into the workspace's node_modules.
+  const bundleLink = join(ws, 'node_modules', 'hivebot-market-bundle')
+  const realLink = join(ws, 'node_modules', '@deepseek-ai', 'dsh-plugin-market')
+  const link = (target: string, linkPath: string): void => {
+    // T51c R4: 链接位可能被真实包目录占据（用户手工/前次安装）——lstat 区分：
+    // 真目录/文件不删不链（WARN 继续，dsh 也许本就能解析它）；别的链接换掉；删除失败不再吞。
+    mkdirSync(dirname(linkPath), { recursive: true })
+    let st
+    try { st = lstatSync(linkPath) } catch { /* 不存在 → 直接建 */ }
+    if (st !== undefined) {
+      if (st.isSymbolicLink()) {
+        try { if (readlinkSync(linkPath) === target) return } catch { /* 读不了 → 换 */ }
+        try { rmSync(linkPath, { force: true }) } catch (error) {
+          process.stderr.write(`WARN p2sdk: cannot replace ${linkPath} (${String(error).slice(0, 120)}); leaving it\n`); return
+        }
+      } else {
+        process.stderr.write(`WARN p2sdk: ${linkPath} exists and is not a symlink; leaving it in place\n`); return
+      }
+    }
+    try { symlinkSync(target, linkPath) } catch (error) {
+      process.stderr.write(`WARN p2sdk: cannot link ${linkPath} (${String(error).slice(0, 120)})\n`)
+    }
+  }
+  link(join(PKG_ROOT, 'profile', 'bundles', 'hivebot-market-bundle'), bundleLink)
+  link(join(PKG_ROOT, 'node_modules', '@deepseek-ai', 'dsh-plugin-market'), realLink)
+  seedMarketIndexes(userPatchPath, seedIndexes)
+}
+
+/** T51b: the plugin-market seed row (yamlScalar-escaped URLs; dsh settings.update writes this same shape). */
+function marketSeedDoc(seedIndexes: string[]): string {
+  const rows = seedIndexes.map((u) => `      - ${yamlScalar(u)}`).join('\n')
+  return `- id: plugin-market\n  name: '@deepseek-ai/dsh-plugin-market'\n  config:\n    indexes:\n${rows}\n`
+}
+
+/**
+ * T51c R1: seed env sources into an *existing* user patch layer. This file is
+ * dsh-owned and will also hold the user's model routing (T49) — so every
+ * uncertain case leaves the original bytes untouched: empty doc/sequence is
+ * rewritten whole (no user state), a block sequence gets the seed row appended
+ * with a separating newline, anything else (flow sequence, non-sequence,
+ * unparseable) is skipped with a WARN. The write itself is verified: the
+ * post-write document must re-parse and contain every pre-write item, in
+ * order, as a prefix — otherwise the original bytes are restored.
+ */
+function seedMarketIndexes(userPatchPath: string, seedIndexes: string[]): void {
+  if (seedIndexes.length === 0 || !existsSync(userPatchPath)) return
+  const raw = readFileSync(userPatchPath, 'utf8')
+  const result = applySeed(raw, seedIndexes)
+  if (result.warn !== undefined) process.stderr.write(`WARN p2sdk: ${userPatchPath}: ${result.warn}\n`)
+  if (result.content === undefined) return
+  // 复审①: 整写截断目标文件发生在任何保护之外（ENOSPC 部分写 → 原配置变成半行且无恢复）。
+  // 结构性修复：先把候选内容写进同目录临时文件，校验通过后 rename 原子替换——
+  // 临时文件写失败时原文件从未被打开写入，物理上不可能截断。
+  const tmp = `${userPatchPath}.p2sdk-seed-tmp`
+  try {
+    writeFileSync(tmp, result.content)
+    if (!prefixKept(raw, readFileSync(tmp, 'utf8'))) throw new Error('post-write prefix check failed')
+    renameSync(tmp, userPatchPath)
+  } catch (error) {
+    try { rmSync(tmp, { force: true }) } catch { /* tmp 从未建成或已被 rename */ }
+    process.stderr.write(`WARN p2sdk: ${userPatchPath}: seed write failed self-check (${String(error).slice(0, 120)}); original untouched\n`)
+  }
+}
+
+/** 复审③: 校验「写前每一项按深比较仍是写后数组的前缀」。空文档（null，如只有注释）按零前缀处理
+ * （种子整写后只需可解析且为数组）；复审②: 循环引用等 JSON.stringify 处理不了的值一律按"比较不了
+ * →不安全"处理，绝不抛出（可选的 seed 不能阻止启动）。 */
+function prefixKept(raw: string, written: string): boolean {
+  let before: unknown
+  let after: unknown
+  try { before = YAML__parse(raw); after = YAML__parse(written) } catch { return false }
+  if (!Array.isArray(after)) return false
+  if (before === null || before === undefined) return true // 空文档：零前缀（复审③）
+  if (!Array.isArray(before)) return false
+  try {
+    return before.every((item, i) => JSON.stringify(item) === JSON.stringify(after[i]))
+  } catch { return false } // 复审②: circular structure 等——比较不了=不安全=不写
+}
+
+/** T51c R1: 纯函数——决定种子怎么落（返回写入内容或跳过原因），不碰磁盘。 */
+export function applySeed(raw: string, seedIndexes: string[]): { content?: string; warn?: string } {
+  let doc: unknown
+  try { doc = YAML__parse(raw) } catch { return { warn: 'not parseable YAML; seed skipped' } }
+  const hasMarket = Array.isArray(doc) && doc.some((item) => typeof item === 'object' && item !== null && (item as { id?: unknown }).id === 'plugin-market')
+  if (hasMarket) return {}
+  if (doc === null || (Array.isArray(doc) && doc.length === 0)) {
+    const content = marketSeedDoc(seedIndexes)
+    return parseable(content) ? { content } : { warn: 'seed doc failed self-check' }
+  }
+  if (!Array.isArray(doc)) return { warn: 'not a YAML sequence; seed skipped' }
+  const firstLine = raw.split('\n').find((line) => line.trim() !== '' && !line.trim().startsWith('#'))
+  if (firstLine === undefined || !firstLine.trimStart().startsWith('- ')) return { warn: 'flow-style sequence; not safe to append, seed skipped' }
+  const content = `${raw.endsWith('\n') ? raw : `${raw}\n`}${marketSeedDoc(seedIndexes)}`
+  // 复审②: prefixKept 内部吞掉比较异常（循环锚点等）——比较不了就 WARN 跳过，不抛
+  return prefixKept(raw, content) ? { content } : { warn: 'append failed self-check; seed skipped' }
+}
+
+const parseable = (text: string): boolean => { try { YAML__parse(text); return true } catch { return false } }
+
 /** Prepare the home dir, overlays, and dsh child process for one runtime. */
 export function startRuntime(cfg: StartConfig): RuntimeHandle {
   mkdirSync(cfg.home, { recursive: true })
@@ -908,6 +1122,8 @@ export function startRuntime(cfg: StartConfig): RuntimeHandle {
   if (cfg.provider === 'mock') {
     writeFileSync(join(cfg.home, 'replay-override.json'), JSON.stringify(mockReplayOverride()))
   }
+  // T51: before spawn — the workspace must exist for dsh to pick the bundle up on this very boot.
+  ensureMarketBundle(cfg.home, (process.env.P2SDK_MARKET_INDEXES ?? '').split(/\s+/).filter(Boolean))
   const runtimePatch = writeRuntimePatch(cfg)
   const child = spawn(process.execPath, [dshEntry(), ...buildArgs(cfg, runtimePatch)], dshSpawnOptions(cfg))
 
@@ -942,9 +1158,12 @@ export function startRuntime(cfg: StartConfig): RuntimeHandle {
     const m = /^(p2sdk-fs-guard \([^)]*\): Error: .+)$/m.exec(chunk)
     if (m) guardFailure = m[1]
   }
+  // T49ab（Sol M4）：real 模式 stdout 过闸——ready 行（连同启动期全部 stdout）缓冲到
+  // 种子完成才放行；mock 直通。行解析照旧（ready/guard 判定不受闸影响）。
+  const stdoutGate = createStdoutGate(cfg.provider === 'mock')
   child.stdout!.setEncoding('utf8')
   child.stdout!.on('data', (chunk: string) => {
-    process.stdout.write(chunk)
+    stdoutGate.push(chunk, (c) => process.stdout.write(c))
     if (announced) return
     pending += chunk
     let nl: number
@@ -966,6 +1185,7 @@ export function startRuntime(cfg: StartConfig): RuntimeHandle {
   child.on('exit', () => {
     clearTimeout(timer)
     if (!announced) readyResolve(false)
+    stdoutGate.flushOnExit((c) => process.stdout.write(c)) // T49ab：退出兜底——错误诊断可见
   })
   return {
     child,
@@ -973,15 +1193,58 @@ export function startRuntime(cfg: StartConfig): RuntimeHandle {
     exited,
     /** P5-02 决策 6: the guard activation-failure line seen on stdout, or null. */
     guardFailed(): string | null { return guardFailure },
+    /** T49ab（Sol M4）：放行被闸住的 stdout（real=种子成功后；mock 直通无需调用）。 */
+    releaseStdout(): void { stdoutGate.release((c) => process.stdout.write(c)) },
   }
 }
 
 /** Entry point: returns the process exit code. */
+/** T49a：默认 litellm 路由种子——user 层没有就经 settings/mutate 写一条（DSH Models 页同款调用）。
+ * p2sdk.yml 不再给 llm-pi-ai 配 config（!!js 节点会让一切 settings 写操作在合并校验炸，
+ * 且 patch-config 按 T51 先例锁 ns）；「providers 由用户设置文档提供」是 dsh-base 官方语义。
+ * 只作首启种子（T51 env 口径）：user 层已有（用户改过/删过再加）一律不覆盖。 */
+export interface SeedClient { call(method: string, args?: unknown): Promise<unknown>; close(): void }
+
+export async function seedDefaultRoute(client: SeedClient, cfg: StartConfig): Promise<void> {
+  if (cfg.provider === 'mock') return
+  // T49ab（Sol M3）：读到的 revision 随写发出（dsh-settings 用它拒绝过期写——DSH Models 页
+  // writeSettings 同款，client.js:3307 settings.mutate(ns, ops, expectedRevision)）；
+  // settings/conflict 冲突 → 重读一次：已有 litellm（并发方写了）即放弃种子，没有再试一次，
+  // 仍冲突按种子失败处理（抛给 main → 拒启）。
+  const seedOps = [{
+    op: 'set', path: ['providers', 'litellm'],
+    value: {
+      api: 'openai-completions',
+      baseURL: normalizeApiBase(cfg.llmBaseUrl),
+      apiKeyEnv: 'P2SDK_LLM_API_KEY',
+      models: [{ id: cfg.model, contextWindow: 131072 }],
+    },
+  }] as const
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const described = (await client.call('settings/describe', {})) as { namespaces?: Array<{ ns?: string; user?: { providers?: { litellm?: unknown } }; revision?: number }> }
+    const ns = (described.namespaces ?? []).find((n) => n.ns === 'llm-pi-ai')
+    if (ns?.user?.providers?.litellm !== undefined) return
+    const revision = ns?.revision
+    try {
+      await client.call('settings/mutate', { ns: 'llm-pi-ai', ops: [...seedOps], ...(revision !== undefined ? { expectedRevision: revision } : {}) })
+      return
+    } catch (error) {
+      const code = (error as { code?: string }).code ?? ''
+      const isConflict = code === 'settings/conflict' || /conflict/i.test(String((error as Error).message ?? ''))
+      if (!isConflict || attempt === 1) throw error
+    }
+  }
+}
+
 export async function main(cfg: StartConfig = resolveConfig()): Promise<number> {
   const err = validateStart(cfg)
   if (err) {
     process.stderr.write(`p2sdk: ${err}\n`)
     return 1
+  }
+  // T50a：无 key 不再拒启——一行 WARN 引导，请求时报 MISSING_CREDENTIAL（§0 探针帧）。
+  if (cfg.provider === 'real' && !cfg.apiKey) {
+    process.stderr.write('WARN p2sdk: no API key yet — add one in Settings → Models\n')
   }
   // P5-01 决策 15: exactly one WARN line when PBOTS_DATA_DIR is unset — the
   // default userData layout is assumed, boot continues (NOT fail-closed).
@@ -1042,5 +1305,26 @@ export async function main(cfg: StartConfig = resolveConfig()): Promise<number> 
     forward('SIGTERM')
     return (await handle.exited) || 1
   }
+  // T49a：ready 后种子默认路由（mock 不种）。失败 = 无模型可用还静默服务，宁可启动失败；
+  // 错误信息只含方法名与消息，不含 key（seed 请求本身不带 key 值）。
+  if (cfg.provider !== 'mock') {
+    try {
+      const baseUrl = readFileSync(join(cfg.handoff, 'base-url'), 'utf8').trim()
+      const token = readFileSync(join(cfg.handoff, 'launch-token'), 'utf8').trim()
+      const { pathToFileURL } = await import('node:url')
+      const mod = (await import(pathToFileURL(join(PKG_ROOT, 'examples', 'lib', 'client.mjs')).href)) as {
+        connect(opts: { baseUrl: string; token: string }): Promise<SeedClient>
+      }
+      const client = await mod.connect({ baseUrl, token })
+      try { await seedDefaultRoute(client, cfg) } finally { client.close() }
+      process.stderr.write('p2sdk: default llm route seeded (user-level settings)\n')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      process.stderr.write(`p2sdk: seeding default llm route failed; not serving: ${message}\n`)
+      forward('SIGTERM')
+      return (await handle.exited) || 1 // T49ab：不 releaseStdout——ready 行随退出兜底 flush，消费者见退出不见假 ready
+    }
+  }
+  handle.releaseStdout() // T49ab（Sol M4）：种子成功才放行 ready 行（mock 闸直通，调用是幂等 no-op）
   return await handle.exited
 }

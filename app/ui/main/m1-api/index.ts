@@ -23,9 +23,22 @@ export const M1_ALLOW: ReadonlySet<string> = new Set([
   'pluginMarket/listIndexes',
   'pluginMarket/search',
   'pluginMarket/readEntryDetail',
+  'pluginMarket/setIndexes',
   'pluginManager/installBundle',
   'pluginManager/listBundles',
+  // T73b：连接器 standing-grants 窄门——remember 只认 SDK 侧活卡（无待答 refused），
+  // clear 只清不读（回 {clearedCount}，不回显存储内容）。checkArgs 同形状校验。
+  'p2sdk/connector_grants_remember',
+  'p2sdk/connector_grants_clear',
   '$events/result',
+  // T49（Q-047「这个直接抄DSH的配置」2026-11-11）：DSH 配置口窄门。credentials 三法
+  // 只写不读（回包字段白名单过滤）；settings 写口只开 mutate（探针实测 update 在
+  // llm-pi-ai 上因 patch !!js 节点恒炸，DSH Models 页官方写法即 mutate——T49 探针回执）。
+  'credentials/describe',
+  'credentials/set',
+  'credentials/unset',
+  'settings/describe',
+  'settings/mutate',
 ])
 
 /**
@@ -33,7 +46,12 @@ export const M1_ALLOW: ReadonlySet<string> = new Set([
  * 凭证/account、`/permission`、configForms 也无条件拒绝；放宽须引用用户原话另开安全红线问题。
  */
 export function d9DeniedReason(method: string, args: unknown): string | undefined {
-  if (/^credentials/i.test(method)) return 'credentials methods are permanently denied (BRIEF D9)'
+  // T49 放宽依据：Q-047 用户原话「这个直接抄DSH的配置」（2026-11-11）——仅放行
+  // credentials/describe|set|unset 三法（下方 T49 守卫再收引用名）；其余 credentials/*
+  // （list/export/…）照 D9 永拒。原判据「凭证不进 bot」不变：set 只写不读、回包过滤。
+  if (/^credentials/i.test(method) && !/^credentials\/(describe|set|unset)$/.test(method)) {
+    return 'credentials methods are permanently denied (BRIEF D9; T49 opens describe/set/unset only)'
+  }
   if (/^account/i.test(method)) return 'account methods are permanently denied (BRIEF D9)'
   if (method.startsWith('/permission')) return '/permission methods are permanently denied (BRIEF D9)'
   if (method === 'commands/execute' && permissionCommandLine(args) !== undefined) {
@@ -82,7 +100,88 @@ export function invalidBundleNameReason(names: readonly unknown[]): string | und
 }
 
 /** §2.2 参数约束；返回拒绝结果或 undefined（通过）。 */
+const REF_NAME_RE = /^[A-Z][A-Z0-9_]*$/
+/** T49b：派生函数与 DSH Models 页同源（client.js:1358 deriveKeyRef）——mutate 守卫与
+ * set/unset 守卫共用一条规则，「能存路由就能存 key」成为结构保证（Sol M1）。 */
+export function deriveKeyRef(route: string): string {
+  return `${route.toUpperCase().replace(/[^A-Z0-9]+/g, '_')}_API_KEY`
+}
+/** T49：set/unset 合法引用名 = 我们默认路由的 apiKeyEnv（T49a 种子 litellm）
+ * 或 deriveKeyRef 派生形态（允许中间下划线——my-route → MY_ROUTE_API_KEY）。
+ * DSH_* 前缀排除（非 llm 命名域）；GITHUB_TOKEN 等不以 _API_KEY 结尾的天然不匹配。 */
+const SETTABLE_REF_RE = /^(P2SDK_LLM_API_KEY|[A-Z][A-Z0-9_]*_API_KEY)$/
+function t49DeniedReason(method: string, args: unknown): string | { code: 'pbots/forbidden'; message: string } | undefined {
+  const a = (typeof args === 'object' && args !== null ? args : {}) as Record<string, unknown>
+  if (method === 'credentials/describe') {
+    const refs = a.refs
+    if (!Array.isArray(refs) || refs.length === 0 || refs.length > 64) return 'describe requires {refs: string[]} of at most 64 names'
+    if (refs.some((r) => typeof r !== 'string' || !REF_NAME_RE.test(r))) return 'each credential ref must match ^[A-Z][A-Z0-9_]*$'
+    return undefined
+  }
+  if (method === 'credentials/set' || method === 'credentials/unset') {
+    // 引用名不在放行域 = 越权写他人凭证 → forbidden（工单②语义）；value 形状 = invalid-args
+    const ref = a.ref
+    if (typeof ref !== 'string' || !SETTABLE_REF_RE.test(ref) || ref.startsWith('DSH_')) {
+      return { code: 'pbots/forbidden', message: 'credential ref must be the default route key (P2SDK_LLM_API_KEY) or a derived <ROUTE>_API_KEY name' } as const
+    }
+    if (method === 'credentials/set' && (typeof a.value !== 'string' || (a.value as string).length === 0)) return 'set requires a non-empty string value'
+    return undefined
+  }
+  if (method === 'settings/mutate') {
+    if (a.ns !== 'llm-pi-ai') return { code: 'pbots/forbidden', message: 'settings writes are only allowed for the llm-pi-ai namespace' } as const
+    const ops = a.ops
+    if (!Array.isArray(ops) || ops.length === 0) return 'mutate requires {ops: SettingsPathOp[]}'
+    // DSH Models 页实际只用 set/unset 两种 op（client.js:1736-1962 pathOps），都限 providers.<route>
+    for (const op of ops) {
+      const o = (typeof op === 'object' && op !== null ? op : {}) as { op?: unknown; path?: unknown; value?: unknown }
+      // T49b：route 字母开头（数字开头派生 1ABC_API_KEY 不是合法 POSIX env 名——DSH 上游
+      // client.js:1668 注释自认该缺陷会在 credential seam 失败，这里收紧在源头拒绝）
+      if (o.op !== 'set' && o.op !== 'unset') return { code: 'pbots/forbidden', message: 'mutate ops must be set/unset' } as const
+      if (!Array.isArray(o.path) || o.path.length !== 2 || o.path[0] !== 'providers' || typeof o.path[1] !== 'string' || !/^[a-z][a-z0-9_-]{0,63}$/.test(o.path[1] as string)) {
+        return { code: 'pbots/forbidden', message: 'mutate ops must address providers.<route>' } as const
+      }
+      if (o.op === 'unset') continue
+      const v = o.value
+      if (typeof v !== 'object' || v === null) return 'each providers.<route> value must be an object'
+      try { JSON.stringify(v) } catch { return 'providers.<route> value must be plain JSON' }
+      // 经理守卫（防凭证外泄）：mutate 能写 baseURL+apiKeyEnv——不锁 apiKeyEnv，界面就能把
+      // 宿主任意环境变量（GITHUB_TOKEN 等，credentials 层 source:env 可解析）当 key 发到任意
+      // baseURL。锁死：apiKeyEnv 只能是本 route 的派生名（deriveKeyRef 形态 client.js:1358），
+      // litellm 额外放行默认 P2SDK_LLM_API_KEY。
+      const route = o.path[1] as string
+      const derived = deriveKeyRef(route)
+      const env = (v as { apiKeyEnv?: unknown }).apiKeyEnv
+      const envOk = env === undefined || env === derived || (route === 'litellm' && env === 'P2SDK_LLM_API_KEY')
+      if (!envOk) {
+        return { code: 'pbots/forbidden', message: `apiKeyEnv must be ${derived}${route === 'litellm' ? ' or P2SDK_LLM_API_KEY' : ''}` } as const
+      }
+    }
+    return undefined
+  }
+  return undefined
+}
+
+/** T49 ④：credentials/describe 回包逐条目字段白名单（configured/source/writable）——
+ * 上游若加宽回包（多出 value 等）在 main 丢弃；set/unset 回值一律不透传（undefined）。 */
+const CREDENTIAL_INFO_FIELDS = new Set(['configured', 'source', 'writable'])
+function filterCredentialDescribe(result: M1Result): M1Result {
+  if (!result.ok) return result
+  const value = result.value as Record<string, unknown> | null
+  if (typeof value !== 'object' || value === null) return result
+  const kept: Record<string, unknown> = {}
+  for (const [ref, info] of Object.entries(value)) {
+    if (typeof info === 'object' && info !== null) {
+      const row: Record<string, unknown> = {}
+      for (const [k, v] of Object.entries(info as Record<string, unknown>)) if (CREDENTIAL_INFO_FIELDS.has(k)) row[k] = v
+      kept[ref] = row
+    }
+  }
+  return { ok: true, value: kept }
+}
+
 function checkArgs(method: string, args: unknown, ledger: EventsLedger): M1Result | undefined {
+  const t49 = t49DeniedReason(method, args)
+  if (t49 !== undefined) return typeof t49 === 'string' ? invalid(t49) : forbidden(t49.message)
   if (method === 'pluginManager/installBundle') {
     // wire 形状：typert 命名参数 {spec, options}（U-15 联调实测：位置数组被 gateway 拒
     // 'Remote payload must contain exactly one plain-object args field'）；数组分支保留兼容旧口径
@@ -91,6 +190,36 @@ function checkArgs(method: string, args: unknown, ledger: EventsLedger): M1Resul
       : (typeof args === 'object' && args !== null ? (args as { options?: unknown }).options : undefined)
     if (typeof opts !== 'object' || opts === null || (opts as { enabled?: unknown }).enabled !== false) {
       return invalid('installBundle requires an options object with enabled === false')
+    }
+    return undefined
+  }
+  if (method === 'p2sdk/connector_grants_remember') {
+    // T73c 边界 5（T73b 遗留 wire 修正）：gateway 要 {request:{botId,serverName}}（单参方法
+    // args 字段=形参名，workspace_ensure 同先例）。只收 request 单键——裸形到 gateway 必失败
+    // 不兼容；多余键拒绝（防「校验一份、转发另一份」歧义）。形状同 SDK 侧正则，越界 M1 先拒。
+    const keys = typeof args === 'object' && args !== null ? Object.keys(args as object) : []
+    const inner = keys.length === 1 && keys[0] === 'request' ? (args as { request?: unknown }).request : undefined
+    const { botId, serverName } = (typeof inner === 'object' && inner !== null ? inner : {}) as { botId?: unknown; serverName?: unknown }
+    if (typeof botId !== 'string' || !/^[\w-]{1,64}$/.test(botId) || typeof serverName !== 'string' || !/^[A-Za-z0-9_-]{1,32}$/.test(serverName)) {
+      return invalid('connector_grants_remember requires exactly {request:{botId, serverName}} of word-dash shapes (bot ≤64, server ≤32)')
+    }
+    return undefined
+  }
+  if (method === 'p2sdk/connector_grants_clear') {
+    if (args !== undefined && args !== null && Object.keys(args as object).length > 0) {
+      return invalid('connector_grants_clear takes no arguments')
+    }
+    return undefined
+  }
+  if (method === 'pluginMarket/setIndexes') {
+    // T51：目录源由界面管理（DSH Discover 同款）。wire 形状 {urls: string[]}（U-15 同因：
+    // 位置数组被 gateway 拒）。上限先于上游校验拒——URL 规范化交给 plugin-market。
+    const urls = (typeof args === 'object' && args !== null ? (args as { urls?: unknown }).urls : undefined)
+    if (!Array.isArray(urls)) return invalid('setIndexes requires {urls: string[]}')
+    if (urls.length > 20) return invalid('setIndexes accepts at most 20 index sources')
+    // T51c R5: find 与「未找到」同值（元素 undefined 被当作没找到）——some 才是真判断
+    if (urls.some((u) => typeof u !== 'string' || u.length === 0 || u.length > 2048)) {
+      return invalid('each index source must be a non-empty string of at most 2048 chars')
     }
     return undefined
   }
@@ -239,6 +368,11 @@ export function registerM1Api(deps: M1Deps = {}): (req: M1Request) => Promise<M1
       if (!ledger.consumeResult(eventId)) {
         log(`$events/result consume skipped (eventId no longer pending after rpc): ${JSON.stringify(eventId)}`)
       }
+    }
+    if (method === 'credentials/describe') return filterCredentialDescribe(result)
+    if (method === 'credentials/set' || method === 'credentials/unset') {
+      // 只写不读：上游回值（若有）不进 renderer；错误照透传（T49 ⑧：错误消息不应含 value——上游契约如此）
+      return result.ok ? { ok: true, value: undefined } : result
     }
     return method === 'agentPresets/list' ? filterP2tempPresets(result) : result
   }

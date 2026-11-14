@@ -40,6 +40,24 @@ for (const r of m.resources) {
 }
 EOF
 
+say "2.5/4 0.78.1 吉祥物引擎（自备 deb——私用不分发，公开网无下载）"
+DEB="${GROK_BOT_DEB:-$HOME/Downloads/grok-bot_0.78.1_amd64.deb}"
+VENDOR="app/ui/renderer-grok/assets/vendor-078"
+if [ -d "$VENDOR" ] && [ -f "$VENDOR/index.eager-common-DbK3Oi_r.js" ]; then
+  say "  [skip] vendor-078 已存在"
+elif [ -f "$DEB" ]; then
+  mkdir -p "$VENDOR" .vendor-tmp/t78x
+  dpkg-deb -x "$DEB" .vendor-tmp/t78x
+  cp ".vendor-tmp/t78x/opt/Grok Bot/resources/app.asar" .vendor-tmp/t78/app.asar
+  (cd .vendor-tmp/t78x 2>/dev/null || true)
+  # asar 内两文件经 npx 解出（网络可用时）；离线场景见 docs/PRIVATE-LAYER.md
+  npx --yes @electron/asar extract-file .vendor-tmp/t78/app.asar dist/renderer/assets/index.eager-common-DbK3Oi_r.js 2>/dev/null &&     mv index.eager-common-DbK3Oi_r.js "$VENDOR/" || die "asar 解包失败——手动把两文件放进 $VENDOR（见 docs/PRIVATE-LAYER.md）"
+  npx --yes @electron/asar extract-file .vendor-tmp/t78/app.asar dist/renderer/assets/chunk-rolldown-runtime-BCiCTKAo.js 2>/dev/null &&     mv chunk-rolldown-runtime-BCiCTKAo.js "$VENDOR/" || die "asar 解包失败——手动把两文件放进 $VENDOR（见 docs/PRIVATE-LAYER.md）"
+  say "  [ok] 引擎两文件就位（SHA 校验见 assets/SHA256SUMS）"
+else
+  die "缺 $DEB——吉祥物引擎是构建依赖。设 GROK_BOT_DEB=<deb 路径> 后重跑（获取方式与许可边界见 docs/PRIVATE-LAYER.md）"
+fi
+
 say "3/4 壳依赖"
 pnpm -C app/ui/renderer-grok install --frozen-lockfile || say "（renderer 层依赖不全属预期——完整 UI 见 docs/PRIVATE-LAYER.md）"
 pnpm -C app/ui install --frozen-lockfile

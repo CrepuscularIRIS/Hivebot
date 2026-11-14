@@ -178,3 +178,46 @@ describe('GU-P6-15-r1 ②：ask 身份两路都对不上 → 中性，不借用�
     expect(askPendingOf('w', null, new Map([['ev-9', { agentId: 'other' }]]), undefined)).toBe(false)
   })
 })
+
+// T73c 四审补：Sol 指出的两场景固化（questions.test 的 rig/dev.testFeedEvent/data.deps 直驱先例）
+describe('T73c 待答生命周期（终态过滤+在途回滚）', () => {
+  it('① 旧终态不遮新 pending：askPendingOf 对终态 ask 返回 false、新 pending true；factsOf 阻塞判新', () => {
+    const asks = new Map([['ev-old', { agentId: 'w', outcome: 'skipped' as const }], ['ev-new', { agentId: 'w' }]])
+    expect(askPendingOf('w', 'ev-old', asks)).toBe(false)
+    expect(askPendingOf('w', 'ev-new', asks)).toBe(true)
+    expect(askPendingOf('w', null, asks)).toBe(true)
+  })
+})
+
+// T73c 四审补②（Sol 挂点先例 rig/testFeedEvent/deps.resolvePermission 直驱）：
+// 在途 follow（approval/decided 先于 $events/result 返回）+ RPC 失败回滚——卡回 pending 且推送恢复。
+describe('T73c resolvePermission 在途竞态（真 shim 直驱）', () => {
+  it('② follow 先到 + RPC 失败：ask 不被删，回滚后仍 pending（可重试）', async () => {
+    const { createShimData } = await import('../../../renderer-grok/shim/src/data')
+    const calls: Array<{ method: string; args?: unknown }> = []
+    let rpcResult: { ok: boolean } = { ok: false } // RPC 慢且失败
+    let rpcPending: Promise<{ ok: boolean }> | null = null
+    const api = (method: string, args?: unknown) => {
+      calls.push({ method, args })
+      if (method === '$events/result') { rpcPending = new Promise((res) => setTimeout(() => res(rpcResult), 40)); return rpcPending }
+      if (method === 'session/list') return Promise.resolve({ ok: true, value: { items: [{ sessionId: 's1', projections: { values: { title: 'A' } } }] } })
+      return Promise.resolve({ ok: true, value: {} })
+    }
+    const data = createShimData({ authId: 'auth', api, metaApi: () => Promise.resolve({ ok: true, value: { mainBotId: 's1', recipes: {} } }) })
+    const dev = data.dev as unknown as { testFeedEvent(i: unknown): void }
+    dev.testFeedEvent({ type: 'waterfall', event: 'approval/request', eventId: 'ev-1', agentId: 's1', request: { callId: 'c1', toolName: 'mcp__server-memory-30e6e77d__create_entities', reason: 'p2sdk policy: connector tools require user approval' } })
+    await new Promise((r) => setTimeout(r, 10))
+    const resolve = data.deps.resolvePermission as (i: { requestId: string; dshValue: string }) => Promise<void>
+    const p = resolve({ requestId: 'ev-1', dshValue: 'rejected' })
+    await new Promise((r) => setTimeout(r, 10)) // RPC 在途
+    // follow 的 approval/decided 先到（工具已定局）——在途 ask（answering）不可被删
+    dev.testFeedEvent({ type: 'event', agentId: 's1', event: { type: 'tool/call', callId: 'c1', name: 'mcp__server-memory-30e6e77d__create_entities', seq: 1, time: Date.now(), data: { status: 'done', decision: { kind: 'deny' } } } })
+    await new Promise((r) => setTimeout(r, 10))
+    await p.then(() => {}, () => {}) // RPC 失败结算
+    await new Promise((r) => setTimeout(r, 10))
+    const page = data.deps.openAgentTail('s1') as unknown as { entries?: Array<{ message?: { ask?: { status?: string } } }> }
+    const asks = (page.entries ?? []).filter((e) => e.message?.ask !== undefined)
+    expect(asks.length, 'ask 保留（失败回滚）').toBe(1)
+    expect(asks[0]?.message?.ask?.status, '回滚后投影 pending（卡可重试）').toBe('pending')
+  })
+})

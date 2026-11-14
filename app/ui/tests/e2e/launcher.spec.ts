@@ -111,6 +111,16 @@ async function connectUi(port: number) {
   if (browser === undefined) throw new Error(`CDP 连不上 :${port}（60s）${String(lastErr).slice(0, 120)}`)
   const ctx = browser.contexts()[0]!
   const page = ctx.pages()[0] ?? await ctx.newPage()
+  // T62：T26 真首启语义后全新 home 必进 onboarding landing（shim data.ts:436-443
+  // seen≠'1' 且 roster 空 → 无 agent item），原 waitForSelector 恒超时——测的是
+  // 启动器生命周期不是引导，预置 seen=1（onboarding.spec ③ 同款 setItem+reload，
+  // reload 后 data.ts:445 照常建 main bot）再等就绪。
+  await page.waitForLoadState('domcontentloaded')
+  const seen = await page.evaluate(() => window.localStorage.getItem('pbots.shim.onboarding-seen'))
+  if (seen !== '1') {
+    await page.evaluate(() => window.localStorage.setItem('pbots.shim.onboarding-seen', '1'))
+    await page.reload()
+  }
   await page.waitForSelector('.sand-agent-item', { timeout: 90_000 })
   return { browser, page }
 }
@@ -212,13 +222,26 @@ test.describe('T17 产品启动器', () => {
     }
   })
 
-  test('③a 无 key real 模式 → 拒启（退出码≠0 + stderr 提示 + 无 electron）', { timeout: 60_000 }, async () => {
+  test('③a 无 key real 模式 → 可启动（WARN 引导一行、electron 在、无 sk- 泄漏）', { timeout: 120_000 }, async () => {
+    // T50a 语义反转：缺 key 不再拒启——用户能开门，引导去 Settings → Models（旧「拒启」断言随之退役）
     const l = await launchHivebot() // 无 key、无 env 文件、非 mock
-    const exitP = new Promise<number>((r) => l.proc.once('exit', (c) => r(c ?? 0)))
-    const rc = await Promise.race([exitP, new Promise<number>((r) => setTimeout(() => r(-1), 20_000))])
-    expect(rc, '退出码≠0').not.toBe(0)
-    expect(l.stderr, 'stderr 提示变量名').toContain('P2SDK_LLM_API_KEY')
-    expect(existsSync(join(l.stateDir, 'hivebot', 'logs', 'ui.log')), 'ui.log 未生成（无 electron）').toBe(false)
+    try {
+      const exitP = new Promise<number>((r) => l.proc.once('exit', (c) => r(c ?? 0)))
+      const rc = await Promise.race([exitP, new Promise<number>((r) => setTimeout(() => r(-1), 20_000))])
+      expect(rc, '20s 内不退出（-1=仍在跑）').toBe(-1)
+      const pids = descendantPids(l)
+      const cmdAll = pids.map((p) => { try { return readFileSync(`/proc/${p}/cmdline`, 'utf8') } catch { return '' } }).join('\n')
+      expect(cmdAll, '含 start.mjs（SDK 已起）').toContain('start.mjs')
+      expect(cmdAll, '含 electron 主进程').toContain('out/main/index.js')
+      expect(existsSync(join(l.stateDir, 'hivebot', 'logs', 'ui.log')), 'ui.log 已生成').toBe(true)
+      const warnLines = l.stderr.split('\n').filter((s) => s.includes('no API key yet'))
+      expect(warnLines.length, `WARN 恰好一行（实际 ${warnLines.length}）`).toBe(1)
+      expect(warnLines[0] ?? '', '引导文案').toContain('Settings → Models')
+      expect(l.stderr, 'stderr 无 sk- 泄漏').not.toContain('sk-')
+      expect(readFileSync(join(l.stateDir, 'hivebot', 'logs', 'ui.log'), 'utf8'), 'ui.log 无 sk- 泄漏').not.toContain('sk-')
+    } finally {
+      await l.stop()
+    }
   })
 
   test('③b env 文件权限过宽 → 拒启（chmod 600 提示）', { timeout: 60_000 }, async () => {
@@ -346,7 +369,19 @@ test.describe('T17 产品启动器', () => {
   test('⑥ 真模型一轮（默认链+默认 preset，不叠 presets.yml）', { timeout: 300_000 }, async () => {
     test.setTimeout(300_000)
     const key = process.env.LITELLM_MASTER_KEY
-    test.skip(key === undefined, 'LITELLM_MASTER_KEY 未设（真模型格跳过）')
+    // T62：真依赖格不许静默 skip——开跑前探一次 /v1/models，非 200 或连不上都把
+    // 实测状态码/错误写进 skip 理由（本机 LiteLLM 500「No connected db」时本格跳、
+    // 其余七格不受影响——它们不依赖真模型，见 connectUi 注释）。
+    // Sol MAJOR 修复：⑥子进程 env 是显式构造（不含 P2SDK_LLM_BASE_URL）→ SDK 恒走
+    // 默认 4001；探测必须与被测同一个服务——base 写死默认，不读 env（否则无关端点
+    // 故障即可误跳真实链路）。
+    const base = 'http://127.0.0.1:4001'
+    let health = ''
+    try {
+      const res = await fetch(`${base}/v1/models`, key !== undefined ? { headers: { Authorization: `Bearer ${key}` } } : {})
+      health = `HTTP ${res.status}`
+    } catch (e) { health = `连接失败(${String((e as Error).message).slice(0, 60)})` }
+    test.skip(key === undefined || health !== 'HTTP 200', `LiteLLM 不健康：GET ${base}/v1/models → ${health}${key === undefined ? '；LITELLM_MASTER_KEY 未设' : ''}——真模型格跳过`)
     const home = tmkdir('bot-T17-6-home-')
     const stateDir = join(home, 'state')
     const configDir = join(home, 'config')

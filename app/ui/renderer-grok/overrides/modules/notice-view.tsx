@@ -9,7 +9,7 @@
 import { useState } from 'react'
 import { TranscriptNoticeCard as Upstream } from '../../frontend/src/recovered/features/conversation/cards/notice/view'
 import { AgentAvatar } from '../../frontend/src/recovered/features/conversation/workspace/agent-avatar'
-import { SandIcon } from '../../frontend/src/recovered/ui/sand-kit-primitives'
+import { SandButton, SandIcon } from '../../frontend/src/recovered/ui/sand-kit-primitives'
 import type { TranscriptNotice } from '../../frontend/src/recovered/features/conversation/workspace/model'
 import { activeAgent } from './markers'
 import { ui, useUiVersion, type PbotsUi } from './pbots-ui'
@@ -164,7 +164,14 @@ export function TranscriptNoticeCard({ entry }: { entry: TranscriptNotice }) {
   useUiVersion() // ask 活状态 / 名字随 roster 变化重渲
   const u = ui()
   const meta = u?.peer(entry.id) ?? null
-  if (u === null || meta === null) return <Upstream entry={entry} />
+  if (u === null || meta === null) {
+    // T50a：缺 key 引导 notice（action=open-models）末尾加直达按钮；ProductionRenderer 监听 pbots:open-settings
+    if (entry.action === 'open-models') return <div className="pb-notice-key">
+      <Upstream entry={entry} />
+      <SandButton data-action="open-models" onClick={() => window.dispatchEvent(new CustomEvent('pbots:open-settings', { detail: { section: 'models' } }))} shape="pill" size="sm" variant="secondary">Open Settings → Models</SandButton>
+    </div>
+    return <Upstream entry={entry} />
+  }
   if (meta.kind === 'assign') return <AssignRow entry={entry} meta={meta} u={u} />
   if (meta.kind === 'report') return <ReportCard entry={entry} items={meta.items} u={u} />
   return <TaskCard entry={entry} fromId={meta.fromId} text={meta.text} u={u} />

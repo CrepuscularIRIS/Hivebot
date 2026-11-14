@@ -17,7 +17,6 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
 
-  launchArgsFor,
   marketWrapperDirFor,
   parseExactNpmSpec,
   patchPluginManagerInstall,
@@ -98,9 +97,20 @@ await case_('serverNameOf: deterministic, <=32 chars, distinct per package', () 
   assert.notEqual(serverNameOf('a/pkg'), serverNameOf('b/pkg'))
 })
 
-await case_('launchArgsFor: filesystem needs its registry-required named arg; unknown packages launch with none', () => {
-  assert.deepEqual(launchArgsFor(CONNECTOR, '/tmp/ws'), ['--allowed-directories', '/tmp/ws'])
-  assert.deepEqual(launchArgsFor('pkg', '/tmp/ws'), [])
+await case_('T70 launch comes from picks.json data: {workspace} placeholder resolved at generation', () => {
+  // T70：启动配置从条目数据查表透传（launchArgsFor 删除）——期望从 picks.json 现算，不手抄。
+  const picks = JSON.parse(readFileSync(new URL('../../src/market/picks.json', import.meta.url), 'utf8'))
+  const wsHome = regTmp(mkdtempSync(join(tmpdir(), 't70-proc-')))
+  const ws = join(wsHome, 'workspace')
+  const withLaunch = picks.filter((p) => p.launch !== undefined)
+  assert.ok(withLaunch.length >= 2, 'picks.json 至少两条带 launch')
+  for (const p of withLaunch) {
+    const dir = marketWrapperDirFor({ spec: `${p.name}@${p.version}`, sdkRoot: SDK_ROOT, dshHome: wsHome })
+    assert.ok(typeof dir === 'string', `${p.name} wraps against the real preseed`)
+    const row = JSON.parse(readFileSync(join(dir, 'cordis.patch.yml'), 'utf8')).flatMap((q) => q.insert ?? [])[0]
+    assert.deepEqual(row.config.args.slice(1), (p.launch.args ?? []).map((a) => a.replaceAll('{workspace}', ws)), `${p.name} args = 数据替换后`)
+    assert.deepEqual(row.config.env, Object.fromEntries(Object.entries(p.launch.env ?? {}).map(([k, v]) => [k, v.replaceAll('{workspace}', ws)])), `${p.name} env = 数据替换后`)
+  }
 })
 
 await case_('marketWrapperDirFor writes a format-1 wrapper for a preseeded bare package', () => {

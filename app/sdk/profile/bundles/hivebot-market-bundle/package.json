@@ -1,0 +1,11 @@
+{
+  "name": "hivebot-market-bundle",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Mounts the dsh plugin-market service in the profile's bundle layer (not an overlay), so pluginMarket/setIndexes can persist index sources through the settings service (T51).",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

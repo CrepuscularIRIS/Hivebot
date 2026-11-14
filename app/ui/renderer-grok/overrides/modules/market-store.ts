@@ -5,6 +5,7 @@
 // - 三分类（P4）：已安装（源名或 wrapper 名 ∈ #16）> not-installable / 无 install.spec（仅浏览）> 本会话 not-bundle > 可装。
 // - 安装（P5/P6）：#15 固定 {enabled:false}；看业务 application，不凭 M1 ok；完成后重拉 #16 核实。
 import { useSyncExternalStore } from 'react'
+import { BUILTIN_PICKS_TITLE, BUILTIN_PICKS_URL, isBuiltin, searchPicks } from './market-picks'
 import { wrapperNameOf } from '../../../../sdk/src/market/wrapper-name.mjs'
 import { api, installedBundles, type Bundle, type Localized } from './pbots-ui'
 
@@ -86,6 +87,12 @@ async function search(offset: number): Promise<void> {
   if (url === null) return
   const mine = ++seq
   set({ loading: true, error: null, ...(offset === 0 ? { entries: [], total: 0, nextOffset: null } : {}) })
+  if (isBuiltin(url)) { // T69：内置源本地检索（静态模块，无网络）
+    const r = searchPicks({ text: state.query, offset, limit: PAGE })
+    if (mine !== seq) return
+    set({ loading: false, entries: offset === 0 ? r.entries : [...state.entries, ...r.entries], total: r.total, nextOffset: r.nextOffset })
+    return
+  }
   const res = await api('pluginMarket/search', { url, query: { sort: { kind: 'index' }, text: state.query, offset, limit: PAGE } })
   if (mine !== seq) return // 迟到响应：已切源或改 query
   if (!res.ok) { set({ loading: false, error: res.error?.message ?? "Couldn't load" }); return }
@@ -111,15 +118,52 @@ export async function enterMarket(force = false): Promise<void> {
   set({ sources: null, sourcesError: null })
   const res = await api('pluginMarket/listIndexes', {})
   // profile 没挂 market 插件时 dsh 无此端点（main connect.ts：pbots/upstream「HTTP 404 from …」）= 没配目录源，走空态而非报错
-  if (!res.ok && res.error?.code === 'pbots/upstream' && res.error.message.startsWith('HTTP 404')) { set({ sources: [], url: null }); return }
+  // T69：内置 picks 源恒置顶（dsh 的源列表永不包含它——builtin: 不是合法 http 索引）
+  const BUILTIN: Source = { url: BUILTIN_PICKS_URL, title: BUILTIN_PICKS_TITLE }
+  if (!res.ok && res.error?.code === 'pbots/upstream' && res.error.message.startsWith('HTTP 404')) { set({ sources: [BUILTIN], url: BUILTIN_PICKS_URL }); await search(0); return }
   if (!res.ok) { set({ sourcesError: res.error?.message ?? "Couldn't load" }); return }
-  const sources = Array.isArray(res.value) ? res.value as Source[] : []
-  set({ sources, url: sources[0]?.url ?? null })
+  const userSources = Array.isArray(res.value) ? res.value as Source[] : []
+  const sources = [BUILTIN, ...userSources]
+  // 默认浏览尊重用户源（配过源打开看到自己的目录）；无用户源才落内置 picks（T69 语义）
+  set({ sources, url: state.url ?? userSources[0]?.url ?? BUILTIN_PICKS_URL })
   await search(0)
 }
 
 export function setSource(url: string): void { set({ url, detail: null }); void search(0) }
 export function setQuery(query: string): void { set({ query }); void search(0) }
+
+/** T51：Index sources 管理（DSH Discover 同款）——setIndexes 全量提交；新加源自动成为当前源。返回错误文案或 null。 */
+export async function addIndex(url: string): Promise<string | null> {
+  const trimmed = url.trim()
+  const cur = (state.sources ?? []).map((s) => s.url).filter((u) => !u.startsWith('builtin:')) // 提交给 dsh 的永不含内置源
+  // T69b：任何 builtin: 前缀输入都在提交前拒绝（不只本尊 URL）——dsh 现在会拒 invalid-index-url，
+  // 但「urls 不含 builtin:」是本层承诺，不押注上游校验永远在。
+  if (trimmed.startsWith('builtin:')) return 'Index source listed twice'
+  if (trimmed === '' || cur.includes(trimmed)) return cur.includes(trimmed) ? 'Index source listed twice' : 'Enter an index URL'
+  const next = [...cur, trimmed]
+  const res = await api('pluginMarket/setIndexes', { urls: next })
+  if (!res.ok) return res.error?.message ?? "Couldn't save"
+  await enterMarket(true)
+  // T51c R2: 上游会把 URL 规范化（大小写/端口/.. 折叠）——从刷新后的 sources 里选
+  // 本次新增的那一项；拿用户原样输入 setSource 会选中不存在的地址（Index is not configured）。
+  const fresh = (getMarket().sources ?? []).map((x) => x.url).filter((u) => !u.startsWith('builtin:')) // T69：内置源恒在 sources[0]，不是「本次新增」
+  const added = fresh.find((u) => !cur.includes(u)) ?? fresh[0]
+  if (added !== undefined) setSource(added)
+  return null
+}
+
+/** T51：删源——删后剩源自动选首个；全删回空态。 */
+export async function removeIndex(url: string): Promise<string | null> {
+  if (url.trim().startsWith('builtin:')) return null // 内置源（任意 builtin: 前缀，含带空白输入）不可删（UI 也不给删除钮——双保险）
+  const next = (state.sources ?? []).map((s) => s.url).filter((u) => u !== url && !u.startsWith('builtin:'))
+  const res = await api('pluginMarket/setIndexes', { urls: next })
+  if (!res.ok) return res.error?.message ?? "Couldn't save"
+  // T69：删的是当前源 → 回落：下一个用户源，否则内置 picks（内置恒在，不再有「无源可看」态）
+  const keep = state.url === url ? next[0] ?? BUILTIN_PICKS_URL : state.url
+  await enterMarket(true)
+  setSource(keep)
+  return null
+}
 export function loadMore(): void { if (state.nextOffset !== null && !state.loading) void search(state.nextOffset) }
 export function retrySearch(): void { void search(0) }
 export function openDetail(name: string | null): void { set({ detail: name }) }

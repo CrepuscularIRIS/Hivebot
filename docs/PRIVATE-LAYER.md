@@ -7,3 +7,7 @@
 3. `pnpm -C app/ui build && ./app/launcher/hivebot`。
 
 > 0.18 上游无许可证：拉取与拼装仅限私用；不要把拼好的树再分发。
+
+## 0.78.1 吉祥物引擎（vendor-078，2026-11-14 起）
+
+`app/ui/renderer-grok/assets/vendor-078/`（index.eager-common-DbK3Oi_r.js + chunk-rolldown-runtime-BCiCTKAo.js）来自 grok-bot 0.78.1 官方 deb，**闭源产物、无分发许可——只作本地依赖，不进本仓**。install.sh 第 2.5 步从你自备的 deb（`GROK_BOT_DEB` 或 `~/Downloads/grok-bot_0.78.1_amd64.deb`）解包就位；完整性校验见 `assets/SHA256SUMS`。缺它时 UI 构建不可用（`overrides/modules/agent-avatar.tsx` 静态引用）。

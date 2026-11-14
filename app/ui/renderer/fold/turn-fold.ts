@@ -13,7 +13,7 @@ export type FoldEntry = (
   | { kind: 'message'; id: string; text: string; role: 'ack' | 'result' }
   | { kind: 'thinking'; id: string; text: string; from: 'text' | 'reasoning' }
   | { kind: 'tool-call'; id: string; callId: string; name: string; args: string; status: ToolStatus; result: string | null; awaiting: boolean; decision: string | null }
-  | { kind: 'notice'; id: string; tone: 'muted' | 'danger'; text: string; source: 'reduce' | 'fold' }
+  | { kind: 'notice'; id: string; tone: 'muted' | 'danger'; text: string; source: 'reduce' | 'fold'; action?: 'open-models' }
   // P6-16 决策 25：编排来源条目（回报 / 任务）原样透传，由 shim entries 渲染
   | { kind: 'peer'; id: string; peer: { kind: 'report'; items: ReportItem[] } | { kind: 'task'; text: string; fromId: string | null } }
 ) & { at?: number }
@@ -99,8 +99,8 @@ export function foldTurns(items: readonly TimelineItem[], input: FoldInput): Fol
           entries.push({ kind: 'peer', id: item.id, peer: { kind: 'report', items: item.items }, ...atOf(item) }); break
         case 'task':
           entries.push({ kind: 'peer', id: item.id, peer: { kind: 'task', text: item.text, fromId: item.fromId }, ...atOf(item) }); break
-        case 'notice': // (b)(e)：reduce endNotice 原样透传
-          entries.push({ kind: 'notice', id: item.id, tone: item.tone, text: item.text, source: 'reduce', ...atOf(item) }); break
+        case 'notice': // (b)(e)：reduce endNotice 原样透传（action 随行——T50a 缺 key 引导按钮）
+          entries.push({ kind: 'notice', id: item.id, tone: item.tone, text: item.text, source: 'reduce', ...(item.action === undefined ? {} : { action: item.action }), ...atOf(item) }); break
         case 'assistant': {
           if (idx === promoteMid) { entries.push({ kind: 'message', id: item.id, text: item.text, role: 'result', ...atOf(item) }); break } // (c)
           if (seg.fragment) { entries.push({ kind: 'thinking', id: item.id, text: item.text, from: 'text', ...atOf(item) }); break } // (g)：无回合起点，一律按中间文本

@@ -27,6 +27,7 @@ export const MODULE_OVERRIDES: Record<string, string> = {
   'recovered/features/plugins/overlay/desktop-surface.tsx': 'market-surface.tsx',
   'recovered/features/agent-info/settings/view.tsx': 'agent-settings.tsx',
   'recovered/features/conversation/workspace/composer.tsx': 'composer.tsx',
+  'recovered/features/conversation/workspace/agent-avatar.tsx': 'agent-avatar.tsx', // T88：吉祥物换 0.78.1 引擎（vendor-078 整件）
   'production/evidence.ts': 'evidence.ts',
   // P5-W3.f1（L-7）：工具结果卡投影（R2）/ 分页 scope 恢复（R3）/ 重试复用原
   // requestId 的登记与出线换 nonce（R5，acknowledgement+coordinator-client 成对）

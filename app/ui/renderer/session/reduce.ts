@@ -17,7 +17,7 @@ export type TimelineItem = (
   | { kind: 'assistant'; id: string; text: string }
   | { kind: 'thinking'; id: string; text: string }
   | { kind: 'tool'; id: string; callId: string; name: string; args: string; status: ToolStatus; result: string | null; awaiting: boolean; decision: string | null }
-  | { kind: 'notice'; id: string; tone: 'muted' | 'danger'; text: string }
+  | { kind: 'notice'; id: string; tone: 'muted' | 'danger'; text: string; action?: 'open-models' }
   // P6-16 决策 25：两种编排来源各一种 item（其余非 user 来源仍丢弃）。字段全部按不可信数据清洗成字符串。
   | { kind: 'report'; id: string; items: ReportItem[] }
   | { kind: 'task'; id: string; text: string; fromId: string | null; assignmentId: string | null }
@@ -133,11 +133,20 @@ const updateTool = (view: SessionView, callId: string, patch: Partial<Extract<Ti
  * tool/result 另有 'outcome is unknown'——见 receipts/T12a.md 第 1 步实测）。 */
 export const SSH_LOST_NOTICE = '电脑连接已断开。上一步可能已执行，也可能没执行——先看看结果再决定要不要重试。重新打开 Hivebot 即可重新连接。'
 
+/** T50a：缺 key 引导文案。触发判据 = turn/end reason.failure.code === 'MISSING_CREDENTIAL'
+ * （§0 探针原样帧；按 code 不按 message——README:119 契约，上游文本会变）。 */
+export const NO_KEY_NOTICE = '还没有填 API key。去 Settings → Models 填好后重发这条消息。'
+
 function endNotice(turn: unknown, reason: AnyRecord): TimelineItem | null {
   const kind = str(reason.kind) ?? 'unknown'
   if (kind === 'completed') return null
   const id = `end-${String(turn)}`
   if (kind === 'aborted' || kind === 'interrupted' || kind === 'cancelled') return { kind: 'notice', id, tone: 'muted', text: '已停止' }
+  // code 的两个序列化面：live 事件帧 reason.error.code（SSH 帧同形）与 follow 快照
+  // reason.failure.code（§0 探针原样帧）——同契约，两处都认。
+  if (str(rec(reason.failure).code) === 'MISSING_CREDENTIAL' || str(rec(reason.error).code) === 'MISSING_CREDENTIAL') {
+    return { kind: 'notice', id, tone: 'danger', text: NO_KEY_NOTICE, action: 'open-models' }
+  }
   // ponytail: 整体 stringify 找串而非取字段——串是上游固定的（dsh-ssh lib/index.js:243），
   // 字段位置上游可能变。上限：用户自己的报错文本里恰好含这两串会误判（概率低，可接受）。
   const raw = JSON.stringify(reason)

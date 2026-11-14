@@ -94,7 +94,7 @@ test('P-C ①：入口 Connect apps → 浏览 / 搜索 / 分页 / 切源重置 
     const box = await market(page).evaluate((el) => { const cs = getComputedStyle(el); return { r: cs.borderTopLeftRadius, b: cs.borderTopWidth, shadow: cs.boxShadow, w: el.getBoundingClientRect().width } })
     expect(box).toMatchObject({ r: '14px', b: '1px', shadow: 'none' })
     expect(box.w).toBeLessThanOrEqual(900)
-    await expect(page.locator('[data-market-source] option')).toHaveCount(2) // 两个源 → select（P11）
+    await expect(page.locator('[data-market-source] option')).toHaveCount(3) // T69：内置 picks + 两个 env 源 → select（P11；原 2）
     await expect.poll(() => count(page), { timeout: 20_000 }).toBe('Showing 50 of 111')
     await page.screenshot({ path: join(EVIDENCE, 'market-list-light.png') })
     // P5-41.f1 ④：可连接条目排在首屏（不被 109 条 Not available 埋掉）
@@ -227,7 +227,7 @@ test('P-C ②③④：Connect 旅程（串行 / 可离开 / 重拉 #16）→ New
     const fs = page.locator(`[data-entry="${FS_PLUGIN}"]`)
     await expect(fs).toHaveAttribute('data-kind', 'installable')
     await fs.locator('.pb-row__open').click() // 浏览 → 搜索 → 详情
-    await expect(page.locator(`[data-market-detail="${FS_PLUGIN}"]`)).toContainText('supported connector bundle')
+    await expect(page.locator(`[data-market-detail="${FS_PLUGIN}"]`)).toContainText('this app is supported')
     await page.screenshot({ path: join(EVIDENCE, 'market-detail-installable.png') })
     await page.click(`[data-market-detail="${FS_PLUGIN}"] [data-action="connect"]`)
     await expect(page.locator(`[data-market-detail="${FS_PLUGIN}"] [data-action="connect"]`)).toHaveText('Connecting…')
@@ -281,5 +281,90 @@ test('P-C ②③④：Connect 旅程（串行 / 可离开 / 重拉 #16）→ New
     await page.screenshot({ path: join(EVIDENCE, 'market-not-bundle.png') })
   } finally {
     await env.stop()
+  }
+})
+
+test('T51：无源空态 → Add index source → 目录活 → 重启源还在 → 删源回空态（DSH Discover 同款）', async () => {
+  test.setTimeout(300_000)
+  // 生产缺省：不设 P2SDK_MARKET_INDEXES、不预装 bundle——目录源完全由界面管理（start.ts ensureMarketBundle 挂 bundle 层）
+  const server = await serveMarket()
+  const home = tmkdir('bot-t51-e2e-')
+  const rt = await launchSdkRuntime({ patch: fakeOverlayPath(), cwd: tmkdir('bot-t51-e2ew-'), home })
+  let shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })
+  try {
+    const page = shell.page
+    await waitProductReady(page)
+    await openMarket(page)
+    // T69 规格变更：无用户源不再是空页——内置 Hivebot picks 目录直接可见（仍可进 Index sources 加源）
+    await expect(page.locator('[data-market-list] .pb-row').first()).toBeVisible({ timeout: 20_000 })
+    await expect(page.getByText('No catalog configured')).toHaveCount(0)
+    await page.locator('[data-action="your-plugins"]').click() // T71：入口收进 Installed 底部
+    const addBtn = page.locator('[data-action="manage-index-sources"]')
+    await expect(addBtn).toBeVisible()
+    await page.screenshot({ path: join(EVIDENCE, 't51-empty-light.png') })
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.screenshot({ path: join(EVIDENCE, 't51-empty-dark.png') })
+    await page.emulateMedia({ colorScheme: 'light' })
+
+    // Add index source → 管理视图 → 加回环源（被拒草稿场景先走一次）
+    await addBtn.click()
+    await expect(page.getByRole('heading', { name: 'Index sources' })).toBeVisible()
+    await page.locator('[data-index-input]').fill('ftp://bad.example/index.json')
+    await page.locator('[data-action="add-index"]').click()
+    await expect(page.locator('[data-index-refused]')).toContainText('http or https', { timeout: 15_000 }) // 拒绝原因 + 草稿保留
+    await expect(page.locator('[data-index-input]')).toHaveValue('ftp://bad.example/index.json')
+    await page.screenshot({ path: join(EVIDENCE, 't51-manage-light.png') })
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.screenshot({ path: join(EVIDENCE, 't51-manage-dark.png') })
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.locator('[data-index-input]').fill(server.realUrl)
+    await page.locator('[data-action="add-index"]').click()
+
+    // 源生效：管理视图出现该源行；回列表——目录条目可搜（目录活了）
+    await expect(page.locator(`[data-index-item="${server.realUrl}"]`)).toBeVisible({ timeout: 20_000 })
+    await page.locator('[data-action="sources-done"]').click()
+    await expect.poll(() => count(page), { timeout: 30_000 }).toBe('Showing 50 of 111')
+    await page.fill('[data-market-search]', 'filesystem')
+    const fs = page.locator(`[data-entry="${FS_PLUGIN}"]`)
+    await expect(fs).toHaveAttribute('data-kind', 'installable')
+    await page.screenshot({ path: join(EVIDENCE, 't51-listed-light.png') })
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.screenshot({ path: join(EVIDENCE, 't51-listed-dark.png') })
+    await page.emulateMedia({ colorScheme: 'light' })
+
+    // Connect 一个 → ✓Connected（真装 wrapper，复用 P-C 选择器）
+    await fs.locator('[data-action="connect"]').click()
+    await expect(fs, 'T51：加的源能真装').toHaveAttribute('data-kind', 'installed', { timeout: 120_000 })
+    await expect(fs.locator('.pb-added')).toContainText('Connected')
+
+    // 重启运行时（同 HOME 新 rt + 新 shell）——源必须还在（profiles/web/cordis.patch.yml 持久）
+    await shell.stop()
+    await rt.stop()
+    const rt2 = await launchSdkRuntime({ patch: fakeOverlayPath(), cwd: tmkdir('bot-t51-e2ew2-'), home })
+    const shell2 = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt2.handoff } })
+    try {
+      const page2 = shell2.page
+      await waitProductReady(page2)
+      await openMarket(page2)
+      await expect.poll(() => count(page2), { timeout: 30_000 }).toBe('Showing 50 of 111') // 源在且可读（重启持久 · spec 本段）
+      // 删源 → 只剩内置源（T69b 意见2：原 toHaveCount(0) 只可能采样到 enterMarket 骨架屏
+      // 瞬间才过——是假绿。正确结论：恰剩内置 1 行、带 Built-in 标、无任何删除钮。）
+      await page2.locator('[data-action="your-plugins"]').click()
+      await page2.locator('[data-action="manage-index-sources"]').click()
+      await page2.locator(`[data-index-item="${server.realUrl}"] [data-action="remove-index"]`).click()
+      await expect(page2.locator('[data-index-item]')).toHaveCount(1, { timeout: 20_000 })
+      await expect(page2.locator('[data-index-item="builtin:hivebot-picks"] [data-builtin-source]')).toBeVisible()
+      await expect(page2.locator('[data-action="remove-index"]')).toHaveCount(0)
+      await page2.locator('[data-action="sources-done"]').click()
+      await expect(page2.locator('[data-market-list] .pb-row').first()).toBeVisible({ timeout: 20_000 }) // T69：删完用户源回内置目录（原 No catalog 空态）
+      await expect(page2.getByText('No catalog configured')).toHaveCount(0)
+    } finally {
+      await shell2.stop()
+      await rt2.stop()
+    }
+  } finally {
+    await shell.stop()
+    await rt.stop()
+    await server.close()
   }
 })

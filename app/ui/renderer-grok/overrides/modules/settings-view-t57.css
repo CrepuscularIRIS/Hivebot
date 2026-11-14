@@ -1,0 +1,113 @@
+/* T57/T57b：设置对话框按 0.78.1 像素规格对齐（RE-UI-LAYOUT §1.1–1.6 + 渲染 probe
+ * ref/settings-general-light.deep-probe.txt——§1.4 RE 文本把分组卡/行两层混写，以 probe 为准）。
+ * 压 recovered features/settings/overlay/view.css（0.18 复刻值）：同选择器后加载覆盖；
+ * 颜色一律走 p5-55-palette.css 的 --sand-* token（亮暗两套）。现状表/迭代/返修记录见
+ * work/tickets/receipts/T57.receipt.md。
+ * scrim（平台 dialog 通用）在 overrides/p5-55-layout.css——本文件随 lazy chunk 加载，
+ * 不放全局规则（T57b④）。 */
+
+/* §1.1 外壳：宽 900 / 内容高 min(700,vh-96)、bg-chrome 底、.5px translucent 边（radius 14 已对不动） */
+.sand-settings-dialog {
+  width: min(900px, calc(100vw - 32px));
+  height: min(700px, calc(100vh - 96px));
+  background: var(--sand-bg-chrome);
+  border: 0.5px solid var(--sand-border-secondary-translucent);
+}
+
+/* §1.2 导航：宽 198、容器 padding 16/12、底透明（原版无 0.18 的黑罩）、右分隔 .5px。
+ * 特异性战（T57b①治本）：view.css:46 `.sand-settings-dialog button:not(×2)`（0,4,1）把
+ * 域内一切非 kit button 的 padding 6px 9px、radius 6、bg-secondary、1px 边、font:inherit
+ * （连 line-height 一起继承）全钉死——同形状选择器+尾缀（0,5,1）反压：**全部项**透明底
+ * 无边（probe 行 6/9/12），选中态由 [data-active] 条（0,6,1）覆盖 bg。 */
+.sand-settings-layout { grid-template-columns: 198px 1fr; }
+.sand-settings-nav {
+  gap: 2px;
+  padding: 16px 12px;
+  background: transparent;
+  border-right: 0.5px solid var(--sand-border-tertiary-translucent); /* T66: nav 分隔档位修正（RE-BORDERS §0.4：tertiary 非 secondary） */
+}
+.sand-settings-dialog button:not(.sand-kit-button):not(.sand-kit-icon-button).sand-settings-nav__item {
+  padding: 7px 9px;
+  line-height: 18px;
+  border-radius: 8px;
+  background: transparent;
+  border: 0;
+}
+.sand-settings-nav__item { font-size: 13px; }
+.sand-settings-dialog button:not(.sand-kit-button):not(.sand-kit-icon-button).sand-settings-nav__item[data-active] { background: var(--sand-bg-active); }
+.sand-settings-nav__item .ui-icon { width: 15px !important; height: 15px !important; font-size: 15px !important; flex: 0 0 15px; }
+
+/* §1.3 pane 头（T57b② probe 行 18-20）：无分隔线；h2 即 header 条，padding 32/54/6/32
+ * 与 h2 自身 padding-inline-start 8 合成为左 40；字 17/500/24 行高、字距 -0.136px。 */
+.sand-settings-panel > h2 {
+  height: auto;
+  min-height: 62px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 32px 54px 6px 40px;
+  border-bottom: 0;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: -0.136px;
+}
+.sand-settings-panel__body { padding: 22px 32px 28px; }
+/* 分组标题（§1.3 h3 12/400 secondary） */
+.sand-settings-general section > h3 { font-size: 12px; font-weight: 400; color: var(--sand-text-secondary); }
+.sand-settings-panel__close { width: 32px !important; height: 32px !important; padding: 0; }
+
+/* §1.4 行 vs 分组卡（T57c：真实卡层 DOM——SettingsGroup 包 .sand-settings-group__card，
+ * probe 行 33/39/52）。行 padding 10/14、radius 0、透明底；卡 padding 8px 0、r14、
+ * elevated 底 + attachment-card 细边（亮 8% 黑≈ref #ededed）。section gap 8=h3↔卡；
+ * 分组间 28；h3 margin 清零（UA 默认 1em 撑大间距——T57b 差距表根因）。 */
+.sand-settings-general { gap: 28px; }
+.sand-settings-general section { display: grid; row-gap: 8px; }
+.sand-settings-general section > h3 {
+  margin: 0;
+  padding: 0 0 0 14px;
+  line-height: 16px;
+}
+.sand-settings-group__card {
+  display: grid;
+  row-gap: 0;
+  padding: 8px 0;
+  border-radius: 14px;
+  background: var(--sand-bg-elevated);
+  border: 1px solid var(--sand-border-attachment-card);
+}
+.sand-settings-group__card > label,
+.sand-settings-dialog .sand-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 20px;
+  padding: 10px 14px;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+}
+/* Sol T57c MAJOR：卡层使 view.css:31-34 的 `section > label(> span)` 布局规则失效——
+ * 卡内版补齐：span 网格 flex:1（label/description 两行）、switch 行 span 同款。 */
+.sand-settings-group__card > label > span,
+.sand-settings-group__card > .sand-settings-row > .sand-settings-copy { display: grid; flex: 1; min-width: 0; gap: 4px; }
+.sand-settings-group__card > label:has([role="switch"]) { display: flex; width: 100%; }
+/* Account 行进卡层：0.18 的灰底+深边压掉（probe 行 40-51 卡内结构） */
+.sand-settings-general .sand-account-card {
+  background: transparent;
+  border: 0;
+}
+.sand-settings-general section > label small,
+.sand-settings-row small { font-size: 13px; color: var(--sand-text-tertiary); }
+
+/* §1.6 Select：高 28（4+18+4+2 边）、padding 4/5/4/7、radius 10、透明底 + 1px quaternary、
+ * 字距 -0.08px、gap 4（值+chevron）；min-width 148 是 0.18 值（原版自适应）。 */
+.sand-settings-dialog button:not(.sand-kit-button):not(.sand-kit-icon-button).ui-select-trigger,
+.sand-settings-dialog .ui-select-trigger {
+  min-width: 0;
+  padding: 4px 5px 4px 7px;
+  gap: 4px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--sand-border-quaternary-translucent);
+  letter-spacing: -0.08px;
+}

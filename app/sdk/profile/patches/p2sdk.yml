@@ -20,28 +20,17 @@
 - id: session-title-llm
   disabled: true
 
-# Route the real provider through dsh-llm-pi-ai to the local LiteLLM endpoint.
-# apiKeyEnv names the environment variable; the key value itself never enters
-# config, logs, or stdout.
-- id: llm-pi-ai
-  config:
-    providers:
-      litellm:
-        api: openai-completions
-        baseURL: !!js process.env.P2SDK_LLM_API_BASE ?? 'http://127.0.0.1:4001/v1'
-        apiKeyEnv: P2SDK_LLM_API_KEY
-        models:
-          - id: !!js process.env.P2SDK_LLM_MODEL ?? 'glm-5.3-flash'
-            contextWindow: 131072
+# T49a：llm-pi-ai 不在此配 config——patch 层 config(尤其 !!js 节点)会进 settings 合并
+# 校验（$.providers.litellm.baseURL got object）并按 T51 先例锁 ns 不可写。挂载由
+# dsh-base cordis.patch.yml 提供（零路由）；默认 litellm 路由由 start.ts#seedDefaultRoute
+# 在启动时经 settings/mutate 写进 user 层（DSH Models 页同构，用户可编辑/删除）。
 
 # Default model selection follows the provider mode.
+# T49a：静态缺省（real）；mock 由 runtime overlay 整行覆盖（writeRuntimePatch mock 分支）。
 - id: agent-default-model
   config:
-    provider: !!js >-
-      process.env.P2SDK_PROVIDER === 'mock' ? 'mock' : 'litellm'
-    model: !!js >-
-      process.env.P2SDK_PROVIDER === 'mock' ? 'mock' :
-      (process.env.P2SDK_LLM_MODEL ?? 'glm-5.3-flash')
+    provider: litellm
+    model: glm-5.3-flash
 
 # Rows that must carry absolute plugin specifiers (llm-replay, p2sdk-handoff)
 # are generated at boot into $P2SDK_HOME/runtime-patch.yml by

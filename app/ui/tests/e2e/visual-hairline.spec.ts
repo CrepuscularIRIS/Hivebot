@@ -1,7 +1,8 @@
 // P5-14 E5 细边（0.18 production.css:43 `border-right: .5px solid var(--sand-border-weak)`）迁到 renderer-grok：
 // 必须在 DPR 2 下量——CSS border-width 计算值按设备像素吸附，DPR 1 时 .5px 计算为 1px（Electron 44 实测）。
-// P5-55：0.78.1 实测侧栏右缘 = 1px solid border-tertiary-translucent（对照台 ref computed，DPR 2 下同为 1px），
-// 0.18 的 .5px 由 overrides/p5-55-layout.css 换成 0.78.1 值；本用例改锁 1px（DPR 2 仍是区分 .5 与 1 的量法）。
+// T66 翻案：0.78.1 侧栏右缘源码即 .5px——三重铁证（容器类串 APP@1340000 含 1jox5e1/18b5jzi/h1nr2e +
+// CSS `sand-1jox5e1{border-inline-end-width:.5px}` + solid/tertiary 同组规则）。P5-55 时期「实测 1px」
+// 出自 DPR1 对照台的吸附伪读（同口径下 0.78.1 自己的 .5 也读 1）。本用例锁 .5px（T66 顺带修正）。
 import { expect, test, type Page } from 'playwright/test'
 import { join } from 'node:path'
 import { createBots, evidenceOut, launchProduct, openBot, type Env } from '../support/ui.ts'
@@ -32,7 +33,7 @@ test('E5：侧栏右缘细边 = 0.78.1 的 1px（DPR 2，亮暗）', async () =>
     })
     for (const mode of ['light', 'dark'] as const) {
       await theme(page, mode)
-      expect(await edge(), `${mode} sidebar`).toBe('1px')
+      expect(await edge(), `${mode} sidebar`).toBe('0.5px')
       await page.screenshot({ path: join(OUT, `hairline-${mode}.png`) })
     }
   } finally {

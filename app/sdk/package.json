@@ -27,7 +27,8 @@
     "@deepseek-ai/dsh-sandbox-ssh": "0.2.2-rc.1",
     "@deepseek-ai/dsh-ssh": "0.2.2-rc.1",
     "@deepseek-ai/dsh-subprocess-ssh": "0.2.2-rc.1",
-    "ws": "8.22.1"
+    "ws": "8.22.1",
+    "yaml": "2.9.1"
   },
   "devDependencies": {
     "@agent-infra/mcp-server-filesystem": "1.2.29",
@@ -35,6 +36,9 @@
     "@deepseek-ai/dsh-llm-replay": "0.2.2-rc.1",
     "@deepseek-ai/dsh-sandbox-policy": "0.2.2-rc.1",
     "@deepseek-ai/dsh-session-projection": "0.2.2-rc.1",
+    "@modelcontextprotocol/server-memory": "2.1.1",
+    "@modelcontextprotocol/server-sequential-thinking": "2.1.1",
+    "@upstash/context7-mcp": "4.6.0",
     "@vitest/coverage-v8": "5.0.5",
     "vitest": "5.0.5"
   },

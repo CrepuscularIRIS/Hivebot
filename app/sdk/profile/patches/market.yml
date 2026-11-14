@@ -14,15 +14,13 @@
 # dependency. The generated runtime patch in src/start.ts cannot do this
 # ($DSH_HOME has no package scope), which is why that one uses file:// URLs.
 #
-# P2SDK_MARKET_INDEXES: whitespace-separated http(s) index URLs for
-# plugin-market's `indexes` config. Empty by default; tests point it at a
-# loopback static server serving a local format-1 snapshot (fixture only).
-- insert:
-    - id: plugin-market
-      name: '@deepseek-ai/dsh-plugin-market'
-      config:
-        indexes: !!js (process.env.P2SDK_MARKET_INDEXES ?? '').split(/\s+/).filter(Boolean)
-
+# P2SDK_MARKET_INDEXES: whitespace-separated http(s) index URLs. T51: this patch
+# no longer sets `indexes` — a config on the insert row makes settings.update refuse
+# every later write ("overridden by a home patch"), which locked the market to the
+# dead-end empty state. Mirrors the DSH bundle (plugin-market-bundle/cordis.patch.yml:
+# insert without config). The env var now only seeds first-run sources; the operator
+# injects them via pluginMarket/setIndexes once the runtime is up (launcher serve /
+# tests/support/sdk-runtime), so user-added sources survive restarts.
 - insert:
     - id: p2temp-connectors
       # Relative to this patch file's directory (profile/patches/).

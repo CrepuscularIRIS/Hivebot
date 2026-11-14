@@ -67,22 +67,28 @@ export function serverNameOf(name) {
 }
 
 /**
- * registry 声明的必需启动参数（packages[].packageArguments，type 'named' +
- * isRequired）的取值表。值是运行时策略而非 registry 数据（registry 只给名字与
- * 形状，2026-11-02 实测）；默认值 = bot 自己的 workspace（$DSH_HOME/workspace，
- * 生成时创建）。表外的包按零参数启动——零参数即可用的 stdio server 直接工作；
- * 需要参数却不在表里的包会在 ENABLE 时以 failOnStartupError 结构化报
- * preset-broken（安装仍然成功，市场语义不撒谎）。
- * ponytail: 目录级 allow-list（按包选目录/多参数）是 P4 市场安装表单的事。
+ * 能装条目的启动配置来源：`picks.json`（条目数据，同仓声明式——每个 bot 的差异在
+ * 数据不在代码，T70）。wrapper 按 `name@version` 精确坐标查表透传、不解释；值里
+ * 唯一占位符 `{workspace}` 生成时字面替换为该 runtime 的 `$DSH_HOME/workspace`
+ * （值随 HOME 走没法写死——这是保留下来的最小 DSH 适配）。不在表里的预置坐标按
+ * 零参数零 env 启动；零参数即可用的 stdio server 直接工作，需要参数却没配的包在
+ * ENABLE 时以 failOnStartupError 结构化报 preset-broken（安装仍然成功，市场语义
+ * 不撒谎）。launch 只出自仓内数据——不经 installBundle wire 传递，第三方 index
+ * source 永远不是启动配置的作者（env 注入即本机代码执行）。
  */
-const REQUIRED_ARGS = new Map([
-  ['@agent-infra/mcp-server-filesystem', (workspaceDir) => ['--allowed-directories', workspaceDir]],
-])
+const PICKS = JSON.parse(readFileSync(new URL('./picks.json', import.meta.url), 'utf8'))
 
-/** 启动参数：表内包带 registry 必需参数（值指向 workspace），表外零参数。 */
-export function launchArgsFor(name, workspaceDir) {
-  const make = REQUIRED_ARGS.get(name)
-  return make === undefined ? [] : make(workspaceDir)
+const PICK_BY_SPEC = Object.fromEntries(PICKS.map((p) => [`${p.name}@${p.version}`, p]))
+
+/** launch 查表 + `{workspace}` 字面替换；查不到 → 零参数零 env（同现行表外包）。 */
+function launchOf(spec, workspaceDir) {
+  const pick = PICK_BY_SPEC[spec]
+  // 函数形式：replacement 是字符串时 $&/$' 等模式会被解释——路径含它们时替换结果错。
+  const sub = (v) => v.replaceAll('{workspace}', () => workspaceDir)
+  return {
+    args: (pick?.launch?.args ?? []).map(sub),
+    env: Object.fromEntries(Object.entries(pick?.launch?.env ?? {}).map(([k, v]) => [k, sub(v)])),
+  }
 }
 
 /** 预置树里的包清单；读不到返回 null。 */
@@ -137,6 +143,7 @@ export function marketWrapperDirFor({ spec, sdkRoot = SDK_ROOT, dshHome }) {
   if (!existsSync(entry)) return null
   const wrapperDir = join(dshHome, 'market-wrappers', dirSegmentOf(parsed.name))
   const workspaceDir = join(dshHome, 'workspace')
+  const launch = launchOf(`${parsed.name}@${parsed.version}`, workspaceDir)
   try {
     mkdirSync(wrapperDir, { recursive: true })
     // 默认允许目录先建出来：filesystem 类 server 要求它真实存在。
@@ -156,8 +163,8 @@ export function marketWrapperDirFor({ spec, sdkRoot = SDK_ROOT, dshHome }) {
         serverName,
         transport: 'stdio',
         command: process.execPath,
-        args: [entry, ...launchArgsFor(parsed.name, workspaceDir)],
-        env: {},
+        args: [entry, ...launch.args],
+        env: launch.env,
         cwd: '',
         failOnStartupError: true,
       },

@@ -1,7 +1,7 @@
 // T26 · onboarding（A 段+review 修复后语义）：真首启（roster 空+未 seen）→ landing →
 // skip 退出补建 main；seen=1 正常启动。前置：pnpm build。
 import { expect, test, type Page } from 'playwright/test'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { devState, launchProduct } from '../support/ui.ts'
 
@@ -253,6 +253,15 @@ test('④ 走完 walk：landing → meet → computer-demo → jobs → role →
     expect(finalReq).toContain('Your name is Product Performance.')
     expect(finalReq).toContain('Repros the bug in staging and drops a pack with steps and screenshots The user primarily works in Engineering')
     expect(finalReq.match(/bot_introduction_request/g)?.length ?? 0).toBeGreaterThanOrEqual(3)
+    // T60：介绍已发出（≥3 次）后，界面任何显示位都不吃提示原文（dsh 自动标题=第一条 user 消息截断）
+    await page.reload()
+    await expect(page.locator('.sand-agent-item'), 'reload 后三行侧栏回来').toHaveCount(3, { timeout: 30_000 })
+    const after = await page.locator('.sand-agents-sidebar').innerText()
+    expect(after, 'T60 侧栏行不吃提示原文').not.toContain('<bot_introduction_request>')
+    expect(await page.locator('.sand-chat-composer, textarea, [contenteditable]').first().getAttribute('placeholder') ?? '', 'T60 composer placeholder 不吃提示原文').not.toContain('<bot_introduction_request>')
+    // T60 证据：onboarding 完成后的主界面（侧栏+会话头+composer 可见，名字全是正常口径）
+    mkdirSync('/home/lingxufeng/bot/work/ui-polish-win/evidence/T60', { recursive: true })
+    await page.screenshot({ path: '/home/lingxufeng/bot/work/ui-polish-win/evidence/T60/after-onboarding.png' })
   } finally {
     await env.stop()
   }

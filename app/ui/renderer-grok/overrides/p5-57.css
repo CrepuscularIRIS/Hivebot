@@ -8,7 +8,7 @@ dialog.pb-dialog {
   box-sizing: border-box; margin: auto; padding: 0;
   color: var(--sand-text-primary); background: var(--cursor-bg-elevated, var(--sand-bg-elevated));
   border: 1px solid var(--cursor-stroke-secondary); border-radius: 14px; box-shadow: none; /* R2 D1 实测 14（色板 --cursor-radius-xl 现值 12，不借用） */
-  font: 400 14px/20px var(--sand-font-family, system-ui, sans-serif);
+  font: 400 14px/20px var(--cursor-font-family-sans); /* T75: 一套栈（原 --sand-font-family 未定义回落 system-ui） */
   animation: pb-dialog-in 200ms cubic-bezier(.165, .84, .44, 1) both;
 }
 dialog.pb-dialog::backdrop { background: var(--cursor-bg-scrim, rgba(0, 0, 0, .32)); }
@@ -47,6 +47,14 @@ dialog.pb-dialog::backdrop { background: var(--cursor-bg-scrim, rgba(0, 0, 0, .3
   position: relative; display: grid; grid-template-rows: auto auto auto minmax(0, 1fr);
   width: min(900px, calc(100vw - 32px)); height: min(700px, calc(100vh - 96px)); overflow: clip;
 }
+/* T58：市场外壳对齐设置同壳（RE §1.1「设置/市场共用」）——底 chrome、边 .5px secondary、
+ * scrim 分主题（亮 .502 / 暗 .698）。共用段 dialog.pb-dialog（新建对话框）不动。 */
+.sand-plugins-dialog.pb-market {
+  border: 0.5px solid var(--sand-border-secondary-translucent);
+  background: var(--sand-bg-chrome);
+}
+div:has(> .pb-market) { background: rgba(0, 0, 0, 0.502) !important; }
+[data-theme="cursor-dark"] div:has(> .pb-market) { background: rgba(0, 0, 0, 0.698) !important; }
 .pb-market__head { display: flex; align-items: center; gap: 4px; height: 48px; box-sizing: border-box; padding: 10px 48px 10px 10px; }
 .pb-market__head h2 { margin: 0 0 0 6px; font-size: 15px; font-weight: 600; line-height: 20px; }
 .pb-market .sand-plugins-dialog__close { position: absolute !important; top: 10px !important; right: 10px !important; left: auto !important; } /* 原子类 :not(#\#) 压位 */
@@ -54,12 +62,14 @@ dialog.pb-dialog::backdrop { background: var(--cursor-bg-scrim, rgba(0, 0, 0, .3
 div:has(> .pb-market) { background: rgba(0, 0, 0, .5) !important; }
 .pb-offline { margin: 0 16px 8px; padding: 6px 12px; border-radius: 10px; background: var(--sand-bg-warn-secondary); color: var(--sand-text-warn-primary); font-size: 13px; }
 .pb-market__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 0 16px 10px; }
-.pb-search {
+.pb-search { /* T58：RE §3 input-group——灰底药丸退役；1px tertiary 边 + input-field 底 + focus 边升 primary */
   display: flex; flex: 1 1 280px; align-items: center; gap: 8px; min-width: 0; height: 32px; padding: 0 12px;
-  border-radius: 9999px; background: var(--sand-bg-secondary); color: var(--sand-text-tertiary);
+  border: 1px solid var(--sand-border-tertiary-translucent); border-radius: 8px;
+  background: var(--cursor-bg-input-field); color: var(--sand-text-tertiary);
 }
-.pb-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--sand-text-primary); font: inherit; font-size: 13px; }
-.pb-search:focus-within { box-shadow: 0 0 0 2px var(--cursor-stroke-focused, var(--sand-border-focus-primary)); }
+.pb-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--sand-text-primary); font: inherit; font-size: 13px; line-height: 18px; }
+.pb-search:focus-within { border-color: var(--sand-border-primary-translucent); box-shadow: none; }
+.pb-search::placeholder, .pb-search input::placeholder { color: var(--sand-text-secondary); }
 .pb-market .pb-search input:focus-visible { outline: none !important; } /* 外层 pill 已画焦点环 */
 .pb-market__scroll { overflow: auto; padding: 4px 16px 16px; border-top: 1px solid var(--sand-border-tertiary-translucent); }
 
@@ -92,6 +102,7 @@ div:has(> .pb-market) { background: rgba(0, 0, 0, .5) !important; }
   transition: background-color .12s ease-out;
 }
 .pb-installed-preview:hover { background: var(--sand-bg-secondary-hover, var(--sand-bg-hover)); color: var(--sand-text-primary); }
+.pb-installed-preview__label { /* T71c：零安装也露字——原版首页 Installed 栏字样 */ }
 .pb-installed-preview__stack { display: inline-flex; }
 .pb-installed-preview__stack > .pb-mono { border-radius: 5px; box-shadow: 0 0 0 1.5px var(--cursor-bg-elevated, var(--sand-bg-elevated)); }
 .pb-installed-preview__stack > .pb-mono + .pb-mono { margin-left: -5px; }
@@ -202,12 +213,25 @@ dialog.pb-dialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh
 .pb-dialog__actions { border-top: 1px solid #1c1c1c2e; }
 [data-theme="cursor-dark"] .pb-dialog__head { border-bottom-color: #ffffff2e; }
 [data-theme="cursor-dark"] .pb-dialog__actions { border-top-color: #ffffff2e; }
-/* T30d #1：暗 Create 白底黑字（探针：SandButton primary 原子类赢过 T30c 规则——!important 提权；
-   仅对话框内此钮，不动全局 primary token） */
-[data-theme="cursor-dark"] .pb-dialog__actions [data-action="create-bot"]:not([disabled]) { background: #ffffff !important; color: #1c1c1c !important; border-color: #ffffff !important; transition: none !important; }
-/* T30db #2：disabled→enabled 的 background-color transition 在截图/快速态拍出 205（computed 已 255）——transition none 消掉中间帧 */
-
 /* T30d #3：贴纸边双层 token（ref light=白 3px+灰 1px；ref dark 实测=浅灰环 48-78 on bg31） */
-[data-theme=cursor-dark] .pb-dialog__actions [data-action=create-bot]:not([disabled]) span { color: #1c1c1c !important; } /* T30db：文字色在 span 上（原子类 var #2e2e2e） */
 .pb-character { --pb-sticker-gray: #1c1c1c59; --pb-sticker-surface: #ffffff; }
 [data-theme="cursor-dark"] .pb-character { --pb-sticker-gray: #565656; --pb-sticker-surface: #1f1f1f; }
+
+/* T51：Index sources 管理视图（DSH Discover 同款语义；复用市场浮层外观） */
+.pb-market__sources { display: flex; flex-direction: column; gap: 12px; padding: 20px; }
+.pb-market__sources .pb-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--sand-border, #0000001a); border-radius: 8px; }
+.pb-market__sources .pb-row__main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pb-market__sources .pb-row__desc { font-size: 12px; opacity: .7; overflow-wrap: anywhere; }
+.pb-market__sources .pb-row__error { color: var(--sand-danger, #b3261e); }
+.pb-market__add { display: flex; align-items: center; gap: 8px; }
+.pb-market__add .pb-search { flex: 1 1 auto; }
+.pb-market__done { min-width: 88px; } /* T51b F2：Done 裁字——给足内宽 */
+/* T58b：Done 字下沉根因——0.18 md 尺寸类 sand-1yrsyyn 只有 padding-top:6px（半截，无 bottom 类），
+ * 叠 min-height:var(--cursor-height-base)=28 钉高后 6+18+0=24<28，字贴上、下空 4px。
+ * 市场专用补 bottom（口径：不动全局 kit） */
+.pb-market .pb-market__done { padding-bottom: 6px; }
+/* T58：Index sources 底部 ActionBar（RE-market-detail §4）——右对齐、gap 8；旧 .pb-foot 的 space-between 是主视图（计数+Load more）的 */
+.pb-market__footbar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 12px 0 0; } /* 右与内容区齐（sources padding 20 内） */
+/* T58：行内 Connect 钮高 26（RE §1.2 zn sm 规格；我方 kit sm 默认 28）——只压市场行内，不动全局 kit */
+.pb-row [data-action="connect"] { height: 26px !important; border-radius: 9999px !important; } /* pill 被 kit sm 原子类(:not(#)×3 特异性)压掉——定点 !important 复原 */
+.pb-note--error { color: var(--sand-danger, #b3261e); }

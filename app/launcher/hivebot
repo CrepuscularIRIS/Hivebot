@@ -149,7 +149,9 @@ if [ -z "${P2SDK_PROVIDER:-}" ]; then
       esac
     done < "$ENV_FILE"
   fi
-  [ -n "${P2SDK_LLM_API_KEY:-}" ] || die "real 模式缺 P2SDK_LLM_API_KEY——设环境变量或写 $ENV_FILE（chmod 600）"
+  # T50a：无 key 不再拒启——一行 WARN 引导；请求时 llm-pi-ai 报 MISSING_CREDENTIAL，
+  # UI 提示并直达 Settings → Models。env 文件读取与权限检查（③b）原样保留。
+  [ -n "${P2SDK_LLM_API_KEY:-}" ] || echo "WARN hivebot: no API key yet — add one in Settings → Models" >&2
 fi
 
 # ── 3 SDK ──

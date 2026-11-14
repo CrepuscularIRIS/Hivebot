@@ -216,9 +216,10 @@ async function scriptedTurn(client: D4Runtime['client'], sessionId: string, prom
   expect(text, 'the scripted fake text arrived').toBeTruthy()
 }
 
-// P6-05.f1: independent of approval.yml's drift exemption. Rolling back both
-// P6-05 files must still fail here; hash pinned to P6-02's D3 run-meta.json.
-it('P6-05.f1: default standard persona retains the approved reply section sha256', async () => {
+// P6-05.f1 / T80: default standard persona = 0.18 文字聊天语气规格
+// （来源 grok-bot-0.18-reconstructed@a9f633e:system-prompt.ts:80,113-130）。
+// 断言：开场句 + Tone 段（sha256 钉死）+ Reply length 段在；旧三段式全无。
+it('P6-05.f1: default standard persona = 0.18 tone spec (T80), Tone section sha pinned', async () => {
   const rt = await launchD4Runtime()
   try {
     const { sessionId, agentPreset } = await rt.client.call('session/create', {
@@ -230,10 +231,17 @@ it('P6-05.f1: default standard persona retains the approved reply section sha256
     const records = rt.readStreams().filter((r) => r.sessionId === sessionId)
     expect(records).toHaveLength(1)
     const systemText = records[0].systemTexts.join('\n')
-    const section = systemText.match(/^## Replying to the user\n\n[^\n]+/m)?.[0] ?? ''
+    expect(systemText, '开场句（0.18:80，去 Grok Bot）').toContain('You are a warm, concise desktop assistant.')
+    expect(systemText, 'T80b 杠杆1：Harness 身份首句关（与人设打架）').not.toContain('powered by DeepSeek Harness')
+    expect(systemText, 'Reply length 段在').toContain('## Reply length and shape')
+    for (const gone of ['coding agent', 'Reply in three parts', '100 words']) {
+      expect(systemText, `旧三段式残留：${gone}`).not.toContain(gone)
+    }
+    const section = systemText.match(/## Tone\n\n[\s\S]*?(?=\n## Reply length)/)?.[0] ?? ''
+    expect(section, 'Tone 段非空').not.toBe('')
     expect(createHash('sha256').update(section, 'utf8').digest('hex'),
-      'default standard system prompt must contain the frozen P6-02 persona section',
-    ).toBe('c7c53cd4e281e361191cbdecf873d2c6c5a5d9d7e56277091bf0d54a9734b356')
+      'Tone 段 = 0.18:113-120 逐字（sha256 钉死）',
+    ).toBe('4b0f6467b33203adf2fdbab0ad497a7a25c9f96039ca0e9d5a085822c662f3cb')
   } finally {
     await rt.stop()
   }

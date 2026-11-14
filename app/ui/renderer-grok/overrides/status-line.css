@@ -12,3 +12,32 @@
 .sand-status-line__avatar { display: inline-flex; }
 .sand-activity-label__text { font-size: 13px; }
 .sand-activity-elapsed { font-size: 12px; opacity: 0.7; }
+
+/* T83 · 状态行短语 shimmer（0.78.1 机制复刻：ui-2p1ol6 高光带渐变 + ui-1ulpqlm-B 平移扫 +
+ * shimmerDuration 1400ms token + linear timing；isShimmering 恒开——quiet 分支实证 isShimmering:!0）。
+ * 底字 = currentColor 60%（--ui-text-shimmer-base 同款 color-mix）；::after 同文本 clip 出高光带。 */
+.sand-status-line:not([data-exiting]) .sand-activity-label__text {
+  position: relative;
+  color: color-mix(in srgb, currentColor 60%, transparent);
+}
+.sand-status-line:not([data-exiting]) .sand-activity-label__text::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: transparent;
+  background-image: linear-gradient(90deg, transparent 0%, transparent 25%, var(--sand-text-secondary, currentColor) 60%, transparent 75%, transparent 100%);
+  background-size: 394.118% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: t83-shimmer 1400ms linear infinite;
+}
+@keyframes t83-shimmer {
+  0% { background-position-x: 100%; }
+  100% { background-position-x: -294.118%; }
+}
+/* reduced-motion：原版=纯 opacity 降级（非 animation:none）——停在底字 60%，高光带不扫 */
+@media (prefers-reduced-motion: reduce) {
+  .sand-status-line .sand-activity-label__text { color: color-mix(in srgb, currentColor 60%, transparent); }
+  .sand-status-line:not([data-exiting]) .sand-activity-label__text::after { animation: none; opacity: 0; }
+}

@@ -242,3 +242,24 @@ describe('T30 kickstartPrompt 构造', () => {
     expect(kickstartPrompt({ name: '', setup: '' })).toBe(kickstartPrompt({}))
   })
 })
+
+// T73c：连接器审批卡的投影——mcp toolName 带 connector{serverName,displayName}；bash 不带。
+describe('T73c permissionEntry connector 字段', () => {
+  it('a. mcp toolName → ask.connector.serverName 正确', () => {
+    const e = permissionEntry({ id: 'pe-m1', requestId: 'ev-m1', scope: 'pbots', revision: 1, command: 'mcp__server-memory-30e6e77d__create_entities', connector: { serverName: 'server-memory-30e6e77d', displayName: 'Memory' } })
+    const ask = (e.message as { ask?: { connector?: { serverName?: string; displayName?: string } } }).ask
+    expect(ask?.connector?.serverName).toBe('server-memory-30e6e77d')
+    expect(ask?.connector?.displayName).toBe('Memory')
+  })
+  it('b. 无 connector 入参 → ask 无 connector 字段（bash/文件卡零变化）', () => {
+    const e = permissionEntry({ id: 'pe-b1', requestId: 'ev-b1', scope: 'pbots', revision: 1, command: 'pip install x' })
+    const ask = (e.message as { ask?: { connector?: unknown } }).ask
+    expect(ask?.connector).toBeUndefined()
+  })
+  it('c. status 扩展 always/skipped 回显态可入 entry', () => {
+    const e = permissionEntry({ id: 'pe-r1', requestId: 'ev-r1', scope: 'pbots', revision: 1, command: 'x', status: 'always', connector: { serverName: 's', displayName: 'D' } })
+    expect((e.message as { ask?: { status?: string } }).ask?.status).toBe('always')
+    const e2 = permissionEntry({ id: 'pe-r2', requestId: 'ev-r2', scope: 'pbots', revision: 1, command: 'x', status: 'skipped' })
+    expect((e2.message as { ask?: { status?: string } }).ask?.status).toBe('skipped')
+  })
+})

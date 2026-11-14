@@ -22,9 +22,3 @@
   padding: 8px 16px; font-size: 13px; color: var(--sand-text-danger-primary); white-space: pre-line;
 }
 .pb-skills-dialog__foot { padding: 12px 16px; text-align: right; }
-
-/* ponytail: 暗色 neutral primary 字色为色板原样问题（--sand-text-on-primary #f5f5f5 配浅底），
-   全局修见 queue 提议。此处只修对话框内按钮。 */
-html[data-theme="cursor-dark"] .pb-skills-dialog [data-action="skills-add"] {
-  color: var(--sand-text-inverted) !important; /* T7bd：字面色换 var（暗色即 T7bc 指定的深字色） */
-}

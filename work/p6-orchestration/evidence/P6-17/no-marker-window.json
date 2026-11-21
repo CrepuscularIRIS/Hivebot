@@ -1,0 +1,13 @@
+{
+  "worker": "Unreader",
+  "samples": [
+    {
+      "t": 37,
+      "state": "running"
+    },
+    {
+      "t": 161,
+      "state": "unread"
+    }
+  ]
+}

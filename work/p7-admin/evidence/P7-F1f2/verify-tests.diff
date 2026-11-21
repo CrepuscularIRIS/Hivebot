@@ -1,0 +1,186 @@
+diff --git a/app/ui/tests/unit/admin/operations.test.ts b/app/ui/tests/unit/admin/operations.test.ts
+index e9237d1..268dc1f 100644
+--- a/app/ui/tests/unit/admin/operations.test.ts
++++ b/app/ui/tests/unit/admin/operations.test.ts
+@@ -13,6 +13,13 @@ import { tmkdir } from '../../support/tmp-sweep.ts'
+ // vi.mock 工厂被提升到模块体之前执行：flag 用函数读值，调用时模块体已初始化
+ let failNextOpen = false
+ let repairFailure: 'open' | 'sync' | 'rename' | undefined
++let syncBarrier: { entered: () => void; wait: Promise<void> } | undefined
++const currentBarrier = (): typeof syncBarrier => syncBarrier
++const deferred = () => {
++  let resolve!: () => void
++  const promise = new Promise<void>((done) => { resolve = done })
++  return { promise, resolve }
++}
+ const shouldFailOpen = (): boolean => failNextOpen
+ const repairFailureAt = (): typeof repairFailure => repairFailure
+ 
+@@ -30,10 +37,19 @@ vi.mock('node:fs/promises', async (importOriginal) => {
+     }
+     if (repairFailureAt() === 'open') return Promise.reject(new Error('simulated EIO open'))
+     return actual.open(args[0] as string, args[1] as string, args[2] as number | undefined).then((handle) => {
+-      if (repairFailureAt() !== 'sync') return handle
++      if (repairFailureAt() !== 'sync' && currentBarrier() === undefined) return handle
+       return {
+         appendFile: (data: Buffer) => handle.appendFile(data),
+-        sync: () => Promise.reject(new Error('simulated EIO sync')),
++        sync: async () => {
++          const barrier = currentBarrier()
++          if (barrier !== undefined) {
++            syncBarrier = undefined
++            barrier.entered()
++            await barrier.wait
++          }
++          if (repairFailureAt() === 'sync') throw new Error('simulated EIO sync')
++          await handle.sync()
++        },
+         close: () => handle.close(),
+       }
+     })
+@@ -180,6 +196,44 @@ describe('P7-F1 · append/flush 失败 → 副作用 0', () => {
+   })
+ })
+ 
++describe('P7-F1.f2 · sync 结果不明失败关闭', () => {
++  it('首次真实 append 后 sync 失败：重试与 finish 均拒，重开只恢复原 ID，不重放', async () => {
++    const dir = dataDir()
++    const ledger = new OperationsLedger(dir)
++    await ledger.init()
++    const request = baseRequest({ dedupeKey: 'uncertain' })
++    repairFailure = 'sync' // appendFile / close 保留真实文件系统操作。
++    await expect(ledger.beginOperation(request)).rejects.toMatchObject({ code: 'PBOTS_OPS_APPEND_FAILED' })
++    repairFailure = undefined
++    const original = readFileSync(ledgerFile(dir))
++    const id = JSON.parse(rawLines(dir)[0]).operationId
++    try {
++      await expect(ledger.beginOperation(request)).rejects.toMatchObject({ code: 'PBOTS_OPS_APPEND_FAILED' })
++      await expect(ledger.finishOperation(id, finishWith())).rejects.toMatchObject({ code: 'PBOTS_OPS_APPEND_FAILED' })
++      await expect(ledger.recordReceipt(id, 2)).rejects.toMatchObject({ code: 'PBOTS_OPS_APPEND_FAILED' })
++      expect(() => ledger.readOperations()).toThrowError(/PBOTS_OPS_APPEND_FAILED/)
++      expect(readFileSync(ledgerFile(dir))).toEqual(original)
++    } finally { ledger.close() }
++    const reopened = new OperationsLedger(dir)
++    try {
++      await reopened.init()
++      expect(await reopened.beginOperation(request)).toEqual({ operationId: id, created: false, status: 'inProgress' })
++      expect(reopened.readOperations().inProgress.map((entry) => entry.operationId)).toEqual([id])
++      await reopened.finishOperation(id, finishWith())
++      expect(reopened.readOperations().completed[0].operationId).toBe(id)
++      const normal = await reopened.beginOperation(baseRequest({ dedupeKey: 'normal' }))
++      await reopened.finishOperation(normal.operationId, finishWith())
++      expect(beginCount(dir)).toBe(2)
++    } finally { reopened.close() }
++    const restarted = new OperationsLedger(dir)
++    try {
++      await restarted.init()
++      expect(await restarted.beginOperation(request)).toEqual({ operationId: id, created: false, status: 'completed' })
++      expect(restarted.readOperations().completed).toHaveLength(2)
++    } finally { restarted.close() }
++  })
++})
++
+ describe('P7-F1 · 丢文件失败关闭', () => {
+   it('落盘后文件被删：后续 begin 拒收 PBOTS_OPS_LOST 且不重建文件', async () => {
+     const dir = dataDir()
+@@ -501,6 +555,100 @@ describe('P7-F1 · 凭证字段拒入账', () => {
+   })
+ })
+ 
++describe('P7-F1.f2 · close 永久停写与锁交接', () => {
++  it('idle close 后新 writer 正常，旧引用的 begin/finish/receipt/init 全拒且重复 close 不解新锁', async () => {
++    const dir = dataDir()
++    const old = new OperationsLedger(dir)
++    await old.init()
++    old.close()
++    const fresh = new OperationsLedger(dir)
++    try {
++      await fresh.init()
++      const req = baseRequest({ dedupeKey: 'same' })
++      await expect(old.beginOperation(req)).rejects.toMatchObject({ code: 'PBOTS_OPS_CLOSED' })
++      await expect(old.finishOperation('old', finishWith())).rejects.toMatchObject({ code: 'PBOTS_OPS_CLOSED' })
++      await expect(old.recordReceipt('old', 2)).rejects.toMatchObject({ code: 'PBOTS_OPS_CLOSED' })
++      await expect(old.init()).rejects.toMatchObject({ code: 'PBOTS_OPS_CLOSED' })
++      old.close()
++      expect(() => new OperationsLedger(dir)).toThrowError(/PBOTS_OPS_LOCKED/)
++      const result = await fresh.beginOperation(req)
++      expect(result.created).toBe(true)
++      await fresh.finishOperation(result.operationId, finishWith())
++      expect(beginCount(dir)).toBe(1)
++    } finally { fresh.close(); old.close() }
++  })
++
++  it.each([false, true])('在途 sync 结束前保留锁；未启动队列拒绝；失败=%s', async (failSync) => {
++    const dir = dataDir()
++    const old = new OperationsLedger(dir)
++    await old.init()
++    const entered = deferred()
++    const release = deferred()
++    syncBarrier = { entered: entered.resolve, wait: release.promise }
++    if (failSync) repairFailure = 'sync'
++    const req = baseRequest({ dedupeKey: 'same' })
++    const active = old.beginOperation(req).then((value) => value, (error: Error) => error)
++    await entered.promise // 已真实 append，sync 被确定性屏障挡住。
++    const queued = old.beginOperation(req).then(() => 'unexpected write', (error) => error.code)
++    old.close()
++    old.close()
++    try {
++      expect(() => new OperationsLedger(dir)).toThrowError(/PBOTS_OPS_LOCKED/)
++    } finally { release.resolve() }
++    const result = await active
++    expect(result instanceof Error).toBe(failSync)
++    expect(await queued).toBe('PBOTS_OPS_CLOSED')
++    repairFailure = undefined
++    const fresh = new OperationsLedger(dir)
++    try {
++      await fresh.init()
++      const id = JSON.parse(rawLines(dir)[0]).operationId
++      expect(await fresh.beginOperation(req)).toEqual({ operationId: id, created: false, status: 'inProgress' })
++      await fresh.finishOperation(id, finishWith())
++      expect(beginCount(dir)).toBe(1)
++    } finally { fresh.close() }
++  })
++
++  it('close 发生在任务启动前：保留锁直到已排队请求拒绝，然后可重建', async () => {
++    const dir = dataDir()
++    const old = new OperationsLedger(dir)
++    await old.init()
++    const queued = old.beginOperation(baseRequest()).then(() => 'unexpected write', (error) => error.code)
++    old.close()
++    expect(() => new OperationsLedger(dir)).toThrowError(/PBOTS_OPS_LOCKED/)
++    expect(await queued).toBe('PBOTS_OPS_CLOSED')
++    expect(existsSync(ledgerFile(dir))).toBe(false)
++    const fresh = new OperationsLedger(dir)
++    try { await fresh.init(); expect((await fresh.beginOperation(baseRequest())).created).toBe(true) }
++    finally { fresh.close() }
++  })
++
++  it('init 补换行写入在途时 close 也不得提前交锁', async () => {
++    const dir = dataDir()
++    const seed = new OperationsLedger(dir)
++    await seed.init()
++    const result = await seed.beginOperation(baseRequest({ dedupeKey: 'same' }))
++    seed.close()
++    writeFileSync(ledgerFile(dir), readFileSync(ledgerFile(dir), 'utf8').trimEnd())
++    const old = new OperationsLedger(dir)
++    const entered = deferred()
++    const release = deferred()
++    syncBarrier = { entered: entered.resolve, wait: release.promise }
++    const initializing = old.init()
++    await entered.promise
++    old.close()
++    try { expect(() => new OperationsLedger(dir)).toThrowError(/PBOTS_OPS_LOCKED/) }
++    finally { release.resolve() }
++    await initializing
++    const fresh = new OperationsLedger(dir)
++    try {
++      await fresh.init()
++      expect(fresh.readOperations().inProgress[0].operationId).toBe(result.operationId)
++      await fresh.finishOperation(result.operationId, finishWith())
++    } finally { fresh.close() }
++  })
++})
++
+ describe('P7-F1 · finish 校验与单实例锁', () => {
+   it('finish 未知操作拒；重复 finish 拒（append-only 不改写）', async () => {
+     const dir = dataDir()

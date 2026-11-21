@@ -1,0 +1,14 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-01.f3-verify/app/sdk
+
+[p2sdk] ready http://127.0.0.1:37907
+p2sdk: dsh pid 1977658
+p2sdk: no ready line within 1ms
+p2sdk: forwarding SIGTERM to dsh
+p2sdk: forwarding SIGTERM to dsh
+
+ Test Files  11 passed (11)
+      Tests  57 passed (57)
+   Start at  16:02:44
+   Duration  45.01s (tests 99%, import 1%)
+

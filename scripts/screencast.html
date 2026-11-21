@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Grok Bot 投屏 (CDP Screencast)</title>
+<style>
+  body { margin:0; background:#1a1c20; display:flex; flex-direction:column; align-items:center; font-family:sans-serif; }
+  #bar { padding:6px 12px; color:#9aa3ad; font-size:12px; display:flex; gap:12px; align-items:center; }
+  #status { color:#6fcf72; }
+  #img { max-width:100%; max-height:calc(100vh - 34px); image-rendering:auto; cursor:crosshair; }
+</style>
+</head>
+<body>
+<div id="bar"><span id="status">connecting…</span><span id="fps"></span><span style="color:#5a626b">点击画面=转发点击到 app</span></div>
+<img id="img">
+<script>
+const img = document.getElementById('img');
+const statusEl = document.getElementById('status');
+const fpsEl = document.getElementById('fps');
+const ws = new WebSocket('ws://' + location.host + '/devtools/page/' + new URLSearchParams(location.search).get('target'));
+ws.binaryType = 'arraybuffer';
+let id = 0, frames = 0, lastFpsT = performance.now(), scale = 1, meta = {w:0,h:0};
+function send(method, params) { id++; ws.send(JSON.stringify({id, method, params})); return id; }
+ws.onopen = () => {
+  statusEl.textContent = 'connected';
+  send('Page.enable', {});
+  send('Page.startScreencast', {format:'jpeg', quality: 70, maxWidth: 1400, maxHeight: 900});
+};
+ws.onmessage = (ev) => {
+  if (typeof ev.data === 'string') {
+    const m = JSON.parse(ev.data);
+    if (m.method === 'Page.screencastFrame') {
+      const {data, metadata, sessionId} = m.params;
+      img.src = 'data:image/jpeg;base64,' + data;
+      meta = metadata || meta;
+      send('Page.screencastFrameAck', {sessionId});
+      frames++;
+      const now = performance.now();
+      if (now - lastFpsT > 1000) { fpsEl.textContent = frames + ' fps'; frames = 0; lastFpsT = now; }
+    }
+    if (m.method === 'Page.screencastVisibilityChanged') {
+      statusEl.textContent = m.params.visible ? 'live' : 'hidden';
+    }
+  }
+};
+ws.onclose = () => { statusEl.textContent = 'disconnected — retry in 2s'; setTimeout(()=>location.reload(), 2000); };
+ws.onerror = () => { statusEl.textContent = 'error'; };
+// 点击转发：图片坐标 → CSS 像素 → Input.dispatchMouseEvent
+img.addEventListener('click', (e) => {
+  const r = img.getBoundingClientRect();
+  const x = Math.round((e.clientX - r.left) * (meta.w / r.width));
+  const y = Math.round((e.clientY - r.top) * (meta.h / r.height));
+  send('Input.dispatchMouseEvent', {type:'mousePressed', x, y, button:'left', clickCount:1});
+  send('Input.dispatchMouseEvent', {type:'mouseReleased', x, y, button:'left', clickCount:1});
+});
+// 键盘转发（页面聚焦时）
+document.addEventListener('keydown', (e) => {
+  const params = {type: e.type === 'keydown' ? 'keyDown' : 'keyUp', key: e.key, code: e.code,
+    windowsVirtualKeyCode: e.keyCode, nativeVirtualKeyCode: e.keyCode};
+  if (e.key.length === 1 || e.key === 'Enter') params.text = e.key === 'Enter' ? '\r' : e.key;
+  send('Input.dispatchKeyEvent', params);
+  if (e.key === 'Enter' || e.key === 'Backspace' || e.key === 'Tab') e.preventDefault();
+});
+</script>
+</body>
+</html>

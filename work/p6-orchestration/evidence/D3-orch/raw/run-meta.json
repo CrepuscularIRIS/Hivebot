@@ -1,0 +1,506 @@
+{
+  "ts": "2026-11-05T02:54:04.859Z",
+  "mode": "real",
+  "model": "glm-5.3",
+  "llmBase": "http://127.0.0.1:4001",
+  "litellm": {
+    "ok": true,
+    "hasModel": true,
+    "modelCount": 21
+  },
+  "groupDelayMs": 5000,
+  "entries": [
+    {
+      "id": "attach1-hike-append",
+      "rep": 1,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-5f05e502-578c-47b6-aa62-c34a8e360576",
+      "raw": "attach1-hike-append-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:44:55.727Z"
+    },
+    {
+      "id": "attach1-hike-append",
+      "rep": 2,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-b3fcaba8-49ce-4803-95c7-aac844c52cea",
+      "raw": "attach1-hike-append-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:46:25.264Z"
+    },
+    {
+      "id": "attach1-hike-append",
+      "rep": 3,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-d8963d61-81aa-4dc5-9f0e-3bd81a698ff9",
+      "raw": "attach1-hike-append-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:48:08.433Z"
+    },
+    {
+      "id": "attach2-backup-index",
+      "rep": 1,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-92c0b471-6de7-4a13-80ea-4d5b9a06076f",
+      "raw": "attach2-backup-index-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:48:52.760Z"
+    },
+    {
+      "id": "attach2-backup-index",
+      "rep": 2,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-3a7ead68-6e36-477d-bb56-dbb795a7b816",
+      "raw": "attach2-backup-index-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:49:54.268Z"
+    },
+    {
+      "id": "attach2-backup-index",
+      "rep": 3,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-7c4e1408-f4c0-449f-a8f4-2f83461a938c",
+      "raw": "attach2-backup-index-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:50:37.382Z"
+    },
+    {
+      "id": "chat1-thanks",
+      "rep": 1,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-e8368056-970b-409d-9cea-a9489c35ccc4",
+      "raw": "chat1-thanks-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:33:14.238Z"
+    },
+    {
+      "id": "chat1-thanks",
+      "rep": 2,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-3248f5ee-99e7-4b6c-a056-5918f484b367",
+      "raw": "chat1-thanks-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:33:26.914Z"
+    },
+    {
+      "id": "chat1-thanks",
+      "rep": 3,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-26289200-f8dc-4744-a84d-78469b7b1dd1",
+      "raw": "chat1-thanks-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:33:45.194Z"
+    },
+    {
+      "id": "chat2-greeting",
+      "rep": 1,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-15962a58-6230-4308-8d66-22080a2772fd",
+      "raw": "chat2-greeting-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:33:59.471Z"
+    },
+    {
+      "id": "chat2-greeting",
+      "rep": 2,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-1d0280af-6519-4690-a23b-1b3e35218e09",
+      "raw": "chat2-greeting-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:34:12.159Z"
+    },
+    {
+      "id": "chat2-greeting",
+      "rep": 3,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-08a973ca-24a7-4c50-b05b-d57b1cbac63c",
+      "raw": "chat2-greeting-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:34:25.234Z"
+    },
+    {
+      "id": "dir1-docker-vm",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-3b774678-b5f3-43de-a6ee-18fc402cf576",
+      "raw": "dir1-docker-vm-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:02:12.103Z"
+    },
+    {
+      "id": "dir1-docker-vm",
+      "rep": 2,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-092b031f-cad6-4e1f-8223-904e39e5f3c6",
+      "raw": "dir1-docker-vm-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:02:48.809Z"
+    },
+    {
+      "id": "dir1-docker-vm",
+      "rep": 3,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-c1295ce5-eb97-4e35-bf8c-427fdc6de73d",
+      "raw": "dir1-docker-vm-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:03:14.707Z"
+    },
+    {
+      "id": "dir2-translate-ja",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-477f73a5-d13e-498a-a393-783f118d535d",
+      "raw": "dir2-translate-ja-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:03:24.995Z"
+    },
+    {
+      "id": "dir2-translate-ja",
+      "rep": 2,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-5b9866e8-0ff4-4fae-b094-a50c886ffbad",
+      "raw": "dir2-translate-ja-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:03:37.683Z"
+    },
+    {
+      "id": "dir2-translate-ja",
+      "rep": 3,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-a1c2d388-4c49-48e2-a2d1-2d742cd37ef8",
+      "raw": "dir2-translate-ja-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:03:52.791Z"
+    },
+    {
+      "id": "dir3-power",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-dbd644f2-bdc0-4b8b-ad20-26f3ee7296e8",
+      "raw": "dir3-power-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:04:03.483Z"
+    },
+    {
+      "id": "dir3-power",
+      "rep": 2,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-92071cf6-db2d-4179-85b3-272d8cc05c4e",
+      "raw": "dir3-power-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:04:17.794Z"
+    },
+    {
+      "id": "dir3-power",
+      "rep": 3,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-a4abf2d0-9b9d-4be0-9944-0a262582f098",
+      "raw": "dir3-power-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:04:36.522Z"
+    },
+    {
+      "id": "dir4-tv-rec",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-cad4f8e3-2e32-423e-b06a-d5ce8dcfc493",
+      "raw": "dir4-tv-rec-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:04:50.414Z"
+    },
+    {
+      "id": "dir4-tv-rec",
+      "rep": 2,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-c0c50b52-e29e-4a81-a5a2-5a9eb01aa69a",
+      "raw": "dir4-tv-rec-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:05:02.699Z"
+    },
+    {
+      "id": "dir4-tv-rec",
+      "rep": 3,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-10ab3910-a84f-488e-a21b-882f42c3ef6f",
+      "raw": "dir4-tv-rec-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:05:21.025Z"
+    },
+    {
+      "id": "par1-two-tasks",
+      "rep": 1,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-d8f78f23-e0f5-4b8d-9232-4640ac808252",
+      "raw": "par1-two-tasks-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:37:32.543Z"
+    },
+    {
+      "id": "par1-two-tasks",
+      "rep": 2,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-cf5de69a-5c3a-4402-86e9-fb76c6a654ce",
+      "raw": "par1-two-tasks-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-31d951d1-45d7-4fd9-b76a-b558aba140ce",
+          "name": "todo",
+          "raw": "par1-two-tasks-2.w1.jsonl"
+        },
+        {
+          "sessionId": "session-93f138c0-9bd0-4cc3-8704-d5fc099158af",
+          "name": "sum",
+          "raw": "par1-two-tasks-2.w2.jsonl"
+        }
+      ],
+      "ts": "2026-11-05T02:39:28.923Z"
+    },
+    {
+      "id": "par1-two-tasks",
+      "rep": 3,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-634e1ab2-5693-4c3d-8cc7-b09a111da3de",
+      "raw": "par1-two-tasks-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:39:56.836Z"
+    },
+    {
+      "id": "par2-list-and-weekday",
+      "rep": 1,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-0ffa5b6c-36d8-4713-b3f1-70987de0970c",
+      "raw": "par2-list-and-weekday-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:41:47.165Z"
+    },
+    {
+      "id": "par2-list-and-weekday",
+      "rep": 2,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-fd222113-eee3-4139-b977-968b80fcf4d1",
+      "raw": "par2-list-and-weekday-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:42:37.876Z"
+    },
+    {
+      "id": "par2-list-and-weekday",
+      "rep": 3,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-a37ce262-b820-4fd7-bdd4-a63120836609",
+      "raw": "par2-list-and-weekday-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:43:53.003Z"
+    },
+    {
+      "id": "single1-packing",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-5b37022d-2b82-4c19-89b5-fc81a179c911",
+      "raw": "single1-packing-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:05:43.741Z"
+    },
+    {
+      "id": "single1-packing",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-37f28b52-8a95-43dc-ac86-7d63ddb393f1",
+      "raw": "single1-packing-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:06:09.665Z"
+    },
+    {
+      "id": "single1-packing",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-9f586687-90c9-441e-8faf-ee880f1d355f",
+      "raw": "single1-packing-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:06:32.772Z"
+    },
+    {
+      "id": "single2-date-diary",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-f336d79a-feb5-4f40-ac58-70f8bafbb953",
+      "raw": "single2-date-diary-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:07:32.339Z"
+    },
+    {
+      "id": "single2-date-diary",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-991ca9b3-147a-4933-a842-3f1675dd4f79",
+      "raw": "single2-date-diary-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:08:23.533Z"
+    },
+    {
+      "id": "single2-date-diary",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-8a9ed981-547f-4721-9427-60d4298952dd",
+      "raw": "single2-date-diary-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:08:52.622Z"
+    },
+    {
+      "id": "single3-fib-run",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-3a81625f-0a0b-4eff-b5ac-3cc48ba0a764",
+      "raw": "single3-fib-run-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:09:23.712Z"
+    },
+    {
+      "id": "single3-fib-run",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-4db89ff1-9102-4a59-87d2-4916f3d2116d",
+      "raw": "single3-fib-run-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:10:57.606Z"
+    },
+    {
+      "id": "single3-fib-run",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-12c7600c-085f-45bc-829f-fbcebbb1c8c5",
+      "raw": "single3-fib-run-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:11:26.714Z"
+    },
+    {
+      "id": "single4-count-logs",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-8f4403ff-542d-406b-a4be-590740bc7fa5",
+      "raw": "single4-count-logs-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:11:59.399Z"
+    },
+    {
+      "id": "single4-count-logs",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-35f91a33-ddb2-4b7b-a0ce-32fa89d408aa",
+      "raw": "single4-count-logs-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:12:35.695Z"
+    },
+    {
+      "id": "single4-count-logs",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-0fc77f6c-db49-4a77-9798-f209de1c2a2c",
+      "raw": "single4-count-logs-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:13:21.593Z"
+    },
+    {
+      "id": "stop1-lowercase",
+      "rep": 1,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-015f2c96-4562-49ff-a3fc-9c5e62b1d57b",
+      "raw": "stop1-lowercase-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:51:00.069Z"
+    },
+    {
+      "id": "stop1-lowercase",
+      "rep": 2,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-c5a70947-373e-4362-8f21-82aa87c3e2ab",
+      "raw": "stop1-lowercase-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:51:33.975Z"
+    },
+    {
+      "id": "stop1-lowercase",
+      "rep": 3,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-8cfff74b-c417-47e0-8886-2f889a220c31",
+      "raw": "stop1-lowercase-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:52:01.073Z"
+    },
+    {
+      "id": "stop2-archive",
+      "rep": 1,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-f2bfa403-c71d-49b0-a247-53314e5d5215",
+      "raw": "stop2-archive-1.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:52:38.594Z"
+    },
+    {
+      "id": "stop2-archive",
+      "rep": 2,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-e80ee49e-7641-452e-8133-8c2a8a486959",
+      "raw": "stop2-archive-2.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:53:11.315Z"
+    },
+    {
+      "id": "stop2-archive",
+      "rep": 3,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-56dc8cfe-8c0d-4e6b-8a6b-6ddd2ae0080a",
+      "raw": "stop2-archive-3.jsonl",
+      "workers": [],
+      "ts": "2026-11-05T02:54:04.855Z"
+    }
+  ],
+  "note": "run 断点续跑 4 段（21:01 首跑、21:10/21:23 修复续跑、21:36 委派类 18 组 --force 重采）；entries 以各组 raw 主名首行重建，ts 取该组采集时刻"
+}

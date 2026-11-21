@@ -1,0 +1,8 @@
+$ cd /tmp/bot-wt/T-18/app/sdk && node --input-type=module -e "import { presetIdOf } from './src/p2temp/preset-id.mjs'
+import P2Temp, { normalizeConnectors } from './src/p2temp/index.mjs'"
+id([a,a]) === id([a]): true p2temp-4bd2645fefad
+id([b,a]) === id([a,b]): true
+normalize([a,a]) -> ["a"]
+normalize([b,a,b]) -> ["a","b"]
+normalize mutates input? ["b","a"]          # 输入未被原地修改
+normalize rejects: p2temp: connectors must be a non-empty a   # ['a',''] 被拒

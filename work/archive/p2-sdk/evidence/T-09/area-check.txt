@@ -1,0 +1,14 @@
+== git diff --stat d0a8008..4240ab4 (area: exactly 7 declared files) ==
+ app/sdk/package.json                          |    1 +
+ app/sdk/pnpm-lock.yaml                        |  499 ++++++++
+ app/sdk/profile/patches/market-source.yml     |   26 +
+ app/sdk/scripts/fetch-market-fixture.mjs      |  126 ++
+ app/sdk/tests/e2e/fixtures/market/index.json  | 1561 +++++++++++++++++++++++++
+ app/sdk/tests/e2e/fixtures/market/source.json |   24 +
+ app/sdk/tests/e2e/market.test.ts              |  351 ++++++
+ 7 files changed, 2588 insertions(+)
+
+== node_modules tracked in git / vendor dirs ==
+git ls-files app/sdk | grep -c node_modules => 0
+app/sdk/.gitignore:1:node_modules/	app/sdk/node_modules
+== name mapping determinism (script lines 52-68 comment + collision guard; 111 unique valid names) ==

@@ -1,0 +1,48 @@
+/* P5-52 · 死入口覆盖文件（ours，不在 SOURCES.tsv）。U4′：静息态与各视图零死入口。
+ * 规则：能力开关（shim 回值让上游自己收起）优先，其次模块覆盖（overrides/modules，剥 prop 让上游 null 门控收起），
+ * 两者都做不到的才在这里屏蔽。每条注明入口与原因。
+ * display:none 一律 !important：上游 stylex 原子类带 :not(#\#) 三重 id 特异性，普通规则压不过。 */
+
+/* ---- titlebar：拖拽层不吃点击 ----
+ * 上游重构树的拖拽层 .sand-cover-drag（fixed 52px、z 4999）盖住 sidebar/chat header，header 按钮也没有 no-drag：
+ * New / Agent network / View agent settings / Channels 点不到（活入口变死入口）；chat header 右端还压在
+ * 原生窗口控件（main/window.ts titleBarOverlay）下且不消费 --sand-window-controls-inset。
+ * 拖拽靠 app-region（Electron 按 CSS 计算，与命中测试无关），所以拖拽层只需让出命中。 */
+.sand-cover-drag { pointer-events: none; }
+.sand-agents-sidebar__header :is(button, [role="button"]),
+.sand-chat-header :is(button, [role="button"]) { -webkit-app-region: no-drag; app-region: no-drag; }
+.sand-chat-header { padding-right: calc(16px + var(--sand-window-controls-inset, 0px)); }
+
+/* ---- composer：附件与语音没有实底（stageAttachmentBytes 恒 failed、transcribeAudio 恒空串）---- */
+.sand-prompt-shell button[aria-label="Attach file"],
+.sand-prompt-shell button[aria-label="Start voice input"] { display: none !important; }
+
+/* ---- 账户菜单：Help Center（openExternal 到 Cursor 文档）/ Send Feedback（submitFeedback 无实底）/ Log out（无账户体系，
+ * 登出后只剩不可用的「Sign In with Cursor」）。菜单项无可选属性，按位置屏蔽：前提 = shim getUsageSummary=null、无 iOS 项，
+ * 菜单为 Settings · About · Help Center · Send Feedback · <hr> · Log out（e2e 断言可见项恰为 Settings/About，漂移即红）。 */
+[role="menu"][aria-label="Account"] [data-component="menu-layout"] > :nth-child(n+3) { display: none !important; }
+/* 设置 → General → Account 卡片的 Sign Out 同理 */
+.sand-account-card > button { display: none !important; }
+
+/* ---- 搜索面板 tab：Groups（无群聊）、Routines（无 automations）。tab 无可选属性，按位置屏蔽：前提 = shim
+ * isGlobalSearchEnabled=false（Messages/Files/Links tab 不出现），tab 为 All · Agents · Groups · Routines · Actions
+ * （e2e 断言可见 tab 恰为 All/Agents/Actions）。 */
+[role="tablist"][aria-label="Filter results"] > [role="tab"]:nth-child(3),
+[role="tablist"][aria-label="Filter results"] > [role="tab"]:nth-last-child(2) { display: none !important; }
+
+/* ---- info pane 版式：重构树缺原版 shell 网格样式，aside 落在 .sand-shell 流末尾（视口外 y≥820），
+ * View agent settings / Edit Profile 点了「看不见」。临时贴右侧浮层；P5-55 按 0.78.1 定稿版式时替换本条。 */
+.sand-shell > .sand-info-pane[data-open] {
+  position: absolute; top: 52px; right: 0; bottom: 0; z-index: 20;
+  width: min(360px, 45vw); overflow-y: auto;
+  background: var(--cursor-bg-editor); border-left: 1px solid var(--cursor-stroke-tertiary);
+}
+
+/* ---- 会话设置 pane：Notifications 开关（setAgentNotifyOnUpdates 无 handler）、Edit agent avatar（generateAgentAvatarImage
+ * 恒空、pickAvatarFile 恒 null；头像由 persona 按 agentId 确定）。 */
+.sand-agent-settings__card,
+.sand-info-pane button[aria-label="Edit agent avatar"] { display: none !important; }
+
+/* ---- 设置 overlay 的 Close：上游 .sand-settings-panel__close 的 absolute 定位被 SandIconButton 原子类压掉，
+ * 按钮落在左侧导航底下（点击被 nav 吃掉）。恢复上游自己声明的位置。 */
+.sand-settings-panel > .sand-settings-panel__close { position: absolute !important; top: 11px !important; right: 14px !important; left: auto !important; z-index: 1 !important; }

@@ -1,0 +1,15 @@
+$ vitest run
+
+ RUN  v5.0.5 /tmp/bot-wt/T-08/app/sdk
+
+[p2sdk] ready http://127.0.0.1:39189
+p2sdk: dsh pid 2014672
+p2sdk: no ready line within 1ms
+p2sdk: forwarding SIGTERM to dsh
+p2sdk: forwarding SIGTERM to dsh
+
+ Test Files  12 passed (12)
+      Tests  61 passed (61)
+   Start at  16:08:18
+   Duration  42.65s (tests 99%)
+

@@ -1,0 +1,204 @@
+{
+  "mode": "rename",
+  "worker": "session-426534a6-034b-4968-b5b7-2d78dc2cd21c",
+  "tool": "rvw_delegate",
+  "before": 3,
+  "after": 4,
+  "results": [
+    {
+      "seq": 17,
+      "type": "tool/result",
+      "callId": "probe-call",
+      "isError": false,
+      "error": null,
+      "text": "started subagent 21d67538-6bce-4700-ac4b-059bd122ebdc"
+    }
+  ],
+  "childEvents": [
+    {
+      "seq": 0,
+      "type": "subagent/descriptor",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 1,
+      "type": "sandbox/mode",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 2,
+      "type": "approval/policy",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 3,
+      "type": "agent/inbox/spliced",
+      "target": "next-turn",
+      "outcome": null,
+      "insertedIds": [
+        "5d3db989-7187-47da-b62a-46cc2b8b2f78"
+      ]
+    },
+    {
+      "seq": 4,
+      "type": "turn/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 5,
+      "type": "agent/inbox/spliced",
+      "target": "next-turn",
+      "outcome": null,
+      "insertedIds": []
+    },
+    {
+      "seq": 6,
+      "type": "step/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 7,
+      "type": "system/message",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 8,
+      "type": "user/message",
+      "id": "5d3db989-7187-47da-b62a-46cc2b8b2f78",
+      "sourceKind": "user"
+    },
+    {
+      "seq": 9,
+      "type": "user/message",
+      "id": "1bb0ff1b-332e-4492-b8d2-911d9387176d",
+      "sourceKind": "runtime-context"
+    },
+    {
+      "seq": 10,
+      "type": "user/message",
+      "id": "8daaa53b-e748-4dba-bfac-32d9daadfd89",
+      "sourceKind": "time-context"
+    },
+    {
+      "seq": 11,
+      "type": "request/header",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 12,
+      "type": "request/context",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 13,
+      "type": "session/title",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 14,
+      "type": "assistant/message",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 15,
+      "type": "tool/call",
+      "turn": 1,
+      "callId": "probe-call",
+      "name": "job_list"
+    },
+    {
+      "seq": 16,
+      "type": "tool/result",
+      "callId": "probe-call",
+      "isError": false,
+      "error": null,
+      "text": "(no background jobs)"
+    },
+    {
+      "seq": 17,
+      "type": "step/end",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 18,
+      "type": "step/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 19,
+      "type": "assistant/message",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 20,
+      "type": "step/end",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 21,
+      "type": "turn/end",
+      "turn": 1,
+      "reason": "completed",
+      "callId": "",
+      "name": ""
+    }
+  ],
+  "snapshot": {
+    "agents": [
+      {
+        "id": "session-426534a6-034b-4968-b5b7-2d78dc2cd21c",
+        "names": [
+          "request_network",
+          "working_directory",
+          "p612_conn_write",
+          "present",
+          "read",
+          "write",
+          "edit",
+          "glob",
+          "grep",
+          "skill",
+          "web_search",
+          "web_fetch",
+          "bash",
+          "read_image",
+          "get_goal",
+          "create_goal",
+          "update_goal",
+          "ask_user_question",
+          "todo_write",
+          "exit_plan_mode",
+          "rvw_delegate"
+        ]
+      }
+    ]
+  }
+}

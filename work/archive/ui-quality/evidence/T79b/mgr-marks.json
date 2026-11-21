@@ -1,0 +1,72 @@
+[
+ {
+  "where": "sidebar",
+  "rect": [
+   20,
+   73,
+   36,
+   36
+  ],
+  "state": "idle",
+  "color": "gray",
+  "shape": "squircle",
+  "svg": 1,
+  "canvas": 0
+ },
+ {
+  "where": "sidebar",
+  "rect": [
+   20,
+   127,
+   36,
+   36
+  ],
+  "state": "idle",
+  "color": "orange",
+  "shape": "wedge",
+  "svg": 1,
+  "canvas": 0
+ },
+ {
+  "where": "header",
+  "rect": [
+   285,
+   128,
+   16,
+   16
+  ],
+  "state": "idle",
+  "color": "orange",
+  "shape": "wedge",
+  "svg": 1,
+  "canvas": 0
+ },
+ {
+  "where": "sidebar",
+  "rect": [
+   20,
+   181,
+   36,
+   36
+  ],
+  "state": "idle",
+  "color": "brown",
+  "shape": "blob",
+  "svg": 1,
+  "canvas": 0
+ },
+ {
+  "where": "header",
+  "rect": [
+   741,
+   19,
+   24,
+   24
+  ],
+  "state": "idle",
+  "color": "orange",
+  "shape": "wedge",
+  "svg": 1,
+  "canvas": 0
+ }
+]

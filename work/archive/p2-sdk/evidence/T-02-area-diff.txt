@@ -1,0 +1,5 @@
+# area check: git -C /tmp/bot-wt/T-02 diff --name-only main, 2026-11-01 14:43
+app/sdk/tests/e2e/stream.test.ts
+app/sdk/tests/support/fake/harness.ts
+app/sdk/tests/support/fake/plugin.mjs
+app/sdk/tests/support/fake/relay.mjs

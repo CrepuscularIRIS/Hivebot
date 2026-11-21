@@ -1,0 +1,376 @@
+{
+  "before": [
+    {
+      "seq": 0,
+      "type": "permission/preset",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 1,
+      "type": "sandbox/mode",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 2,
+      "type": "approval/policy",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 3,
+      "type": "agent/inbox/spliced",
+      "target": "next-turn",
+      "outcome": null,
+      "insertedIds": [
+        "7246d5a2-774c-43fc-a371-0c86ba711f96"
+      ]
+    },
+    {
+      "seq": 4,
+      "type": "turn/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 5,
+      "type": "agent/inbox/spliced",
+      "target": "next-turn",
+      "outcome": null,
+      "insertedIds": []
+    },
+    {
+      "seq": 6,
+      "type": "step/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 7,
+      "type": "system/message",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 8,
+      "type": "user/message",
+      "id": "7246d5a2-774c-43fc-a371-0c86ba711f96",
+      "sourceKind": "user"
+    },
+    {
+      "seq": 9,
+      "type": "user/message",
+      "id": "bd62f111-b07c-40ad-8eee-54994e7ba4b2",
+      "sourceKind": "runtime-context"
+    },
+    {
+      "seq": 10,
+      "type": "user/message",
+      "id": "fde7c5e1-2fad-44fd-ad43-2da748d37d9e",
+      "sourceKind": "time-context"
+    },
+    {
+      "seq": 11,
+      "type": "request/header",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 12,
+      "type": "request/context",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 13,
+      "type": "session/title",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 14,
+      "type": "assistant/message",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 15,
+      "type": "tool/call",
+      "turn": 1,
+      "callId": "bad-send",
+      "name": "send_to_bot"
+    },
+    {
+      "seq": 16,
+      "type": "tool/result",
+      "callId": "bad-send",
+      "isError": false,
+      "error": null,
+      "text": "{\"sessionId\":\"session-5eb7c1e2-57a0-464d-8717-c2c9b0e85778\",\"assignmentId\":\"845e5f3b-4a12-4b49-bb26-a28c0da3ae7e\"}"
+    },
+    {
+      "seq": 17,
+      "type": "step/end",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 18,
+      "type": "step/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    }
+  ],
+  "after": [
+    {
+      "seq": 0,
+      "type": "permission/preset",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 1,
+      "type": "sandbox/mode",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 2,
+      "type": "approval/policy",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 3,
+      "type": "agent/inbox/spliced",
+      "target": "next-turn",
+      "outcome": null,
+      "insertedIds": [
+        "7246d5a2-774c-43fc-a371-0c86ba711f96"
+      ]
+    },
+    {
+      "seq": 4,
+      "type": "turn/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 5,
+      "type": "agent/inbox/spliced",
+      "target": "next-turn",
+      "outcome": null,
+      "insertedIds": []
+    },
+    {
+      "seq": 6,
+      "type": "step/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 7,
+      "type": "system/message",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 8,
+      "type": "user/message",
+      "id": "7246d5a2-774c-43fc-a371-0c86ba711f96",
+      "sourceKind": "user"
+    },
+    {
+      "seq": 9,
+      "type": "user/message",
+      "id": "bd62f111-b07c-40ad-8eee-54994e7ba4b2",
+      "sourceKind": "runtime-context"
+    },
+    {
+      "seq": 10,
+      "type": "user/message",
+      "id": "fde7c5e1-2fad-44fd-ad43-2da748d37d9e",
+      "sourceKind": "time-context"
+    },
+    {
+      "seq": 11,
+      "type": "request/header",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 12,
+      "type": "request/context",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 13,
+      "type": "session/title",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 14,
+      "type": "assistant/message",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 15,
+      "type": "tool/call",
+      "turn": 1,
+      "callId": "bad-send",
+      "name": "send_to_bot"
+    },
+    {
+      "seq": 16,
+      "type": "tool/result",
+      "callId": "bad-send",
+      "isError": false,
+      "error": null,
+      "text": "{\"sessionId\":\"session-5eb7c1e2-57a0-464d-8717-c2c9b0e85778\",\"assignmentId\":\"845e5f3b-4a12-4b49-bb26-a28c0da3ae7e\"}"
+    },
+    {
+      "seq": 17,
+      "type": "step/end",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 18,
+      "type": "step/start",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 19,
+      "type": "assistant/message",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 20,
+      "type": "step/end",
+      "turn": 1,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 21,
+      "type": "turn/end",
+      "turn": 1,
+      "reason": "completed",
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 22,
+      "type": "agent/inbox/spliced",
+      "target": "next-turn",
+      "outcome": null,
+      "insertedIds": [
+        "pbots-report:35f6e43d73ff4766425672fc1a04ed5e293dafae388edc5c400e1ef9d5ecdd58"
+      ]
+    },
+    {
+      "seq": 23,
+      "type": "turn/start",
+      "turn": 2,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 24,
+      "type": "agent/inbox/spliced",
+      "target": "next-turn",
+      "outcome": null,
+      "insertedIds": []
+    },
+    {
+      "seq": 25,
+      "type": "step/start",
+      "turn": 2,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 26,
+      "type": "user/message",
+      "id": "pbots-report:35f6e43d73ff4766425672fc1a04ed5e293dafae388edc5c400e1ef9d5ecdd58",
+      "sourceKind": "pbots-worker",
+      "items": [
+        {
+          "key": "845e5f3b-4a12-4b49-bb26-a28c0da3ae7e:end",
+          "kind": "end",
+          "workerId": "session-5eb7c1e2-57a0-464d-8717-c2c9b0e85778",
+          "assignmentId": "845e5f3b-4a12-4b49-bb26-a28c0da3ae7e",
+          "outcome": "error",
+          "reason": "blocked"
+        }
+      ]
+    },
+    {
+      "seq": 27,
+      "type": "request/header",
+      "turn": null,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 28,
+      "type": "developer/message",
+      "turn": 2,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 29,
+      "type": "assistant/message",
+      "turn": 2,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 30,
+      "type": "step/end",
+      "turn": 2,
+      "callId": "",
+      "name": ""
+    },
+    {
+      "seq": 31,
+      "type": "turn/end",
+      "turn": 2,
+      "reason": "completed",
+      "callId": "",
+      "name": ""
+    }
+  ]
+}

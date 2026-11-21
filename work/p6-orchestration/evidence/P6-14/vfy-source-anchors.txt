@@ -1,0 +1,182 @@
+
+/tmp/bot-wt/P6-14/app/sdk/src/orchestration/index.mjs
+45: export { SEND_TO_BOT_TOOL, SEND_TO_BOT_DESCRIPTION, sendRelayText, registerSendToBot } from './send.mjs'
+46: // P6-12 注册行（PLAN §2 v4 接线归属：只追加本任务导出，不重构）。
+47: export { BATCH_WINDOW_MS, RESULT_LIMIT, Reporter, resultTextFor, truncateResult } from './report.mjs'
+48: export { registerTaintGuard } from './taint-guard.mjs'
+49: // P6-13 注册行（PLAN §2 v4 接线归属：只追加本任务导出，不重构）。
+50: export { STOP_BOT_TOOL, STOP_BOT_DESCRIPTION, registerStopBot } from './stop.mjs'
+51: // P6-14 注册行（PLAN §2 v4 接线归属：只追加本任务导出，不重构）。
+52: export {
+53:   COORDINATOR_TOOLS,
+54:   DELEGATION_TOOLS,
+55:   JOB_TOOLS,
+56:   ENTRY_ANNOTATIONS,
+57:   judgeWorkerCall,
+58:   enumerateInstalledEntries,
+59:   registerEnvelope,
+60: } from './envelope.mjs'
+
+/tmp/bot-wt/P6-14/app/sdk/src/orchestration/main-channel.mjs
+207:     super(ctx, 'pbotsOrchestration', { namespace: 'pbots' })
+208:     this.config = config
+209:     this.channel = new CreateChannel({ timeoutMs: config.createTimeoutMs ?? DEFAULT_CREATE_TIMEOUT_MS })
+210:     this.slots = sharedSlots(config.capacity)
+211:     this.delivery = new Delivery(ctx)
+212:     this.createBot = registerCreateBot(ctx, this)
+213:     this.sendToBot = registerSendToBot(ctx, this) // P6-11：与 create 共用 turns/slotHolds/slots
+214:     this.stopBot = registerStopBot(ctx, this) // P6-13：与 create/send 共用 turns 账本；两阶段，不占容量
+215:     // P6-12：worker 回报 → 主 bot（合批投递 + 启动对账）与污染回合全工具拒。
+216:     // taint-guard 复用上面 create 建的 orch.turns 账本；Reporter 挂事件即返回。
+217:     this.taintGuard = registerTaintGuard(ctx, this)
+218:     // P6-14：worker 安全信封——worker 会话拒全部再委派与后台作业入口、协调者
+219:     // 工具 direct execute 兜底（D9③④⑤；guard 判定复用 readWorkerIds）。
+220:     this.envelope = registerEnvelope(ctx, this)
+221:     this.report = new Reporter(this)
+222:     this.report.start()
+
+/tmp/bot-wt/P6-14/app/sdk/src/start.ts
+110:   return trimmed.endsWith('/v1') ? trimmed : `${trimmed}/v1`
+111: }
+112: 
+113: /** dsh argv: web profile + our static overlay + the approval overlay + the generated runtime overlay + extras (acceptance ③). */
+114: export function buildArgs(cfg: StartConfig, runtimePatch: string): string[] {
+115:   const args = [
+116:     'web',
+117:     '--patch', join(PKG_ROOT, 'profile', 'patches', 'p2sdk.yml'),
+118:     // T-12 (REVIEW R3/R5/R13): the shell-ask approval policy ships in the
+119:     // DEFAULT chain — no P2SDK_PATCH opt-in — so an ordinary bash call asks
+120:     // out of the box (CLAUDE.md 安全反例: openclaw exec 默认不审批).
+121:     '--patch', join(PKG_ROOT, 'profile', 'patches', 'approval.yml'),
+122:     // P5-58：market.yml（plugin-market + p2temp）同样进默认链——生产启动开箱
+123:     // 即有 pluginMarket/* 与 p2temp/session.createWithConnectors（UI M1 白名单
+124:     // 两者都在，缺这个 patch 时它们 404）。目录源仍由 P2SDK_MARKET_INDEXES 配；
+125:     // 缺省空目录 = 诚实空态（不是桩）。测试再显式链 market.yml 时同 id insert
+126:     // 行整行替换，无副作用（market-source.yml 同款语义）。
+127:     '--patch', join(PKG_ROOT, 'profile', 'patches', 'market.yml'),
+128:     '--patch', runtimePatch,
+129:   ]
+130:   for (const p of cfg.extraPatches) args.push('--patch', p)
+131:   args.push('--port', String(cfg.port), '--no-open')
+132:   return args
+133: }
+134: 
+135: /**
+136:  * Environment for the dsh child: an explicit allowlist (T-01.f3 O8/R1), not the
+137:  * launcher's full env. Only PATH, HOME, and the P2SDK_ / DSH_ prefixed names
+138:  * pass through; the handoff dir is always dropped (its path must not be
+139:  * env-derivable inside the sandbox), and the real LLM key is dropped in mock
+140:  * mode (the replay/fake providers never read it). T-12 (REVIEW R1 critical):
+141:  * P2SDK_HOME is dropped too — the upstream tool-subprocess scrubber removes
+142:  * DSH_* names but keeps P2SDK_*, so a home path in P2SDK_HOME would let a
+
+/home/lingxufeng/bot/repos/deepseek-harness/packages/core/tools/src/index.ts
+155:   /**
+156:    * Restrict global tools for the calling agent scope. Empty filters, unknown
+157:    * names, scope-local names, and reserved transport names fail. Restrictions
+158:    * intersect; scoped registrations remain visible.
+159:    * @param filter - global-tool mask: `allow` (keep only) and/or `deny` (remove).
+160:    * @returns the exact disposer that lifts this restriction.
+161:    */
+162:   restrict(filter: ToolRestriction): () => void {
+163:     const scope = scopeOf(this.ctx)
+164:     if (scope === undefined) {
+165:       throw new Error('tools.restrict() requires a scoped context (agent.ctx): a context-global restriction would mask every agent — deny the tool for the intended agent instead')
+166:     }
+167:     const allow = filter.allow
+168:     const deny = filter.deny
+169:     if (allow === undefined && deny === undefined) {
+170:       throw new Error('tools.restrict({}) is a no-op: pass `allow` and/or `deny` (an empty filter is almost always a materialized-empty-config bug)')
+171:     }
+172:     const compiled: CompiledToolRestriction = {
+173:       ...allow !== undefined ? { allow: new Set(allow) } : {},
+174:       ...deny !== undefined ? { deny: new Set(deny) } : {},
+175:     }
+176:     if ([...allow ?? [], ...deny ?? []].includes(RUN_CODE_NAME)) {
+177:       throw new Error(`tools.restrict() cannot name reserved PTC mode presentation transport "${RUN_CODE_NAME}"; restrict end-capability tools instead`)
+178:     }
+179:     const known = this.view(scope).restrictableNames
+180:     const unknown = [...allow ?? [], ...deny ?? []].filter(name => !known.has(name))
+181:     if (unknown.length > 0) {
+182:       throw new Error(`tools.restrict() names unknown global tool${unknown.length > 1 ? 's' : ''} ${unknown.map(n => `"${n}"`).join(', ')}; known global tools: ${[...known].sort().join(', ') || '(none)'}`)
+183:     }
+184:     return this.layers.effect(
+185:       this.ctx,
+186:       layer => layer.restrictions.append(compiled),
+187:       { label: 'tools.restrict()' },
+188:     )
+
+/home/lingxufeng/bot/repos/deepseek-harness/packages/subagent/tool-subagent/src/index.ts
+70:   /**
+71:    * Maximum child depth: a non-negative safe integer (`0` forbids delegation),
+72:    * or `'provider-managed'` to send no cap. A numeric cap
+73:    * requires the provider's `depthLimit` capability (mount fails loud
+74:    * otherwise). The provider checks the calling agent's current depth at every
+75:    * start; the tool remains model-visible so runtime policy owns rejection.
+76:    * `'provider-managed'` is for an out-of-process provider whose recursion
+77:    * budget belongs to the child runtime or its own deployment. Omission reads
+78:    * the current Host subagent depth setting (default `1`) at each delegation.
+79:    */
+80:   maxDepth?: number | 'provider-managed'
+308:           )
+309:           if (ctx.subagents.getProvider(config.provider) !== subagentProvider) {
+310:             throw new Error(`subagent provider "${config.provider}" changed while resolving the child LLM route; retry the delegation`)
+311:           }
+312:         }
+313:         exec.signal.throwIfAborted()
+314:         const maxDepth = ctx.subagents.resolveMaxDepth(config.maxDepth)
+315:         const request = {
+316:           ...args.cwd === undefined ? {} : { cwd: args.cwd },
+317:           prompt: [{ type: 'text', text: args.prompt }] as ContentBlock[],
+318:           parent,
+319:           ...agentPreset === undefined ? {} : { agentPreset },
+320:           ...requestedChildAgentOptions !== undefined ? { agentOptions: requestedChildAgentOptions } : {},
+321:           ...maxDepth !== undefined ? { maxDepth } : {},
+322:         }
+323: 
+324:         const started = await ctx.subagents.startActivation({
+
+/tmp/bot-wt/P6-14/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.2.2-alpha.2_d570a50fd9051dfa7084c71da173b036/node_modules/@deepseek-ai/dsh-tools/lib/index.js
+450: 	* @param filter - global-tool mask: `allow` (keep only) and/or `deny` (remove).
+451: 	* @returns the exact disposer that lifts this restriction.
+452: 	*/
+453: 	restrict(filter) {
+454: 		const scope = scopeOf(this.ctx);
+455: 		if (scope === void 0) throw new Error("tools.restrict() requires a scoped context (agent.ctx): a context-global restriction would mask every agent — deny the tool for the intended agent instead");
+456: 		const allow = filter.allow;
+457: 		const deny = filter.deny;
+458: 		if (allow === void 0 && deny === void 0) throw new Error("tools.restrict({}) is a no-op: pass `allow` and/or `deny` (an empty filter is almost always a materialized-empty-config bug)");
+459: 		const compiled = {
+460: 			...allow !== void 0 ? { allow: new Set(allow) } : {},
+461: 			...deny !== void 0 ? { deny: new Set(deny) } : {}
+462: 		};
+463: 		if ([...allow ?? [], ...deny ?? []].includes("run_code")) throw new Error(`tools.restrict() cannot name reserved PTC mode presentation transport "${RUN_CODE_NAME}"; restrict end-capability tools instead`);
+464: 		const known = this.view(scope).restrictableNames;
+465: 		const unknown = [...allow ?? [], ...deny ?? []].filter((name) => !known.has(name));
+466: 		if (unknown.length > 0) throw new Error(`tools.restrict() names unknown global tool${unknown.length > 1 ? "s" : ""} ${unknown.map((n) => `"${n}"`).join(", ")}; known global tools: ${[...known].sort().join(", ") || "(none)"}`);
+467: 		return this.layers.effect(this.ctx, (layer) => layer.restrictions.append(compiled), { label: "tools.restrict()" });
+468: 	}
+469: 	/**
+470: 	* Resolve visible tools and pre-restriction names. Restrictions across the
+
+/tmp/bot-wt/P6-14/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-tool-subagent@0.2.2-alpha.2_4b21d4d1632c909107a777c6295b7967/node_modules/@deepseek-ai/dsh-tool-subagent/lib/index.js
+445: 				if (requiresRoutePreflight) {
+446: 					const llm = ctx.get("llm");
+447: 					if (llm === void 0) throw new Error("cannot resolve the selected child LLM route because the `llm` service is unavailable");
+448: 					await preflightChildLlmRoute(llm, parentOptions, requestedChildAgentOptions, exec.signal, providerRouteDefaults === void 0);
+449: 					if (ctx.subagents.getProvider(config.provider) !== subagentProvider) throw new Error(`subagent provider "${config.provider}" changed while resolving the child LLM route; retry the delegation`);
+450: 				}
+451: 				exec.signal.throwIfAborted();
+452: 				const maxDepth = ctx.subagents.resolveMaxDepth(config.maxDepth);
+453: 				const request = {
+454: 					...args.cwd === void 0 ? {} : { cwd: args.cwd },
+455: 					prompt: [{
+456: 						type: "text",
+457: 						text: args.prompt
+458: 					}],
+459: 					parent,
+460: 					...agentPreset === void 0 ? {} : { agentPreset },
+461: 					...requestedChildAgentOptions !== void 0 ? { agentOptions: requestedChildAgentOptions } : {},
+462: 					...maxDepth !== void 0 ? { maxDepth } : {}
+463: 				};
+464: 				return {

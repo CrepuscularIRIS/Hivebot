@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+"""bot-reap：bot 开发唯一的进程清理工具（任何模型都可以用）。
+
+只杀「bot 沙箱内」的进程：属于当前用户、不是 PID 1 / 调用者祖先、
+cwd 或命令行落在 ALLOWED_ROOTS 下。先 SIGTERM，3 秒后仍在再 SIGKILL。
+
+用法：
+  bot-reap PID [PID...]        按 PID 清理（逐个校验）
+  bot-reap --match T-12        清理命令行或 cwd 含该字符串的沙箱进程（如任务 id、worktree 名）
+  bot-reap --dry-run ...       只列出会杀谁
+"""
+from __future__ import annotations
+
+import argparse
+import os
+import signal
+import sys
+import time
+
+ALLOWED_ROOTS = ("/tmp/bot-wt", "/home/lingxufeng/bot", "/tmp/p2sdk", "/tmp/vfy-", "/tmp/bot-", "/dev/shm/bot-",
+                 "/dev/shm/pbots")
+
+
+def ancestors() -> set[int]:
+    pids, pid = set(), os.getpid()
+    while pid > 1:
+        pids.add(pid)
+        try:
+            with open(f"/proc/{pid}/stat") as f:
+                pid = int(f.read().rsplit(")", 1)[1].split()[1])
+        except (OSError, ValueError, IndexError):
+            break
+    return pids
+
+
+def info(pid: int) -> tuple[str, str] | None:
+    """(cmdline, cwd)；进程不存在返回 None。"""
+    try:
+        with open(f"/proc/{pid}/cmdline", "rb") as f:
+            cmd = f.read().replace(b"\0", b" ").decode("utf-8", "ignore").strip()
+        return cmd, os.readlink(f"/proc/{pid}/cwd")
+    except FileNotFoundError:
+        return None
+    except PermissionError:
+        return "?", "?"
+
+
+def refuse_reason(pid: int, anc: set[int]) -> str | None:
+    if pid <= 1:
+        return "PID 1 / 非法"
+    if pid in anc:
+        return "调用者自身或祖先进程"
+    try:
+        if os.stat(f"/proc/{pid}").st_uid != os.getuid():
+            return "不属于当前用户"
+    except FileNotFoundError:
+        return None
+    got = info(pid)
+    if got is None:
+        return None
+    cmd, cwd = got
+    if not any(cwd.startswith(r) or r in cmd for r in ALLOWED_ROOTS):
+        return f"不在沙箱内（cwd={cwd}）"
+    return None
+
+
+def candidates(match: str) -> list[int]:
+    out = []
+    for d in os.listdir("/proc"):
+        if d.isdigit():
+            got = info(int(d))
+            if got and (match in got[0] or match in got[1]):
+                out.append(int(d))
+    return out
+
+
+def main(argv: list[str]) -> int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("pids", nargs="*", type=int)
+    ap.add_argument("--match")
+    ap.add_argument("--dry-run", action="store_true")
+    a = ap.parse_args(argv)
+    if not a.pids and not a.match:
+        ap.error("给出 PID 或 --match")
+    if a.match is not None and len(a.match) < 3:
+        ap.error("--match 至少 3 个字符")
+    anc = ancestors()
+    targets = list(a.pids) + (candidates(a.match) if a.match else [])
+    ok, rc = [], 0
+    for pid in dict.fromkeys(targets):
+        why = refuse_reason(pid, anc)
+        got = info(pid)
+        desc = (got[0][:100] if got else "已退出")
+        if why:
+            # --match 时沙箱外的命中是正常的，静默跳过；显式 PID 被拒要报错
+            if pid in a.pids:
+                print(f"拒绝 {pid}：{why}  {desc}")
+                rc = 1
+            continue
+        if got is None:
+            print(f"跳过 {pid}：已退出")
+            continue
+        print(f"{'将清理' if a.dry_run else '清理'} {pid}  {desc}")
+        ok.append(pid)
+    if a.dry_run or not ok:
+        return rc
+    for pid in ok:
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+    time.sleep(3)
+    for pid in ok:
+        if info(pid) is not None:
+            try:
+                os.kill(pid, signal.SIGKILL)
+                print(f"SIGKILL {pid}")
+            except ProcessLookupError:
+                pass
+    return rc
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

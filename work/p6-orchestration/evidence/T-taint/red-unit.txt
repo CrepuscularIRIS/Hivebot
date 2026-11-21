@@ -1,0 +1,56 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-taint/app/sdk
+
+ ❯ tests/unit/orchestration-foundation.test.ts (59 tests | 1 failed) 108ms
+   ❯ turn-origin (5)
+     × T-taint: goal / schedule claims pollute the turn for coordinator tools only; full taint stays pbots-worker-only 8ms
+ ❯ tests/unit/orchestration-create.test.ts (40 tests | 1 failed) 66ms
+   ❯ create_bot taint guard (P6-10.f1 ①) (3)
+     × goal / schedule rounds hide create_bot and execute rejects before the channel; monotonic within the turn 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/orchestration-create.test.ts > create_bot taint guard (P6-10.f1 ①) > goal / schedule rounds hide create_bot and execute rejects before the channel; monotonic within the turn
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/orchestration-create.test.ts:265:48
+    263|     expect(await when({ id: 'session-main' })).toBe(true) // 干净回合可见
+    264|     claim('session-main', 5, 'goal')
+    265|     expect(await when({ id: 'session-main' })).toBe(false)
+       |                                                ^
+    266|     claim('session-main', 5, 'user-approval') // 同回合后到的宿主内部来源不解除污染（回合内…
+    267|     expect(await when({ id: 'session-main' })).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/orchestration-foundation.test.ts > turn-origin > T-taint: goal / schedule claims pollute the turn for coordinator tools only; full taint stays pbots-worker-only
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ tests/unit/orchestration-foundation.test.ts:449:55
+    447|   // pbots-worker（R2-1 口径零变化）。
+    448|   it('T-taint: goal / schedule claims pollute the turn for coordinator…
+    449|     expect(classifyTurn(['goal']).coordinatorTainted).toBe(true)
+       |                                                       ^
+    450|     expect(classifyTurn(['schedule']).coordinatorTainted).toBe(true)
+    451|     expect(classifyTurn(['user', 'goal']).tainted).toBe(false) // 全工具口…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 97 passed (99)
+   Start at  11:45:04
+   Duration  703ms (transform 48%, tests 34%, import 13%, setup 3%, worker 1%)
+

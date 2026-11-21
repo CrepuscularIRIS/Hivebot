@@ -1,0 +1,23 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-01.f3-verify/app/sdk
+
+ ✓ tests/e2e/mock-demo.test.ts > boots in a mkdtemp home with a 0600 launch token and no token in output 1ms
+ ✓ tests/e2e/mock-demo.test.ts > serves the session API over loopback to the connected client 41ms
+ ✓ tests/e2e/mock-demo.test.ts > release(gateId) touches the barrier file without opening a port 0ms
+ ✓ tests/e2e/mock-demo.test.ts > min-client self-assertions pass under the mock provider 342ms
+[p2sdk] ready http://127.0.0.1:41101
+ ✓ tests/e2e/mock-demo.test.ts > startRuntime boots in-process (coverage for src/start.ts runtime path) 1448ms
+p2sdk: dsh pid 2007404
+p2sdk: no ready line within 1ms
+p2sdk: forwarding SIGTERM to dsh
+ ✓ tests/e2e/mock-demo.test.ts > main returns non-zero when no ready line arrives within the timeout 6ms
+ ✓ tests/e2e/mock-demo.test.ts > T-01.f3 credential isolation + snapshot barrier > ① fake read ../launch-token fails at the tool layer; token and handoff path never reach the transcript 2029ms
+ ✓ tests/e2e/mock-demo.test.ts > T-01.f3 credential isolation + snapshot barrier > ② paceMs=0 stress: 20 scripted turns through the barrier all pass 3995ms
+ ✓ tests/e2e/mock-demo.test.ts > T-01.f3 credential isolation + snapshot barrier > ③ a follow opening snapshot that already contains turn/end settles without waiting for increments 2214ms
+p2sdk: forwarding SIGTERM to dsh
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  16:07:16
+   Duration  11.74s (tests 100%)
+

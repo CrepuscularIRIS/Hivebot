@@ -1,0 +1,34 @@
+REPORT P6-14.f4（builder，2026-11-04 20:34）
+branch: feat/P6-14f2  commit: 528c368（基于 8db9636）
+worktree: /tmp/bot-wt/P6-14f2（验收后 git status 干净）
+改动文件（3）:
+  app/ui/main/index.ts              超时分支 m3.init.then 两分支放行后才 setRestoreSettled
+  app/sdk/src/orchestration/envelope.mjs  恢复撤销 ponytail 注释措辞（f3 minor）
+  app/ui/tests/unit/shell/startup-gate.test.ts  新增（f3 对抗探针同法，先红后绿）
+
+一、开闸路径审计（全部 setRestoreSettled 生产调用点）
+  1. ensure.ts:47 —— 首连正常 + 重连共用（wireRestoreOnReconnect 队列，先 await m3.init）→ 无需改
+  2. main/index.ts 超时分支 —— 阻塞项本体，改为 m3.init.then(放行, 放行)；
+     init 不 reject（错误留 store.loadError 读方 fail closed），保留 U-17「连接失败不永久挂死」退路
+  3. 无其他调用点（grep 全仓确认）；setDshReady 只开 dsh 条件不涉 restore 闸门
+  TDD：startup-gate.test.ts 先红（复现 f3 反例：init 未完成 completed=true）→ 修复后绿
+
+二、验收复跑（全部定向）
+  1. f3 对抗探针复跑（vfy-f4/startup-f4.test.ts，超时分支函数体从生产 index.ts 原文提取执行）：
+     timeout=false/true 两分支均 PASS —— init 未完成前闸门不放行（completed=false、dsh 0 调用）；
+     就位后 session/create 到达时 {"identity":"main","fileExists":true}（日志断言）
+  2. UI 单测全量：42 files / 479 passed（f3 为 41/478，+1 为新增测试）
+  3. SDK 定向 79 passed（envelope/envelope-live/create/send/stop/report-live）+ 相邻 157 passed
+  4. probe-vfy 六格 production-main/cold-boot/missing/corrupt/rename/recovery 全 exit0；
+     cold-boot 断言 unknownCount=0（三观察点均 main）；recovery 首调一次性 UNKNOWN_TOOL 后恢复
+  5. faults-vfy / states-vfy PASS：14 态判定不变、三恢复挂点 lifts=1、真 worker 三挂点不撤
+  日志：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14f2/vfy-f4/
+
+三、收尾自查
+  bot-reap --dry-run --match p614f2 / p614f4 / p614f3 均无匹配（exit0）；
+  临时根（探针 mkdtemp / vfy-startup / HOME）均已在 finally 或收尾删除；
+  未碰沙箱外进程；机器上其他既有 P6-14f2 进程（f3 验收时已存在）未动。
+
+未完成项 / 新发现：无新问题。f2 遗留（PLAN 记账缺 index.mjs、rename 持久孤儿行 minor）未在本次范围。
+
+待 verifier 验收。

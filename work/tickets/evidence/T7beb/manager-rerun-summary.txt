@@ -1,0 +1,10 @@
+wpr1:   1 failed   1 passed (11.7s) 
+wpr2:   2 passed (17.0s) 
+batch1:   5 passed (1.8m) 
+batch2:   5 passed (1.8m) 
+batch3:   5 passed (1.7m) 
+batch4:   5 passed (1.7m) 
+batch5:   5 passed (1.7m) 
+ 21:28:54 up 5 days, 22:59,  1 user,  load average: 3.17, 3.54, 3.77
+
+[exited with code 0]

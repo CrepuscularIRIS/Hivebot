@@ -1,0 +1,1 @@
+清理 3879940  /usr/bin/node /home/lingxufeng/bot/app/sdk/node_modules/@deepseek-ai/dsh/lib/bin.js web --patch /hom

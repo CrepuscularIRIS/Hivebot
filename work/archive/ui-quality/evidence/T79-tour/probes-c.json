@@ -1,0 +1,212 @@
+{
+ "avatar": [
+  {
+   "where": "sidebar",
+   "rect": [
+    36,
+    36
+   ],
+   "canvas": [
+    28,
+    28
+   ],
+   "ink": 0,
+   "svg": 1,
+   "err": null,
+   "state": "idle",
+   "html": "<canvas width=\"28\" height=\"28\" style=\"display: block; height: 100%; width: 100%;\"><svg xmlns=\"http://www.w3.org/2000/svg\" id=\"sand-agent-mark-source-session-87e"
+  },
+  {
+   "where": "header",
+   "rect": [
+    16,
+    16
+   ],
+   "canvas": [
+    16,
+    16
+   ],
+   "ink": 0,
+   "svg": 1,
+   "err": null,
+   "state": "idle",
+   "html": "<canvas width=\"16\" height=\"16\" style=\"display: block; height: 100%; width: 100%;\"><svg xmlns=\"http://www.w3.org/2000/svg\" id=\"sand-agent-mark-source-session-87e"
+  },
+  {
+   "where": "sidebar",
+   "rect": [
+    36,
+    36
+   ],
+   "canvas": [
+    28,
+    28
+   ],
+   "ink": 0,
+   "svg": 1,
+   "err": null,
+   "state": "idle",
+   "html": "<canvas width=\"28\" height=\"28\" style=\"display: block; height: 100%; width: 100%;\"><svg xmlns=\"http://www.w3.org/2000/svg\" id=\"sand-agent-mark-source-session-a84"
+  },
+  {
+   "where": "header",
+   "rect": [
+    24,
+    24
+   ],
+   "canvas": [
+    28,
+    28
+   ],
+   "ink": 0,
+   "svg": 1,
+   "err": null,
+   "state": "idle",
+   "html": "<canvas width=\"28\" height=\"28\" style=\"display: block; height: 100%; width: 100%;\"><svg xmlns=\"http://www.w3.org/2000/svg\" id=\"sand-agent-mark-source-session-87e"
+  }
+ ],
+ "messages": [
+  {
+   "role": "user",
+   "rect": [
+    394,
+    111,
+    390,
+    54
+   ],
+   "more": 0
+  },
+  {
+   "role": "assistant",
+   "rect": [
+    296,
+    177,
+    89,
+    36
+   ],
+   "more": 0
+  },
+  {
+   "role": "user",
+   "rect": [
+    623,
+    260,
+    161,
+    34
+   ],
+   "more": 0
+  },
+  {
+   "role": "assistant",
+   "rect": [
+    296,
+    306,
+    39,
+    36
+   ],
+   "more": 0
+  }
+ ],
+ "more-last": {
+  "msg": [
+   296,
+   306,
+   488,
+   36
+  ],
+  "btn": [
+   657,
+   343,
+   29,
+   29
+  ],
+  "menu": [
+   [
+    536,
+    300,
+    150,
+    38
+   ]
+  ],
+  "userBubbles": [
+   [
+    394,
+    111,
+    390,
+    54
+   ],
+   [
+    623,
+    260,
+    161,
+    34
+   ]
+  ]
+ },
+ "more-userLast": {
+  "msg": [
+   296,
+   248,
+   488,
+   46
+  ],
+  "btn": [
+   755,
+   295,
+   29,
+   29
+  ],
+  "menu": [
+   [
+    634,
+    252,
+    150,
+    38
+   ]
+  ],
+  "userBubbles": [
+   [
+    394,
+    111,
+    390,
+    54
+   ],
+   [
+    623,
+    260,
+    161,
+    34
+   ]
+  ]
+ },
+ "jump": {
+  "text": "Jump to latest ↓",
+  "unread": null,
+  "rect": [
+   484,
+   376,
+   112,
+   24
+  ],
+  "centerDxVsTranscript": 0,
+  "centerDxVsComposer": 0,
+  "gapToComposer": 140,
+  "font": "12px/normal/400",
+  "bg": "rgb(255, 255, 255)",
+  "color": "rgb(28, 28, 28)",
+  "radius": "9999px",
+  "shadow": "rgba(0, 0, 0, 0.14) 0px 4px 12px 0px, rgba(28, 28, 28, 0.06) 0px 0px 0px 0.5px",
+  "border": "0px none rgb(28, 28, 28)",
+  "pad": "5px 14px",
+  "op": "1"
+ },
+ "jump:ERROR": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeAttached\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.sand-message[data-role=\"assistant\"]').filter({ hasText: 'new incoming reply' })\nExpected: attached\nTimeout: 60000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeAttached\" locator('.sand-message[data-role=\"assistant\"]').filter({ hasText: 'new incoming reply' }) with timeout 6",
+ "settingsAnim": [
+  [],
+  [],
+  [],
+  [],
+  [],
+  []
+ ]
+}

@@ -1,0 +1,23 @@
+P6-25.f1a builder 回报（待 verifier 验收）
+分支 feat/P6-25f1；基点 a6e5b8f8a4373473136f5b64069c8b17ecd6ba7a；提交 d6af82eba1464f87075979001dbfcc66d3ed717b。
+改动仅两文件：
+/tmp/bot-wt/P6-25f1/app/sdk/src/policy/fs-zone.mjs
+/tmp/bot-wt/P6-25f1/app/sdk/tests/unit/fs-zone.test.ts
+
+文件头补 SandboxedFileSystem 上游来源；ponytail 注释改为 VERIFY 的实测结论，包含执行时解析到实际 syscall 的残余窗口、读侧二次解析不比对、写侧锁队列、任意本用户可达宿主路径（含 NEVER）、ptc 无卡行动方及另立任务的 bwrap namespace 升级路径。
+后端硬拒沿用现成 FS_PERMISSION_DENIED，避免上游 tool-fs 将 FS_SANDBOX_DENIED 映射为通用 sandbox + escalation available；错误文本固定为 code: p2sdk policy: ...，不含宿主路径。既有直打错误码断言同步，新加一个真实 tool-fs 调用文本格，确定性接缝位于包装层判定后、后端 fresh resolve 前。
+
+TDD 红：HOME=/tmp/bot-p625f1a-home pnpm -C /tmp/bot-wt/P6-25f1/app/sdk exec vitest run tests/unit/fs-zone.test.ts -t '后端拒绝向模型' --maxWorkers=1
+Tests 1 failed | 13 skipped (14)；期望 code: 原因，实际收到 sandbox 通用拒绝及 escalation available（正确复现）。
+绿：HOME=/tmp/bot-p625f1a-home pnpm -C /tmp/bot-wt/P6-25f1/app/sdk exec vitest run tests/unit/fs-zone.test.ts tests/unit/policy.test.ts --maxWorkers=1
+Test Files 2 passed (2)
+Tests 86 passed (86)
+覆盖率：相同入口增加 --coverage --coverage.include=src/policy/fs-zone.mjs
+Statements 86.53% (45/52)；Branches 80.85% (38/47)；Functions 80% (8/10)；Lines 87.5% (35/40)。
+真实 Loader：HOME=/tmp/bot-p625f1a-home pnpm -C /tmp/bot-wt/P6-25f1/app/sdk exec vitest run tests/e2e/write-outside.test.ts --maxWorkers=1
+Test Files 1 passed (1)
+Tests 8 passed (8)
+Duration 13.64s
+node --check fs-zone.mjs、git diff --check 通过；提交后工作树干净。
+结束前 /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p625f1 无输出。
+未完成项：无本次范围内未完成项；VERIFY 已确认的残余竞态仍需派发者另立 bwrap namespace 跟进任务，本次不修复、不自评通过。

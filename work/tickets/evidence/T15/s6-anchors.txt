@@ -1,0 +1,31 @@
+# §6 DESIGN 装包锚点：a2 行号 vs rc1 行号（按锚点所指代码的字面串定位）
+anchor	literal	a2	rc1
+helper.js:535	fibers.push(await ctx.plugin(SandboxPolicyService, {	535	535
+helper.js:541	fibers.push(await ctx.plugin(LocalSandboxProvider));	541	541
+helper.js:557	const root = await mkdtemp("/tmp/dsh-ssh-");	558	558
+schemas.js:125		root: remotePath,	125	161
+sandbox-ssh index.js:16	var SshSandboxProvider = class extends SandboxProvider {	16	16
+sandbox-ssh index.js:34	} catch (error) {	34	34
+fs-ssh index.js:25	var SshFileSystem = class extends FileSystem {	25	11
+fs-ssh index.js:30	async resolve(path, opts) {	30	16
+fs-ssh index.js:93	async writeText(target, content, expected, signal, sandboxPolicy) {	93	79
+fs-ssh index.js:102	async editText(target, edit, expected, signal, sandboxPolicy) {	102	88
+fs-ssh patchText	async patchText(		97
+fs-ssh deleteFile	async deleteFile(		106
+fs-ssh moveFile	async moveFile(		114
+
+## helper.js 是否仍无配置挂 LocalSandboxProvider（D4 核心前提）
+a2: 1 处无配置挂载；runnerCommand 出现 0 次
+rc1: 1 处无配置挂载；runnerCommand 出现 0 次
+## fs-ssh 写入口数
+a2: 2
+rc1: 5
+## fs-ssh checkedTarget
+a2: 0
+rc1: 0
+## rc1 helper 协议新方法
+      1 "fs.delete"
+      1 "fs.edit"
+      1 "fs.move"
+      2 "fs.patch"
+      2 "fs.write"

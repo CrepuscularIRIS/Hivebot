@@ -1,0 +1,35 @@
+# REVIEW P6-14 · 方向 A（信任边界与输入）
+
+> 转正自 evidence/P6-14-rvw/REVIEW-A.txt（txt 兜底）。
+
+P6-14 code review · A 信任边界与输入
+范围：944afa0..09f627b（6 文件）；commit: 09f627b656962b891ef759fbebd0a263b34da81f
+结论：CONFIRMED critical 0 / major 0 / minor 1（测试覆盖盲区，不是已复现的生产权限绕过）。
+按照本次执行上下文“不写报告 .md”的约束，全文落盘到指定 evidence .txt 兜底。
+
+CONFIRMED
+minor | /home/lingxufeng/bot/app/sdk/tests/unit/orchestration-envelope-live.test.ts:166-172,316-321 | 上游保留现有入口，同时新增一个入口/别名（探针以独立无副作用的 delegate_v2 注册模拟） | 现有“全集枚举”只从 DELEGATION_TOOLS/JOB_TOOLS 逐名构造候选，worker 工具表断言也只遍历 RESTRICT_TOOLS；新增项完全不参与比较。真实 ToolsService 注册新工具后，旧 17 项在 worker 上全部隐藏、主侧全部可见，上述现有断言条件仍成立，但 delegate_v2 在 worker 上仍可执行，pre-execute 也透传。只证明升级哨兵无法发现“增加且保留旧名”的工具表变化，不声称该合并版本已有新委派入口，也没有执行真实委派/后台作业。 | /tmp/vfy-r-p614-a/probe.mjs（upgrade-additional-entry-sentinel）；持久副本 /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/probe.mjs
+
+REFUTED（每项均已实际跑探针）
+1. 模型/wire 将任意工具名注入 deny：workerRestrictDeny 只从 17 个常量中筛选，null、对象、数组、数字、__proto__、constructor、Unicode 和 100 万字符名称都不能注入其他 deny 项。已装 tools.definitions(agent) 直接来自 ToolsService.view(agent).visible.values()，是宿主注册表，不是模型提交的工具列表。MCP tools/list 的确是外部枚举面，但 publicToolName 固定命名空间，不能借此注册成本地 subagent。探针 registry-shape-and-canonical-deny / unicode-case-alias-of-native-tool / mcp-public-name-collision。
+2. Unicode / 大小写 / 空白 / MCP publicToolName 绕过同一个本地工具：判定确实是精确字符串，但实际 ToolsService.executable 也是精确 Map 查找；SUBAGENT、Subagent、零宽字符、全角字符、尾空格、mcp__server__subagent 在仅注册原生名字时均不存在，并非本地 subagent 的解析别名。MCP 命名探针直接执行已装包 publicToolName 函数源码，覆盖原样、大小写、零宽、全角和超长截断+hash，5 项互异且不碰撞本地工具名。独立注册的 MCP 能力不是本地工具别名；本次不把“外部工具可能拥有其他能力”当作已证实绕过。
+3. restrict 参数形状异常导致会话崩溃：生产 applyWorkerRestriction 的 filter 固定为 {deny: string[]}，并不接受 wire 传来的 filter。模拟 definitions 返回 null、对象、字符串、数字、[null]、[{}]、[{name:null}]、稀疏数组、10 万个名称，以及 restrict 自身抛错，均经 registerWorkerRestriction 的实际 agent/created 回调运行；无外抛，异常产生 warn，subagent 的执行期 envelope 继续 deny。10 万条名字单次约 15.48ms（只代表本机这一规模，不是无限输入上界）。直接调用 applyWorkerRestriction 对坏 definitions 可以抛错，但生产调用点有 catch，不将内部 helper 的抛错误报为外部会话崩溃。探针 malformed-definitions-and-restrict。
+4. null/数组/字符串/数字/超长 call arguments 杀 guard，或以 'true'/1 代替后台布尔值绕过：13 类参数均不使 judgeWorkerCall 抛错；禁止工具名不依赖参数形状；bash 的 true 被拒。另实际调用已装 validateArgs，null、数组、{run_in_background:'true'}、{run_in_background:1} 均不通过 boolean 参数模式。已装 bash 使用 defineTool 和 run_in_background === true，因此未发现类型强制转换绕过。探针 malformed-call-arguments。
+5. 升级将现有名字替换为新名字但所有哨兵仍绿：API 字符串哨兵（scope/unknown-name/disposer）单独不能识别名字变化；不过 live #1 明确要求当前 7 个 delegation 和 7 个 jobs 原名全部存在。用 subagent -> delegate_v2 的注册表变异运行相同枚举断言，断言实际失败，因此“纯替换/删除仍绿”不成立。上面的 minor 限定于新增或保留旧名的别名场景。探针 upgrade-renamed-native-entry-sentinel。
+
+实际执行与证据
+- HOME=/tmp/vfy-r-p614-a/home node /tmp/vfy-r-p614-a/probe.mjs
+  退出 0；6 个 REFUTED 检查组 + 1 个 CONFIRMED-TEST-GAP（最后一项为 minor）。使用真实已装 Cordis Context / ToolsService / scoped context；仅 systemPrompt 和 worker 事件载体作最小替身；MCP 只执行纯名称函数；没有启动 SDK/Electron，没有真实委派、shell 命令或网络请求。
+  输出：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/probe.log
+  结构化结果：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/results.json
+- cd /home/lingxufeng/bot/app/sdk && HOME=/tmp/vfy-r-p614-a/home pnpm exec vitest run tests/unit/orchestration-envelope.test.ts tests/unit/orchestration-foundation.test.ts
+  Test Files 2 passed (2)；Tests 83 passed (83)；Duration 264ms。
+  输出：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/unit.log
+- 本次没有运行 live test 整文件；对哨兵的变异是运行对应断言逻辑，不冒称整套 live 已运行。没有跑全量回归/e2e。
+- git diff --quiet 09f627b -- <审查的六文件> 退出 0；结束 HEAD 仍为 09f627b656962b891ef759fbebd0a263b34da81f。
+- /home/lingxufeng/bot/scripts/bot-reap --dry-run --match vfy-r-p614-a 退出 0，无匹配残留；日志 /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/process-check.txt。无 shell kill / pkill / sudo。
+
+必要调用方核对（限本方向）
+- 已装 dsh-agent announce: live registry 身份校验后 serial agent/created({agent: entry.agent,...})，payload 不直接取模型输出。
+- 已装 dsh-tools definitions: 从作用域可见注册表返回定义数组；restrict: 精确字符串集合并验证可限制名字；executable/get: 精确名字 Map 查找，无大小写/Unicode/MCP 别名归一化。
+- 已装 dsh-mcp-client publicToolName/syncTools: 外部 listTools 名字命名空间化后注册，rawName 不直接进入本地原生工具名空间。

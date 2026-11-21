@@ -1,0 +1,27 @@
+$ vitest run --coverage
+
+ RUN  v5.0.5 /tmp/t01-verify/app/sdk
+      Coverage enabled with v8
+
+[p2sdk] ready http://127.0.0.1:42685
+p2sdk: no ready line within 1ms
+
+ Test Files  2 passed (2)
+      Tests  24 passed (24)
+   Start at  13:51:56
+   Duration  3.52s (tests 96%, transform 2%, import 1%, worker 1%)
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+----------|---------|----------|---------|---------|-------------------
+File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+----------|---------|----------|---------|---------|-------------------
+All files |   94.18 |    88.46 |   86.95 |   98.64 |                   
+ start.ts |   94.18 |    88.46 |   86.95 |   98.64 | 231               
+----------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 94.18% ( 81/86 )
+Branches     : 88.46% ( 46/52 )
+Functions    : 86.95% ( 20/23 )
+Lines        : 98.64% ( 73/74 )
+================================================================================

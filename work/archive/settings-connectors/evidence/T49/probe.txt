@@ -1,0 +1,16 @@
+T49 probe 2026-11-11T17:28:47.382Z
+P1 describe(env-only) = {"P2SDK_LLM_API_KEY":{"configured":true,"source":"env","writable":true}}
+P4b mutate litellm = {"ns":"llm-pi-ai","autoGenerate":false,"schema":{"uid":5411,"refs":{"5266":{"type":"number","meta":{"max":2147483647,"default":500}},"5267":{"type":"number","meta":{"max":2147483647,"default":10000}},
+P4b' mutate t49probe = {"ns":"llm-pi-ai","autoGenerate":false,"schema":{"uid":7466,"refs":{"7321":{"type":"number","meta":{"max":2147483647,"default":500}},"7322":{"type":"number","meta":{"max":2147483647,"default":10000}},
+P4c catalog providers = ["litellm"] groups = ["litellm:glm-5.3-flash"]
+P2 credentials/set = undefined
+P2 auth after set = "Bearer probe-new"（期望 Bearer probe-new）
+P2 /tmp/t49-home-Cw8TLu/.credentials.yaml exists=true mode=600
+P2 describe after set = {"P2SDK_LLM_API_KEY":{"configured":true,"source":"file","writable":true}}
+P3 describe after restart = {"P2SDK_LLM_API_KEY":{"configured":true,"source":"file","writable":true}}
+P4d restart llm-pi-ai 头 260 字 = "ns":"llm-pi-ai","autoGenerate":false,"schema":{"uid":3737,"refs":{"3592":{"type":"number","meta":{"max":2147483647,"default":500}},"3593":{"type":"number","meta":{"max":2147483647,"default":10000}},"3594":{"type":"number","meta":{"min":0,"max":1,"default":0.1
+P4d restart catalog providers = ["litellm"] groups = ["litellm:glm-5.3-flash"]
+P5 host 侧文件权限 = 600
+P5 answered allowed-once
+P5 tool/result = {"type":"event","event":{"type":"tool/result","seq":20,"data":{"message":{"role":"tool","content":[{"type":"text","text":"exit=1\n[stderr]\ncat: /tmp/t49-p5-home-GC7e4J/.credentials.yaml: No such file or directory\n"}],"isError":false}}}}
+（原样输出补记自运行日志；断言：凭证值 p5-secret-value 绝不出现在工具结果——passed 1/1）

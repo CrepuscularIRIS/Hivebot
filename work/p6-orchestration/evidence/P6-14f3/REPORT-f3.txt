@@ -1,0 +1,62 @@
+# REPORT P6-14.f3（builder，2026-11-04）
+分支 feat/P6-14f2（在 f2 head 5873660 上继续）
+commits: 44e8b11（SDK：契约语义 + 恢复撤销）、8db9636（app/ui：冷启动 ensure）
+worktree: /tmp/bot-wt/P6-14f2，提交后 git status --porcelain 为空。
+
+## 改动文件（10）
+- app/sdk/src/orchestration/envelope.mjs
+  resolveWorkerStatus：加 version!==1→unknown；bots 键省略(undefined)→main（契约决策 31）；
+  键在但 null/非对象/数组→unknown。registerWorkerRestriction：新增 sweep（session/created、
+  agent/created 全体 sweep；tools/pre-execute 只查执行中 agent），identity unknown→确认非
+  worker 时撤销已挂 restrict；真 worker 不撤；sweep 不外抛（session/created 是 veto 点）。
+- app/ui/main/m3-meta/store.ts
+  init() ENOENT → 立即原子写 {version:1,mainBotId:null,recipes:{}}（无 bots 键）；已存在
+  文件只读；坏文件不覆盖；写失败记 loadError。顺序由既有闸门链保证（main/index.ts:167-168
+  先 await m3.init 再放行 restore，M1/M2 全部 restoreGated）。
+- 测试 8 文件：envelope 单测（⑤/② 预期翻转；新增 ②b/⑨/⑩）；五份 live fixture 恢复合法
+  形状（空 bots 不写键）；ui store.test.ts 新增冷启动用例；ui index.test.ts 一条预期随新
+  语义更新。
+
+## 验收对照（可重跑）
+1. 【阻塞】零 worker create_bot 放行：
+   - 单元面：envelope.test.ts ⑤（无 bots 键 → create_bot/subagent pass-through）。
+   - 真实 Loader：probe-f3.mjs production-main（生产 store 形状文档，无订阅者）——
+     create_bot 过信封，错误为 main-unavailable（通道层）而非 pbots/forbidden，工具表可见。
+     probe-production-main.log。
+2. 冷启动全程无 unknown：
+   - store.test.ts 新用例：空目录 init() 即落盘骨架。
+   - envelope-live boot 文件改为省略 bots 键后，①/⑥ 的「主 bot 工具表完整」断言（首个会话
+     在零 worker 文档下建立、RESTRICT_TOOLS 全可见）全绿——即无 unknown 判定的可见结果。
+3. f2 两安全探针仍被拦：probe-missing.log / probe-corrupt.log / probe-rename.log 全 PASS
+   （0 子代理、0 子执行、job_list 不可达、改名委派创建点 veto）。安全面未回退。
+4. 计数不降：SDK 定向 6 文件 79 passed（f2=76；live 44 保持）；相邻单测 5 文件 157 passed
+   （=f2）；app/ui 全量单测 41 files / 478 tests passed；faults 矩阵 19x3 deny、
+   missing/bad-json deny、no-bots/empty-createdBy pass、mainBotId collision deny
+   （faults-f3.log，脚本 faults-f3.mjs 由 f2 版改造：no-bots 翻转为 pass、补 version/形状格）。
+5. 恢复撤销（f2 新问题 1）：单测 ⑩（agent/created 与 tools/pre-execute 两触发点、真 worker
+   不撤）+ probe-recovery.log（真 Loader：首调一次性 UNKNOWN_TOOL，该调用的 pre-execute 即
+   撤销 restrict，表立即恢复，第二回合 job_list 真实执行成功）。
+
+## 复测命令
+cd /tmp/bot-wt/P6-14f2/app/sdk && HOME=/tmp/bot-p614f3-home ./node_modules/.bin/vitest run \
+  tests/unit/orchestration-envelope.test.ts tests/unit/orchestration-envelope-live.test.ts \
+  tests/unit/orchestration-create-live.test.ts tests/unit/orchestration-send-live.test.ts \
+  tests/unit/orchestration-stop-live.test.ts tests/unit/orchestration-report-live.test.ts
+cd /tmp/bot-wt/P6-14f2/app/ui && HOME=/tmp/bot-p614f3-home ./node_modules/.bin/vitest run tests/unit/
+cd work/p6-orchestration/evidence/P6-14f3 && HOME=/tmp/bot-p614f3-home node faults-f3.mjs
+  （探针：node probe-f3.mjs <missing|corrupt|rename|production-main|recovery>，路径写死
+  /tmp/bot-wt/P6-14f2，与 f2 verifier 探针同款约定）
+
+## 区域偏差 / 备注
+- PLAN f3 区域写「app/ui/main/index.ts（启动顺序）」：实际根因修在 store.init()，index.ts
+  零改动（闸门链已保证顺序，commit 8db9636 正文有依据）。请在 PLAN 补记 store.ts。
+- f2 遗留记账（VERIFY 项 6，PLAN 区域列缺 index.mjs）未在本次处理——本次未改 index.mjs。
+- 已知上限（代码注释已记）：恢复撤销无 fs.watch，被隐藏工具的首调仍按旧表解析失败一次
+  （该调用的 pre-execute 已触发撤销，实测表立即恢复、重试即成功）。
+- 证据目录：work/p6-orchestration/evidence/P6-14f3/（报告 + 2 脚本 + 6 log；探针运行根
+  自清，evidence 无运行时产物）。
+
+## 未完成项
+- 无产品代码未完成项。veto 持久孤儿行（f2 记录项 minor）不在 f3 范围，未动。
+
+待 verifier 验收。

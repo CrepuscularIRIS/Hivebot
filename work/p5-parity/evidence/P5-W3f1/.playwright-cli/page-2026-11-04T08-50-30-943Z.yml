@@ -1,0 +1,29 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e4]:
+    - generic [ref=f1e5]:
+      - complementary "Agents" [ref=f1e7]:
+        - button "New" [ref=f1e10] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f1e11]: 
+        - button "Search" [ref=f1e12] [cursor=pointer]:
+          - generic [ref=f1e13]:
+            - generic [aria-hidden] [ref=f1e14]: 
+            - text: Search
+        - region "Agent list" [ref=f1e15]:
+          - generic "请执行验收命令并显示结果 chat preview" [ref=f1e19]:
+            - button "请执行验收命令并显示结果" [ref=f1e20] [cursor=pointer]:
+              - strong [ref=f1e31]: 请执行验收命令并显示结果
+        - separator "Resize sidebar" [ref=f1e32]
+      - button "Connect apps" [ref=f1e34] [cursor=pointer]
+      - button "Account" [ref=f1e37] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f1e38]: P
+    - generic [ref=f1e39]:
+      - main [ref=f1e40]:
+        - group "请执行验收命令并显示结果" [ref=f1e41]:
+          - button "View agent settings" [ref=f1e42] [cursor=pointer]:
+            - generic [ref=f1e51]: 请执行验收命令并显示结果
+        - log "Conversation transcript" [ref=f1e52]
+      - textbox "Prompt" [ref=f1e57]:
+        - paragraph [ref=f1e58]: Message 请执行验收命令并显示结果
+  - status:
+    - generic: Grok Bot
+    - generic: Starting…

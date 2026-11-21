@@ -1,0 +1,8 @@
+{
+  "seq": 16,
+  "type": "tool/result",
+  "callId": "probe-call",
+  "isError": true,
+  "error": null,
+  "text": "Error: pbots/storage: workspace mkdir failed for \"/tmp/vfy-r-p610-c/live-private-data-blocked/workspaces/session-8a14e57b-7188-4b30-9601-b374a4abe17a\": Error: ENOTDIR: not a directory, mkdir '/tmp/vfy-r-p610-c/live-private-data-blocked/workspaces/session-8a14e57b-7188-4b30-9601-b374a4abe17a'"
+}

@@ -1,0 +1,8 @@
+id	入口	方向	0.18	0.78.1	contextBridge键
+W05-3-1	preload-avatar-source.cjs	新增	-	Y	
+W05-3-2	preload-desktop-mount-capture-overlay.cjs	新增	-	Y	desktopMountCaptureOverlay
+W05-3-3	preload-desktop-mount-panel.cjs	新增	-	Y	desktopMount;desktopMountFiles
+-	preload-vnc.cjs	保留	Y	Y	
+-	preload-webview.cjs	保留	Y	Y	
+-	preload.cjs	保留	Y	Y	coordinatorPort;desktop;desktopMount;sandPopout;sandRenderTrace
+-	preload-dev-controls.cjs	删除	Y	-	sand

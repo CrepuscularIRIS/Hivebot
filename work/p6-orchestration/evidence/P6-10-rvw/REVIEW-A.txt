@@ -1,0 +1,66 @@
+P6-10 code review — A 信任边界与输入
+commit: 29c6b1a5af425b4260479ddfdd918f795d2cba9b
+范围：397c7c8..29c6b1a 中用户指定的 P6-10 文件；不纳入该时间段混入的 P6-15/P6-21/policy 改动。
+结论：CONFIRMED critical 0 / major 3 / minor 0。
+报告按运行指令使用 .txt 兜底；未改产品代码、未派子 agent、未跑全量/e2e。
+
+CONFIRMED
+
+A1
+major | /home/lingxufeng/bot/app/ui/main/m3-meta/orch-channel.ts:52-54 | ⑤ stream 收到合法 JSON mux 帧 {type:"item",streamId:<当前订阅>,value:null} | onFrame 仅排除 undefined，直接读 item.ready，抛出未捕获 TypeError；实际 WebSocket → DshMuxSocket.receive → orch onFrame 链上的独立 Node 24 子进程退出码 1 | /tmp/vfy-r-p610-a/probe.mjs
+证据：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/output.log，WIRE_NULL_ITEM。
+关键输出：TypeError: Cannot read properties of null (reading 'ready')；栈含 onFrame、DshMuxSocket.receive、WebSocket message 回调。
+影响：无效请求内容未被隔离为单条拒绝，而逃出 main 的常驻 wire 回调。探针使用真实生产 DshMuxSocket 与 wireOrchChannel，不是直接调用伪造回调；未启动 Electron，退出码证据指该 Node 24 宿主，不将其冒称为 Electron 截图/实测。
+修复点：使用运行时类型守卫，先确认 value 是非 null 对象，再读 ready/requestId；不能仅依赖 TypeScript 强转。
+
+A2
+major | /home/lingxufeng/bot/app/sdk/src/orchestration/main-channel.mjs:121-125 | 持有流的合法 peer 对在途 requestId 回答 {error:null}（public respond 只检查 requestId，原样转发 error） | 先删 pending、清 timeout，再读 null.code 抛 TypeError；原 request 永久悬挂，detach 与 timeout 均无法回收；连续 3 次使真实 create_bot 占满 3 个 Slots，后续正常调用稳定报 pbots/capacity | /tmp/vfy-r-p610-a/capacity.mjs
+证据：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/capacity.log；底层 promise 独立验证见 output.log 的 RESPOND_NULL_ERROR。
+关键输出：TOOL_CAPACITY {"used":3,"state":["pending","pending","pending"],"fourth":"pbots/capacity"}；30ms timeout 后等待 100ms 且 detach 后仍 pending。
+影响：畸形 wire outcome 把可超时的错误变为不可恢复的执行悬挂与永久容量耗尽（直至进程重启）。不是错误 peer 绕权；触发前提明确要求合法持流 peer。
+修复点：消费 pending 前校验 outcome/error/value；无效响应应明确 reject 或保留超时兜底，任何解析分支都必须 settle 原请求。
+
+A3
+major | /home/lingxufeng/bot/app/ui/main/m3-meta/orch-channel.ts:54,65-66 | 收到正常 create 请求且 create 已成功，随后 respond 的 HTTP 200 响应体为截断 JSON "{" | rpcRaw 的 res.json() 抛 SyntaxError，answer() 对 respond 的 await 不在 try/catch 内，且 void answer() 无 rejection handler；真实 HTTP + rpcRaw 探针出现未处理拒绝，Node 24 子进程退出码 1 | /tmp/vfy-r-p610-a/rpc.mjs
+证据：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/rpc.log，RESPOND_INVALID_JSON。
+关键输出：SyntaxError: Expected property name or '}' in JSON at position 1；status:1。
+调用方核对：/home/lingxufeng/bot/app/ui/main/dsh/connect.ts:26-38 的 rpcRaw 直接 await res.json()；:170-185 的 DshConnection.rpc 只有 finally，未捕获 rejection。main 中未找到全局 uncaughtException/unhandledRejection handler。此项不归咎于旧 rpcRaw 的通用问题，而是新 answer fire-and-forget 未收敛 respond 边界错误。
+影响：本应仅一次应答失败却逃出常驻订阅；session 已创建时更不能因坏响应拖垮宿主。探针未运行 Electron，Node 24 的退出不冒称 Electron 实测。
+修复点：answer 的 respond 与响应形状访问也纳入 catch；保证 fire-and-forget promise 永不无处理拒绝。不得因应答失败重新 create。
+
+REFUTED / 对抗覆盖
+
+R1：bots.json 为 null、42、[]、非法 JSON "{" 会逃出解析器崩溃。
+结果：REFUTED（所审 SDK parser 与 main store 入口范围）。readMainBotId 返回 undefined，readWorkerIds 返回 []；BotsMetaStore.init 捕获错误，read() 明确抛出供既有调用方捕获。未将 init 内捕获的 null.version TypeError 误报为未捕获崩溃。
+探针：/tmp/vfy-r-p610-a/probe.mjs，FILE_MATRIX；持久证据 output.log。
+
+R2：bots 条目为 null/number/string、createdBy 为 null 会让新 deriveBots 解构崩溃。
+结果：REFUTED（通过实际 store.init/read 的生产路径）。botsOf 丢弃坏条目，只保留非空 string createdBy；deriveBots 正常返回 1 行，SDK 同样只读有效 worker。
+探针：/tmp/vfy-r-p610-a/probe.mjs，FILE_MATRIX badEntries；持久证据 output.log。
+
+R3：模型参数为 null、array、number、空 name/空 prompt 会进入建会话流程。
+结果：REFUTED。真实 registerCreateBot 注册的 execute 返回 pbots/invalid-args，各样本 dsh RPC 计数均为 0。
+探针：/tmp/vfy-r-p610-a/probe.mjs，INPUT_MATRIX null/array/primitive/emptyName/emptyPrompt。
+
+R4：路径穿越字符串、NUL/换行/ANSI 控制字符、emoji、1MiB name/prompt 会污染 workspace 路径或 minted sessionId。
+结果：REFUTED（限定为 workspace 与 sessionId 生成，不宣称真实上游 rename/模型处理完成）。execute → createWorkerBot 实际运行，落盘真实 BotsMetaStore；三个样本均使用 UUID session-* 与 dataDir/workspaces/<UUID>，name/prompt 不参与路径。1MiB 样本未被限长并会传给 RPC，但本探针未证成坏 session 或资源故障，因此不把“没有 maxLength”单独记成缺陷。
+探针：/tmp/vfy-r-p610-a/probe.mjs，INPUT_MATRIX controls/emoji/long。
+限制：此矩阵的 session/create、session/rename 和 delivery 是记录调用的 stub sink；没有声称在真实 dsh session 中跑通这些特殊文本。A1/A3 用真实本地 wire/HTTP，A2 用真实工具与真实通道/Slots。
+
+独立定向测试
+HOME=/tmp/vfy-r-p610-a/home pnpm -C /home/lingxufeng/bot/app/ui exec vitest run tests/unit/m3/orch-channel.test.ts tests/unit/m3/p610.test.ts
+输出：Test Files 2 passed (2)；Tests 21 passed (21)。日志：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/ui-tests.log。
+HOME=/tmp/vfy-r-p610-a/home pnpm -C /home/lingxufeng/bot/app/sdk exec vitest run tests/unit/orchestration-create.test.ts
+输出：Test Files 1 passed (1)；Tests 30 passed (30)。日志：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/sdk-tests.log。
+已有单测通过并不覆盖上述三个输入坏路径。
+
+复现命令
+HOME=/tmp/vfy-r-p610-a/home /home/lingxufeng/bot/app/ui/node_modules/.bin/node /tmp/vfy-r-p610-a/probe.mjs
+HOME=/tmp/vfy-r-p610-a/home /home/lingxufeng/bot/app/ui/node_modules/.bin/node /tmp/vfy-r-p610-a/capacity.mjs
+HOME=/tmp/vfy-r-p610-a/home /home/lingxufeng/bot/app/ui/node_modules/.bin/node /tmp/vfy-r-p610-a/rpc.mjs
+以上三条均退出 0：父探针断言预期故障成立；两个 wire 子进程则如证据所示因异常退出 1。
+三个父探针与所有结果日志已复制到 /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-rvw/ 供长期留档；probe.mjs 重建生产代码 bundle 及 wire 子脚本，rpc.mjs 重建 HTTP 子脚本。未将临时 HOME/bots.json/workspaces 放入 evidence。
+
+卫生与绑定
+开始和结束 git HEAD 均为 29c6b1a5af425b4260479ddfdd918f795d2cba9b；产品目录 git status 无变更。
+/home/lingxufeng/bot/scripts/bot-reap --dry-run --match vfy-r-p610-a 无残留输出。未执行手工 kill，崩溃子进程自然退出，其 server socket 随进程退出关闭。

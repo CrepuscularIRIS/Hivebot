@@ -1,0 +1,44 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-15/app/sdk
+
+ ❯ tests/e2e/connector-restart.test.ts (1 test | 1 failed) 8246ms
+   × T-15① connector bot across restart: list/events survive; follow+prompt on the old session recover (target semantics, expected red) 8190ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/e2e/connector-restart.test.ts > T-15① connector bot across restart: list/events survive; follow+prompt on the old session recover (target semantics, expected red)
+AssertionError: connector bot recovery across restart (header presetId=p2temp-1-79362c); observed outcomes in the diff — red here IS the CONTRACT §7.1 answer: the persisted temp preset no longer resolves after restart: expected { freshBot: { ok: true, …(1) }, …(3) } to match object { freshBot: { ok: true }, …(3) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+@@ -4,9 +4,9 @@
+    },
+    "freshBot": {
+      "ok": true,
+    },
+    "prompt": {
+-     "ok": true,
++     "error": "prompt: session/prompt failed: {\"code\":\"gateway/internal\",\"message\":\"resume failed for session \\\"session-34b651e3-5e65-4c58-8a2a-5ba9ce580f88\\\": RemoteError: Unknown agent preset: p2temp-1-79362c\",\"details\":{}}",
+    },
+-   "turnEnd": true,
++   "turnEnd": false,
+  }
+
+ ❯ tests/e2e/connector-restart.test.ts:266:5
+    264|     `connector bot recovery across restart (header presetId=${presetId…
+    265|       'red here IS the CONTRACT §7.1 answer: the persisted temp preset…
+    266|   ).toMatchObject({ freshBot: { ok: true }, follow: { ok: true }, prom…
+       |     ^
+    267|
+    268|   rt1.client.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  01:31:00
+   Duration  8.39s (tests 99%)
+

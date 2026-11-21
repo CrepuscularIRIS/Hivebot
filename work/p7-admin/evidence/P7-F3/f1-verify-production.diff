@@ -1,0 +1,804 @@
+diff --git a/app/sdk/src/admin/host.mjs b/app/sdk/src/admin/host.mjs
+new file mode 100644
+index 0000000..a15bc47
+--- /dev/null
++++ b/app/sdk/src/admin/host.mjs
+@@ -0,0 +1,141 @@
++// P7-F3: one process-owned recovery lease; no Assignment or operation state is stored here.
++import { randomUUID } from 'node:crypto'
++import { realpathSync } from 'node:fs'
++import { readFile as readText } from 'node:fs/promises'
++import { join } from 'node:path'
++import { createRequire } from 'node:module'
++import { pathToFileURL } from 'node:url'
++import { foldAssignments } from '../orchestration/assignment.mjs'
++
++// Module lifetime is the SDK process, not a socket or plugin mount.
++const PROCESS_ID = randomUUID()
++
++const require = createRequire(realpathSync(new URL('../../node_modules/@deepseek-ai/dsh-plugin-market/lib/index.js', import.meta.url)))
++const { interruptedTurnClosers } = await import(pathToFileURL(require.resolve('@deepseek-ai/dsh-session')))
++
++// 来源: https://github.com/deepseek-ai/dsh-superagent-prototype@6337fc823ce20251c8de8085948165c81aaa701e:src/core/assignments.ts (MIT); local-only adaptation.
++export const RECOVERY_NOTE = 'The host restarted during this assignment. Inspect the current worktree, operation records and existing results first. Do not repeat an already completed external operation. Unknown side effects must not be replayed automatically. Report the interrupted assignment status.'
++
++/** Await readiness without allowing cancellation to be undone by a late resolve. */
++export async function waitForRecovery(permit) {
++  if (!permit) return
++  permit.signal.throwIfAborted()
++  let onAbort
++  try {
++    await Promise.race([
++      permit.ready,
++      new Promise((_, reject) => {
++        onAbort = () => reject(permit.signal.reason)
++        permit.signal.addEventListener('abort', onAbort, { once: true })
++      }),
++    ])
++    permit.signal.throwIfAborted()
++  } finally {
++    if (onAbort) permit.signal.removeEventListener('abort', onAbort)
++  }
++}
++
++/** Re-read the original logs, use native interrupted closers, then flush before acknowledgement. */
++export async function recoverAssignments(orch, signal) {
++  signal.throwIfAborted()
++  const meta = JSON.parse(await readText(join(orch.config.dataDir, 'bots.json'), 'utf8'))
++  if (!meta || meta.version !== 1 || (meta.mainBotId !== null && (typeof meta.mainBotId !== 'string' || meta.mainBotId === '')) ||
++      (meta.bots !== undefined && (!meta.bots || typeof meta.bots !== 'object' || Array.isArray(meta.bots)))) {
++    throw new Error('untrusted bot relationships; recovery stays closed')
++  }
++  const interrupted = []
++  const held = []
++  const issues = []
++  for (const [id, bot] of Object.entries(meta.bots ?? {})) {
++    if (id === meta.mainBotId) continue
++    if (meta.mainBotId === null || bot?.createdBy !== meta.mainBotId) {
++      issues.push({ sessionId: id, reason: 'unmatched-main' })
++      continue
++    }
++    signal.throwIfAborted()
++    let events = await orch.delivery.readLog(id)
++    signal.throwIfAborted()
++    const before = foldAssignments(events)
++    const open = [...before.assignments].filter(([, assignment]) => assignment.ended === undefined)
++    if (open.length) {
++      // Do not resolveAgent/followup: that could release a restored inbox or goal driver.
++      if (orch.ctx.agents.get(id) !== undefined) throw new Error('live unclosed assignment; recovery stays closed')
++      const handle = await orch.ctx.sessionPersistence.open(id, 'write', { signal })
++      try {
++        signal.throwIfAborted()
++        const { events: raw } = await handle.read(0, undefined, { signal })
++        const closers = interruptedTurnClosers(raw)
++        signal.throwIfAborted()
++        if (closers.length) await handle.append(closers)
++      } finally { await handle.close() }
++      await orch.ctx.sessionPersistence.flush()
++      signal.throwIfAborted()
++      // Persisted termination, not computeDue's in-memory stopped projection.
++      events = await orch.delivery.readLog(id)
++      signal.throwIfAborted()
++      const after = foldAssignments(events)
++      for (const [assignmentId] of open) {
++        if (after.assignments.get(assignmentId)?.ended !== 'interrupted') throw new Error('assignment termination not durable')
++        interrupted.push({ sessionId: id, assignmentId })
++      }
++    }
++    for (const pending of foldAssignments(events).pendingAssigns) held.push({ sessionId: id, assignmentId: pending.assignmentId })
++  }
++  signal.throwIfAborted()
++  return { interrupted, held, issues, note: RECOVERY_NOTE }
++}
++
++/** Lifecycle owned by OrchestrationPlugin; peer identity comes only from the current invocation. */
++export class HostRecovery {
++  constructor(recover) {
++    this.processId = PROCESS_ID
++    this.lifetime = new AbortController()
++    this.recover = recover
++    this.current = this.makeLease(null)
++    this.prepared = undefined
++  }
++
++  makeLease(peer) {
++    const controller = new AbortController()
++    const { promise, resolve } = Promise.withResolvers()
++    return { peer, controller, signal: controller.signal, ready: promise, resolve, open: false, challenge: randomUUID(), prepared: false }
++  }
++
++  attach(peer) {
++    this.lifetime.signal.throwIfAborted()
++    this.current.controller.abort()
++    this.current = this.makeLease(peer)
++    return { processId: this.processId, challenge: this.current.challenge }
++  }
++
++  assert(peer, challenge) {
++    const lease = this.current
++    lease.signal.throwIfAborted()
++    if (peer === null || lease.peer !== peer || lease.challenge !== challenge) throw new Error('stale or foreign recovery handoff')
++    return lease
++  }
++
++  async prepare(peer, challenge) {
++    const lease = this.assert(peer, challenge)
++    // A reconnect is not an SDK restart. Native log repair is single-flight per process.
++    this.prepared ??= this.recover(this.lifetime.signal)
++    const summary = await this.prepared
++    this.assert(peer, challenge)
++    lease.prepared = !summary.issues?.length
++    return { processId: this.processId, ...summary }
++  }
++
++  complete(peer, challenge) {
++    const lease = this.assert(peer, challenge)
++    if (!lease.prepared) throw new Error('assignments not restored')
++    lease.open = true
++    lease.resolve()
++    return { processId: this.processId, ready: true }
++  }
++
++  detach(peer) {
++    if (this.current.peer === peer) this.current.controller.abort()
++  }
++
++  stop() { this.lifetime.abort(); this.current.controller.abort() }
++}
+diff --git a/app/sdk/src/orchestration/delivery.mjs b/app/sdk/src/orchestration/delivery.mjs
+index 1aeaf0a..bfb47d0 100644
+--- a/app/sdk/src/orchestration/delivery.mjs
++++ b/app/sdk/src/orchestration/delivery.mjs
+@@ -11,6 +11,7 @@
+ // 不作已投依据；回报「已投」的权威判定是 pending.mjs 的主 session 日志 fold
+ // （claim 后崩溃的键在两张表里都不可见，P6-09 (f5-ii) 实证）。
+ /** Cross-session idempotent delivery on the dsh host (P6-21). */
++import { waitForRecovery } from '../admin/host.mjs'
+ 
+ /** Source kinds owned by this SDK's orchestration layer. */
+ export const OWN_SOURCE_KINDS = ['pbots-worker', 'pbots-main']
+@@ -93,8 +94,9 @@ export class Delivery {
+    * @param {{ sessionPersistence: object, agents: { get(id: string): object } }} ctx
+    * dsh plugin context; only the two services SA's AgentDelivery uses.
+    */
+-  constructor(ctx) {
++  constructor(ctx, recovery = () => undefined) {
+     this.ctx = ctx
++    this.recovery = recovery
+     // P6-21.f1 (L-9): in-flight reservation per `${agent.id}:${messageId}`.
+     // holds() 与 followup 之间隔着 await（flush + 全量读日志），两个并发 send
+     // 同 (agent,id) 都会读到「未投过」→ 空闲目标 followup 两次、忙碌目标第二
+@@ -153,7 +155,8 @@ export class Delivery {
+    * @param {{ id: string, source: { kind: string } }} message
+    * @returns {Promise<{ skipped: boolean }>} skipped = already held.
+    */
+-  async send(agent, message) {
++  async send(agent, message, permit = this.recovery()) {
++    await waitForRecovery(permit)
+     const id = deliveryIdOf(message)
+     if (!id) throw new Error('delivery.send requires a pbots-owned message source')
+     const key = `${agent.id}:${id}`
+@@ -161,17 +164,23 @@ export class Delivery {
+     if (running !== undefined) {
+       try {
+         await running
++        permit?.signal.throwIfAborted()
+         return { skipped: true } // the concurrent call delivered (or held) it
+-      } catch {
+-        return this.send(agent, message) // it failed undelivered — take over
++      } catch (error) {
++        permit?.signal.throwIfAborted()
++        if (error?.unconfirmedStart) throw error // followup may already have started; never replay it
++        return this.send(agent, message, permit) // retry only a confirmed pre-followup failure
+       }
+     }
+     const attempt = (async () => {
+-      if (await this.holds(agent, id)) return { skipped: true }
++      const held = await this.holds(agent, id)
++      permit?.signal.throwIfAborted()
++      if (held) return { skipped: true }
+       if (this.ctx.agents.get(agent.id) !== agent) throw new Error('Delivery target was disposed')
+       agent.followup(message)
+       try {
+         await this.ctx.sessionPersistence.flush()
++        permit?.signal.throwIfAborted()
+       } catch (error) {
+         // P6-10.f2 B-2：followup 已入列、仅持久化未确认——目标回合可能已启动，
+         // 调用方不得按「未启动」处理（如 create_bot 释放容量）。带标记上抛。
+@@ -196,10 +205,15 @@ export class Delivery {
+    * @param {string} id pending message id.
+    * @returns {boolean} whether the message was pending and got rewoken.
+    */
+-  wake(agent, id) {
++  wake(agent, id, permit = this.recovery()) {
++    permit?.signal.throwIfAborted()
++    if (permit?.open === false) return false
+     const message = [...agent.inbox.nextTurn, ...agent.inbox.nextStep].find((m) => String(m.id) === id)
+     if (!message) return false
++    permit?.signal.throwIfAborted()
+     agent.inbox.remove(message.id)
++    // remove may synchronously publish an event which invalidates the lease.
++    permit?.signal.throwIfAborted()
+     agent.followup(message)
+     return true
+   }
+diff --git a/app/sdk/src/orchestration/main-channel.mjs b/app/sdk/src/orchestration/main-channel.mjs
+index 65c1210..f626b83 100644
+--- a/app/sdk/src/orchestration/main-channel.mjs
++++ b/app/sdk/src/orchestration/main-channel.mjs
+@@ -22,6 +22,8 @@ import { Reporter } from './report.mjs'
+ import { registerTaintGuard } from './taint-guard.mjs'
+ import { registerEnvelope, registerWorkerRestriction } from './envelope.mjs'
+ import { registerRoutingPrompt } from './routing-prompt.mjs'
++import { HostRecovery, recoverAssignments } from '../admin/host.mjs'
++import { orchDataDir } from './identity.mjs'
+ 
+ // 依赖解析同 src/p2temp/index.mjs：裸包名只能解析 app/sdk 直接依赖，从稳定
+ // 直接依赖（dsh-plugin-market）的真实路径 createResolve，pnpm peer store 保证
+@@ -206,10 +208,14 @@ export default class OrchestrationPlugin extends TypertRemoteService {
+    */
+   constructor(ctx, config = {}) {
+     super(ctx, 'pbotsOrchestration', { namespace: 'pbots' })
+-    this.config = config
++    this.config = { ...config, dataDir: config.dataDir ?? orchDataDir() }
++    // Opt-in at the current launcher/overlay; standalone P6 retains its original lifecycle.
++    if (config.hostRecovery === true || process.env.DSH_PBOTS_HOST_RECOVERY === '1') {
++      this.host = new HostRecovery((signal) => recoverAssignments(this, signal))
++    }
+     this.channel = new CreateChannel({ timeoutMs: config.createTimeoutMs ?? DEFAULT_CREATE_TIMEOUT_MS })
+     this.slots = sharedSlots(config.capacity)
+-    this.delivery = new Delivery(ctx)
++    this.delivery = new Delivery(ctx, () => this.recovery)
+     this.createBot = registerCreateBot(ctx, this)
+     this.sendToBot = registerSendToBot(ctx, this) // P6-11：与 create 共用 turns/slotHolds/slots
+     this.stopBot = registerStopBot(ctx, this) // P6-13：与 create/send 共用 turns 账本；两阶段，不占容量
+@@ -224,7 +230,41 @@ export default class OrchestrationPlugin extends TypertRemoteService {
+     this.workerRestriction = registerWorkerRestriction(ctx, this)
+     this.routingPrompt = registerRoutingPrompt(ctx, this)
+     this.report = new Reporter(this)
+-    this.report.start()
++    ctx.effect(() => {
++      const stop = this.report.start()
++      return () => { this.host?.stop(); stop() }
++    })
++  }
++
++  get recovery() { return this.host?.current }
++
++  /** Separate control stream: connection, metadata restore and repair RPCs never wait on SDK readiness. */
++  async *recoveryRequests() {
++    if (!this.host) throw orchError('pbots/unavailable', 'host recovery is not enabled')
++    const { peer, signal } = this.ctx.invocation
++    if (this.host.current.peer !== null && !this.host.current.signal.aborted) throw orchError('pbots/forbidden', 'recovery already has a subscriber')
++    const handoff = this.host.attach(peer)
++    const detach = () => this.host.detach(peer)
++    signal.addEventListener('abort', detach, { once: true })
++    try {
++      yield handoff
++      if (!signal.aborted) await new Promise((resolve) => signal.addEventListener('abort', resolve, { once: true }))
++    } finally {
++      signal.removeEventListener('abort', detach)
++      detach()
++    }
++  }
++
++  async recoveryPrepare(request) {
++    if (!this.host) throw orchError('pbots/unavailable', 'host recovery is not enabled')
++    return this.host.prepare(this.ctx.invocation.peer, request?.challenge)
++  }
++
++  recoveryComplete(request) {
++    if (!this.host) throw orchError('pbots/unavailable', 'host recovery is not enabled')
++    const result = this.host.complete(this.ctx.invocation.peer, request?.challenge)
++    this.report.scheduleFlush()
++    return result
+   }
+ 
+   /** Live agent or resume-by-id (cold session attach, P6-09 (a) pattern). */
+@@ -278,4 +318,7 @@ export default class OrchestrationPlugin extends TypertRemoteService {
+ Object.defineProperty(OrchestrationPlugin.prototype, REMOTE_METHOD_DESCRIPTOR, { value: { version: 1, methods: [
+   { method: 'requests', exportName: 'orchestration.requests', mode: 'stream', invocation: { kind: 'direct' } },
+   { method: 'respond', exportName: 'orchestration.respond', invocation: { kind: 'direct' } },
++  { method: 'recoveryRequests', exportName: 'orchestration.recovery', mode: 'stream', invocation: { kind: 'direct' } },
++  { method: 'recoveryPrepare', exportName: 'orchestration.recoveryPrepare', invocation: { kind: 'direct' } },
++  { method: 'recoveryComplete', exportName: 'orchestration.recoveryComplete', invocation: { kind: 'direct' } },
+ ] } })
+diff --git a/app/sdk/src/orchestration/report.mjs b/app/sdk/src/orchestration/report.mjs
+index 8148aca..75197cd 100644
+--- a/app/sdk/src/orchestration/report.mjs
++++ b/app/sdk/src/orchestration/report.mjs
+@@ -16,6 +16,7 @@ import { join } from 'node:path'
+ import { orchDataDir, readMainBotId, BOTS_JSON } from './identity.mjs'
+ import { buildReportMessage, computeDue, REPORT_PREFIX } from './pending.mjs'
+ import { foldAssignments, QUESTION_TOOL } from './assignment.mjs'
++import { waitForRecovery, RECOVERY_NOTE } from '../admin/host.mjs'
+ 
+ /** 决策 15：空闲主 bot 首项回报后的收齐窗口（`ponytail:` 常量）。 */
+ export const BATCH_WINDOW_MS = 2_000
+@@ -93,6 +94,7 @@ export class Reporter {
+     this.batchWindowMs = batchWindowMs
+     this.timer = null
+     this.flushing = false
++    this.reconcilePending = false
+     /** 进程内主 bot 回合记账：turn/start/end 事件维护，flush 判忙的快路径。 */
+     this.mainRunning = false
+     /**
+@@ -102,6 +104,8 @@ export class Reporter {
+      */
+     this.cachedMainId = undefined
+     this.off = () => {}
++    this.lifetime = new AbortController()
++    this.withdrawTimers = new Set()
+   }
+ 
+   /** Mount event listeners and run the boot reconcile (决策 27③: SDK 启动直接扫日志). */
+@@ -112,6 +116,9 @@ export class Reporter {
+   }
+ 
+   stop() {
++    this.lifetime.abort()
++    for (const timer of this.withdrawTimers) clearTimeout(timer)
++    this.withdrawTimers.clear()
+     this.off()
+     if (this.timer !== null) {
+       clearTimeout(this.timer)
+@@ -121,7 +128,7 @@ export class Reporter {
+ 
+   /** @param {unknown} session @param {{ type?: string, data?: any }} event */
+   handleEvent(session, event) {
+-    if (!event || typeof event.type !== 'string') return
++    if (this.lifetime.signal.aborted || !event || typeof event.type !== 'string') return
+     const sid = String(session?.id ?? '')
+     if (sid === '') return
+     if (event.type === 'turn/start') {
+@@ -152,7 +159,7 @@ export class Reporter {
+ 
+   /** Open (or keep) the ≤2s collection window; one flush per window. */
+   scheduleFlush() {
+-    if (this.timer !== null) return
++    if (this.lifetime.signal.aborted || this.timer !== null) return
+     this.timer = setTimeout(() => {
+       this.timer = null
+       this.flush('window').catch((error) => warn(`report flush failed: ${String(error instanceof Error ? error.message : error)}`))
+@@ -177,11 +184,23 @@ export class Reporter {
+    * @param {string} trigger 'boot' | 'window'（日志用）。
+    */
+   async flush(trigger) {
+-    if (this.flushing) return
++    if (this.lifetime.signal.aborted) return
++    if (this.flushing) {
++      this.reconcilePending = true
++      return
++    }
++    const recovery = this.orch.recovery
++    const permit = {
++      ready: recovery?.ready ?? Promise.resolve(),
++      signal: AbortSignal.any([this.lifetime.signal, ...(recovery ? [recovery.signal] : [])]),
++      get open() { return recovery?.open !== false },
++    }
+     this.flushing = true
+     try {
++      await waitForRecovery(permit)
+       const dir = this.orch.config.dataDir ?? orchDataDir()
+       const mainId = await readMainBotId(dir)
++      permit.signal.throwIfAborted()
+       this.cachedMainId = mainId
+       if (mainId === null || mainId === undefined) return // 无主 / 不可读 → 没有回报对象，fail closed
+       let mainAgent
+@@ -191,14 +210,18 @@ export class Reporter {
+         warn(`main bot ${mainId} unresolvable, reports stay due: ${String(error instanceof Error ? error.message : error)}`)
+         return
+       }
++      permit.signal.throwIfAborted()
+       if (this.mainBusy(mainAgent)) return // 忙：攒（决策 15），下次触发重开窗口
+ 
+       const mainEvents = await this.orch.delivery.readLog(mainId)
++      permit.signal.throwIfAborted()
+       /** @type {Array<{ workerId: string, events: object[], idle: boolean }>} */
+       const workers = []
+       const folds = new Map()
+       for (const workerId of await ownWorkerIds(dir, mainId)) {
++        permit.signal.throwIfAborted()
+         const events = await this.orch.delivery.readLog(workerId)
++        permit.signal.throwIfAborted()
+         // 冷 worker 不 resume：重启后不可能有 running 回合（slots 同款口径），
+         // 无 turn/end + 非 running 即崩溃孤儿 → computeDue 判 stopped。live 的
+         // 才读 status（maintenance 期间报 idle，方向安全：最多早投，不丢）。
+@@ -211,7 +234,11 @@ export class Reporter {
+       // (f2)：恢复的 inbox 不自动认领——唤醒（remove + 同 id followup）
+       for (const nw of needsWake) {
+         try {
+-          this.orch.delivery.wake(await this.orch.agentOf(nw.sessionId), nw.messageId)
++          // F3 never resumes a held/paused worker assignment automatically.
++          if (recovery && nw.sessionId !== mainId) continue
++          const agent = await this.orch.agentOf(nw.sessionId)
++          permit.signal.throwIfAborted()
++          this.orch.delivery.wake(agent, nw.messageId, permit)
+         } catch (error) {
+           warn(`wake ${nw.sessionId}/${nw.messageId} failed: ${String(error instanceof Error ? error.message : error)}`)
+         }
+@@ -221,15 +248,28 @@ export class Reporter {
+       // 决策 17：end 项补 result（末工具后正文，≤4000 截断附 worker id）
+       const items = due.map((item) => {
+         if (item.kind !== 'end') return item
++        if (recovery && item.reason === 'interrupted') return { ...item, result: RECOVERY_NOTE }
+         const turn = folds.get(item.workerId)?.assignments.get(item.assignmentId)?.turn
+         const raw = turn === undefined ? undefined : resultTextFor(workers.find((w) => w.workerId === item.workerId)?.events ?? [], turn)
+         return raw === undefined ? item : { ...item, result: truncateResult(raw, item.workerId) }
+       })
+       if (this.orch.config.crashAt === 'report-before-splice') process.exit(CRASH_EXIT_CODE)
+-      await this.orch.delivery.send(mainAgent, buildReportMessage(items))
++      permit.signal.throwIfAborted()
++      await this.orch.delivery.send(mainAgent, buildReportMessage(items), permit)
+       if (this.orch.config.crashAt === 'report-after-send') process.exit(CRASH_EXIT_CODE)
++    } catch (error) {
++      // An already-issued followup is unknown, not a canceled pre-delivery pass.
++      if (error?.unconfirmedStart) this.reconcilePending = false
++      if (!permit.signal.aborted || error?.unconfirmedStart) throw error
+     } finally {
+       this.flushing = false
++      const reconcile = this.reconcilePending && permit.signal.aborted && !this.lifetime.signal.aborted
++      this.reconcilePending = false
++      // A completed new lease's window can expire behind the canceled old pass.
++      // Consume that one trigger after releasing single-flight; no polling/retry.
++      if (reconcile) queueMicrotask(() => {
++        this.flush('recovery').catch((error) => warn(`recovery reconcile failed: ${String(error instanceof Error ? error.message : error)}`))
++      })
+     }
+   }
+ 
+@@ -241,15 +281,20 @@ export class Reporter {
+    * pendingReports，与 claim 窗口同一恢复路径）。
+    * @param {string} mainId @param {number} [attempt]
+    */
+-  withdrawWithRetry(mainId, attempt = 0) {
++  withdrawWithRetry(mainId, attempt = 0, recovery = this.orch.recovery) {
++    if (this.lifetime.signal.aborted || recovery?.signal.aborted || recovery?.open === false) return
+     try {
+-      this.withdrawPendingReports(mainId)
++      this.withdrawPendingReports(mainId, recovery)
+     } catch (error) {
+       if (attempt >= 50) {
+         warn(`withdraw kept failing for ${mainId}: ${String(error instanceof Error ? error.message : error)}`)
+         return
+       }
+-      setTimeout(() => this.withdrawWithRetry(mainId, attempt + 1), 50)
++      const timer = setTimeout(() => {
++        this.withdrawTimers.delete(timer)
++        this.withdrawWithRetry(mainId, attempt + 1, recovery)
++      }, 50)
++      this.withdrawTimers.add(timer)
+     }
+   }
+ 
+@@ -259,11 +304,13 @@ export class Reporter {
+    * 下一条用户消息的回合不会与回报混合，回合结束后补投恰一次。
+    * @param {string} mainId
+    */
+-  withdrawPendingReports(mainId) {
++  withdrawPendingReports(mainId, recovery = this.orch.recovery) {
++    if (this.lifetime.signal.aborted || recovery?.signal.aborted || recovery?.open === false) return
+     const agent = this.ctx.agents.get(mainId)
+     if (agent === undefined) return // 冷主 bot无 live inbox；claim 窗口的键由日志重算覆盖
+     let withdrawn = 0
+     for (const message of [...agent.inbox.nextTurn, ...agent.inbox.nextStep]) {
++      if (this.lifetime.signal.aborted || recovery?.signal.aborted || recovery?.open === false) break
+       if (String(message?.id ?? '').startsWith(REPORT_PREFIX)) {
+         agent.inbox.remove(message.id)
+         withdrawn += 1
+diff --git a/app/sdk/src/start.ts b/app/sdk/src/start.ts
+index e80ebd4..082e102 100644
+--- a/app/sdk/src/start.ts
++++ b/app/sdk/src/start.ts
+@@ -19,6 +19,8 @@
+  *                        as `p2sdk: handoff <dir>` for the operator client
+  *   P2SDK_PORT           listen port, default 0 (OS-assigned)
+  *   P2SDK_PATCH          colon-separated extra `--patch` overlays (absolute paths)
++ *   P2SDK_HOST_RECOVERY  '1' enables the main-confirmed F3 recovery barrier for orchestration;
++ *                        requires a connected main; standalone P6 is unchanged when unset.
+  */
+ import { spawn } from 'node:child_process'
+ import { randomUUID } from 'node:crypto'
+@@ -163,10 +165,11 @@ export function childEnv(cfg: StartConfig, env: NodeJS.ProcessEnv): NodeJS.Proce
+     if (
+       keep &&
+       name !== 'P2SDK_HANDOFF' && name !== 'P2SDK_TEST_V8_COVERAGE' && name !== 'P2SDK_HOME' &&
+-      name !== 'PBOTS_DATA_DIR' && name !== 'P2SDK_SANDBOX_MASK' &&
++      name !== 'PBOTS_DATA_DIR' && name !== 'P2SDK_SANDBOX_MASK' && name !== 'P2SDK_HOST_RECOVERY' &&
+       (testSandbox || !testOnlySandboxVars.has(name))
+     ) child[name] = value
+   }
++  if (env.P2SDK_HOST_RECOVERY === '1') child.DSH_PBOTS_HOST_RECOVERY = '1'
+   child.DSH_HOME = cfg.home
+   child.P2SDK_PROVIDER = cfg.provider
+   child.P2SDK_LLM_MODEL = cfg.model
+diff --git a/app/ui/main/admin/recovery.ts b/app/ui/main/admin/recovery.ts
+new file mode 100644
+index 0000000..92382e5
+--- /dev/null
++++ b/app/ui/main/admin/recovery.ts
+@@ -0,0 +1,117 @@
++// P7-F3: main owns F1; SDK owns native Assignment repair. A socket epoch only cancels work,
++// never establishes a new SDK process generation or grants a management permission.
++import type { OperationsLedger, OperationsView } from './operations'
++
++interface Frame { type: string; value?: unknown }
++interface RecoveryDsh {
++  currentGeneration?: number
++  onConnected(fn: (generation: number) => void): unknown
++  onDisconnected(fn: () => void): unknown
++  ready(): Promise<{ openStream(endpoint: string, args: unknown, cb: (frame: Frame) => void): { cancel(): void } }>
++  rpc(method: string, args: unknown): Promise<{ ok: boolean; value?: unknown }>
++}
++interface Handoff { processId: string; challenge: string }
++interface Summary { processId: string; interrupted: unknown[]; held: unknown[]; issues: Array<{ sessionId: string; reason: string }> }
++const object = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value)
++const handoffOf = (value: unknown): value is Handoff => object(value) && typeof value.processId === 'string' && value.processId !== '' && typeof value.challenge === 'string' && value.challenge !== ''
++const summaryOf = (value: unknown): value is Summary => object(value) && typeof value.processId === 'string' && Array.isArray(value.interrupted) && Array.isArray(value.held) && Array.isArray(value.issues) && value.issues.every((issue) => object(issue) && typeof issue.sessionId === 'string' && typeof issue.reason === 'string')
++const operations = (view: OperationsView) => [...view.inProgress, ...view.completed, ...view.failed, ...view.undone]
++
++/** Wire the recovery control stream on main's own Peer. Never replay an in-progress operation. */
++export function wireAdminRecovery(deps: {
++  dsh: RecoveryDsh
++  ledger: OperationsLedger
++  restore: (connectionGeneration: number) => Promise<void>
++  log?: (message: string) => void
++}) {
++  const log = deps.log ?? ((message: string) => console.warn(message))
++  const initialized = deps.ledger.init()
++  let closed = false
++  let epoch = 0
++  let ready = false
++  let current: { cancel(): void } | undefined
++  let ticket: Handoff | undefined
++  let hostProcess: string | undefined
++  let hostGeneration = 0
++  let connectionGeneration = deps.dsh.currentGeneration ?? 0
++  const invalidate = () => { ++epoch; ready = false; ticket = undefined }
++  const check = (expected: number) => {
++    if (closed || expected !== epoch) throw new Error('obsolete recovery connection')
++  }
++
++  const restore = async (handoff: Handoff, expected: number, connection: number) => {
++    try {
++      await initialized
++      check(expected)
++      const view = deps.ledger.readOperations() // throws for an unhealthy ledger
++      await deps.restore(connection)
++      check(expected)
++      const result = await deps.dsh.rpc('pbots/orchestration.recoveryPrepare', { request: { challenge: handoff.challenge } })
++      check(expected)
++      if (!result.ok || !summaryOf(result.value) || result.value.processId !== handoff.processId) throw new Error('untrusted Assignment recovery response')
++      if (hostProcess !== handoff.processId) {
++        hostGeneration = Math.max(hostGeneration, ...operations(view).flatMap((operation) => [operation.generation, operation.receipt?.generation ?? 0])) + 1
++        hostProcess = handoff.processId
++      }
++      for (const issue of result.value.issues) {
++        check(expected)
++        const audit = await deps.ledger.beginOperation({ action: 'recovery', actor: 'host', turnCategory: 'delegated', generation: hostGeneration, target: issue.sessionId, dedupeKey: `recovery:${handoff.processId}:${issue.sessionId}:${issue.reason}` })
++        if (audit.created) await deps.ledger.finishOperation(audit.operationId, { outcome: 'failed', error: issue.reason })
++      }
++      if (result.value.issues.length) throw new Error('unmatched Assignment relationships; audit recorded')
++      check(expected)
++      deps.ledger.readOperations() // health recheck immediately before release
++      const completed = await deps.dsh.rpc('pbots/orchestration.recoveryComplete', { request: { challenge: handoff.challenge } })
++      check(expected)
++      if (!completed.ok || !object(completed.value) || completed.value.processId !== handoff.processId || completed.value.ready !== true) throw new Error('recovery completion not confirmed')
++      ticket = handoff
++      ready = true
++    } catch (error) {
++      if (expected === epoch && !closed) { ready = false; log(`[admin] recovery stays closed: ${String(error)}`) }
++    }
++  }
++
++  const subscribe = async () => {
++    invalidate()
++    const expected = epoch
++    const connection = connectionGeneration
++    try {
++      const socket = await deps.dsh.ready()
++      check(expected)
++      current = socket.openStream('pbots/orchestration.recovery', {}, (frame) => {
++        if (closed || expected !== epoch) return
++        if (frame.type !== 'item') {
++          invalidate()
++          return
++        }
++        if (!handoffOf(frame.value) || ticket !== undefined) { invalidate(); log('[admin] invalid recovery handoff'); return }
++        // Mark the frame consumed now, not after asynchronous repair (duplicate frames cannot race).
++        ticket = frame.value
++        void restore(frame.value, expected, connection)
++      })
++    } catch (error) {
++      if (expected === epoch && !closed) { invalidate(); log(`[admin] recovery subscription failed: ${String(error)}`) }
++    }
++  }
++  deps.dsh.onDisconnected(invalidate)
++  deps.dsh.onConnected((generation) => {
++    connectionGeneration = generation
++    invalidate()
++    try { current?.cancel() } catch { /* dead socket already invalidated its SDK lease */ }
++    current = undefined
++    void subscribe()
++  })
++  void subscribe()
++
++  return {
++    initialized,
++    isReady: () => ready && !closed,
++    generation: () => ready ? hostGeneration : undefined,
++    // F4 owns restart receipts. A client of an external SDK cannot issue one.
++    close() {
++      closed = true
++      invalidate()
++      try { current?.cancel() } catch { /* connection already closed */ }
++    },
++  }
++}
+diff --git a/app/ui/main/admin/restart.ts b/app/ui/main/admin/restart.ts
+new file mode 100644
+index 0000000..eb1a466
+--- /dev/null
++++ b/app/ui/main/admin/restart.ts
+@@ -0,0 +1,4 @@
++// F4 owns spawning/relaunch. Main is currently a client of an externally started SDK.
++export async function restartSdk(): Promise<{ ok: false; error: { code: string; message: string } }> {
++  return { ok: false, error: { code: 'pbots/unavailable', message: 'SDK restart is unavailable: this main process does not own the SDK.' } }
++}
+diff --git a/app/ui/main/dsh/connect.ts b/app/ui/main/dsh/connect.ts
+index 12f560b..a79ba61 100644
+--- a/app/ui/main/dsh/connect.ts
++++ b/app/ui/main/dsh/connect.ts
+@@ -68,6 +68,7 @@ export class DshConnection {
+   private readyWaiters: Array<(g: number) => void> = []
+   private firstConnectWaiters: Array<(g: number) => void> = []
+   private connectedListeners: Array<(g: number) => void> = []
++  private disconnectedListeners: Array<() => void> = []
+   /** main 侧已发出的 /api 调用计数（断言口径：拒绝时必须 === 0）。 */
+   apiCount = 0
+ 
+@@ -85,6 +86,15 @@ export class DshConnection {
+     this.connectedListeners.push(listener)
+   }
+ 
++  /** F3 invalidates main's management permission as soon as the current socket dies. */
++  onDisconnected(listener: () => void): void { this.disconnectedListeners.push(listener) }
++
++  private notifyDisconnected(): void {
++    for (const listener of [...this.disconnectedListeners]) {
++      try { listener() } catch (error) { console.warn(`[dsh] onDisconnected listener failed: ${String(error)}`) }
++    }
++  }
++
+   /** 连接并完成首次 /connect + ws open；之后再断线自动重连。
+    * U-17（R2/R3）：首连失败与断线走同一条指数退避重试路径；start() 在
+    * startTimeoutMs 内等到首个 generation 才 resolve，超时 reject（后台继续重试，
+@@ -132,6 +142,7 @@ export class DshConnection {
+       if (this.socket !== socket) return
+       // U-17（R13）：死 socket 立即出清，ready() 只会挂起等新代，不再返回死柄。
+       this.socket = undefined
++      this.notifyDisconnected()
+       void this.scheduleReconnect()
+     })
+     for (const w of this.readyWaiters.splice(0)) w(this.generation)
+@@ -187,6 +198,7 @@ export class DshConnection {
+ 
+   stop(): void {
+     this.stopped = true
++    this.notifyDisconnected()
+     if (this.reconnectTimer !== undefined) clearTimeout(this.reconnectTimer)
+     this.socket?.close()
+   }
+diff --git a/app/ui/main/index.ts b/app/ui/main/index.ts
+index 708bb24..1c717b2 100644
+--- a/app/ui/main/index.ts
++++ b/app/ui/main/index.ts
+@@ -18,6 +18,8 @@ import { createBotWithConnectors, createSessionForcedWorkspace, createWorkerBot,
+ import { wireOrchChannel } from './m3-meta/orch-channel'
+ import type { BotsMetaStore } from './m3-meta/store'
+ import { wireWorkerNotify } from './notify/worker-notify'
++import { OperationsLedger } from './admin/operations'
++import { wireAdminRecovery } from './admin/recovery'
+ 
+ if (process.type === 'browser') {
+   // 必须在 app ready 前注册；单测导入本模块时（纯 node）跳过。
+@@ -158,18 +160,30 @@ export function wireRestoreOnReconnect(
+   m3: M3Handle,
+   ready: ReadyGate,
+   log: (message: string) => void = (m) => console.warn(m),
+-): void {
++): (generation: number) => Promise<void> {
+   let run: Promise<void> = Promise.resolve()
++  let currentGeneration = 0
++  let current: Promise<void> = Promise.reject(new Error('M3 connection not restored'))
++  void current.catch(() => {})
+   dsh.onConnected((generation) => {
+-    ready.setDshReady()
++    currentGeneration = generation
++    ready.setDshReady(generation)
+     log(`[m3] dsh connected (generation ${generation}); running preset restore`)
+-    run = run
+-      .then(async () => {
+-        await m3.init
+-        await ensureThenReady({ dsh, store: m3.store, failed: m3.failed, ready })
+-      })
+-      .catch((error) => log(`[m3] restore rerun failed: ${String(error)}`))
++    current = run.then(async () => {
++      await m3.init
++      const outcomes = await ensureThenReady({ dsh, store: m3.store, failed: m3.failed,
++        ready: { ...ready, setRestoreSettled: (failed) => ready.setRestoreSettled(failed, generation) } })
++      // Shell availability permits settled failures; management recovery never does.
++      m3.store.read()
++      if (generation !== currentGeneration || m3.failed.size || outcomes.some((outcome) => !outcome.ok)) throw new Error('M3 recovery not successful for current connection')
++    })
++    run = current.catch((error) => log(`[m3] restore rerun failed: ${String(error)}`))
+   })
++  return async (generation) => {
++    if (generation !== currentGeneration || generation === 0) throw new Error('obsolete M3 recovery connection')
++    await current
++    if (generation !== currentGeneration) throw new Error('obsolete M3 recovery completion')
++  }
+ }
+ 
+ async function main(): Promise<void> {
+@@ -276,7 +290,11 @@ async function main(): Promise<void> {
+     // 挂「连接成功」事件而非一次性的 dshStart —— 首连超时 reject 只放行闸门（U-17 语义，
+     // M1/M2 不永久挂），后台重连成功时补跑 preset.ensure，#21 不再被永久跳过。
+     if (dsh !== undefined) {
+-      wireRestoreOnReconnect(dsh, m3, ready)
++      const restored = wireRestoreOnReconnect(dsh, m3, ready)
++      const operations = new OperationsLedger(dataDir)
++      const recovery = wireAdminRecovery({ dsh, ledger: operations, restore: restored })
++      // F1 close durability/terminal semantics are independently repaired; do not reuse this instance.
++      app.once('before-quit', () => { recovery.close(); dsh?.stop(); operations.close() })
+       dshStart?.catch((error) => {
+         console.warn(`[m3] first connect timed out; restore deferred to reconnect: ${String(error)}`)
+         // P6-14.f4（VERIFY-P6-14.f3 阻塞项）：超时放行同样先等身份存储 init ——
+diff --git a/app/ui/main/ready.ts b/app/ui/main/ready.ts
+index 5ad0238..7681085 100644
+--- a/app/ui/main/ready.ts
++++ b/app/ui/main/ready.ts
+@@ -19,9 +19,9 @@ export interface ReadyStatus {
+ 
+ export interface ReadyGate {
+   setWindowReady(): void
+-  setDshReady(): void
++  setDshReady(generation?: number): void
+   /** #21 恢复全部 settle（含失败）后调用；failed 进载荷，不阻断就绪。 */
+-  setRestoreSettled(failed: string[]): void
++  setRestoreSettled(failed: string[], generation?: number): void
+   /** 全部已配置条件就绪后 resolve（dsh 未配置时只等窗口）。 */
+   wait(): Promise<void>
+   /** 只等 #21 恢复 settle（M1/M2 入口闸门用；dsh 连不上时不挂死 —— M2 自带 10s 超时兜底）。 */
+@@ -31,6 +31,7 @@ export interface ReadyGate {
+ 
+ export function createReadyGate(opts: ReadyGateOptions = {}): ReadyGate {
+   const dshConfigured = opts.dshConfigured ?? Boolean(process.env.PBOTS_DSH_HANDOFF)
++  let generation = 0
+   let windowReady = false
+   let dshReady: boolean | null = dshConfigured ? false : null
+   let restoreReady: boolean | null = dshConfigured ? false : null
+@@ -45,8 +46,21 @@ export function createReadyGate(opts: ReadyGateOptions = {}): ReadyGate {
+   }
+   return {
+     setWindowReady() { windowReady = true; flush() },
+-    setDshReady() { dshReady = true; flush() },
+-    setRestoreSettled(failed: string[]) { restoreReady = true; failedPresets = [...failed]; flush() },
++    setDshReady(next?: number) {
++      if (next !== undefined) {
++        if (next < generation) return
++        if (next !== generation) restoreReady = false
++        generation = next
++      }
++      dshReady = true
++      flush()
++    },
++    setRestoreSettled(failed: string[], restoredGeneration?: number) {
++      if (generation !== (restoredGeneration ?? 0)) return
++      restoreReady = true
++      failedPresets = [...failed]
++      flush()
++    },
+     wait() { if (done()) return Promise.resolve(); return new Promise((r) => waiters.push(r)) },
+     waitRestore() { if (restoreDone()) return Promise.resolve(); return new Promise((r) => restoreWaiters.push(r)) },
+     status() { return { window: windowReady, dsh: dshReady, restore: restoreReady, failedPresets: [...failedPresets] } },

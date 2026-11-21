@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "frozenAt": "2026-11-04",
+  "note": "P6-22 dev-only，首稿前冻结。10 条；只用此集原始回复调词。追加和停止的 turns[0] 是创建铺垫，turns[1] 是计分回合。任务均不需要网络或已有文件。",
+  "cases": [
+    {
+      "id": "dev-single-csv-json",
+      "kind": "single",
+      "task": "convert-inline-csv-to-json",
+      "prompt": "这段 CSV 是 name,price 换行 pencil,2 换行 ruler,5。帮我转成 products.json，价格保留数字类型，再解析一次确认格式有效。",
+      "expect": { "route": "create", "createCalls": 1, "stopCalls": 0 }
+    },
+    {
+      "id": "dev-single-svg-badge",
+      "kind": "single",
+      "task": "draw-svg-status-badge",
+      "prompt": "做一个 status.svg：绿色圆点旁边写 READY，画布 160×40。保存后检查 SVG 标签有没有闭合。",
+      "expect": { "route": "create", "createCalls": 1, "stopCalls": 0 }
+    },
+    {
+      "id": "dev-single-json-schema",
+      "kind": "single",
+      "task": "validate-inline-json-fields",
+      "prompt": "拿这份样例 {\"port\":8080,\"enabled\":true}，写个 Node 校验脚本 validate.mjs，确认 port 是合法端口且 enabled 是布尔值；运行脚本，把校验结论写到 validation-result.md。",
+      "expect": { "route": "create", "createCalls": 1, "stopCalls": 0 }
+    },
+    {
+      "id": "dev-single-extract-links",
+      "kind": "single",
+      "task": "extract-markdown-link-targets",
+      "prompt": "从这段 Markdown「[甲](https://example.org/a) 和 [乙](https://example.org/b)」提取两个链接地址，存为 links.json 数组，然后检查数组里没有重复项。不要访问网页。",
+      "expect": { "route": "create", "createCalls": 1, "stopCalls": 0 }
+    },
+    {
+      "id": "dev-parallel-css-units",
+      "kind": "parallel",
+      "task": "style-card-and-convert-length-units",
+      "prompt": "分头处理这两项：做个只有圆角蓝色卡片的 card.html；另外制作米、厘米、毫米互换的 units.csv 并校验 1 米等于 1000 毫米。互不等待。",
+      "expect": { "route": "create", "createCalls": 2, "stopCalls": 0 }
+    },
+    {
+      "id": "dev-parallel-poem-regex",
+      "kind": "parallel",
+      "task": "compose-poem-and-test-regex",
+      "prompt": "一边写一首四行的月亮小诗到 moon.md，一边准备匹配三个大写字母加两位数字的正则，拿 ABC12 和 AbC12 跑正反样例，把结果保存为 regex-check.json。两项各做各的。",
+      "expect": { "route": "create", "createCalls": 2, "stopCalls": 0 }
+    },
+    {
+      "id": "dev-attach-recipe-allergy",
+      "kind": "attach",
+      "task": "revise-recipe-for-allergy",
+      "turns": [
+        "帮我设计一份两人份番茄意面的菜谱，包含用料克数和烹饪步骤，写成 pasta.md。",
+        "那份意面菜谱要照顾乳制品过敏，把奶酪换成不含奶的替代食材并调整步骤。"
+      ],
+      "expect": { "route": "send", "createCalls": 0, "stopCalls": 0 }
+    },
+    {
+      "id": "dev-stop-synthetic-benchmark",
+      "kind": "stop",
+      "task": "cancel-synthetic-benchmark",
+      "turns": [
+        "做一个十分钟的本地定时采样实验，每隔十秒在 latency.csv 记录一次定时器偏差，结束后计算偏差的中位数；不要访问网络。",
+        "采样实验到此为止吧，取消后面尚未执行的采样，现有记录留着。"
+      ],
+      "expect": { "route": "stop", "createCalls": 0, "stopCalls": 1 }
+    },
+    {
+      "id": "dev-direct-http-status",
+      "kind": "direct",
+      "task": "explain-http-404",
+      "prompt": "HTTP 的 404 通常表示什么？用一句话回答就好。",
+      "expect": { "route": "direct-answer", "createCalls": 0, "stopCalls": 0 }
+    },
+    {
+      "id": "dev-chat-tired",
+      "kind": "chat",
+      "task": "casual-tired-comment",
+      "prompt": "脑袋有点转不动了，我去倒杯茶缓缓。",
+      "expect": { "route": "ignore", "createCalls": 0, "stopCalls": 0 }
+    }
+  ]
+}

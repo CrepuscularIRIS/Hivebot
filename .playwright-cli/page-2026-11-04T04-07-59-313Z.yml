@@ -1,0 +1,399 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - complementary "Agents" [ref=e7]:
+        - button "New" [ref=e10] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e11]: 
+        - button "Search" [ref=e12] [cursor=pointer]:
+          - generic [ref=e13]:
+            - generic [aria-hidden] [ref=e14]: 
+            - text: Search
+        - region "Agent list" [ref=e15]:
+          - generic "New chat chat preview" [ref=e19]:
+            - button "New chat" [ref=e20] [cursor=pointer]:
+              - strong [ref=e31]: New chat
+        - separator "Resize sidebar" [ref=e32]
+      - button "Connect apps" [ref=e34] [cursor=pointer]
+      - button "Account" [ref=e37] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e38]: P
+    - generic [ref=e39]:
+      - main [ref=e40]:
+        - group "New chat" [ref=e41]:
+          - button "View agent settings" [ref=e42] [cursor=pointer]:
+            - generic [ref=e51]: New chat
+        - log "Conversation transcript" [ref=e52]
+      - textbox "Prompt" [ref=e57]:
+        - paragraph [ref=e58]: Message New chat
+  - dialog [ref=e60]:
+    - banner [ref=e61]:
+      - heading "Connect Apps" [level=2] [ref=e62]
+      - button "Close" [ref=e63] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e64]: 
+    - generic [ref=e65]:
+      - generic [ref=e66]:
+        - generic [aria-hidden] [ref=e67]: 
+        - searchbox "Search plugins" [active] [ref=e68]
+      - combobox "Catalog" [ref=e69]:
+        - option "MCP official registry snapshot (offline mirror)" [selected]
+        - option "http://127.0.0.1:38229/local/index.json"
+    - generic [ref=e70]:
+      - button "Your plugins" [ref=e71] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e73]: P
+        - generic [ref=e74]: "1"
+        - generic [aria-hidden] [ref=e75]: 
+      - list [ref=e76]:
+        - listitem [ref=e77]:
+          - button "Open ac.inference.sh/mcp" [ref=e78] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e79]: M
+            - generic [ref=e80]:
+              - generic [ref=e81]: ac.inference.sh/mcp
+              - generic [ref=e82]: run any ai model. compose agents, stack knowledge, connect tools. one api, pay per run.
+          - status "This listing has no install coordinates" [ref=e84]: Not available
+        - listitem [ref=e85]:
+          - button "Open ac.snag/snag" [ref=e86] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e87]: S
+            - generic [ref=e88]:
+              - generic [ref=e89]: ac.snag/snag
+              - generic [ref=e90]: Gives your coding agent the captured console, network, replay and screenshot evidence for a bug.
+          - status "This listing has no install coordinates" [ref=e92]: Not available
+        - listitem [ref=e93]:
+          - button "Open ac.tandem/docs-mcp" [ref=e94] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e95]: D
+            - generic [ref=e96]:
+              - generic [ref=e97]: ac.tandem/docs-mcp
+              - generic [ref=e98]: Remote MCP server for Tandem docs, install guides, SDKs, workflows, and agent setup help.
+          - status "This listing has no install coordinates" [ref=e100]: Not available
+        - listitem [ref=e101]:
+          - button "Open academy.apexai/apex-ai-academy" [ref=e102] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e103]: A
+            - generic [ref=e104]:
+              - generic [ref=e105]: academy.apexai/apex-ai-academy
+              - generic [ref=e106]: "Co-Learn with your Agent: fact-checked AI lessons with Human and Agent views."
+          - status "This listing has no install coordinates" [ref=e108]: Not available
+        - listitem [ref=e109]:
+          - button "Open academy.ase/periodic-system" [ref=e110] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e111]: P
+            - generic [ref=e112]:
+              - generic [ref=e113]: academy.ase/periodic-system
+              - generic [ref=e114]: Practices for building software with coding agents, each with a test you check on your repo.
+          - status "This listing has no install coordinates" [ref=e116]: Not available
+        - listitem [ref=e117]:
+          - button "Open ad.getle/leads" [ref=e118] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e119]: L
+            - generic [ref=e120]:
+              - generic [ref=e121]: ad.getle/leads
+              - generic [ref=e122]: Find B2B leads with verified work emails, find and verify emails, and run cold email outreach.
+          - status "This listing has no install coordinates" [ref=e124]: Not available
+        - listitem [ref=e125]:
+          - button "Open ad.inside/inside-ads" [ref=e126] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e127]: I
+            - generic [ref=e128]:
+              - generic [ref=e129]: ad.inside/inside-ads
+              - generic [ref=e130]: "Telegram ad exchange: estimate reach and cost with no account, then create and run campaigns."
+          - status "This listing has no install coordinates" [ref=e132]: Not available
+        - listitem [ref=e133]:
+          - button "Open ae.beachclubs/mcp" [ref=e134] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e135]: M
+            - generic [ref=e136]:
+              - generic [ref=e137]: ae.beachclubs/mcp
+              - generic [ref=e138]: Search UAE beach clubs, day pass prices, amenities, opening hours and events across all 7 emirates.
+          - status "This listing has no install coordinates" [ref=e140]: Not available
+        - listitem [ref=e141]:
+          - button "Open ae.brainy/grocery-prices" [ref=e142] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e143]: G
+            - generic [ref=e144]:
+              - generic [ref=e145]: ae.brainy/grocery-prices
+              - generic [ref=e146]: "Source-backed UAE costs: groceries, schools, housing, transport, utilities, telecom and relocation"
+          - status "This listing has no install coordinates" [ref=e148]: Not available
+        - listitem [ref=e149]:
+          - button "Open ae.datadubai/dubai-real-estate" [ref=e150] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e151]: D
+            - generic [ref=e152]:
+              - generic [ref=e153]: ae.datadubai/dubai-real-estate
+              - generic [ref=e154]: Dubai property prices, AED/sqft, sales, rents, yields and projects from DLD registered transactions.
+          - status "This listing has no install coordinates" [ref=e156]: Not available
+        - listitem [ref=e157]:
+          - button "Open ae.easyvoice/tts" [ref=e158] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e159]: T
+            - generic [ref=e160]:
+              - generic [ref=e161]: ae.easyvoice/tts
+              - generic [ref=e162]: "Hosted text-to-speech MCP server: 66 voices in 9 languages, long-form narration, podcasts."
+          - status "This listing has no install coordinates" [ref=e164]: Not available
+        - listitem [ref=e165]:
+          - button "Open ae.genosys/genosys" [ref=e166] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e167]: G
+            - generic [ref=e168]:
+              - generic [ref=e169]: ae.genosys/genosys
+              - generic [ref=e170]: "Shop GENOSYS Korean skincare in the UAE from chat: find products, AED prices, order and pay."
+          - status "This listing has no install coordinates" [ref=e172]: Not available
+        - listitem [ref=e173]:
+          - button "Open ae.grovisor/grotax" [ref=e174] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e175]: G
+            - generic [ref=e176]:
+              - generic [ref=e177]: ae.grovisor/grotax
+              - generic [ref=e178]: "UAE Corporate Tax: CT computation, SBR, penalties, free zone test, TP and health-check."
+          - status "This listing has no install coordinates" [ref=e180]: Not available
+        - listitem [ref=e181]:
+          - button "Open ae.plantguide/dubai-gardening" [ref=e182] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e183]: D
+            - generic [ref=e184]:
+              - generic [ref=e185]: ae.plantguide/dubai-gardening
+              - generic [ref=e186]: What to plant in Dubai, indoor plants, plant care in the heat, garden styles and Garden Care prices.
+          - status "This listing has no install coordinates" [ref=e188]: Not available
+        - listitem [ref=e189]:
+          - button "Open ae.projectory/mcp" [ref=e190] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e191]: M
+            - generic [ref=e192]:
+              - generic [ref=e193]: ae.projectory/mcp
+              - generic [ref=e194]: Find UAE off-plan developments and registered residential sales.
+          - status "This listing has no install coordinates" [ref=e196]: Not available
+        - listitem [ref=e197]:
+          - button "Open ae.propick/propick" [ref=e198] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e199]: P
+            - generic [ref=e200]:
+              - generic [ref=e201]: ae.propick/propick
+              - generic [ref=e202]: "Manage your real-estate stock on Propick (Dubai): bulk listing sync, lookups and run reports."
+          - status "This listing has no install coordinates" [ref=e204]: Not available
+        - listitem [ref=e205]:
+          - button "Open ae.waggle/fenlight" [ref=e206] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e207]: F
+            - generic [ref=e208]:
+              - generic [ref=e209]: ae.waggle/fenlight
+              - generic [ref=e210]: Google search results, forum threads, local and shopping data, keyword ideas, AI answer tracking.
+          - status "This listing has no install coordinates" [ref=e212]: Not available
+        - listitem [ref=e213]:
+          - button "Open ae.waggle/vera" [ref=e214] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e215]: V
+            - generic [ref=e216]:
+              - generic [ref=e217]: ae.waggle/vera
+              - generic [ref=e218]: Scrape, search and extract the public web. 3,000 free credits at https://vera.waggle.ae/signup
+          - status "This listing has no install coordinates" [ref=e220]: Not available
+        - listitem [ref=e221]:
+          - button "Open aero.events/events" [ref=e222] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e223]: E
+            - generic [ref=e224]:
+              - generic [ref=e225]: aero.events/events
+              - generic [ref=e226]: "Find aviation events: airshows, fly-ins, workshops and club meets. Public and read-only."
+          - status "This listing has no install coordinates" [ref=e228]: Not available
+        - listitem [ref=e229]:
+          - button "Open africa.ugc/ugc" [ref=e230] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e231]: U
+            - generic [ref=e232]:
+              - generic [ref=e233]: africa.ugc/ugc
+              - generic [ref=e234]: The Human Ad Network. Campaigns, clipping, and Clip Studio from chat.
+          - status "This listing has no install coordinates" [ref=e236]: Not available
+        - listitem [ref=e237]:
+          - button "Open ag.hood/name-service" [ref=e238] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e239]: "N"
+            - generic [ref=e240]:
+              - generic [ref=e241]: ag.hood/name-service
+              - generic [ref=e242]: Resolve .hood names on Robinhood Chain — forward/reverse, text records, availability & pricing.
+          - status "This listing has no install coordinates" [ref=e244]: Not available
+        - listitem [ref=e245]:
+          - button "Open agency.goji/goji" [ref=e246] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e247]: G
+            - generic [ref=e248]:
+              - generic [ref=e249]: agency.goji/goji
+              - generic [ref=e250]: Answers on AEO, SEO, web and brand from GOJI's published material. Melbourne, Australia.
+          - status "This listing has no install coordinates" [ref=e252]: Not available
+        - listitem [ref=e253]:
+          - button "Open agency.justidea/justidea-agency" [ref=e254] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e255]: J
+            - generic [ref=e256]:
+              - generic [ref=e257]: agency.justidea/justidea-agency
+              - generic [ref=e258]: Services, prices, inquiries and free analytics, AI and Google visibility scans by JustIdea, Poland.
+          - status "This listing has no install coordinates" [ref=e260]: Not available
+        - listitem [ref=e261]:
+          - button "Open agency.kesey/pretrip" [ref=e262] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e263]: P
+            - generic [ref=e264]:
+              - generic [ref=e265]: agency.kesey/pretrip
+              - generic [ref=e266]: Screen regulated-health marketing copy against source-cited rulesets, all 50 states.
+          - generic [ref=e268]:
+            - generic [aria-hidden] [ref=e269]: 
+            - text: Connected
+        - listitem [ref=e270]:
+          - button "Open agency.lona/trading" [ref=e271] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e272]: T
+            - generic [ref=e273]:
+              - generic [ref=e274]: agency.lona/trading
+              - generic [ref=e275]: "AI-powered trading strategy development: backtesting, market data, and portfolio analysis"
+          - status "This listing has no install coordinates" [ref=e277]: Not available
+        - listitem [ref=e278]:
+          - button "Open agency.ottobot/business-contact-finder" [ref=e279] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e280]: B
+            - generic [ref=e281]:
+              - generic [ref=e282]: agency.ottobot/business-contact-finder
+              - generic [ref=e283]: Check how to contact a business website, and whether that contact path actually works.
+          - status "This listing has no install coordinates" [ref=e285]: Not available
+        - listitem [ref=e286]:
+          - button "Open agency.ottobot/contractor-license-changes" [ref=e287] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e288]: C
+            - generic [ref=e289]:
+              - generic [ref=e290]: agency.ottobot/contractor-license-changes
+              - generic [ref=e291]: Did this contractor's licence change? Observed lapses and reinstatements, not a snapshot.
+          - status "This listing has no install coordinates" [ref=e293]: Not available
+        - listitem [ref=e294]:
+          - button "Open agency.ottobot/licensed-house-painters" [ref=e295] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e296]: L
+            - generic [ref=e297]:
+              - generic [ref=e298]: agency.ottobot/licensed-house-painters
+              - generic [ref=e299]: Find licensed house painters in 11 US states, with dated license status from state boards.
+          - status "This listing has no install coordinates" [ref=e301]: Not available
+        - listitem [ref=e302]:
+          - button "Open agency.thebureauoflostcontext/bureau-public" [ref=e303] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e304]: B
+            - generic [ref=e305]:
+              - generic [ref=e306]: agency.thebureauoflostcontext/bureau-public
+              - generic [ref=e307]: Bureau-operated public read-only MCP service for public Context Packets and Cases.
+          - status "This listing has no install coordinates" [ref=e309]: Not available
+        - listitem [ref=e310]:
+          - button "Open agency.thirdhemisphere/ai-authority-index" [ref=e311] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e312]: A
+            - generic [ref=e313]:
+              - generic [ref=e314]: agency.thirdhemisphere/ai-authority-index
+              - generic [ref=e315]: Read-only CRISP scores and AI visibility data from Third Hemisphere's AI Authority Index.
+          - status "This listing has no install coordinates" [ref=e317]: Not available
+        - listitem [ref=e318]:
+          - button "Open agency.zoll/ausfuhr" [ref=e319] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e320]: A
+            - generic [ref=e321]:
+              - generic [ref=e322]: agency.zoll/ausfuhr
+              - generic [ref=e323]: "Regeln und Suchen zur Ausfuhr aus der EU: Kumulierung, Präferenznachweis, Incoterms, Warennummer"
+          - status "This listing has no install coordinates" [ref=e325]: Not available
+        - listitem [ref=e326]:
+          - button "Open ai.0si/disclosures" [ref=e327] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e328]: D
+            - generic [ref=e329]:
+              - generic [ref=e330]: ai.0si/disclosures
+              - generic [ref=e331]: Korean (DART/KIND) and US SEC filings with AI summaries, direction labels and market reaction.
+          - status "This listing has no install coordinates" [ref=e333]: Not available
+        - listitem [ref=e334]:
+          - button "Open ai.1325/mcp" [ref=e335] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e336]: M
+            - generic [ref=e337]:
+              - generic [ref=e338]: ai.1325/mcp
+              - generic [ref=e339]: Verified directory of 47,000+ Black-owned U.S. businesses. Search, profiles, maps, rewards.
+          - status "This listing has no install coordinates" [ref=e341]: Not available
+        - listitem [ref=e342]:
+          - button "Open ai.1clickwebsite/mcp" [ref=e343] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e344]: M
+            - generic [ref=e345]:
+              - generic [ref=e346]: ai.1clickwebsite/mcp
+              - generic [ref=e347]: Build and edit WordPress websites for local service businesses and run Lead Gen demo-site batches.
+          - status "This listing has no install coordinates" [ref=e349]: Not available
+        - listitem [ref=e350]:
+          - button "Open ai.1court.state/court-directory" [ref=e351] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e352]: C
+            - generic [ref=e353]:
+              - generic [ref=e354]: ai.1court.state/court-directory
+              - generic [ref=e355]: "US county court directory: clerk, courthouse address, e-filing, filing fees, and case lookup."
+          - status "This listing has no install coordinates" [ref=e357]: Not available
+        - listitem [ref=e358]:
+          - button "Open ai.2kw/mcp-server" [ref=e359] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e360]: A
+            - generic [ref=e361]:
+              - generic [ref=e362]: ai.2kw/mcp-server
+              - generic [ref=e363]: "EU-hosted AI platform: OpenAI-compatible LLM gateway, document extraction, transcription, agents."
+          - status "This listing has no install coordinates" [ref=e365]: Not available
+        - listitem [ref=e366]:
+          - button "Open ai.4ai/domains" [ref=e367] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e368]: D
+            - generic [ref=e369]:
+              - generic [ref=e370]: ai.4ai/domains
+              - generic [ref=e371]: Search 254 premium .ai domains for sale, get free .ai value estimates and real .ai sales data.
+          - status "This listing has no install coordinates" [ref=e373]: Not available
+        - listitem [ref=e374]:
+          - button "Open ai.69ai/69ai" [ref=e375] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e376]: "6"
+            - generic [ref=e377]:
+              - generic [ref=e378]: ai.69ai/69ai
+              - generic [ref=e379]: "Relationship network for AI agents and people: register, match, chat, dinner ideas, virtual gifts."
+          - status "This listing has no install coordinates" [ref=e381]: Not available
+        - listitem [ref=e382]:
+          - button "Open ai.aard/aard" [ref=e383] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e384]: A
+            - generic [ref=e385]:
+              - generic [ref=e386]: ai.aard/aard
+              - generic [ref=e387]: Official statistics from 170+ publishers, resolved from natural language with provenance.
+          - status "This listing has no install coordinates" [ref=e389]: Not available
+        - listitem [ref=e390]:
+          - button "Open ai.aarna/atars-mcp" [ref=e391] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e392]: A
+            - generic [ref=e393]:
+              - generic [ref=e394]: ai.aarna/atars-mcp
+              - generic [ref=e395]: Crypto market signals, technical indicators, and sentiment analysis for AI agents.
+          - status "This listing has no install coordinates" [ref=e397]: Not available
+        - listitem [ref=e398]:
+          - button "Open ai.abmeter/abmeter" [ref=e399] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e400]: A
+            - generic [ref=e401]:
+              - generic [ref=e402]: ai.abmeter/abmeter
+              - generic [ref=e403]: Run A/B experiments through your AI assistant. SDKs for Ruby, Python, JS, Node, React Native, Go.
+          - status "This listing has no install coordinates" [ref=e405]: Not available
+        - listitem [ref=e406]:
+          - button "Open ai.achromat/mcp-server" [ref=e407] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e408]: M
+            - generic [ref=e409]:
+              - generic [ref=e410]: ai.achromat/mcp-server
+              - generic [ref=e411]: Recall and calibrate policy-compliant tool-call arguments before execution. Does not run the tool.
+          - status "This listing has no install coordinates" [ref=e413]: Not available
+        - listitem [ref=e414]:
+          - button "Open ai.actwise/ideation" [ref=e415] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e416]: I
+            - generic [ref=e417]:
+              - generic [ref=e418]: ai.actwise/ideation
+              - generic [ref=e419]: Actwise Ideation helps founders benchmark startup and product ideas before they build.
+          - status "This listing has no install coordinates" [ref=e421]: Not available
+        - listitem [ref=e422]:
+          - button "Open ai.adadvisor/mcp-server" [ref=e423] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e424]: M
+            - generic [ref=e425]:
+              - generic [ref=e426]: ai.adadvisor/mcp-server
+              - generic [ref=e427]: Query Meta Ads performance data — accounts, campaigns, ad sets, ads, metrics & settings.
+          - status "This listing has no install coordinates" [ref=e429]: Not available
+        - listitem [ref=e430]:
+          - button "Open ai.adako/ads" [ref=e431] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e432]: A
+            - generic [ref=e433]:
+              - generic [ref=e434]: ai.adako/ads
+              - generic [ref=e435]: Google, Meta, LinkedIn and ChatGPT Ads for AI assistants. Every change needs your approval.
+          - status "This listing has no install coordinates" [ref=e437]: Not available
+        - listitem [ref=e438]:
+          - button "Open ai.adeu/adeu" [ref=e439] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e440]: M
+            - generic [ref=e441]:
+              - generic [ref=e442]: ai.adeu/adeu
+              - generic [ref=e443]: Automated DOCX Redlining Engine
+          - status "This listing has no install coordinates" [ref=e445]: Not available
+        - listitem [ref=e446]:
+          - button "Open ai.adkix/adkix" [ref=e447] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e448]: A
+            - generic [ref=e449]:
+              - generic [ref=e450]: ai.adkix/adkix
+              - generic [ref=e451]: "Turn a website into a short 9:16 video ad: script, cast, voice, shots, music. Asks before spending."
+          - status "This listing has no install coordinates" [ref=e453]: Not available
+        - listitem [ref=e454]:
+          - button "Open ai.adoraads/beauty" [ref=e455] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e456]: B
+            - generic [ref=e457]:
+              - generic [ref=e458]: ai.adoraads/beauty
+              - generic [ref=e459]: AI-native beauty ads, sponsored product discovery, and brand recommendations.
+          - status "This listing has no install coordinates" [ref=e461]: Not available
+        - listitem [ref=e462]:
+          - button "Open ai.adplane/google-ads" [ref=e463] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e464]: G
+            - generic [ref=e465]:
+              - generic [ref=e466]: ai.adplane/google-ads
+              - generic [ref=e467]: "Google, Meta, Microsoft and TikTok Ads in Claude or ChatGPT: reports and changes, created paused."
+          - status "This listing has no install coordinates" [ref=e469]: Not available
+        - listitem [ref=e470]:
+          - button "Open ai.adrails/adrails" [ref=e471] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e472]: A
+            - generic [ref=e473]:
+              - generic [ref=e474]: ai.adrails/adrails
+              - generic [ref=e475]: AI agents that build, test and monitor Meta Ads and Google Ads campaigns from your real data.
+          - status "This listing has no install coordinates" [ref=e477]: Not available
+      - generic [ref=e478]:
+        - generic [ref=e479]: Showing 50 of 111
+        - button "Load more" [ref=e480] [cursor=pointer]

@@ -1,0 +1,21 @@
+[t93] events 原样（截 600）: {"cursor":24,"records":[{"type":"event","event":{"type":"permission/preset","seq":0,"time":1794831160571,"data":{"preset":"workspace-write"}}},{"type":"event","event":{"type":"sandbox/mode","seq":1,"time":1794831160574,"data":{"mode":"workspace-write"}}},{"type":"event","event":{"type":"approval/policy","seq":2,"time":1794831160575,"data":{"policy":"ask"}}},{"type":"event","event":{"type":"session/title","seq":3,"time":1794831160592,"data":{"title":"T93-改名","messageSeqs":[],"source":{"kind":"user"}}}},{"type":"event","event":{"type":"agent/inbox/spliced","seq":4,"time":1794831160603,"data":{"t
+[t93] scan atSeq 0 → 子 cursor 3 maxSeq 3
+[t93] scan atSeq 1 → 子 cursor 3 maxSeq 3
+[t93] scan atSeq 2 → 子 cursor 3 maxSeq 3
+[t93] scan atSeq 5 → 子 cursor 7 maxSeq 7
+[t93] scan atSeq 10 → 子 cursor 13 maxSeq 13
+[t93] scan atSeq 15 → 子 cursor 17 maxSeq 17
+[t93] scan atSeq 20 → 子 cursor 23 maxSeq 23
+[t93] scan atSeq 21 → 子 cursor 24 maxSeq 24
+[t93] scan atSeq 23 → 子 cursor 25 maxSeq 25
+[t93] selectModel 预置失败: Error: session/selectModel failed: {"code":"session/model-unavailable","message":"Select an availabl
+[t93] M5 lastUserMessage = {"seq":21,"text":"问二"}
+[t93] F1 含 问一 = true ；F1 不含 问二 = true （boundary= 16 ）
+[t93] 默认 fork → 子 session-a5bd5a14-c28b-4188-99ff-d83aa3a5dd8d
+[t93] F2 model inherited= no
+[t93] F2 子快照整键 = []
+[t93] F2 子 selectModel 重放 = ERR Error: session/selectModel failed: {"code":"session/model-unavailable","message":"Select an availabl
+[t93] F1 默认 fork：子 cursor 25 maxSeq 25 父 cursor 24
+[t93] F3 续发：子 cursor 25 → 35 增长 = true （新事件显著 = true ）
+[t93] F3 子会话活性（模型调用到达 #2）= true
+FACTS_OK

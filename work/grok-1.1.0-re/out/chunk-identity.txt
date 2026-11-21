@@ -1,0 +1,585 @@
+## chunk-team-bot-line-render-DBs7eslj.js
+## index.eager-common-DbK3Oi_r.js
+  DkTYgQ = \\
+  aDYdSm = \\
+  KLBHat = Couldn't attach \\
+## chunk-view-CKIKFjF_.js
+  gRHPkn = This is a shared Bot
+  U49GLA = Its owner and managers can't see your messages
+  Zzu66G = Skills, routines, and capabilities are shared with everyone who uses i
+  wWgM9X = Round trip between 
+  zAVOK4 = Departs 
+## chunk-view-kcheXZ65.js
+  t7TeQU = Messages
+  hudddG = Read and reply to texts
+  dEtoBD = Find and read your notes
+  QztL2w = Save new notes and add to existing ones
+  Bo5Dtk = See your reminders and what's due
+## chunk-vault-card-dialog-BsPYIg-g.js
+  Ev2r9A = No results
+  WyGyYp = (Optional)
+  KDw4GX = Try again
+  b8Cn0n = Open System Settings
+  ePK91l = Edit
+## chunk-grok-bot-vault-login-dialogs-C6oXFsoF.js
+  cu6iol = Close dialog
+  On0aF2 = Website
+  ePK91l = Edit
+  DPfwMq = Done
+  WyGyYp = (Optional)
+## chunk-places-stage-XXPRxxlp.js
+  kPDBMd = In stock
+  Gcc9VQ = Out of stock
+  DMGXc3 = Preorder
+  a7hmSa = Backorder
+  5WPh3r = Free shipping
+## chunk-general-pane-YXy_8X5a.js
+  XCrgCo = Cursor account
+  6f5U0u = Remove 
+  dEgA5A = Cancel
+  MPPZ54 = Add account
+  KM6m8p = Team
+## chunk-view-CZFaUvTL.js
+  DPfwMq = Done
+  QCEzof = Memories
+  dmYV6f = Routines
+  0Khkjg = New Team Bot
+  OJx3wK = Not available
+## chunk-prompt-editor-DpaS0rI9.js
+  NQSKOV = No matches for \\
+  1E6CXB = Nothing to reference yet
+  gtdpBF = Reference a skill
+  iiP6uW = Press Esc to close
+  ixkTse = Bot
+## chunk-fullscreen-file-viewer-body-DAx1ejMe.js
+  6gRgw8 = Retry
+  wdxz7K = Source
+  6V3Ea3 = Copied
+## chunk-plugin-detail-view-BgPF1Rqs.js
+  trIsPs = Connect 
+  8U6a8X = Disconnect 
+  dEgA5A = Cancel
+  dJNmzF = Add repositories
+  gcoiFh = Reconnect
+## chunk-view-Bx8u2sOw.js
+  dEgA5A = Cancel
+  DPfwMq = Done
+  wckWOP = Manage
+  2FYpfJ = More
+  iSLIjg = Connect
+## chunk-order-checkout-CgYYwj9M.js
+  Fh0anL = <0>••••</0> 
+  jWRieJ = No payment method
+  W7hVmE = Choose payment method
+  mZmCk2 = Payment methods
+  XnzLko = Total
+## chunk-view-ODc_03uE.js
+  oca6v8 = automatically schedule all future updates
+  rH1I8B = Choose whether to update now or schedule the computer update for later
+  Q15keH = Update now
+  qMuJlf = Reschedule computer update
+  FGceLl = Schedule computer update
+## chunk-bot-manage-screen-DrDJNBmv.js
+  rJe6vw = 7 days
+  P9cEa2 = 30 days
+  h28hXf = 90 days
+  y6y0HQ = An AI estimate of the time this Bot saved your team versus working wit
+  3P75bH = About hours saved
+## chunk-team-bot-overview-section-DJkvySoI.js
+  xbmz4y = Suggested
+  VyqRJB = Share this Bot
+  Z8lGw6 = Share
+  qlM7mp = Who has access
+  kWJmRL = You
+## chunk-view-D6kXWFjx.js
+  pp4fh9 = Additional usage credits
+  PaQ3df = Enable
+  ePK91l = Edit
+  HYZwQe = Monthly additional usage
+  nTJmu3 = Monthly additional usage limit
+## chunk-team-bot-teams-flow-dialog-live-ajOPiiYC.js
+  zFtti1 = Which teams should 
+  AXXpyg = Are you a Microsoft Teams admin?
+  H6CpMT = Microsoft Teams isn't enabled for 
+  nFRqj8 = Microsoft Teams isn't available yet
+  0vPeqn = Microsoft Teams for 
+## chunk-onboarding-flow-CX7HFdkW.js
+  pgWIy0 = Bug Reproduction
+  NAwnOU = Repros the bug in staging and drops a pack with steps and screenshots
+  XSSheb = Product Performance
+  wE0AfD = Walks observability tools and writes up the hotspots
+  wuqxoF = Kicks off cloud agent runs, chases what's stuck, and summarizes
+## chunk-team-bot-service-accounts-dialog-b4h461Q0.js
+  fqSfXY = Replace
+  OJx3wK = Not available
+  JUpeyb = The secret was not saved. Try again.
+  pA2odF = No secrets yet
+  MAv87s = Secrets
+## chunk-native-plugin-detail-mHF04USK.js
+  EkH9pt = Update
+  dEgA5A = Cancel
+  6gRgw8 = Retry
+  Pwqkdw = Loading…
+  ZDY7Fy = Syncing…
+## chunk-inline-user-form-DX_81oNY.js
+  EkH9pt = Update
+  xGVfLh = Continue
+  dEgA5A = Cancel
+  tfDRzk = Save
+  hQRttt = Submit
+## chunk-bot-share-popover-CMoUCIhN.js
+  MEelZJ = Unpublish this Bot?
+  lgxknF = Teammates lose access to this Bot until you publish it again
+  4DLZUa = Unpublish
+  jvDsYK = Unpublishing…
+  dEgA5A = Cancel
+## chunk-view-BLt3J-sA.js
+  6V3Ea3 = Copied
+  dEgA5A = Cancel
+  JcD7qf = More actions
+  t7TeQU = Messages
+  O3oNi5 = Email
+## chunk-grok-bot-slack-dialog-live-BLUnpZTr.js
+  ygYnVo = Ask your Slack admin to auto-approve Team Bots, so the next one instal
+  f6VKmJ = This Slack authorization is missing app-management permissions. Reconn
+  QYPG6T = Send your Slack admin this link: <0>docs.slack.dev/admins/managing-app
+  8RofV4 = Grok Bot no longer has access to this Slack workspace. Reconnect it.
+  JJGun8 = Another install finished first. Try again to pick up its Slack app.
+## chunk-transcript-markdown-DXf0_QSE.js
+  OZJeTZ = Skill
+  kn2XvK = Open this skill in Settings
+  jozt9B = Cursor cloud agent
+  ixkTse = Bot
+  kWJmRL = You
+## chunk-team-bot-details-dialog-BhxZZwGZ.js
+  6YtxFj = Name
+  RFtRvq = Bot name
+  Lf9rlW = Name can’t be empty
+  Nu4oKW = Description
+  NDq8h1 = Bot description
+## chunk-team-bot-plugins-dialog-list-BG7BjvIV.js
+  JgMRiA = MCP Servers
+  MAv87s = Secrets
+  BbG6WA = Saving replaces all of 
+  02ePaq = Select 
+  WyGyYp = (Optional)
+## chunk-bot-template-details-dialog-DQpW2jFk.js
+  NxHkkp = Instructions
+  nsWW87 = instructions
+  QCEzof = Memories
+  9wcfqX = memories
+  PCSkw2 = Skills
+## chunk-new-chat-bar-DZEzyk5x.js
+  12i8o8 = No matching Bots
+  S80jdB = No Team Bots are available to you yet
+  ZZvRDK = by you
+  FiSaDn = by 
+  8Ri8tN = Team Bots
+## chunk-bot-configure-dialog-DoyeGyea.js
+  yQE2r9 = Loading
+  VOE4im = Not on this team
+  3suhu0 = Teammate
+  OZdaTZ = Person
+  t7TeQU = Messages
+## chunk-bot-share-invite-popover-Bv0yoCDo.js
+  ATGYL1 = Email address
+  MFKlMB = Invite
+  VyqRJB = Share this Bot
+  65K6ph = Cursor user
+  BEqeBq = Shared across all your Bots
+## chunk-unrequested-meeting-approval-Bx73Ngpb.js
+  joLIQz = Allowed
+  hQRttt = Submit
+  h7peZQ = Allow
+  QqKsGg = Couldn't save. Try again.
+  9lzViG = Computer
+## chunk-view-Bbgcfm9R.js
+  ZgqGro = This Mac
+  hXCTWg = Needs approval
+  dEgA5A = Cancel
+  h7peZQ = Allow
+  NoKBgy = Always allow
+## chunk-teach-recording-controls-Cpb8XFNW.js
+  9zb2WA = Connecting
+  IEhHIt = Screen preview unavailable
+  68rgYg = Recording another Bot's computer
+  3h2s4g = Recording 
+  ITj4Ys = Stop and save recording
+## chunk-team-bot-details-rows-DuviYrAI.js
+  iSLIjg = Connect
+  rDxVOJ = Connect after publishing
+  PKY57O = Connect once your team can see it
+  OJx3wK = Not available
+  JrFTcr = Connecting…
+## chunk-box-desktop-modal-CN4iwwJC.js
+  hxL96M = More screens
+  cC22Hu = Take control
+  s8Hj9A = I'm done
+  ygCKqB = Stop
+  Kmqs84 = You're in control
+## chunk-virtual-card-checkout-osUl4Sck.js
+  dXoieq = Summary
+  qVjbu0 = Hide flights
+  MSCAsT = Show flights
+## chunk-phone-call-B49iXw_D.js
+  6gRgw8 = Retry
+  9uXmKJ = Hide transcript
+  iko5Ih = Show transcript
+  KDw4GX = Try again
+  yqwjpd = Take over
+## chunk-view-Beq5n-NF.js
+  Sad2tK = Sending…
+  JlFcis = Send
+  bzSI52 = Discard
+  t7TeQU = Messages
+  KDw4GX = Try again
+## chunk-connector-card-view-CrTQkW_M.js
+  XuVQrE = Set up 
+  Lrv2Lo = Browse more
+  iSLIjg = Connect
+  yIVrHZ = Authorize
+  6V3Ea3 = Copied
+## chunk-computer-screen-preview-BURxVcDY.js
+  pwcnuW = Waking up…
+  O7rjNS = Setting up…
+  M0RdTC = Computer is asleep
+  Mpyer3 = Can't reach the screen
+  qJb6G2 = Try Again
+## chunk-view-Bu9ETj1Z.js
+  uYWUqA = Mail
+  xDAtGP = Message
+  gK3X4k = Message not delivered
+## chunk-view-CANKD5iS.js
+  9nliFO = Bots shared with you or your org. Add one to keep it in your sidebar.
+  ZZvRDK = by you
+  MTvQPd = by 
+  HrUSV3 = Required by your admin. You can't turn this off.
+  hp8OtS = Added
+## chunk-view-BnT48mMZ.js
+  iH8pgl = Back
+  6Uau97 = Skip
+  DPfwMq = Done
+  hXzOVo = Next
+  9NyAH9 = Skipped
+## chunk-bot-manage-knowledge-Cciz9jNH.js
+  MEJR0H = Use at least one letter (a–z) or number
+  MdpSC1 = New skill
+  Uqy4he = Editing skill
+  6YtxFj = Name
+  NxHkkp = Instructions
+## chunk-view-DgwOjGyI.js
+  hXCTWg = Needs approval
+  9lzViG = Computer
+  irWnmp = Couldn't open System Settings. Try again.
+  h7peZQ = Allow
+  OJx3wK = Not available
+## chunk-plugin-detail-sharepoint-write-CDvU6iFa.js
+  trIsPs = Connect 
+  OX6vme = Authenticate
+  gcoiFh = Reconnect
+  6gRgw8 = Retry
+  iSLIjg = Connect
+## chunk-team-setup-row-DtX-rXDf.js
+  T9mwDN = Open 
+## chunk-agent-avatar-editor-CDfEUvTS.js
+  6z9W13 = Restart
+  dEgA5A = Cancel
+  BzEFor = or
+  ixkTse = Bot
+  OfhWJH = Reset
+## chunk-team-bot-context-dialog-BhePh4Ev.js
+  PCSkw2 = Skills
+  nYwHT5 = Add skills from your library that 
+  D2AZQg = Something went wrong. Try again.
+  6YtxFj = Name
+  4b3oEV = Content
+## chunk-view-lxKSMA-f.js
+  9NyAH9 = Skipped
+  URmyfc = Details
+  6Uau97 = Skip
+  JlFcis = Send
+  1TNIig = Open
+## chunk-custom-mcp-form-IGQv-nwH.js
+  dEgA5A = Cancel
+  tZF1VG = Add plugin
+  tfDRzk = Save
+  AUlCmR = Name must contain at least one letter or number
+  BMJU7y = A server named \\
+## chunk-view-BQsUvw4u.js
+  D2AZQg = Something went wrong. Try again.
+  AjVXBS = Calendar
+  dDUgzP = (You)
+  URmyfc = Details
+  wJijgU = Location
+## chunk-view-yi69_8ne.js
+  joLIQz = Allowed
+  h7peZQ = Allow
+## chunk-voice-memo-bubble-O-la4bTx.js
+  ixkTse = Bot
+  9uXmKJ = Hide transcript
+  iko5Ih = Show transcript
+## chunk-connector-card-DcGxh_HK.js
+  iSLIjg = Connect
+  yIVrHZ = Authorize
+  wckWOP = Manage
+  m16xKo = Add
+  0lPOT3 = Personal tailnet
+## chunk-team-setup-new-skill-dialog-DwGXKoR0.js
+  0He7gk = Nothing to add
+  D2AZQg = Something went wrong. Try again.
+  2IXDgU = Upload file
+  JwdYqs = Or drag and drop here
+  aM8P8N = Add files
+## chunk-view-DLupEaB5.js
+  dEgA5A = Cancel
+  KM6m8p = Team
+  KDw4GX = Try again
+  yQE2r9 = Loading
+  iMkWoF = Turn on
+## chunk-view-BCgrkxOh.js
+  JcD7qf = More actions
+  3Siwmw = More options
+  la8mWk = Copy conversation ID
+  Osn70z = Debug
+  SGu12N = Cut after 
+## chunk-text-viewer-DJ7QYGEa.js
+  6gRgw8 = Retry
+## chunk-widget-DEsXv4qw.js
+  DPfwMq = Done
+  hQRttt = Submit
+  KDw4GX = Try again
+## chunk-cloud-agent-card-elevated-98HJpZrq.js
+  uAQUqI = Status
+  jozt9B = Cursor cloud agent
+## chunk-automation-detail-panel-v6MDF3Np.js
+  Pwqkdw = Loading…
+  7E5yw8 = This Bot is unavailable
+  JKdhhI = Couldn't pause this routine
+  ePK91l = Edit
+## chunk-team-bot-share-card-BYodp49N.js
+  iH8pgl = Back
+  V1fa9u = See more
+  a83GDF = Copy the share link
+  SZw9tS = View Details
+## chunk-view-DICrypK2.js
+  N6oHir = Waiting for you
+  QSzGDE = Idle
+  vS7jKA = Mark 
+  p7WaXc = Mark as finished
+  jOsQQK = More actions for 
+## chunk-view-4gH-NXtD.js
+  xDAtGP = Message
+  lyjq5X = Slack
+  e66y2Z = Thread
+  ePK91l = Edit
+## chunk-agent-invite-dialog-Dyc6ZdGe.js
+  MFKlMB = Invite
+  KDw4GX = Try again
+  P8jvuh = Try again in a moment
+  BJMUPG = <0>
+  iwuQtT = Couldn't complete this action. Check your connection and try again.
+## chunk-view-Be_TJB7a.js
+  KDw4GX = Try again
+  ovBPCi = Default
+  dEgA5A = Cancel
+  PsbMzj = Pay 
+  72c5Qo = Total
+## chunk-view-pQ-2bxLy.js
+  MAv87s = Secrets
+  hQRttt = Submit
+  idD8Ev = Saved
+## chunk-view-9XAPZnJe.js
+  BgNTlp = Couldn't load this visual
+  6gRgw8 = Retry
+## chunk-bonfire-dialog-Bzno6fy5.js
+  NY2uHw = 2 weeks of Grok Bot, on me
+  6KGpSb = Gift Grok Bot to a friend
+  e5DbhT = Your friend’s first 2 weeks are on us. Earn a free usage reset 7 days 
+  6vhD3j = Couldn't create your link. Try again.
+  STJz1y = Share on X
+## chunk-listener-integrations-tkDXHP8t.js
+  hbm6Vx = Couldn't connect 
+  IQDXxM = Link Slack so your Bot can wake on messages, mentions, and reactions
+  qthRAP = Link 
+  SVaREQ = Link 
+  iSLIjg = Connect
+## chunk-bot-share-trigger-DRvAGPUr.js
+  dDUgzP = (You)
+  LtI9AS = Owner
+  31RMxV = Manager
+  sylWod = Collaborator
+  ZQqoBZ = Can edit the Bot's settings and share with others
+## chunk-view-BB4uiBe7.js
+  T9mwDN = Open 
+  quCEII = Shared with your team
+  lEQW6L = Choose a team before sharing this agent
+  ZWt22w = This Bot can't be copied to your team
+  D2AZQg = Something went wrong. Try again.
+## chunk-mac-mail-setup-dialog-ChVoM-G0.js
+  FFv0Vh = Automation
+  psfvM3 = Lets Grok Bot open emails in Mail
+  AnNF5e = Accessibility
+  oDFbSU = Allow Grok Bot to Send Email
+  eCPaOW = Grok Bot needs macOS permissions to open each email you approve in Mai
+## chunk-file-stage-CwpXHeLZ.js
+  6gRgw8 = Retry
+## chunk-network-debugger-dialog-CzEDPquJ.js
+  Jq6deq = Allowlist these wildcard patterns:
+  M9OOz1 = Bypass SSL inspection, DLP, and proxy buffering for these domains. All
+  zwZaZg = Tested endpoint: 
+  QVjG8n = Network Debugger
+  vhgAB7 = Check Grok Bot's connection
+## chunk-view-DAK_-E-H.js
+  vfQ7wz = That code expired. Send a new one to keep going.
+  5M3gzq = A code went out less than a minute ago. Enter that one, or wait before
+  IF7AGW = The passkey prompt was cancelled before a passkey was saved
+  tMIwgc = That passkey request expired. Start again with a new code.
+  UqfpBk = The passkey couldn't be saved. Start again with a new code.
+## chunk-view-CF5ipRxC.js
+  ejZKhw = Unpublished
+  idD8Ev = Saved
+  E4TOUX = App secrets
+  6gRgw8 = Retry
+  tfDRzk = Save
+## chunk-bot-slack-copy-dlfEGYgY.js
+  IYyHwi = Added skills
+  m16xKo = Add
+  QIroEg = Skills teach this Bot how to handle tasks your team repeats
+  vD68LO = Your skills
+  BlLxpG = Search skills
+## chunk-bot-store-files-library-KBmGnBg9.js
+  Re33Vq = Skipped because larger than 
+  jyL4Il = Skipped because the name starts with a dot: 
+  BTsbsf = Skipped because this Bot already holds 
+  0He7gk = Nothing to add
+  D2AZQg = Something went wrong. Try again.
+## chunk-view-EpEVD5Q5.js
+  NoKBgy = Always allow
+  6Uau97 = Skip
+## chunk-view-DSY1HXfk.js
+  E2rHU1 = Move Grok Bot to Applications to update
+  QqKsGg = Couldn't save. Try again.
+  WfbkKQ = Move to Applications
+  fvg2KT = Restarting…
+  Cy8PUD = Restart to Update
+## chunk-view-BnWMhsyB.js
+## chunk-view-CQrxHlDU.js
+  XeOkNa = Not what I asked
+  YJPN3F = Too slow
+  HHOP3h = How can we improve?
+  VrRR3V = Share details
+  hQRttt = Submit
+## chunk-team-setup-new-secret-dialog-Cpllu6yn.js
+  E0czcG = Add new secret
+  ysrOqg = Environment variable name
+  i0OHcl = e.g. CRM_API_TOKEN
+  dDvWpB = Secret value
+  JUpeyb = The secret was not saved. Try again.
+## chunk-view-BjAuvRqj.js
+  a83GDF = Copy the share link
+  baaWCJ = Publishing…
+  pHhmq9 = Publish to team
+## chunk-send-imessage-approval-DmncYaKv.js
+  t7TeQU = Messages
+  JlFcis = Send
+## chunk-view-nKMRFjLY.js
+  6lGV3K = Show less
+  fMPkxb = Show more
+  xDAtGP = Message
+## chunk-vault-card-editor-l2uP6QMQ.js
+  QqKsGg = Couldn't save. Try again.
+  dEgA5A = Cancel
+## chunk-onepassword-previous-vault-note-CyYFkPWF.js
+  QWdKwH = Move
+  dEgA5A = Cancel
+  KDw4GX = Try again
+  1QfxQT = Dismiss
+## chunk-view-D6vJyZeT.js
+  a83GDF = Copy the share link
+  eORZUT = Publish this template
+  WZKu5f = This template was deleted. Its link no longer works.
+  kthsWj = View this template
+  SZw9tS = View Details
+## chunk-team-bot-memories-list-ByAYPVXj.js
+  2vdb1P = …more
+  6lGV3K = Show less
+  p4C0h8 = Showing the newest 
+  2cRvsl = No memories yet
+  QCEzof = Memories
+## chunk-view-j6BzC4-h.js
+  NoKBgy = Always allow
+  ixkTse = Bot
+  joLIQz = Allowed
+## chunk-marketplace-browse-model-_4v46oGV.js
+  N42ane = Productivity
+  hZotg6 = Communication
+  f8fH8W = Design
+  EWPtMO = Code
+  mUv9U4 = Sales
+## chunk-draft-send-error-B4qRBEoa.js
+  lyjq5X = Slack
+  t7TeQU = Messages
+## chunk-auto-review-rule-notice-DX8kPPBt.js
+  6lGV3K = Show less
+  fMPkxb = Show more
+  h7peZQ = Allow
+## chunk-view-BuVdKOTd.js
+  O3oNi5 = Email
+  h7peZQ = Allow
+  D2AZQg = Something went wrong. Try again.
+## chunk-view-CySVijdt.js
+  iMkWoF = Turn on
+  9NyAH9 = Skipped
+  D2AZQg = Something went wrong. Try again.
+  iDNBZe = Notifications
+  Njwcqh = Turn on notifications
+## chunk-bot-share-state-line-BqbbdSuB.js
+  vfz0d5 = Shared with 
+  tkkyHc = Shared with the Bot’s team
+  eS3FGC = Shared with 
+  3mhYHO = Shared with 
+  0Gd0NU = Shared
+## chunk-view-B75H9t_S.js
+  PS2Itk = Status unavailable
+## chunk-native-connector-card-tEGjQXOY.js
+  gcoiFh = Reconnect
+  iSLIjg = Connect
+  8U6a8X = Disconnect 
+  uG9dXc = Grok Bot will stop signing in with your 1Password logins until you con
+  dEgA5A = Cancel
+## chunk-team-bot-manager-alerts-B0UJWAZx.js
+  1w332T = Only team admins can share Bots
+  D2AZQg = Something went wrong. Try again.
+  ZQvSYg = Make 
+  UGVwbH = They’ll be able to change this Bot’s setup, like its profile, skills, 
+  ErwyLe = Add manager
+## chunk-view-7PKdecmC.js
+## chunk-team-bot-access-alerts-CZ1PN-F6.js
+  D2AZQg = Something went wrong. Try again.
+  7al2ea = This Bot’s access changed. Make your change again.
+  JIHQ2i = Your change is saved, but it hasn’t reached everyone yet. Try again to
+  KDw4GX = Try again
+  kNGLX6 = Retrying…
+## chunk-top-up-recipe-B8QboYgP.js
+  iM5q08 = Top up your balance
+  zTs8vS = Auto top-up when balance runs low
+  EB1xbN = Top up amount
+  tfDRzk = Save
+  dEgA5A = Cancel
+## chunk-app-copy-ocC0PfQl.js
+  crwali = Reminders
+  AjVXBS = Calendar
+  gVfVfe = Contacts
+  1DBGsz = Notes
+  uYWUqA = Mail
+## chunk-connector-data-center-D7GAVfda.js
+  TGYwsT = Data centers
+  xGVfLh = Continue
+  dEgA5A = Cancel
+  QJf5K9 = Choose a data center to continue
+## chunk-grok-bot-secret-problem-text-Byrhpk7j.js
+  uzgMt8 = Too long. Maximum length is 
+  m8zVtt = Names starting with 
+  kSvB29 = Names containing CURSOR_SANDBOX are reserved by the box
+  qNV794 = Paste the secret
+  Cr5BJv = Too short. Minimum length is 

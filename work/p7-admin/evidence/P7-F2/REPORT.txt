@@ -1,0 +1,79 @@
+P7-F2 证据报告（builder，2026-11-05 08:06）
+分支 feat/P7-F2，基点 main 757bd25，交付 HEAD aa19bc6bf430f4561512da3f85c459f607a475be
+worktree /tmp/bot-wt/P7-F2
+
+== 交付文件（全部新增，无既有文件改动） ==
+app/sdk/src/admin/origin.mjs          回合来源三分（user/delegated/tainted），沿用 P6 TurnOrigin 实例模式
+app/sdk/src/admin/authority.mjs       H1 授权三元组（词表/否定/token 相等/禁区/单 Mandate）
+app/sdk/src/admin/channel.mjs         受限管理桥 SDK 侧（照 P6 ⑤ CreateChannel 安全语义）
+app/sdk/src/admin/tools.mjs           动作表为空，默认全拒（明确 pbots/admin-unavailable）
+app/sdk/tests/unit/p7-authority.test.ts
+app/sdk/tests/unit/p7-admin-channel.test.ts
+app/ui/main/admin/policy.ts           main 权威重验（originRef 台账 / 伪 source / 旧代 / tainted）
+app/ui/main/admin/channel.ts          main 侧常驻订阅（P6 orch-channel 模式）
+app/ui/main/admin/consumer.ts         空动作表分发 + sanitizeAdminValue（不返 token/PID）
+app/ui/tests/unit/admin/channel.test.ts
+
+== TDD ==
+RED：实现前定向跑两份 SDK 测试（vitest run tests/unit/p7-authority.test.ts
+     tests/unit/p7-admin-channel.test.ts）→ "Test Files 2 failed (2) / Tests no
+     tests"（模块不存在）。UI 侧同理（import 失败）。
+GREEN：见下。
+
+== 复测命令与结果（环境 HOME=/tmp/bot-p7f2-home） ==
+1) cd app/sdk && ./node_modules/.bin/vitest run tests/unit/p7-authority.test.ts tests/unit/p7-admin-channel.test.ts
+   exit 0 · Test Files 2 passed (2) · Tests 49 passed (49)
+2) cd app/ui && ./node_modules/.bin/vitest run tests/unit/admin/channel.test.ts
+   exit 0 · Test Files 1 passed (1) · Tests 17 passed (17)
+（PLAN 验收缩写 SDK(x)/UI(x) 用 `pnpm test -- <file>` 在本仓 pnpm 下不过滤会跑全套
+ 175s——见「未完成项/发现」；上面用等价 vitest 定向过滤。）
+
+== 覆盖率（新增模块 ≥80% 门槛） ==
+SDK：vitest --coverage.include='src/admin/**' → All files 96.47% stmts /
+     89.67% branch / 98.03% funcs / 98.83% lines。
+UI：app/ui 未装 @vitest/coverage-v8，且 package.json 不在 P7-F2 白名单，未加依赖；
+    三文件全部行为分支均有测试（17 例覆盖重验矩阵/每代重开/坏帧/unavailable/sanitize）。
+
+== 验收格对照（PLAN P7-F2 行） ==
+- 宿主取原文、main 重验：authority 只吃 humanUtteranceOfGrant / mandate.grantUtterance
+  （宿主参数，模型自报无入口）；policy.reverifyAdminRequest 身份/代/记录重验。
+- 伪 source / 旧代 / 非 main respond / 重复订阅 / 超长 / null / 断流：
+  unknown-origin-ref + stale-generation（请求侧与记录侧双查）、respond 绑持流
+  Peer（错 Peer/迟到/伪造 requestId 拒）、attach 第二订阅者抛 forbidden、
+  validateAdminRequest 超长（>8192 JSON chars）与 null/缺字段拒、detach 作废在途
+  （stream-closed, outcome unknown）。
+- §3.3 词表反例 + 「装X」正例：正例 allow；「看看X的issue」「不要装X，装Y」
+  「不是不要装」「引号指令」等反例 deny/handoff。
+- 同目标异动作 / 否定 / 子串 / 工具结果授权失败：四类各有专测
+  （archive≠install 授权、否定优先、github≠github-connectors 双向 token 不等、
+  delegated 回合原文同词不算证据 + Mandate 范围项无原文证据不写入）。
+- unknown 内部普通工具不被全拒：classifyOrigin 内部/未知 kind → delegated（≠tainted），
+  authority 对 delegated 是 handoff（转需要你处理）不是全拒。
+- 未知副作用不重试：超时/断流 outcome unknown，测试断言队列回收、占位清空、
+  不自动重发。
+- 不返 token/PID：consumer sanitizeAdminValue 深剥禁区键（token/apiKey/password/
+  pid/processid 等），测试含嵌套与数组。
+- 附加收紧（测试在案）：调用方走私 requestId/generation → invalid-args；
+  盖章字段放 spread 最后。
+
+== 边界与留口 ==
+- 本任务只搭桥：tools.mjs ADMIN_ACTIONS = {}，consumer 默认动作表为空，
+  任何动作 → 明确 unavailable，未接任何真实管理动作；未注册 dsh 工具
+  （p7-admin.yml 属 P7-WM）；wireAdminChannel 未接进 main/index.ts（F3 文件）。
+- 正文过滤（跨回合正文隔离）按派发留接口：authority 的
+  humanUtteranceOfGrant 是唯一人类证据入口，采集/过滤接线等 D-1 定案。
+- main 侧不做请求大小复查：流上条目只能来自 SDK 通道队列（入队前已过
+  validateAdminRequest），无第二生产者。
+
+== 未完成项 / 发现（不自行扩范围） ==
+1) `pnpm -C app/sdk test -- tests/unit/x.test.ts` 的 `--` 过滤在本仓 pnpm 11 下
+   不生效（跑了全套 57 文件、175s）。PLAN 验收命令按此缩写派 verifier 时注意，
+   建议改用 `pnpm -C app/sdk exec vitest run <file>`。（p6 侧命令同理，值得立小任务）
+2) 全量跑时 tests/e2e/subagent-policy.test.ts 有 1 例失败（assertChildDenied，
+   subagent-policy.test.ts:271→326）——与本次改动无关（本分支零既有文件改动，
+   该失败在 main 基点即存在），未处理，建议主会话核实归口。
+3) app/ui 无 @vitest/coverage-v8（装它要动 package.json，超本任务白名单）。
+
+== 清理自查 ==
+`bot-reap --dry-run --match p7f2` exit 0、无输出（无残留进程）；测试用临时
+HOME=/tmp/bot-p7f2-home。

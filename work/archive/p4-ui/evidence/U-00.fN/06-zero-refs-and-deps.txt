@@ -1,0 +1,34 @@
+== date: 2026-11-02 15:32:13 HEAD: 07d88d6ad54be0be96af2aeeff5d9712137c266a ==
+== ① grep '@deepseek-ai|deepseek-harness' app/ui（ts/tsx/mjs/json/yaml/html，排除 node_modules、lock）==
+app/ui/pnpm-workspace.yaml:7:# dsh client 保留集经 link: 协议指向 vendor/deepseek-harness 的已构建包
+app/ui/main/window.ts:1:// 来源: https://github.com/deepseek-ai/deepseek-harness@ce7073d51254c26cd63b22a60835b8f948deb447:apps/desktop/src/main.ts:259-295,356-364
+app/ui/tests/unit/m3/ensure.test.ts:29:  pathToFileURL(registryRequire.resolve('@deepseek-ai/dsh-agent-preset-registry'))
+app/ui/main/index.ts:2:// 来源: https://github.com/deepseek-ai/deepseek-harness@ce7073d51254c26cd63b22a60835b8f948deb447:apps/desktop/src/main.ts:185-192（scheme 注册，改动：去 corsEnabled）
+app/ui/main/index.ts:57: * 来源: deepseek-harness@ce7073d:apps/desktop/src/main.ts:506-512（promise reject 的
+app/ui/main/sender.ts:1:// 来源: https://github.com/deepseek-ai/deepseek-harness@ce7073d51254c26cd63b22a60835b8f948deb447:apps/desktop/src/ipc.ts:108-115
+app/ui/tests/unit/m3/index.test.ts:125:    // 模拟上游 gateway 的参数校验：list(_request, signal)（repos/deepseek-harness
+app/ui/preload/index.ts:1:// 来源: https://github.com/deepseek-ai/deepseek-harness@ce7073d51254c26cd63b22a60835b8f948deb447:apps/desktop/src/preload-app.ts:79,118
+app/ui/tests/unit/shell/load-abort.test.ts:2:// app.exit(1)。判定口径照上游 deepseek-harness main.ts:506-512（promise reject 的
+app/ui/main/dsh/ledger.ts:2:// ApprovalOutcome 取自 https://github.com/deepseek-ai/deepseek-harness@ce7073d51254c26cd63b22a60835b8f948deb447:packages/interaction/user-approval/src/types.ts:32
+
+== link: 依赖计数（package.json / pnpm-lock.yaml）==
+package.json link:./vendor -> 0
+pnpm-lock.yaml link: -> 0
+
+== .gitmodules / gitlink ==
+ls: cannot access 'app/ui/.gitmodules': No such file or directory
+ls: cannot access '.gitmodules': No such file or directory
+0
+gitlink 条目 0
+
+== markdown 库 ==
+33:    "react-markdown": "^10.1.0",
+34:    "rehype-highlight": "^7.0.2",
+
+== 29 条删除计数 ==
+5c6af7a^ 的 link:./vendor 条数: 29
+5c6af7a 删除的 @deepseek-ai 条数: 29
+
+== markdown 已装未接 ==
+0
+（0 = 渲染产物未引用，未接入）

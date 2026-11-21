@@ -1,0 +1,16 @@
+# T51 step0v8 @ 2026-11-11T12:20:07.148Z
+workspace: /tmp/t51v8-uLA5PQ/profiles/web
+Q1 listIndexes(初)=[]
+Q2 setIndexes([real]) 成功=undefined
+Q2 profiles/web/cordis.patch.yml=
+# Your patch layer for this dsh profile, applied after every bundle layer:
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+- id: plugin-market
+  name: "@deepseek-ai/dsh-plugin-market"
+  config:
+    indexes:
+      - http://127.0.0.1:44639/real/index.json
+
+Q3 listIndexes=[{"url":"http://127.0.0.1:44639/real/index.json"}]
+Q4 重启后 listIndexes=[{"url":"http://127.0.0.1:44639/real/index.json"}]

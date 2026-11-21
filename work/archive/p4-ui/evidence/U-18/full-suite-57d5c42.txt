@@ -1,0 +1,35 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/U-18/app/ui
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+TypeError: deps.dsh.ready is not a function
+ ❯ main/m2-mux/index.ts:222:40
+    220|     void (async () => {
+    221|       for (;;) {
+    222|         const socket = await deps.dsh!.ready()
+       |                                        ^
+    223|         if (deadSockets.has(socket)) { await sleep(pollMs); continue }
+    224|         wire(socket)
+ ❯ Module.registerM2Mux main/m2-mux/index.ts:227:5
+ ❯ tests/unit/shell/wire.test.ts:107:16
+ ❯ node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/run.BPv-BBRv.js:1632:35
+ ❯ node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/run.BPv-BBRv.js:2801:26
+ ❯ node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/run.BPv-BBRv.js:3338:20
+ ❯ runWithCancel node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/run.BPv-BBRv.js:3333:10
+ ❯ node_modules/.pnpm/vitest@5.0.5_@types+node@24.19.2_vite@6.4.5_@types+node@24.19.2_/node_modules/vitest/dist/chunks/run.BPv-BBRv.js:3318:20
+
+This error originated in "tests/unit/shell/wire.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  19 passed (19)
+      Tests  167 passed (167)
+     Errors  1 error
+   Start at  14:24:31
+   Duration  2.90s (tests 91%, import 6%, transform 2%, worker 1%)
+

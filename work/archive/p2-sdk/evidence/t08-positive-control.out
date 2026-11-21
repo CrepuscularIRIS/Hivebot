@@ -1,0 +1,13 @@
+== T-08 独立正对照（verifier 自制，哨兵经变量传递不回显值） ==
+-- A. strict home：哨兵在 zstd 第 3 帧 + 同目录 binary JPEG --
+secret-prefix: sk-canary-p2sdk-
+UNRECOGNIZED /tmp/t08-verify-2yZx/photo.jpg: not UTF-8 text and not zstd — unrecognized format, refusing to skip
+HIT /tmp/t08-verify-2yZx/sessions/ws/session-aaa/session.v4.jsonl.zstd
+SCANNED files=2 pids=0
+FAIL 1 hits, 1 unrecognized files
+exit=2
+-- B. 同一 JPEG 走 --file（= --tracked 同一 raw 域，scan.mjs L64）--
+HIT /tmp/t08-verify-2yZx/photo.jpg
+SCANNED files=1 pids=0
+FAIL 1 hits
+exit=1

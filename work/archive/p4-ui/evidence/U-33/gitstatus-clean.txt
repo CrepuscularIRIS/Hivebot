@@ -1,0 +1,13 @@
+绿证明（全量 e2e 跑完后立即实测，2026-11-02 23:28）：
+$ git -C /home/lingxufeng/bot status --short -- work/
+ M work/LOG.md          ← 主会话先在的在途文件，非本任务所动
+$ git -C /home/lingxufeng/bot status --short -- work/p4-ui/evidence/ | wc -l
+0
+$ git -C /tmp/bot-wt/U-33 status --short        （commit 前）
+ M app/ui/.gitignore
+ M app/ui/package.json
+ M app/ui/tests/e2e/journeys/d11-d12.spec.ts
+ M app/ui/tests/e2e/visual.spec.ts
+ M app/ui/tests/support/ui.ts
+?? app/ui/scripts/
+→ 两侧 work/ 零脏；44 张截图全部落在 gitignored 的 app/ui/test-output/{PAB,PDC,U-27,U-31}/。

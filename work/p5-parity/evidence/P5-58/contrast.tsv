@@ -1,0 +1,27 @@
+id	ratio(light)	ratio(dark)	fg(light)	bg(light)	fg(dark)	bg(dark)	size	weight
+侧栏头图标钮	17.04	15.12	rgba(28, 28, 28, 0.92)	rgb(255,255,255)	rgba(245, 245, 245, 0.9)	rgb(31,31,31)	13px	400
+侧栏条目名	15.63	17.71	rgb(28, 28, 28)	rgb(245,245,245)	rgb(245, 245, 245)	rgb(14,14,14)	14px	500
+Plugins 药丸	17.04	15.12	rgb(28, 28, 28)	rgb(255,255,255)	rgb(245, 245, 245)	rgb(31,31,31)	14px	500
+正文	16.61	17.18	rgb(28, 28, 28)	rgb(252,252,252)	rgb(245, 245, 245)	rgb(18,18,18)	14px	400
+正文链接	4.94	6.64	rgb(11, 109, 211)	rgb(252,252,252)	rgb(77, 155, 255)	rgb(18,18,18)	14px	400
+代码块	17.04	15.12	rgb(28, 28, 28)	rgb(255,255,255)	rgb(245, 245, 245)	rgb(31,31,31)	13px	400
+thinking 行	16.61	17.18	rgb(28, 28, 28)	rgb(252,252,252)	rgb(245, 245, 245)	rgb(18,18,18)	16px	400
+工具行预览	16.61	17.18	rgba(28, 28, 28, 0.56)	rgb(252,252,252)	rgba(245, 245, 245, 0.54)	rgb(18,18,18)	13px	400
+审批卡标题	17.04	15.12	rgb(28, 28, 28)	rgb(255,255,255)	rgb(245, 245, 245)	rgb(31,31,31)	15px	600
+审批卡命令	17.04	16.6	rgb(28, 28, 28)	rgb(255,255,255)	rgb(245, 245, 245)	rgb(22,22,22)	12px	400
+审批 Allow once	16.61	17.18	rgb(252, 252, 252)	rgb(28,28,28)	rgb(18, 18, 18)	rgb(245,245,245)	14px	500
+审批 Deny once	17.04	15.12	rgba(28, 28, 28, 0.68)	rgb(255,255,255)	rgba(245, 245, 245, 0.66)	rgb(31,31,31)	14px	400
+composer 输入区	17.04	15.12	rgb(28, 28, 28)	rgb(255,255,255)	rgb(245, 245, 245)	rgb(31,31,31)	16px	400
+composer 编辑器	17.04	15.12	rgb(28, 28, 28)	rgb(255,255,255)	rgb(245, 245, 245)	rgb(31,31,31)	14px	400
+发送钮	17.04	16.6	rgb(255, 255, 255)	rgb(28,28,28)	rgb(22, 22, 22)	rgb(245,245,245)	16px	400
+info pane 标题	16.61	17.18	rgb(28, 28, 28)	rgb(252,252,252)	rgb(245, 245, 245)	rgb(18,18,18)	16px	400
+时间分隔	16.61	17.18	rgba(28, 28, 28, 0.68)	rgb(252,252,252)	rgba(245, 245, 245, 0.66)	rgb(18,18,18)	12px	400
+chat header 标题	16.61	17.18	rgb(28, 28, 28)	rgb(252,252,252)	rgb(245, 245, 245)	rgb(18,18,18)	16px	400
+ROOTVARS	light	--sand-bg-base=#fcfcfc --sand-bg-subtle=#f7f7f7 --sand-bg-elevated=#ffffff --sand-fill-elevated=#fcfcfc --sand-fill-bubble-agent=#1c1c1c0f --sand-fill-secondary-solid=#f3f3f3 --cursor-base=#1c1c1c --cursor-bg-input-surface=#1c1c1c0f
+ROOTVARS	dark	--sand-bg-base=#070707 --sand-bg-subtle=#111111 --sand-bg-elevated=#1f1f1f --sand-fill-elevated=#2f2f2f --sand-fill-bubble-agent=#f5f5f50a --sand-fill-secondary-solid=#151515 --cursor-base=#f5f5f5 --cursor-bg-input-surface=#f5f5f50a
+overlay	light	设置面板标题	17.04	rgb(28, 28, 28)	rgb(255,255,255)
+overlay	light	设置导航项	17.04	rgb(28, 28, 28)	rgb(255,255,255)
+overlay	light	搜索面板输入	17.04	rgb(28, 28, 28)	rgb(255,255,255)
+overlay	dark	设置面板标题	15.12	rgb(245, 245, 245)	rgb(31,31,31)
+overlay	dark	设置导航项	15.12	rgb(245, 245, 245)	rgb(31,31,31)
+overlay	dark	搜索面板输入	15.12	rgb(245, 245, 245)	rgb(31,31,31)

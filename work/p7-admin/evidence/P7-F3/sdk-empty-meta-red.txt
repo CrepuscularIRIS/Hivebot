@@ -1,0 +1,30 @@
+Already up to date
+Done in 305ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/P7-F3/app/sdk
+
+ ❯ tests/unit/p7-host-recovery.test.ts (16 tests | 1 failed) 152ms
+   ❯ P7-F3 durable native interrupted termination (5)
+     × accepts native fresh M3 metadata with null main and optional bots, but never trusts malformed relationships 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 durable native interrupted termination > accepts native fresh M3 metadata with null main and optional bots, but never trusts malformed relationships
+Error: untrusted bot relationships; recovery stays closed
+ ❯ recoverAssignments src/admin/host.mjs:43:11
+     41|   const meta = JSON.parse(await readText(join(orch.config.dataDir, 'bo…
+     42|   if (meta.version !== 1 || typeof meta.mainBotId !== 'string' || !met…
+     43|     throw new Error('untrusted bot relationships; recovery stays close…
+       |           ^
+     44|   }
+     45|   const interrupted = []
+ ❯ tests/unit/p7-host-recovery.test.ts:230:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  09:50:31
+   Duration  355ms (tests 60%, transform 24%, import 12%, setup 3%, worker 1%)
+

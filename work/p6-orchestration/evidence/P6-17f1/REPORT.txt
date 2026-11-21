@@ -1,0 +1,35 @@
+P6-17.f1 回报（builder，2026-11-04）
+分支 feat/P6-17f1（基点 main@ae41ce7），worktree /tmp/bot-wt/P6-17f1
+
+根因（读码确认，envelope.mjs registerWorkerRestriction）
+- launchReal 里 bots.json 写在 session/create 之后。session/create 触发 agent/created
+  → maybeRestrict(main agent)：此刻 ORCH 目录无 bots.json → resolveWorkerStatus =
+  'unknown' → fail-closed 挂 restrict，create_bot 从主 bot 工具表隐藏。
+- f3 的恢复 sweep（tools/pre-execute 撤 restrict）对首调只报一次 UNKNOWN_TOOL
+  （工具解析快照已按隐藏表取），fake 脚本不重试 → worker 永不创建，
+  workerIdByName 超时。与派发描述完全一致。
+
+修法（仅测试文件，+6 行）
+- app/ui/tests/e2e/p6-stuck.spec.ts launchReal：SDK 启动前向 P2SDK_ORCH_DATA_DIR
+  预写零 worker 骨架 {"version":1}（契约决策 31：省略 bots 键=零 worker=确认非
+  worker）→ agent/created 时身份即 'main'，restrict 不挂。
+- 既有的 shell 启动前整写（mainBotId/recipes/bots）保留不动。
+
+验收
+- RED：pnpm test:e2e p6-stuck → 2 failed，均在 workerIdByName
+  「create_bot result for "Test fixer"/"Asker" lands in main log: timed out」
+  （与 PLAN 现象行一致）。
+- GREEN：pnpm test:e2e p6-stuck → 2 passed (33.4s)，Xvfb（run-e2e.sh）。
+  注：PLAN 写「3 条全绿」，实际该 spec 自合并起就是 2 条（a5f8dc9 "p6-stuck 2 条"），
+  GU-P6-15-r1 的三条验收是并入这两条内的断言，非独立用例。
+- 未跑 e2e 全量 78（按 LEARNINGS 2026-11-04 由主会话合并后 shell 跑）。
+
+环境备注
+- 裸 `sh scripts/run-e2e.sh` 在 miniconda PATH 下会解析到全局旧版 playwright
+  （unknown command 'test'）；经 `pnpm test:e2e`（node_modules/.bin 前置）正常。
+  与本任务无关，未改脚本。
+
+改动文件
+- app/ui/tests/e2e/p6-stuck.spec.ts（唯一，产品代码零触碰）
+
+待 verifier 验收。

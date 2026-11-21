@@ -1,0 +1,22 @@
+836559 node /home/lingxufeng/.npm-global/bin/rea mcp
+1469589 node scripts/start.mjs
+1469604 /usr/bin/node /tmp/bot-wt/T-03/app/sdk/node_modules/@deepseek-ai/dsh/lib/bin.js web --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/p2sdk.yml --patch /tmp/t03dbg/home/runtime-patch.yml --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/market.yml --port 0 --no-open
+1473558 node scripts/start.mjs
+1473568 /usr/bin/node /tmp/bot-wt/T-03/app/sdk/node_modules/@deepseek-ai/dsh/lib/bin.js web --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/p2sdk.yml --patch /tmp/t03dbg/home/runtime-patch.yml --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/market.yml --port 0 --no-open
+1519661 node scripts/start.mjs
+1519678 /usr/bin/node /tmp/bot-wt/T-03/app/sdk/node_modules/@deepseek-ai/dsh/lib/bin.js web --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/p2sdk.yml --patch /tmp/t03dbg/home/runtime-patch.yml --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/market.yml --patch /tmp/t03dbg/observer.yml --port 0 --no-open
+1534561 node scripts/start.mjs
+1534573 /usr/bin/node /tmp/bot-wt/T-03/app/sdk/node_modules/@deepseek-ai/dsh/lib/bin.js web --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/p2sdk.yml --patch /tmp/t03dbg/home/runtime-patch.yml --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/market.yml --patch /tmp/t03dbg/observer.yml --port 0 --no-open
+1558197 node scripts/start.mjs
+1558209 /usr/bin/node /tmp/bot-wt/T-03/app/sdk/node_modules/@deepseek-ai/dsh/lib/bin.js web --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/p2sdk.yml --patch /tmp/t03dbg/home/runtime-patch.yml --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/market.yml --patch /tmp/t03dbg/observer.yml --port 0 --no-open
+1567144 node scripts/start.mjs
+1567157 /usr/bin/node /tmp/bot-wt/T-03/app/sdk/node_modules/@deepseek-ai/dsh/lib/bin.js web --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/p2sdk.yml --patch /tmp/t03dbg/home/runtime-patch.yml --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/market.yml --patch /tmp/t03dbg/observer.yml --port 0 --no-open
+1574035 node scripts/start.mjs
+1574048 /usr/bin/node /tmp/bot-wt/T-03/app/sdk/node_modules/@deepseek-ai/dsh/lib/bin.js web --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/p2sdk.yml --patch /tmp/t03dbg/home/runtime-patch.yml --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/market.yml --patch /tmp/t03dbg/observer.yml --port 0 --no-open
+1580601 node scripts/start.mjs
+1580616 /usr/bin/node /tmp/bot-wt/T-03/app/sdk/node_modules/@deepseek-ai/dsh/lib/bin.js web --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/p2sdk.yml --patch /tmp/t03dbg/home/runtime-patch.yml --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/market.yml --patch /tmp/t03dbg/observer.yml --port 0 --no-open
+1585117 node scripts/start.mjs
+1585129 /usr/bin/node /tmp/bot-wt/T-03/app/sdk/node_modules/@deepseek-ai/dsh/lib/bin.js web --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/p2sdk.yml --patch /tmp/t03dbg/home/runtime-patch.yml --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/market.yml --patch /tmp/t03dbg/observer.yml --port 0 --no-open
+1594833 node scripts/start.mjs
+1594840 /usr/bin/node /tmp/bot-wt/T-03/app/sdk/node_modules/@deepseek-ai/dsh/lib/bin.js web --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/p2sdk.yml --patch /tmp/t03dbg/home/runtime-patch.yml --patch /tmp/bot-wt/T-03/app/sdk/profile/patches/market.yml --patch /tmp/t03dbg/observer.yml --port 0 --no-open
+1703958 node /home/lingxufeng/.npm-global/bin/pnpm exec vitest run tests/e2e/mock-demo.test.ts --no-file-parallelism

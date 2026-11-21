@@ -1,0 +1,41 @@
+# VERIFY P7-F2.f1（P7-F2 整体终验）
+
+> 转正自 evidence/P7-F2/VERIFY-f1.txt。P7-F2 整体判定：PASS（分层定位差距按简化令交 PLAN v1.1）。
+
+verdict: PASS
+commit: c29193368468e5934c992e5829cd94da8cf8548f
+任务：P7-F2.f1 复验；P7-F2 整体 PASS（按本轮指定的原 F2 模块/桥范围；原版分层差距仍交 v1.1，不代表新版 PLAN 分层已实现）。
+worktree：/tmp/bot-wt/P7-F2；分支：feat/P7-F2；增量基点：aa19bc6bf430f4561512da3f85c459f607a475be。
+本会话禁止写报告 .md，因此采用用户允许的 TXT 备用路径。只写主仓 evidence，未改产品代码。
+
+| 验收项 | 结果 | 证据（本文件同目录） |
+|---|---|---|
+| create/restart 正负冲突否定优先 | PASS | f1-bad-path.log:18-19，均 deny/negated；SDK 62 包含中英、反序、有效 Mandate 不得覆盖否定 |
+| Mandate 授予同动作同目标否定冲突拒绝 | PASS | f1-bad-path.log:20，deny/negated；SDK 用例含反序、英文、create/restart、范围其他项冲突；不同动作/精确目标负控制仍 allow |
+| 空 consumer 不命中 Object 原型 | PASS | f1-bad-path.log:21-25：install/constructor/toString/hasOwnProperty/__proto__ 均 pbots/admin-unavailable，无抛异常或原请求返回；UI 23 还包含自定义继承 handler 不调用、非函数拒绝、自有同名函数可显式注册 |
+| SDK 指定测试 62 | PASS | f1-sdk.log:7-10，2 files / 62 passed，exit 0 |
+| UI 定向 23 | PASS | f1-ui-target.log:5-8，1 file / 23 passed，exit 0 |
+| UI 全量 513 | PASS | f1-ui-full.log:5-8，44 files / 513 passed，exit 0 |
+| 安装与构建 | PASS | 两包 frozen/offline 安装 exit 0，f1-install-sdk.log、f1-install-ui.log；pnpm build exit 0，f1-ui-build.log:75-83。保留 Vite 既有 chunk/dynamic-import 等 warning，不冒充无警告 |
+| 增量四文件白名单与无真实管理接线 | PASS | f1-scope.log:6-14，恰为 authority.mjs、p7-authority.test.ts、consumer.ts、admin/channel.test.ts；p7-admin.yml 与 main/index.ts 无增量；git diff --check 无输出 |
+| 额外坏路径：断流/迟到回复 | PASS | f1-bad-path.log:26-28，断流 outcome=unknown、pending=0，迟到 pbots/forbidden，FAILED_CHECKS=0 |
+| 分层差距定位不变更 | PASS（归口保持） | 仍按原 VERIFY.txt:46-51：未实现 always_allow/auto_review/needs_approval/blocked，交 v1.1；不以本次 PASS 宣称原版分层、Loader/live RPC 或宿主原文采集已完成 |
+
+独立复跑命令（均 export HOME=/tmp/bot-p7f2-f1-verify-home）：
+1. cd /tmp/bot-wt/P7-F2/app/sdk && pnpm install --frozen-lockfile --offline
+2. cd /tmp/bot-wt/P7-F2/app/ui && pnpm install --frozen-lockfile --offline
+3. cd /tmp/bot-wt/P7-F2/app/sdk && pnpm exec node /home/lingxufeng/bot/work/p7-admin/evidence/P7-F2/verify-bad-path.mjs
+4. cd /tmp/bot-wt/P7-F2/app/sdk && pnpm exec vitest run tests/unit/p7-authority.test.ts tests/unit/p7-admin-channel.test.ts
+5. cd /tmp/bot-wt/P7-F2/app/ui && pnpm exec vitest run tests/unit/admin/channel.test.ts
+6. cd /tmp/bot-wt/P7-F2/app/ui && pnpm build
+7. cd /tmp/bot-wt/P7-F2/app/ui && pnpm exec vitest run
+各命令串行执行，安装/脚本/测试/构建退出码全部为 0。实测时 30 CPU、iowait=0、idle约75%，无重叠全套回归。
+8. cd /tmp/bot-wt/P7-F2 && git rev-parse HEAD && git status --short && git diff --name-only aa19bc6..HEAD && git diff --check aa19bc6..HEAD
+最终 HEAD 未漂移；工作区干净。完整输出 f1-scope.log。
+
+整体判定依据：原 VERIFY.txt 的 F2 范围内三个失败现象均已复现验证修复；原先通过项由本轮两份指定完整测试重新覆盖。只验未接线纯模块与 mock 传输，未改变原报告边界。本次没有 renderer/UI 交互变更，没有启动真实窗口，不伪造截图/用户旅程。SDK 全仓 E2E 不在本轮快验清单，未再运行；原报告第 39-44 行的 SDK 全仓隔离问题及第 57 行范围外 [FIX] 保留，不宣称已修复或获得 SDK 全仓绿证据。覆盖率也不宣称本轮重新取得。
+
+新问题（每条一行，可直接成为修复任务）：
+无本轮新增 [FIX]。原范围外测试基础设施 [FIX] 及“交 v1.1”分层事项保持原归口。
+
+进程边界：未手工 kill/pkill、未重启/注销；仅执行 bot-reap --dry-run --match P7-F2，输出为空，无需清理。证据绑定上述完整 SHA，HEAD 改动则本报告失效。

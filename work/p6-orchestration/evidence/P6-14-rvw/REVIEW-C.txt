@@ -1,0 +1,74 @@
+# P6-14 · 方向 C：失败关闭与安全面
+
+范围：944afa0..09f627b
+commit：09f627b656962b891ef759fbebd0a263b34da81f
+结论：CONFIRMED 2 major；critical 0，minor 0。
+仅审范围 diff 及理解所需的 slots、真实 Loader 测试支撑、已安装工具/子代理调用方；未修改产品代码，未跑全量回归。
+当前运行约束禁止写报告 .md，按证据目录 TXT 兜底落盘。
+
+## CONFIRMED
+
+C-1
+major | app/sdk/src/orchestration/envelope.mjs:130,202 | worker 身份文件缺失/损坏，或合法 JSON 缺 bots/createdBy；worker 冷建立或 restriction 未成功挂载时 | 工具表层和执行层同时把 readWorkerIds() 的 [] 当成“非 worker”，不是身份未知即拒绝。真实 Loader 中，预先登记 worker 后把 bots.json 损坏，再以预铸 ID 建立会话：subagent 调用成功，session 数 3→4，结果 started subagent 3ed7d2ee-fdf3-4a56-8d9d-a1514fe24785；其子代理 job_list 也成功。 | /tmp/vfy-r-p614-c/probe.mjs missing；/tmp/vfy-r-p614-c/faults.mjs
+
+证据：
+- /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/missing-result.json
+- /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/missing.log
+- /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/faults.log
+- 单独调用真实 registerEnvelope 的矩阵实测：missing / bad-json / no-bots / empty-createdBy 四格，原先返回 deny 的同一 worker subagent 调用变为 next()。
+- 此处不是声称已成功挂载的 restrict 会因删文件自动撤销；已挂的工具名过滤仍在。问题成立于冷建立/重建，或原本挂载失败的会话；执行层本身每次重读都会失去参数级保护。
+- slots.mjs:26-35 的失败返回 [] 原本适用于容量收养，本次新增安全策略直接复用这一结果，将读取失败与确认非 worker 混为一类。范围内注释承认该行为，但它仍违反失败关闭要求。
+
+C-2
+major | app/sdk/src/orchestration/envelope.mjs:33-36,87,167-169,202 | 部署通过上游支持的 toolName 将 subagent 改名；本探针仅改 standard preset 的 toolName: subagent 为 rvw_delegate，身份文件健康，createdBy 先落盘再 session/create | restrict 和 pre-execute 都只识别固定名字。真实 worker 的 restrict 已挂（job_list、subagent_fork 等已从工具表消失），rvw_delegate 仍可见且调用成功；session 数 3→4，结果 started subagent 21d67538-6bce-4700-ac4b-059bd122ebdc。新子代理不在 bots.json worker 清单中，未继承 worker 的 job_list 限制，实际 job_list 返回 (no background jobs)。 | /tmp/vfy-r-p614-c/probe.mjs rename
+
+证据：
+- /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/rename-result.json
+- /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/rename.log
+- 子代理日志 tool/call(job_list) seq=15，tool/result seq=16，isError=false，turn/end completed seq=21。
+- 父 worker 的最终 definitions 仅保留普通工具与 rvw_delegate；不含 job_list/subagent_fork，排除“探针没有按生产顺序挂 restrict”的混淆。
+- 触发前提是受信部署配置改名，不是模型能凭空注册/改名。原样 standard preset 未出现此绕过。新文件第21-23行已说明改名上限，但“改名后可以再委派并生成无 worker 信封的后代”是实际复现的后果。
+- 将改名漏拦与子代理无 worker 信封作为一条攻击链计数，不重复报两个发现。
+
+## 已试但 REFUTED / 未确认的疑点
+
+1. restrict 抛错、API 缺失、definitions 抛错时，标准 deny 面是否静默放行：REFUTED（身份健康前提）。
+   /tmp/vfy-r-p614-c/faults.mjs 实调真实 registerWorkerRestriction + registerEnvelope，三种注入故障各跑17个固定工具名与 bash/pwsh run_in_background=true，共19调用，全部 deny，实际 next() 计数0；主 bot subagent 与 worker read 均放行。
+   输出：throw/missing/definitions-throw: 19 worker calls denied。
+
+2. restrict 建立时没有的标准名字是否缺少执行兜底：REFUTED（守卫层）。
+   故障探针的 definitions 仅含 subagent；schedule_create 不在建立时清单，执行时仍被 registerEnvelope 拒绝。该证据只证明晚到标准名的执行层覆盖，不冒充真实 MCP 服务连接/动态注册 E2E。
+   MCP 连接全链未额外启动；必要调用方核对显示已装 dsh-mcp-client/lib/index.js:134-153 按 publicName 注册工具。未将任意 MCP 工具语义、前缀名推断为另一个 CONFIRMED。
+
+3. 已装 schedule/job 工具族漏枚举：REFUTED（仅当前锁定0.2.2-alpha.2版本）。
+   真实 unrestricted agent definitions 的所有 schedule_ 名字：schedule_create、schedule_delete、schedule_list、schedule_update；所有 job_ 名字：job_kill、job_list、job_output。全部在 JOB_TOOLS 中。未将其他上游版本的 view/edit 当成本版本遗漏。
+   证据：missing-result.json 的 snapshot；已装 dsh-tool-schedule/lib/index.js 注册点507/547/569/603。
+
+4. mainBotId 恰好等于 worker ID 会反向免检：REFUTED。
+   身份文件 mainBotId=w、bots.w.createdBy=m 时，subagent 仍 deny。实际依赖 createdBy，不依赖 mainBotId。身份丢失的免检已归入C-1。
+
+5. 错误文本泄漏：未确认模型可见泄漏。
+   注入含合成内部路径的 restrict 异常，回调不外抛；19种拒绝返回均不含该路径或合成标记。异常原文在 logger.warn 中，属于本地诊断输出；未以此虚报模型数据泄漏。未读取真实凭证。
+
+6. 原样 standard preset 的 worker 默认拒绝对照：真实 Loader 中正常预登记 worker，job_list 返回 pbots/forbidden，session 数3→3，父工具表中17个 RESTRICT_TOOLS 均消失。
+   证据：normal-result.json、normal.log。
+
+## 命令和结果
+
+运行目录 /home/lingxufeng/bot；测试 HOME 全部为 /tmp/vfy-r-p614-c 下临时路径。
+
+HOME=/tmp/vfy-r-p614-c/home app/sdk/node_modules/.bin/node /tmp/vfy-r-p614-c/probe.mjs normal
+HOME=/tmp/vfy-r-p614-c/home app/sdk/node_modules/.bin/node /tmp/vfy-r-p614-c/probe.mjs rename
+HOME=/tmp/vfy-r-p614-c/home app/sdk/node_modules/.bin/node /tmp/vfy-r-p614-c/probe.mjs missing
+HOME=/tmp/vfy-r-p614-c/home app/sdk/node_modules/.bin/node /tmp/vfy-r-p614-c/faults.mjs
+
+定向旧测试：
+cd /home/lingxufeng/bot/app/sdk && HOME=/tmp/vfy-r-p614-c/unit-home ./node_modules/.bin/vitest run tests/unit/orchestration-envelope.test.ts
+结果：Test Files 1 passed (1)；Tests 25 passed (25)；Duration 142ms。
+说明：旧测试显式断言身份文件不可读时放行，因此25绿不能反证C-1。
+
+探针永久副本：
+/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/probe.mjs
+/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14-rvw/faults.mjs
+
+清理：每次真实 Loader 探针 finally 仅用 scripts/bot-reap --match /tmp/vfy-r-p614-c/<mode>；最后 scripts/bot-reap --dry-run --match /tmp/vfy-r-p614-c 输出为空。临时 runtime/handoff 已删除；证据目录只留脚本、测试输出及投影结果，不含 launch-token/.credentials.yaml。最终 HEAD 仍为上述审查SHA。

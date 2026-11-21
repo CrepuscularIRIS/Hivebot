@@ -1,0 +1,5 @@
+== 坏路径探针（验收员自建，/tmp/bot-p4-vfy-U-16/probe/badpath-reconnect.spec.ts）==
+场景：关窗口（HOLD 存活）→ 观察窗口中途 testDropSocket 断链 → DshConnection 重连新一代 → 重开 main $events（gateway 补发未决）→ deadline 代答
+结果（13:38 复跑）：
+  ✓ 1 passed (20.4s) —— answers===1、answeredEvents===[eventId]、pending===[]、canary 不存在；+10s 复查仍恰 1 次、canary 仍不存在
+判据：expect.poll timeout=deadline+20s 有界——若重连后不代答则超时 FAIL

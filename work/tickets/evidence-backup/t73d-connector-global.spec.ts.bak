@@ -1,0 +1,100 @@
+// T73d e2e（安全单核心验收）：① 经 UI 市场 Connect → __pbotsM1 末条 enabled===true + 建bot对话框无连接器栏
+// ② 无勾选新 bot 调 mcp__* → T73c 审批卡 → Always allow → standing-grants 落盘 → 再调直放
+// ③ Connect 之前建好的 bot 同调也出卡（热生效）
+import { expect, test, type Page } from 'playwright/test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { launchShell } from '../support/launch.ts'
+import { fakeOverlayPath, launchSdkRuntime, type SdkRuntime } from '../support/sdk-runtime.ts'
+import { waitProductReady, devState, permissionDock } from '../support/ui.ts'
+import { tmkdir } from '../support/tmp-sweep.ts'
+
+const SERVER = 'server-memory-30e6e77d'
+const TOOL = `mcp__${SERVER}__create_entities`
+const mcpCall = (entity: string): object => {
+  const id = `call-${entity}`, json = JSON.stringify({ entities: [{ name: entity }] })
+  return { chunks: [
+    { type: 'block-start', index: 0, blockType: 'tool-call', id, name: TOOL, arguments: json },
+    { type: 'block-end', index: 0, block: { type: 'tool-call', id, name: TOOL, arguments: json } },
+    { type: 'usage', usage: { inputTokens: 10, outputTokens: 5 } }, { type: 'finish', reason: { kind: 'stop' } },
+  ], paceMs: 10 }
+}
+const textTail = { chunks: [
+  { type: 'block-start', index: 0, blockType: 'text' }, { type: 'text-delta', index: 0, text: 'done' },
+  { type: 'block-end', index: 0, block: { type: 'text', text: 'done' } },
+  { type: 'usage', usage: { inputTokens: 10, outputTokens: 5 } }, { type: 'finish', reason: { kind: 'stop' } },
+], paceMs: 10 }
+
+test('T73d：装上即全局——①true 落 M1 ②无勾选新 bot 出卡+落盘 ③旧 bot 热生效', async () => {
+  test.setTimeout(480_000)
+  const dataDir = tmkdir('t73d-data-')
+  const grantsFile = join(dataDir, 'g', 'standing-grants.json')
+  const rt: SdkRuntime = await launchSdkRuntime({ patch: fakeOverlayPath(), cwd: tmkdir('t73d-ws-'), env: { PBOTS_DATA_DIR: join(dataDir, 'g') } })
+  const shell = await launchShell({ env: { PBOTS_DSH_HANDOFF: rt.handoff } })
+  try {
+    const page = shell.page
+    await waitProductReady(page)
+    const writeScript = (sid: string, calls: object[]): void => {
+      mkdirSync(join(rt.home, 'fake', 'scripts'), { recursive: true })
+      writeFileSync(join(rt.home, 'fake', 'scripts', `${sid}.json`), JSON.stringify({ calls }))
+    }
+    const prompt = async (): Promise<void> => {
+      const editor = page.locator('.sand-prompt-shell .ProseMirror[contenteditable="true"]')
+      await editor.click()
+      await page.keyboard.type('go', { delay: 3 })
+      await page.keyboard.press('ControlOrMeta+Enter') // T100：mod+enter 发送
+    }
+    const card = (page: Page) => permissionDock(page).locator('[data-connector-card]')
+    const newBot = async (name: string): Promise<string> => {
+      const pre = (await devState(page)).order
+      await page.locator('.sand-agents-sidebar__header button[aria-label="New"]').click()
+      const d = page.locator('dialog[data-dialog="new-bot"]')
+      await expect(d).toBeVisible()
+      await d.getByRole('textbox', { name: 'Bot name' }).fill(name)
+      await d.locator('[data-action="create-bot"]').click()
+      await expect(d).toHaveCount(0, { timeout: 60_000 })
+      const sid = (await devState(page)).order.find((id) => !pre.includes(id))!
+      return sid
+    }
+
+    // ---- ③ 前置：Connect 之前先建 OLD（热生效用）----
+    const old = await newBot('OLD')
+
+    // ---- ① UI 市场 Connect memory → M1 末条 true + 对话框无连接器栏 ----
+    await page.locator('.sand-agents-sidebar__plugins').click()
+    const memRow = page.locator('[data-market-list] .pb-row', { hasText: 'Memory' }).first()
+    await expect(memRow).toBeVisible({ timeout: 20_000 })
+    await memRow.locator('button[data-action="connect"]').click()
+    await expect(memRow).toHaveAttribute('data-kind', 'installed', { timeout: 120_000 })
+    const installs = await page.evaluate(() => (window as unknown as { __pbotsM1?: { installs: Array<{ enabled: unknown }> } }).__pbotsM1?.installs ?? [])
+    expect(installs[installs.length - 1]?.enabled, '__pbotsM1 末条 enabled===true').toBe(true)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(400)
+    await page.locator('.sand-agents-sidebar__header button[aria-label="New"]').click()
+    const dlg = page.locator('dialog[data-dialog="new-bot"]')
+    await expect(dlg).toBeVisible()
+    expect(await dlg.locator('[data-connectors]').count(), '建 bot 对话框连接器栏已删').toBe(0)
+    await dlg.locator('button[aria-label="Close"]').click()
+
+    // ---- ② 无勾选新 bot NEW 调 mcp → 出卡 → Always allow → 落盘 → 再调直放 ----
+    const nb = await newBot('NEW')
+    writeScript(nb, [mcpCall('t73d-n1'), textTail, mcpCall('t73d-n2'), textTail])
+    await prompt()
+    await expect(card(page), '② 无勾选新 bot 也出 T73c 卡（全局可用）').toBeVisible({ timeout: 30_000 })
+    await card(page).locator('button[data-always], button', { hasText: 'Always allow' }).first().click()
+    await expect.poll(async () => { try { return readFileSync(grantsFile, 'utf8') } catch { return '' } }, { timeout: 15_000 }).toContain(SERVER)
+    await prompt()
+    await expect(card(page), '② 直放（不再出卡）').toHaveCount(0, { timeout: 30_000 })
+
+    // ---- ③ OLD（Connect 之前建的）同调也出卡（热生效）----
+    await page.locator('.sand-agent-item[aria-label="OLD"]').click()
+    await page.waitForTimeout(500)
+    writeScript(old, [mcpCall('t73d-o1'), textTail])
+    await prompt()
+    await expect(card(page), '③ 旧 bot 热生效出卡').toBeVisible({ timeout: 30_000 })
+  } finally {
+    await shell.stop()
+    await rt.stop()
+  }
+})

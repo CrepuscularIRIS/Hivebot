@@ -1,0 +1,58 @@
+# VERIFY P6-25
+
+> 转正自 evidence/P6-25/VERIFY.txt。
+> **主会话裁定：PASS。** 唯一 [FIX]「区外链接指向区内时 write 成功」源自派发词的过度规定（我要求「两个方向的链接都拒」）。verifier 同时证实实际落盘在区内、未证实任何区外写入——按 resolve 到真实目标再判区内外，是正确且标准的语义：字节最终写在哪里才是边界，区内链接指向区外目标已被正确拒绝。该格不立修复。
+
+verdict: FAIL
+commit: 390f4d499913042f92e1c460a3ec1454e24c2047
+branch: feat/P6-25
+worktree: /tmp/bot-wt/P6-25
+base: 60e8b028c3c6724c2108ed5f3459dca55c5a18d6
+
+本会话的上级工具约束禁止写报告 .md，按派发给定的 TXT 回退路径落盘。未修改产品代码或产品测试。
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+| 1. fake provider + 真 Loader：绝对路径写宿主区外 /tmp 被拒、无审批卡、无落盘；builder 7/7 | PASS | 独立 adversarial.mjs 的 absolute-host-tmp：error=true,cards=0,exists=false。vfy-write-outside-verbose.log 第6–17行：write-outside 7 passed (7)。 |
+| 2. 独立绕过矩阵：..、双向符号链接、/proc/self/cwd/..、区外 edit、大小写/双斜杠/尾斜杠全部拒绝 | FAIL | vfy-adversarial.log 第3–16行，13格中12格符合预期；outside-symlink-to-inside 实际 error=false,cards=0，区内文件被创建。其余指定区外路径被 policy deny，文件不存在或保持 before。 |
+| 3. 区内 write/edit 不误伤、区外 read 仍 ASK、NEVER 不变 | PASS | 独立 inside-write 成功；outside-read-still-ask 卡数1（拒绝卡后工具失败，证明没有被改成直接拒）；never-root-sdk-home 被 p2sdk-fs-guard 拒且0卡。builder 真Loader⑤区内 write/edit 成功、②区外read批准成功后edit仍被拒。policy + tiers-policy + guard-fs + guard-escalation + approval + w1ap0-matrix 均绿。 |
+| 4. 主/普通 bot、worker或子代理同受约束；核查全会话同路径论断 | PASS（按派发允许的子代理承载） | vfy-write-outside-verbose.log：①根会话、⑥另一cwd普通会话、⑦真实ptc never子代理均被拒/0卡/宿主无文件。shell-ask.mjs:192,258在宿主ctx注册tools/pre-execute；321–343只按工具档位、session workspaceRoot与真实目标判断，不按bot/worker类型分支。resolve.mjs:23–39从exec.agent.session解析cwd与workspaceRoot。未声称跑了UI worker旅程。 |
+| 5. 已装 dsh 注册表枚举，无遗漏写类文件工具 | PASS | 独立探针以只观察不改返回值的pre-execute监听器调用真实ToolsService.view(exec.agent)，持久化33项实际注册定义至registry.json；文件读写工具为read/write/edit/read_image/glob/grep，任意文件写入入口只有write/edit；str_replace_editor未注册。bash及workflow/委派为独立执行能力，不是遗漏的文件写工具。vfy-inspection.txt第7–41行。 |
+| 6. policy unit + 五类指定定向e2e回归 | PASS | vfy-regression.log：7 files / 114 tests passed；退出0，276.47s。命令明确列出7文件，未跑全量。 |
+| 7. diff限shell-ask + 两测试；旧单测翻转理由 | PASS | vfy-inspection.txt第2–6行：HEAD未变，merge-base为申报基点，diff仅三个指定文件且工作树干净。policy.test.ts原“区外写next交fence”一格改为deny，是撤销错误的fence能拦区外/tmp前提，与本次决策一致；新增8格，未用删测试压绿。 |
+
+命令（均在 /tmp/bot-wt/P6-25/app/sdk 执行）
+1. HOME=/tmp/bot-p625-vfy-home pnpm exec vitest run tests/unit/policy.test.ts tests/e2e/write-outside.test.ts tests/e2e/tiers-policy.test.ts tests/e2e/guard-escalation.test.ts tests/e2e/guard-fs.test.ts tests/e2e/approval.test.ts tests/e2e/w1ap0-matrix.test.ts --maxWorkers=1
+   输出尾部：Test Files 7 passed (7); Tests 114 passed (114); Duration 276.47s。exit=0。
+2. HOME=/tmp/bot-p625-vfy-home pnpm exec vitest run tests/e2e/write-outside.test.ts --maxWorkers=1 --reporter=verbose
+   输出尾部：Test Files 1 passed (1); Tests 7 passed (7); Duration 7.08s。exit=0。
+3. HOME=/tmp/bot-p625-vfy-home pnpm exec node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-25/adversarial.mjs
+   输出尾部：SUMMARY {"total":13,"passed":12,"failed":["outside-symlink-to-inside"]}。exit=1。
+4. HOME=/tmp/bot-p625-vfy-home pnpm exec node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-25/dangling-file.mjs
+   输出尾部：SUMMARY {"total":2,"passed":2,"failed":[]}。exit=0。
+
+独立对抗发现（CONFIRMED）
+- /tmp/bot-p625-vfy-qH2nid/outside/inside-link -> /tmp/bot-p625-vfy-qH2nid/workspace。
+- 会话cwd为workspace；write file_path=/tmp/bot-p625-vfy-qH2nid/outside/inside-link/linked-in。
+- 实际结果：isError=false，approval卡数0；结果展示 canonical path=/tmp/bot-p625-vfy-qH2nid/workspace/linked-in；该文件存在，内容unexpected。
+- 成因：shell-ask.mjs:328–343只检查resolve后的targets；区外拼写经链接解析为区内目标即通过。目标真实在区内，故这不是已经复现的“越界写宿主区外文件”漏洞，但直接违反本次派发明确要求的“区外链接指向区内也应拒”。不能把这一格记PASS。如实际产品意图仅限制最终realpath，需要派发者明确修订验收口径；本次不擅自放宽要求。
+
+额外坏路径
+- 区内断链目录指向区外不存在父目录：工具失败（ENOENT），0卡，无区外落盘；这是下游执行失败，不能冒称policy层deny。
+- 区内末端断链文件指向区外缺失文件（区外父目录存在）：被下游“not a regular file”拒，0卡，区外文件未创建。
+- 对照：区内末端链接指向区外已存在文件，被write-outside-workspace直接拒，原内容before不变。
+- 以上排除了本轮探针中断链直接造成宿主区外写入的假设，未确认为新漏洞。
+
+进程与边界
+- 独立探针的HOME、workspace、outside、dsh均由同一个mkdtemp('/tmp/bot-p625-vfy-')根派生；不读取真实凭证。runtime handoff仅供本地连接，不进入证据。
+- 只使用测试框架/探针自身的rt.stop() teardown回收自spawn子进程；未运行手工kill、pkill、sudo或桌面操作。
+- 结束前 /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p625：无匹配进程，exit=0，证据vfy-reap.txt。
+- 本任务为SDK安全策略验收，无UI改动；未运行浏览器/截图、全量回归或全套e2e。
+
+所有证据均位于 /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-25/：
+- vfy-regression.log / vfy-write-outside-verbose.log
+- adversarial.mjs / adversarial-results.json / vfy-adversarial.log
+- dangling-file.mjs / dangling-results.json / vfy-dangling.log
+- registry.json / registry-dangling.json / vfy-inspection.txt / vfy-reap.txt
+
+新问题（每条一行，可直接成为修复任务）：
+- [FIX] 区外符号链接指向区内时write成功且无卡，不符合本次“双向链接全部拒绝”的验收要求（实际写入在区内，未证明区外落盘漏洞） | 复现：运行 /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-25/adversarial.mjs，查看outside-symlink-to-inside格，isError=false/cards=0/文件内容unexpected | 疑似位置：/tmp/bot-wt/P6-25/app/sdk/src/policy/shell-ask.mjs:328–343（只验canonical目标，丢失区外入口拼写） | 严重度：major（验收契约不符）

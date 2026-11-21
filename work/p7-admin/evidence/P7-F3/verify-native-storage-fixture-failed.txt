@@ -1,0 +1,16 @@
+file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-format@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1/node_modules/@deepseek-ai/dsh-session-format/lib/index.js:28
+	if (!Number.isSafeInteger(value) || value < 0 || Object.is(value, -0)) throw new SessionFormatError(`${label} must be a non-negative safe integer`);
+	                                                                             ^
+
+SessionFormatError: Session format version must be a non-negative safe integer
+    at sessionFormatCount (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-format@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1/node_modules/@deepseek-ai/dsh-session-format/lib/index.js:28:79)
+    at sessionFormatVersion (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-format@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1/node_modules/@deepseek-ai/dsh-session-format/lib/index.js:48:9)
+    at inspectSessionFormatVersion (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-format@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1/node_modules/@deepseek-ai/dsh-session-format/lib/index.js:57:9)
+    at Object.encodeCurrentHeader (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-format@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1/node_modules/@deepseek-ai/dsh-session-format/lib/index.js:346:7)
+    at toHeaderLine (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:817:30)
+    at Proxy.create (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:2468:3)
+    at Object.apply (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+cordis@4.0.6-alpha.1_@deepseek-ai+cordis-plugin-include@1.0.11-alpha.1_@de_782585c5ba9930e61e782d060d4eca18/node_modules/@deepseek-ai/cordis/lib/index.js:120:36)
+    at file:///home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/verify-native-storage.mjs:18:24
+
+Node.js v24.22.2
+EXIT 1

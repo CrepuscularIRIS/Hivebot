@@ -1,0 +1,21 @@
+SHA 4da62902c7a9c26452eafc4e98cf40c6d6a6d452
+ENV {'HOME': '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/verify-home', 'TMPDIR': '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/verify-tmp', 'PATH': '/home/lingxufeng/.npm-global/bin:/usr/bin:/bin', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/tmp/bot-P7-F3-no-dbus'}
+COMMAND ['/home/lingxufeng/.npm-global/bin/pnpm', '-C', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/verify-source/app/sdk', 'exec', 'vitest', 'run', '--config', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/verify-ui.config.mjs', '--maxWorkers=1', '--no-file-parallelism', 'tests/unit/admin/recovery.test.ts', 'tests/unit/admin/operations.test.ts', 'tests/unit/admin/channel.test.ts', 'tests/unit/shell/restore-wiring.test.ts', 'tests/unit/shell/ready.test.ts', 'tests/unit/shell/connect.test.ts', 'tests/unit/shell/startup-gate.test.ts', 'tests/unit/shell/wire.test.ts', 'tests/unit/shell/document-path.test.ts', 'tests/unit/shell/single-instance.test.ts', 'tests/unit/shell/load-abort.test.ts', 'tests/unit/m3/restore.test.ts', 'tests/unit/m3/orch-channel.test.ts']
+[ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY] Aborted removal of modules directory due to no TTY
+
+If you are running pnpm in CI, set the CI environment variable to "true", or set "confirmModulesPurge" to "false".
+[ERROR] Command failed with exit code 1: pnpm install
+
+pnpm: Command failed with exit code 1: pnpm install
+    at getFinalError (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:28547:14)
+    at makeError (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:30854:21)
+    at getSyncResult (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:32698:10)
+    at spawnSubprocessSync (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:32658:14)
+    at execaCoreSync (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:32588:23)
+    at callBoundExeca (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:35116:23)
+    at boundExeca (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:35093:49)
+    at sync (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:35248:14)
+    at runPnpmCli (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:210245:5)
+    at runDepsStatusCheck (file:///home/lingxufeng/.npm-global/lib/node_modules/pnpm/dist/pnpm.mjs:211947:7)
+
+EXIT 1

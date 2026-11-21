@@ -1,0 +1,91 @@
+verdict: PASS
+commit: 528c368ed768deae5611cec0787071a9230658a3
+P6-14 修复链整体判定: PASS（本轮全部指定验收项通过；f1→f4 的 worker 隔离、身份 fail closed、合法零 worker 放行、冷启动顺序与恢复撤销，本次独立复测未降级）
+branch: feat/P6-14f2
+worktree: /tmp/bot-wt/P6-14f2
+基准: 8db9636
+验收日期: 2026-11-04
+报告格式: 按当前验收环境禁止报告 .md 的限制，使用用户指定的 evidence/P6-14f2/VERIFY-f4.txt。
+
+证据目录 E = /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14f2/vfy-f4-final
+复用且已读完整的 f3 验收探针目录 S = /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14f3/vfy
+注意：E 中日志均为本验收员本轮重新执行产生，不采用 builder 的通过日志。
+
+| 验收项 | 结果 | 证据（命令/文件/输出） |
+| --- | --- | --- |
+| 1 f3 启动对抗探针复跑 | PASS | E/startup.log：timeout=false/true 均在 init 挂起时 completed=false、dsh 调用空；释放真实 BotsMetaStore.init 后首个 session/create 到达 dsh 适配器时均为 identity=main、fileExists=true。2 files / 3 tests passed，exit 0。包含生产新增测试的等价重定位执行，另原测试也在 UI 479 中直接通过。 |
+| 2 全部开闸路径独立审计 | PASS | E/audit.log。git grep + rg 查生产调用与 ensureThenReady 调用方：ensure.ts:47 一条；index.ts:283/284 是同一超时路径下 init.then 的成功/拒绝两个回调。严格按调用表达式计为 3 条、按开闸路径计为 2 条，不能把 builder 的“2 处”理解为只有 2 条表达式；未发现第三条开闸旁路。正常首连/重连唯一生产 ensureThenReady 调用在 index.ts:168，前一行 await m3.init；超时路径两个回调均等 init settle。ready.ts:49 为实现，:24 为接口；setDshReady 只置 dshReady，restoreDone 仍独立检查 restoreReady，不能提前放行 M1/M2。 |
+| 3a 合法零 worker 文档省略 bots 键时主 bot 放行 | PASS | E/probe-production-main.log：create_bot 可见，实际经过信封进入协调通道，结果 main-unavailable（探针无 main 订阅者），不是 pbots/forbidden；before=after=1。 |
+| 3b 冷启动全程无 unknown | PASS | E/probe-cold-boot.log：真实 store.init 写出合法骨架；session/created、agent/created、tools/pre-execute 三观察点 status 均 main，明确 BOOT ASSERT unknownCount=0；指定 main 后 17 个目标工具可见，create_bot 通过信封。与第 1 项结合，覆盖骨架创建与入口闸门顺序。 |
+| 3c missing/corrupt/rename 安全三探针 | PASS | E/probe-missing.log、probe-corrupt.log 均 pbots/forbidden、before=after=1、无 child agent/turn/tool；E/probe-rename.log 改名 rvw_delegate 后在子会话创建边界拒绝，无 live 子会话、无子 agent、job_list 不可执行；强行恢复持久目录记录也无 turn/start/tool/call。六格探针进程全部 exit 0。 |
+| 3d 恢复撤销三挂点 | PASS | E/states.log：session/created、agent/created、tools/pre-execute 各 lifts=1/layers=0；真 worker 在三挂点都不撤。E/probe-recovery.log 真 SDK：恢复文件后首调一次 UNKNOWN_TOOL，但工具表立即恢复 visible=true，第二回合 job_list 执行成功。 |
+| 3e SDK 指定 79 + 相邻 157 | PASS | E/sdk-target.log：6 files / 79 passed，83.49s；E/sdk-adjacent.log：5 files / 157 passed，3.16s；两命令 exit 0。未跑 SDK 全量。 |
+| 3f UI 单测 479 | PASS | E/ui-unit.log：42 files / 479 passed，4.05s，exit 0。仅按用户指定跑 UI 单测；本轮是 main 启动接线修复、无界面改动，未跑全套 e2e。 |
+| 3g 异常降级与身份形态矩阵 | PASS | E/faults.log：restrict 抛错、缺失、工具表枚举抛错各 19 个 worker 调用 deny、主 bot subagent/worker read 放行、晚注册 schedule_create 仍 deny，拒绝结果不泄漏注入异常文字；E/states.log 14 态含坏 JSON/版本/结构 fail closed、合法省略 bots/空 bots/空 createdBy 放行。 |
+| 4 diff 恰 3 文件；源码提取测试不是复制品 | PASS | E/audit.log 精确 3 文件：envelope.mjs、main/index.ts、startup-gate.test.ts。新增测试用 URL 定位真正 main/index.ts，readFileSync 读取生产文件，正则提取 dshStart.catch 函数体并 new Function 执行；无匹配会在 expect(body).toBeTruthy 失败。额外 E/prepare-binding.mjs 从生产测试原文生成只重定位 import/source URL 的基线与变异测试。E/startup.log 基线绿；E/mutant.log 将“读出的生产源码”仅在内存回退为立即 setRestoreSettled 后，新测试在 expect(completed).toBe(false) 精确变红（received true），exit 1，证明绑定的确是生产源函数体而不是另一份手写逻辑。未改任何产品文件。 |
+| 5 minor 注释措辞 | PASS | envelope.mjs:295-296 改为首调确实经过 pre-execute、撤 restrict 但本次仍按隐藏工具表快照报一次 UNKNOWN_TOOL；E/probe-recovery.log 本轮实际观察到对应现象并确认第二次调用成功，措辞与行为一致。 |
+
+关键输出尾部/片段：
+1. E/startup.log
+   f4 PASS timeout=false: gate held; first session/create saw {"method":"session/create","identity":"main","fileExists":true}
+   f4 PASS timeout=true: gate held; first session/create saw {"method":"session/create","identity":"main","fileExists":true}
+   Test Files 2 passed (2); Tests 3 passed (3)
+2. E/mutant.log（预期失败的对抗检查，不是产品失败）
+   MUTATION: production timeout body reverted in memory; product file unchanged
+   AssertionError: expected true to be false
+   expect(completed).toBe(false)
+   Test Files 1 failed (1); Tests 1 failed (1)
+3. E/states.log
+   {"recoveryHook":"session/created","lifts":1,"layers":0}
+   {"recoveryHook":"agent/created","lifts":1,"layers":0}
+   {"recoveryHook":"tools/pre-execute","lifts":1,"layers":0}
+   real worker restriction never lifted at any of 3 hooks; PASS
+4. E/probe-recovery.log
+   f3 recovery undo: first call one-shot UNKNOWN_TOOL, table restored immediately, second call executed ok
+5. E/sdk-target.log：Test Files 6 passed (6); Tests 79 passed (79)
+   E/sdk-adjacent.log：Test Files 5 passed (5); Tests 157 passed (157)
+   E/ui-unit.log：Test Files 42 passed (42); Tests 479 passed (479)
+
+实际执行命令（所有测试显式 HOME=/tmp/bot-p614f4-final-home；以下执行目录分别为所列包）：
+SDK = /tmp/bot-wt/P6-14f2/app/sdk
+UI = /tmp/bot-wt/P6-14f2/app/ui
+NODE = /tmp/bot-wt/P6-14f2/app/sdk/node_modules/.bin/node
+
+SDK 目录：
+HOME=/tmp/bot-p614f4-final-home ./node_modules/.bin/vitest run tests/unit/orchestration-envelope.test.ts tests/unit/orchestration-envelope-live.test.ts tests/unit/orchestration-create-live.test.ts tests/unit/orchestration-send-live.test.ts tests/unit/orchestration-stop-live.test.ts tests/unit/orchestration-report-live.test.ts --reporter=verbose
+HOME=/tmp/bot-p614f4-final-home ./node_modules/.bin/vitest run tests/unit/orchestration-foundation.test.ts tests/unit/orchestration-create.test.ts tests/unit/orchestration-send.test.ts tests/unit/orchestration-stop.test.ts tests/unit/orchestration-report.test.ts --reporter=verbose
+
+UI 目录：
+HOME=/tmp/bot-p614f4-final-home ./node_modules/.bin/vitest run tests/unit/
+HOME=/tmp/bot-p614f4-final-home node E/prepare-binding.mjs
+HOME=/tmp/bot-p614f4-final-home ./node_modules/.bin/vitest run --config E/startup.config.mts --reporter=verbose
+HOME=/tmp/bot-p614f4-final-home ./node_modules/.bin/vitest run --config E/mutant.config.mts --reporter=verbose
+最后一条预期且实际 exit 1；其他测试命令全部 exit 0。
+
+主仓目录：
+for mode in production-main cold-boot missing corrupt rename recovery; do HOME=/tmp/bot-p614f4-final-home NODE --experimental-strip-types S/probe-vfy.mjs "$mode"; done
+HOME=/tmp/bot-p614f4-final-home NODE S/faults-vfy.mjs
+HOME=/tmp/bot-p614f4-final-home NODE S/states-vfy.mjs
+真实 SDK 探针每次以 mkdtemp 根派生 HOME/runtime/data/handoff；finally 仅通过 bot-reap 按自建 base 清理自己的 SDK 进程，并删除运行时根目录。没有把运行时 handoff/token 落到证据目录。
+
+审计命令：
+git -C /tmp/bot-wt/P6-14f2 diff --name-only 8db9636..HEAD
+git -C /tmp/bot-wt/P6-14f2 grep -n 'setRestoreSettled' -- ':!app/ui/tests' ':!work' ':!repos'
+rg -n 'setRestoreSettled|setDshReady' /tmp/bot-wt/P6-14f2/app --glob '!pnpm-lock.yaml' --glob '!**/dist/**'
+rg -n 'ensureThenReady|await m3.init|setRestoreSettled|restoreReady =' /tmp/bot-wt/P6-14f2/app/ui/main
+结果见 E/audit.log；开始和结束 HEAD 一致，git status --short 均为空。
+
+额外坏路径：对真实生产超时函数体做内存回退变异，复现“init 未完成但 completed=true”，新回归测试精确报红；另 missing/corrupt/rename 真实 SDK 反例均被拒。没有为获得红色测试修改产品代码。
+
+修复链边界与已知非本轮遗留：
+- rename 仍会留 1 条持久会话目录记录（session/list before=1/after=2），但 live sessions 只有原会话，子 agent 创建为 0，记录无法复活执行。这是前轮已有 minor，不将它包装为“持久记录也为 0”；本次零子 agent/零执行硬标准满足。
+- 现有恢复方案仍允许恢复后首个隐藏工具调用一次 UNKNOWN_TOOL；本轮实证重试成功，注释已正确声明此上限。
+- 本报告仅裁决 P6-14 修复链；不替代整个 p6-orchestration 交付回归，不裁决 P6-14b 默认链开放。
+
+收尾：
+/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p614f2
+/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p614f4
+E/cleanup.log 两次均无匹配输出、exit=0；只清理本次探针自己启动的 SDK 子进程，未动其他会话或系统进程。自建临时 HOME 已删除；未改产品代码；未启动全量 SDK 回归或全套 e2e。
+
+新问题（每条一行，可直接成为修复任务）：
+- 无新增 [FIX]；前轮 await 阻塞项与注释 minor 本轮均已独立实证关闭。

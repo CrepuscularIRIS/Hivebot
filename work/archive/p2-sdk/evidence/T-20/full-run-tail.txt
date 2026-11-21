@@ -1,0 +1,16 @@
+Already up to date
+Done in 296ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/T-20/app/sdk
+
+[p2sdk] ready http://127.0.0.1:46863
+p2sdk: dsh pid 611186
+p2sdk: handoff /tmp/p2sdk-handoff-JxwQAB
+p2sdk: no ready line within 1ms
+p2sdk: forwarding SIGTERM to dsh
+
+ Test Files  19 passed (19)
+      Tests  136 passed (136)
+   Start at  12:23:02
+   Duration  125.39s (tests 99%, import 1%)
+

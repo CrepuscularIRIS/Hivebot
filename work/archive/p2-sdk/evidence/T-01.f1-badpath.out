@@ -1,0 +1,3 @@
+A queue-path error: throw MuxError: {"code":"Q"}
+B open after drop: PASS MuxError: mux socket is not open
+BADPATH PASS

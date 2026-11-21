@@ -1,0 +1,112 @@
+Already up to date
+Done in 312ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/P7-F3/app/sdk
+
+ ❯ tests/unit/p7-host-recovery.test.ts (4 tests | 4 failed) 121091ms
+   ❯ P7-F3 existing Reporter lifecycle recovery barrier (4)
+     × boot and worker turn/end consume nothing until recovery, then report the stable key once 1051ms
+     × start then stop cancels the queued boot pass 34ms
+     × real Delivery: stop after holds enters readLog prevents followup after the await 120002ms
+     × changing generation during agentOf cannot wake an old pending report 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 existing Reporter lifecycle recovery barrier > boot and worker turn/end consume nothing until recovery, then report the stable key once
+Error: controlled checkpoint not reached
+ ❯ until tests/unit/p7-host-recovery.test.ts:15:9
+     13|     await sleep(5)
+     14|   }
+     15|   throw new Error('controlled checkpoint not reached')
+       |         ^
+     16| }
+     17| const cleanups: Array<() => void> = []
+ ❯ tests/unit/p7-host-recovery.test.ts:58:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 existing Reporter lifecycle recovery barrier > start then stop cancels the queued boot pass
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 2 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "main",
+    ]
+
+  2nd vi.fn() call:
+
+    Array [
+      "worker",
+    ]
+
+
+Number of calls: 2
+
+ ❯ tests/unit/p7-host-recovery.test.ts:68:41
+     66|     f.reporter.stop()
+     67|     await sleep()
+     68|     expect(f.orch.delivery.readLog).not.toHaveBeenCalled()
+       |                                         ^
+     69|     expect(f.orch.delivery.send).not.toHaveBeenCalled()
+     70|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 existing Reporter lifecycle recovery barrier > real Delivery: stop after holds enters readLog prevents followup after the await
+Error: Test timed out in 120000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/p7-host-recovery.test.ts:72:3
+     70|   })
+     71|
+     72|   it('real Delivery: stop after holds enters readLog prevents followup…
+       |   ^
+     73|     const f = fixture()
+     74|     f.recovery.resolve()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/unit/p7-host-recovery.test.ts > P7-F3 existing Reporter lifecycle recovery barrier > changing generation during agentOf cannot wake an old pending report
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "followup": [Function Mock],
+        "id": "main",
+        "inbox": Object {
+          "nextStep": Array [],
+          "nextTurn": Array [],
+          "remove": [Function Mock],
+        },
+        "status": "idle",
+      },
+      "pbots-report:old",
+    ]
+
+
+Number of calls: 1
+
+ ❯ tests/unit/p7-host-recovery.test.ts:116:38
+    114|     release.resolve()
+    115|     await running
+    116|     expect(f.orch.delivery.wake).not.toHaveBeenCalled()
+       |                                      ^
+    117|   })
+    118| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  09:15:48
+   Duration  121.25s (tests 100%)
+
+
+EXIT_CODE=1

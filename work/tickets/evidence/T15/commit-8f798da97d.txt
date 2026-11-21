@@ -1,0 +1,215 @@
+sha=8f798da97df81faf68b9fb3d93a76bfc962cc77d
+date=2026-10-21T09:21:01Z
+msg:
+fix(tool-fs): leave sandbox decisions to providers and bound patch diffs
+
+Drop the preflight sandbox fence. It derived writable roots in the local
+process, so under the SSH provider it threw on remote additionalWritableRoots
+and compared remote targets against local temp roots; write and edit never
+fenced in the tool layer. The provider now refuses a denied operation at
+commit, and a commit whose first operation failed without any change rejects
+like a preflight refusal so the sandbox escalation path keeps its error code.
+
+Classify FS_ABORTED as unknown: a cancelled remote request rejects while the
+provider may still be writing, so no stat comparison can settle it. Document
+that a cancelled call receives the registry's abort result like every tool.
+
+Store no diff for creations, matching write, and bound the move source basis
+by diffBasisMaxBytes so persisted metadata never holds whole files;
+FsMoveOutcome.sourceBefore becomes nullable. Omit deletions from the call
+preview and from result diffs without a basis instead of rendering them as
+empty creations, and count distinct files in the preview title.
+
+Reject a NUL byte beyond the read sampling window in preflight, name targets
+by display path in atomic-write diagnostics, align the apply_patch guidance
+with the edit wording and mention delete and move, read the stopped flag and
+applied diffs tool-agnostically in the client models, skip the permission-bit
+snapshot under root, list fs/delete-intent in the tool catalog, and refresh
+the fs-patch description, group README, fs-sandbox summary, and ui-tool README.
+files:
+modified	+6	-6	docs/subsystems/filesystem.i18n.yaml
+modified	+8	-8	docs/subsystems/filesystem.md
+modified	+8	-8	docs/subsystems/filesystem.zh.md
+modified	+1	-1	docs/tool-catalog.i18n.yaml
+modified	+2	-2	docs/tool-catalog.md
+modified	+1	-1	docs/tool-catalog.zh.md
+modified	+2	-2	packages/client/ui-tool/README.i18n.yaml
+modified	+1	-8	packages/client/ui-tool/README.md
+modified	+1	-8	packages/client/ui-tool/README.zh.md
+modified	+5	-4	packages/client/ui-tool/src/client/tool/models/diff-card-model.ts
+modified	+3	-2	packages/client/ui-tool/src/client/tool/models/tool-call-model.ts
+modified	+4	-3	packages/client/ui-tool/tests/diff-card.client.spec.tsx
+modified	+2	-2	packages/extensions/tool-cordis/src/api-catalog.ts
+modified	+4	-4	packages/fs/README.i18n.yaml
+modified	+5	-5	packages/fs/README.md
+modified	+5	-5	packages/fs/README.zh.md
+modified	+12	-11	packages/fs/fs-local/src/fsio.ts
+modified	+13	-16	packages/fs/fs-local/src/index.ts
+modified	+9	-6	packages/fs/fs-local/tests/fsio.spec.ts
+modified	+9	-0	packages/fs/fs-local/tests/patch-mutations.spec.ts
+modified	+1	-1	packages/fs/fs-patch/package.json
+modified	+2	-2	packages/fs/fs-sandbox/README.i18n.yaml
+modified	+1	-1	packages/fs/fs-sandbox/README.md
+modified	+1	-1	packages/fs/fs-sandbox/README.zh.md
+modified	+1	-1	packages/fs/fs/src/index.ts
+modified	+3	-3	packages/fs/fs/src/types.ts
+modified	+8	-8	packages/fs/tool-fs/README.i18n.yaml
+modified	+5	-5	packages/fs/tool-fs/README.md
+modified	+5	-5	packages/fs/tool-fs/README.zh.md
+modified	+19	-9	packages/fs/tool-fs/src/apply-patch-output.ts
+modified	+10	-8	packages/fs/tool-fs/src/apply-patch-presentation.ts
+modified	+2	-2	packages/fs/tool-fs/src/apply-patch.ts
+modified	+3	-1	packages/fs/tool-fs/src/patch/execute.ts
+modified	+1	-1	packages/fs/tool-fs/src/patch/plan.ts
+modified	+22	-25	packages/fs/tool-fs/src/patch/preflight.ts
+modified	+14	-11	packages/fs/tool-fs/tests/apply-patch-presentation.spec.ts
+modified	+8	-9	packages/fs/tool-fs/tests/apply-patch.spec.ts
+modified	+31	-2	packages/fs/tool-fs/tests/patch/commit.spec.ts
+modified	+12	-35	packages/fs/tool-fs/tests/patch/preflight.spec.ts
+modified	+2	-2	packages/ssh/ssh/src/schemas.ts
+modified	+1	-1	scripts/doc-standard.spec.ts
+modified	+1	-1	scripts/gen-tool-catalog.ts
+modified	+1	-1	scripts/verify-package-readme-model-experience.ts
+modified	+1	-1	snapshots/sdk/bash-tool/system-prompt.expected.md
+modified	+1	-1	snapshots/sdk/bash-tool/tool-schemas.expected.json
+modified	+1	-1	snapshots/sdk/desktop-context/system-prompt.expected.md
+modified	+1	-1	snapshots/sdk/desktop-context/tool-schemas.expected.json
+modified	+2	-2	snapshots/sdk/desktop-ptc-context/system-prompt.expected.md
+modified	+1	-1	snapshots/sdk/subagent-activation-limit/system-prompt.1.expected.md
+modified	+1	-1	snapshots/sdk/subagent-activation-limit/tool-schemas.1.expected.json
+modified	+1	-1	snapshots/sdk/subagent-continuable-inheritance/system-prompt.1.expected.md
+modified	+1	-1	snapshots/sdk/subagent-continuable-inheritance/tool-schemas.1.expected.json
+modified	+1	-1	snapshots/sdk/subagent-continuable/system-prompt.1.expected.md
+modified	+1	-1	snapshots/sdk/subagent-continuable/tool-schemas.1.expected.json
+modified	+1	-1	snapshots/sdk/subagent-dsh-sdk-diagnostic/system-prompt.expected.md
+modified	+1	-1	snapshots/sdk/subagent-dsh-sdk-diagnostic/tool-schemas.expected.json
+modified	+1	-1	snapshots/sdk/subagent-dsh-sdk-dynamic-route/system-prompt.1.expected.md
+modified	+1	-1	snapshots/sdk/subagent-dsh-sdk-dynamic-route/system-prompt.expected.md
+modified	+1	-1	snapshots/sdk/subagent-dsh-sdk-dynamic-route/tool-schemas.1.expected.json
+modified	+1	-1	snapshots/sdk/subagent-dsh-sdk-dynamic-route/tool-schemas.expected.json
+modified	+1	-1	snapshots/sdk/subagent-list-agents/system-prompt.1.expected.md
+modified	+1	-1	snapshots/sdk/subagent-list-agents/tool-schemas.1.expected.json
+modified	+1	-1	snapshots/sdk/subagent-send-message/system-prompt.1.expected.md
+modified	+1	-1	snapshots/sdk/subagent-send-message/tool-schemas.1.expected.json
+modified	+1	-1	snapshots/sdk/text-turn/system-prompt.expected.md
+modified	+1	-1	snapshots/sdk/text-turn/tool-schemas.expected.json
+modified	+3	-3	snapshots/sdk/tool-error-details/system-prompt.expected.md
+modified	+1	-1	snapshots/sdk/tool-error-details/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/advanced-toolchain/system-prompt.1.expected.md
+modified	+1	-1	snapshots/session/advanced-toolchain/system-prompt.2.expected.md
+modified	+4	-4	snapshots/session/advanced-toolchain/system-prompt.expected.md
+modified	+2	-2	snapshots/session/advanced-toolchain/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/agent-instructions/system-prompt.expected.md
+modified	+2	-2	snapshots/session/agent-instructions/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/apply-patch-partial/session.v4.jsonl
+modified	+1	-1	snapshots/session/apply-patch-update/session.v4.jsonl
+modified	+1	-1	snapshots/session/apply-patch-update/system-prompt.expected.md
+modified	+1	-1	snapshots/session/apply-patch-update/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/background-confinement-failure/system-prompt.expected.md
+modified	+1	-1	snapshots/session/background-confinement-failure/tool-schemas.expected.json
+modified	+2	-2	snapshots/session/both-mode-turn/system-prompt.expected.md
+modified	+1	-1	snapshots/session/browser-use-chrome-devtools-mcp/system-prompt.expected.md
+modified	+1	-1	snapshots/session/browser-use-chrome-devtools-mcp/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/browser-use-playwright-mcp/system-prompt.expected.md
+modified	+1	-1	snapshots/session/browser-use-playwright-mcp/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/browser-use-stagehand-native/system-prompt.expected.md
+modified	+1	-1	snapshots/session/browser-use-stagehand-native/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/claude-code-mods/system-prompt.expected.md
+modified	+1	-1	snapshots/session/claude-code-mods/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/computer-use-cua-driver-mcp/system-prompt.expected.md
+modified	+1	-1	snapshots/session/computer-use-cua-driver-mcp/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/computer-use-cua-driver-native/system-prompt.expected.md
+modified	+1	-1	snapshots/session/computer-use-cua-driver-native/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/cordis-inspect-jsdoc/system-prompt.expected.md
+modified	+1	-1	snapshots/session/cordis-inspect-jsdoc/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/cua-native/system-prompt.expected.md
+modified	+1	-1	snapshots/session/cua-native/tool-schemas.expected.json
+modified	+2	-2	snapshots/session/cua-ptc/system-prompt.expected.md
+modified	+2	-2	snapshots/session/deepseek-messages-system-prompt/system-prompt.expected.md
+modified	+1	-1	snapshots/session/deepseek-messages-system-prompt/tool-schemas.expected.json
+modified	+2	-2	snapshots/session/deepseek-protocol-system-prompt/system-prompt.expected.md
+modified	+1	-1	snapshots/session/deepseek-protocol-system-prompt/tool-schemas.expected.json
+modified	+2	-2	snapshots/session/dynamic-tool-prompt-updates/system-prompt.expected.md
+modified	+1	-1	snapshots/session/dynamic-tool-updates/system-prompt.expected.md
+modified	+3	-3	snapshots/session/dynamic-tool-updates/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/foreground-confinement-timeout/system-prompt.expected.md
+modified	+1	-1	snapshots/session/foreground-confinement-timeout/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/fs-glob-sampling/system-prompt.expected.md
+modified	+1	-1	snapshots/session/fs-glob-sampling/tool-schemas.expected.json
+modified	+2	-0	snapshots/session/headless.snapshot.ts
+modified	+1	-1	snapshots/session/lsp-definition/system-prompt.expected.md
+modified	+1	-1	snapshots/session/lsp-definition/tool-schemas.expected.json
+modified	+2	-2	snapshots/session/mcp-resources-ptc/system-prompt.expected.md
+modified	+1	-1	snapshots/session/mcp-resources/system-prompt.expected.md
+modified	+1	-1	snapshots/session/mcp-resources/tool-schemas.expected.json
+modified	+2	-2	snapshots/session/model-switch-notice/system-prompt.expected.md
+modified	+2	-2	snapshots/session/model-switch-notice/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/multimodal-spill-ends/system-prompt.expected.md
+modified	+1	-1	snapshots/session/multimodal-spill-ends/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/office-authoring-checker/system-prompt.expected.md
+modified	+1	-1	snapshots/session/office-progressive-native/system-prompt.expected.md
+modified	+1	-1	snapshots/session/office-progressive-native/tool-schemas.expected.json
+modified	+2	-2	snapshots/session/office-progressive-ptc/system-prompt.expected.md
+modified	+1	-1	snapshots/session/office-sidecar-instructions/system-prompt.expected.md
+modified	+1	-1	snapshots/session/office-skills/system-prompt.expected.md
+modified	+1	-1	snapshots/session/office-skills/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/persistent-pwsh-tool-turn/system-prompt.expected.md
+modified	+1	-1	snapshots/session/persistent-pwsh-tool-turn/tool-schemas.expected.json
+modified	+2	-2	snapshots/session/pi-ai-conversation-updates/system-prompt.expected.md
+modified	+2	-2	snapshots/session/plugin-manager-mcp/system-prompt.expected.md
+modified	+2	-2	snapshots/session/plugin-manager-mcp/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/plugin-manager/system-prompt.expected.md
+modified	+1	-1	snapshots/session/plugin-manager/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/product-subagent-both/system-prompt.expected.md
+modified	+1	-1	snapshots/session/product-subagent-both/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/product-subagent-codex/system-prompt.expected.md
+modified	+1	-1	snapshots/session/product-subagent-codex/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/product-subagent-oar/system-prompt.expected.md
+modified	+1	-1	snapshots/session/product-subagent-oar/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/product-subagent-result-diagnostic/system-prompt.expected.md
+modified	+1	-1	snapshots/session/product-subagent-result-diagnostic/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/provider-cwd/system-prompt.expected.md
+modified	+1	-1	snapshots/session/provider-cwd/tool-schemas.expected.json
+modified	+2	-2	snapshots/session/ptc-node-read-only/system-prompt.expected.md
+modified	+2	-2	snapshots/session/ptc-node-workspace/system-prompt.expected.md
+modified	+2	-2	snapshots/session/ptc-persistent/system-prompt.expected.md
+modified	+2	-2	snapshots/session/ptc-policy-change/system-prompt.expected.md
+modified	+2	-2	snapshots/session/ptc-python-turn/system-prompt.expected.md
+modified	+2	-2	snapshots/session/ptc-read-image/system-prompt.expected.md
+modified	+2	-2	snapshots/session/ptc-turn/system-prompt.expected.md
+modified	+1	-1	snapshots/session/pty-tools-sandbox-backend/system-prompt.expected.md
+modified	+1	-1	snapshots/session/pty-tools-sandbox-backend/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/pwsh-tool-turn/system-prompt.expected.md
+modified	+1	-1	snapshots/session/pwsh-tool-turn/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/ralph-loop/system-prompt.1.expected.md
+modified	+1	-1	snapshots/session/ralph-loop/system-prompt.2.expected.md
+modified	+1	-1	snapshots/session/ralph-loop/system-prompt.expected.md
+modified	+1	-1	snapshots/session/ralph-loop/tool-schemas.1.expected.json
+modified	+1	-1	snapshots/session/ralph-loop/tool-schemas.2.expected.json
+modified	+1	-1	snapshots/session/ralph-loop/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/read-image/system-prompt.expected.md
+modified	+1	-1	snapshots/session/session-query-spill/system-prompt.expected.md
+modified	+1	-1	snapshots/session/session-query-spill/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/subagent-acp-diagnostic/system-prompt.expected.md
+modified	+1	-1	snapshots/session/subagent-acp-diagnostic/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/subagent-agent-preset/system-prompt.1.expected.md
+modified	+1	-1	snapshots/session/subagent-agent-preset/tool-schemas.1.expected.json
+modified	+1	-1	snapshots/session/subagent-agent-preset/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/subagent-child-question-rejection/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/subagent-structured-parent/system-prompt.1.expected.md
+modified	+1	-1	snapshots/session/subagent-structured-parent/tool-schemas.1.expected.json
+modified	+1	-1	snapshots/session/subagent-structured-parent/tool-schemas.expected.json
+modified	+2	-2	snapshots/session/system-prompt-in-history/system-prompt.expected.md
+modified	+1	-1	snapshots/session/system-prompt-in-history/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/team-targets/system-prompt.expected.md
+modified	+1	-1	snapshots/session/team-targets/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/text-turn/system-prompt.expected.md
+modified	+1	-1	snapshots/session/text-turn/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/web-fetch/system-prompt.expected.md
+modified	+1	-1	snapshots/session/web-fetch/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/workflow-confinement/system-prompt.expected.md
+modified	+1	-1	snapshots/session/workflow-confinement/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/workspace-dependencies/system-prompt.expected.md
+modified	+1	-1	snapshots/session/workspace-dependencies/tool-schemas.expected.json
+modified	+1	-1	snapshots/session/worktree/system-prompt.expected.md
+modified	+1	-1	snapshots/session/worktree/tool-schemas.expected.json

@@ -1,0 +1,6 @@
+== git status --porcelain (whole tree):
+== dsh installed:
+  "version": "0.2.2-alpha.2",
+== main repos/deepseek-harness after:
+ce7073d51254c26cd63b22a60835b8f948deb447
+(porcelain empty above = unchanged)

@@ -1,0 +1,73 @@
+P6-13 stop_bot · builder 报告（2026-11-04 17:20 实测时间）
+=====================================================
+
+分支 feat/P6-13（worktree /tmp/bot-wt/P6-13），基点 main@80880b9，commit 79899b0。
+改动 6 文件 +806/-3：
+  app/sdk/src/orchestration/stop.mjs                     新（工具本体，159 行）
+  app/sdk/src/orchestration/main-channel.mjs             +2 行接线（import + registerStopBot）
+  app/sdk/src/orchestration/index.mjs                    +2 行（P6-13 注册行）
+  app/sdk/tests/unit/orchestration-stop.test.ts          新（15 例纯单测，先红后绿）
+  app/sdk/tests/unit/orchestration-stop-live.test.ts     新（5 例真 Loader，D10）
+  app/sdk/tests/unit/orchestration-foundation.test.ts    barrel 追加 P6-13 导出（P6-11/12 合并 commit 同款先例）
+
+语义定稿（PLAN 行未覆盖、按契约推定的一格）
+  目标空闲时 stop = 幂等成功：返回 {accepted:true, wasRunning:false}。
+  依据：打断调用与应用 session/cancel RPC 实现逐字同款——
+  dsh-api-session-controller cancel 不查状态直接 agent.cancel；宿主对 idle 是
+  文档化 no-op（agent-loop agent.ts cancel）。工具多回 wasRunning + note 告知模型。
+
+实现要点
+  打断：agent.cancel({kind:'user'},{keepInbox:true})（=应用 session/cancel；
+  BRIEF §73「stop_bot 调 dsh sessionController cancel」）。
+  两阶段（R6 §6 / dsh interrupt_agent:75-111 只搬语义）：工具只回 accepted；
+  恰 1 项 end:stopped 与容量释放都绑 worker turn/end——分别归 P6-12 Reporter
+  与 P6-10 trackWorkerTurns，stop 不占不释 sharedSlots（单测断言 slots.used 不变）。
+  重入教训落实：stop 不注册任何事件回调；唯一宿主调用 cancel 是信号中止（无
+  同步 append），发生在工具 execute 栈，不在 session/event 发布栈（P6-12
+  withdrawWithRetry 撞重入保护那条路的反面）。
+  白名单/身份/污染：与 create/send 同构（when 隐藏 + execute 再拦，两道读权威
+  mainBotId；createdBy≠当前主 / 自身 / 未知 → pbots/forbidden；认领过
+  pbots-worker → pbots/forbidden，cancel 零调用）。错误一律 code: 前缀。
+  ponytail 注释：回合挂死时容量少一格，由 P5-27 打断链路超时兜底（决策 26）。
+  readCreatedBy 从 send.mjs 本地复制（PLAN 区域列不含改 send.mjs）。
+
+验收覆盖（全部有断言，非口头）
+  D10 进程树：live ①——marker 认树（bash -c 参数含 # p613w1，沿 PPid 上溯到
+    dsh + 链根子树），stop 后 /proc 全退（P5-27 口径，无 pkill）；之后 0 新
+    工具调用 / 0 新模型请求（fake requests.jsonl 计数）。
+  Assignment 回合 → 恰 1 项 end:stopped：live ①——reports==1、items==1、
+    outcome stopped、key=<assignmentId>:end、无 ask 项、3s 观察窗不双发。
+  非 Assignment 回合 → 0 项：live ②——用户直发 worker 被 stop，4s 后主 bot
+    0 条 pbots-worker 消息；工具结果含 accepted:true。
+  accepted 后 turn/end 前第 4 次 create → pbots/capacity：live ③——确定性窗口
+    构造：w1 回合挂在 fake 模型 paceMs=300_000 长睡上（pace sleep 不看 abort，
+    fake 仅 chunk 边界查 → cancel 后 turn/end 在 pace 期内不落，先断言
+    turn/end 未落再断言 create 拒）；同一模型响应批内 [stop, create] 两调用，
+    stop accepted + create pbots/capacity、通道零触达。释放只绑终态：停掉
+    bash 型 w2 → turn/end 落盘 → create 成功（占位释放后可再 create）。
+  污染回合：单测（execute 层 pbots/forbidden + cancel 零调用 + when 隐藏）；
+    live ④ 端到端（inject 唤醒的回合里 stop_bot 落空、worker 无 turn/end、
+    作业树仍存活——零触达）。
+  空闲目标：单测 + live ⑤（wasRunning:false）。
+  非 createdBy / 自身 / 未知 / bots.json 读不了：单测 6 例（fail closed）。
+
+测试结果（复测命令）
+  cd app/sdk && PATH=node24 ./node_modules/.bin/vitest run <files>
+  定向（2 files / 20 tests）：
+    Test Files  2 passed (2)
+         Tests  20 passed (20)
+  全量 pnpm test（47 files / 522 tests）：
+    Test Files  47 passed (47)
+         Tests  522 passed (522)
+  （首轮全量 approval.test.ts D8 闪红一次，复跑全绿；该文件不加载
+   orchestration.yml，与本改动无共享状态。）
+
+清理自查
+  bot-reap --dry-run --match p613 → 空（exit 0）；无 /tmp/bot-p613-* 残留；
+  live ③④ 的长命令 worker 均在用例内经 session/cancel 停掉并等 /proc 退出；
+  pace 型挂起在 dsh 进程内随 runtime 结束回收（无子进程）。
+  观察项（范围外）：/tmp/p2sdk-handoff-* 累积 1721 个，是全套件所有
+  launchRuntime 用例的既有行为，非本任务引入，建议另立清理任务。
+
+未完成 / 新发现
+  无未完成项。P6-14b（开放闸）依赖本任务，状态未动（blocked，归派发者）。

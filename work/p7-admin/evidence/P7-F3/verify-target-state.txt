@@ -1,0 +1,51 @@
+{
+  "time": "2026-11-05T10:31:05.104644",
+  "commands": [
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/bot-wt/P7-F3-verify",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "4da62902c7a9c26452eafc4e98cf40c6d6a6d452\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/bot-wt/P7-F3-verify",
+        "status",
+        "--porcelain"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/bot-wt/P7-F3-verify",
+        "diff",
+        "--check",
+        "e5ff286..4da62902"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "cleanup": [
+    "verify-source",
+    "verify-home",
+    "verify-tmp"
+  ],
+  "cache_deviation": [
+    "/tmp/bot-wt/P7-F3/app/sdk/node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json",
+    "/tmp/bot-wt/P7-F3/app/ui/node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json"
+  ]
+}

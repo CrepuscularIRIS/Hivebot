@@ -1,0 +1,4352 @@
+{
+  "commit": "be374843f45a87a1fe77ec67d042ab8563b7715a",
+  "root": "/tmp/vfy-r-p625-b/run-nUsIyU",
+  "trials": 200,
+  "swapped": 200,
+  "outsideWrites": 200,
+  "hitRate": 1,
+  "cards": 0,
+  "raceSuccess": 200,
+  "recheckDenied": 200,
+  "controlInside": true,
+  "rounds": [
+    {
+      "turn": 0,
+      "phase": "race",
+      "results": [
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o0/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o1/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o2/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o3/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o4/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o5/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o6/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o7/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o8/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o9/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o10/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o11/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o12/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o13/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o14/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o15/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o16/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o17/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o18/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o19/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    },
+    {
+      "turn": 1,
+      "phase": "race",
+      "results": [
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o20/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o21/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o22/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o23/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o24/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o25/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o26/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o27/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o28/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o29/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o30/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o31/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o32/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o33/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o34/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o35/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o36/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o37/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o38/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o39/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    },
+    {
+      "turn": 2,
+      "phase": "race",
+      "results": [
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o40/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o41/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o42/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o43/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o44/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o45/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o46/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o47/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o48/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o49/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o50/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o51/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o52/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o53/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o54/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o55/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o56/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o57/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o58/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o59/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    },
+    {
+      "turn": 3,
+      "phase": "race",
+      "results": [
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o60/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o61/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o62/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o63/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o64/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o65/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o66/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o67/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o68/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o69/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o70/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o71/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o72/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o73/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o74/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o75/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o76/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o77/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o78/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o79/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    },
+    {
+      "turn": 4,
+      "phase": "race",
+      "results": [
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o80/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o81/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o82/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o83/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o84/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o85/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o86/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o87/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o88/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o89/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o90/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o91/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o92/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o93/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o94/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o95/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o96/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o97/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o98/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o99/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    },
+    {
+      "turn": 5,
+      "phase": "race",
+      "results": [
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o100/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o101/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o102/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o103/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o104/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o105/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o106/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o107/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o108/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o109/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o110/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o111/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o112/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o113/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o114/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o115/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o116/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o117/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o118/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o119/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    },
+    {
+      "turn": 6,
+      "phase": "race",
+      "results": [
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o120/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o121/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o122/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o123/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o124/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o125/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o126/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o127/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o128/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o129/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o130/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o131/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o132/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o133/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o134/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o135/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o136/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o137/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o138/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o139/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    },
+    {
+      "turn": 7,
+      "phase": "race",
+      "results": [
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o140/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o141/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o142/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o143/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o144/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o145/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o146/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o147/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o148/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o149/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o150/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o151/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o152/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o153/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o154/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o155/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o156/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o157/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o158/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o159/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    },
+    {
+      "turn": 8,
+      "phase": "race",
+      "results": [
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o160/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o161/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o162/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o163/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o164/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o165/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o166/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o167/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o168/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o169/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o170/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o171/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o172/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o173/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o174/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o175/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o176/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o177/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o178/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o179/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    },
+    {
+      "turn": 9,
+      "phase": "race",
+      "results": [
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o180/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o181/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o182/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o183/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o184/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o185/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o186/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o187/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o188/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o189/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o190/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o191/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o192/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o193/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o194/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o195/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o196/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o197/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o198/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/outside/o199/x</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    },
+    {
+      "turn": 10,
+      "phase": "same-path-recheck",
+      "results": [
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        }
+      ]
+    },
+    {
+      "turn": 11,
+      "phase": "same-path-recheck",
+      "results": [
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        }
+      ]
+    },
+    {
+      "turn": 12,
+      "phase": "same-path-recheck",
+      "results": [
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        }
+      ]
+    },
+    {
+      "turn": 13,
+      "phase": "same-path-recheck",
+      "results": [
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        }
+      ]
+    },
+    {
+      "turn": 14,
+      "phase": "same-path-recheck",
+      "results": [
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        }
+      ]
+    },
+    {
+      "turn": 15,
+      "phase": "same-path-recheck",
+      "results": [
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        }
+      ]
+    },
+    {
+      "turn": 16,
+      "phase": "same-path-recheck",
+      "results": [
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        }
+      ]
+    },
+    {
+      "turn": 17,
+      "phase": "same-path-recheck",
+      "results": [
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        }
+      ]
+    },
+    {
+      "turn": 18,
+      "phase": "same-path-recheck",
+      "results": [
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        }
+      ]
+    },
+    {
+      "turn": 19,
+      "phase": "same-path-recheck",
+      "results": [
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        },
+        {
+          "error": true,
+          "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+        }
+      ]
+    },
+    {
+      "turn": 20,
+      "phase": "control",
+      "results": [
+        {
+          "error": false,
+          "text": "<path>/tmp/vfy-r-p625-b/run-nUsIyU/workspace/control</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d0/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d1/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d2/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d3/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d4/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d5/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d6/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d7/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d8/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d9/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d10/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d11/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d12/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d13/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d14/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d15/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d16/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d17/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d18/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d19/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d20/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d21/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d22/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d23/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d24/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d25/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d26/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d27/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d28/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d29/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d30/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d31/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d32/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d33/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d34/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d35/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d36/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d37/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d38/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d39/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d40/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d41/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d42/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d43/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d44/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d45/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d46/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d47/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d48/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d49/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d50/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d51/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d52/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d53/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d54/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d55/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d56/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d57/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d58/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d59/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d60/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d61/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d62/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d63/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d64/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d65/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d66/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d67/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d68/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d69/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d70/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d71/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d72/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d73/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d74/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d75/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d76/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d77/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d78/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d79/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d80/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d81/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d82/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d83/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d84/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d85/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d86/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d87/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d88/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d89/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d90/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d91/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d92/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d93/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d94/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d95/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d96/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d97/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d98/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d99/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d100/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d101/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d102/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d103/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d104/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d105/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d106/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d107/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d108/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d109/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d110/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d111/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d112/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d113/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d114/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d115/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d116/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d117/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d118/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d119/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d120/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d121/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d122/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d123/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d124/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d125/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d126/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d127/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d128/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d129/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d130/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d131/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d132/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d133/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d134/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d135/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d136/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d137/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d138/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d139/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d140/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d141/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d142/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d143/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d144/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d145/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d146/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d147/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d148/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d149/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d150/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d151/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d152/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d153/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d154/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d155/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d156/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d157/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d158/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d159/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d160/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d161/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d162/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d163/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d164/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d165/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d166/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d167/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d168/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d169/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d170/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d171/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d172/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d173/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d174/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d175/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d176/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d177/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d178/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d179/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d180/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d181/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d182/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d183/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d184/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d185/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d186/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d187/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d188/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d189/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d190/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d191/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d192/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d193/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d194/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d195/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d196/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d197/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d198/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d199/x",
+      "decision": {
+        "kind": "allow"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d0/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d1/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d2/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d3/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d4/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d5/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d6/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d7/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d8/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d9/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d10/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d11/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d12/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d13/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d14/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d15/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d16/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d17/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d18/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d19/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d20/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d21/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d22/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d23/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d24/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d25/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d26/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d27/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d28/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d29/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d30/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d31/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d32/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d33/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d34/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d35/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d36/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d37/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d38/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d39/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d40/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d41/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d42/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d43/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d44/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d45/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d46/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d47/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d48/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d49/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d50/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d51/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d52/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d53/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d54/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d55/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d56/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d57/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d58/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d59/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d60/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d61/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d62/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d63/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d64/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d65/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d66/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d67/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d68/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d69/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d70/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d71/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d72/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d73/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d74/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d75/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d76/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d77/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d78/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d79/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d80/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d81/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d82/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d83/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d84/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d85/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d86/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d87/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d88/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d89/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d90/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d91/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d92/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d93/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d94/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d95/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d96/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d97/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d98/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d99/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d100/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d101/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d102/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d103/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d104/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d105/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d106/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d107/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d108/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d109/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d110/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d111/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d112/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d113/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d114/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d115/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d116/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d117/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d118/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d119/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d120/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d121/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d122/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d123/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d124/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d125/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d126/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d127/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d128/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d129/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d130/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d131/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d132/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d133/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d134/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d135/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d136/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d137/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d138/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d139/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d140/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d141/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d142/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d143/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d144/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d145/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d146/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d147/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d148/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d149/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d150/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d151/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d152/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d153/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d154/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d155/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d156/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d157/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d158/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d159/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d160/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d161/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d162/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d163/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d164/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d165/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d166/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d167/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d168/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d169/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d170/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d171/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d172/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d173/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d174/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d175/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d176/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d177/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d178/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d179/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d180/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d181/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d182/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d183/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d184/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d185/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d186/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d187/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d188/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d189/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d190/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d191/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d192/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d193/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d194/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d195/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d196/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d197/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d198/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/d199/x",
+      "decision": {
+        "kind": "deny",
+        "reason": "p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    },
+    {
+      "path": "/tmp/vfy-r-p625-b/run-nUsIyU/workspace/control",
+      "decision": {
+        "kind": "allow"
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+P6-22 r2 / r2b — PARTIAL，429 停采；没有完整子集分，不裁决收敛
+文案冻结：0ed1ed4；ROUTING_PROMPT SHA256=8bc4ea57810cbfcc2ac21c6cb4a510449df88c174dd22efc0d753bea81f04fc8
+采集器修复：5092c75；仅修等待扫描与隔离根白名单，未改产品文案、prompts.json、score.mjs。
+执行席：6.1 Sol；被测：glm-5.3 / litellm。
+
+本次补采情况
+- r2a 的 17 个完整组全部保留；r2a par1-two-tasks-2 的 429 超时证据仍保留，不冒充重采成功。
+- r2b 先重采 dev 追加组，第一回合即遇 worker 429；立即停，无重试，held-out 未启动。
+- held-out 本次新增 0/19；待补采 19（未采18 + par1-two-tasks-2重采1），名单见 SUPPLEMENT-r2b.txt。
+- 原 dev 追加与原超时并行组归档 archive-r2a；dev/raw 追加为本次真实重采，不拿原回放结果回填分。
+
+类别          正确/计划  完整路由失败  超时  缺失
+单派          12/12      0             0     0
+并行           1/6       0             1     4
+追加           0/6       0             0     6
+停止           0/6       0             0     6
+直接答哨兵     4/4       0             0     0
+闲聊哨兵       0/2       0             0     2
+机械子集=13/30（13组完整正确、1组超时、16组缺失）；不能视为完整轮次的12–21档。
+哨兵误派：已测0/4，另2未采；机械字段0/6不代表完整哨兵通过。
+硬指标：污染回合工具成功0；已记录16批回报，1批tailTexts!=1来自原429超时组；未完整通过。
+Dev：9/10（单派4/4、并行2/2、追加0/1、停止1/1、直接答1/1、闲聊1/1）。
+Dev追加本次 outcome=timeout，timeouts=turn1，worker=1，尚未发第2用户回合；worker终态429。不是“模型没调create/send”的完整路由失败。
+回放：修复后原dev两批回报可消化；5格测试通过。fake smoke PASS。回放不改任何既有评分。
+
+全部36组机械分表（不含raw原文；来源均为r2a，本次补采=无）
+dir1-docker-vm-1 OK
+dir2-translate-ja-1 OK
+dir3-power-1 OK
+dir4-tv-rec-1 OK
+single1-packing-1 OK
+single1-packing-2 OK
+single1-packing-3 OK
+single2-date-diary-1 OK
+single2-date-diary-2 OK
+single2-date-diary-3 OK
+single3-fib-run-1 OK
+single3-fib-run-2 OK
+single3-fib-run-3 OK
+single4-count-logs-1 OK
+single4-count-logs-2 OK
+single4-count-logs-3 OK
+par1-two-tasks-1 OK
+par1-two-tasks-2 INCOMPLETE outcome=timeout timeouts=report create=2；待重采
+par1-two-tasks-3 MISSING
+par2-list-and-weekday-1 MISSING
+par2-list-and-weekday-2 MISSING
+par2-list-and-weekday-3 MISSING
+attach1-hike-append-1 MISSING
+attach1-hike-append-2 MISSING
+attach1-hike-append-3 MISSING
+attach2-backup-index-1 MISSING
+attach2-backup-index-2 MISSING
+attach2-backup-index-3 MISSING
+stop1-lowercase-1 MISSING
+stop1-lowercase-2 MISSING
+stop1-lowercase-3 MISSING
+stop2-archive-1 MISSING
+stop2-archive-2 MISSING
+stop2-archive-3 MISSING
+chat1-thanks-1 MISSING
+chat2-greeting-1 MISSING
+
+对比r1：r1完整子集3/30（单派0、并行3、追加0、停止0），r2部分13/30（单派12、并行1，追加/停止未采），不能据此声称完整+10。
+建议：因429阻塞先续采同一r2文案，暂不定案、不决定r3、不转§12.3。完整≥22/30且哨兵0/6且硬指标通过才建议定案；完整<12转§12.3；完整12–21只据dev分析r3。48组未跑。

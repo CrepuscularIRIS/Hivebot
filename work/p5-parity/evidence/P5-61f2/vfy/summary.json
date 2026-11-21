@@ -1,0 +1,713 @@
+{
+  "red": [
+    {
+      "file": "reload-dark-0.json",
+      "bad": 20,
+      "range": [
+        53.099999994039536,
+        351.7999999821186
+      ],
+      "stable": [
+        "rgb(31, 31, 31)",
+        "rgb(31, 31, 31)",
+        "rgb(31, 31, 31)",
+        "rgb(31, 31, 31)"
+      ],
+      "badPerControl": [
+        0,
+        20,
+        10,
+        10
+      ]
+    },
+    {
+      "file": "reload-dark-1.json",
+      "bad": 19,
+      "range": [
+        62,
+        347.19999998807907
+      ],
+      "stable": [
+        "rgb(31, 31, 31)",
+        "rgb(31, 31, 31)",
+        "rgb(31, 31, 31)",
+        "rgb(31, 31, 31)"
+      ],
+      "badPerControl": [
+        0,
+        19,
+        10,
+        10
+      ]
+    },
+    {
+      "file": "reload-light-0.json",
+      "bad": 11,
+      "range": [
+        62,
+        210.5
+      ],
+      "stable": [
+        "rgb(255, 255, 255)",
+        "rgb(255, 255, 255)",
+        "rgb(255, 255, 255)",
+        "rgb(255, 255, 255)"
+      ],
+      "badPerControl": [
+        0,
+        11,
+        8,
+        8
+      ]
+    },
+    {
+      "file": "reload-light-1.json",
+      "bad": 11,
+      "range": [
+        55.900000005960464,
+        210.59999999403954
+      ],
+      "stable": [
+        "rgb(255, 255, 255)",
+        "rgb(255, 255, 255)",
+        "rgb(255, 255, 255)",
+        "rgb(255, 255, 255)"
+      ],
+      "badPerControl": [
+        0,
+        11,
+        8,
+        8
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "run": "run-0",
+      "traces": [
+        {
+          "file": "reload-dark-0.json",
+          "bad": 0,
+          "rows": 65,
+          "band129to380": 16,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-dark-media.trace.json",
+          "bad": 0,
+          "rows": 65,
+          "band129to380": 15,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-dark.trace.json",
+          "bad": 0,
+          "rows": 94,
+          "band129to380": 16,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-light-0.json",
+          "bad": 0,
+          "rows": 60,
+          "band129to380": 17,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        },
+        {
+          "file": "reload-light-media.trace.json",
+          "bad": 0,
+          "rows": 64,
+          "band129to380": 15,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        },
+        {
+          "file": "reload-light.trace.json",
+          "bad": 0,
+          "rows": 96,
+          "band129to380": 15,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        }
+      ],
+      "movies": [
+        {
+          "file": "cold-dark.frames.json",
+          "mode": "dark",
+          "frames": 32,
+          "unpresented": 0,
+          "minLuma": 17.484943875,
+          "maxLuma": 18.5486165625,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "cold-light.frames.json",
+          "mode": "light",
+          "frames": 32,
+          "unpresented": 0,
+          "minLuma": 249.95151487500002,
+          "maxLuma": 251.87054843750002,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "reload-dark.frames.json",
+          "mode": "dark",
+          "frames": 62,
+          "unpresented": 0,
+          "minLuma": 17.480728687499997,
+          "maxLuma": 20.390720499999997,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "reload-light.frames.json",
+          "mode": "light",
+          "frames": 62,
+          "unpresented": 0,
+          "minLuma": 249.95164525,
+          "maxLuma": 252.2668589375,
+          "badWhole": 0,
+          "badStrip": 0
+        }
+      ]
+    },
+    {
+      "run": "run-1",
+      "traces": [
+        {
+          "file": "reload-dark-0.json",
+          "bad": 0,
+          "rows": 64,
+          "band129to380": 15,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-dark-media.trace.json",
+          "bad": 0,
+          "rows": 64,
+          "band129to380": 15,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-dark.trace.json",
+          "bad": 0,
+          "rows": 96,
+          "band129to380": 15,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-light-0.json",
+          "bad": 0,
+          "rows": 65,
+          "band129to380": 15,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        },
+        {
+          "file": "reload-light-media.trace.json",
+          "bad": 0,
+          "rows": 64,
+          "band129to380": 15,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        },
+        {
+          "file": "reload-light.trace.json",
+          "bad": 0,
+          "rows": 95,
+          "band129to380": 16,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        }
+      ],
+      "movies": [
+        {
+          "file": "cold-dark.frames.json",
+          "mode": "dark",
+          "frames": 32,
+          "unpresented": 0,
+          "minLuma": 17.501830625,
+          "maxLuma": 19.08860875,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "cold-light.frames.json",
+          "mode": "light",
+          "frames": 32,
+          "unpresented": 0,
+          "minLuma": 249.94931725,
+          "maxLuma": 251.59932937499997,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "reload-dark.frames.json",
+          "mode": "dark",
+          "frames": 62,
+          "unpresented": 0,
+          "minLuma": 17.471520125,
+          "maxLuma": 19.088729999999998,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "reload-light.frames.json",
+          "mode": "light",
+          "frames": 62,
+          "unpresented": 0,
+          "minLuma": 249.925978625,
+          "maxLuma": 252.2668446875,
+          "badWhole": 0,
+          "badStrip": 0
+        }
+      ]
+    },
+    {
+      "run": "run-2",
+      "traces": [
+        {
+          "file": "reload-dark-0.json",
+          "bad": 0,
+          "rows": 67,
+          "band129to380": 16,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-dark-media.trace.json",
+          "bad": 0,
+          "rows": 65,
+          "band129to380": 15,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-dark.trace.json",
+          "bad": 0,
+          "rows": 96,
+          "band129to380": 15,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-light-0.json",
+          "bad": 0,
+          "rows": 65,
+          "band129to380": 15,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        },
+        {
+          "file": "reload-light-media.trace.json",
+          "bad": 0,
+          "rows": 65,
+          "band129to380": 15,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        },
+        {
+          "file": "reload-light.trace.json",
+          "bad": 0,
+          "rows": 96,
+          "band129to380": 16,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        }
+      ],
+      "movies": [
+        {
+          "file": "cold-dark.frames.json",
+          "mode": "dark",
+          "frames": 32,
+          "unpresented": 0,
+          "minLuma": 17.4704023125,
+          "maxLuma": 18.5486165625,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "cold-light.frames.json",
+          "mode": "light",
+          "frames": 32,
+          "unpresented": 0,
+          "minLuma": 249.843869125,
+          "maxLuma": 251.8477420625,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "reload-dark.frames.json",
+          "mode": "dark",
+          "frames": 62,
+          "unpresented": 0,
+          "minLuma": 17.486487937499998,
+          "maxLuma": 18.5485985625,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "reload-light.frames.json",
+          "mode": "light",
+          "frames": 62,
+          "unpresented": 0,
+          "minLuma": 249.91777049999996,
+          "maxLuma": 252.2668589375,
+          "badWhole": 0,
+          "badStrip": 0
+        }
+      ]
+    },
+    {
+      "run": "run-3",
+      "traces": [
+        {
+          "file": "reload-dark-0.json",
+          "bad": 0,
+          "rows": 65,
+          "band129to380": 15,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-dark-media.trace.json",
+          "bad": 0,
+          "rows": 63,
+          "band129to380": 15,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-dark.trace.json",
+          "bad": 0,
+          "rows": 95,
+          "band129to380": 15,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-light-0.json",
+          "bad": 0,
+          "rows": 65,
+          "band129to380": 15,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        },
+        {
+          "file": "reload-light-media.trace.json",
+          "bad": 0,
+          "rows": 67,
+          "band129to380": 15,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        },
+        {
+          "file": "reload-light.trace.json",
+          "bad": 0,
+          "rows": 95,
+          "band129to380": 16,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        }
+      ],
+      "movies": [
+        {
+          "file": "cold-dark.frames.json",
+          "mode": "dark",
+          "frames": 32,
+          "unpresented": 0,
+          "minLuma": 17.48607675,
+          "maxLuma": 19.088678375,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "cold-light.frames.json",
+          "mode": "light",
+          "frames": 32,
+          "unpresented": 0,
+          "minLuma": 249.90618312499998,
+          "maxLuma": 251.59932937499997,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "reload-dark.frames.json",
+          "mode": "dark",
+          "frames": 62,
+          "unpresented": 0,
+          "minLuma": 17.500029249999997,
+          "maxLuma": 19.0888149375,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "reload-light.frames.json",
+          "mode": "light",
+          "frames": 62,
+          "unpresented": 0,
+          "minLuma": 249.85584831249997,
+          "maxLuma": 253.66167118750002,
+          "badWhole": 0,
+          "badStrip": 0
+        }
+      ]
+    },
+    {
+      "run": "run-4",
+      "traces": [
+        {
+          "file": "reload-dark-0.json",
+          "bad": 0,
+          "rows": 65,
+          "band129to380": 15,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-dark-media.trace.json",
+          "bad": 0,
+          "rows": 65,
+          "band129to380": 16,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-dark.trace.json",
+          "bad": 0,
+          "rows": 94,
+          "band129to380": 17,
+          "stable": [
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)",
+            "rgb(31, 31, 31)"
+          ]
+        },
+        {
+          "file": "reload-light-0.json",
+          "bad": 0,
+          "rows": 64,
+          "band129to380": 15,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        },
+        {
+          "file": "reload-light-media.trace.json",
+          "bad": 0,
+          "rows": 66,
+          "band129to380": 15,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        },
+        {
+          "file": "reload-light.trace.json",
+          "bad": 0,
+          "rows": 96,
+          "band129to380": 16,
+          "stable": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ]
+        }
+      ],
+      "movies": [
+        {
+          "file": "cold-dark.frames.json",
+          "mode": "dark",
+          "frames": 32,
+          "unpresented": 0,
+          "minLuma": 17.5171016875,
+          "maxLuma": 18.571890749999998,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "cold-light.frames.json",
+          "mode": "light",
+          "frames": 32,
+          "unpresented": 0,
+          "minLuma": 249.93798675000002,
+          "maxLuma": 251.59932937499997,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "reload-dark.frames.json",
+          "mode": "dark",
+          "frames": 62,
+          "unpresented": 0,
+          "minLuma": 17.4723071875,
+          "maxLuma": 18.5889109375,
+          "badWhole": 0,
+          "badStrip": 0
+        },
+        {
+          "file": "reload-light.frames.json",
+          "mode": "light",
+          "frames": 62,
+          "unpresented": 0,
+          "minLuma": 249.922425875,
+          "maxLuma": 252.2668589375,
+          "badWhole": 0,
+          "badStrip": 0
+        }
+      ]
+    }
+  ],
+  "points17": [
+    {
+      "file": "points17-light.json",
+      "n": 17,
+      "nullPerControl": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bad": 0,
+      "timeRange": [
+        140.09999999403954,
+        379.7999999821186
+      ]
+    },
+    {
+      "file": "points17-dark.json",
+      "n": 17,
+      "nullPerControl": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bad": 0,
+      "timeRange": [
+        136.60000002384186,
+        383
+      ]
+    }
+  ]
+}

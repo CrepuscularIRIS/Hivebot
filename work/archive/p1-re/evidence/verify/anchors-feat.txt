@@ -1,0 +1,20 @@
+1 "GrokBotAgentKind"|electron-main/proto.cjs
+2 GrokBotAgent|1 id 9|electron-main/proto.cjs
+3 "GrokBotAgentSessionKind"|electron-main/proto.cjs
+4 primary_agent_id|electron-main/proto.cjs
+5 "SetGrokBotMainAgent"|electron-main/proto.cjs
+6 GrokBotAgentClientState|1 agent_id 9|electron-main/proto.cjs
+7 function MYn(e){return{id:e.id,name:e.name|renderer/assets/index.eager-app-iGTgHP_Q.js
+8 harness:`temporal`|renderer/assets/index.eager-app-iGTgHP_Q.js
+9 sand.client.slice|renderer/assets/index.eager-app-iGTgHP_Q.js
+10 roster:`listAgents.countAgents|renderer/assets/index.eager-app-iGTgHP_Q.js
+11 "notePrimaryBotCreated"|renderer/assets/index.eager-app-iGTgHP_Q.js
+12 Settings|1 server_id 9|node-agent-coordinator/main.cjs
+13 "SetPrimaryBot"|electron-main/main-core.cjs
+14 "disk-saver","plugin-auth"|node-agent-coordinator/main.cjs
+15 "CreateGrokBotThreadFromMessage"|electron-main/proto.cjs
+16 "LocalToolPermissionCeiling"|electron-main/proto.cjs
+17 "ListGrokBotUserBotMemories"|electron-main/proto.cjs
+18 sand-client-persistence|electron-main/main-app.cjs
+19 sand:boot-snapshot-sync|electron-preload/preload.cjs
+20 q("getServerAgentRoster")|node-agent-coordinator/main.cjs

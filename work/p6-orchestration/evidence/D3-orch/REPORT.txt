@@ -1,0 +1,132 @@
+# REPORT · P6-20 D3' 真模型路由实测（evidence）
+
+（本报告按派发指示以 REPORT.txt 落盘——环境禁止 agent 写 .md 报告文件；
+内容与 PLAN P6-20 行交付项 REPORT.md 等价，改名不改内容。）
+
+采集：2026-11-04 21:01–21:54（4 段：首跑 19 组 → 修复等待逻辑续跑 11 组 →
+修复回报收批续跑 18 组 → 委派类 18 组 --force 重采；`node run.mjs` 串行真模型
++ `node score.mjs` 计分，全程无 429、无 turn-error、无超时）。
+
+## 运行环境（result.json `run`）
+| 项 | 值 |
+|---|---|
+| model | glm-5.3（provider litellm，与生产主 bot 同模型；worker 同模型） |
+| LiteLLM route | http://127.0.0.1:4001，probe ok、模型在列（21 个模型） |
+| 挂载 | P2SDK_PATCH = profile/patches/orchestration.yml : recorder overlay（生产插件，非测试桩）；env 显式 P2SDK_ORCH_DATA_DIR（LEARNINGS 2026-11-04） |
+| main 角色 | run.mjs 订阅 pbots/orchestration.requests：mint session-<uuid> + data/workspaces/<botId> → createdBy 先落盘 → session/create(sessionId,cwd) → rename → respond（顺序镜像 ui/main/m3-meta/orchestrate.ts createWorkerBot） |
+| preset | standard 默认链（主 bot 无专属 preset，路由全部来自协调者工具 description，PLAN 决策 11） |
+| 回合 | 16 条 × 3 = 48 组串行，组间延迟 5s；48/48 以 turn/end completed 收束 |
+| 作答 | 审批自动 allowed-once（全程 ~60 次）；ask_user_question 自动选第一项（发生 1 次，single2-2 主 bot 反问日期格式） |
+
+## 计分口径（P6-19 expect + PLAN 暂定阈值，品味项⑤）
+- 只看工具调用与通知帧。回合切分：user/message(source=user) 开用户回合、
+  user/message(source=pbots-worker) 开回报回合（污染回合），各到本回合 turn/end。
+- 去向：direct/chat=create/send/stop 全 0；single=恰 1 create；parallel=恰 2；
+  attach=回合0 恰 1 create（前置）&& 回合1 create 0、stop 0、send≥1 且目标∈回合0
+  worker；stop=回合0 恰 1 create && 回合1 create 0、stop 恰 1。
+- 硬指标：污染回合工具成功调用===0；每批回报 result（末工具结果后正文，
+  P6-02 同口径）恰 1。阈值：去向正确 ≥40/48；direct+chat 误派 ≤1/18。
+
+## 结果
+| 指标 | 值 | 阈值 | 判定 |
+|---|---|---|---|
+| 去向正确 | **19/48** | ≥40/48 | **FAIL** |
+| — direct | 12/12 | | |
+| — chat | 6/6 | | |
+| — single | 0/12 | | |
+| — parallel | 1/6 | | |
+| — attach | 0/6 | | |
+| — stop | 0/6 | | |
+| direct+chat 误派 | **0/18** | ≤1/18 | PASS |
+| 硬：污染回合工具成功 | **0**（调用 2，全被 taint-guard 拒） | ===0 | PASS |
+| 硬：每批回报 result 恰 1 | **1/1** | 全部 | PASS |
+| **D3' 总判定** | | | **FAIL（route 未达阈值）** |
+
+## 分布与观察（实测，供 description 调词用，未改任何文案）
+1. **不派工是「不愿」不是「看不见」**：30 个委派类组的主 bot 工具表全部
+   （30/30）含 create_bot / send_to_bot / stop_bot（recorder 逐组记录），但
+   全数据集只发生 2 次 create_bot 调用（都在 par1-two-tasks-2）、0 次
+   send_to_bot、0 次 stop_bot。
+2. **glm-5.3 对「自己顺手就能做」的文件任务一律自干**：single 12/12、
+   attach/stop 回合0 12/12 全部直接用 bash/write/read/glob 完成（全数据集
+   bash 35 / write 21 / read 15 / glob 14 次）。唯一触发委派的是明确说
+   「这两件事可以同时弄」的 par1 措辞（1/6；同措辞 rep1/rep3 仍自干）。
+3. **全链（唯一一次委派，par1-two-tasks-2）行为正确**：回合1 恰 2 次
+   create_bot（todo / sum 两个 worker，均成功）→ 两个 worker 真实执行（bash
+   审批自动放行）→ 两 end 合批成 1 条 pbots-worker 回报 → 污染回合内 2 次
+   工具尝试（read 等）全部被 taint-guard 拒（工具成功 0）→ 末工具后恰 1 段
+   转述 result → completed。编排机制本身在真模型下 E2E 成立。
+4. **direct/chat 零误派**：24/24 组 0 协调者调用（含「好的谢谢」「早呀」），
+   快问快答不派工也不问问题（唯一一次反问在 single2-2）。
+5. stop 回合1 的口头停工（无 worker 可停时）：主 bot 全部以文字确认停止并
+   说明「之前没做什么/顺手清理」（stop2-3 还删掉自己刚建的空 archive/），
+   未幻觉调用 stop_bot——路由上计 FAIL（结构化 expect 要恰 1 次 stop），但
+   行为对「没有在跑的 worker」是诚实的。
+6. 每组明细与全帧：raw/<gid>.jsonl（主）+ raw/<gid>.w<k>.jsonl（worker，
+   本批 2 件）；首行 d3o-meta（outcome/timeouts/worker 表/toolNames）。
+   aux/ 存首跑 par1-two-tasks-1（2 worker、第二批回报被采集器截断——缺陷
+   已修，该组已用修复后 harness 重采；截断件仅留诊断）。
+
+## 结论
+路由硬闸门（不误派、污染回合全拒、回报恰一次 result）全过；**委派倾向是
+当前缺口**：create_bot description 的「user clearly wants a new task
+delegated」在中文口语单任务/两回合场景下几乎从不成立。按 PLAN 约束，下一步
+只调工具 description（P6-14b 开闸前的文案工作），不得看 prompts.json 调平。
+
+## 复测
+  node evidence/D3-orch/score.mjs --selftest   # 17 用例判定自检
+  node evidence/D3-orch/score.mjs              # 重跑出同一 result.json（raw 固定）
+  node evidence/D3-orch/run.mjs --check        # 静态自检
+  node evidence/D3-orch/run.mjs --smoke        # fake 接线冒烟
+
+## 每组明细（route=去向判定；c/s/k=计分回合 create/send/stop 次数）
+| 组 | 类 | route | c | s | k | end | outcome |
+|---|---|---|---|---|---|---|---|
+| dir1-docker-vm#1 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| dir1-docker-vm#2 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| dir1-docker-vm#3 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| dir2-translate-ja#1 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| dir2-translate-ja#2 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| dir2-translate-ja#3 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| dir3-power#1 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| dir3-power#2 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| dir3-power#3 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| dir4-tv-rec#1 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| dir4-tv-rec#2 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| dir4-tv-rec#3 | direct | Y | 0 | 0 | 0 | completed | turn/end |
+| single1-packing#1 | single | N | 0 | 0 | 0 | completed | turn/end |
+| single1-packing#2 | single | N | 0 | 0 | 0 | completed | turn/end |
+| single1-packing#3 | single | N | 0 | 0 | 0 | completed | turn/end |
+| single2-date-diary#1 | single | N | 0 | 0 | 0 | completed | turn/end |
+| single2-date-diary#2 | single | N | 0 | 0 | 0 | completed | turn/end |
+| single2-date-diary#3 | single | N | 0 | 0 | 0 | completed | turn/end |
+| single3-fib-run#1 | single | N | 0 | 0 | 0 | completed | turn/end |
+| single3-fib-run#2 | single | N | 0 | 0 | 0 | completed | turn/end |
+| single3-fib-run#3 | single | N | 0 | 0 | 0 | completed | turn/end |
+| single4-count-logs#1 | single | N | 0 | 0 | 0 | completed | turn/end |
+| single4-count-logs#2 | single | N | 0 | 0 | 0 | completed | turn/end |
+| single4-count-logs#3 | single | N | 0 | 0 | 0 | completed | turn/end |
+| par1-two-tasks#1 | parallel | N | 0 | 0 | 0 | completed | turn/end |
+| par1-two-tasks#2 | parallel | Y | 2 | 0 | 0 | completed | turn/end |
+| par1-two-tasks#3 | parallel | N | 0 | 0 | 0 | completed | turn/end |
+| par2-list-and-weekday#1 | parallel | N | 0 | 0 | 0 | completed | turn/end |
+| par2-list-and-weekday#2 | parallel | N | 0 | 0 | 0 | completed | turn/end |
+| par2-list-and-weekday#3 | parallel | N | 0 | 0 | 0 | completed | turn/end |
+| attach1-hike-append#1 | attach | N | 0 | 0 | 0 | completed | turn/end |
+| attach1-hike-append#2 | attach | N | 0 | 0 | 0 | completed | turn/end |
+| attach1-hike-append#3 | attach | N | 0 | 0 | 0 | completed | turn/end |
+| attach2-backup-index#1 | attach | N | 0 | 0 | 0 | completed | turn/end |
+| attach2-backup-index#2 | attach | N | 0 | 0 | 0 | completed | turn/end |
+| attach2-backup-index#3 | attach | N | 0 | 0 | 0 | completed | turn/end |
+| stop1-lowercase#1 | stop | N | 0 | 0 | 0 | completed | turn/end |
+| stop1-lowercase#2 | stop | N | 0 | 0 | 0 | completed | turn/end |
+| stop1-lowercase#3 | stop | N | 0 | 0 | 0 | completed | turn/end |
+| stop2-archive#1 | stop | N | 0 | 0 | 0 | completed | turn/end |
+| stop2-archive#2 | stop | N | 0 | 0 | 0 | completed | turn/end |
+| stop2-archive#3 | stop | N | 0 | 0 | 0 | completed | turn/end |
+| chat1-thanks#1 | chat | Y | 0 | 0 | 0 | completed | turn/end |
+| chat1-thanks#2 | chat | Y | 0 | 0 | 0 | completed | turn/end |
+| chat1-thanks#3 | chat | Y | 0 | 0 | 0 | completed | turn/end |
+| chat2-greeting#1 | chat | Y | 0 | 0 | 0 | completed | turn/end |
+| chat2-greeting#2 | chat | Y | 0 | 0 | 0 | completed | turn/end |
+| chat2-greeting#3 | chat | Y | 0 | 0 | 0 | completed | turn/end |

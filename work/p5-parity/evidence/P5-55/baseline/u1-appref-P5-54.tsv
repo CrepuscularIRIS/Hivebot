@@ -1,0 +1,1069 @@
+view	part	property	ref(0.78.1)	app	disposition	reason
+conv-rest.light	sidebar.root	height	900px	303px	open	
+conv-rest.light	sidebar.root	border-right-width	1px	0.5px	open	
+conv-rest.light	sidebar.root	background-color	rgb(245, 245, 245)	rgb(247, 247, 247)	open	
+conv-rest.light	sidebar.root	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-rest.light	sidebar.header	width	279px	279.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-rest.light	sidebar.header	height	60px	50px	open	
+conv-rest.light	sidebar.header	min-height	52px	auto	open	
+conv-rest.light	sidebar.header	padding-top	12px	0px	open	
+conv-rest.light	sidebar.header	padding-right	16px	12px	open	
+conv-rest.light	sidebar.header	padding-bottom	12px	0px	open	
+conv-rest.light	sidebar.header	border-bottom-width	0px	1px	open	
+conv-rest.light	sidebar.header	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-rest.light	sidebar.header	gap	8px	normal	open	
+conv-rest.light	sidebar.header-first-btn	width	36px	24px	open	
+conv-rest.light	sidebar.header-first-btn	height	36px	24px	open	
+conv-rest.light	sidebar.header-first-btn	border-top-width	1px	0px	open	
+conv-rest.light	sidebar.header-first-btn	border-bottom-width	1px	0px	open	
+conv-rest.light	sidebar.header-first-btn	border-left-width	1px	0px	open	
+conv-rest.light	sidebar.header-first-btn	border-right-width	1px	0px	open	
+conv-rest.light	sidebar.header-first-btn	border-top-left-radius	9999px	6px	open	
+conv-rest.light	sidebar.header-first-btn	border-top-right-radius	9999px	6px	open	
+conv-rest.light	sidebar.header-first-btn	border-bottom-left-radius	9999px	6px	open	
+conv-rest.light	sidebar.header-first-btn	border-bottom-right-radius	9999px	6px	open	
+conv-rest.light	sidebar.header-first-btn	background-color	rgb(255, 255, 255)	rgba(0, 0, 0, 0)	open	
+conv-rest.light	sidebar.header-first-btn	color	rgba(28, 28, 28, 0.92)	rgba(20, 20, 20, 0.6)	open	
+conv-rest.light	sidebar.header-first-btn	font-size	13px	16px	open	
+conv-rest.light	sidebar.header-first-btn	line-height	18px	normal	open	
+conv-rest.light	sidebar.search-entry	width	36px	255.5px	open	
+conv-rest.light	sidebar.search-entry	height	36px	28px	open	
+conv-rest.light	sidebar.search-entry	min-height	auto	28px	open	
+conv-rest.light	sidebar.search-entry	padding-top	0px	6px	open	
+conv-rest.light	sidebar.search-entry	padding-right	0px	8px	open	
+conv-rest.light	sidebar.search-entry	padding-left	0px	8px	open	
+conv-rest.light	sidebar.search-entry	margin-top	0px	4px	open	
+conv-rest.light	sidebar.search-entry	margin-bottom	0px	4px	open	
+conv-rest.light	sidebar.search-entry	border-top-width	1px	0px	open	
+conv-rest.light	sidebar.search-entry	border-bottom-width	1px	0px	open	
+conv-rest.light	sidebar.search-entry	border-left-width	1px	0px	open	
+conv-rest.light	sidebar.search-entry	border-right-width	1px	0px	open	
+conv-rest.light	sidebar.search-entry	border-top-left-radius	9999px	8px	open	
+conv-rest.light	sidebar.search-entry	border-top-right-radius	9999px	8px	open	
+conv-rest.light	sidebar.search-entry	border-bottom-left-radius	9999px	8px	open	
+conv-rest.light	sidebar.search-entry	border-bottom-right-radius	9999px	8px	open	
+conv-rest.light	sidebar.search-entry	background-color	rgb(255, 255, 255)	rgba(119, 119, 119, 0.09)	open	
+conv-rest.light	sidebar.search-entry	color	rgba(28, 28, 28, 0.92)	rgb(20, 20, 20)	open	
+conv-rest.light	sidebar.search-entry	gap	normal	4px	open	
+conv-rest.light	sidebar.search-entry	box-shadow	none	rgba(20, 20, 20, 0.1) 0px 0px 0px 0.5px inset	open	
+conv-rest.light	sidebar.item	width	255px	240.5px	open	
+conv-rest.light	sidebar.item	height	54px	58px	open	
+conv-rest.light	sidebar.item	min-height	0px	58px	open	
+conv-rest.light	sidebar.item	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-rest.light	sidebar.item	gap	8px	9px	open	
+conv-rest.light	sidebar.item	transition-property	transform, width, padding	all	open	
+conv-rest.light	sidebar.item	transition-duration	0.2s	0s	open	
+conv-rest.light	sidebar.item	transition-timing-function	cubic-bezier(0.22, 1, 0.36, 1)	ease	open	
+conv-rest.light	sidebar.item-name	width	55.25px	152.32px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-rest.light	sidebar.item-name	height	20px	15.5px	open	
+conv-rest.light	sidebar.item-name	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-rest.light	sidebar.item-name	font-size	14px	13px	open	
+conv-rest.light	sidebar.item-name	font-weight	500	700	open	
+conv-rest.light	sidebar.item-name	line-height	20px	normal	open	
+conv-rest.light	sidebar.item-time	(element)	MISSING	present	open	
+conv-rest.light	sidebar.footer-pill	width	203px	264px	open	
+conv-rest.light	sidebar.footer-pill	height	36px	38px	open	
+conv-rest.light	sidebar.footer-pill	min-height	auto	38px	open	
+conv-rest.light	sidebar.footer-pill	padding-top	0px	6px	open	
+conv-rest.light	sidebar.footer-pill	padding-right	16px	12px	open	
+conv-rest.light	sidebar.footer-pill	padding-left	16px	8px	open	
+conv-rest.light	sidebar.footer-pill	border-top-width	1px	0px	open	
+conv-rest.light	sidebar.footer-pill	border-bottom-width	1px	0px	open	
+conv-rest.light	sidebar.footer-pill	border-left-width	1px	0px	open	
+conv-rest.light	sidebar.footer-pill	border-right-width	1px	0px	open	
+conv-rest.light	sidebar.footer-pill	border-top-left-radius	9999px	10px	open	
+conv-rest.light	sidebar.footer-pill	border-top-right-radius	9999px	10px	open	
+conv-rest.light	sidebar.footer-pill	border-bottom-left-radius	9999px	10px	open	
+conv-rest.light	sidebar.footer-pill	border-bottom-right-radius	9999px	10px	open	
+conv-rest.light	sidebar.footer-pill	background-color	rgb(255, 255, 255)	rgba(119, 119, 119, 0.09)	open	
+conv-rest.light	sidebar.footer-pill	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-rest.light	sidebar.footer-pill	font-size	14px	13px	open	
+conv-rest.light	sidebar.footer-pill	font-weight	500	400	open	
+conv-rest.light	sidebar.footer-pill	line-height	20px	18px	open	
+conv-rest.light	sidebar.footer-pill	gap	0px	4px	open	
+conv-rest.light	sidebar.footer-pill	transition-property	background-color, flex-grow, padding	background-color, color	open	
+conv-rest.light	sidebar.footer-pill	transition-duration	0.3s	0.12s	open	
+conv-rest.light	sidebar.footer-pill	transition-timing-function	cubic-bezier(0.2, 0, 0, 1)	ease-out	open	
+conv-rest.light	chat.header	width	1000px	1160px	open	
+conv-rest.light	chat.header	height	61px	51px	open	
+conv-rest.light	chat.header	min-height	auto	51px	open	
+conv-rest.light	chat.header	padding-top	10px	0px	open	
+conv-rest.light	chat.header	padding-right	0px	156px	open	
+conv-rest.light	chat.header	padding-bottom	10px	0px	open	
+conv-rest.light	chat.header	padding-left	140px	16px	open	
+conv-rest.light	chat.header	border-bottom-width	0px	1px	open	
+conv-rest.light	chat.header	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-rest.light	chat.header-name	width	110.25px	28px	open	
+conv-rest.light	chat.header-name	height	41px	28px	open	
+conv-rest.light	chat.header-name	border-top-left-radius	0px	10px	open	
+conv-rest.light	chat.header-name	border-top-right-radius	0px	10px	open	
+conv-rest.light	chat.header-name	border-bottom-left-radius	0px	10px	open	
+conv-rest.light	chat.header-name	border-bottom-right-radius	0px	10px	open	
+conv-rest.light	chat.header-name	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-rest.light	transcript.user-message	width	960px	308px	open	
+conv-rest.light	transcript.user-message	height	34px	56px	open	
+conv-rest.light	transcript.user-message	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+conv-rest.light	transcript.user-message	padding-top	0px	8px	open	
+conv-rest.light	transcript.user-message	padding-right	0px	12px	open	
+conv-rest.light	transcript.user-message	padding-bottom	0px	8px	open	
+conv-rest.light	transcript.user-message	padding-left	0px	12px	open	
+conv-rest.light	transcript.user-message	border-top-left-radius	0px	18px	open	
+conv-rest.light	transcript.user-message	border-top-right-radius	0px	18px	open	
+conv-rest.light	transcript.user-message	border-bottom-left-radius	0px	18px	open	
+conv-rest.light	transcript.user-message	border-bottom-right-radius	0px	18px	open	
+conv-rest.light	transcript.user-message	background-color	rgba(0, 0, 0, 0)	rgb(238, 238, 238)	open	
+conv-rest.light	transcript.user-message	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-rest.light	transcript.assistant-message	width	960px	186.242px	open	
+conv-rest.light	transcript.assistant-message	height	184px	193.047px	open	
+conv-rest.light	transcript.assistant-message	padding-top	2px	8px	open	
+conv-rest.light	transcript.assistant-message	padding-right	0px	12px	open	
+conv-rest.light	transcript.assistant-message	padding-bottom	2px	8px	open	
+conv-rest.light	transcript.assistant-message	padding-left	0px	12px	open	
+conv-rest.light	transcript.assistant-message	border-top-left-radius	0px	18px	open	
+conv-rest.light	transcript.assistant-message	border-top-right-radius	0px	18px	open	
+conv-rest.light	transcript.assistant-message	border-bottom-left-radius	0px	18px	open	
+conv-rest.light	transcript.assistant-message	border-bottom-right-radius	0px	18px	open	
+conv-rest.light	transcript.assistant-message	background-color	rgba(0, 0, 0, 0)	rgb(238, 238, 238)	open	
+conv-rest.light	transcript.assistant-message	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-rest.light	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+conv-rest.light	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+conv-rest.light	permission.card	width	520px	700px	open	
+conv-rest.light	permission.card	height	58px	210.781px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.light	permission.card	padding-top	10px	12px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.light	permission.card	padding-bottom	16px	12px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.light	permission.card	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-rest.light	permission.card-primary-btn	width	95.7031px	97.2344px	open	
+conv-rest.light	permission.card-primary-btn	height	32px	32.1953px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-rest.light	permission.card-primary-btn	padding-right	14px	9px	open	
+conv-rest.light	permission.card-primary-btn	padding-left	14px	9px	open	
+conv-rest.light	permission.card-primary-btn	border-top-width	0px	1px	open	
+conv-rest.light	permission.card-primary-btn	border-bottom-width	0px	1px	open	
+conv-rest.light	permission.card-primary-btn	border-left-width	0px	1px	open	
+conv-rest.light	permission.card-primary-btn	border-right-width	0px	1px	open	
+conv-rest.light	permission.card-primary-btn	border-top-left-radius	9999px	6px	open	
+conv-rest.light	permission.card-primary-btn	border-top-right-radius	9999px	6px	open	
+conv-rest.light	permission.card-primary-btn	border-bottom-left-radius	9999px	6px	open	
+conv-rest.light	permission.card-primary-btn	border-bottom-right-radius	9999px	6px	open	
+conv-rest.light	permission.card-primary-btn	background-color	rgb(28, 28, 28)	rgb(197, 244, 103)	open	
+conv-rest.light	permission.card-primary-btn	color	rgb(252, 252, 252)	rgb(22, 22, 22)	open	
+conv-rest.light	permission.card-primary-btn	font-family	-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif	Inter, ui-sans-serif, system-ui, sans-serif	open	
+conv-rest.light	permission.card-primary-btn	font-size	14px	13px	open	
+conv-rest.light	permission.card-primary-btn	font-weight	500	400	open	
+conv-rest.light	permission.card-primary-btn	line-height	20px	18.2px	open	
+conv-rest.light	permission.card-primary-btn	gap	4px	normal	open	
+conv-rest.light	permission.card-primary-btn	opacity	1	0.5	open	
+conv-rest.light	permission.card-primary-btn	transition-property	background-color, color	all	open	
+conv-rest.light	permission.card-primary-btn	transition-duration	0.12s	0s	open	
+conv-rest.light	permission.card-primary-btn	transition-timing-function	ease-out	ease	open	
+conv-rest.light	composer	width	960px	700px	open	
+conv-rest.light	composer	height	44px	84px	open	
+conv-rest.light	composer	padding-top	0px	9px	open	
+conv-rest.light	composer	padding-right	0px	9px	open	
+conv-rest.light	composer	padding-bottom	0px	9px	open	
+conv-rest.light	composer	padding-left	0px	9px	open	
+conv-rest.light	composer	border-top-left-radius	22px	16px	open	
+conv-rest.light	composer	border-top-right-radius	22px	16px	open	
+conv-rest.light	composer	border-bottom-left-radius	22px	16px	open	
+conv-rest.light	composer	border-bottom-right-radius	22px	16px	open	
+conv-rest.light	composer	background-color	rgb(255, 255, 255)	rgba(119, 119, 119, 0.09)	open	
+conv-rest.light	composer	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-rest.light	composer	box-shadow	rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03) 0px 1px 2px 0px, rgba(228, 228, 228, 0.04) 0px 0px 0px 1px	rgba(0, 0, 0, 0.12) 0px 1px 3px 0px	open	
+conv-rest.light	composer	transition-property	height, border-radius, border-color, background-color	all	open	
+conv-rest.light	composer	transition-duration	0.3s, 0.3s, 0.15s, 0.15s	0s	open	
+conv-rest.light	composer	transition-timing-function	linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), ease, ease	ease	open	
+conv-running.light	sidebar.root	height	900px	288px	open	
+conv-running.light	sidebar.root	border-right-width	1px	0.5px	open	
+conv-running.light	sidebar.root	background-color	rgb(245, 245, 245)	rgb(247, 247, 247)	open	
+conv-running.light	sidebar.root	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-running.light	sidebar.header	width	279px	279.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-running.light	sidebar.header	height	60px	50px	open	
+conv-running.light	sidebar.header	min-height	52px	auto	open	
+conv-running.light	sidebar.header	padding-top	12px	0px	open	
+conv-running.light	sidebar.header	padding-right	16px	12px	open	
+conv-running.light	sidebar.header	padding-bottom	12px	0px	open	
+conv-running.light	sidebar.header	border-bottom-width	0px	1px	open	
+conv-running.light	sidebar.header	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-running.light	sidebar.header	gap	8px	normal	open	
+conv-running.light	sidebar.header-first-btn	width	36px	24px	open	
+conv-running.light	sidebar.header-first-btn	height	36px	24px	open	
+conv-running.light	sidebar.header-first-btn	border-top-width	1px	0px	open	
+conv-running.light	sidebar.header-first-btn	border-bottom-width	1px	0px	open	
+conv-running.light	sidebar.header-first-btn	border-left-width	1px	0px	open	
+conv-running.light	sidebar.header-first-btn	border-right-width	1px	0px	open	
+conv-running.light	sidebar.header-first-btn	border-top-left-radius	9999px	6px	open	
+conv-running.light	sidebar.header-first-btn	border-top-right-radius	9999px	6px	open	
+conv-running.light	sidebar.header-first-btn	border-bottom-left-radius	9999px	6px	open	
+conv-running.light	sidebar.header-first-btn	border-bottom-right-radius	9999px	6px	open	
+conv-running.light	sidebar.header-first-btn	background-color	rgb(255, 255, 255)	rgba(0, 0, 0, 0)	open	
+conv-running.light	sidebar.header-first-btn	color	rgba(28, 28, 28, 0.92)	rgba(20, 20, 20, 0.6)	open	
+conv-running.light	sidebar.header-first-btn	font-size	13px	16px	open	
+conv-running.light	sidebar.header-first-btn	line-height	18px	normal	open	
+conv-running.light	sidebar.search-entry	width	36px	255.5px	open	
+conv-running.light	sidebar.search-entry	height	36px	28px	open	
+conv-running.light	sidebar.search-entry	min-height	auto	28px	open	
+conv-running.light	sidebar.search-entry	padding-top	0px	6px	open	
+conv-running.light	sidebar.search-entry	padding-right	0px	8px	open	
+conv-running.light	sidebar.search-entry	padding-left	0px	8px	open	
+conv-running.light	sidebar.search-entry	margin-top	0px	4px	open	
+conv-running.light	sidebar.search-entry	margin-bottom	0px	4px	open	
+conv-running.light	sidebar.search-entry	border-top-width	1px	0px	open	
+conv-running.light	sidebar.search-entry	border-bottom-width	1px	0px	open	
+conv-running.light	sidebar.search-entry	border-left-width	1px	0px	open	
+conv-running.light	sidebar.search-entry	border-right-width	1px	0px	open	
+conv-running.light	sidebar.search-entry	border-top-left-radius	9999px	8px	open	
+conv-running.light	sidebar.search-entry	border-top-right-radius	9999px	8px	open	
+conv-running.light	sidebar.search-entry	border-bottom-left-radius	9999px	8px	open	
+conv-running.light	sidebar.search-entry	border-bottom-right-radius	9999px	8px	open	
+conv-running.light	sidebar.search-entry	background-color	rgb(255, 255, 255)	rgba(119, 119, 119, 0.09)	open	
+conv-running.light	sidebar.search-entry	color	rgba(28, 28, 28, 0.92)	rgb(20, 20, 20)	open	
+conv-running.light	sidebar.search-entry	gap	normal	4px	open	
+conv-running.light	sidebar.search-entry	box-shadow	none	rgba(20, 20, 20, 0.1) 0px 0px 0px 0.5px inset	open	
+conv-running.light	sidebar.item	width	255px	255.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-running.light	sidebar.item	height	54px	58px	open	
+conv-running.light	sidebar.item	min-height	0px	58px	open	
+conv-running.light	sidebar.item	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-running.light	sidebar.item	gap	8px	9px	open	
+conv-running.light	sidebar.item	transition-property	transform, width, padding	all	open	
+conv-running.light	sidebar.item	transition-duration	0.2s	0s	open	
+conv-running.light	sidebar.item	transition-timing-function	cubic-bezier(0.22, 1, 0.36, 1)	ease	open	
+conv-running.light	sidebar.item-name	width	55.25px	167.32px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-running.light	sidebar.item-name	height	20px	15.5px	open	
+conv-running.light	sidebar.item-name	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-running.light	sidebar.item-name	font-size	14px	13px	open	
+conv-running.light	sidebar.item-name	font-weight	500	700	open	
+conv-running.light	sidebar.item-name	line-height	20px	normal	open	
+conv-running.light	sidebar.item-time	(element)	MISSING	present	open	
+conv-running.light	sidebar.footer-pill	width	203px	264px	open	
+conv-running.light	sidebar.footer-pill	height	36px	38px	open	
+conv-running.light	sidebar.footer-pill	min-height	auto	38px	open	
+conv-running.light	sidebar.footer-pill	padding-top	0px	6px	open	
+conv-running.light	sidebar.footer-pill	padding-right	16px	12px	open	
+conv-running.light	sidebar.footer-pill	padding-left	16px	8px	open	
+conv-running.light	sidebar.footer-pill	border-top-width	1px	0px	open	
+conv-running.light	sidebar.footer-pill	border-bottom-width	1px	0px	open	
+conv-running.light	sidebar.footer-pill	border-left-width	1px	0px	open	
+conv-running.light	sidebar.footer-pill	border-right-width	1px	0px	open	
+conv-running.light	sidebar.footer-pill	border-top-left-radius	9999px	10px	open	
+conv-running.light	sidebar.footer-pill	border-top-right-radius	9999px	10px	open	
+conv-running.light	sidebar.footer-pill	border-bottom-left-radius	9999px	10px	open	
+conv-running.light	sidebar.footer-pill	border-bottom-right-radius	9999px	10px	open	
+conv-running.light	sidebar.footer-pill	background-color	rgb(255, 255, 255)	rgba(119, 119, 119, 0.09)	open	
+conv-running.light	sidebar.footer-pill	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-running.light	sidebar.footer-pill	font-size	14px	13px	open	
+conv-running.light	sidebar.footer-pill	font-weight	500	400	open	
+conv-running.light	sidebar.footer-pill	line-height	20px	18px	open	
+conv-running.light	sidebar.footer-pill	gap	0px	4px	open	
+conv-running.light	sidebar.footer-pill	transition-property	background-color, flex-grow, padding	background-color, color	open	
+conv-running.light	sidebar.footer-pill	transition-duration	0.3s	0.12s	open	
+conv-running.light	sidebar.footer-pill	transition-timing-function	cubic-bezier(0.2, 0, 0, 1)	ease-out	open	
+conv-running.light	chat.header	width	1000px	1160px	open	
+conv-running.light	chat.header	height	61px	51px	open	
+conv-running.light	chat.header	min-height	auto	51px	open	
+conv-running.light	chat.header	padding-top	10px	0px	open	
+conv-running.light	chat.header	padding-right	0px	156px	open	
+conv-running.light	chat.header	padding-bottom	10px	0px	open	
+conv-running.light	chat.header	padding-left	140px	16px	open	
+conv-running.light	chat.header	border-bottom-width	0px	1px	open	
+conv-running.light	chat.header	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-running.light	chat.header-name	width	110.25px	28px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-running.light	chat.header-name	height	41px	28px	open	
+conv-running.light	chat.header-name	border-top-left-radius	0px	10px	open	
+conv-running.light	chat.header-name	border-top-right-radius	0px	10px	open	
+conv-running.light	chat.header-name	border-bottom-left-radius	0px	10px	open	
+conv-running.light	chat.header-name	border-bottom-right-radius	0px	10px	open	
+conv-running.light	chat.header-name	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-running.light	transcript.user-message	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.light	transcript.assistant-message	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.light	permission.card	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.light	permission.card-primary-btn	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.light	composer	width	960px	700px	open	
+conv-running.light	composer	height	44px	84px	open	
+conv-running.light	composer	padding-top	0px	9px	open	
+conv-running.light	composer	padding-right	0px	9px	open	
+conv-running.light	composer	padding-bottom	0px	9px	open	
+conv-running.light	composer	padding-left	0px	9px	open	
+conv-running.light	composer	border-top-left-radius	22px	16px	open	
+conv-running.light	composer	border-top-right-radius	22px	16px	open	
+conv-running.light	composer	border-bottom-left-radius	22px	16px	open	
+conv-running.light	composer	border-bottom-right-radius	22px	16px	open	
+conv-running.light	composer	background-color	rgb(255, 255, 255)	rgba(119, 119, 119, 0.09)	open	
+conv-running.light	composer	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+conv-running.light	composer	box-shadow	rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03) 0px 1px 2px 0px, rgba(228, 228, 228, 0.04) 0px 0px 0px 1px	rgba(0, 0, 0, 0.12) 0px 1px 3px 0px	open	
+conv-running.light	composer	transition-property	height, border-radius, border-color, background-color	all	open	
+conv-running.light	composer	transition-duration	0.3s, 0.3s, 0.15s, 0.15s	0s	open	
+conv-running.light	composer	transition-timing-function	linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), ease, ease	ease	open	
+sidebar-collapsed.light	sidebar.root	height	900px	225px	open	
+sidebar-collapsed.light	sidebar.root	border-right-width	1px	0.5px	open	
+sidebar-collapsed.light	sidebar.root	background-color	rgb(245, 245, 245)	rgb(247, 247, 247)	open	
+sidebar-collapsed.light	sidebar.root	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+sidebar-collapsed.light	sidebar.header	width	87px	87.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+sidebar-collapsed.light	sidebar.header	height	52px	50px	open	
+sidebar-collapsed.light	sidebar.header	min-height	52px	auto	open	
+sidebar-collapsed.light	sidebar.header	padding-right	4px	0px	open	
+sidebar-collapsed.light	sidebar.header	padding-left	4px	0px	open	
+sidebar-collapsed.light	sidebar.header	border-bottom-width	0px	1px	open	
+sidebar-collapsed.light	sidebar.header	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+sidebar-collapsed.light	sidebar.header	gap	8px	normal	open	
+sidebar-collapsed.light	sidebar.header-first-btn	width	36px	24px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.header-first-btn	height	36px	24px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.header-first-btn	min-height	0px	auto	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.header-first-btn	border-top-width	1px	0px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.header-first-btn	border-bottom-width	1px	0px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.header-first-btn	border-left-width	1px	0px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.header-first-btn	border-right-width	1px	0px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.header-first-btn	background-color	rgb(255, 255, 255)	rgba(0, 0, 0, 0)	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.header-first-btn	color	rgba(28, 28, 28, 0.92)	rgba(20, 20, 20, 0.6)	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.header-first-btn	font-size	13px	16px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.header-first-btn	line-height	18px	normal	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.search-entry	(element)	present	MISSING	waived:arch	0.18 折叠 rail 不含搜索入口（sidebar.tsx 折叠分支只出 rail-new）；加入口要改模块结构，非换皮
+sidebar-collapsed.light	sidebar.item	width	54px	48.5px	open	
+sidebar-collapsed.light	sidebar.item	height	54px	44px	open	
+sidebar-collapsed.light	sidebar.item	min-height	0px	44px	open	
+sidebar-collapsed.light	sidebar.item	padding-top	9px	5px	open	
+sidebar-collapsed.light	sidebar.item	padding-right	9px	5px	open	
+sidebar-collapsed.light	sidebar.item	padding-bottom	9px	5px	open	
+sidebar-collapsed.light	sidebar.item	padding-left	9px	5px	open	
+sidebar-collapsed.light	sidebar.item	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+sidebar-collapsed.light	sidebar.item	gap	8px	9px	open	
+sidebar-collapsed.light	sidebar.item	transition-property	transform, width, padding	all	open	
+sidebar-collapsed.light	sidebar.item	transition-duration	0.2s	0s	open	
+sidebar-collapsed.light	sidebar.item	transition-timing-function	cubic-bezier(0.22, 1, 0.36, 1)	ease	open	
+sidebar-collapsed.light	sidebar.footer-pill	(element)	MISSING	present	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	chat.header	width	1192px	1352px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	chat.header	height	35px	51px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	chat.header	min-height	auto	51px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	chat.header	padding-top	10px	0px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	chat.header	padding-right	0px	156px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	chat.header	padding-bottom	10px	0px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	chat.header	padding-left	140px	16px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	chat.header	border-bottom-width	0px	1px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	chat.header	color	rgb(28, 28, 28)	rgb(20, 20, 20)	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	chat.header-name	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	transcript.user-message	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	transcript.assistant-message	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+sidebar-collapsed.light	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+sidebar-collapsed.light	permission.card	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	permission.card-primary-btn	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	composer	width	960px	700px	open	
+sidebar-collapsed.light	composer	height	44px	84px	open	
+sidebar-collapsed.light	composer	padding-top	0px	9px	open	
+sidebar-collapsed.light	composer	padding-right	0px	9px	open	
+sidebar-collapsed.light	composer	padding-bottom	0px	9px	open	
+sidebar-collapsed.light	composer	padding-left	0px	9px	open	
+sidebar-collapsed.light	composer	border-top-left-radius	22px	16px	open	
+sidebar-collapsed.light	composer	border-top-right-radius	22px	16px	open	
+sidebar-collapsed.light	composer	border-bottom-left-radius	22px	16px	open	
+sidebar-collapsed.light	composer	border-bottom-right-radius	22px	16px	open	
+sidebar-collapsed.light	composer	background-color	rgb(255, 255, 255)	rgba(119, 119, 119, 0.09)	open	
+sidebar-collapsed.light	composer	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+sidebar-collapsed.light	composer	box-shadow	rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03) 0px 1px 2px 0px, rgba(228, 228, 228, 0.04) 0px 0px 0px 1px	rgba(0, 0, 0, 0.12) 0px 1px 3px 0px	open	
+sidebar-collapsed.light	composer	transition-property	height, border-radius, border-color, background-color	all	open	
+sidebar-collapsed.light	composer	transition-duration	0.3s, 0.3s, 0.15s, 0.15s	0s	open	
+sidebar-collapsed.light	composer	transition-timing-function	linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), ease, ease	ease	open	
+info-pane.light	sidebar.root	height	900px	288px	open	
+info-pane.light	sidebar.root	border-right-width	1px	0.5px	open	
+info-pane.light	sidebar.root	background-color	rgb(245, 245, 245)	rgb(247, 247, 247)	open	
+info-pane.light	sidebar.root	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+info-pane.light	sidebar.header	width	279px	279.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.light	sidebar.header	height	60px	50px	open	
+info-pane.light	sidebar.header	min-height	52px	auto	open	
+info-pane.light	sidebar.header	padding-top	12px	0px	open	
+info-pane.light	sidebar.header	padding-right	16px	12px	open	
+info-pane.light	sidebar.header	padding-bottom	12px	0px	open	
+info-pane.light	sidebar.header	border-bottom-width	0px	1px	open	
+info-pane.light	sidebar.header	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+info-pane.light	sidebar.header	gap	8px	normal	open	
+info-pane.light	sidebar.header-first-btn	width	36px	24px	open	
+info-pane.light	sidebar.header-first-btn	height	36px	24px	open	
+info-pane.light	sidebar.header-first-btn	border-top-width	1px	0px	open	
+info-pane.light	sidebar.header-first-btn	border-bottom-width	1px	0px	open	
+info-pane.light	sidebar.header-first-btn	border-left-width	1px	0px	open	
+info-pane.light	sidebar.header-first-btn	border-right-width	1px	0px	open	
+info-pane.light	sidebar.header-first-btn	border-top-left-radius	9999px	6px	open	
+info-pane.light	sidebar.header-first-btn	border-top-right-radius	9999px	6px	open	
+info-pane.light	sidebar.header-first-btn	border-bottom-left-radius	9999px	6px	open	
+info-pane.light	sidebar.header-first-btn	border-bottom-right-radius	9999px	6px	open	
+info-pane.light	sidebar.header-first-btn	background-color	rgb(255, 255, 255)	rgba(0, 0, 0, 0)	open	
+info-pane.light	sidebar.header-first-btn	color	rgba(28, 28, 28, 0.92)	rgba(20, 20, 20, 0.6)	open	
+info-pane.light	sidebar.header-first-btn	font-size	13px	16px	open	
+info-pane.light	sidebar.header-first-btn	line-height	18px	normal	open	
+info-pane.light	sidebar.search-entry	width	36px	255.5px	open	
+info-pane.light	sidebar.search-entry	height	36px	28px	open	
+info-pane.light	sidebar.search-entry	min-height	auto	28px	open	
+info-pane.light	sidebar.search-entry	padding-top	0px	6px	open	
+info-pane.light	sidebar.search-entry	padding-right	0px	8px	open	
+info-pane.light	sidebar.search-entry	padding-left	0px	8px	open	
+info-pane.light	sidebar.search-entry	margin-top	0px	4px	open	
+info-pane.light	sidebar.search-entry	margin-bottom	0px	4px	open	
+info-pane.light	sidebar.search-entry	border-top-width	1px	0px	open	
+info-pane.light	sidebar.search-entry	border-bottom-width	1px	0px	open	
+info-pane.light	sidebar.search-entry	border-left-width	1px	0px	open	
+info-pane.light	sidebar.search-entry	border-right-width	1px	0px	open	
+info-pane.light	sidebar.search-entry	border-top-left-radius	9999px	8px	open	
+info-pane.light	sidebar.search-entry	border-top-right-radius	9999px	8px	open	
+info-pane.light	sidebar.search-entry	border-bottom-left-radius	9999px	8px	open	
+info-pane.light	sidebar.search-entry	border-bottom-right-radius	9999px	8px	open	
+info-pane.light	sidebar.search-entry	background-color	rgb(255, 255, 255)	rgba(119, 119, 119, 0.09)	open	
+info-pane.light	sidebar.search-entry	color	rgba(28, 28, 28, 0.92)	rgb(20, 20, 20)	open	
+info-pane.light	sidebar.search-entry	gap	normal	4px	open	
+info-pane.light	sidebar.search-entry	box-shadow	none	rgba(20, 20, 20, 0.1) 0px 0px 0px 0.5px inset	open	
+info-pane.light	sidebar.item	width	255px	255.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.light	sidebar.item	height	54px	58px	open	
+info-pane.light	sidebar.item	min-height	0px	58px	open	
+info-pane.light	sidebar.item	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+info-pane.light	sidebar.item	gap	8px	9px	open	
+info-pane.light	sidebar.item	transition-property	transform, width, padding	all	open	
+info-pane.light	sidebar.item	transition-duration	0.2s	0s	open	
+info-pane.light	sidebar.item	transition-timing-function	cubic-bezier(0.22, 1, 0.36, 1)	ease	open	
+info-pane.light	sidebar.item-name	width	55.25px	167.32px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+info-pane.light	sidebar.item-name	height	20px	15.5px	open	
+info-pane.light	sidebar.item-name	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+info-pane.light	sidebar.item-name	font-size	14px	13px	open	
+info-pane.light	sidebar.item-name	font-weight	500	700	open	
+info-pane.light	sidebar.item-name	line-height	20px	normal	open	
+info-pane.light	sidebar.item-time	(element)	MISSING	present	open	
+info-pane.light	sidebar.footer-pill	width	203px	264px	open	
+info-pane.light	sidebar.footer-pill	height	36px	38px	open	
+info-pane.light	sidebar.footer-pill	min-height	auto	38px	open	
+info-pane.light	sidebar.footer-pill	padding-top	0px	6px	open	
+info-pane.light	sidebar.footer-pill	padding-right	16px	12px	open	
+info-pane.light	sidebar.footer-pill	padding-left	16px	8px	open	
+info-pane.light	sidebar.footer-pill	border-top-width	1px	0px	open	
+info-pane.light	sidebar.footer-pill	border-bottom-width	1px	0px	open	
+info-pane.light	sidebar.footer-pill	border-left-width	1px	0px	open	
+info-pane.light	sidebar.footer-pill	border-right-width	1px	0px	open	
+info-pane.light	sidebar.footer-pill	border-top-left-radius	9999px	10px	open	
+info-pane.light	sidebar.footer-pill	border-top-right-radius	9999px	10px	open	
+info-pane.light	sidebar.footer-pill	border-bottom-left-radius	9999px	10px	open	
+info-pane.light	sidebar.footer-pill	border-bottom-right-radius	9999px	10px	open	
+info-pane.light	sidebar.footer-pill	background-color	rgb(255, 255, 255)	rgba(119, 119, 119, 0.09)	open	
+info-pane.light	sidebar.footer-pill	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+info-pane.light	sidebar.footer-pill	font-size	14px	13px	open	
+info-pane.light	sidebar.footer-pill	font-weight	500	400	open	
+info-pane.light	sidebar.footer-pill	line-height	20px	18px	open	
+info-pane.light	sidebar.footer-pill	gap	0px	4px	open	
+info-pane.light	sidebar.footer-pill	transition-property	background-color, flex-grow, padding	background-color, color	open	
+info-pane.light	sidebar.footer-pill	transition-duration	0.3s	0.12s	open	
+info-pane.light	sidebar.footer-pill	transition-timing-function	cubic-bezier(0.2, 0, 0, 1)	ease-out	open	
+info-pane.light	chat.header	width	820px	1160px	open	
+info-pane.light	chat.header	height	61px	51px	open	
+info-pane.light	chat.header	min-height	auto	51px	open	
+info-pane.light	chat.header	padding-top	10px	0px	open	
+info-pane.light	chat.header	padding-right	0px	156px	open	
+info-pane.light	chat.header	padding-bottom	10px	0px	open	
+info-pane.light	chat.header	padding-left	0px	16px	open	
+info-pane.light	chat.header	border-bottom-width	0px	1px	open	
+info-pane.light	chat.header	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+info-pane.light	chat.header-name	width	110.25px	28px	open	
+info-pane.light	chat.header-name	height	41px	28px	open	
+info-pane.light	chat.header-name	border-top-left-radius	0px	10px	open	
+info-pane.light	chat.header-name	border-top-right-radius	0px	10px	open	
+info-pane.light	chat.header-name	border-bottom-left-radius	0px	10px	open	
+info-pane.light	chat.header-name	border-bottom-right-radius	0px	10px	open	
+info-pane.light	chat.header-name	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+info-pane.light	transcript.user-message	width	808px	308px	open	
+info-pane.light	transcript.user-message	height	34px	56px	open	
+info-pane.light	transcript.user-message	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+info-pane.light	transcript.user-message	padding-top	0px	8px	open	
+info-pane.light	transcript.user-message	padding-right	0px	12px	open	
+info-pane.light	transcript.user-message	padding-bottom	0px	8px	open	
+info-pane.light	transcript.user-message	padding-left	0px	12px	open	
+info-pane.light	transcript.user-message	border-top-left-radius	0px	18px	open	
+info-pane.light	transcript.user-message	border-top-right-radius	0px	18px	open	
+info-pane.light	transcript.user-message	border-bottom-left-radius	0px	18px	open	
+info-pane.light	transcript.user-message	border-bottom-right-radius	0px	18px	open	
+info-pane.light	transcript.user-message	background-color	rgba(0, 0, 0, 0)	rgb(238, 238, 238)	open	
+info-pane.light	transcript.user-message	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+info-pane.light	transcript.assistant-message	width	808px	186.242px	open	
+info-pane.light	transcript.assistant-message	height	184px	193.047px	open	
+info-pane.light	transcript.assistant-message	padding-top	2px	8px	open	
+info-pane.light	transcript.assistant-message	padding-right	0px	12px	open	
+info-pane.light	transcript.assistant-message	padding-bottom	2px	8px	open	
+info-pane.light	transcript.assistant-message	padding-left	0px	12px	open	
+info-pane.light	transcript.assistant-message	border-top-left-radius	0px	18px	open	
+info-pane.light	transcript.assistant-message	border-top-right-radius	0px	18px	open	
+info-pane.light	transcript.assistant-message	border-bottom-left-radius	0px	18px	open	
+info-pane.light	transcript.assistant-message	border-bottom-right-radius	0px	18px	open	
+info-pane.light	transcript.assistant-message	background-color	rgba(0, 0, 0, 0)	rgb(238, 238, 238)	open	
+info-pane.light	transcript.assistant-message	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+info-pane.light	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+info-pane.light	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+info-pane.light	permission.card	width	520px	700px	open	
+info-pane.light	permission.card	height	58px	210.781px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.light	permission.card	padding-top	10px	12px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.light	permission.card	padding-bottom	16px	12px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.light	permission.card	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+info-pane.light	permission.card-primary-btn	width	95.7031px	97.2344px	open	
+info-pane.light	permission.card-primary-btn	height	32px	32.1953px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.light	permission.card-primary-btn	padding-right	14px	9px	open	
+info-pane.light	permission.card-primary-btn	padding-left	14px	9px	open	
+info-pane.light	permission.card-primary-btn	border-top-width	0px	1px	open	
+info-pane.light	permission.card-primary-btn	border-bottom-width	0px	1px	open	
+info-pane.light	permission.card-primary-btn	border-left-width	0px	1px	open	
+info-pane.light	permission.card-primary-btn	border-right-width	0px	1px	open	
+info-pane.light	permission.card-primary-btn	border-top-left-radius	9999px	6px	open	
+info-pane.light	permission.card-primary-btn	border-top-right-radius	9999px	6px	open	
+info-pane.light	permission.card-primary-btn	border-bottom-left-radius	9999px	6px	open	
+info-pane.light	permission.card-primary-btn	border-bottom-right-radius	9999px	6px	open	
+info-pane.light	permission.card-primary-btn	background-color	rgb(28, 28, 28)	rgb(197, 244, 103)	open	
+info-pane.light	permission.card-primary-btn	color	rgb(252, 252, 252)	rgb(22, 22, 22)	open	
+info-pane.light	permission.card-primary-btn	font-family	-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif	Inter, ui-sans-serif, system-ui, sans-serif	open	
+info-pane.light	permission.card-primary-btn	font-size	14px	13px	open	
+info-pane.light	permission.card-primary-btn	font-weight	500	400	open	
+info-pane.light	permission.card-primary-btn	line-height	20px	18.2px	open	
+info-pane.light	permission.card-primary-btn	gap	4px	normal	open	
+info-pane.light	permission.card-primary-btn	opacity	1	0.5	open	
+info-pane.light	permission.card-primary-btn	transition-property	background-color, color	all	open	
+info-pane.light	permission.card-primary-btn	transition-duration	0.12s	0s	open	
+info-pane.light	permission.card-primary-btn	transition-timing-function	ease-out	ease	open	
+info-pane.light	composer	width	808px	700px	open	
+info-pane.light	composer	height	44px	84px	open	
+info-pane.light	composer	padding-top	0px	9px	open	
+info-pane.light	composer	padding-right	0px	9px	open	
+info-pane.light	composer	padding-bottom	0px	9px	open	
+info-pane.light	composer	padding-left	0px	9px	open	
+info-pane.light	composer	border-top-left-radius	22px	16px	open	
+info-pane.light	composer	border-top-right-radius	22px	16px	open	
+info-pane.light	composer	border-bottom-left-radius	22px	16px	open	
+info-pane.light	composer	border-bottom-right-radius	22px	16px	open	
+info-pane.light	composer	background-color	rgb(255, 255, 255)	rgba(119, 119, 119, 0.09)	open	
+info-pane.light	composer	color	rgb(28, 28, 28)	rgb(20, 20, 20)	open	
+info-pane.light	composer	box-shadow	rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03) 0px 1px 2px 0px, rgba(228, 228, 228, 0.04) 0px 0px 0px 1px	rgba(0, 0, 0, 0.12) 0px 1px 3px 0px	open	
+info-pane.light	composer	transition-property	height, border-radius, border-color, background-color	all	open	
+info-pane.light	composer	transition-duration	0.3s, 0.3s, 0.15s, 0.15s	0s	open	
+info-pane.light	composer	transition-timing-function	linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), ease, ease	ease	open	
+conv-rest.dark	sidebar.root	height	900px	303px	open	
+conv-rest.dark	sidebar.root	border-right-width	1px	0.5px	open	
+conv-rest.dark	sidebar.root	background-color	rgb(14, 14, 14)	rgb(17, 17, 17)	open	
+conv-rest.dark	sidebar.root	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-rest.dark	sidebar.header	width	279px	279.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-rest.dark	sidebar.header	height	60px	50px	open	
+conv-rest.dark	sidebar.header	min-height	52px	auto	open	
+conv-rest.dark	sidebar.header	padding-top	12px	0px	open	
+conv-rest.dark	sidebar.header	padding-right	16px	12px	open	
+conv-rest.dark	sidebar.header	padding-bottom	12px	0px	open	
+conv-rest.dark	sidebar.header	border-bottom-width	0px	1px	open	
+conv-rest.dark	sidebar.header	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-rest.dark	sidebar.header	gap	8px	normal	open	
+conv-rest.dark	sidebar.header-first-btn	width	36px	24px	open	
+conv-rest.dark	sidebar.header-first-btn	height	36px	24px	open	
+conv-rest.dark	sidebar.header-first-btn	border-top-width	1px	0px	open	
+conv-rest.dark	sidebar.header-first-btn	border-bottom-width	1px	0px	open	
+conv-rest.dark	sidebar.header-first-btn	border-left-width	1px	0px	open	
+conv-rest.dark	sidebar.header-first-btn	border-right-width	1px	0px	open	
+conv-rest.dark	sidebar.header-first-btn	border-top-left-radius	9999px	6px	open	
+conv-rest.dark	sidebar.header-first-btn	border-top-right-radius	9999px	6px	open	
+conv-rest.dark	sidebar.header-first-btn	border-bottom-left-radius	9999px	6px	open	
+conv-rest.dark	sidebar.header-first-btn	border-bottom-right-radius	9999px	6px	open	
+conv-rest.dark	sidebar.header-first-btn	background-color	rgb(31, 31, 31)	rgba(0, 0, 0, 0)	open	
+conv-rest.dark	sidebar.header-first-btn	color	rgba(245, 245, 245, 0.9)	rgba(252, 252, 252, 0.6)	open	
+conv-rest.dark	sidebar.header-first-btn	font-size	13px	16px	open	
+conv-rest.dark	sidebar.header-first-btn	line-height	18px	normal	open	
+conv-rest.dark	sidebar.search-entry	width	36px	255.5px	open	
+conv-rest.dark	sidebar.search-entry	height	36px	28px	open	
+conv-rest.dark	sidebar.search-entry	min-height	auto	28px	open	
+conv-rest.dark	sidebar.search-entry	padding-top	0px	6px	open	
+conv-rest.dark	sidebar.search-entry	padding-right	0px	8px	open	
+conv-rest.dark	sidebar.search-entry	padding-left	0px	8px	open	
+conv-rest.dark	sidebar.search-entry	margin-top	0px	4px	open	
+conv-rest.dark	sidebar.search-entry	margin-bottom	0px	4px	open	
+conv-rest.dark	sidebar.search-entry	border-top-width	1px	0px	open	
+conv-rest.dark	sidebar.search-entry	border-bottom-width	1px	0px	open	
+conv-rest.dark	sidebar.search-entry	border-left-width	1px	0px	open	
+conv-rest.dark	sidebar.search-entry	border-right-width	1px	0px	open	
+conv-rest.dark	sidebar.search-entry	border-top-left-radius	9999px	8px	open	
+conv-rest.dark	sidebar.search-entry	border-top-right-radius	9999px	8px	open	
+conv-rest.dark	sidebar.search-entry	border-bottom-left-radius	9999px	8px	open	
+conv-rest.dark	sidebar.search-entry	border-bottom-right-radius	9999px	8px	open	
+conv-rest.dark	sidebar.search-entry	background-color	rgb(31, 31, 31)	rgba(119, 119, 119, 0.173)	open	
+conv-rest.dark	sidebar.search-entry	color	rgba(245, 245, 245, 0.9)	rgb(252, 252, 252)	open	
+conv-rest.dark	sidebar.search-entry	gap	normal	4px	open	
+conv-rest.dark	sidebar.search-entry	box-shadow	none	rgba(252, 252, 252, 0.1) 0px 0px 0px 0.5px inset	open	
+conv-rest.dark	sidebar.item	width	255px	240.5px	open	
+conv-rest.dark	sidebar.item	height	54px	58px	open	
+conv-rest.dark	sidebar.item	min-height	0px	58px	open	
+conv-rest.dark	sidebar.item	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-rest.dark	sidebar.item	gap	8px	9px	open	
+conv-rest.dark	sidebar.item	transition-property	transform, width, padding	all	open	
+conv-rest.dark	sidebar.item	transition-duration	0.2s	0s	open	
+conv-rest.dark	sidebar.item	transition-timing-function	cubic-bezier(0.22, 1, 0.36, 1)	ease	open	
+conv-rest.dark	sidebar.item-name	width	55.25px	152.32px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-rest.dark	sidebar.item-name	height	20px	15.5px	open	
+conv-rest.dark	sidebar.item-name	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-rest.dark	sidebar.item-name	font-size	14px	13px	open	
+conv-rest.dark	sidebar.item-name	font-weight	500	700	open	
+conv-rest.dark	sidebar.item-name	line-height	20px	normal	open	
+conv-rest.dark	sidebar.item-time	(element)	MISSING	present	open	
+conv-rest.dark	sidebar.footer-pill	width	203px	264px	open	
+conv-rest.dark	sidebar.footer-pill	height	36px	38px	open	
+conv-rest.dark	sidebar.footer-pill	min-height	auto	38px	open	
+conv-rest.dark	sidebar.footer-pill	padding-top	0px	6px	open	
+conv-rest.dark	sidebar.footer-pill	padding-right	16px	12px	open	
+conv-rest.dark	sidebar.footer-pill	padding-left	16px	8px	open	
+conv-rest.dark	sidebar.footer-pill	border-top-width	1px	0px	open	
+conv-rest.dark	sidebar.footer-pill	border-bottom-width	1px	0px	open	
+conv-rest.dark	sidebar.footer-pill	border-left-width	1px	0px	open	
+conv-rest.dark	sidebar.footer-pill	border-right-width	1px	0px	open	
+conv-rest.dark	sidebar.footer-pill	border-top-left-radius	9999px	10px	open	
+conv-rest.dark	sidebar.footer-pill	border-top-right-radius	9999px	10px	open	
+conv-rest.dark	sidebar.footer-pill	border-bottom-left-radius	9999px	10px	open	
+conv-rest.dark	sidebar.footer-pill	border-bottom-right-radius	9999px	10px	open	
+conv-rest.dark	sidebar.footer-pill	background-color	rgb(31, 31, 31)	rgba(119, 119, 119, 0.173)	open	
+conv-rest.dark	sidebar.footer-pill	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-rest.dark	sidebar.footer-pill	font-size	14px	13px	open	
+conv-rest.dark	sidebar.footer-pill	font-weight	500	400	open	
+conv-rest.dark	sidebar.footer-pill	line-height	20px	18px	open	
+conv-rest.dark	sidebar.footer-pill	gap	0px	4px	open	
+conv-rest.dark	sidebar.footer-pill	transition-property	background-color, flex-grow, padding	background-color, color	open	
+conv-rest.dark	sidebar.footer-pill	transition-duration	0.3s	0.12s	open	
+conv-rest.dark	sidebar.footer-pill	transition-timing-function	cubic-bezier(0.2, 0, 0, 1)	ease-out	open	
+conv-rest.dark	chat.header	width	1000px	1160px	open	
+conv-rest.dark	chat.header	height	61px	51px	open	
+conv-rest.dark	chat.header	min-height	auto	51px	open	
+conv-rest.dark	chat.header	padding-top	10px	0px	open	
+conv-rest.dark	chat.header	padding-right	0px	156px	open	
+conv-rest.dark	chat.header	padding-bottom	10px	0px	open	
+conv-rest.dark	chat.header	padding-left	140px	16px	open	
+conv-rest.dark	chat.header	border-bottom-width	0px	1px	open	
+conv-rest.dark	chat.header	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-rest.dark	chat.header-name	width	110.25px	28px	open	
+conv-rest.dark	chat.header-name	height	41px	28px	open	
+conv-rest.dark	chat.header-name	border-top-left-radius	0px	10px	open	
+conv-rest.dark	chat.header-name	border-top-right-radius	0px	10px	open	
+conv-rest.dark	chat.header-name	border-bottom-left-radius	0px	10px	open	
+conv-rest.dark	chat.header-name	border-bottom-right-radius	0px	10px	open	
+conv-rest.dark	chat.header-name	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-rest.dark	transcript.user-message	width	960px	308px	open	
+conv-rest.dark	transcript.user-message	height	34px	56px	open	
+conv-rest.dark	transcript.user-message	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+conv-rest.dark	transcript.user-message	padding-top	0px	8px	open	
+conv-rest.dark	transcript.user-message	padding-right	0px	12px	open	
+conv-rest.dark	transcript.user-message	padding-bottom	0px	8px	open	
+conv-rest.dark	transcript.user-message	padding-left	0px	12px	open	
+conv-rest.dark	transcript.user-message	border-top-left-radius	0px	18px	open	
+conv-rest.dark	transcript.user-message	border-top-right-radius	0px	18px	open	
+conv-rest.dark	transcript.user-message	border-bottom-left-radius	0px	18px	open	
+conv-rest.dark	transcript.user-message	border-bottom-right-radius	0px	18px	open	
+conv-rest.dark	transcript.user-message	background-color	rgba(0, 0, 0, 0)	rgb(38, 38, 38)	open	
+conv-rest.dark	transcript.user-message	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-rest.dark	transcript.assistant-message	width	960px	186.242px	open	
+conv-rest.dark	transcript.assistant-message	height	184px	193.047px	open	
+conv-rest.dark	transcript.assistant-message	padding-top	2px	8px	open	
+conv-rest.dark	transcript.assistant-message	padding-right	0px	12px	open	
+conv-rest.dark	transcript.assistant-message	padding-bottom	2px	8px	open	
+conv-rest.dark	transcript.assistant-message	padding-left	0px	12px	open	
+conv-rest.dark	transcript.assistant-message	border-top-left-radius	0px	18px	open	
+conv-rest.dark	transcript.assistant-message	border-top-right-radius	0px	18px	open	
+conv-rest.dark	transcript.assistant-message	border-bottom-left-radius	0px	18px	open	
+conv-rest.dark	transcript.assistant-message	border-bottom-right-radius	0px	18px	open	
+conv-rest.dark	transcript.assistant-message	background-color	rgba(0, 0, 0, 0)	rgb(38, 38, 38)	open	
+conv-rest.dark	transcript.assistant-message	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-rest.dark	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+conv-rest.dark	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+conv-rest.dark	permission.card	width	520px	700px	open	
+conv-rest.dark	permission.card	height	58px	210.781px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.dark	permission.card	padding-top	10px	12px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.dark	permission.card	padding-bottom	16px	12px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.dark	permission.card	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-rest.dark	permission.card-primary-btn	width	95.7031px	97.2344px	open	
+conv-rest.dark	permission.card-primary-btn	height	32px	32.1953px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-rest.dark	permission.card-primary-btn	padding-right	14px	9px	open	
+conv-rest.dark	permission.card-primary-btn	padding-left	14px	9px	open	
+conv-rest.dark	permission.card-primary-btn	border-top-width	0px	1px	open	
+conv-rest.dark	permission.card-primary-btn	border-bottom-width	0px	1px	open	
+conv-rest.dark	permission.card-primary-btn	border-left-width	0px	1px	open	
+conv-rest.dark	permission.card-primary-btn	border-right-width	0px	1px	open	
+conv-rest.dark	permission.card-primary-btn	border-top-left-radius	9999px	6px	open	
+conv-rest.dark	permission.card-primary-btn	border-top-right-radius	9999px	6px	open	
+conv-rest.dark	permission.card-primary-btn	border-bottom-left-radius	9999px	6px	open	
+conv-rest.dark	permission.card-primary-btn	border-bottom-right-radius	9999px	6px	open	
+conv-rest.dark	permission.card-primary-btn	background-color	rgb(245, 245, 245)	rgb(197, 244, 103)	open	
+conv-rest.dark	permission.card-primary-btn	color	rgb(18, 18, 18)	rgb(22, 22, 22)	open	
+conv-rest.dark	permission.card-primary-btn	font-family	-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif	Inter, ui-sans-serif, system-ui, sans-serif	open	
+conv-rest.dark	permission.card-primary-btn	font-size	14px	13px	open	
+conv-rest.dark	permission.card-primary-btn	font-weight	500	400	open	
+conv-rest.dark	permission.card-primary-btn	line-height	20px	18.2px	open	
+conv-rest.dark	permission.card-primary-btn	gap	4px	normal	open	
+conv-rest.dark	permission.card-primary-btn	opacity	1	0.5	open	
+conv-rest.dark	permission.card-primary-btn	transition-property	background-color, color	all	open	
+conv-rest.dark	permission.card-primary-btn	transition-duration	0.12s	0s	open	
+conv-rest.dark	permission.card-primary-btn	transition-timing-function	ease-out	ease	open	
+conv-rest.dark	composer	width	960px	700px	open	
+conv-rest.dark	composer	height	44px	84px	open	
+conv-rest.dark	composer	padding-top	0px	9px	open	
+conv-rest.dark	composer	padding-right	0px	9px	open	
+conv-rest.dark	composer	padding-bottom	0px	9px	open	
+conv-rest.dark	composer	padding-left	0px	9px	open	
+conv-rest.dark	composer	border-top-left-radius	22px	16px	open	
+conv-rest.dark	composer	border-top-right-radius	22px	16px	open	
+conv-rest.dark	composer	border-bottom-left-radius	22px	16px	open	
+conv-rest.dark	composer	border-bottom-right-radius	22px	16px	open	
+conv-rest.dark	composer	background-color	rgb(31, 31, 31)	rgba(119, 119, 119, 0.173)	open	
+conv-rest.dark	composer	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-rest.dark	composer	box-shadow	rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03) 0px 1px 2px 0px, rgba(228, 228, 228, 0.04) 0px 0px 0px 1px	rgba(0, 0, 0, 0) 0px 1px 3px 0px	open	
+conv-rest.dark	composer	transition-property	height, border-radius, border-color, background-color	all	open	
+conv-rest.dark	composer	transition-duration	0.3s, 0.3s, 0.15s, 0.15s	0s	open	
+conv-rest.dark	composer	transition-timing-function	linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), ease, ease	ease	open	
+conv-running.dark	sidebar.root	height	900px	288px	open	
+conv-running.dark	sidebar.root	border-right-width	1px	0.5px	open	
+conv-running.dark	sidebar.root	background-color	rgb(14, 14, 14)	rgb(17, 17, 17)	open	
+conv-running.dark	sidebar.root	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-running.dark	sidebar.header	width	279px	279.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-running.dark	sidebar.header	height	60px	50px	open	
+conv-running.dark	sidebar.header	min-height	52px	auto	open	
+conv-running.dark	sidebar.header	padding-top	12px	0px	open	
+conv-running.dark	sidebar.header	padding-right	16px	12px	open	
+conv-running.dark	sidebar.header	padding-bottom	12px	0px	open	
+conv-running.dark	sidebar.header	border-bottom-width	0px	1px	open	
+conv-running.dark	sidebar.header	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-running.dark	sidebar.header	gap	8px	normal	open	
+conv-running.dark	sidebar.header-first-btn	width	36px	24px	open	
+conv-running.dark	sidebar.header-first-btn	height	36px	24px	open	
+conv-running.dark	sidebar.header-first-btn	border-top-width	1px	0px	open	
+conv-running.dark	sidebar.header-first-btn	border-bottom-width	1px	0px	open	
+conv-running.dark	sidebar.header-first-btn	border-left-width	1px	0px	open	
+conv-running.dark	sidebar.header-first-btn	border-right-width	1px	0px	open	
+conv-running.dark	sidebar.header-first-btn	border-top-left-radius	9999px	6px	open	
+conv-running.dark	sidebar.header-first-btn	border-top-right-radius	9999px	6px	open	
+conv-running.dark	sidebar.header-first-btn	border-bottom-left-radius	9999px	6px	open	
+conv-running.dark	sidebar.header-first-btn	border-bottom-right-radius	9999px	6px	open	
+conv-running.dark	sidebar.header-first-btn	background-color	rgb(31, 31, 31)	rgba(0, 0, 0, 0)	open	
+conv-running.dark	sidebar.header-first-btn	color	rgba(245, 245, 245, 0.9)	rgba(252, 252, 252, 0.6)	open	
+conv-running.dark	sidebar.header-first-btn	font-size	13px	16px	open	
+conv-running.dark	sidebar.header-first-btn	line-height	18px	normal	open	
+conv-running.dark	sidebar.search-entry	width	36px	255.5px	open	
+conv-running.dark	sidebar.search-entry	height	36px	28px	open	
+conv-running.dark	sidebar.search-entry	min-height	auto	28px	open	
+conv-running.dark	sidebar.search-entry	padding-top	0px	6px	open	
+conv-running.dark	sidebar.search-entry	padding-right	0px	8px	open	
+conv-running.dark	sidebar.search-entry	padding-left	0px	8px	open	
+conv-running.dark	sidebar.search-entry	margin-top	0px	4px	open	
+conv-running.dark	sidebar.search-entry	margin-bottom	0px	4px	open	
+conv-running.dark	sidebar.search-entry	border-top-width	1px	0px	open	
+conv-running.dark	sidebar.search-entry	border-bottom-width	1px	0px	open	
+conv-running.dark	sidebar.search-entry	border-left-width	1px	0px	open	
+conv-running.dark	sidebar.search-entry	border-right-width	1px	0px	open	
+conv-running.dark	sidebar.search-entry	border-top-left-radius	9999px	8px	open	
+conv-running.dark	sidebar.search-entry	border-top-right-radius	9999px	8px	open	
+conv-running.dark	sidebar.search-entry	border-bottom-left-radius	9999px	8px	open	
+conv-running.dark	sidebar.search-entry	border-bottom-right-radius	9999px	8px	open	
+conv-running.dark	sidebar.search-entry	background-color	rgb(31, 31, 31)	rgba(119, 119, 119, 0.173)	open	
+conv-running.dark	sidebar.search-entry	color	rgba(245, 245, 245, 0.9)	rgb(252, 252, 252)	open	
+conv-running.dark	sidebar.search-entry	gap	normal	4px	open	
+conv-running.dark	sidebar.search-entry	box-shadow	none	rgba(252, 252, 252, 0.1) 0px 0px 0px 0.5px inset	open	
+conv-running.dark	sidebar.item	width	255px	255.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-running.dark	sidebar.item	height	54px	58px	open	
+conv-running.dark	sidebar.item	min-height	0px	58px	open	
+conv-running.dark	sidebar.item	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-running.dark	sidebar.item	gap	8px	9px	open	
+conv-running.dark	sidebar.item	transition-property	transform, width, padding	all	open	
+conv-running.dark	sidebar.item	transition-duration	0.2s	0s	open	
+conv-running.dark	sidebar.item	transition-timing-function	cubic-bezier(0.22, 1, 0.36, 1)	ease	open	
+conv-running.dark	sidebar.item-name	width	55.25px	167.32px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-running.dark	sidebar.item-name	height	20px	15.5px	open	
+conv-running.dark	sidebar.item-name	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-running.dark	sidebar.item-name	font-size	14px	13px	open	
+conv-running.dark	sidebar.item-name	font-weight	500	700	open	
+conv-running.dark	sidebar.item-name	line-height	20px	normal	open	
+conv-running.dark	sidebar.item-time	(element)	MISSING	present	open	
+conv-running.dark	sidebar.footer-pill	width	203px	264px	open	
+conv-running.dark	sidebar.footer-pill	height	36px	38px	open	
+conv-running.dark	sidebar.footer-pill	min-height	auto	38px	open	
+conv-running.dark	sidebar.footer-pill	padding-top	0px	6px	open	
+conv-running.dark	sidebar.footer-pill	padding-right	16px	12px	open	
+conv-running.dark	sidebar.footer-pill	padding-left	16px	8px	open	
+conv-running.dark	sidebar.footer-pill	border-top-width	1px	0px	open	
+conv-running.dark	sidebar.footer-pill	border-bottom-width	1px	0px	open	
+conv-running.dark	sidebar.footer-pill	border-left-width	1px	0px	open	
+conv-running.dark	sidebar.footer-pill	border-right-width	1px	0px	open	
+conv-running.dark	sidebar.footer-pill	border-top-left-radius	9999px	10px	open	
+conv-running.dark	sidebar.footer-pill	border-top-right-radius	9999px	10px	open	
+conv-running.dark	sidebar.footer-pill	border-bottom-left-radius	9999px	10px	open	
+conv-running.dark	sidebar.footer-pill	border-bottom-right-radius	9999px	10px	open	
+conv-running.dark	sidebar.footer-pill	background-color	rgb(31, 31, 31)	rgba(119, 119, 119, 0.173)	open	
+conv-running.dark	sidebar.footer-pill	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-running.dark	sidebar.footer-pill	font-size	14px	13px	open	
+conv-running.dark	sidebar.footer-pill	font-weight	500	400	open	
+conv-running.dark	sidebar.footer-pill	line-height	20px	18px	open	
+conv-running.dark	sidebar.footer-pill	gap	0px	4px	open	
+conv-running.dark	sidebar.footer-pill	transition-property	background-color, flex-grow, padding	background-color, color	open	
+conv-running.dark	sidebar.footer-pill	transition-duration	0.3s	0.12s	open	
+conv-running.dark	sidebar.footer-pill	transition-timing-function	cubic-bezier(0.2, 0, 0, 1)	ease-out	open	
+conv-running.dark	chat.header	width	1000px	1160px	open	
+conv-running.dark	chat.header	height	61px	51px	open	
+conv-running.dark	chat.header	min-height	auto	51px	open	
+conv-running.dark	chat.header	padding-top	10px	0px	open	
+conv-running.dark	chat.header	padding-right	0px	156px	open	
+conv-running.dark	chat.header	padding-bottom	10px	0px	open	
+conv-running.dark	chat.header	padding-left	140px	16px	open	
+conv-running.dark	chat.header	border-bottom-width	0px	1px	open	
+conv-running.dark	chat.header	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-running.dark	chat.header-name	width	110.25px	28px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-running.dark	chat.header-name	height	41px	28px	open	
+conv-running.dark	chat.header-name	border-top-left-radius	0px	10px	open	
+conv-running.dark	chat.header-name	border-top-right-radius	0px	10px	open	
+conv-running.dark	chat.header-name	border-bottom-left-radius	0px	10px	open	
+conv-running.dark	chat.header-name	border-bottom-right-radius	0px	10px	open	
+conv-running.dark	chat.header-name	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-running.dark	transcript.user-message	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.dark	transcript.assistant-message	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.dark	permission.card	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.dark	permission.card-primary-btn	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.dark	composer	width	960px	700px	open	
+conv-running.dark	composer	height	44px	84px	open	
+conv-running.dark	composer	padding-top	0px	9px	open	
+conv-running.dark	composer	padding-right	0px	9px	open	
+conv-running.dark	composer	padding-bottom	0px	9px	open	
+conv-running.dark	composer	padding-left	0px	9px	open	
+conv-running.dark	composer	border-top-left-radius	22px	16px	open	
+conv-running.dark	composer	border-top-right-radius	22px	16px	open	
+conv-running.dark	composer	border-bottom-left-radius	22px	16px	open	
+conv-running.dark	composer	border-bottom-right-radius	22px	16px	open	
+conv-running.dark	composer	background-color	rgb(31, 31, 31)	rgba(119, 119, 119, 0.173)	open	
+conv-running.dark	composer	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+conv-running.dark	composer	box-shadow	rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03) 0px 1px 2px 0px, rgba(228, 228, 228, 0.04) 0px 0px 0px 1px	rgba(0, 0, 0, 0) 0px 1px 3px 0px	open	
+conv-running.dark	composer	transition-property	height, border-radius, border-color, background-color	all	open	
+conv-running.dark	composer	transition-duration	0.3s, 0.3s, 0.15s, 0.15s	0s	open	
+conv-running.dark	composer	transition-timing-function	linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), ease, ease	ease	open	
+sidebar-collapsed.dark	sidebar.root	height	900px	225px	open	
+sidebar-collapsed.dark	sidebar.root	border-right-width	1px	0.5px	open	
+sidebar-collapsed.dark	sidebar.root	background-color	rgb(14, 14, 14)	rgb(17, 17, 17)	open	
+sidebar-collapsed.dark	sidebar.root	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+sidebar-collapsed.dark	sidebar.header	width	87px	87.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+sidebar-collapsed.dark	sidebar.header	height	52px	50px	open	
+sidebar-collapsed.dark	sidebar.header	min-height	52px	auto	open	
+sidebar-collapsed.dark	sidebar.header	padding-right	4px	0px	open	
+sidebar-collapsed.dark	sidebar.header	padding-left	4px	0px	open	
+sidebar-collapsed.dark	sidebar.header	border-bottom-width	0px	1px	open	
+sidebar-collapsed.dark	sidebar.header	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+sidebar-collapsed.dark	sidebar.header	gap	8px	normal	open	
+sidebar-collapsed.dark	sidebar.header-first-btn	width	36px	24px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.header-first-btn	height	36px	24px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.header-first-btn	min-height	0px	auto	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.header-first-btn	border-top-width	1px	0px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.header-first-btn	border-bottom-width	1px	0px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.header-first-btn	border-left-width	1px	0px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.header-first-btn	border-right-width	1px	0px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.header-first-btn	background-color	rgb(31, 31, 31)	rgba(0, 0, 0, 0)	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.header-first-btn	color	rgba(245, 245, 245, 0.9)	rgba(252, 252, 252, 0.6)	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.header-first-btn	font-size	13px	16px	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.header-first-btn	line-height	18px	normal	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.search-entry	(element)	present	MISSING	waived:arch	0.18 折叠 rail 不含搜索入口（sidebar.tsx 折叠分支只出 rail-new）；加入口要改模块结构，非换皮
+sidebar-collapsed.dark	sidebar.item	width	54px	48.5px	open	
+sidebar-collapsed.dark	sidebar.item	height	54px	44px	open	
+sidebar-collapsed.dark	sidebar.item	min-height	0px	44px	open	
+sidebar-collapsed.dark	sidebar.item	padding-top	9px	5px	open	
+sidebar-collapsed.dark	sidebar.item	padding-right	9px	5px	open	
+sidebar-collapsed.dark	sidebar.item	padding-bottom	9px	5px	open	
+sidebar-collapsed.dark	sidebar.item	padding-left	9px	5px	open	
+sidebar-collapsed.dark	sidebar.item	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+sidebar-collapsed.dark	sidebar.item	gap	8px	9px	open	
+sidebar-collapsed.dark	sidebar.item	transition-property	transform, width, padding	all	open	
+sidebar-collapsed.dark	sidebar.item	transition-duration	0.2s	0s	open	
+sidebar-collapsed.dark	sidebar.item	transition-timing-function	cubic-bezier(0.22, 1, 0.36, 1)	ease	open	
+sidebar-collapsed.dark	sidebar.footer-pill	(element)	MISSING	present	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	chat.header	width	1192px	1352px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	chat.header	height	35px	51px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	chat.header	min-height	auto	51px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	chat.header	padding-top	10px	0px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	chat.header	padding-right	0px	156px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	chat.header	padding-bottom	10px	0px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	chat.header	padding-left	140px	16px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	chat.header	border-bottom-width	0px	1px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	chat.header	color	rgb(245, 245, 245)	rgb(252, 252, 252)	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	chat.header-name	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	transcript.user-message	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	transcript.assistant-message	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+sidebar-collapsed.dark	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+sidebar-collapsed.dark	permission.card	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	permission.card-primary-btn	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	composer	width	960px	700px	open	
+sidebar-collapsed.dark	composer	height	44px	84px	open	
+sidebar-collapsed.dark	composer	padding-top	0px	9px	open	
+sidebar-collapsed.dark	composer	padding-right	0px	9px	open	
+sidebar-collapsed.dark	composer	padding-bottom	0px	9px	open	
+sidebar-collapsed.dark	composer	padding-left	0px	9px	open	
+sidebar-collapsed.dark	composer	border-top-left-radius	22px	16px	open	
+sidebar-collapsed.dark	composer	border-top-right-radius	22px	16px	open	
+sidebar-collapsed.dark	composer	border-bottom-left-radius	22px	16px	open	
+sidebar-collapsed.dark	composer	border-bottom-right-radius	22px	16px	open	
+sidebar-collapsed.dark	composer	background-color	rgb(31, 31, 31)	rgba(119, 119, 119, 0.173)	open	
+sidebar-collapsed.dark	composer	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+sidebar-collapsed.dark	composer	box-shadow	rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03) 0px 1px 2px 0px, rgba(228, 228, 228, 0.04) 0px 0px 0px 1px	rgba(0, 0, 0, 0) 0px 1px 3px 0px	open	
+sidebar-collapsed.dark	composer	transition-property	height, border-radius, border-color, background-color	all	open	
+sidebar-collapsed.dark	composer	transition-duration	0.3s, 0.3s, 0.15s, 0.15s	0s	open	
+sidebar-collapsed.dark	composer	transition-timing-function	linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), ease, ease	ease	open	
+info-pane.dark	sidebar.root	height	900px	288px	open	
+info-pane.dark	sidebar.root	border-right-width	1px	0.5px	open	
+info-pane.dark	sidebar.root	background-color	rgb(14, 14, 14)	rgb(17, 17, 17)	open	
+info-pane.dark	sidebar.root	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+info-pane.dark	sidebar.header	width	279px	279.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.dark	sidebar.header	height	60px	50px	open	
+info-pane.dark	sidebar.header	min-height	52px	auto	open	
+info-pane.dark	sidebar.header	padding-top	12px	0px	open	
+info-pane.dark	sidebar.header	padding-right	16px	12px	open	
+info-pane.dark	sidebar.header	padding-bottom	12px	0px	open	
+info-pane.dark	sidebar.header	border-bottom-width	0px	1px	open	
+info-pane.dark	sidebar.header	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+info-pane.dark	sidebar.header	gap	8px	normal	open	
+info-pane.dark	sidebar.header-first-btn	width	36px	24px	open	
+info-pane.dark	sidebar.header-first-btn	height	36px	24px	open	
+info-pane.dark	sidebar.header-first-btn	border-top-width	1px	0px	open	
+info-pane.dark	sidebar.header-first-btn	border-bottom-width	1px	0px	open	
+info-pane.dark	sidebar.header-first-btn	border-left-width	1px	0px	open	
+info-pane.dark	sidebar.header-first-btn	border-right-width	1px	0px	open	
+info-pane.dark	sidebar.header-first-btn	border-top-left-radius	9999px	6px	open	
+info-pane.dark	sidebar.header-first-btn	border-top-right-radius	9999px	6px	open	
+info-pane.dark	sidebar.header-first-btn	border-bottom-left-radius	9999px	6px	open	
+info-pane.dark	sidebar.header-first-btn	border-bottom-right-radius	9999px	6px	open	
+info-pane.dark	sidebar.header-first-btn	background-color	rgb(31, 31, 31)	rgba(0, 0, 0, 0)	open	
+info-pane.dark	sidebar.header-first-btn	color	rgba(245, 245, 245, 0.9)	rgba(252, 252, 252, 0.6)	open	
+info-pane.dark	sidebar.header-first-btn	font-size	13px	16px	open	
+info-pane.dark	sidebar.header-first-btn	line-height	18px	normal	open	
+info-pane.dark	sidebar.search-entry	width	36px	255.5px	open	
+info-pane.dark	sidebar.search-entry	height	36px	28px	open	
+info-pane.dark	sidebar.search-entry	min-height	auto	28px	open	
+info-pane.dark	sidebar.search-entry	padding-top	0px	6px	open	
+info-pane.dark	sidebar.search-entry	padding-right	0px	8px	open	
+info-pane.dark	sidebar.search-entry	padding-left	0px	8px	open	
+info-pane.dark	sidebar.search-entry	margin-top	0px	4px	open	
+info-pane.dark	sidebar.search-entry	margin-bottom	0px	4px	open	
+info-pane.dark	sidebar.search-entry	border-top-width	1px	0px	open	
+info-pane.dark	sidebar.search-entry	border-bottom-width	1px	0px	open	
+info-pane.dark	sidebar.search-entry	border-left-width	1px	0px	open	
+info-pane.dark	sidebar.search-entry	border-right-width	1px	0px	open	
+info-pane.dark	sidebar.search-entry	border-top-left-radius	9999px	8px	open	
+info-pane.dark	sidebar.search-entry	border-top-right-radius	9999px	8px	open	
+info-pane.dark	sidebar.search-entry	border-bottom-left-radius	9999px	8px	open	
+info-pane.dark	sidebar.search-entry	border-bottom-right-radius	9999px	8px	open	
+info-pane.dark	sidebar.search-entry	background-color	rgb(31, 31, 31)	rgba(119, 119, 119, 0.173)	open	
+info-pane.dark	sidebar.search-entry	color	rgba(245, 245, 245, 0.9)	rgb(252, 252, 252)	open	
+info-pane.dark	sidebar.search-entry	gap	normal	4px	open	
+info-pane.dark	sidebar.search-entry	box-shadow	none	rgba(252, 252, 252, 0.1) 0px 0px 0px 0.5px inset	open	
+info-pane.dark	sidebar.item	width	255px	255.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.dark	sidebar.item	height	54px	58px	open	
+info-pane.dark	sidebar.item	min-height	0px	58px	open	
+info-pane.dark	sidebar.item	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+info-pane.dark	sidebar.item	gap	8px	9px	open	
+info-pane.dark	sidebar.item	transition-property	transform, width, padding	all	open	
+info-pane.dark	sidebar.item	transition-duration	0.2s	0s	open	
+info-pane.dark	sidebar.item	transition-timing-function	cubic-bezier(0.22, 1, 0.36, 1)	ease	open	
+info-pane.dark	sidebar.item-name	width	55.25px	167.32px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+info-pane.dark	sidebar.item-name	height	20px	15.5px	open	
+info-pane.dark	sidebar.item-name	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+info-pane.dark	sidebar.item-name	font-size	14px	13px	open	
+info-pane.dark	sidebar.item-name	font-weight	500	700	open	
+info-pane.dark	sidebar.item-name	line-height	20px	normal	open	
+info-pane.dark	sidebar.item-time	(element)	MISSING	present	open	
+info-pane.dark	sidebar.footer-pill	width	203px	264px	open	
+info-pane.dark	sidebar.footer-pill	height	36px	38px	open	
+info-pane.dark	sidebar.footer-pill	min-height	auto	38px	open	
+info-pane.dark	sidebar.footer-pill	padding-top	0px	6px	open	
+info-pane.dark	sidebar.footer-pill	padding-right	16px	12px	open	
+info-pane.dark	sidebar.footer-pill	padding-left	16px	8px	open	
+info-pane.dark	sidebar.footer-pill	border-top-width	1px	0px	open	
+info-pane.dark	sidebar.footer-pill	border-bottom-width	1px	0px	open	
+info-pane.dark	sidebar.footer-pill	border-left-width	1px	0px	open	
+info-pane.dark	sidebar.footer-pill	border-right-width	1px	0px	open	
+info-pane.dark	sidebar.footer-pill	border-top-left-radius	9999px	10px	open	
+info-pane.dark	sidebar.footer-pill	border-top-right-radius	9999px	10px	open	
+info-pane.dark	sidebar.footer-pill	border-bottom-left-radius	9999px	10px	open	
+info-pane.dark	sidebar.footer-pill	border-bottom-right-radius	9999px	10px	open	
+info-pane.dark	sidebar.footer-pill	background-color	rgb(31, 31, 31)	rgba(119, 119, 119, 0.173)	open	
+info-pane.dark	sidebar.footer-pill	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+info-pane.dark	sidebar.footer-pill	font-size	14px	13px	open	
+info-pane.dark	sidebar.footer-pill	font-weight	500	400	open	
+info-pane.dark	sidebar.footer-pill	line-height	20px	18px	open	
+info-pane.dark	sidebar.footer-pill	gap	0px	4px	open	
+info-pane.dark	sidebar.footer-pill	transition-property	background-color, flex-grow, padding	background-color, color	open	
+info-pane.dark	sidebar.footer-pill	transition-duration	0.3s	0.12s	open	
+info-pane.dark	sidebar.footer-pill	transition-timing-function	cubic-bezier(0.2, 0, 0, 1)	ease-out	open	
+info-pane.dark	chat.header	width	820px	1160px	open	
+info-pane.dark	chat.header	height	61px	51px	open	
+info-pane.dark	chat.header	min-height	auto	51px	open	
+info-pane.dark	chat.header	padding-top	10px	0px	open	
+info-pane.dark	chat.header	padding-right	0px	156px	open	
+info-pane.dark	chat.header	padding-bottom	10px	0px	open	
+info-pane.dark	chat.header	padding-left	0px	16px	open	
+info-pane.dark	chat.header	border-bottom-width	0px	1px	open	
+info-pane.dark	chat.header	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+info-pane.dark	chat.header-name	width	110.25px	28px	open	
+info-pane.dark	chat.header-name	height	41px	28px	open	
+info-pane.dark	chat.header-name	border-top-left-radius	0px	10px	open	
+info-pane.dark	chat.header-name	border-top-right-radius	0px	10px	open	
+info-pane.dark	chat.header-name	border-bottom-left-radius	0px	10px	open	
+info-pane.dark	chat.header-name	border-bottom-right-radius	0px	10px	open	
+info-pane.dark	chat.header-name	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+info-pane.dark	transcript.user-message	width	808px	308px	open	
+info-pane.dark	transcript.user-message	height	34px	56px	open	
+info-pane.dark	transcript.user-message	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+info-pane.dark	transcript.user-message	padding-top	0px	8px	open	
+info-pane.dark	transcript.user-message	padding-right	0px	12px	open	
+info-pane.dark	transcript.user-message	padding-bottom	0px	8px	open	
+info-pane.dark	transcript.user-message	padding-left	0px	12px	open	
+info-pane.dark	transcript.user-message	border-top-left-radius	0px	18px	open	
+info-pane.dark	transcript.user-message	border-top-right-radius	0px	18px	open	
+info-pane.dark	transcript.user-message	border-bottom-left-radius	0px	18px	open	
+info-pane.dark	transcript.user-message	border-bottom-right-radius	0px	18px	open	
+info-pane.dark	transcript.user-message	background-color	rgba(0, 0, 0, 0)	rgb(38, 38, 38)	open	
+info-pane.dark	transcript.user-message	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+info-pane.dark	transcript.assistant-message	width	808px	186.242px	open	
+info-pane.dark	transcript.assistant-message	height	184px	193.047px	open	
+info-pane.dark	transcript.assistant-message	padding-top	2px	8px	open	
+info-pane.dark	transcript.assistant-message	padding-right	0px	12px	open	
+info-pane.dark	transcript.assistant-message	padding-bottom	2px	8px	open	
+info-pane.dark	transcript.assistant-message	padding-left	0px	12px	open	
+info-pane.dark	transcript.assistant-message	border-top-left-radius	0px	18px	open	
+info-pane.dark	transcript.assistant-message	border-top-right-radius	0px	18px	open	
+info-pane.dark	transcript.assistant-message	border-bottom-left-radius	0px	18px	open	
+info-pane.dark	transcript.assistant-message	border-bottom-right-radius	0px	18px	open	
+info-pane.dark	transcript.assistant-message	background-color	rgba(0, 0, 0, 0)	rgb(38, 38, 38)	open	
+info-pane.dark	transcript.assistant-message	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+info-pane.dark	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+info-pane.dark	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+info-pane.dark	permission.card	width	520px	700px	open	
+info-pane.dark	permission.card	height	58px	210.781px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.dark	permission.card	padding-top	10px	12px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.dark	permission.card	padding-bottom	16px	12px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.dark	permission.card	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+info-pane.dark	permission.card-primary-btn	width	95.7031px	97.2344px	open	
+info-pane.dark	permission.card-primary-btn	height	32px	32.1953px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.dark	permission.card-primary-btn	padding-right	14px	9px	open	
+info-pane.dark	permission.card-primary-btn	padding-left	14px	9px	open	
+info-pane.dark	permission.card-primary-btn	border-top-width	0px	1px	open	
+info-pane.dark	permission.card-primary-btn	border-bottom-width	0px	1px	open	
+info-pane.dark	permission.card-primary-btn	border-left-width	0px	1px	open	
+info-pane.dark	permission.card-primary-btn	border-right-width	0px	1px	open	
+info-pane.dark	permission.card-primary-btn	border-top-left-radius	9999px	6px	open	
+info-pane.dark	permission.card-primary-btn	border-top-right-radius	9999px	6px	open	
+info-pane.dark	permission.card-primary-btn	border-bottom-left-radius	9999px	6px	open	
+info-pane.dark	permission.card-primary-btn	border-bottom-right-radius	9999px	6px	open	
+info-pane.dark	permission.card-primary-btn	background-color	rgb(245, 245, 245)	rgb(197, 244, 103)	open	
+info-pane.dark	permission.card-primary-btn	color	rgb(18, 18, 18)	rgb(22, 22, 22)	open	
+info-pane.dark	permission.card-primary-btn	font-family	-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif	Inter, ui-sans-serif, system-ui, sans-serif	open	
+info-pane.dark	permission.card-primary-btn	font-size	14px	13px	open	
+info-pane.dark	permission.card-primary-btn	font-weight	500	400	open	
+info-pane.dark	permission.card-primary-btn	line-height	20px	18.2px	open	
+info-pane.dark	permission.card-primary-btn	gap	4px	normal	open	
+info-pane.dark	permission.card-primary-btn	opacity	1	0.5	open	
+info-pane.dark	permission.card-primary-btn	transition-property	background-color, color	all	open	
+info-pane.dark	permission.card-primary-btn	transition-duration	0.12s	0s	open	
+info-pane.dark	permission.card-primary-btn	transition-timing-function	ease-out	ease	open	
+info-pane.dark	composer	width	808px	700px	open	
+info-pane.dark	composer	height	44px	84px	open	
+info-pane.dark	composer	padding-top	0px	9px	open	
+info-pane.dark	composer	padding-right	0px	9px	open	
+info-pane.dark	composer	padding-bottom	0px	9px	open	
+info-pane.dark	composer	padding-left	0px	9px	open	
+info-pane.dark	composer	border-top-left-radius	22px	16px	open	
+info-pane.dark	composer	border-top-right-radius	22px	16px	open	
+info-pane.dark	composer	border-bottom-left-radius	22px	16px	open	
+info-pane.dark	composer	border-bottom-right-radius	22px	16px	open	
+info-pane.dark	composer	background-color	rgb(31, 31, 31)	rgba(119, 119, 119, 0.173)	open	
+info-pane.dark	composer	color	rgb(245, 245, 245)	rgb(252, 252, 252)	open	
+info-pane.dark	composer	box-shadow	rgba(0, 0, 0, 0.05) 0px 2px 8px -1px, rgba(0, 0, 0, 0.03) 0px 1px 2px 0px, rgba(228, 228, 228, 0.04) 0px 0px 0px 1px	rgba(0, 0, 0, 0) 0px 1px 3px 0px	open	
+info-pane.dark	composer	transition-property	height, border-radius, border-color, background-color	all	open	
+info-pane.dark	composer	transition-duration	0.3s, 0.3s, 0.15s, 0.15s	0s	open	
+info-pane.dark	composer	transition-timing-function	linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), linear(0 0%, 0.01588 2%, 0.05618 4%, 0.11201 6%, 0.1768 8%, 0.2458 10%, 0.31562 12%, 0.38392 14%, 0.44914 16%, 0.51029 18%, 0.56683 20%, 0.61852 22%, 0.66534 24%, 0.70743 26%, 0.74501 28%, 0.77838 30%, 0.80788 32%, 0.83383 34%, 0.85658 36%, 0.87645 38%, 0.89376 40%, 0.92183 44%, 0.94282 48%, 0.95838 52%, 0.96984 56%, 0.97823 60%, 0.98435 64%, 0.98878 68%, 0.99198 72%, 0.99594 80%, 0.99829 90%, 1 100%), ease, ease	ease	open	

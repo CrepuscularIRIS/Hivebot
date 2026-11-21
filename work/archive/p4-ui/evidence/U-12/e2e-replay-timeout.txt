@@ -1,0 +1,7 @@
+$ playwright test --grep '10s 超时'
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/m2-port.spec.ts:207:5 › ① 10s 超时：socket 一直不就绪 → readyState=3 派发 error（真 10s 计时） (10.6s)
+
+  1 passed (11.0s)

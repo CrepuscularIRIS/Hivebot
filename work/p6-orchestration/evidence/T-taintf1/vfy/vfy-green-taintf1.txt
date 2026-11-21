@@ -1,0 +1,10 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-taintf1-verify/app/sdk
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  13:09:51
+   Duration  262ms (transform 69%, import 16%, tests 8%, setup 5%, worker 2%)
+
+exit=0

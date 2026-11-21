@@ -1,0 +1,55 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-taintf1-verify/app/sdk
+
+ ❯ tests/unit/vfy-probe-send-avail.test.ts (2 tests | 2 failed) 13ms
+   ❯ T-taint vfy probe: goal round send_to_bot still usable (残留事实实证) (2)
+     × goal-claimed turn: send execute NOT rejected by coordinator taint (goes through to delivery) 10ms
+     × schedule-claimed turn: send when still true (对照既有 R2-1 口径) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/vfy-probe-send-avail.test.ts > T-taint vfy probe: goal round send_to_bot still usable (残留事实实证) > goal-claimed turn: send execute NOT rejected by coordinator taint (goes through to delivery)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/vfy-probe-send-avail.test.ts:60:48
+     58|       fn({ agent: { id: 'session-main' }, message: { id: 'm-1', source…
+     59|     }
+     60|     expect(await when({ id: 'session-main' })).toBe(true) // 可见（残留：未接 …
+       |                                                ^
+     61|     const result: any = await call({ botId: 'session-w1', prompt: 'p' …
+     62|     expect(result).toMatchObject({ sessionId: 'session-w1' }) // 可用：ex…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/vfy-probe-send-avail.test.ts > T-taint vfy probe: goal round send_to_bot still usable (残留事实实证) > schedule-claimed turn: send when still true (对照既有 R2-1 口径)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/vfy-probe-send-avail.test.ts:88:72
+     86|       fn({ agent: { id: 'session-main' }, message: { id: 'm-2', source…
+     87|     }
+     88|     expect(await send.options.when({ agent: { id: 'session-main' } }))…
+       |                                                                        ^
+     89|   })
+     90| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  13:10:30
+   Duration  196ms (transform 43%, import 30%, tests 15%, setup 8%, worker 4%)
+
+exit=1

@@ -1,0 +1,5 @@
+PASS real JSONL cold orphan: native closers durable; unknown external outcome; zero agent resolution; idempotent reread; old challenge rejected
+PASS real JSONL bad relationship: issue returned; recoveryComplete refused; gate closed
+PASS provider disposal/reopen: interrupted Assignment read from actual disk
+
+EXIT 0

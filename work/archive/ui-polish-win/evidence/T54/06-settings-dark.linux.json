@@ -1,0 +1,54 @@
+{
+ "id": "06-settings-dark",
+ "platform": "linux",
+ "geo": {
+  ".sand-settings-dialog": {
+   "rect": {
+    "x": 210,
+    "y": 66,
+    "w": 860,
+    "h": 620
+   },
+   "font": "Inter, ui-sans-serif, system-ui, sans-serif",
+   "size": "13px",
+   "lineH": "18.2px",
+   "text": "GeneralGeneralAccountPPbotspbots-local"
+  },
+  ".sand-settings-nav": {
+   "rect": {
+    "x": 211,
+    "y": 67,
+    "w": 190,
+    "h": 618
+   },
+   "font": "Inter, ui-sans-serif, system-ui, sans-serif",
+   "size": "13px",
+   "lineH": "18.2px",
+   "text": "General"
+  },
+  ".sand-settings-panel__body": {
+   "rect": {
+    "x": 401,
+    "y": 121,
+    "w": 668,
+    "h": 564
+   },
+   "font": "Inter, ui-sans-serif, system-ui, sans-serif",
+   "size": "13px",
+   "lineH": "18.2px",
+   "text": "AccountPPbotspbots-local@pbots.localSig"
+  }
+ },
+ "meta": {
+  "platform": "Linux x86_64",
+  "uaPlatform": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.7977.130 Electron/44.7.0 Safari/537.36",
+  "dpr": 1,
+  "innerW": 1280,
+  "innerH": 752,
+  "loadedFonts": [
+   "cursor-icons/normal",
+   "cursor-icons/normal"
+  ],
+  "scrollY": 752
+ }
+}

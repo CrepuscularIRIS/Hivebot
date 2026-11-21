@@ -1,0 +1,31 @@
+[
+  {
+    "kinds": [
+      "schedule"
+    ],
+    "tainted": false,
+    "auditKinds": [
+      "schedule"
+    ]
+  },
+  {
+    "kinds": [
+      "pbots-worker"
+    ],
+    "tainted": true,
+    "auditKinds": [
+      "pbots-worker"
+    ]
+  },
+  {
+    "kinds": [
+      "schedule",
+      "pbots-worker"
+    ],
+    "tainted": true,
+    "auditKinds": [
+      "schedule",
+      "pbots-worker"
+    ]
+  }
+]

@@ -1,0 +1,27 @@
+seat: A
+verdict: REVISE
+confidence: high
+findings:
+- [HIGH] BRIEF.md:52（D9 末句）— 写的还是旧状态：「Q-009 暂定 B……Q-009 答 A 之前，以上保持默认拒绝」。但 §9（:69）和 QUESTIONS.md:89-90 都记着 Q-009 已答 A。按字面读，「答 A 之前保持默认拒绝」意味着 A 已答，默认拒绝就可以解除了。这样 frontend-dev 或 verifier 可能得出结论：可以开放权限 preset 切换，或者让 danger-full-access 出现在可选列表里。而 Q-009=A 下选了 never preset，bash 是不经询问直接执行的（QUESTIONS.md:86），等于在产品层放宽了审批默认值，属于安全红线（LEARNINGS.md:23 要求引用用户原话授权）。Q-009=A 只授权 SDK 尊重「用户主动配置」的 never，没有授权 P4 的 UI 暴露这个选项 — 证据: BRIEF.md:52 vs :69；QUESTIONS.md:84-90；CONTRACT.md:149（§8-3「Q-009 答 A 前保持默认拒绝」是 v1.3 写于 Q-009 作答之前的条件句）— 建议: 把 D9 末句改成无条件写法：「Q-009=A 只改 SDK 侧 shell-ask（T-12.f1），不改变 P4 边界。P4 的 UI 无论如何都不提供权限 preset 切换入口，never 类 preset 不出现在任何可选列表里；§8-3 两条拒绝（/permission 行、configForms 写）是永久判据。」同时把这处改动记进修订账（v1.1 那一行目前只写了 D6），第 3 行的版本号也改成 v1.1
+- [HIGH] BRIEF.md:58-59（W0→W1 顺序）— W0 的四个场景（两 bot 并发流式、审批往返、renderer 重载），加上「main 白名单每拒绝一次就记下 endpoint」，实际上已经要求一个能跑的 Electron 壳、一个 M1 白名单桥和一个 M2 端口转交桥（CONTRACT §2.3，main 是唯一的 socket 持有者，renderer 不能直连）。可这些分别是 W1 的交付物和待查 2 的调研对象。BRIEF 既没写 W0 用什么桥，也没把待查 2 列为 W0 的前置条件。1 个工作日里要完成壳、桥和 Cordis 闭包三件事，超时以后怎么办也没有规则（止损线只看闭包深度和拒绝数，不看用时）。这正是 BRIEF §4 自己列的头号死因 — 证据: BRIEF.md:58 的四场景和白名单记录；CONTRACT.md:17-23（M1/M2 都「需新增」），:63-74（端口转交时序）；BRIEF.md:73（待查 2 = Electron 壳/electron-vite/playwright _electron，排在 §10，和波次没有顺序关系）— 建议: ① 写明待查 2 回报之后才开 W0；② 写明 W0 的桥是 spike 级：M1 默认拒绝，只记日志；M2 原帧直通加 §2.3 的端口转交（只复用 `client.mjs` 的 connect()）。代码留在 spike 分支，可以作为 W1 的起点，但不免除 W1 的约束和测试；③ 超出 1 个工作日按触发止损处理：带着已测数据回 G1，不默默延期
+- [MEDIUM] BRIEF.md:49（D6 blocked 写法）— 普通 bot 的重启恢复（J4 主干，也是 roadmap DONE 示例 2，roadmap.md:82）和连接器 bot 的恢复（依赖 T-16）放在同一条里，T-16 没合入，整条 D6 就 blocked，结果 J4 主干也跟着验收不了。另外 D7 的「有 #21 时」、D8 的「重启后仍非只读」、D10c 的 allSettled 都依赖 T-16，但都没标 blocked。`feat/T-16` 目前的 tip 仍是 T-15② 的 probe commit（97cb7cf），没有合入 main — 证据: BRIEF.md:49-53；`git merge-base --is-ancestor feat/T-16 main` → not-merged — 建议: 拆成 D6a（普通 bot 和主 bot 的列表与历史，不 blocked）和 D6b（连接器 bot 非只读，blocked on T-16）；D7、D8、D10c 中依赖 #21 的子项也逐一标 blocked on T-16
+- [MEDIUM] BRIEF.md:38/:53（失效态没有 DONE）— v1.1 删掉了降级分支，但只读态依然能出现：D10c 的 allSettled 会把失败的 recipe 标成 `live=false`，v1.2 之前用计数 id 建的 bot 也永久只读（CONTRACT.md:85,97）。旅程 3 明确写了「或者明确显示为失效」，现在没有任何条款验证这种显示。这是 §4 死因 2「静默降级」的直接漏洞 — 证据: BRIEF.md:38 vs :44-55；CONTRACT.md:85,97,137 — 建议: 在 D10c 里加一条 E2E：临时 HOME 里删掉某个已装连接器的 bundle → close 再 launch → 这个 bot 显示「连接器已失效，请新建 bot」，不自动重试，其他 bot 正常
+- [MEDIUM] BRIEF.md:60（W2 页序）— 第一批 P-A+P-B 被认领为 D1–D4，可 D1、D2 要「用两个不同 preset 建 bot」「三个 bot」，而建 bot 对话框（选 preset/模型/连接器）归在 P-D（:19），排在第二批 — 证据: BRIEF.md:19,44-45,60 — 建议: 把建 bot 对话框（至少 preset 和模型两个选项）挪进第一批，或者写明 P-A 的「新建入口」先做一个最小对话框，P-D 再补连接器、只读头部和「用此配置新建」
+- [MEDIUM] BRIEF.md:45（D2 计数点）— 「A 收到的 chunk 数等于 K」没写在哪里计数。切到 B 以后，A 的视图可能卸载，而 assistant-stream 只在本进程内、不会重放（CONTRACT.md:105）。所以在 DOM 计数和在 main 的 M2 tap 计数，判出来的结论不一样 — 建议: 写明计数点（main 原帧 tap 或 renderer 的 session store），并补一条断言：切回 A 时显示的是完整的定稿消息，不残留半截流
+- [MEDIUM] BRIEF.md:28,72（图标）— Grok 的图标是 cursor-icons 连字字体（818 个字形，不是 SVG），而 dsh theme 是按 icon id 替换完整 SVG，而且要求 namespace/viewBox。中间缺一步「字形转 SVG」，待查 1 里没有这一项 — 证据: RE-ui-shell.md:107-111；dsh-client-packages.md:163 — 建议: 待查 1 加第 ④ 项：从 woff2 导出 4 页用到的约 20 个图标的 SVG path（fonttools），并给出对应的 dsw-icon id 表
+- [MEDIUM] BRIEF.md:47（D4 ③）— 「无人应答时记录宽限/超时实测值」没设等待上限。如果 gateway 根本没有超时，pending 会一直保留（GW/index.ts:729-737），测试就会一直挂着 — 建议: 规定观察窗口（比如 2× 已知超时，或固定 5 分钟）；窗口内没有超时也算有效结论，记为「无超时」，同时断言命令没有执行
+- [LOW] BRIEF.md:44（D1）— 默认 profile 是否带两个以上非 p2temp 的 agent preset，没有说明。P2 现有的 p2-alpha/p2-beta 是测试 fixture，要通过 P2SDK_PATCH 注入 — 证据: app/sdk/profile/patches/presets.yml:8-26；app/sdk/tests/e2e/config.test.ts:160 — 建议: D1 写明使用 presets.yml fixture
+- [LOW] BRIEF.md:50（D7）— 建 bot 对话框的连接器候选来自 #16 已装列表，UI 上选不到「未安装的连接器」 — 建议: 写明注入方式：直接调 M1，或者在列表和创建之间删掉 bundle fixture
+- [LOW] BRIEF.md:55（D12 ③）— 「使用 Grok 品牌、XVF 字体和 token」只靠截图和 GU panel 来判，偏主观 — 建议: 加几条 computed-style 断言：body 的 font-family 含 XVF，若干 `--dsw-*` 的值等于 token 表的值
+- [LOW] BRIEF.md:28（token 前缀）— scout 结论里有两类变量：组件用 `--dsw-*`（scout-C:160），正文字体走 `--dsh-font-family-text/code`，wordmark 另有独立变量（scout-C:162）。theme 插件只映射 `--dsw-*` 的话，字体对不上 — 建议: §3 样式行补上 `--dsh-font-family-*` 和品牌 wordmark 变量
+- [LOW] BRIEF.md:73（待查 2 ①）— 上游 `apps/desktop` 就是 Electron 壳（package.json:70 `electron ^44.7.0`），走的是「桌面壳加同一个 web renderer」的模式（scout-C:130），但它的 socket 归属和「main 是唯一 mux 客户端」的约束冲突 — 建议: 待查 2 先回答第 ① 项：它能不能作为第 2 级的壳整仓集成，靠替换 transport 来满足约束；不能的话再找模板
+- [LOW] QUESTIONS.md:73,82 — Q-008、Q-009 的标题仍标着 [open]，答复和落实却已经写好了（这不是 BRIEF 本身的问题，顺带提一下）
+
+reverse_take: 最可能的失败方式是 W0 首日 spike 一天之内要同时搭 Electron 壳、M1/M2 端口转交桥和 Cordis 最小闭包，结果三件都只做了一半，又没有超时规则，就这样拖成 W1。更笨也更稳的做法：先等待查 2 回报，再在 spike 分支上用一个「默认拒绝、只记日志」的 M1 和一个原帧直通的 M2 量出闭包；超过一天就当作止损，回 G1。
+
+## 关注点逐项核对
+1. **范围 HOLD**：一致。4 页加 spike，明确排除 75 个 entrypoint、云电脑和账号（BRIEF.md:13-20），和 roadmap.md:9（MVP 不做的项）、:76-84（P4 链路顺序与 DONE 示例）、CONTRACT §6 都对得上。
+2. **可证伪性**：D1–D5、D7–D11 都有可执行的证伪方式。问题在 D2 计数点、D4③ 的等待上限、D12③ 的主观部分，以及失效态没有条款（见上）。D5 依赖 T-09 的 blocked 写法正确；D6 的写法本身没错，但颗粒度太粗，会连带 J4 主干一起 blocked，还有几处依赖 #21 的子项没标。
+3. **§8 吸收**：完整。§8-1 → D7；§8-2 → D8（含 p2temp/presetIdOf 拒绝缺省的单测）；§8-3 → D9 加 W0 判据（:58 已加 /permission 和 configForms）；§8-4 的五条 LOW → D10 a–e，和 G1-r2-A.md:10-14 逐条对应（b 按 LOW 第 2 条换成编排顺序单测，d 按 LOW 第 4 条去掉 `bots` 字段）。CONTRACT §2.2 的三条拒绝测试也都在 D9 里。唯一的瑕疵是 D9 的 Q-009 文案过期（HIGH-1）。§7.4 spike 判据基本照抄，并补上了 §8-3。§7.5 → D11。
+4. **波次**：W1 → W2 → W3 的依赖顺序是对的。W0 的隐含前置条件和超时规则缺失（HIGH-2）；W2 第一批缺建 bot 对话框（MEDIUM）。
+5. **路线**：第 2 级集成加 B 作为止损回退，和 scout 最终决策行一致（dsh-client-packages.md:167，第 3 级见 :18，npm 版本不一致见 :17）。不全局导入 766KB CSS、不引入 Tailwind，和 scout-C:160-161 一致。前缀写 `--dsw-*` 是对的（派发说明里写的「--dsh-*」只对应字体变量，见 LOW）。

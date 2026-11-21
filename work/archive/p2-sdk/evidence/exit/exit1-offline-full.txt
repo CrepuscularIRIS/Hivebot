@@ -1,0 +1,18 @@
+Already up to date
+Done in 300ms using pnpm v11.0.9
+$ vitest run
+
+ RUN  v5.0.5 /home/lingxufeng/bot/app/sdk
+
+[p2sdk] ready http://127.0.0.1:43149
+p2sdk: dsh pid 4135331
+p2sdk: handoff /tmp/p2sdk-handoff-tBSKEV
+p2sdk: no ready line within 1ms
+p2sdk: forwarding SIGTERM to dsh
+p2sdk: forwarding SIGTERM to dsh
+
+ Test Files  18 passed (18)
+      Tests  127 passed (127)
+   Start at  10:36:39
+   Duration  13.58s (tests 99%, import 1%)
+

@@ -1,0 +1,71 @@
+/* B6 spotlight 窗样式（1.1.0 规格：无边框透明置顶 quick-chat 卡片）。
+   dark 面板卡片居中；phase 动画二段收起（RE §4 dismissing→hidden）。 */
+
+.pbots-spotlight-root {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 18px;
+  background: transparent;
+  font-family: var(--sand-font-sans, system-ui, sans-serif);
+}
+
+.pbots-spotlight-root[data-pbots-spotlight-phase='dismissing'] {
+  animation: pbots-spotlight-out 180ms ease-in forwards;
+}
+
+@keyframes pbots-spotlight-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+.pbots-spotlight-card {
+  width: 560px;
+  border-radius: 16px;
+  padding: 14px 16px 10px;
+  background: #1f1f1fe6;
+  border: 1px solid #ffffff1f;
+  box-shadow: 0 18px 48px #00000066;
+  color: #f2f2f2;
+}
+
+.pbots-spotlight-target {
+  font-size: 12px;
+  color: #b8b8b8;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pbots-spotlight-card textarea {
+  width: 100%;
+  min-height: 68px;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.pbots-spotlight-hint {
+  font-size: 11px;
+  color: #8a8a8a;
+  text-align: right;
+  margin-top: 4px;
+}
+
+@media (prefers-color-scheme: light) {
+  .pbots-spotlight-card {
+    background: #ffffffeb;
+    border-color: #0000001a;
+    color: #1c1c1c;
+    box-shadow: 0 18px 48px #00000024;
+  }
+  .pbots-spotlight-target { color: #6a6a6a; }
+  .pbots-spotlight-hint { color: #9a9a9a; }
+}

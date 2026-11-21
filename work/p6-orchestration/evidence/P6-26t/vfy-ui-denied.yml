@@ -1,0 +1,45 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - complementary "Agents" [ref=e7]:
+      - button "New" [ref=e10] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e11]: 
+      - button "Search" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]:
+          - generic [aria-hidden] [ref=e14]: 
+          - text: Search
+      - region "Agent list" [ref=e15]:
+        - generic "New chat chat preview" [ref=e19]:
+          - button "New chat" [ref=e20] [cursor=pointer]:
+            - strong [ref=e31]: New chat
+      - separator "Resize sidebar" [ref=e32]
+    - button "Connect apps" [ref=e34] [cursor=pointer]
+    - button "Account" [ref=e37] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e38]: P
+  - generic [ref=e39]:
+    - main [ref=e40]:
+      - group "New chat" [ref=e41]:
+        - button "View agent settings" [ref=e42] [cursor=pointer]:
+          - generic [ref=e51]: New chat
+      - log "Conversation transcript" [ref=e52]:
+        - separator [ref=e71]: Today 5:35 AM
+        - article "You 11/5/2026, 5:35:35 AM" [ref=e72]:
+          - generic [ref=e73]:
+            - group [ref=e74]:
+              - paragraph [ref=e76]: P626T UI 拒绝验证
+            - toolbar "Message actions for your message (9d53a338-20c1-4969-886a-717d69cd74ed)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - listitem [ref=e77]:
+          - 'button "Run_code Error: the user rejected tool \"run_code\"" [ref=e105] [cursor=pointer]':
+            - generic [aria-hidden] [ref=e79]: 
+            - generic [ref=e80]: Run_code
+            - generic [ref=e81]: "Error: the user rejected tool \"run_code\""
+        - article "New chat 11/5/2026, 5:35:49 AM" [ref=e106]:
+          - generic [ref=e107]:
+            - group "Agent message" [ref=e108]:
+              - paragraph [ref=e110]: P626T-UI-DENIED
+            - toolbar "Message actions for New chat (t1-s2)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+    - textbox "Prompt" [ref=e57]:
+      - paragraph [ref=e58]: Message New chat

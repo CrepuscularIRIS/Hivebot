@@ -1,0 +1,7 @@
+# T33 产品认知提示段（BRIEF work/bot-product-awareness/）：每个 bot 的系统提示挂
+# 「本应用与其他 bot」说明 + 同伴名册（sessionController.list 同源于 shim 侧栏）。
+# 进默认链（src/start.ts buildArgs，market.yml 之后）——生产启动器不带 P2SDK_PATCH。
+- insert:
+    - id: pbots-awareness
+      # 相对本 patch 文件目录（profile/patches/）。
+      name: ../../src/awareness/product-prompt.mjs

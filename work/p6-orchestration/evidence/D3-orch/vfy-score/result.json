@@ -1,0 +1,1540 @@
+{
+  "version": 1,
+  "criteria": {
+    "segmentation": "user/message(user) 开用户回合、user/message(pbots-worker) 开回报回合（污染回合），各到本回合 turn/end；runtime-context 不开回合",
+    "route": {
+      "direct": "0/0/0",
+      "chat": "0/0/0",
+      "single": "create=1",
+      "parallel": "create=2",
+      "attach": "t0 create=1 && t1 create=0 stop=0 send>=1 目标∈t0 worker",
+      "stop": "t0 create=1 && t1 create=0 stop=1"
+    },
+    "hard": "污染回合工具成功调用===0；每批回报的 result（末工具结果后正文，P6-02 口径）恰 1",
+    "thresholds": {
+      "routeOk": 40,
+      "misdispatch": 1,
+      "groups": 48
+    },
+    "note": "incomplete（含 missing）计入 48 分母；未达标只改工具 description，不得看 prompts.json 调"
+  },
+  "run": {
+    "ts": "2026-11-05T02:54:04.859Z",
+    "mode": "real",
+    "model": "glm-5.3",
+    "llmBase": "http://127.0.0.1:4001",
+    "litellm": {
+      "ok": true,
+      "hasModel": true,
+      "modelCount": 21
+    }
+  },
+  "totals": {
+    "groups": 48,
+    "collected": 48,
+    "missing": 0,
+    "routeOk": 19,
+    "complete": 48,
+    "invalid": 0,
+    "byKind": {
+      "direct": {
+        "n": 12,
+        "ok": 12
+      },
+      "single": {
+        "n": 12,
+        "ok": 0
+      },
+      "parallel": {
+        "n": 6,
+        "ok": 1
+      },
+      "attach": {
+        "n": 6,
+        "ok": 0
+      },
+      "stop": {
+        "n": 6,
+        "ok": 0
+      },
+      "chat": {
+        "n": 6,
+        "ok": 6
+      }
+    },
+    "directChat": {
+      "n": 18,
+      "misdispatch": 0
+    },
+    "pollutedTurns": {
+      "batches": 1,
+      "ended": 1,
+      "exactlyOneResult": 1,
+      "toolCalls": 2,
+      "toolSuccess": 0
+    }
+  },
+  "verdict": {
+    "thresholds": {
+      "routeOk": 40,
+      "misdispatch": 1,
+      "groups": 48
+    },
+    "routeOkPass": false,
+    "misdispatchPass": true,
+    "hardPollutedToolSuccessZero": true,
+    "hardReportResultExactlyOne": true,
+    "d3orch": false
+  },
+  "perTurn": [
+    {
+      "promptId": "dir1-docker-vm",
+      "kind": "direct",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-3b774678-b5f3-43de-a6ee-18fc402cf576",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir1-docker-vm-1.jsonl",
+        "sha256": "073a57e7c9b973a817417727806e8e6f7a7e26a9afd5a796377fb49de6b9b7bd",
+        "frameCount": 1396
+      }
+    },
+    {
+      "promptId": "dir1-docker-vm",
+      "kind": "direct",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-092b031f-cad6-4e1f-8223-904e39e5f3c6",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir1-docker-vm-2.jsonl",
+        "sha256": "9b4b2b70d1752ef2cc7db73bdae55768cb1f53e0b6bffba4e64f4f538ca036bc",
+        "frameCount": 1215
+      }
+    },
+    {
+      "promptId": "dir1-docker-vm",
+      "kind": "direct",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-c1295ce5-eb97-4e35-bf8c-427fdc6de73d",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir1-docker-vm-3.jsonl",
+        "sha256": "3e001454a00e4b21caf01da769be564cf45a2ef9e3c35d449f2e13d363f486e6",
+        "frameCount": 818
+      }
+    },
+    {
+      "promptId": "dir2-translate-ja",
+      "kind": "direct",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-477f73a5-d13e-498a-a393-783f118d535d",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir2-translate-ja-1.jsonl",
+        "sha256": "8acfb46ca522aa8c8c7c360ffcddcfa394c282050cf2c186e064b352f74d250b",
+        "frameCount": 28
+      }
+    },
+    {
+      "promptId": "dir2-translate-ja",
+      "kind": "direct",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-5b9866e8-0ff4-4fae-b094-a50c886ffbad",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir2-translate-ja-2.jsonl",
+        "sha256": "754520728c702afe1687593f0b72cfbec57373ec01a9a26147b35d9f686afabd",
+        "frameCount": 103
+      }
+    },
+    {
+      "promptId": "dir2-translate-ja",
+      "kind": "direct",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-a1c2d388-4c49-48e2-a2d1-2d742cd37ef8",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir2-translate-ja-3.jsonl",
+        "sha256": "5e46d7c2578892c2c215210c25bac77280d2e179057457a2aca6ba43c2d3417b",
+        "frameCount": 45
+      }
+    },
+    {
+      "promptId": "dir3-power",
+      "kind": "direct",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-dbd644f2-bdc0-4b8b-ad20-26f3ee7296e8",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir3-power-1.jsonl",
+        "sha256": "d7500dceb4055246bea5b93600caea4273418af9791510fd702ce26511783119",
+        "frameCount": 58
+      }
+    },
+    {
+      "promptId": "dir3-power",
+      "kind": "direct",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-92071cf6-db2d-4179-85b3-272d8cc05c4e",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir3-power-2.jsonl",
+        "sha256": "ba05768ec84cbbeb80c41c070c6182a8e212835c1b3f38d13970d950d8715bc6",
+        "frameCount": 74
+      }
+    },
+    {
+      "promptId": "dir3-power",
+      "kind": "direct",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-a4abf2d0-9b9d-4be0-9944-0a262582f098",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir3-power-3.jsonl",
+        "sha256": "1bbdffe0bef4683cbca7a544e690f475f3c762d89e2dd5f421d28789b236f2f3",
+        "frameCount": 69
+      }
+    },
+    {
+      "promptId": "dir4-tv-rec",
+      "kind": "direct",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-cad4f8e3-2e32-423e-b06a-d5ce8dcfc493",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir4-tv-rec-1.jsonl",
+        "sha256": "92f027e3a1b21eb4bb9e0d787a617e0d4f9d36a62ebe51305c514a826cdeb2f1",
+        "frameCount": 181
+      }
+    },
+    {
+      "promptId": "dir4-tv-rec",
+      "kind": "direct",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-c0c50b52-e29e-4a81-a5a2-5a9eb01aa69a",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir4-tv-rec-2.jsonl",
+        "sha256": "e14337bd7faa70d6fbf715d123647542f5da281d8631b607c1a0b736ad9de636",
+        "frameCount": 128
+      }
+    },
+    {
+      "promptId": "dir4-tv-rec",
+      "kind": "direct",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-10ab3910-a84f-488e-a21b-882f42c3ef6f",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "dir4-tv-rec-3.jsonl",
+        "sha256": "882fa7eb419b1bc5f4b123444314533965fab52fa3b3eec64be48abf4ad3ad38",
+        "frameCount": 106
+      }
+    },
+    {
+      "promptId": "single1-packing",
+      "kind": "single",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 2,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-5b37022d-2b82-4c19-89b5-fc81a179c911",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single1-packing-1.jsonl",
+        "sha256": "c26d519ef5b17714bfb6964c6075fad81a2de726aa29e8bda7079f7459e218e7",
+        "frameCount": 266
+      }
+    },
+    {
+      "promptId": "single1-packing",
+      "kind": "single",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 2,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-37f28b52-8a95-43dc-ac86-7d63ddb393f1",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single1-packing-2.jsonl",
+        "sha256": "7219a73cfb7c05fca83fc9d71f20057459d8185b8f33edc0af33e1aec6b8c082",
+        "frameCount": 254
+      }
+    },
+    {
+      "promptId": "single1-packing",
+      "kind": "single",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 2,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-9f586687-90c9-441e-8faf-ee880f1d355f",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single1-packing-3.jsonl",
+        "sha256": "dc960b976965a90a6393ab67160ec254d768cb846ae8e2c8b5f31769236d892c",
+        "frameCount": 276
+      }
+    },
+    {
+      "promptId": "single2-date-diary",
+      "kind": "single",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 3,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-f336d79a-feb5-4f40-ac58-70f8bafbb953",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single2-date-diary-1.jsonl",
+        "sha256": "24aff7278ab7d1dab88eb590661a5758fd8642c1c33befc52cec92fe8847d96a",
+        "frameCount": 1801
+      }
+    },
+    {
+      "promptId": "single2-date-diary",
+      "kind": "single",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 3,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-991ca9b3-147a-4933-a842-3f1675dd4f79",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single2-date-diary-2.jsonl",
+        "sha256": "58afb9915683596edfc57712428ef424efbeae01a6bd69964964a2198994128e",
+        "frameCount": 1516
+      }
+    },
+    {
+      "promptId": "single2-date-diary",
+      "kind": "single",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 2,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-8a9ed981-547f-4721-9427-60d4298952dd",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single2-date-diary-3.jsonl",
+        "sha256": "654028c52d13a34c9568d2e116474ebd143fa1db4ed0dbf9311d5ce5bf50db29",
+        "frameCount": 755
+      }
+    },
+    {
+      "promptId": "single3-fib-run",
+      "kind": "single",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 3,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-3a81625f-0a0b-4eff-b5ac-3cc48ba0a764",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single3-fib-run-1.jsonl",
+        "sha256": "e6b712949764db5dc63701f416555fe93a346684844d0f3d4cc80f460fc2b7b2",
+        "frameCount": 345
+      }
+    },
+    {
+      "promptId": "single3-fib-run",
+      "kind": "single",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 3,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-4db89ff1-9102-4a59-87d2-4916f3d2116d",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single3-fib-run-2.jsonl",
+        "sha256": "1aec53ea7090bc724b2d9b37c4e0d55fe6c65b34d40759eb76b62b518add486d",
+        "frameCount": 295
+      }
+    },
+    {
+      "promptId": "single3-fib-run",
+      "kind": "single",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 3,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-12c7600c-085f-45bc-829f-fbcebbb1c8c5",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single3-fib-run-3.jsonl",
+        "sha256": "29875b95df338f9226ef5cfa2356359071360f56eb4ed09aa00e9b53d0e9ef71",
+        "frameCount": 294
+      }
+    },
+    {
+      "promptId": "single4-count-logs",
+      "kind": "single",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 3,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-8f4403ff-542d-406b-a4be-590740bc7fa5",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single4-count-logs-1.jsonl",
+        "sha256": "1675b0b7b306e6d71db3478a1056feaeea7ac064d6aa9d1f214c7bc14bf6fcd5",
+        "frameCount": 620
+      }
+    },
+    {
+      "promptId": "single4-count-logs",
+      "kind": "single",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 4,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-35f91a33-ddb2-4b7b-a0ce-32fa89d408aa",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single4-count-logs-2.jsonl",
+        "sha256": "e25faeec8c74f2b113bc187dd7042691b34cf1a9fbc8874fdc167cdd01b0c581",
+        "frameCount": 749
+      }
+    },
+    {
+      "promptId": "single4-count-logs",
+      "kind": "single",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 3,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-0fc77f6c-db49-4a77-9798-f209de1c2a2c",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "single4-count-logs-3.jsonl",
+        "sha256": "a818036acfd3ce2f3873cb3b93a93ec7e49e6640c5f7c381cff0accd293a4398",
+        "frameCount": 639
+      }
+    },
+    {
+      "promptId": "par1-two-tasks",
+      "kind": "parallel",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 5,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-d8f78f23-e0f5-4b8d-9232-4640ac808252",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "par1-two-tasks-1.jsonl",
+        "sha256": "65cf391732c6b8a561d1f1a06ebfd315a407b429c48bb73dc1d1c21e4f53ae82",
+        "frameCount": 2093
+      }
+    },
+    {
+      "promptId": "par1-two-tasks",
+      "kind": "parallel",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 2,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [
+        {
+          "endReason": "completed",
+          "texts": 2,
+          "tailTexts": 1,
+          "toolCalls": 2,
+          "toolSuccess": 0,
+          "toolRejected": 2
+        }
+      ],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-cf5de69a-5c3a-4402-86e9-fb76c6a654ce",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "par1-two-tasks-2.jsonl",
+        "sha256": "4da958c8095e199a1c0675a65a7e2b4873074c8a7af76399cd9137ad7954c58f",
+        "frameCount": 3404
+      }
+    },
+    {
+      "promptId": "par1-two-tasks",
+      "kind": "parallel",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 2,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-634e1ab2-5693-4c3d-8cc7-b09a111da3de",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "par1-two-tasks-3.jsonl",
+        "sha256": "439c223a92abbbd0b47f759f519708b3dae2204e260faa234e055285503fb47c",
+        "frameCount": 1096
+      }
+    },
+    {
+      "promptId": "par2-list-and-weekday",
+      "kind": "parallel",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 4,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-0ffa5b6c-36d8-4713-b3f1-70987de0970c",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "par2-list-and-weekday-1.jsonl",
+        "sha256": "50cc02e43a0a4229589cca5901dd7acc7c15a49cc7451d95959692edb45e647e",
+        "frameCount": 5007
+      }
+    },
+    {
+      "promptId": "par2-list-and-weekday",
+      "kind": "parallel",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 2,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-fd222113-eee3-4139-b977-968b80fcf4d1",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "par2-list-and-weekday-2.jsonl",
+        "sha256": "30bf52506957e233ba23d3145c2c35289f5e423f51bd3e310604bf3f5788efad",
+        "frameCount": 2214
+      }
+    },
+    {
+      "promptId": "par2-list-and-weekday",
+      "kind": "parallel",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 6,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "create=0 send=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-a37ce262-b820-4fd7-bdd4-a63120836609",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "par2-list-and-weekday-3.jsonl",
+        "sha256": "c050db4d1992c272b6da647e8fba3ab82744b76bac00cc76ead0e506e42037a9",
+        "frameCount": 2878
+      }
+    },
+    {
+      "promptId": "attach1-hike-append",
+      "kind": "attach",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 2,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0 send=0 targets=[]/[]",
+      "misdispatch": false,
+      "sessionId": "session-5f05e502-578c-47b6-aa62-c34a8e360576",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "attach1-hike-append-1.jsonl",
+        "sha256": "a00dac92ac4efca61eb2bc03f1375792b95141a7de48de82184a7b3ab902aa63",
+        "frameCount": 1765
+      }
+    },
+    {
+      "promptId": "attach1-hike-append",
+      "kind": "attach",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 2,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0 send=0 targets=[]/[]",
+      "misdispatch": false,
+      "sessionId": "session-b3fcaba8-49ce-4803-95c7-aac844c52cea",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "attach1-hike-append-2.jsonl",
+        "sha256": "51adbfd54cf665641236d726e4b46ae93fadc5301b413d667998e6159f37c64a",
+        "frameCount": 2168
+      }
+    },
+    {
+      "promptId": "attach1-hike-append",
+      "kind": "attach",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 1,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0 send=0 targets=[]/[]",
+      "misdispatch": false,
+      "sessionId": "session-d8963d61-81aa-4dc5-9f0e-3bd81a698ff9",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "attach1-hike-append-3.jsonl",
+        "sha256": "410e91f814d52125e819ec854b4e7aa1296db16990eaf27b5e7627f25ed631e1",
+        "frameCount": 4102
+      }
+    },
+    {
+      "promptId": "attach2-backup-index",
+      "kind": "attach",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 2,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0 send=0 targets=[]/[]",
+      "misdispatch": false,
+      "sessionId": "session-92c0b471-6de7-4a13-80ea-4d5b9a06076f",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "attach2-backup-index-1.jsonl",
+        "sha256": "caa89f06e9786134af461dc80ed95f6dbf4ee983f3364566264531cdbc0897fe",
+        "frameCount": 1088
+      }
+    },
+    {
+      "promptId": "attach2-backup-index",
+      "kind": "attach",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 1,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0 send=0 targets=[]/[]",
+      "misdispatch": false,
+      "sessionId": "session-3a7ead68-6e36-477d-bb56-dbb795a7b816",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "attach2-backup-index-2.jsonl",
+        "sha256": "891037e2c7854a4746ef4832cca6b1cd9632edf29da3c057348307e30b606255",
+        "frameCount": 822
+      }
+    },
+    {
+      "promptId": "attach2-backup-index",
+      "kind": "attach",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 1,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0 send=0 targets=[]/[]",
+      "misdispatch": false,
+      "sessionId": "session-7c4e1408-f4c0-449f-a8f4-2f83461a938c",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "attach2-backup-index-3.jsonl",
+        "sha256": "a61c223a0ef957b7ea90e8bec9b3df2955f7b6032c35a456bec40dcc6471eb71",
+        "frameCount": 616
+      }
+    },
+    {
+      "promptId": "stop1-lowercase",
+      "kind": "stop",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-015f2c96-4562-49ff-a3fc-9c5e62b1d57b",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "stop1-lowercase-1.jsonl",
+        "sha256": "2f9b2e4117be114b015abda884057ddcf2db7a5e71ba4a5a16bd049a3cbcc3b4",
+        "frameCount": 253
+      }
+    },
+    {
+      "promptId": "stop1-lowercase",
+      "kind": "stop",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-c5a70947-373e-4362-8f21-82aa87c3e2ab",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "stop1-lowercase-2.jsonl",
+        "sha256": "d806bf917873efb819216cf9e7bb50e67cc448ed41c5c09ee96c609fd59a6f92",
+        "frameCount": 375
+      }
+    },
+    {
+      "promptId": "stop1-lowercase",
+      "kind": "stop",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-8cfff74b-c417-47e0-8886-2f889a220c31",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "stop1-lowercase-3.jsonl",
+        "sha256": "b84dfd07d483455eb7e20715f6c8bc39491974649c70cd5394bc7b58874423d9",
+        "frameCount": 420
+      }
+    },
+    {
+      "promptId": "stop2-archive",
+      "kind": "stop",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-f2bfa403-c71d-49b0-a247-53314e5d5215",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "stop2-archive-1.jsonl",
+        "sha256": "0465ad9f5995ab6c312c8be0da5056ffda8e255679538a1c8ba4f08dc6b61d50",
+        "frameCount": 720
+      }
+    },
+    {
+      "promptId": "stop2-archive",
+      "kind": "stop",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-e80ee49e-7641-452e-8133-8c2a8a486959",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "stop2-archive-2.jsonl",
+        "sha256": "f35eba09e988a348b809172b01d930c4abcec93fed324ac0f5ab6df1b4969ba3",
+        "frameCount": 717
+      }
+    },
+    {
+      "promptId": "stop2-archive",
+      "kind": "stop",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 1,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "turn0": {
+        "create": 0,
+        "workerIds": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": false,
+      "routeWhy": "t0create=0 create=0 stop=0",
+      "misdispatch": false,
+      "sessionId": "session-56dc8cfe-8c0d-4e6b-8a6b-6ddd2ae0080a",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "stop2-archive-3.jsonl",
+        "sha256": "8478fdc92f1cb62dba341cbbc7f7dcc1d655d9d689151e65dfb6db3bafa15fc7",
+        "frameCount": 878
+      }
+    },
+    {
+      "promptId": "chat1-thanks",
+      "kind": "chat",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-e8368056-970b-409d-9cea-a9489c35ccc4",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "chat1-thanks-1.jsonl",
+        "sha256": "8e1940f7b1f3ed6a5a81fb591f6bd3b990bb58abfa1e787f0f2add3e4d63508d",
+        "frameCount": 102
+      }
+    },
+    {
+      "promptId": "chat1-thanks",
+      "kind": "chat",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-3248f5ee-99e7-4b6c-a056-5918f484b367",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "chat1-thanks-2.jsonl",
+        "sha256": "d9cc78ebb6a39cbeff9d64e02e32047d0b9513d009055171ef6dbf4c72c3c8d3",
+        "frameCount": 135
+      }
+    },
+    {
+      "promptId": "chat1-thanks",
+      "kind": "chat",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-26289200-f8dc-4744-a84d-78469b7b1dd1",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "chat1-thanks-3.jsonl",
+        "sha256": "5896baf09352a764f6c6eacc81c786a1d79087dd390fe0d5b3f1f2a9b858458c",
+        "frameCount": 135
+      }
+    },
+    {
+      "promptId": "chat2-greeting",
+      "kind": "chat",
+      "rep": 1,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-15962a58-6230-4308-8d66-22080a2772fd",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "chat2-greeting-1.jsonl",
+        "sha256": "30eaa2e9002c4ccf0692182e84c17087f87a4f526412957c286ac354ee029d90",
+        "frameCount": 128
+      }
+    },
+    {
+      "promptId": "chat2-greeting",
+      "kind": "chat",
+      "rep": 2,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-1d0280af-6519-4690-a23b-1b3e35218e09",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "chat2-greeting-2.jsonl",
+        "sha256": "2eb5d5c4aca51ae792bfdf99d822747a3cf5cdbd43d1b8b28ac91da8e2b39beb",
+        "frameCount": 121
+      }
+    },
+    {
+      "promptId": "chat2-greeting",
+      "kind": "chat",
+      "rep": 3,
+      "outcome": "turn/end",
+      "scoredTurn": {
+        "found": true,
+        "endReason": "completed",
+        "create": 0,
+        "send": 0,
+        "stop": 0,
+        "other": 0,
+        "sendTargets": [],
+        "stopTargets": []
+      },
+      "reports": [],
+      "orphanTools": 0,
+      "complete": true,
+      "routeOk": true,
+      "routeWhy": "",
+      "misdispatch": false,
+      "sessionId": "session-08a973ca-24a7-4c50-b05b-d57b1cbac63c",
+      "model": "glm-5.3",
+      "raw": {
+        "file": "chat2-greeting-3.jsonl",
+        "sha256": "dfcfef1772b67f95eb1de4645b75e37f270185b05d6ae2c87c073d7971dea4ba",
+        "frameCount": 130
+      }
+    }
+  ]
+}

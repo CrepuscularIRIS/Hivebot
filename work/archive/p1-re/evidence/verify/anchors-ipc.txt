@@ -1,0 +1,18 @@
+1 exposeInMainWorld("coordinatorPort")|dist/electron-preload/preload.cjs
+2 sand:coordinator-port-request|dist/electron-preload/preload.cjs
+3 dune-rpc:${e}:m:${t}|dist/electron-preload/preload.cjs
+4 sand:boot-snapshot-sync|dist/electron-preload/preload.cjs
+5 "node-agent-coordinator","main.cjs"|dist/electron-main/main-app.cjs
+6 coordinator-renderer-port|dist/electron-main/main-app.cjs
+7 sand-node-agent-coordinator|dist/electron-main/main-app.cjs
+8 incoming-host-bundle.tgz|dist/electron-main/main-app.cjs
+9 sand-local-exec-daemon|dist/electron-main/main-core.cjs
+10 coordinator-renderer-port|dist/node-agent-coordinator/main.cjs
+11 --bootstrap=|dist/node-agent-coordinator/main.cjs
+12 sendPrompt:I().args(Jne)|dist/node-agent-coordinator/main.cjs
+13 {channel:"forever-box"|dist/node-agent-coordinator/main.cjs
+14 performServerAgentAction:C().args(mlt)|dist/electron-main/main-app.cjs
+15 case"sendPrompt":|dist/electron-main/main-app.cjs
+16 {name:"SendGrokBotUserMessage",I:|dist/electron-main/proto.cjs
+17 var Id={|dist/renderer/assets/index.eager-app-iGTgHP_Q.js
+18 protocolVersion:3|dist/renderer/assets/index.eager-app-iGTgHP_Q.js

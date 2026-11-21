@@ -1,0 +1,6 @@
+# T51 step0 @ 2026-11-11T12:08:07.570Z
+serveMarket: real=http://127.0.0.1:41035/real/index.json local=http://127.0.0.1:41035/local/index.json
+Q0 listIndexes(初)=[]
+Q1 setIndexes(array) 失败=Error: pluginMarket/setIndexes failed: {"code":"gateway/internal","message":"Remote payload must contain exactly one plain-object args field","details":{}}
+Q1 setIndexes(object) 失败=Error: pluginMarket/setIndexes failed: {"code":"gateway/internal","message":"Configuration for \"plugin-market\" is overridden by a home patch or command-line overlay","details":{}}
+finally: LOG=true

@@ -1,0 +1,21 @@
+p2sdk: dsh pid 2031663
+A dsh pid under launcher: 2031663
+A dsh env ANTHROPIC_AUTH_TOKEN present (expect false): false
+A dsh env P2SDK_HANDOFF present (expect false): false
+A dsh env DSH_HOME present (expect true): true
+A dsh env PATH present (expect true): true
+A handoff/launch-token mode (expect 600): 600
+A home/launch-token exists (expect false): false
+A home/runtime-patch.yml exists after ready (expect false): false
+B frames total: 46, turn/end present: true
+B 'not found' occurrences (expect 2): 2
+B control read content in transcript (expect true): true
+B token substring in transcript (expect false): false
+B handoff path in transcript (expect false): false
+p2sdk: forwarding SIGTERM to dsh
+p2sdk: dsh pid 2031874
+C default handoff used: true
+C turn/end present: true
+C guessed-default-path token IN transcript (expect true = residual real): true
+p2sdk: forwarding SIGTERM to dsh
+PROBE DONE

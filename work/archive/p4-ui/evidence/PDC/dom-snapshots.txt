@@ -1,0 +1,82 @@
+===== new-bot 对话框 =====
+新建 Bot
+
+基础配置
+standard（默认）
+ptc
+minimal
+cordis
+p2-alpha
+P2SDK D4 fixture alpha (persona + fs tools)
+p2-beta
+P2SDK D4 fixture beta (different persona + fs + search tools)
+连接器
+@p2sdk-fixture/demo-mcp
+模型
+跟随配置默认（p2fake）
+p2fake · p2fake
+Mock Replay · mock
+
+配置随 bot 固定，换配置需新建。
+
+取消
+创建
+
+
+===== info-pane（新 bot） =====
+P
+p2-alpha
+
+配置（创建时固定）
+
+基础配置
+p2-alpha
+
+连接器
+@p2sdk-fixture/demo-mcp
+
+配置随 bot 固定，换配置需新建。
+
+
+用此配置新建
+模型
+跟随配置默认
+正在加载…
+主 Bot
+
+设为主 Bot
+
+===== 会话头部 =====
+p2-alpha · @p2sdk-fixture/demo-mcp
+
+===== 市场列表前 6 行（kind 名称 标签） =====
+browse       [仅浏览]
+browse       [仅浏览]
+browse       [仅浏览]
+browse       [仅浏览]
+browse       [仅浏览]
+browse       [仅浏览]
+
+===== 市场首页三分类计数（50 条页） =====
+{"browse":46,"installable":4}
+
+===== local 源列表 =====
+D
+Demo connector
+U-23 可安装连接器（ping MCP）
+安装
+
+===== local 条目详情 =====
+D
+Demo connector
+@bot-u23/demo-connector · v1.0.0
+
+U-23 可安装连接器（ping MCP）
+
+安装
+
+安装时会校验是否为受支持的连接器包；安装后不会全局启用，需在新建 Bot 时选择。
+
+说明
+
+正在读取说明…

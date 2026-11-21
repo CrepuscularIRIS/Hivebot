@@ -1,0 +1,7 @@
+# T73b 第 0 步原样输出（probe0.mjs 真链路：fake overlay 脚本一次 mcp toolCall → 出卡；observer 落盘）
+{"step":"install","application":"applied"}
+{"step":"session","sessionId":"session-5c162709-dfff-498a-a589-f7f49b5a0ace"}
+=== OBS（exec-obs.jsonl）===
+{"hooked":true}
+{"name":"mcp__server-memory-30e6e77d__create_entities","sessionId":"session-5c162709-dfff-498a-a589-f7f49b5a0ace"}
+# 结论：exec.name = mcp__<serverName>__<tool> ✓；header.id = session/create 返回且 follow 用的同一 id ✓

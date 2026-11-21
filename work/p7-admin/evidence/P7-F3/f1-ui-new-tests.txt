@@ -1,0 +1,47 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F3/app/ui[39m
+
+[90mstderr[2m | tests/unit/admin/recovery.test.ts[2m > [22m[2mP7-F3 main recovery gate[2m > [22m[2mmain entry wires real F1 and recovery to M3 and disposes the control stream before quit without a desktop
+[22m[39m[m3] dsh connected (generation 1); running preset restore
+
+ [31m❯[39m tests/unit/admin/recovery.test.ts [2m([22m[2m11 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 420[2mms[22m[39m
+   [31m❯[39m P7-F3 main recovery gate [2m(11)[22m
+     [32m✓[39m actual M3 reconnect hook exposes success, not merely settled, and fences old completions[32m 27[2mms[22m[39m
+     [32m✓[39m reads F1/M3 and SDK Assignment state before complete; unknown operation is not replayed or promoted[32m 47[2mms[22m[39m
+     [32m✓[39m disconnect closes immediately; old restore resolution cannot complete or open the new generation[32m 64[2mms[22m[39m
+     [32m✓[39m failed restore and mismatched process response keep the gate shut[32m 32[2mms[22m[39m
+     [32m✓[39m bad Assignment relationship leaves a failed operation audit; it never invokes a manager action[32m 32[2mms[22m[39m
+     [32m✓[39m bad F1 or failed M3 recovery never invokes SDK repair or opens management[32m 61[2mms[22m[39m
+     [32m✓[39m a socket reconnect is not a new SDK process; stale receipts fail and no-owner restart is unavailable[32m 62[2mms[22m[39m
+     [32m✓[39m recovery cannot receipt an unknown restart; duplicate/terminal frames close the gate[32m 44[2mms[22m[39m
+     [32m✓[39m actual connection invalidates listeners on socket death and stop even when an earlier listener throws[32m 3[2mms[22m[39m
+     [32m✓[39m old generation restore-settled cannot release the newest ready gate; timeout settled is not management success[32m 0[2mms[22m[39m
+[31m     [31m×[31m main entry wires real F1 and recovery to M3 and disposes the control stream before quit without a desktop[39m[32m 46[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/unit/admin/recovery.test.ts[2m > [22mP7-F3 main recovery gate[2m > [22mmain entry wires real F1 and recovery to M3 and disposes the control stream before quit without a desktop
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m tests/unit/admin/recovery.test.ts:[2m258:64[22m[39m
+    [90m256|[39m       for (let n = 0; n < 100 && dsh.rpc.mock.calls.length < 2; n++) a…
+    [90m257|[39m       expect(dsh.rpc.mock.calls.map(([method]) => method)).toEqual(['p…
+    [90m258|[39m       expect(existsSync(join(root, 'admin-operations.jsonl'))).toBe(tr…
+    [90m   |[39m                                                                [31m^[39m
+    [90m259|[39m       beforeQuit[0]()
+    [90m260|[39m       expect(dsh.stop).toHaveBeenCalledTimes(1)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m10 passed[39m[22m[90m (11)[39m
+[2m   Start at [22m 10:40:06
+[2m   Duration [22m 693ms[2m (tests 70%, transform 22%, import 6%, setup 1%, worker 1%)[22m
+

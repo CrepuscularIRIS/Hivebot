@@ -1,0 +1,19 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-08/app/sdk
+
+ ✓ tests/e2e/security.test.ts > ① ss process-tree criterion: every runtime listener is loopback 1593ms
+ ✓ tests/e2e/security.test.ts > ② admission: no cookie 401, cross-site 403, /connect?token cookie works 1456ms
+ ✓ tests/e2e/security.test.ts > ③ sentinel leak scan: fake run -> kill -9 -> restart -> 0 hits everywhere 3573ms
+ ✓ tests/e2e/security.test.ts > ④ scanner positive control: sentinel in zstd frame 2 and in a plain log both FAIL the scan 711ms
+stdout | tests/e2e/security.test.ts > ⑤ real-key D2 smoke re-scan: same scanner, key from env, hits=0
+  ⑤ real-key scan hits=0 (scanner reported CLEAN)
+
+ ✓ tests/e2e/security.test.ts > ④b scanner guards: refuses non-pnpm invocation and Node <24.9 63ms
+ ✓ tests/e2e/security.test.ts > ⑤ real-key D2 smoke re-scan: same scanner, key from env, hits=0 20066ms
+ ✓ tests/e2e/security.test.ts > ⑥ real provider path sentinel: loopback stub receives the Bearer key, disk scan stays clean 2052ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  16:09:34
+   Duration  29.78s (tests 100%)
+

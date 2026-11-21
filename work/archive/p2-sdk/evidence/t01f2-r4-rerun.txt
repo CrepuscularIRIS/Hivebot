@@ -1,0 +1,14 @@
+== T-01.f2 acceptance ① rerun: node /tmp/T-01.f2-tests/test-r4.mjs (2026-11-01 ~14:42, real chain via scripts/start.mjs) ==
+A ready
+PASS second instance exits non-zero (got 1)
+PASS second instance stderr names the conflict (err="p2sdk: P2SDK_HOME \"/tmp/p2sdk-r4-pKVz2j\" is already in use by launcher pid 1426105: a second instance would clobber its runtime-patch.yml and handoff files")
+PASS launch-token not overwritten by second instance
+PASS runtime-patch.yml not overwritten by second instance
+PASS first instance still running after second refused
+  (stopped child exit=0)
+PASS lock file released when first instance exits
+PASS fresh instance boots after release
+  (stopped child exit=0)
+PASS stale lock taken over
+  (stopped child exit=0)
+R4 RESULT: ALL GREEN

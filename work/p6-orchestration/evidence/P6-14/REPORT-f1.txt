@@ -1,0 +1,93 @@
+P6-14.f1 REPORT（envelope 改走 per-agent restrict 快捷列集成）
+分支 feat/P6-14 @ 828aa90（基 05d8dfc，worktree /tmp/bot-wt/P6-14）
+日期 2026-11-04 · builder（GLM 5.3）
+
+问题（VERIFY-P6-14 [FIX]，验收项 6 FAIL）
+  builder 曾断言「profile 插件拿不到 worker scoped ctx、tools.restrict 无法按
+  会话生效」并降级为纯 pre-execute 守卫。verifier 独立探针（vfy-probe.mjs
+  SCOPED_RESTRICT_PROBE / CONFIRMED）证明 profile 插件可经
+  ctx.agents.get(W).ctx.tools.restrict({deny}) 只限 worker、主 bot 工具表不变。
+
+修法（第 1 级集成）
+  1. envelope.mjs 新增四件：
+     - RESTRICT_TOOLS = 协调者+再委派+后台作业三族并集（bash/pwsh 不进——
+       参数级 run_in_background 只有守卫能按参数判）
+     - workerRestrictDeny(registeredNames)：deny = RESTRICT_TOOLS ∩ agent 可见面
+     - applyWorkerRestriction(agent, tools)：restrict({deny}) 原样返回 disposer
+     - registerWorkerRestriction(ctx, orch)：agent/created + agent/disposed +
+       agents.list() 引导；serial listener 任何分支不外抛（挂不上只损失工具表
+       收窄，执行期守卫照拒）。生命周期模式照 upstream
+       repos/deepseek-harness@ce7073d experimental/tool-agent-team/src/index.ts:422-431
+  2. main-channel.mjs 构造器在 registerEnvelope 后接线 registerWorkerRestriction；
+     index.mjs 追加 5 个导出；start.ts 零改动（默认链仍不加载 orchestration.yml）
+  3. pre-execute 守卫（registerEnvelope）原样保留。依据：dsh-tools pipeline.js
+     的 tools/pre-execute waterfall 先于工具名解析（prepare→waterfall，
+     dispatchToolBody 才 resolveExecution），故 restrict 挂上后守卫字面串拒
+     仍先于 UNKNOWN_TOOL 生效（live ⑦ 实证）；且守卫继续兜 restrict 覆盖不了
+     的参数级后台、后续注册/改名、restrict 未及挂上的会话。
+
+实现中发现的关键事实（踩坑记录）
+  - deny 交集必须取 agent 自己的可见面（tools.definitions(agent)），不能用插件
+    ctx 的全局注册表：standard preset 的再委派/后台作业工具不在全局层（实测
+    agent/created 时全局注册表仅 5 件：request_network、working_directory、
+    create_bot、send_to_bot、stop_bot），而在 agent 的继承链层——对 agent 可
+    见、可 restrict，但全局视图交集会把它们全部漏掉（初版即因此翻红，live ⑥
+    subagent 仍可见）。
+  - agent/created 在 session/create 期间同步触发（source='startup'），生产顺序
+    （main orchestrate.ts createWorkerBot 第 3/4 步：createdBy 先落盘、再
+    session/create 预铸 id）下 worker 在册后才建 agent——restrict 恰在会话建立
+    点挂上，无窗口。
+  - agent/created 是 serial dispatch（listener 抛错会 fail 会话创建）——
+    registerWorkerRestriction 全部 try/catch，logger.warn 记行。
+  - 升级哨兵：已装 0.2.2-alpha.2 lib/index.js:453-467 与 ce7073d
+    packages/core/tools/src/index.ts:160-190 语义一致（需 scoped ctx / 拒未知
+    全局名 / 幂等 disposer）；单测 3 格锁这三条字符串契约，上游改形状即红。
+
+已知上限（ponytail:，代码注释同步）
+  - agent 先于 createdBy 落盘变 live（生产不会；仅手改 bots.json 的既有会话）
+    → 该实例不挂 restrict，执行期守卫照拒，会话重建后恢复。
+  - bots.json 不可读 → 不挂（与守卫同口径 fail-open 到更强兜底）。
+
+验收对照（全部复跑，临时 HOME /tmp/bot-p614f1-*）
+  A. verifier 探针复跑：vfy-probe.mjs RC=0——四入口+非法参数 7 拒、顺序差分格
+     （bg 信封字面串 asked=0 vs fg 出卡 asked=1）、SCOPED_RESTRICT_PROBE
+     CONFIRMED（restrict 生效 + 主 bot 工具表 before/after 深等）、mode=default
+     默认链闸门 PASS。
+  B. 拒绝面全项复跑绿：
+     - 单测 25（12 旧 + 13 新：deny 交集 / disposer 透传 / 空集 / 生命周期 6 格 /
+       哨兵 3 格）
+     - live 7（5 旧 + 新⑥ + 新⑦）：⑥ 生产顺序 worker 工具表收窄（RESTRICT_TOOLS
+       17 名全不可见、bash/read/write/edit 不误伤、主 bot 三族全在）；⑦ restrict
+       已挂的 worker 调 13 入口（7 再委派+schedule_create+job_list+run_in_background
+       bash+协调者三件）仍全拒、pbots/forbidden 字面串先于 UNKNOWN_TOOL、零审批卡、
+       session/list 不增
+  C. 定向 157+12+5 不降：7 文件 189 passed / 189（174 旧全绿 + 15 新）
+  D. 波及面回归：orchestration live 其余 5 文件 38 passed；
+     w1ap0-matrix + approval 15 passed（VERIFY 项 7 同对）
+  命令（app/sdk 下，--maxWorkers=1）：
+     pnpm exec vitest run tests/unit/orchestration-envelope.test.ts \
+       tests/unit/orchestration-envelope-live.test.ts tests/unit/orchestration-foundation.test.ts \
+       tests/unit/orchestration-create.test.ts tests/unit/orchestration-send.test.ts \
+       tests/unit/orchestration-report.test.ts tests/unit/orchestration-stop.test.ts
+     → Test Files 7 passed (7) / Tests 189 passed (189)
+     ./node_modules/.bin/node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14/vfy-probe.mjs
+     → 全 PASS 行 + CONFIRMED + RC=0
+
+改动文件（6）
+  app/sdk/src/orchestration/envelope.mjs        +96（RESTRICT_TOOLS 等四件 + 头注）
+  app/sdk/src/orchestration/main-channel.mjs    +4（接线 1 行 + 注释）
+  app/sdk/src/orchestration/index.mjs           追加 5 导出（P6-14(+f1) 注册行）
+  app/sdk/tests/unit/orchestration-envelope.test.ts        +13 格
+  app/sdk/tests/unit/orchestration-envelope-live.test.ts   +2 格（⑥⑦）
+  app/sdk/tests/unit/orchestration-foundation.test.ts      barrel 清单（+4 名）
+
+未完成项 / 新发现
+  - 无未完成项。
+  - 新问题（不扩范围，交派发者）：preset 工具不在全局注册表这一事实也影响
+    enumerateInstalledEntries 的语义（它拿主 bot visible 探测结果作注册表，
+    目前用例都这么喂、不受影响）；若后续有人改用 ctx.tools.definitions() 喂它
+    会得到空集——envelope.mjs workerRestrictDeny 的注释已写明差别。
+  - 探针里 workerBefore 仍含 subagent 等属预期（探针先建会话后写 bots.json，
+    与生产顺序相反；该场景由守卫覆盖，见已知上限）。
+
+待 verifier 验收。

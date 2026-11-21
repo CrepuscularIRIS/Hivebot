@@ -1,0 +1,159 @@
+token	status	0781	110
+--conversation-chrome-font-size	added		var(--conversation-font-size)
+--conversation-chrome-line-height	added		var(--conversation-line-height)
+--conversation-font-size	changed	var(--cursor-font-size-lg)	var(--conversation-text-font-size,var(--conversation-chrome-font-size)) | var(--cursor-font-size-lg)
+--conversation-line-height	changed	22px	22px | var(--conversation-text-line-height,var(--conversation-chrome-line-height))
+--cursor-accent	changed	#599ce7	#5ca3fe
+--cursor-added	changed	#70b489	#17d581
+--cursor-base	changed	#f0f0f0	#f5f5f5
+--cursor-bg-blue-primary-hover	changed	color-mix(in srgb, var(--cursor-bg-blue-primary) 80%, var(--cursor-bg-blue-secondary))	var(--cursor-blue-fill-hover)
+--cursor-bg-blue-primary-pressed	changed	var(--cursor-bg-blue-primary-hover)	var(--cursor-blue-fill-pressed)
+--cursor-bg-cyan-primary-hover	changed	color-mix(in srgb, var(--cursor-bg-cyan-primary) 80%, var(--cursor-bg-cyan-secondary))	var(--cursor-cyan-fill-hover)
+--cursor-bg-cyan-primary-pressed	changed	var(--cursor-bg-cyan-primary-hover)	var(--cursor-cyan-fill-pressed)
+--cursor-bg-danger-primary-hover	changed	color-mix(in srgb, var(--cursor-danger-fill) 85%, black)	var(--cursor-danger-fill-hover)
+--cursor-bg-danger-primary-pressed	changed	var(--cursor-bg-danger-primary-hover)	var(--cursor-danger-fill-pressed)
+--cursor-bg-green-primary-hover	changed	color-mix(in srgb, var(--cursor-bg-green-primary) 80%, var(--cursor-bg-green-secondary))	var(--cursor-green-fill-hover)
+--cursor-bg-green-primary-pressed	changed	var(--cursor-bg-green-primary-hover)	var(--cursor-green-fill-pressed)
+--cursor-bg-magenta-primary-hover	changed	color-mix(in srgb, var(--cursor-bg-magenta-primary) 80%, var(--cursor-bg-magenta-secondary))	var(--cursor-magenta-fill-hover)
+--cursor-bg-magenta-primary-pressed	changed	var(--cursor-bg-magenta-primary-hover)	var(--cursor-magenta-fill-pressed)
+--cursor-bg-orange-primary-hover	changed	color-mix(in srgb, var(--cursor-bg-orange-primary) 80%, var(--cursor-bg-orange-secondary))	var(--cursor-orange-fill-hover)
+--cursor-bg-orange-primary-pressed	changed	var(--cursor-bg-orange-primary-hover)	var(--cursor-orange-fill-pressed)
+--cursor-bg-purple-primary-hover	changed	color-mix(in srgb, var(--cursor-bg-purple-primary) 80%, var(--cursor-bg-purple-secondary))	var(--cursor-purple-fill-hover)
+--cursor-bg-purple-primary-pressed	changed	var(--cursor-bg-purple-primary-hover)	var(--cursor-purple-fill-pressed)
+--cursor-bg-red-primary-hover	changed	color-mix(in srgb, var(--cursor-bg-red-primary) 80%, var(--cursor-bg-red-secondary))	var(--cursor-red-fill-hover)
+--cursor-bg-red-primary-pressed	changed	var(--cursor-bg-red-primary-hover)	var(--cursor-red-fill-pressed)
+--cursor-bg-success-primary-hover	changed	color-mix(in srgb, var(--cursor-success-fill) 85%, white)	var(--cursor-success-fill-hover)
+--cursor-bg-success-primary-pressed	changed	var(--cursor-bg-success-primary-hover)	var(--cursor-success-fill-pressed)
+--cursor-bg-warning-primary-hover	changed	color-mix(in oklab, var(--cursor-base) 10%, var(--cursor-warn-fill))	var(--cursor-warn-fill-hover)
+--cursor-bg-warning-primary-pressed	changed	var(--cursor-bg-warning-primary-hover)	var(--cursor-warn-fill-pressed)
+--cursor-bg-yellow-primary-hover	changed	color-mix(in srgb, var(--cursor-bg-yellow-primary) 80%, var(--cursor-bg-yellow-secondary))	var(--cursor-yellow-fill-hover)
+--cursor-bg-yellow-primary-pressed	changed	var(--cursor-bg-yellow-primary-hover)	var(--cursor-yellow-fill-pressed)
+--cursor-blue	changed	#7bafe9	#5ca3fe
+--cursor-brown	changed	#ae8968	#d4ae8e
+--cursor-cyan	changed	#81a1c1	#3bc7b4
+--cursor-danger	changed	#e34671	#ff6363
+--cursor-diff-added-line-background	changed	#3fa26633	#14c67214
+--cursor-diff-added-text-background	changed	#3fa26622	#14c67233
+--cursor-diff-removed-line-background	changed	#b8004933	#fe324114
+--cursor-diff-removed-text-background	changed	#b8004922	#fe324133
+--cursor-focus	changed	#f0f0f0	#1f87fc
+--cursor-font-size-transcript	added		15px
+--cursor-green	changed	#3fa266	#17d581
+--cursor-line-height-transcript	added		24px
+--cursor-magenta	changed	#b48ead	#fd6aae
+--cursor-modified	changed	#f1b467	#fda51d
+--cursor-on-primary	changed	#191c22	#f5f5f5
+--cursor-orange	changed	#d08770	#fe8b4a
+--cursor-pane	changed	#181818	#191919
+--cursor-purple	changed	#9386f2	#ab8afe
+--cursor-red	changed	#fc6b83	#ff6363
+--cursor-removed	changed	#fc6b83	#ff6363
+--cursor-sidebar	changed	#181818	#101010
+--cursor-success	changed	#3fa266	#17d581
+--cursor-terminal-ansi-black	changed	#242424	#1f1f1f
+--cursor-terminal-ansi-blue	changed	#81a1c1	#5ca3fe
+--cursor-terminal-ansi-bright-black	changed	#f0f0f099	#f5f5f5ad
+--cursor-terminal-ansi-bright-blue	changed	#87a6c4	#93c2ff
+--cursor-terminal-ansi-bright-cyan	changed	#88c0d0	#7fd1c1
+--cursor-terminal-ansi-bright-green	changed	#70b489	#6dd494
+--cursor-terminal-ansi-bright-magenta	changed	#b48ead	#ff97c0
+--cursor-terminal-ansi-bright-red	changed	#fc6b83	#ff8681
+--cursor-terminal-ansi-bright-white	changed	#f0f0f0	#f5f5f5
+--cursor-terminal-ansi-bright-yellow	changed	#f1b467	#fdab56
+--cursor-terminal-ansi-cyan	changed	#88c0d0	#3bc7b4
+--cursor-terminal-ansi-green	changed	#3fa266	#17d581
+--cursor-terminal-ansi-magenta	changed	#b48ead	#fd6aae
+--cursor-terminal-ansi-red	changed	#fc6b83	#ff6363
+--cursor-terminal-ansi-white	changed	#f0f0f0	#dbdbdb
+--cursor-terminal-ansi-yellow	changed	#d2943e	#fda51d
+--cursor-text-blue-primary-hover	changed	var(--cursor-text-blue-primary)	var(--cursor-blue-foreground-hover)
+--cursor-text-cyan-primary-hover	changed	var(--cursor-text-cyan-primary)	var(--cursor-cyan-foreground-hover)
+--cursor-text-danger-primary-hover	changed	var(--cursor-text-danger-primary)	var(--cursor-danger-foreground-hover)
+--cursor-text-green-primary-hover	changed	var(--cursor-text-green-primary)	var(--cursor-green-foreground-hover)
+--cursor-text-magenta-primary-hover	changed	var(--cursor-text-magenta-primary)	var(--cursor-magenta-foreground-hover)
+--cursor-text-orange-primary-hover	changed	var(--cursor-text-orange-primary)	var(--cursor-orange-foreground-hover)
+--cursor-text-purple-primary-hover	changed	var(--cursor-text-purple-primary)	var(--cursor-purple-foreground-hover)
+--cursor-text-red-primary-hover	changed	var(--cursor-text-red-primary)	var(--cursor-red-foreground-hover)
+--cursor-text-success-primary-hover	changed	var(--cursor-text-success-primary)	var(--cursor-success-foreground-hover)
+--cursor-text-warning-primary-hover	changed	var(--cursor-text-warning-primary)	var(--cursor-warn-foreground-hover)
+--cursor-text-yellow-primary-hover	changed	var(--cursor-text-yellow-primary)	var(--cursor-yellow-foreground-hover)
+--cursor-untracked	changed	#88c0d0	#3bc7b4
+--cursor-warn	changed	#f1b467	#fda51d
+--cursor-yellow	changed	#f1b467	#fda51d
+--default-marker	changed	is([data-component=checkbox][data-checked],[data-component=checkbox][data-indeterminate]):not([data-disabled])) .ui-1b3ufqo.ui-1b3ufqo{border-color:var(--ui-checkbox-border) | hover) .ui-15aqy90.ui-15	is([data-component=checkbox][data-checked],[data-component=checkbox][data-indeterminate]):not([data-disabled])) .ui-1b3ufqo.ui-1b3ufqo{border-color:var(--ui-checkbox-border) | hover) .ui-15aqy90.ui-15
+--element-pick-border	added		transparent
+--element-pick-fill	added		transparent
+--file	changed	hover{background:var(--lightningcss-light,#14141412)var(--lightningcss-dark,#ffffff1a)	hover{background:light-dark(#14141412,#ffffff1a)
+--lightningcss-dark	removed	 | initial	
+--lightningcss-light	removed	initial | 	
+--rte-code-block-border-color	added		transparent
+--rte-code-block-border-width	added		0
+--rte-code-block-white-space	added		pre-wrap
+--rte-ol-nested-ul-list-style-type	added		disc
+--sand-avatar-surface-overlay	changed	color-mix(in srgb,var(--sand-text-accent-primary) 20%,var(--sand-bg-active)) | inherit | transparent | var(--sand-bg-active) | var(--sand-bg-hover)	color-mix(in srgb,var(--sand-text-accent-primary) 20%,var(--sand-bg-active)) | transparent | var(--sand-bg-active) | var(--sand-bg-hover)
+--sand-collapsible-region-gap	added		0px | var(--x---sand-collapsible-region-gap)
+--sand-floating-controls-start	added		calc((var(--sand-sidebar-rail-width) - 36px) / 2) | max(88px,calc(var(--sand-sidebar-rail-width) + 8px))
+--sand-leading-chrome-inset	added		calc(var(--sand-floating-controls-start,12px) + 2*36px + 6px) | calc(var(--sand-floating-controls-start,12px) + 3*36px + 2*6px) | max(0px,calc(var(--sand-floating-controls-start,12px) + 36px - var(--s
+--sand-nav-bar-inset	added		10px | 16px
+--sand-sidebar-rail-width	added		88px
+--sand-view-stage-top	changed	calc(60px + 24px)	48px | calc(60px + 24px)
+--sand-widget-list-divider	added		1 | var(--sand-widget-list-tail-divider,0)
+--sand-widget-list-tail-divider	added		1
+--sent-message-actions-pointer-events	added		none | auto
+--tasks-peek-card-width	added		min(max(calc(var(--tasks-peek-island-width,0px) + 10px),360px),calc(100cqi - 16px))
+--tasks-peek-pill-ring	added		transparent | var(--sand-border-focus-primary)
+--tasks-peek-pill-tint	added		0 | 1
+--ui-badge-translate	changed	translate(-25%,-25%) | translate(-25%,25%) | translate(0,0) | translate(25%,-25%) | translate(25%,25%)	translate(-25%,-25%) | translate(-25%,25%) | translate(0,0) | translate(25%,-25%) | translate(25%,25%) | translate(5px,-5px)
+--ui-button-bg-hover	changed	#00000024 | color-mix(in srgb,var(--cursor-brand) 12%,transparent) | color-mix(in srgb,var(--cursor-brand) 18%,transparent) | color-mix(in srgb,var(--cursor-brand) 80%,color-mix(in srgb,var(--cursor-b	#00000024 | color-mix(in srgb,var(--cursor-brand) 12%,transparent) | color-mix(in srgb,var(--cursor-brand) 18%,transparent) | color-mix(in srgb,var(--cursor-brand) 80%,color-mix(in srgb,var(--cursor-b
+--ui-checkbox-glyph	changed	var(--cursor-text-invert) | var(--cursor-text-secondary)	var(--cursor-icon-on-primary) | var(--cursor-text-invert) | var(--cursor-text-secondary)
+--ui-code-block-actions-display	added		none
+--ui-icon-tile-accent	added		var(--cursor-brand) | var(--cursor-icon-blue-primary) | var(--cursor-icon-cyan-primary) | var(--cursor-icon-green-primary) | var(--cursor-icon-magenta-primary) | var(--cursor-icon-orange-primary) | va
+--ui-icon-tile-fill	added		color-mix(in oklab,var(--ui-icon-tile-accent) 12%,transparent) | var(--cursor-bg-tertiary) | var(--cursor-terminal-ansi-black)
+--ui-icon-tile-glyph-size	changed	calc(var(--cursor-spacing-14) / 1.75) | calc(var(--cursor-spacing-7) / 1.75)	var(--x---ui-icon-tile-glyph-size)
+--ui-input-group-padding-block	changed	0px | var(--cursor-spacing-0-5) | var(--cursor-spacing-1-5) | var(--cursor-spacing-1)	0px | var(--cursor-spacing-0-5) | var(--cursor-spacing-1-25) | var(--cursor-spacing-1-5) | var(--cursor-spacing-1)
+--ui-input-group-padding-inline	changed	0px | var(--cursor-spacing-0-25) | var(--cursor-spacing-1-25) | var(--cursor-spacing-1-5) | var(--cursor-spacing-2)	0px | var(--cursor-spacing-0-25) | var(--cursor-spacing-1-25) | var(--cursor-spacing-1-5) | var(--cursor-spacing-2) | var(--cursor-spacing-4)
+--ui-menu-divider-color	changed	var(--sand-border-quaternary-translucent) | var(--sand-border-secondary-translucent)	var(--cursor-stroke-quaternary) | var(--sand-border-quaternary-translucent) | var(--sand-border-secondary-translucent)
+--ui-menu-divider-margin-block	changed	4px | var(--cursor-spacing-1-5) | var(--cursor-spacing-1)	4px | var(--cursor-spacing-2) | var(--cursor-spacing-1-5) | var(--cursor-spacing-1)
+--ui-menu-divider-margin-block-end	changed	var(--cursor-spacing-0-75)	8px | 9px | var(--cursor-spacing-0-75)
+--ui-menu-divider-margin-block-start	changed	var(--cursor-spacing-0-5)	4px | var(--cursor-spacing-0-5)
+--ui-menu-divider-margin-inline	changed	0px | 8px | calc(-1*var(--ui-menu-inner-padding)) | var(--cursor-spacing-2-5) | var(--cursor-spacing-2)	-4px | 0px | var(--cursor-spacing-6) | 8px | calc(-1*var(--ui-menu-inner-padding)) | var(--cursor-spacing-2-5) | var(--cursor-spacing-2)
+--ui-menu-header-bleed	added		4px
+--ui-menu-header-divider-color	changed	var(--sand-border-tertiary-translucent)	var(--cursor-stroke-tertiary) | var(--sand-border-tertiary-translucent)
+--ui-menu-header-row-min-height	changed	0px	26px | 27px | 0px
+--ui-menu-header-row-padding-bottom	changed	2px	1px | 4px | 2px
+--ui-menu-header-row-padding-top	changed	4px	2px | 4px
+--ui-menu-inner-padding-block	changed	var(--cursor-spacing-1)	0px | 5px | var(--cursor-spacing-1) | var(--cursor-spacing-2-5)
+--ui-menu-item-left-height	changed	var(--cursor-spacing-3-5) | 16px | 18px | 40px	var(--cursor-spacing-3-5) | var(--cursor-spacing-4) | 16px | 18px | 40px
+--ui-menu-item-left-width	changed	12px | 16px | 18px | 40px | auto | var(--sand-search-menu-icon-slot)	12px | auto | var(--cursor-spacing-4) | 16px | 18px | 40px | var(--sand-search-menu-icon-slot)
+--ui-menu-list-gap	changed	1px | 0px | 2px	1px | var(--cursor-spacing-1) | 0px | 2px
+--ui-menu-row-border-radius	changed	var(--cursor-radius-lg) | 10px | var(--sand-menu-row-radius) | var(--sand-search-menu-row-radius)	4px | var(--cursor-radius-lg) | 10px | var(--sand-menu-row-radius) | var(--sand-search-menu-row-radius)
+--ui-menu-row-description-min-height	changed	var(--cursor-height-md)	var(--cursor-height-md) | var(--cursor-spacing-15)
+--ui-menu-row-description-padding-block	changed	var(--cursor-spacing-0-75)	var(--cursor-spacing-0-75) | var(--cursor-spacing-2)
+--ui-menu-row-gap	changed	var(--cursor-spacing-1-5) | 8px | var(--cursor-spacing-2) | var(--sand-menu-row-gap) | var(--sand-search-menu-row-gap)	6px | var(--cursor-spacing-1-5) | var(--cursor-spacing-3) | 8px | var(--cursor-spacing-2) | var(--sand-menu-row-gap) | var(--sand-search-menu-row-gap)
+--ui-menu-row-highlight-background	added		transparent
+--ui-menu-row-highlight-inset	changed	var(--cursor-spacing-1) | 0px | 6px	0px | var(--cursor-spacing-1) | var(--cursor-spacing-3) | 6px
+--ui-menu-row-min-height	changed	var(--cursor-height-md) | 50px | calc(var(--sand-line-height-sm) + 2*var(--cursor-spacing-1-5)) | calc(var(--sand-menu-line-height) + 2*var(--cursor-spacing-1-75)) | var(--sand-menu-row-height) | var(	var(--cursor-height-lg) | var(--cursor-height-md) | var(--cursor-spacing-11) | 50px | calc(var(--sand-line-height-sm) + 2*var(--cursor-spacing-1-5)) | calc(var(--sand-menu-line-height) + 2*var(--curso
+--ui-menu-row-padding-inline	changed	var(--cursor-spacing-2) | 6px | 8px | var(--cursor-spacing-2-5) | var(--sand-search-menu-row-inset)	var(--cursor-spacing-2) | var(--cursor-spacing-6) | 6px | 8px | var(--cursor-spacing-2-5) | var(--sand-search-menu-row-inset)
+--ui-menu-row-padding-inline-end	added		6px | 8px
+--ui-menu-row-padding-inline-start	added		8px
+--ui-menu-row-trailing-gap	added		8px
+--ui-menu-scroll-bleed-inline	added		5px
+--ui-menu-section-title-font-size	added		11px | var(--cursor-font-size-base)
+--ui-menu-section-title-letter-spacing	added		var(--cursor-letter-spacing-base)
+--ui-menu-section-title-line-height	added		var(--cursor-line-height-base)
+--ui-menu-section-title-margin-bottom	added		1px
+--ui-menu-section-title-min-height	changed	calc(var(--cursor-height-md) - 2*var(--cursor-spacing-0-75))	18px | calc(var(--cursor-height-md) - 2*var(--cursor-spacing-0-75)) | var(--cursor-spacing-8)
+--ui-menu-section-title-padding-inline-start	added		6px
+--ui-pill-copy-clear	added		var(--cursor-spacing-3-5) | var(--cursor-spacing-3) | var(--cursor-spacing-4)
+--ui-pill-copy-fade	added		linear-gradient(var(--ui-pill-copy-fade-direction),black calc(100% - var(--ui-pill-copy-clear) - var(--cursor-spacing-5)),transparent calc(100% - var(--ui-pill-copy-clear))) | none
+--ui-pill-copy-fade-direction	added		to right | to left
+--ui-popup-box-shadow	changed	var(--sand-shadow-popover)	0 10px 15px -3px #0000001a,0 4px 6px -4px #0000001a | var(--sand-shadow-popover)
+--ui-radio-glyph	changed	var(--cursor-text-invert) | var(--cursor-text-secondary)	var(--cursor-icon-on-primary) | var(--cursor-text-invert) | var(--cursor-text-secondary)
+--ui-reduced-motion	changed	no-preference | reduce | reduce){.ui-az8sdw.ui-az8sdw{--ui-floating-anchor-fade-duration:.01ms | reduce){.ui-171p3o7.ui-171p3o7{-webkit-background-clip:border-box | reduce){.ui-1g0ytkp.ui-1g0ytkp{-web	no-preference | reduce | reduce){.ui-az8sdw.ui-az8sdw{--ui-floating-anchor-fade-duration:.01ms | reduce){.ui-171p3o7.ui-171p3o7{-webkit-background-clip:border-box | reduce){.ui-1g0ytkp.ui-1g0ytkp{-web
+--ui-scroll-area-thumb-hover-color	added		var(--sand-border-tertiary-translucent)
+--ui-scrollbar-display	added		none
+--ui-scrollbar-gutter	added		0px
+--ui-surface-hairline-color	added		var(--cursor-stroke-tertiary)
+--ui-switch-thumb-radius	added		calc(var(--ui-switch-track-height) / 2 - var(--cursor-spacing-0-5))
+--ui-switch-track-height	added		18px | var(--cursor-spacing-4) | var(--cursor-spacing-5) | var(--cursor-spacing-6)
+--weather-range-stops	added		var(--x---weather-range-stops)

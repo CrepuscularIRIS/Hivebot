@@ -1,0 +1,40 @@
+{
+  "root": "/tmp/bot-p7q1-BGfGI5",
+  "head": "0fa0c37ed1b6650fad0cc61749b1654624e931a6",
+  "sessionId": "session-e71b69e0-0341-41ac-987a-18d5886e74d3",
+  "beforeRestart": {
+    "id": "goal-16e717f5-8759-4278-ad26-bda6dad55da5",
+    "revision": 1,
+    "objective": "Q1 verify headless goal mount",
+    "phase": "active",
+    "maxGoalRounds": 4,
+    "roundsStarted": 2,
+    "createdAt": 1793877980247,
+    "updatedAt": 1793877980247,
+    "activation": "armed"
+  },
+  "afterRestart": {
+    "id": "goal-16e717f5-8759-4278-ad26-bda6dad55da5",
+    "revision": 1,
+    "objective": "Q1 verify headless goal mount",
+    "phase": "active",
+    "maxGoalRounds": 4,
+    "roundsStarted": 2,
+    "createdAt": 1793877980247,
+    "updatedAt": 1793877980247,
+    "activation": "disarmed"
+  },
+  "afterResume": {
+    "id": "goal-16e717f5-8759-4278-ad26-bda6dad55da5",
+    "revision": 2,
+    "objective": "Q1 verify headless goal mount",
+    "phase": "active",
+    "maxGoalRounds": 4,
+    "roundsStarted": 3,
+    "createdAt": 1793877980247,
+    "updatedAt": 1793877987106,
+    "activation": "armed"
+  },
+  "completedGoalRound": 1,
+  "pass": true
+}

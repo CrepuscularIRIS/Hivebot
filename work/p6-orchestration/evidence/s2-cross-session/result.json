@@ -1,0 +1,59 @@
+{
+  "date": "2026-11-03T17:52:06.454Z",
+  "installedVersion": "0.2.2-alpha.2",
+  "checks": [
+    {
+      "label": "old session before registration",
+      "actual": false
+    },
+    {
+      "label": "old session dynamically gains tool",
+      "actual": true
+    },
+    {
+      "label": "other session does not gain tool",
+      "actual": false
+    },
+    {
+      "label": "live scoped deny",
+      "actual": false
+    },
+    {
+      "label": "lift restores tool without recreating session",
+      "actual": true
+    },
+    {
+      "label": "custom RPC channel observation (not acceptance)",
+      "actual": {
+        "status": 405,
+        "body": ""
+      }
+    },
+    {
+      "label": "custom gateway stream ready",
+      "actual": {
+        "ready": true
+      }
+    },
+    {
+      "label": "SDK tool -> main stream -> create session -> SDK respond -> tool result",
+      "actual": true
+    },
+    {
+      "label": "old main immediately loses next-step tool",
+      "actual": false
+    },
+    {
+      "label": "new main old session gains next-step tool",
+      "actual": true
+    },
+    {
+      "label": "forced fake tool call by former main denied",
+      "actual": true
+    },
+    {
+      "label": "preset switch on started session locked",
+      "actual": true
+    }
+  ]
+}

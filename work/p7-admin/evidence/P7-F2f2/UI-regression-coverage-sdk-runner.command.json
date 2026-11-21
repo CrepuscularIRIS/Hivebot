@@ -1,0 +1,29 @@
+{
+  "cwd": "/tmp/bot-wt/P7-F2f2/app/sdk",
+  "env": {
+    "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+    "HOME": "/tmp/bot-P7-F2f2/home",
+    "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+  },
+  "command": [
+    "/bin/bash",
+    "--noprofile",
+    "--norc",
+    "-c",
+    "exec ./node_modules/.bin/vitest run \"$@\" --maxWorkers=1",
+    "vitest",
+    "--root=/tmp/bot-wt/P7-F2f2/app/ui",
+    "--config=/tmp/bot-wt/P7-F2f2/app/ui/vitest.config.ts",
+    "tests/unit/admin/channel.test.ts",
+    "--coverage",
+    "--coverage.provider=v8",
+    "--coverage.include=main/admin/consumer.ts",
+    "--coverage.reporter=text",
+    "--coverage.reporter=json-summary",
+    "--coverage.reportsDirectory=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/ui-coverage-sdk-runner",
+    "--coverage.thresholds.lines=80",
+    "--coverage.thresholds.statements=80",
+    "--coverage.thresholds.functions=80",
+    "--coverage.thresholds.branches=80"
+  ]
+}

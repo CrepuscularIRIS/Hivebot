@@ -1,0 +1,42 @@
+{
+ "id": "09-infopane",
+ "platform": "linux",
+ "geo": {
+  "aside.sand-info-pane": {
+   "rect": {
+    "x": 960,
+    "y": 0,
+    "w": 320,
+    "h": 752
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": "NameDescriptionNotificationsGet notifie"
+  },
+  ".sand-agents-sidebar": {
+   "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 280,
+    "h": 752
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": "SearchNew chatnow"
+  }
+ },
+ "meta": {
+  "platform": "Linux x86_64",
+  "uaPlatform": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.7977.130 Electron/44.7.0 Safari/537.36",
+  "dpr": 1,
+  "innerW": 1280,
+  "innerH": 752,
+  "loadedFonts": [
+   "cursor-icons/normal",
+   "cursor-icons/normal"
+  ],
+  "scrollY": 752
+ }
+}

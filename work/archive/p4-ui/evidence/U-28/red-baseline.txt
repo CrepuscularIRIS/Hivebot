@@ -1,0 +1,19 @@
+== 红基线（独立 detach worktree /tmp/bot-wt/U-28-red @0988baa，git checkout 70c5925 -- app/ui/main，保留全部新测试） ==
+结果：Tests 12 failed | 51 passed (63)
+
+12 条失败 = 全部 U-28 行为测试（R1×2、R2×2、R6×2、onConnected×2、wiring×2、R5×2）；
+第 13 条新增（orchestrate「未传 failed → 行为不变」兼容断言）在旧代码上绿——by design，本就不该红。
+
+失败清单见 verifier 会话；对应关系：
+FAIL tests/unit/m3/index.test.ts > get/patch · rpc 抛错（U-28 R2） > get 的 agentPresets/list reject → 结构化 pbots/unavailable，handler 不 reject
+FAIL tests/unit/m3/index.test.ts > get/patch · rpc 抛错（U-28 R2） > patch 的 session/list reject → 同样结构化 pbots/unavailable，不落盘
+FAIL tests/unit/m3/index.test.ts > get · restore 未 settle（U-28 R6） > restoreSettled()=false → pbots/restore-pending，不查 #1（dsh 计数 === 0）
+FAIL tests/unit/m3/index.test.ts > get · restore 未 settle（U-28 R6） > settle 后同句柄返回正常视图；未注入回调时行为不变
+FAIL tests/unit/m3/orchestrate.test.ts > createBotWithConnectors · failed 清除（U-28 R5） > #4 成功注册同 presetId → 从 opts.failed 删除；#4 失败 → 不清
+FAIL tests/unit/m3/restore.test.ts > restoreRecipes > 补跑成功 → failed 集合清除（U-28 R5）
+FAIL tests/unit/shell/connect.test.ts > DshConnection U-28（R3/R4）：onConnected > start() 超时 reject 后服务恢复 → 后台重连成功仍触发 onConnected（generation 1）
+FAIL tests/unit/shell/connect.test.ts > DshConnection U-28（R3/R4）：onConnected > 断线重连 → 再次触发（generation 2）；listener 抛错不破坏后续 waiter
+FAIL tests/unit/shell/restore-wiring.test.ts > wireRestoreOnReconnect（U-28 R3/R4/R5） > 首连 ensure 失败 → 重连成功补跑 restore → failed 清空、live=true
+FAIL tests/unit/shell/restore-wiring.test.ts > wireRestoreOnReconnect（U-28 R3/R4/R5） > 两次连接事件不叠跑：restore 串行
+FAIL tests/unit/shell/single-instance.test.ts > guardSingleInstance（U-28 R1） > 拿到锁 → true，注册 second-instance 聚焦回调
+FAIL tests/unit/shell/single-instance.test.ts > guardSingleInstance（U-28 R1） > 拿不到锁（已有实例）→ false + 提示一次

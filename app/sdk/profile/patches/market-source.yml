@@ -1,0 +1,26 @@
+# p2sdk D6 market SOURCE overlay (T-09; user authorization 2026-11-02 09:30,
+# R-5 版 D6: 目录来自选定数据源, 连接器必须真实存在于源中).
+#
+# Selected source: the MCP official registry (registry.modelcontextprotocol.io,
+# modelcontextprotocol/registry, Apache-2.0/MIT). Its one-shot snapshot is
+# cached at tests/e2e/fixtures/market/index.json (regenerate with
+# scripts/fetch-market-fixture.mjs --force); tests serve that mirror over
+# loopback HTTP because plugin-market fetches indexes over http(s) only.
+#
+# Same assembly as profile/patches/market.yml (T-03) but its own env var, so
+# the D6 real-source chain and the T-03 self-made fixture chain never share an
+# index URL. When both overlays are chained, the later one replaces this row
+# whole (same id) — chain exactly one of them per runtime.
+- insert:
+    - id: plugin-market
+      name: '@deepseek-ai/dsh-plugin-market'
+      config:
+        indexes: !!js (process.env.P2SDK_MARKET_SOURCE_INDEXES ?? '').split(/\s+/).filter(Boolean)
+
+# Same p2temp row market.yml carries: D6's ③ enable path IS p2temp/session.
+# createWithConnectors (plus preset.ensure, T-16) — the D6 chain must stand on
+# its own, not require market.yml to be chained alongside.
+- insert:
+    - id: p2temp-connectors
+      # Relative to this patch file's directory (profile/patches/).
+      name: ../../src/p2temp/index.mjs

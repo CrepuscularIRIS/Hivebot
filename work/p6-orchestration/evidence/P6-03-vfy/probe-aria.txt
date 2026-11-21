@@ -1,0 +1,41 @@
+- complementary "Agents":
+  - button "New"
+  - button "Search"
+  - region "Agent list":
+    - button "New chat":
+      - strong: New chat
+  - separator "Resize sidebar"
+- button "Plugins"
+- button "Account"
+- main:
+  - group "New chat":
+    - button "View agent settings": New chat
+  - log "Conversation transcript":
+    - separator: Today 10:00 PM
+    - article "You 11/3/2026, 10:00:04 PM":
+      - group:
+        - paragraph: 验收探针：检查环境配置
+      - toolbar "Message actions for your message (5db573bb-7fff-4625-89e9-c8a8c4ba9906)":
+        - button "More message actions"
+    - article "New chat 11/3/2026, 10:00:04 PM":
+      - group "Agent message":
+        - paragraph: A：收到，我先看看环境再动手。
+      - toolbar "Message actions for New chat (t1-s1)":
+        - button "More message actions"
+    - listitem:
+      - button "Bash echo vfy"
+    - listitem:
+      - button "Thinking B：第一步结果正常，接着读配置。"
+    - listitem:
+      - button "Read /tmp/bot-p554-FAq4lu/data/workspaces/session-4856dec0-8088-4d6a-94b0-32ea82058a1e/vfy-t2.txt"
+    - listitem:
+      - button "Thinking C：配置读完，最后核对一次。"
+    - listitem:
+      - button "Read /tmp/bot-p554-FAq4lu/data/workspaces/session-4856dec0-8088-4d6a-94b0-32ea82058a1e/vfy-t3.txt"
+    - article "New chat 11/3/2026, 10:00:07 PM":
+      - group "Agent message":
+        - paragraph: E：全部完成，共检查 3 处，没有问题。
+      - toolbar "Message actions for New chat (t1-s4)":
+        - button "More message actions"
+- textbox "Prompt":
+  - paragraph: Message New chat

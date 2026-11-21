@@ -1,0 +1,2 @@
+node v22.23.4 decompressed length 17 utf8: "FRAME-ONE-甲乙\n"
+node v24.22.2 decompressed length 42 utf8: "FRAME-ONE-甲乙\nFRAME-TWO-哨兵SENTINEL\n"

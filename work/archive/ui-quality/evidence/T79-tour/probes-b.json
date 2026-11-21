@@ -1,0 +1,121 @@
+{
+ "avatar": [
+  {
+   "where": "sidebar",
+   "rect": [
+    36,
+    36
+   ],
+   "canvas": [
+    28,
+    28
+   ],
+   "ink": 0,
+   "svg": 1,
+   "err": null,
+   "state": "idle",
+   "html": "<canvas width=\"28\" height=\"28\" style=\"display: block; height: 100%; width: 100%;\"><svg xmlns=\"http://www.w3.org/2000/svg\" id=\"sand-agent-mark-source-session-1c4"
+  },
+  {
+   "where": "header",
+   "rect": [
+    16,
+    16
+   ],
+   "canvas": [
+    16,
+    16
+   ],
+   "ink": 0,
+   "svg": 1,
+   "err": null,
+   "state": "idle",
+   "html": "<canvas width=\"16\" height=\"16\" style=\"display: block; height: 100%; width: 100%;\"><svg xmlns=\"http://www.w3.org/2000/svg\" id=\"sand-agent-mark-source-session-1c4"
+  },
+  {
+   "where": "sidebar",
+   "rect": [
+    36,
+    36
+   ],
+   "canvas": [
+    28,
+    28
+   ],
+   "ink": 0,
+   "svg": 1,
+   "err": null,
+   "state": "idle",
+   "html": "<canvas width=\"28\" height=\"28\" style=\"display: block; height: 100%; width: 100%;\"><svg xmlns=\"http://www.w3.org/2000/svg\" id=\"sand-agent-mark-source-session-f22"
+  },
+  {
+   "where": "header",
+   "rect": [
+    24,
+    24
+   ],
+   "canvas": [
+    28,
+    28
+   ],
+   "ink": 0,
+   "svg": 1,
+   "err": null,
+   "state": "idle",
+   "html": "<canvas width=\"28\" height=\"28\" style=\"display: block; height: 100%; width: 100%;\"><svg xmlns=\"http://www.w3.org/2000/svg\" id=\"sand-agent-mark-source-session-1c4"
+  }
+ ],
+ "messages": [
+  {
+   "role": "user",
+   "rect": [
+    394,
+    111,
+    390,
+    54
+   ],
+   "more": 0
+  },
+  {
+   "role": "assistant",
+   "rect": [
+    296,
+    177,
+    89,
+    36
+   ],
+   "more": 0
+  },
+  {
+   "role": "user",
+   "rect": [
+    623,
+    260,
+    161,
+    34
+   ],
+   "more": 0
+  },
+  {
+   "role": "assistant",
+   "rect": [
+    296,
+    306,
+    39,
+    36
+   ],
+   "more": 0
+  }
+ ],
+ "more-last": "no More button on this message",
+ "more-userLast": "no More button on this message",
+ "jump:ERROR": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.sand-message[data-role=\"assistant\"]').filter({ hasText: 'Long content' }).nth(1)\nExpected: visible\nTimeout: 60000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('.sand-message[data-role=\"assistant\"]').filter({ hasText: 'Long content' }).nth(1) with timeout 60",
+ "settingsAnim": [
+  [],
+  [],
+  [],
+  [],
+  [],
+  []
+ ]
+}

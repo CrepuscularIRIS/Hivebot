@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:#fff">
+<div id="host" style="width:128px;height:128px;display:inline-block"><canvas id="c" width="128" height="128"></canvas></div>
+<script type="module">
+import { T, E, D } from './index.eager-common-DbK3Oi_r.js'
+const canvas = document.getElementById('c')
+try {
+  const engine = T({
+    id: 'gate-1',
+    body: E('blob'),
+    appearance: D('#7c5cff'),
+    state: 'thinking',
+    size: 128,
+    fill: 0.6,
+    isPlaying: true,
+  })
+  const host = document.getElementById('host')
+  engine.attach({ host, canvas })
+  window.__gate = { ok: true, api: Object.keys(engine).sort().join(',') }
+} catch (e) {
+  window.__gate = { ok: false, err: String(e).slice(0, 300) }
+}
+</script>

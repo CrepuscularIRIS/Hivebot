@@ -1,0 +1,11 @@
+### Session `p561f1-vfy` created, attached to `http://127.0.0.1:19361`.
+Run commands with: playwright-cli -s=p561f1-vfy <command>
+
+### Page
+- Page URL: pbots-app://app/
+- Page Title: Grok Bot
+- Console: 1 errors, 0 warnings
+### Snapshot
+- [Snapshot](.playwright-cli/page-2026-11-04T17-21-05-254Z.yml)
+### Events
+- New console entries: .playwright-cli/console-2026-11-04T17-21-05-200Z.log#L1

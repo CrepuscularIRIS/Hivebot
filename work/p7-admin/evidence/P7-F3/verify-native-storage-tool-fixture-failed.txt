@@ -1,0 +1,26 @@
+file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:2869
+			throw new SessionPersistenceCorruptionError(`session "${expectedId}": stored log is corrupt: ${String(error)} (raw log: ${path})`, { cause: error });
+			      ^
+
+SessionPersistenceCorruptionError: session "worker": stored log is corrupt: SessionFormatError: tool/call external does not match one advertised tool call (raw log: /home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/verify-tmp/bot-P7-F3-native-BHdeoZ/sessions/_no-cwd/worker/session.v4.jsonl)
+    at Proxy.decodeStoredLog (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:2869:10)
+    at Object.apply (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+cordis@4.0.6-alpha.1_@deepseek-ai+cordis-plugin-include@1.0.11-alpha.1_@de_782585c5ba9930e61e782d060d4eca18/node_modules/@deepseek-ai/cordis/lib/index.js:120:36)
+    at Proxy.requireStoredLog (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:2698:15)
+    at async Proxy.open (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:2501:14)
+    at async Delivery.readLog (file:///home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/verify-source/app/sdk/src/orchestration/delivery.mjs:117:20)
+    at async file:///home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/verify-native-storage.mjs:33:31 {
+  [cause]: SessionFormatError: tool/call external does not match one advertised tool call
+      at Relationships.tool (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-format-v3-to-v4@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1/node_modules/@deepseek-ai/dsh-session-format-v3-to-v4/lib/index.js:644:107)
+      at Relationships.accept (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-format-v3-to-v4@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1/node_modules/@deepseek-ai/dsh-session-format-v3-to-v4/lib/index.js:771:10)
+      at assertV4LifecycleRelationships (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-format-v3-to-v4@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1/node_modules/@deepseek-ai/dsh-session-format-v3-to-v4/lib/index.js:860:45)
+      at assertReleasedV4Relationships (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-format-v3-to-v4@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1/node_modules/@deepseek-ai/dsh-session-format-v3-to-v4/lib/index.js:1041:2)
+      at SessionLogScanner.finish (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:1077:3)
+      at scanLog (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:1135:17)
+      at Proxy.decodeStoredLog (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:2853:67)
+      at Object.apply (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+cordis@4.0.6-alpha.1_@deepseek-ai+cordis-plugin-include@1.0.11-alpha.1_@de_782585c5ba9930e61e782d060d4eca18/node_modules/@deepseek-ai/cordis/lib/index.js:120:36)
+      at Proxy.requireStoredLog (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:2698:15)
+      at async Proxy.open (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:2501:14)
+}
+
+Node.js v24.22.2
+EXIT 1

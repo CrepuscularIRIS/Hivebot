@@ -1,0 +1,20 @@
+# original $OFFLINE formula failure path, 2026-11-01 14:42
+== host /sys/class/net ==
+enp4s0
+lo
+singbox_tun
+tailscale0
+wlp3s0
+== unshare -rn 'ls /sys/class/net' (host view leaks in) ==
+enp4s0
+lo
+singbox_tun
+tailscale0
+wlp3s0
+== unshare -rn 'ip -o link show' (netlink view: only lo) ==
+1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN mode DEFAULT group default qlen 1000\    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+== sysfs remount inside userns ==
+mount: /tmp/sysfs-probe: permission denied.
+       dmesg(1) may have more information after failed mount system call.
+== original formula, pnpm replaced by marker ==
+formula-exit=1 (marker absent => tests never run, silent exit 1)

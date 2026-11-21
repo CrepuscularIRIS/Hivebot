@@ -1,0 +1,16 @@
+== pnpm build ==
+../out/renderer/index.html                  0.52 kB
+../out/renderer/assets/index-B6sSn5GD.js  235.66 kB
+✓ built in 462ms
+== pnpm test ==
+ Test Files  14 passed (14)
+      Tests  138 passed (138)
+   Start at  13:34:29
+   Duration  2.58s (tests 90%, import 8%, transform 1%, worker 1%)
+
+== pnpm test:e2e ==
+  ✓  16 tests/e2e/shell/origin-gate.spec.ts:182:5 › ⑧ CSP：响应头带最小 CSP，且内联脚本被拦 (629ms)
+
+  16 passed (34.2s)
+== HEAD ==
+15b4282af7682735785dc40df32fe82173517d26

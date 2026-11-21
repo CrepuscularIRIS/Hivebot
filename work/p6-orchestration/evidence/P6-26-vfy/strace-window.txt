@@ -1,0 +1,41 @@
+openat(AT_FDCWD, "/tmp/bot-p626v-tr-YgRUuJ/ws/sub/a.txt", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 20
+close(20)                        = 0
+readlink("/tmp", 0x75b5591f9800, 1023) = -1 EINVAL (Invalid argument)
+read(19,  <unfinished ...>
+readlink("/tmp/bot-p626v-tr-YgRUuJ",  <unfinished ...>
+<... read resumed>"\1\0\0\0\0\0\0\0", 1024) = 8
+<... readlink resumed>0x75b5591f9800, 1023) = -1 EINVAL (Invalid argument)
+readlink("/tmp/bot-p626v-tr-YgRUuJ/ws", 0x75b5591f9800, 1023) = -1 EINVAL (Invalid argument)
+readlink("/tmp/bot-p626v-tr-YgRUuJ/ws/sub", 0x75b5591f9800, 1023) = -1 EINVAL (Invalid argument)
+readlink("/tmp/bot-p626v-tr-YgRUuJ/ws/sub/a.txt", 0x75b5591f9800, 1023) = -1 EINVAL (Invalid argument)
+read(19, "\1\0\0\0\0\0\0\0", 1024) = 8
+openat(AT_FDCWD, "/proc/sys/vm/overcommit_memory", O_RDONLY|O_CLOEXEC) = 20
+read(20, "0", 1)                 = 1
+close(20)                        = 0
+readlink("/tmp", 0x75b5589f8800, 1023) = -1 EINVAL (Invalid argument)
+readlink("/tmp/bot-p626v-tr-YgRUuJ", 0x75b5589f8800, 1023) = -1 EINVAL (Invalid argument)
+readlink("/tmp/bot-p626v-tr-YgRUuJ/ws", 0x75b5589f8800, 1023) = -1 EINVAL (Invalid argument)
+readlink("/tmp/bot-p626v-tr-YgRUuJ/ws/sub", 0x75b5589f8800, 1023) = -1 EINVAL (Invalid argument)
+readlink("/tmp/bot-p626v-tr-YgRUuJ/ws/sub/a.txt", 0x75b5589f8800, 1023) = -1 EINVAL (Invalid argument)
+read(19, "\1\0\0\0\0\0\0\0", 1024) = 8
+readlink("/tmp", 0x75b523ffe800, 1023) = -1 EINVAL (Invalid argument)
+readlink("/tmp/bot-p626v-tr-YgRUuJ", 0x75b523ffe800, 1023) = -1 EINVAL (Invalid argument)
+readlink("/tmp/bot-p626v-tr-YgRUuJ/ws", 0x75b523ffe800, 1023) = -1 EINVAL (Invalid argument)
+readlink("/tmp/bot-p626v-tr-YgRUuJ/ws/sub", 0x75b523ffe800, 1023) = -1 EINVAL (Invalid argument)
+readlink("/tmp/bot-p626v-tr-YgRUuJ/ws/sub/a.txt", 0x75b523ffe800, 1023) = -1 EINVAL (Invalid argument)
+read(19, "\1\0\0\0\0\0\0\0", 1024) = 8
+openat(AT_FDCWD, "/tmp/bot-p626v-tr-YgRUuJ/ws/sub/a.txt", O_RDONLY|O_NONBLOCK|O_CLOEXEC) = 20
+read(19, "\1\0\0\0\0\0\0\0", 1024) = 8
+readlink("/proc/self/fd/20", "/tmp/bot-p626v-tr-YgRUuJ/ws/sub/"..., 4096) = 37
+read(19, "\1\0\0\0\0\0\0\0", 1024) = 8
+statx(AT_FDCWD, "/proc/self/fd/20", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0664, stx_size=6, ...}) = 0
+read(19, "\1\0\0\0\0\0\0\0", 1024) = 8
+openat(AT_FDCWD, "/proc/self/fd/20", O_RDONLY|O_CLOEXEC) = 21
+read(19, "\1\0\0\0\0\0\0\0", 1024) = 8
+statx(21, "", AT_STATX_SYNC_AS_STAT|AT_EMPTY_PATH, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0664, stx_size=6, ...}) = 0
+read(19, "\1\0\0\0\0\0\0\0", 1024) = 8
+read(21, "INSIDE", 6)            = 6
+read(19, "\1\0\0\0\0\0\0\0", 1024) = 8
+close(21)                        = 0
+read(19, "\1\0\0\0\0\0\0\0", 1024) = 8
+close(20)                        = 0

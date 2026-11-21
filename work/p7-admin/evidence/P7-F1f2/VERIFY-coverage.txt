@@ -1,0 +1,85 @@
+verdict: PASS（P7-F1.f2 模块范围覆盖补验；连同原VERIFY.txt中的B1/B2行为证据，覆盖阻塞已解除）
+commit: d8765b6e779c397801be48651d8830a45995d3a4
+固定独立树: /tmp/bot-wt/P7-F1f2-verify
+历史: 原 /home/lingxufeng/bot/work/p7-admin/evidence/P7-F1f2/VERIFY.txt 保留当时FAIL，未覆盖。本报告只续验其coverage blocker，不是P7产品整体或生产管理旅程PASS。
+证据根 E=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1f2。
+
+结论
+- 官方provider成功输出operations.ts的source-remapped Istanbul覆盖报告；不是原始V8计数、测试数量或作者日志替代覆盖。
+- operations.ts全文件statement/branch/function/line均≥80%；精确diff的修改statement、分支臂、函数和可执行行同样≥80%。
+- 原operations 34项 + 原独立探针15+4项，本轮coverage开启时3文件/53项全部通过，exit 0。只跑operations及必要独立探针；没有重跑channel/全量/build/桌面/模型。
+- 固定HEAD未漂移，git status --short始终空。源码、原测试、产品vitest配置、package.json和pnpm-lock.yaml均与git show固定SHA字节相等；没有产品修复/依赖升级。
+
+工具版本和兼容性
+1. 原独立树实际vitest/package.json version=5.0.5；运行时为此前锁定Node 24.22.2。原Vitest engines允许 ^22.12.0 || ^24.0.0 || >=26.0.0。
+2. 通过公开包metadata pnpm view @vitest/coverage-v8@5.0.5 version peerDependencies engines --json，确认provider version=5.0.5，peer vitest=5.0.5、@vitest/browser=5.0.5；安装后package metadata确认browser peer optional，不为它另选框架。
+3. 自建 /tmp/bot-P7-F1f2-coverage/package.json 仅精确指定vitest=5.0.5和@vitest/coverage-v8=5.0.5；未选5.1.0。工具目录有独立pnpm-lock.yaml，已复制到 E/verify-coverage-tools.lock.yaml，供重现实验。
+4. 安装命令使用 --ignore-scripts --prefer-offline，并复用先前自建隔离缓存 /tmp/bot-P7-F1f2-verify/home/.local/share/pnpm/store/v11。仅获取公开包，没有上传仓库内容。verify-coverage-install.log：reused 37 / downloaded 10 / added 47，exit 0。
+
+安全隔离与解析链接
+全部pnpm运行环境白名单：env -i PATH=/usr/bin:/bin:/home/lingxufeng/.npm-global/bin HOME=/tmp/bot-P7-F1f2-coverage/home TMPDIR=/tmp/bot-P7-F1f2-coverage/tmp CI=1。
+此前确认 /tmp/bot-wt/P7-F1f2-verify/app/ui/node_modules/@vitest/coverage-v8 不存在且非symlink。
+本次仅新建此前不存在的node_modules/@vitest目录及其中coverage-v8符号链接，指向 /tmp/bot-P7-F1f2-coverage/node_modules/@vitest/coverage-v8。未更改任何既有node_modules文件或.pnpm内容。
+采集完成后验证lstat为symlink且readlink等于自己的目标，才unlink该链接，再rmdir自己的空@vitest目录；均成功。没有修改主仓依赖。工具隔离目录保留供复查。
+采集临时配置在E/verify-official-coverage.config.mjs，未修改产品配置；保留原node环境、tmp-sweep setup和20s timeout，单worker、文件串行。没有skip、ignore注解或为凑绿移除测试/分支。include只量本次目标operations.ts，是范围选择而非遮蔽文件内部路径。
+
+官方完整覆盖（coverage-summary.json / coverage-final.json）
+文件: /tmp/bot-wt/P7-F1f2-verify/app/ui/main/admin/operations.ts
+metric      covered / total    pct       verdict
+statements  279 / 313          89.13%    PASS
+branches    215 / 247          87.04%    PASS
+functions    36 / 37           97.29%    PASS
+lines       233 / 246          94.71%    PASS
+四项skipped均0。verify-official-coverage.log:44-50为官方text表，JSON见 E/verify-official-coverage/{coverage-summary.json,coverage-final.json}。
+
+精确修改映射与覆盖
+基线 a2279cd..d8765b6，仅 app/ui/main/admin/operations.ts；由git diff --unified=0确定新增/替换行：
+298,299,310,312,313,316,317,318,319,320,322,323,324,325,326,534,536,537,538,539,540,541,542,543,544,545,546,553,554,566,569,572,573,574,575,576,577,578,579。
+方法：读取官方provider已映射到TS源码的coverage-final.json。statement loc与修改行相交的statement计入；函数完整loc与修改行相交计入touched functions；branch span或任一arm与修改行相交即计全部arm，含隐式else，不过滤未命中项；可执行行按Istanbul statement起始行归并并取该行最大hit count。注释/空行没有虚构执行计数。
+metric                      covered / total    pct       verdict
+modified statements          29 / 29          100.00%    PASS
+modified branch arms         14 / 15           93.33%    PASS
+touched functions            11 / 11          100.00%    PASS
+modified executable lines    23 / 23          100.00%    PASS
+逐项statement ID/坐标/hits、函数坐标、branch ID/arm坐标/hits及行映射均在 E/verify-coverage-map.log:19-78，算法为 E/verify-coverage-map.py，不是额外覆盖provider。
+修改branch表：67 if@317=[112,321]；68 binary@317=[433,191,142]；110 if@536=[19,289]；111 if@539=[30,259]；115 binary@574=[9,4]；116 binary@576=[2,2]；117 if@578=[6,-2]。
+注意官方合并报告branch117出现-2计数异常；本映射保守地将<=0一律算未覆盖，绝不把它算作命中/100%分支。即使保守计数仍14/15=93.33%，故门槛结论不依赖解释负值。本次不声称每个修改branch都覆盖到。
+
+命令与exit（工具配置最多2次，本次官方采集第1次即成功，不需要第2次）
+A. 在上述env下执行：
+pnpm -C /tmp/bot-P7-F1f2-coverage install --ignore-scripts --prefer-offline --store-dir=/tmp/bot-P7-F1f2-verify/home/.local/share/pnpm/store/v11
+exit 0；E/verify-coverage-install.log，Done in 15.9s using pnpm v11.0.9。
+B. 创建上述临时provider解析链接后，在上述env下执行：
+pnpm -C /tmp/bot-wt/P7-F1f2-verify/app/ui exec vitest run --config /home/lingxufeng/bot/work/p7-admin/evidence/P7-F1f2/verify-official-coverage.config.mjs
+exit 0；E/verify-official-coverage.log：Coverage enabled with v8；3 files passed / 53 tests passed；Duration 951ms；官方四项覆盖表见上。
+C. 在无用户env的隔离HOME/TMPDIR下执行：
+/usr/bin/python3 -I /home/lingxufeng/bot/work/p7-admin/evidence/P7-F1f2/verify-coverage-map.py
+初次映射exit 1，仅helper未处理Istanbul隐式else的空坐标（KeyError:line），日志保留 E/verify-coverage-map-attempt1.log；这是结果后处理错误，不是官方采集失败或产品错误。
+只修自有helper以识别空坐标：branch父span入选后仍计全部arm，不排除implicit else。第二次映射exit 0，E/verify-coverage-map.log；没有再次跑采集、没有调整测试/阈值凑绿。同问题未反复尝试。
+D. 自有链接清理成功后，git rev-parse HEAD / git status --short 均exit 0，HEAD仍固定SHA，status无输出。
+
+Source hashes（工作树字节与git show固定SHA逐字节比较通过，完整证据在verify-coverage-map.log）
+app/ui/main/admin/operations.ts
+SHA256 143b2306906a0d8e152802bfaaec7515a9e6726ce20432b478d428f16d0c3cd2
+app/ui/tests/unit/admin/operations.test.ts
+SHA256 8e08bfcb201187f32add549625368f89d8b8d7de2cdb54d550177940da584cba
+app/ui/vitest.config.ts
+SHA256 9504c9c34fdf043902a4c3446e3c6bd805694bd83f97ee671877d4eb4a65bf96
+app/ui/package.json
+SHA256 f1785170f15c8d4daca8d78a8da7e750d7ef0e819d3a914362b7262e8566b611
+app/ui/pnpm-lock.yaml
+SHA256 e61feb30648f83c614f515326c2f57cc77046212fdf7c7f2b141966dafceafd4
+工具独立pnpm-lock.yaml（同E/verify-coverage-tools.lock.yaml）
+SHA256 8e583c70f6e82494295fd059a5498935787793ebfc60f9bedffe3cb2979df18f
+实际Vitest package.json
+SHA256 d00333f3a13ed44fedc77184c8675bae45246534f06684d94cff5e4f8a9f7c10
+官方provider package.json
+SHA256 abdee7d3e2bb4e49ed96bc2393e0e6ef30d32759b90322d5e92aba0d97db8e5b
+官方coverage-final.json
+SHA256 1a3ad339f3b40c19a57bfab0026123187637f0bdee0cd8a3815dfeccd244a550
+临时配置和独立探针source hashes亦列于verify-coverage-map.log:11-13。
+
+资源与未验
+补验开始load=2.13/3.00/4.00，采样iowait=0、idle=93%；仅单worker低负载定向运行。未读取真实凭证/env、未触碰F3、未改源码或原测试、未commit/merge/push、未启动子agent/SendMessage、未重启/注销/kill/真实桌面。
+覆盖补验不扩大原模块证据边界：真实OS断电/EIO、跨进程宿主锁、UI/SDK live接线、生产管理旅程仍未验；不把单元与FS探针通过解释成产品旅程通过。
+新产品缺陷：无；覆盖blocker本次有界解阻成功。

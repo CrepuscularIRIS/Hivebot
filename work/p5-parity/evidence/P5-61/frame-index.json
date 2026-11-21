@@ -1,0 +1,52 @@
+[
+  {
+    "video": "window.mp4",
+    "seconds": 0,
+    "frame": "cold-first.png"
+  },
+  {
+    "video": "window.mp4",
+    "seconds": 0.3,
+    "frame": "cold-ready.png"
+  },
+  {
+    "video": "scenes.mp4",
+    "seconds": 21.9,
+    "frame": "saved-dark-before-reload.png"
+  },
+  {
+    "video": "scenes.mp4",
+    "seconds": 22.033,
+    "frame": "saved-dark-white-flash.png"
+  },
+  {
+    "video": "scenes.mp4",
+    "seconds": 22.1,
+    "frame": "saved-dark-fade.png"
+  },
+  {
+    "video": "scenes.mp4",
+    "seconds": 22.3,
+    "frame": "saved-dark-ready.png"
+  },
+  {
+    "video": "scenes.mp4",
+    "seconds": 24.5,
+    "frame": "saved-light-before-reload.png"
+  },
+  {
+    "video": "scenes.mp4",
+    "seconds": 24.666,
+    "frame": "saved-light-black-flash.png"
+  },
+  {
+    "video": "scenes.mp4",
+    "seconds": 24.7,
+    "frame": "saved-light-fade.png"
+  },
+  {
+    "video": "scenes.mp4",
+    "seconds": 25,
+    "frame": "saved-light-ready.png"
+  }
+]

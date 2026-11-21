@@ -1,0 +1,38 @@
+P7-F3 — BLOCKED（白名单内无法保证现有 P6 消费入口受恢复屏障控制）
+
+分支：feat/P7-F3
+工作树：/tmp/bot-wt/P7-F3
+基点 / 当前 HEAD：e5ff286e686994b489766ea7d3bd1f74614a342b
+新 commit：无。产品 / 测试文件改动：无；git status --short 为空。未切主仓、未 stash/reset/clean/合并/push。
+
+已读主仓最新 LEARNINGS、PLAN F3 与 §3、REUSE、reuse/sa-skill-adapters、BRIEF v2.4、PROTOCOL；主仓没有 .codegraph。已核对 MANIFEST 与 SA 固定源码。本任务不扩权，不把 F1/F2 原模块 PASS 当成原版分层已经实现。
+
+阻塞点（基点现有源码，不是推测缺一个未来 owner）：
+1. /tmp/bot-wt/P7-F3/app/sdk/src/orchestration/main-channel.mjs:207–227 在 OrchestrationPlugin 构造中直接 this.report = new Reporter(this); this.report.start()。没有恢复 promise、恢复 service 注入或 host-ready 参数。该文件不在 F3 十文件白名单。
+2. /tmp/bot-wt/P7-F3/app/sdk/src/orchestration/report.mjs:107–111 的 start() 同步挂 session/event，queueMicrotask 直接 flush('boot')。flush:183–229 自行读取身份和两侧日志，resolveAgent(main)，并在 211–215 对 needsWake 调 delivery.wake，在 229 调 delivery.send。不等 Electron main 的 F1 操作账本初始化、M3 restore 或任何代际恢复信号。stop():114–120 只卸监听/定时器，不会取消已排的 boot microtask 或在途 flush。
+3. /tmp/bot-wt/P7-F3/app/sdk/src/orchestration/pending.mjs:100–105 将既存主回报与 worker pending Assignment 列为 needsWake；/tmp/bot-wt/P7-F3/app/sdk/src/orchestration/delivery.mjs:199–204 的 wake 直接 remove + followup，能够唤醒消费。冷 worker 未闭回合仅在 computeDue:111–117 投影成 interrupted/stopped；不是 SA 的 hostRestarted 恢复说明或恢复前屏障。
+4. /tmp/bot-wt/P7-F3/app/ui/main/index.ts:205–219 是连已存在 SDK 的客户端；M3 恢复到 278–290 才安排。只改 main/ready/connect 或新增 admin/host.mjs，不能可靠地让已经由 P6 构造器排队的 boot flush 等待 main 恢复。既有 admin/channel.ts（F2）也没有控制 P6 Reporter 的入口。F4 owner 尚未接线，不能借此提前实现 owner，不能称 main 的本地 gate 已拦住 SDK 旧 Assignment 消费。
+
+需要派发者处理的最小范围问题：至少将 app/sdk/src/orchestration/main-channel.mjs 加入实现白名单，允许在现有 OrchestrationPlugin 生命周期启动 Reporter/消费者之前接同一个恢复屏障；再依据该接缝决定是否需要 report.mjs 的取消/在途检查。这里没有实施此修改，也没有自行选新架构。不得用运行时 monkey-patch Reporter、启动后 stop 再重建、从 SDK 重开 main 的 F1 写账本、或新建第二 Assignment 状态机来绕过白名单。
+
+TDD / 验收状态：
+RED：未编写/运行 F3 新测试。发现必要修改超出精确白名单，按“必要超出先停报”停在实现前；没有为不存在的接口编造测试或空成功 stub。
+GREEN：无。新增逻辑覆盖率不适用；未实现恢复前管理闸、旧代 ready/receipt 拒绝、操作/Assignment 读回后消费、host restarted 终结/说明、坏关联审计、不重放、paused 保持、无 owner restart unavailable。
+UI 定向 / main 构建 / Electron：未运行（阻塞，无产品修改）；未启动桌面、未用真实配置。来源文本尚未搬入产品；后续若搬，按 https://github.com/deepseek-ai/dsh-superagent-prototype@6337fc823ce20251c8de8085948165c81aaa701e:src/core/assignments.ts:21 及 docs/003-execution.md:144–161 标注 MIT，并将 GitHub 检查改为本地工作区/操作记录/已有成果。
+
+运行命令与退出码（仅既有底座基线，不是 F3 GREEN）：
+A. git -C /home/lingxufeng/bot worktree add /tmp/bot-wt/P7-F3 -b feat/P7-F3 e5ff286
+   exit 0。
+B. pnpm -C /tmp/bot-wt/P7-F3/app/sdk setup
+   exit 0；Done in 1.1s using pnpm v11.0.9；Done in 316ms using pnpm v11.0.9。
+C. pnpm -C /tmp/bot-wt/P7-F3/app/sdk test -- tests/unit/orchestration-report.test.ts tests/unit/p7-admin-channel.test.ts tests/unit/p7-authority.test.ts
+   exit 1。注意：照 PLAN 的 test -- 写法实际未过滤，Vitest 跑了 57 文件（不是期望的三个），属本次命令执行偏差；不重跑全量。实际 55 文件通过、2 文件失败，712 passed / 1 skipped / 2 failed。失败为 tests/e2e/security.test.ts 的 D2 smoke（no text-delta）及 tests/e2e/subagent-policy.test.ts（no child model call within 30000ms）。未改范围外实现或测试。完整输出及命令/退出码：/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/sdk-baseline.txt。
+D. pnpm -C /tmp/bot-wt/P7-F3/app/sdk exec vitest run tests/unit/orchestration-report.test.ts tests/unit/p7-admin-channel.test.ts tests/unit/p7-authority.test.ts
+   exit 0。最后统计：Test Files 3 passed (3)；Tests 82 passed (82)；Duration 2.98s。
+   完整输出及命令/退出码：/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/sdk-targeted.txt。
+E. git -C /tmp/bot-wt/P7-F3 status --short；git -C /tmp/bot-wt/P7-F3 rev-parse HEAD
+   exit 0；状态为空，HEAD 如上。负载检查 09:01 时 load 7.56 / 6.52 / 8.19；不再运行回归。
+
+安全与未完成：没有手工操作外部进程、sudo、重启或注销；没有读取真实凭证。既有测试由自身框架启动/清理自己的沙箱进程；本次没有另写进程清理代码。无 feature commit，不添加 attribution。以上两项基线失败仅留证，不外扩修复；本报告不宣称 F3 或权限分层完成。
+
+待 verifier 验收（当前为阻塞交接，不是申请 PASS）；派发者补准必要接缝范围后方可继续 RED→GREEN。

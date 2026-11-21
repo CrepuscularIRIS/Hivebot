@@ -1,0 +1,121 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-taintf1-verify-red/app/sdk
+
+ ❯ tests/unit/orchestration-taintf1.test.ts (8 tests | 5 failed) 18ms
+   ❯ T-taint.f1: send_to_bot hides and rejects in goal/schedule rounds (2)
+     × goal round: when=false and execute rejects before delivery 8ms
+     × schedule round: when=false and execute rejects 1ms
+   ❯ T-taint.f1: stop_bot hides and rejects in goal/schedule rounds (2)
+     × goal round: when=false, execute rejects, cancel 零调用 1ms
+     × schedule round: when=false and execute rejects 1ms
+   ❯ T-taint.f1: classify() no-claim early return carries the full contract (1)
+     × agent with no recorded claims returns all four fields (toStrictEqual) 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/orchestration-taintf1.test.ts > T-taint.f1: send_to_bot hides and rejects in goal/schedule rounds > goal round: when=false and execute rejects before delivery
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/orchestration-taintf1.test.ts:87:32
+     85|     expect(await r.whenSend()).toBe(true) // 干净回合可见（对照）
+     86|     r.claim('session-main', 1, 'goal')
+     87|     expect(await r.whenSend()).toBe(false) // RED 基线：未修时为 true（vfy-pro…
+       |                                ^
+     88|     await expect(r.callSend({ botId: 'session-w1', prompt: 'p' })).rej…
+     89|       code: 'pbots/forbidden',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/unit/orchestration-taintf1.test.ts > T-taint.f1: send_to_bot hides and rejects in goal/schedule rounds > schedule round: when=false and execute rejects
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/orchestration-taintf1.test.ts:99:32
+     97|     const r = rig(dir, [fakeAgent('session-w1')])
+     98|     r.claim('session-main', 2, 'schedule')
+     99|     expect(await r.whenSend()).toBe(false) // RED 基线：未修时为 true（vfy-pro…
+       |                                ^
+    100|     await expect(r.callSend({ botId: 'session-w1', prompt: 'p' })).rej…
+    101|     expect(r.sends).toHaveLength(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/unit/orchestration-taintf1.test.ts > T-taint.f1: stop_bot hides and rejects in goal/schedule rounds > goal round: when=false, execute rejects, cancel 零调用
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/orchestration-taintf1.test.ts:113:32
+    111|     const r = rig(dir, [w])
+    112|     r.claim('session-main', 1, 'goal')
+    113|     expect(await r.whenStop()).toBe(false) // RED 基线：未修时为 true
+       |                                ^
+    114|     await expect(r.callStop({ botId: 'session-w1' })).rejects.toMatchO…
+    115|       code: 'pbots/forbidden',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  tests/unit/orchestration-taintf1.test.ts > T-taint.f1: stop_bot hides and rejects in goal/schedule rounds > schedule round: when=false and execute rejects
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/orchestration-taintf1.test.ts:126:32
+    124|     const r = rig(dir, [w])
+    125|     r.claim('session-main', 2, 'schedule')
+    126|     expect(await r.whenStop()).toBe(false) // RED 基线：未修时为 true
+       |                                ^
+    127|     await expect(r.callStop({ botId: 'session-w1' })).rejects.toMatchO…
+    128|       code: 'pbots/forbidden',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  tests/unit/orchestration-taintf1.test.ts > T-taint.f1: classify() no-claim early return carries the full contract > agent with no recorded claims returns all four fields (toStrictEqual)
+AssertionError: expected { tainted: false, auditKinds: [] } to strictly equal { tainted: false, …(3) }
+
+- Expected
++ Received
+
+  {
+    "auditKinds": [],
+-   "coordinatorTaintKinds": [],
+-   "coordinatorTainted": false,
+    "tainted": false,
+  }
+
+ ❯ tests/unit/orchestration-taintf1.test.ts:176:39
+    174|     // coordinatorTaintKinds（undefined falsy 恰安全但契约不一致）。toEqual 会
+    175|     // 忽略 undefined 键，故用 toStrictEqual 锁字段存在性。
+    176|     expect(origin.classify('nobody')).toStrictEqual({
+       |                                       ^
+    177|       tainted: false,
+    178|       coordinatorTainted: false,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 3 passed (8)
+   Start at  13:10:03
+   Duration  249ms (transform 65%, import 16%, tests 12%, setup 6%, worker 2%)
+
+exit=1

@@ -1,0 +1,14 @@
+红演示（复现 VERIFY-U-32 新问题②，worktree /tmp/bot-wt/U-33）：
+旧代码 = git stash 暂存本任务全部改动后的 HEAD（cc76af7）。
+命令：cd app/ui && HOME=/tmp/bot-u33 xvfb-run -a --server-args="-screen 0 1600x1000x24" pnpm exec playwright test tests/e2e/settings.spec.ts
+结果：3 passed (20.5s)，随后主仓：
+$ git -C /home/lingxufeng/bot status --short -- work/p4-ui/evidence/
+ M work/p4-ui/evidence/PDC/pd-c1-clone-missing.png
+ M work/p4-ui/evidence/PDC/pd-c1-readonly.png
+ M work/p4-ui/evidence/PDC/pd-clone-prefill.png
+ M work/p4-ui/evidence/PDC/pd-dialog-connectors.png
+ M work/p4-ui/evidence/PDC/pd-info-pane-dark.png
+ M work/p4-ui/evidence/PDC/pd-info-pane-overlay.png
+ M work/p4-ui/evidence/PDC/pd-info-pane.png
+→ 单个 spec 文件即刷脏主仓 7 张已跟踪截图。已 git checkout -- work/p4-ui/evidence 还原并 stash pop。
+（首跑曾 3 failed：app/sdk 未装依赖 dsh/bin.js 缺失，pnpm -C app/sdk setup 后复跑 3 passed；非产品问题。）

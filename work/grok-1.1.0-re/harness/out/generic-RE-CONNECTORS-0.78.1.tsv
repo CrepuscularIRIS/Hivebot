@@ -1,0 +1,330 @@
+anchor	in110
++K0AvT	1
+,label:{id:	1
+,target:J,depth:Xe.length}	0
+.grokbot	1
+.integrations	1
+.length	1
+/.grokbot	1
+/rs6zp	1
+1Password	1
+3khQqh	1
+8U6a8X	1
+:return	1
+AR+YGU	1
+Add a custom connector	1
+Add one server at a time	1
+Add one server to the JSON	1
+Add, change, and check off reminders	1
+Add, move, and remove events	1
+Allow	1
+Always	1
+Always allow for your messages to every Team Bot	1
+Always allow for your messages to this Bot	1
+Always allowed	1
+Calendar	1
+Catch	1
+Catch up and find old messages	1
+Check	1
+Choose	1
+Choose a data center to continue	1
+Confirm	1
+Connect	1
+Connect Google Calendar or Outlook to send this invite	1
+Connect apps	1
+Connected	1
+Contact	1
+Continue	1
+Data centers	1
+Disconnect	1
+Disconnected	1
+Draft	1
+Draft emails in Mail	1
+E0z8bW	1
+Ea8un6	1
+Enter	1
+Enter valid JSON	1
+Find and read your email	1
+Find and read your notes	1
+Find where this Mac is	1
+Finish	1
+Google	1
+Grok Bot asks before each email	1
+Grok Bot asks before each text	1
+Grok Bot can already find, read and draft your email. Finish setup to send.	1
+Grok Bot can text these people without asking first	1
+HTTPS	1
+Ice()	0
+Integrations	1
+JSON.stringify	1
+K0AvT	1
+Look up names, numbers, and emails	1
+MCP server JSON	1
+Manage	1
+Names	1
+Not connected	1
+OAuth	1
+Opened	1
+Opened the OAuth flow in your browser. Return here once it completes.	1
+Outlook	1
+QHcLEN	1
+Read Texts	1
+Read and reply to texts	1
+Reconnect	1
+Remote	1
+Remote HTTPS	1
+Return	1
+S33tz3	1
+S6uAcw	1
+SAND_DATA_ROOT	1
+SVNn3I	1
+Save new notes and add to existing ones	1
+See your reminders and what's due	1
+See your schedule and free time	1
+Send Texts	1
+Send email you approve	1
+Server	1
+Server is not configured	1
+Settings	1
+SharePoint	1
+SharePoint write sign-in was not saved	1
+Show Contact Names	1
+Skipped	1
+Texting	1
+Texts	1
+The server needs a URL or a command	1
+This Mac	1
+Usage	1
+Waiting	1
+Works	1
+Works while it's online	1
+Yi={read:{label:{id:	0
+Your answer didn't go through. Check your connection and try again.	1
+Your other devices are in Settings › Manage devices	0
+ZYnwzF	1
+Zn=new Set([	1
+access:	1
+accountKey	1
+accountLabel	1
+addMcpServer	1
+again.	1
+agentId	1
+allow	1
+allowed	1
+already	1
+always	1
+always_all_team_bots	1
+always_this_bot	1
+answer	1
+approve	1
+aria-invalid	1
+arrival	1
+asking	1
+authenticateMcpServer	1
+before	1
+billing	1
+brokerState	1
+browser.	1
+builtinServerIdentifier	1
+calendar	1
+canAddAccount	1
+center	1
+centers	1
+change	1
+check	1
+checking	1
+chunk-connector-card	1
+chunk-connector-card-view-CrTQkW_M.js	0
+chunk-connector-data-center-D7GAVfda.js	0
+chunk-native-plugin-state-CbU4YlLg.js	0
+chunk-onboarding-flow-CX7HFdkW.js	0
+command	1
+communication:	1
+completeMcpOAuth	1
+completes.	1
+computerSignIn	1
+config	1
+configJson:	1
+configured	1
+connect	1
+connect-apps	1
+connectOAuth	1
+connectOAuth()	1
+connect_apps	1
+connected	1
+connected-app-counter-import	1
+connectedAppCounter	1
+connectedAppCounter:ljt	0
+connection	1
+connectionId	1
+connectionKind	1
+connector	1
+connectorName	1
+connectsInPlace	1
+contacts	1
+continue	1
+copyableSignInUrl	1
+core.requireAccountWriter	1
+core.requireAccountWriter()	1
+count	1
+countConnectedApps	1
+countConnectedApps:	1
+custom	1
+custom-connector	1
+customConnector	1
+depth:Xe.length	0
+detail	1
+devices	1
+disconnect	1
+disconnected	1
+doc:${e.key}	1
+draft	1
+e.key	1
+e.native	1
+email	1
+email.	1
+emails	1
+empty	1
+entry	1
+entryId	1
+entrypoint:	1
+error	1
+events	1
+every	1
+existing	1
+first	1
+focusBrowseQuery	1
+focusPlugin	1
+focusPlugin:	1
+focusPlugin:{kind	1
+focusServerId	1
+front	1
+function	1
+function fMt(	0
+gcoiFh	1
+getMcpCatalog	1
+getMcpState	1
+github-pull-request	1
+gmail-draft	1
+google-calendar-event	1
+grokbot://	1
+grokbot://mcp/oauth/callback	1
+iSLIjg	1
+inPluginWriteOrder	1
+initializing	1
+input	1
+installEntry	1
+installEntry(t,n,r=	1
+installMcpServer	1
+invite	1
+it=J==null?nt?{kind:	0
+joinedNames	1
+k(e)	1
+keys:	1
+kind:	1
+label:	1
+location	1
+loginBrowserWait.run	1
+longer	1
+manage	1
+marketplace	1
+marketplaceFocus	1
+mcp:[	1
+messages	1
+messages-allowed-recipients	1
+messages-send	1
+microsoft-365	1
+nMt=t({countConnectedApps:()=>uMt	0
+names	1
+nativeMarkerOf:e	1
+nativeMarkerOf:e=>e.native	1
+needs	1
+needsAuth	1
+not-connected	1
+notes	1
+notion:	1
+numbers	1
+oauth-broker	1
+omitsSecretFields	1
+onOpenPlugins:ee	0
+onOpenPlugins:ee,connectedAppCounter	0
+onedrive	1
+onepassword	1
+online	1
+openExternal	1
+other	1
+password	1
+people	1
+person	1
+plugin	1
+pluginId	1
+props	1
+providerName	1
+qLe/7o	1
+qq(e).length	0
+read:	1
+reminders	1
+remove	1
+removeMcpAccount	1
+removeMcpServer	1
+renameMcpAccount	1
+reply	1
+requestId	1
+requireAccountWriter	1
+requireCachedPlugin	1
+resolution	1
+resolveConnectorGrant	1
+rowServerIdentifier	1
+sand.openTools	1
+sand_connect_apps_collapse	1
+saved	1
+schedule	1
+send.	1
+server	1
+server.servedBy	1
+sessionId	1
+setup	1
+shownConnectorCards	1
+sign-in	1
+sign_in_pending	1
+slack-message	1
+stage:	1
+startConnecting	1
+started	1
+state	1
+status	1
+status:	1
+stillSigningIn	1
+stopped-waiting	1
+tK2iFA	1
+target:J	0
+texts	1
+these	1
+through.	1
+ti=[	1
+title	1
+uG9dXc	1
+uninstallMcpPlugin	1
+unreachable	1
+user-	1
+user-Finance-xai	1
+user-SharePoint-xai	1
+user-bot-memories	1
+valid	1
+var b=[	1
+var q_n={notion:	0
+variableFields	1
+variant	1
+waitForBrowserLogin	1
+waitForResult	1
+waitingOn	1
+where	1
+which	1
+while	1
+without	1
+workspace	1
+write	1
+x$.integrations	0
+{id:	1
+},keys:[t8(	0
+}:{kind:	1

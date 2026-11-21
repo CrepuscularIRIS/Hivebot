@@ -1,0 +1,43 @@
+verdict: PASS
+commit: c8429c06f6ccd7adde4c4b3fd5e74ab7e7882a0d
+验收对象：/tmp/bot-wt/P6-11，feat/P6-11，基点 29c6b1a。
+时间：2026-11-04 12:11（本机 -05:00）。报告按环境文档写入约束保存为 evidence/P6-11/VERIFY.txt，不写 .md。
+
+| 验收项 | 结果 | 证据（均为独立运行） |
+| --- | --- | --- |
+| 1. diff 7 文件；main-channel 仅两行接线 | PASS | vfy-diff.txt。main-channel 仅增加 registerSendToBot import 与构造器注册（位于 registerCreateBot 后）；index 增加一行注释及一行导出。其余为 send 本体、2 单测文件、1 support 插件及 foundation barrel 断言；无其他产品改动。 |
+| 2. send 30 条 + 编排六件 123 条 | PASS | vfy-send-round1.log：2 files / 30 passed，shuffle seed=61101，27.60s。vfy-six-ordered1.log：6 files / 123 passed，57.08s；vfy-six-ordered2.log：6 files / 123 passed，59.67s。六件两轮均包含 send 30 条。 |
+| 3① 非本主 bot worker forbidden | PASS | 两轮 six 中 send-live 的 D7+D9②：s4 alien worker 返回 pbots/forbidden:，目标活动 0；单测同时覆盖 unknown/plain/self，发送数 0。 |
+| 3② running busy 恰一次 | PASS | 两轮 send-live 的 D9⑩：主日志 tool/call=1，tool/result=1，pbots/busy:；worker 的 pbots-main assign=0。 |
+| 3② idle-but-pending 扩展不误伤空闲 | PASS | 自写真实 Loader 探针 vfy-live-probe.mjs + vfy-probe-plugin.mjs / vfy-live-probe.log。用真实 AgentInbox.splice('next-turn',...) 固定用户待认领窗口，实际 status=idle、pending=1；bot/message 别名调用只返回一次 busy，assign=0；remove 同一消息后 pending=0，workerId/text 调用成功且恰一条 assign。没有假造 agent.status/inbox 数组。扩展避免在已有用户输入后追加任务，符合不排队语义；空 inbox 未被误拦。 |
+| 3③ 污染回合 when 隐藏 + execute 拒 | PASS | send 单测 taint guard：实际 claimed 事件触发共享 TurnOrigin，when true→false，execute pbots/forbidden、sends=0、slots=0；send-live 再验污染来源唤醒后不可见、目标无活动。两轮均绿。 |
+| 3④ 同 assignmentId 两投 skipped 恰一条 | PASS | 两轮 send-live 最后一例：首次工具发送取得 assignmentId，p611/control 用生产 Delivery 再投同 id，skipped=true；pbots-main user/message=1，回合数不增。 |
+| 3⑤ isConcurrencySafe=true 宿主真并发且不串 | PASS | 自写探针在生产 Orch 子类 agentOf 边界放三方屏障，真实 fake 模型一次响应发三个 send；第三个 execute 进入前任何一个都无法越过屏障（串行会 5s 明确失败）。实测 maxActive=3，3 个独立 assignmentId，各目标日志恰一条 assign，正文 UNIQUE-i 和工具结果 assignmentId 按 callId 一一对应，结束 sharedSlots.used=0。既有 live 再验并发四投限三及人工占一格后恰二投成功。 |
+| 4. 定向两轮，记录偶红 | PASS | 常规声明顺序六件两轮 123/123；未复现 builder 11:52 的未定位单例偶红，不能据此宣称已定位或消除该历史偶红。额外 shuffle 实验发现可稳定复现的既有 P6-10 顺序依赖，详见新问题；不是 sharedSlots 偶红的证据。 |
+| 5. UI 接口别名与 code: 前缀两例 | PASS | 真实宿主 probe：bot/message → pbots/busy:；workerId/text → 成功投递；id/text 加非法 cwd → pbots/invalid-args:。另 send 单测覆盖全部五目标别名和三正文别名。此项只验 SDK 参数/错误接口，不涉及 renderer 改动，未启动 UI 或截图。 |
+| 额外坏路径 | PASS | 真实宿主非法 cwd 字段被拒，pbots/invalid-args: 前缀；另既有单测覆盖坏身份 JSON fail-closed、delivery failure 释放容量。 |
+| HEAD、工作区、资源约束 | PASS | 验收前后 HEAD 均为 c8429c06f6ccd7adde4c4b3fd5e74ab7e7882a0d，git status --short 为空；所有测试外层 HOME=/tmp/bot-p611-vfy-home，真实 runtime 数据另建随机 /tmp/bot-p611-vfy-live-* 并 finally 删除；仅测试自身 teardown 结束自己的 SDK 子进程。vfy-reap.log：bot-reap --dry-run --match p611 无匹配输出。未跑全量回归/e2e，未改产品代码。 |
+
+复跑命令
+工作目录：/tmp/bot-wt/P6-11/app/sdk，所有命令前缀 HOME=/tmp/bot-p611-vfy-home。
+A. pnpm exec vitest run tests/unit/orchestration-send.test.ts tests/unit/orchestration-send-live.test.ts --sequence.shuffle --sequence.seed=61101
+B. pnpm exec vitest run tests/unit/orchestration-send.test.ts tests/unit/orchestration-send-live.test.ts tests/unit/orchestration-create.test.ts tests/unit/orchestration-create-live.test.ts tests/unit/orchestration-foundation.test.ts tests/unit/orchestration-foundation-delivery.test.ts --sequence.seed=61103
+C. 同 B，--sequence.seed=61104。B/C 无 --sequence.shuffle，数字仅记录调用参数，不声称用例顺序被随机化。
+D. pnpm exec node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-11/vfy-live-probe.mjs
+D 输出尾部（exit=0）：
+PASS live idle+user-pending: status=idle pending=1, bot/message aliases, pbots/busy: once, assigns=0
+PASS live cleared pending: workerId/text aliases accepted, idle worker delivered exactly once
+PASS real Loader concurrency barrier: all 3 execute entered agentOf before any returns; maxActive=3; 3 distinct assignmentIds; one assign per target; slots return to 0
+PASS bad path: extra cwd rejected with pbots/invalid-args: prefix
+
+额外随机顺序探针（不隐瞒失败）
+- 六件追加 --sequence.shuffle --sequence.seed=61102 → 116 passed / 7 failed，vfy-six-round1.log。
+- 缩到 pnpm exec vitest run tests/unit/orchestration-create-live.test.ts --sequence.shuffle --sequence.seed=61102 → 4 passed / 7 failed，vfy-create-shuffle-repro.log，稳定同样七例。
+- 失败用例：P6-10 live 的 ③ no subscriber、② happy path、⑦⑥ D9-6 capacity、③ wrong-peer respond、⑥ 换主后旧主失权、⑫ durability；及 RT2 的 ③′ timeout。
+- 真实失败：durability 提前执行时 happyWorker 仍为空，readLog 报 cannot encode an empty path segment；它先 kill 自有 runtime，后续用例 ECONNREFUSED。RT2 crash-window 若先执行，同理导致 timeout 例 mux socket is not open。
+- 该 create-live 文件不在 P6-11 diff 内；是既有测试套件依赖声明顺序的可复现问题，非新 send 产品语义失败。正常命令两轮通过，因此不阻塞本任务验收；不将此实验偷换成 builder 11:52 原偶红的已定位根因。
+
+新问题（每条一行，可直接成为修复任务）：
+- [FIX] 既有 P6-10 create-live 不支持随机用例顺序，seed 61102 可稳定七红（空 happyWorker / 已停止 runtime） | 复现：HOME=/tmp/bot-p611-vfy-home pnpm exec vitest run tests/unit/orchestration-create-live.test.ts --sequence.shuffle --sequence.seed=61102 | 疑似位置：/tmp/bot-wt/P6-11/app/sdk/tests/unit/orchestration-create-live.test.ts:318-337、353-399（共享 runtime 与前例产物） | minor，既有测试隔离问题、非 P6-11 阻塞。
+
+证据目录：/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-11/

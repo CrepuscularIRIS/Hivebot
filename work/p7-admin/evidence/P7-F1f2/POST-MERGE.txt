@@ -1,0 +1,44 @@
+verdict: PASS（P7-F1.f2 合并后定向模块回测，不是生产管理旅程/整分支PASS）
+commit: 6439f568b21784c61eedcb40f59834e01131e7e1
+独立detached树: /tmp/bot-wt/P7-F1f2-postmerge（集成分支合并SHA，非main）
+证据根 E=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1f2
+开始与结束HEAD相同，git status --short均空；未触碰builder、F3或原验收树产品文件。
+
+源码/测试一致性（先于测试运行核对，hash命令exit 0）
+方法：隔离env中/usr/bin/python3 -I读取新树两文件bytes，与git -C 新树 show d8765b6e779c397801be48651d8830a45995d3a4:<文件>的stdout逐字节assert相等，并输出SHA256。
+证据 E/postmerge-hashes.log：
+app/ui/main/admin/operations.ts
+143b2306906a0d8e152802bfaaec7515a9e6726ce20432b478d428f16d0c3cd2 BYTE_IDENTICAL_TO_D8765B6
+app/ui/tests/unit/admin/operations.test.ts
+8e08bfcb201187f32add549625368f89d8b8d7de2cdb54d550177940da584cba BYTE_IDENTICAL_TO_D8765B6
+两文件均与既有VERIFY-coverage.txt的固定SHA哈希相同，真三方合并未使F1.f2两产品文件漂移。
+
+环境与依赖
+所有pnpm命令前缀：env -i PATH=/usr/bin:/bin:/home/lingxufeng/.npm-global/bin HOME=/tmp/bot-P7-F1f2-postmerge/home TMPDIR=/tmp/bot-P7-F1f2-postmerge/tmp CI=1。
+复用此前自建隔离缓存，不读用户env/凭证。新树此前无node_modules/.bin/vitest，因此仅安装锁定依赖，未运行生命周期脚本。
+实际命令：
+pnpm -C /tmp/bot-wt/P7-F1f2-postmerge/app/ui install --frozen-lockfile --ignore-scripts --prefer-offline --store-dir=/tmp/bot-P7-F1f2-verify/home/.local/share/pnpm/store/v11
+exit 0；E/postmerge-install.log：Lockfile is up to date；187 reused / 0 downloaded；Vitest 5.0.5，Node 24.22.2；Done in 861ms using pnpm v11.0.9。未升级依赖、未安装provider。
+
+实际定向回测与输出
+1. 原operations+channel（使用新树原产品配置与原测试）
+pnpm -C /tmp/bot-wt/P7-F1f2-postmerge/app/ui exec vitest run tests/unit/admin/operations.test.ts tests/unit/admin/channel.test.ts --maxWorkers=1 --no-file-parallelism
+exit 0；E/postmerge-original.log:4-10：operations 34 tests passed；channel 23 tests passed；Test Files 2 passed (2)；Tests 57 passed (57)；Duration 567ms。
+2. 原独立19项真实FS探针
+pnpm -C /tmp/bot-wt/P7-F1f2-postmerge/app/ui exec vitest run --config /home/lingxufeng/bot/work/p7-admin/evidence/P7-F1f2/postmerge-probe.config.mjs
+exit 0；E/postmerge-probe.log:34-40：verify-probe.test.ts 15 passed；verify-extra.test.ts 4 passed；Test Files 2 passed (2)；Tests 19 passed (19)；Duration 377ms。
+原探针文件保持不变。其import硬编码旧独立树，故仅在本次自有postmerge-probe.config.mjs设置root=/tmp/bot-wt/P7-F1f2-postmerge/app/ui，并用精确resolve.alias把旧绝对operations.ts模块路径重定向到新树operations.ts。没有修改原配置/探针/产品文件，也没有用旧树产品代跑。
+探针重复验证：B1真实append后sync EIO保留字节、旧实例拒重试、重开同key仅原ID且finish/receipt可结算；B2旧引用永久停写、在途允许结算/排队拒绝，append前后/sync/handle.close与init读盘/修复/rename/dirsync期间保锁，失败结算后不复活；partial/zero-byte EIO对照、并发唯一占位、UTF8/无换行、投影/undo/receipt控制均绿。
+3. 最终 git -C /tmp/bot-wt/P7-F1f2-postmerge rev-parse HEAD 与 status --short：exit 0，SHA仍6439f568b21784c61eedcb40f59834e01131e7e1，status无输出。
+
+覆盖引用（本轮未重新采集）
+两产品文件已证字节等于d8765b6，按本次范围引用 E/VERIFY-coverage.txt及 E/verify-official-coverage/{coverage-summary.json,coverage-final.json}：
+operations.ts statements 89.13%、branches 87.04%、functions 97.29%、lines 94.71%。
+原精确修改映射statement29/29、branch14/15、touched functions11/11、executable lines23/23。官方branch117负计数保守算未覆盖的限定不变。
+这不是为6439f56新采集的覆盖报告，只是相同源码/测试的既有固定SHA覆盖证据引用；本轮57+19项则确在新树独立实跑。
+
+资源、范围与边界
+开始load=2.04/2.41/3.13，采样iowait=0、idle=94%；全部单worker、文件串行。只运行必要定向测试，不全量/build/Electron/桌面/模型，不重采覆盖。
+临时HOME/TMPDIR位于/tmp/bot-P7-F1f2-postmerge，探针FS目录由tmpdir派生并只清扫自己创建的目录。没有真实凭证、子agent、SendMessage、sudo、shell kill、重启/注销、commit/merge/push。
+未改实现或原测试、未改原报告。没有发现本次合并导致的定向回归。
+仍未验生产管理旅程、真实宿主/SDK live接线、物理断电/OS EIO、跨进程宿主单实例、F3与整分支。模块回测PASS不等于这些范围已通过。

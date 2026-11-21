@@ -1,0 +1,234 @@
+anchor	in110
+,e)!==	1
+.cursor	1
+.grokbot	1
+.localToolPermissionCeiling	1
+/.grokbot	1
+2ltcq2	1
+2pfonj	1
+3qTGok	1
+3w8V6a	1
+4YBx5X	1
+68SHzZ	1
+6CTZeX	1
+8ffgqX	1
+??"ask"	1
+Added	1
+Added to your Ask first rules	1
+Allow	1
+Allow Grok Bot and all Bots to run commands on your local computer?	1
+Allow Grok Bot to use Messages on your local computer?	1
+Allow Grok Bot to use an on-device tool on your phone?	1
+Allow lasts for this turn	1
+Allow lasts for this turn. You can remove Always allow in Settings.	1
+Allow lasts for this turn. Your team requires approval for each turn.	1
+Allowed	1
+Always	1
+Always allow	1
+Answer	1
+Ask every time	1
+Auto-approved	1
+Auto-approved by your rule	1
+Auto-review	1
+Auto-review required by your admin	1
+BKLcD	1
+BKLcD+	1
+Check	1
+Couldn	1
+Couldn't save. Try again.	1
+EF1t/Y	1
+ESjU66	1
+Expired	1
+GohvVN	1
+Htzxqs	1
+I0xt82	1
+IC()	1
+Messages	1
+Mh.isSandLocalToolAction	0
+NV+jvp	1
+Never	1
+Never allow	1
+NoKBgy	1
+OStQrX	1
+PklaJw	1
+RmCL2p	1
+RmzpYm	1
+S1GhTD	1
+SAND_	1
+SAND_DATA_ROOT	1
+SetGrokBotMcpToolPermissions	1
+Settings.	1
+Skips	1
+Skips the approval card for every text	1
+T=d?[L,te]:[L]	0
+TDaQFx	1
+This applies to Grok Bot and every Bot. It can always be changed in Settings.	1
+This applies to Messages only, not to commands or files	1
+This applies to this message only	1
+TsmRYW	1
+View the command	1
+View the details	1
+XCrhku	1
+Your team asks before each on-device tool runs	1
+Your team's admin allows at most \	1
+ZNr4b5	1
+a9tTHW	1
+accountScope	1
+action	1
+actionsTrailing	1
+admin	1
+again.	1
+allow	1
+allow-once	1
+allowed	1
+allows	1
+already-spent	1
+always	1
+always-allow	1
+always:2	1
+always_allow	1
+answer	1
+applies	1
+approval	1
+approvalId	1
+approvalId:e.approvalId	1
+approvals	1
+ask:1	1
+async	1
+async function Re(	1
+authorization	1
+auto-review	1
+autoReview	1
+autoReviewRulesInEffect:	1
+autoReviewTeamEnforced	1
+autoReviewTeamRules	1
+await	1
+before	1
+block	1
+blocked	1
+cannot	1
+cdGXuM	1
+ceiling	1
+changed	1
+chunk-sand-auto-review-instructions-CoXp1wDA.js	0
+clearLocalToolApprovals	1
+command	1
+commands	1
+computer	1
+computer-use/	1
+connection	1
+consequential	1
+coordinator	1
+daemon	1
+description	1
+details	1
+eager-app	1
+every	1
+evicts	1
+f9pa67	1
+files	1
+first	1
+folder	1
+forbidden-by-team	1
+function	1
+function Te(	1
+function vs(	1
+getLocalToolActionGrant	1
+getLocalToolPermission	1
+getMachineId	1
+global	1
+grantRecipient	1
+granted	1
+grantedAtMs	1
+grants	1
+h7peZQ	1
+iPJV+y	1
+input	1
+isSandLocalToolPermissionAdminEnforced	1
+j0vvBP	1
+kind:	1
+lasts	1
+list-directory	1
+local	1
+local-tool-approvals.json	1
+local-tool-standing-grants.v1.json	1
+localToolPermission	1
+localToolPermissionByMachineId	1
+localToolPermissionCeiling	1
+lock:	1
+locked	1
+mFJh/I	1
+machineId	1
+mcpServers	1
+message	1
+messagesEnabled	1
+mk09HK	1
+n.has	1
+needle	1
+needs_approval	1
+never	1
+never:0	1
+oWoQSS	1
+on-device	1
+oxUMTM	1
+pending	1
+phone	1
+python3	0
+read-file	1
+recipient	1
+recipientName	1
+recordApproval	1
+recordLocalToolApproval	1
+recordLocalToolStandingGrant	1
+recordMacMailSendApproval	1
+recordedAtMs	1
+remove	1
+removeLocalToolApproval	1
+renderer	1
+replaces	1
+requestId	1
+required	1
+requires	1
+resolution	1
+resourcePath	1
+retiredIds	1
+rules	1
+running	1
+s.delete	1
+sag80m	1
+save.	1
+schema	1
+scope	1
+se?.localToolPermissionCeiling	0
+select	1
+send-imessage	1
+send-input	1
+serverAuthoritative	1
+setLocalToolActionGrant	1
+setLocalToolPermission	1
+setLocalToolPermissionCeiling	1
+setting	1
+settings.json	1
+spentIds	1
+standing	1
+subject	1
+svTEGM	1
+target	1
+targetMachineDisplay	1
+terminals	1
+through.	1
+timeZone	1
+toggle	1
+toolPermissions	1
+turn.	1
+turned	1
+undefined	1
+use-app	1
+version	1
+writes	1
+wvd4WD	1
+xGRmq1	1
+ykDLyL	1
+z6H5uV	1
+zOxKTV	1
+{kind:"already-spent"}	1

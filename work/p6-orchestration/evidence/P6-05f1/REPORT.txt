@@ -1,0 +1,70 @@
+P6-05.f1 builder 回报（待 verifier 验收）
+分支: feat/P6-05f1
+提交: 4a3d96fe14ed77dbb2dd13149f0b8629ce58379a
+工作树: /tmp/bot-wt/P6-05f1（提交后干净）
+
+改动文件（只含配置与测试）:
+/tmp/bot-wt/P6-05f1/app/sdk/profile/patches/approval.yml
+/tmp/bot-wt/P6-05f1/app/sdk/tests/e2e/guard-plugin-manager.test.ts
+/tmp/bot-wt/P6-05f1/app/sdk/tests/e2e/config.test.ts
+
+依据与复用:
+任务定义读取主仓 PLAN.md 的 P6-05.f1 与 §12.1(a)。p6-orchestration 未有 REUSE.md；本次按 PLAN 明列的第 1 级 git 原 diff 重放，无新增实现或依赖。已查 repos/MANIFEST.tsv（deepseek-harness ce7073d512）与 reuse/s2-dsh-cross-session.md 的 preset 生命周期说明。
+接手时发现两个文件已有暂存改动，与 8973a67 完全相同（与提示中的干净状态不符）；先保存到 /tmp/bot-p605f1-existing.patch，再逆向原补丁回到基线，以完成 TDD 红态。随后实际执行:
+git show 8973a67 -- app/sdk/profile/patches/approval.yml app/sdk/tests/e2e/guard-plugin-manager.test.ts | git apply --3way
+两文件均 cleanly applied，无手抄、无冲突。approval.yml 最终与 8973a67 完全一致。
+
+回归断言:
+config.test.ts 新增独立 P6-05.f1 用例，复用现有 launchD4Runtime / llm/stream recorder / fake provider。会话创建不传 agentPreset，断言返回 standard；真实启动器构建并加载默认 profile 后，发送一个回合，对实际 LLM 请求的 system 文本内冻结段落计算 sha256。fixture overlay 只插入 alpha/beta preset，不改 standard，也不加载 p6-reply-style.yml。
+断言固定哈希 c7c53cd4e281e361191cbdecf873d2c6c5a5d9d7e56277091bf0d54a9734b356；与 /home/lingxufeng/bot/work/p6-orchestration/evidence/D3/raw/run-meta.json 的 presetSectionSha256 相同。静态核对见 hash-check.log（第一次临时核对脚本忘了 YAML dedent，修正脚本后匹配；产品测试不受影响）。
+新断言不在被恢复的 guard-plugin-manager.test.ts 内；即使配置与原 drift 豁免再次同时被回退，config.test.ts 仍独立判红（TDD 基线已验证两者均未恢复时的红态）。
+
+隔离所需额外差异:
+guard-plugin-manager.test.ts 旧 TEST_HOME 硬编码在主仓 .test-homes/p5-03；改为已有 tmkdir('bot-p605f1-pm-home-')，从 TMPDIR 派生并由现有 tmp-sweep teardown 清扫。因此相对 8973a67，该文件除新断言所在独立文件外，还有 1 条 import 与临时 HOME 替换；这是满足本次硬约束的必要差异。无扩大产品范围。
+
+复测环境（每次均相同）:
+HOME=/tmp/bot-p605f1-home TMPDIR=/tmp/bot-p605f1-home PBOTS_DATA_DIR=/tmp/bot-p605f1-home/data DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-p605f1-no-dbus
+依赖安装: pnpm -C /tmp/bot-wt/P6-05f1/app/sdk setup（frozen lockfile，成功，无锁文件差异）
+
+TDD 首红（未重放原两文件）:
+pnpm -C /tmp/bot-wt/P6-05f1/app/sdk test tests/e2e/config.test.ts -t P6-05.f1
+退出 1；tdd-red.log:
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 skipped (2)
+ Received e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855（空段落哈希）
+ Expected c7c53cd4e281e361191cbdecf873d2c6c5a5d9d7e56277091bf0d54a9734b356
+
+三态对称验证:
+1. 段落在 → 绿，present-green.log，退出 0:
+pnpm -C /tmp/bot-wt/P6-05f1/app/sdk test tests/e2e/guard-plugin-manager.test.ts tests/e2e/config.test.ts --maxWorkers=1
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  22:32:34
+   Duration  10.63s (tests 99%, transform 1%)
+
+2. 用 Edit 手动把 prefix 改回原单行值 → 红，removed-red.log，退出 1:
+pnpm -C /tmp/bot-wt/P6-05f1/app/sdk test tests/e2e/config.test.ts tests/e2e/guard-plugin-manager.test.ts -t 'P6-05.f1|drift' --maxWorkers=1
+ FAIL config.test.ts > P6-05.f1: default standard persona retains the approved reply section sha256
+ Received e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+ Expected c7c53cd4e281e361191cbdecf873d2c6c5a5d9d7e56277091bf0d54a9734b356
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 1 passed | 4 skipped (6)
+   Start at  22:33:16
+   Duration  3.13s (tests 96%, import 2%, transform 1%, setup 1%)
+唯一通过的为 drift；证明豁免无法掩盖独立存在性断言。
+
+3. 从 index 恢复原重放段落 → 绿，restored-green.log，退出 0:
+pnpm -C /tmp/bot-wt/P6-05f1/app/sdk test tests/e2e/guard-plugin-manager.test.ts tests/e2e/config.test.ts --maxWorkers=1
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  22:33:40
+   Duration  12.26s (tests 99%)
+
+静态与卫生:
+git diff HEAD --check、git diff --cached --check 均无输出。
+提交前 /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p605f1 无匹配输出，退出 0。
+只使用真实 SDK 子进程和 mock/fake 模型，未启动 Electron，未读取凭证内容；测试 teardown 仅结束其自身启动的 SDK。
+
+未完成项 / 新问题:
+未跑 SDK 全量与全量覆盖率：按 grok-orchestrate §6.3，builder 仅跑定向两文件；且起步 load average 48.73 / 37.78 / 29.02，避免全量负载。SDK 全量回归由主会话合并后执行。没有新增产品问题。
+待 verifier 验收。

@@ -1,0 +1,87 @@
+TAP version 13
+# Subtest: 对照：无替换 write/read 区内照常
+ok 1 - 对照：无替换 write/read 区内照常
+  ---
+  duration_ms: 19.182657
+  type: 'test'
+  ...
+# Subtest: 对照：判定前已是区外链 → shell-ask deny
+ok 2 - 对照：判定前已是区外链 → shell-ask deny
+  ---
+  duration_ms: 2.683989
+  type: 'test'
+  ...
+# [obs] Q1-write true {"isError":true,"error":{"message":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"},"conten
+# Subtest: B1 Q1 write（pre 接缝）→ 拒、区外无文件
+ok 3 - B1 Q1 write（pre 接缝）→ 拒、区外无文件
+  ---
+  duration_ms: 2.273111
+  type: 'test'
+  ...
+# [obs] Q1-edit {"isError":true,"error":{"message":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"},"conten
+# Subtest: B1 Q1 read→edit（先正常 read 建立观察，再 edit 时 pre 换链）→ edit 拒、区外文件不变
+ok 4 - B1 Q1 read→edit（先正常 read 建立观察，再 edit 时 pre 换链）→ edit 拒、区外文件不变
+  ---
+  duration_ms: 2.541682
+  type: 'test'
+  ...
+# Subtest: B1 Q1 read（pre 换链到区外）→ 拒、无内容
+ok 5 - B1 Q1 read（pre 换链到区外）→ 拒、无内容
+  ---
+  duration_ms: 1.681074
+  type: 'test'
+  ...
+# Subtest: Q2 无缓存：第二次判定 deny
+ok 6 - Q2 无缓存：第二次判定 deny
+  ---
+  duration_ms: 4.875895
+  type: 'test'
+  ...
+# [obs] side-read {"isError":true,"error":{"message":"p2sdk policy: read-outside-workspace denied (execute-time zone re-check; the call does not run)"},"content":[{"type":"text",
+# Subtest: B2 旁支 read（pre 换链到非 /tmp 语义的任意区外目录）→ 拒
+ok 7 - B2 旁支 read（pre 换链到非 /tmp 语义的任意区外目录）→ 拒
+  ---
+  duration_ms: 2.450645
+  type: 'test'
+  ...
+# [obs] never-read {"isError":true,"error":{"message":"p2sdk policy: never-root denied at execution time (credential or masked root; the call does not run)"},"content":[{"type":"t
+# [obs] never-write {"isError":true,"error":{"message":"p2sdk policy: never-root denied at execution time (credential or masked root; the call does not run)"},"content":[{"type":"t
+# Subtest: 验收② 假凭证目录（pre 接缝）：read / write 都拒
+ok 8 - 验收② 假凭证目录（pre 接缝）：read / write 都拒
+  ---
+  duration_ms: 6.222549
+  type: 'test'
+  ...
+# [obs] inner-write "[sandbox: file access denied under workspace-write mode]\\n[sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrow
+# [obs] inner-write-cred cause= p2sdk policy: never-root denied at execution time (credential or masked root; the call does not run)
+# Subtest: 第二层独立：inner 接缝（包装已放行后换链）write → 后端 checkedTarget 拒（区外 / 假凭证）
+ok 9 - 第二层独立：inner 接缝（包装已放行后换链）write → 后端 checkedTarget 拒（区外 / 假凭证）
+  ---
+  duration_ms: 4.833587
+  type: 'test'
+  ...
+# [obs] residual-read-far leaked= true {"path":"/tmp/bot-p625f1-vfy/run-mZrMTn/far/x.txt","offset":1,"lines":[{"number":1,"text":"FAR-RESIDUAL"}],"totalLines":
+# [obs] residual-read-fakecred leaked= true {"path":"/tmp/bot-p625f1-vfy/run-mkRmoZ/fakehome/.ssh/id_fake","offset":1,"lines":[{"number":1,"text":"FAKE-CRED-MARKER"
+# Subtest: 残余（读侧）inner 接缝：包装放行后、tool 自己 resolve 前换链 → 观测
+ok 10 - 残余（读侧）inner 接缝：包装放行后、tool 自己 resolve 前换链 → 观测
+  ---
+  duration_ms: 3.974062
+  type: 'test'
+  ...
+# [obs] residual-write-outside landed= true {"path":"/tmp/bot-p625f1-vfy/run-oZfJSN/ws/sub/late.txt","operation":"create","before":null,"after":"LATE"}
+# [obs] residual-write-fakecred landed= true
+# Subtest: 残余（写侧）lock 接缝：checkedTarget 返回后、withLock op 前换链 → 观测（上游已接受的窗口）
+ok 11 - 残余（写侧）lock 接缝：checkedTarget 返回后、withLock op 前换链 → 观测（上游已接受的窗口）
+  ---
+  duration_ms: 7.442265
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 184.36129

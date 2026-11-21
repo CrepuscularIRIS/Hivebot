@@ -1,0 +1,256 @@
+{
+  "author_evidence": [
+    {
+      "path": "app/sdk/package.json",
+      "fixed_sha256": "b60848fbc0e52c220fd8bb8d2a85b391b214188a7bf86556233238c66f1f34cd",
+      "tool_owner_equal": true
+    },
+    {
+      "path": "app/sdk/pnpm-lock.yaml",
+      "fixed_sha256": "f4b84e7261b7903bb44e08e97464b10488abe85c89035ec1199156aee4050d71",
+      "tool_owner_equal": true
+    },
+    {
+      "path": "app/ui/package.json",
+      "fixed_sha256": "f1785170f15c8d4daca8d78a8da7e750d7ef0e819d3a914362b7262e8566b611",
+      "tool_owner_equal": true
+    },
+    {
+      "path": "app/ui/pnpm-lock.yaml",
+      "fixed_sha256": "e61feb30648f83c614f515326c2f57cc77046212fdf7c7f2b141966dafceafd4",
+      "tool_owner_equal": true
+    },
+    {
+      "author_evidence": "A1-RED-test",
+      "exit": "1",
+      "command": {
+        "cwd": "/tmp/bot-wt/P7-F2f2/app/sdk",
+        "env": {
+          "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+          "HOME": "/tmp/bot-P7-F2f2/home",
+          "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+        },
+        "command": [
+          "/bin/bash",
+          "--noprofile",
+          "--norc",
+          "-c",
+          "exec ./node_modules/.bin/vitest run \"$@\" --maxWorkers=1",
+          "vitest",
+          "tests/unit/p7-authority.test.ts",
+          "-t",
+          "A1"
+        ]
+      }
+    },
+    {
+      "author_evidence": "A1-GREEN",
+      "exit": "0",
+      "command": {
+        "cwd": "/tmp/bot-wt/P7-F2f2/app/sdk",
+        "env": {
+          "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+          "HOME": "/tmp/bot-P7-F2f2/home",
+          "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+        },
+        "command": [
+          "/bin/bash",
+          "--noprofile",
+          "--norc",
+          "-c",
+          "exec ./node_modules/.bin/vitest run \"$@\" --maxWorkers=1",
+          "vitest",
+          "tests/unit/p7-authority.test.ts",
+          "-t",
+          "A1"
+        ]
+      }
+    },
+    {
+      "author_evidence": "A2-RED",
+      "exit": "1",
+      "command": {
+        "cwd": "/tmp/bot-wt/P7-F2f2/app/sdk",
+        "env": {
+          "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+          "HOME": "/tmp/bot-P7-F2f2/home",
+          "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+        },
+        "command": [
+          "/bin/bash",
+          "--noprofile",
+          "--norc",
+          "-c",
+          "exec ./node_modules/.bin/vitest run \"$@\" --maxWorkers=1",
+          "vitest",
+          "tests/unit/p7-authority.test.ts",
+          "-t",
+          "A2"
+        ]
+      }
+    },
+    {
+      "author_evidence": "A2-GREEN",
+      "exit": "0",
+      "command": {
+        "cwd": "/tmp/bot-wt/P7-F2f2/app/sdk",
+        "env": {
+          "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+          "HOME": "/tmp/bot-P7-F2f2/home",
+          "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+        },
+        "command": [
+          "/bin/bash",
+          "--noprofile",
+          "--norc",
+          "-c",
+          "exec ./node_modules/.bin/vitest run \"$@\" --maxWorkers=1",
+          "vitest",
+          "tests/unit/p7-authority.test.ts",
+          "-t",
+          "A2"
+        ]
+      }
+    },
+    {
+      "author_evidence": "A3-RED",
+      "exit": "1",
+      "command": {
+        "cwd": "/tmp/bot-wt/P7-F2f2/app/ui",
+        "env": {
+          "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+          "HOME": "/tmp/bot-P7-F2f2/home",
+          "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+        },
+        "command": [
+          "/bin/bash",
+          "--noprofile",
+          "--norc",
+          "-c",
+          "exec ./node_modules/.bin/vitest run \"$@\" --maxWorkers=1",
+          "vitest",
+          "tests/unit/admin/channel.test.ts",
+          "-t",
+          "A3"
+        ]
+      }
+    },
+    {
+      "author_evidence": "A3-GREEN",
+      "exit": "0",
+      "command": {
+        "cwd": "/tmp/bot-wt/P7-F2f2/app/ui",
+        "env": {
+          "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+          "HOME": "/tmp/bot-P7-F2f2/home",
+          "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+        },
+        "command": [
+          "/bin/bash",
+          "--noprofile",
+          "--norc",
+          "-c",
+          "exec ./node_modules/.bin/vitest run \"$@\" --maxWorkers=1",
+          "vitest",
+          "tests/unit/admin/channel.test.ts",
+          "-t",
+          "A3"
+        ]
+      }
+    },
+    {
+      "author_evidence": "SDK-final",
+      "exit": "0",
+      "command": {
+        "cwd": "/tmp/bot-wt/P7-F2f2/app/sdk",
+        "env": {
+          "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+          "HOME": "/tmp/bot-P7-F2f2/home",
+          "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+        },
+        "command": [
+          "/bin/bash",
+          "--noprofile",
+          "--norc",
+          "-c",
+          "exec ./node_modules/.bin/vitest run \"$@\" --maxWorkers=1",
+          "vitest",
+          "tests/unit/p7-authority.test.ts",
+          "tests/unit/p7-admin-channel.test.ts",
+          "--coverage",
+          "--coverage.include=src/admin/authority.mjs",
+          "--coverage.reporter=text",
+          "--coverage.reporter=json-summary",
+          "--coverage.reportsDirectory=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/sdk-final-coverage"
+        ]
+      }
+    },
+    {
+      "author_evidence": "UI-final",
+      "exit": "0",
+      "command": {
+        "cwd": "/tmp/bot-wt/P7-F2f2/app/sdk",
+        "env": {
+          "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+          "HOME": "/tmp/bot-P7-F2f2/home",
+          "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+        },
+        "command": [
+          "/bin/bash",
+          "--noprofile",
+          "--norc",
+          "-c",
+          "exec ./node_modules/.bin/vitest run \"$@\" --maxWorkers=1",
+          "vitest",
+          "--root=/tmp/bot-wt/P7-F2f2/app/ui",
+          "--config=/tmp/bot-wt/P7-F2f2/app/ui/vitest.config.ts",
+          "tests/unit/admin/channel.test.ts",
+          "--coverage",
+          "--coverage.provider=v8",
+          "--coverage.include=main/admin/consumer.ts",
+          "--coverage.reporter=text",
+          "--coverage.reporter=json-summary",
+          "--coverage.reportsDirectory=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/ui-final-coverage",
+          "--coverage.thresholds.lines=80",
+          "--coverage.thresholds.statements=80",
+          "--coverage.thresholds.functions=80",
+          "--coverage.thresholds.branches=80"
+        ]
+      }
+    }
+  ],
+  "author_file_hashes": [
+    {
+      "path": "app/sdk/src/admin/authority.mjs",
+      "author_sha256": "7cb278e5e6c8dbb2b78e3bc922ea5fd5cfeeb64fbe0870dbbe34db4949b225e1",
+      "fixed_sha_equal": true
+    },
+    {
+      "path": "app/sdk/tests/unit/p7-authority.test.ts",
+      "author_sha256": "39f1d8e6c65c7b11f5ae6346bf82ce4b5088d2c9d030539524ed005294d25e1f",
+      "fixed_sha_equal": true
+    },
+    {
+      "path": "app/ui/main/admin/consumer.ts",
+      "author_sha256": "aecad4a19a04a99adf27d5ce901d29f2bcf7c3a6351dffe023aae7492b45a43d",
+      "fixed_sha_equal": true
+    },
+    {
+      "path": "app/ui/tests/unit/admin/channel.test.ts",
+      "author_sha256": "dec7152bd58c337db2abcc55a30f02fcdf72ad11a7647783cd4eda93bb68ea50",
+      "fixed_sha_equal": true
+    }
+  ],
+  "existing_tools": [
+    {
+      "path": "/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/vitest@5.0.5_@opentelemetry+api@1.10.0_@types+node@26.6.6_@vitest+coverage-v8@5.0.5_vit_3ac04b59097271728ea44333b4271da3/node_modules/vitest/package.json",
+      "version": "5.0.5",
+      "sha256": "d00333f3a13ed44fedc77184c8675bae45246534f06684d94cff5e4f8a9f7c10"
+    },
+    {
+      "path": "/home/lingxufeng/bot/app/sdk/node_modules/.pnpm/@vitest+coverage-v8@5.0.5_vitest@5.0.5/node_modules/@vitest/coverage-v8/package.json",
+      "version": "5.0.5",
+      "sha256": "abdee7d3e2bb4e49ed96bc2393e0e6ef30d32759b90322d5e92aba0d97db8e5b"
+    }
+  ]
+}

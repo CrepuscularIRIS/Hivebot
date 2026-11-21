@@ -1,0 +1,45 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - complementary "Agents" [ref=e7]:
+      - button "New" [ref=e10] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e11]: 
+      - button "Search" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]:
+          - generic [aria-hidden] [ref=e14]: 
+          - text: Search
+      - region "Agent list" [ref=e15]:
+        - generic "New chat chat preview" [ref=e19]:
+          - button "New chat" [ref=e20] [cursor=pointer]:
+            - strong [ref=e31]: New chat
+      - separator "Resize sidebar" [ref=e32]
+    - button "Connect apps" [ref=e34] [cursor=pointer]
+    - button "Account" [ref=e37] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e38]: P
+  - generic [ref=e39]:
+    - main [ref=e40]:
+      - group "New chat" [ref=e41]:
+        - button "View agent settings" [ref=e42] [cursor=pointer]:
+          - generic [ref=e51]: New chat
+      - log "Conversation transcript" [ref=e52]:
+        - separator [ref=e67]: Today 3:48 AM
+        - article "You 11/4/2026, 3:48:26 AM" [ref=e68]:
+          - generic [ref=e69]:
+            - group [ref=e70]:
+              - paragraph [ref=e72]: 请执行验收命令并显示结果
+            - toolbar "Message actions for your message (0f1e68c0-8b1d-4e88-9f7d-e41f38c53244)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - listitem [ref=e73]:
+          - button "Bash printf VFY-UNIQUE-FULL-RESULT" [ref=e74] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e75]: 
+            - generic [ref=e76]: Bash
+            - generic [ref=e77]: printf VFY-UNIQUE-FULL-RESULT
+        - article "New chat 11/4/2026, 3:48:48 AM" [ref=e101]:
+          - generic [ref=e102]:
+            - group "Agent message" [ref=e103]:
+              - paragraph [ref=e105]: Verifier turn finished.
+            - toolbar "Message actions for New chat (t1-s2)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+    - textbox "Prompt" [ref=e57]:
+      - paragraph [ref=e58]: Message New chat

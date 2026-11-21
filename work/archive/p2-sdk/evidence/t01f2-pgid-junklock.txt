@@ -1,0 +1,12 @@
+== PGID separation on REAL chain while ready (evidence/t01f2-pgid-and-junklock.mjs) ==
+p2sdk: dsh pid 1460264
+PASS dsh pgid 1460264 != launcher pgid 1460236 (detached real-chain)
+p2sdk: forwarding SIGTERM to dsh
+PASS junk lock content treated as stale, instance boots
+RESULT: ALL GREEN
+
+== leftover sweep + orphan cleanup (builder's pre-commit red-path run had left, at /tmp/p2sdk-r4-BKMN3E, files dated 14:34 i.e. before verifier regression at 14:41) ==
+orphan chain found: start.mjs pid 1377960 (P2SDK_PROVIDER=mock) + dsh 1377974; start.mjs pid 1378116 (P2SDK_PROVIDER=real) + dsh 1378124; pgid 1377951, ppid re-parented to systemd --user (2037)
+kill -TERM 1377960 1378116 -> all 4 pids gone (launcher forwarded SIGTERM to its detached dsh; clean chain exit)
+verifier's own rerun left nothing (its home /tmp/p2sdk-r4-pKVz2j instances all exited, dirs removed)
+note: `pgrep -f "P2SDK_HOME=..."` false-positives on the invoking bash's own cmdline (same lesson as LEARNINGS' pkill -f rule) -- always inspect with `pgrep -af` before judging leftovers.

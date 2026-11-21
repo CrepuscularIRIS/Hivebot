@@ -1,0 +1,26 @@
+Already up to date
+Done in 381ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/P6-26/app/sdk
+      Coverage enabled with v8
+
+
+ Test Files  2 passed (2)
+      Tests  33 passed (33)
+   Start at  05:02:52
+   Duration  824ms (tests 60%, transform 24%, import 11%, worker 3%, setup 3%)
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------|---------|----------|---------|---------|-------------------
+File         | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+-------------|---------|----------|---------|---------|-------------------
+All files    |   88.03 |    82.55 |   86.66 |   93.25 |
+ fs-zone.mjs |   88.03 |    82.55 |   86.66 |   93.25 | 87-93,123
+-------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 88.03% ( 103/117 )
+Branches     : 82.55% ( 71/86 )
+Functions    : 86.66% ( 26/30 )
+Lines        : 93.25% ( 83/89 )
+================================================================================

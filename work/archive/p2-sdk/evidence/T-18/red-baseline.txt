@@ -1,0 +1,25 @@
+ ❯ tests/unit/p2temp.test.ts (25 tests | 5 failed) 11ms
+   × normalizeConnectors accepts a non-empty string array and returns the deduplicated, sorted copy (subprocess runner) 6ms
+   × T-18①: duplicate connector names register one row set per connector — clean callers get the identical preset (subprocess runner) 1ms
+   × T-18②: broken activation throws p2temp/preset-broken, disposes the record; retry after fixing the patch re-registers under the same id (subprocess runner) 0ms
+   × T-18②: a leftover broken record under the id is never served — preset-broken, register untouched (subprocess runner) 0ms
+   × T-18②: register without a disposer still reports broken loudly on every retry (subprocess runner) 1ms
+ ❯ tests/e2e/preset-broken.test.ts (1 test | 1 failed) 2391ms
+   × T-18②: broken preset is not cached — ensure fails loud, retry after fixing the patch re-registers the same id 2390ms
+ FAIL  tests/e2e/preset-broken.test.ts > T-18②: broken preset is not cached — ensure fails loud, retry after fixing the patch re-registers the same id
+AssertionError: promise resolved "{ presetId: 'p2temp-5c78e7627507' }" instead of rejecting
+ FAIL  tests/unit/p2temp.test.ts > normalizeConnectors accepts a non-empty string array and returns the deduplicated, sorted copy (subprocess runner)
+AssertionError: Expected values to be strictly deep-equal:
++ actual - expected
+: expected false to be true // Object.is equality
+ FAIL  tests/unit/p2temp.test.ts > T-18①: duplicate connector names register one row set per connector — clean callers get the identical preset (subprocess runner)
+AssertionError: ['a','a'] and ['a'] register exactly the same plugins
++ actual - expected
+: expected false to be true // Object.is equality
+ FAIL  tests/unit/p2temp.test.ts > T-18②: broken activation throws p2temp/preset-broken, disposes the record; retry after fixing the patch re-registers under the same id (subprocess runner)
+ FAIL  tests/unit/p2temp.test.ts > T-18②: a leftover broken record under the id is never served — preset-broken, register untouched (subprocess runner)
+AssertionError: Missing expected rejection.: expected false to be true // Object.is equality
+ FAIL  tests/unit/p2temp.test.ts > T-18②: register without a disposer still reports broken loudly on every retry (subprocess runner)
+AssertionError: Missing expected rejection: attempt 1 must not return a success id for a broken preset: expected false to be true // Object.is equality
+ Test Files  2 failed (2)
+      Tests  6 failed | 20 passed (26)

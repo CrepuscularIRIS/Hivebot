@@ -1,0 +1,26 @@
+=== T-07 VERIFY 证据汇编（verifier 独立复跑，2026-11-01）===
+worktree /tmp/bot-wt/T-07  HEAD=0b51fc172d556955a6b459cd0f979df8e7819ac1
+
+--- [1] 干净全量（pnpm install --frozen-lockfile 后，--no-file-parallelism）---
+$ pnpm -C app/sdk install --frozen-lockfile  → Already up to date / Done in 330ms
+$ pnpm -C app/sdk exec vitest run --no-file-parallelism
+
+ Test Files  13 passed (13)
+      Tests  61 passed (61)
+   Start at  17:11:31
+   Duration  42.66s (tests 99%, import 1%)
+
+
+--- [2] 单跑 approval ---
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  17:12:14
+   Duration  4.36s (tests 99%, import 1%)
+
+
+--- [3] 单跑 policy ---
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  17:12:19
+   Duration  118ms (import 36%, tests 31%, transform 19%, worker 14%, environment 1%)
+

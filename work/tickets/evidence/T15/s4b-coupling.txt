@@ -1,0 +1,23 @@
+# §4 补：我们代码里钉 alpha.2 的耦合点
+## 模型可见工具名（各 tool 包注册的 name 字面，a2 vs rc1）
+SAME dsh-tool-ask-user: name: "ask_user_question" 
+SAME dsh-tool-bash: name: "bash" 
+SAME dsh-tool-cordis: name: "cordis_inspect_list" name: "cordis_inspect_query" 
+SAME dsh-tool-executor-ptc: 
+DIFF dsh-tool-fs: a2=[name: "edit" name: "read" name: "read_image" name: "write" ] rc1=[name: "apply_patch" name: "edit" name: "read" name: "read_image" name: "write" ]
+SAME dsh-tool-fs-search: name: "glob" name: "grep" 
+SAME dsh-tool-goal: name: "create_goal" name: "get_goal" name: "update_goal" 
+SAME dsh-tool-jobs: name: "job_kill" name: "job_list" name: "job_output" 
+SAME dsh-tool-present: name: "present" 
+SAME dsh-tool-pwsh: name: "pwsh" 
+DIFF dsh-tool-schedule: a2=[name: "schedule_create" name: "schedule_delete" name: "schedule_list" name: "schedule_update" ] rc1=[name: "schedule_create" name: "schedule_edit" name: "schedule_list" name: "schedule_view" ]
+SAME dsh-tool-skill: name: "skill" 
+SAME dsh-tool-subagent: name: "list_subagent_models" 
+SAME dsh-tool-subagent-control: name: "interrupt_agent" name: "list_agents" name: "send_message" 
+SAME dsh-tool-todo: name: "todo_write" 
+SAME dsh-tool-web: name: "web_fetch" name: "web_search" 
+SAME dsh-tool-workflow: 
+## bash-sandbox lib diff 行数（request-net.mjs 钉了 confine argv 形状）
+0
+## agent-preset-registry lib diff 行数（p2temp 与其实现耦合）
+14

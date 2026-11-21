@@ -1,0 +1,35 @@
+=== T-07 红基线独立复核（verifier，2026-11-01 17:00，HEAD=0b51fc1）===
+命令：P2SDK_T07_PRESET_ONLY=1 pnpm -C /tmp/bot-wt/T-07/app/sdk exec vitest run tests/e2e/approval.test.ts --no-file-parallelism
+（PRESET_ONLY 只挂 fake overlay，不挂 profile/patches/approval.yml → 组合即纯 dsh 权限行）
+
+结果：2/2 红，都在 ① 段超时（10s 内 $events 无 approval/request）：
+ FAIL tests/e2e/approval.test.ts > D8: ordinary shell asks for approval; ...
+ Error: timed out after 10000ms waiting for approval/request #1 for session-66aa1c95-…（test1）
+ FAIL tests/e2e/approval.test.ts > D8: an approval granted in session Y …
+ Error: timed out after 10000ms waiting for approval/request #1 for session-6af6a562-…（test2）
+      Tests  2 failed (2)   Duration  23.50s
+
+「未问就跑了」实证（零审批交互下 canary 创建）：
+ run 起点 17:00:44；对比运行前后 /tmp/p2sdk-runtime-* 目录新增 18 个（同机有其他
+ agent 的测试在跑），其中 2 个属于本次红跑（时间戳逐一核对）：
+ - /tmp/p2sdk-runtime-QCqO4O/workspace/canary-denied  创建于 17:00:45.99（prompt 后 ~1s）
+ - /tmp/p2sdk-runtime-0HjN8O/workspace/canary-y        创建于 17:00:57.66
+ - /tmp/p2sdk-runtime-0HjN8O/workspace/canary-x        创建于 17:00:57.66
+ 测试全程没有 answer 过任何审批 —— 文件是命令未经审批直接执行的结果。
+ （test2 场景：X、Y 两个 canary 都在零审批下创建。）
+
+会话日志解码（unzstd -dc，QCqO4O 的 session-66aa1c95…）事件类型计数：
+ permission/preset ×1  sandbox/mode ×1  approval/policy ×1
+ tool/call ×1（name=bash, touch …/canary-denied）
+ tool/result ×1（isError:false, "(no output)"）
+ approval/asked ×0   approval/decided ×0   ← 整个日志零审批事件
+关键行原文：
+ {"type":"permission/preset","seq":0,…,"data":{"preset":"workspace-write"}}
+ {"type":"sandbox/mode","seq":1,…,"data":{"mode":"workspace-write"}}
+ {"type":"approval/policy","seq":2,…,"data":{"policy":"ask"}}
+ {"type":"tool/call","seq":15,…,"name":"bash","arguments":"{\"command\":\"touch /tmp/p2sdk-runtime-QCqO4O/workspace/canary-denied\",…}"}
+ {"type":"tool/result","seq":18,…,"isError":false}
+
+结论：纯 preset 组合（workspace-write + policy=ask）下普通 bash 调用直通执行，
+preset 路径不可达「普通 shell 必问」→ src/policy/shell-ask.mjs 的存在理由成立，
+与 evidence/D8-approval.md 红用例引文一致（引文事件序列逐条对上）。

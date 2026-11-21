@@ -1,0 +1,21 @@
+{
+  "baseline_product": "a2279cd",
+  "tests": "ed336c9",
+  "cwd": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/verify-runtime/red-project/app/sdk",
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "HOME": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/verify-runtime/home",
+    "TMPDIR": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/verify-runtime/tmp"
+  },
+  "command": [
+    "/home/lingxufeng/bot/app/sdk/node_modules/.bin/vitest",
+    "run",
+    "--root=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/verify-runtime/red-project/app/ui",
+    "--config=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/verify-runtime/red-project/app/ui/vitest.config.ts",
+    "tests/unit/admin/channel.test.ts",
+    "-t",
+    "A3",
+    "--maxWorkers=1",
+    "--no-file-parallelism"
+  ]
+}

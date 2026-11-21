@@ -1,0 +1,71 @@
+verdict: FAIL
+commit: 4da62902c7a9c26452eafc4e98cf40c6d6a6d452
+base: e5ff286e686994b489766ea7d3bd1f74614a342b
+角色：独立定向 review + verifier，Sol 代席；未派 Agent，未改产品/原测试/锁/配置，未 commit/merge/push。仅此 SHA 有效。
+
+范围与方法
+- 已读主仓 LEARNINGS、PLAN F3/§3、REUSE、原 REPORT.txt/REPORT-implementation.txt；director 未落独立报告，主仓 LOG.md:36–37 保存原范围扩准结论，未伪造 UNBLOCK.md。
+- git show --stat 与 git diff e5ff286..4da62902 精确十二文件（十个生产文件、两个新测试）；全部 diff 已审，必要调用上下文包括 native session closers、JSONL persistence、M3 restore、F1、Delivery、Reporter。未扩 F4/WM/L2/L3，不另造 Assignment 状态机。
+- 固定验收树初末均干净。该树无 node_modules；受只写 evidence 限制，以 git archive 固定 SHA 建 evidence/verify-source 字节一致副本，共689个文件逐一对比验收树并SHA256登记 verify-source-hashes.txt；复用作者树已装锁定依赖，不安装、不构建。
+- 负载起始2.01/2.17/2.85，执行前 vmstat idle95%、iowait0。定向 vitest exec、maxWorkers=1、no-file-parallelism，三组串行；未全量、未 build/Electron/真实模型/桌面；无截图要求，未截用户屏幕。
+- 全部测试 env -i 白名单 HOME/TMPDIR 位于本 evidence，PATH仅 npm-global/usr/bin/bin，死DBus；测试数据合成。子进程仅既有测试框架自管，无 shell kill/pkill/killall/sudo/重启注销，无读取真实凭证/用户env。
+
+独立命令与原始退出码
+根目录 E=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3；S=$E/verify-source/app/sdk。
+1. python -I $E/verify-run.py sdk ui loader：外层exit0；脚本逐组记录内层exit，不能把外层0当测试绿。
+   精确每组命令、全部测试路径和白名单env见 verify-{sdk,ui,loader}-run.txt 首三行及 verify-run.py。
+   公共命令：pnpm -C "$S" --config.verify-deps-before-run=false exec vitest run --config "$E/verify-{sdk|ui}.config.mjs" --maxWorkers=1 --no-file-parallelism <精确路径>。
+   SDK：7文件233 passed；内层exit1，仅四项整文件coverage threshold未达80%。
+   UI：13文件108 passed；内层exit1，仅四项整文件coverage threshold未达80%。正确包含 tests/unit/m3/restore.test.ts 与 orch-channel.test.ts。
+   Loader：exec vitest run，coverage.enabled=false；两个文件11 passed/5 skipped，exit0。五项旧crash跳过未补跑，不当作PASS；范围仅原报告同一 -t 过滤。
+2. env -i HOME="$E/verify-home" TMPDIR="$E/verify-tmp" PATH=/usr/bin:/bin /tmp/bot-wt/P7-F3/app/sdk/node_modules/.bin/node "$E/verify-native-storage.mjs"：exit0；verify-native-storage.txt。
+3. 同上白名单env、node "$E/verify-independent.mjs"：exit1；verify-independent.txt。9个结果8 PASS/1 FAIL；生产默认2000ms窗口，非仅缩短窗口fixture。
+4. python -I "$E/verify-map-coverage.py"：exit0；官方coverage-final.json逐位置映射至精确零上下文生产diff，产物 verify-coverage-diff-map.json、verify-coverage-diff-summary.txt、verify-production.diff。
+5. git -C /tmp/bot-wt/P7-F3-verify diff --check e5ff286..4da62902：exit0；末次HEAD仍固定SHA、status为空，见 verify-target-state.txt。
+
+分层验收
+| 验收项 | 结果 | 证据与限定 |
+| 恢复前 Reporter boot/event 不消费、start-stop queued microtask不复活 | PASS（定向） | 原18项F3测试包含boot gate/start-stop；SDK233通过；非作者输出复用 |
+| 同一捕获许可在多await flush/agentOf后禁止旧wake/send | PASS（所测边界） | 原p7-host用例 + verify-independent.txt:1–3；分别在main-agent/main-log/worker-log挂起后换代，send+wake=0 |
+| Delivery holds/readLog/flush/open/read/close后拒旧followup；撤销后不复活 | PASS（所测边界） | verify-independent.txt:6–9真实Delivery四阶段followup=0；原18项含stop后holds与同步remove撤销 |
+| 已followup再取消不能声称副作用0；并发未知结果不重放 | PASS（定向） | SDK原p7-host post-followup用例：followup=1、unconfirmedStart=true；waiter不重放，不夸成0副作用 |
+| 原生持久旧Assignment终结、冷孤儿最小合法成功 | PASS（真实JSONL模块链） | verify-native-storage.txt exit0；真实Cordis+锁定JSONL provider，create→append合成合法v4 orphan→close/dispose→新provider→recoverAssignments→append原生closers→flush→真实read→complete；再次dispose/reopen仍interrupted |
+| 未知外部工具结果不重放、paused/held不自动resume | PASS（已测） | 真实JSONL读到TOOL_OUTCOME_UNKNOWN，agentOf禁止调用且未触发；原定向held Assignment保留且wake/followup=0；无真实工具外部动作 |
+| 坏关联留审计、旧challenge/foreign Peer/stop拒开闸 | PASS（组合证据） | native-storage坏createdBy返回issue并拒complete；UI真实F1写failed audit；SDK Loader控制流foreign Peer/旧challenge拒绝、processId重连不变；原stop测试 |
+| main F1健康读回/M3 init+ensure后prepare/complete；旧ready不释放新代 | PASS（模块与接缝） | UI108含真实OperationsLedger/BotsMetaStore、真实wireRestoreOnReconnect，错误F1/M3不发repair、旧settled不释放新generation；transport为mock，非完整Electron生产旅程 |
+| 控制RPC不等待自身恢复死锁 | PASS（真实Loader空metadata） | SDK233内的真实Loader控制stream+prepare+complete成功；无消费者ready前可调用，不借模型 |
+| 新代合法恢复后能够自动消费剩余回报 | FAIL / CONFIRMED F3-V1 | 默认2s窗口内新complete的唯一flush触发被旧flushing吞掉；旧await随后结束也不再触发；独立反例及手动flush正对照见下 |
+| 无owner restart明确unavailable、不伪造receipt | PASS（定向） | UI108中restartSdk拒绝、unknown restart仍inProgress无receipt；不做F4 |
+| 单一原生Assignment状态，不增加第二账本/状态机 | PASS（源码范围） | host仅进程内许可；恢复通过原生sessionPersistence/closers+既有fold，F1仍main持有 |
+| 真实冷存储孤儿通过真实SDK RPC再连main整体恢复 | UNKNOWN | 本轮真实JSONL冷恢复与真实Loader空metadata控制RPC分别走通，未把二者与main F1/M3组成同一进程链；不冒称完整生产E2E。不是工具缺失，系本次最小隔离验证边界 |
+
+CONFIRMED F3-V1（major，恢复后回报可永久滞留）
+输入：已有已完成worker的稳定end回报；旧lease的Reporter.flush停在main readLog；新Peer attach使旧lease abort；新prepare/complete合法成功并调用scheduleFlush；保持旧读挂起超过生产默认2秒收齐窗口，期间无其他session事件；然后释放旧读。
+实际：定时器已将timer清null并调用flush，但flush见this.flushing=true直接return；旧flush收到取消后仅在finally置false，不安排补跑。等待旧flush结束后自动send=0。手动flush同一新lease立即send=1，排除metadata/回报不存在/新代许可不合法。
+预期：旧代不得消费，但新代complete的恢复reconcile触发必须保留，旧在途结束后自动投递一次；不能要求再有一条无关事件才恢复。
+定位：app/sdk/src/orchestration/main-channel.mjs:263–267（complete只schedule一次）；app/sdk/src/orchestration/report.mjs:160–165（定时器清空）、185–186（flushing直接return）、257–258（finally仅复位）。
+证据：verify-independent.mjs、verify-independent.txt:4–5、EXIT1。受控module测试使用真实HostRecovery/Reporter、真实临时bots.json，日志read有确定性barrier，非真实磁盘延迟注入或全生产E2E；已在默认2000ms窗口复现。
+
+覆盖核实（不拿整文件旧路径直接裁决修改逻辑）
+- 作者原报告只有json-summary；本轮实际启用锁定官方@vitest/coverage-v8 5.0.5 provider的json reporter，已取得verify-coverage-sdk/coverage-final.json与verify-coverage-ui/coverage-final.json，不是V8原始range或“执行成功即覆盖”。
+- verify-coverage-diff-map.json保存每个修改行集合、匹配statement/branch/function ID、原source map范围、每分支arm计数与官方statement起始行line coverage。选取与新增/替换新侧行相交的映射，保留包围该变化的旧函数/分支跨度，不人为剔除旧路径凑绿；大跨度包含旧逻辑的限制已记录。未把注释/闭括号等无statement起点行当可执行行。
+- S/B/F/L修改相交聚合：SDK 77.56/79.07/67.50/81.70%；UI 86.09/83.52/88.89/93.52%。此数是已采集映射统计，不是完整修改逻辑覆盖已判定值。
+- SDK start新增修改相交S/B/F/L均100%；host 98.91/92.50/100/100；delivery 90.91/81.82/100/100；report 86/91.49/80/90.91。因此不能用start.ts既有launcher低覆盖直接否定新增启动开关。
+- main-channel修改37 statements只采到1、18 branch arms/11 functions/25 line起点均零。其真实Loader子进程执行没有进入本provider的官方JSON；这些路径是未采集/未证，不能断言真实修改逻辑只有2.7%，也不能删除该文件后宣称SDK≥80%。本轮native脚本未并入官方coverage，同样不以其成功补计数。
+- UI index修改相交S/B/F/L=67.74/66.67/80/80；connect=55.56/无branch映射/80/66.67；旧main入口中的新OperationsLedger/wireAdminRecovery/before-quit callback未获覆盖，新增disconnected listener自身入口/异常日志路径亦有未证。UI聚合超80不掩盖这些模块新逻辑不足，具体计数逐项可核。
+- 覆盖结论：修改逻辑≥80%的完整闸门UNKNOWN/未证（按验收规则阻塞），不是拿整文件63%/69%直接宣称修改逻辑<80%；不新增依赖，不继续全量/扩大场景凑覆盖。
+
+工具与现场偏差（透明保留）
+- 首次三组pnpm exec因pnpm默认verifyDepsBeforeRun尝试自动安装并在no-TTY下退出1；实际测试未运行，见verify-{sdk,ui,loader}-setup-failed.txt。随后以命令行verify-deps-before-run=false禁用，不改配置/锁，不启用CI自动安装。
+- 原生探针前四次因本人合成fixture缺version、source、tool arguments或model provider/model未符合真实v4契约退出1；均保留verify-native-storage-*-fixture-failed.txt，不计产品失败；修正fixture后最终真实provider三阶段读回exit0。
+- 独立脚本初次自身缺闭括号SyntaxError退出1，保留verify-independent-fixture-failed.txt；修正后在缩短及生产默认窗口均复现同一逻辑失败，不将语法错当产品反例。
+- 本轮依赖目录整体symlink导致Vitest覆盖写了作者树app/{sdk,ui}/node_modules/.vite/vitest/.../results.json（mtime10:18:22/10:18:29）。这是测试缓存的外树写入偏差，不是源码变更；未擅自恢复他树缓存。固定验收树及他树产品/原测试/配置/锁未改。verify-prepare.py已改为逐顶层依赖链接、排除.vite/.cache，后续复现缓存留evidence；该准备器不是产品修复。
+- 用后清除本evidence下verify-source/verify-home/verify-tmp临时树，避免保留任何测试handoff/runtime；原始日志、官方coverage JSON、哈希清单、独立脚本与复现准备器保留。重现先python -I verify-prepare.py，再使用上述命令；不需要依赖安装。
+
+新问题（可直接派发）
+- [FIX] F3恢复许可更新时Reporter丢失新代唯一reconcile触发 | 复现：verify-independent.mjs；旧readLog挂起→新prepare/complete→过默认2秒→放旧读，自动send=0、手动flush=1 | 疑似位置：app/sdk/src/orchestration/report.mjs:160–165,185–186,257–258；main-channel.mjs:263–267 | major
+- [FIX] F3修改逻辑覆盖闸门未证，主要缺main-channel真实子进程官方coverage及index/connect新接线 | 复现：verify-run.py sdk ui；verify-map-coverage.py逐项映射 | 疑似位置：定向coverage采集/测试接缝；不要求新增产品依赖 | 验收阻塞
+
+后续整合必要性
+F1/F2修复不在本固定树，未自行合入；本轮PASS项只证明e5ff286基底上的指定模块。后续整合F1/F2修复及F3补丁后必须在新SHA重新跑相邻定向回归，特别是账本关闭/写隔离、authority/channel过滤与恢复健康检查。不得沿用本报告给新HEAD盖章。
+有限范围完成即停止；最终总体FAIL源于一个实证major与完整coverage未证，不开启新修复轮。

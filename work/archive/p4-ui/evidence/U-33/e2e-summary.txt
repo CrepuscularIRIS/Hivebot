@@ -1,0 +1,6 @@
+  ✓  54 tests/e2e/visual.spec.ts:100:5 › 市场：行 36 / gap 12 / padding 12 / 行距 7；搜索框 r8；亮暗截图 (3.2s)
+
+  54 passed (5.0m)
+EXIT=0
+$ sh scripts/run-e2e.sh
+

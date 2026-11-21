@@ -1,0 +1,33 @@
+P5-15 验收独立复跑实录（verifier，2026-11-03 02:23–02:32）
+worktree /tmp/bot-wt/P5-15 @ 83a39ab2f7cf4b16afbd6c861f2b3e1cfee15270，HOME=/tmp/bot-vfy-p515
+
+[1] pnpm build
+  ✓ built in 1.14s
+
+[2] pnpm test (vitest)
+  Test Files  27 passed (27)
+       Tests  224 passed (224)
+  Duration  3.89s
+
+[3] pnpm test:e2e (全量, Xvfb 自带)
+  54 passed (5.8m)
+  含 visual.spec 两条：
+    ✓ 53 visual.spec.ts:55  侧栏/会话/审批/info-pane U2 fixed 项亮暗数值断言 (7.4s)
+    ✓ 54 visual.spec.ts:175 市场D4/D6 亮暗 (3.3s)
+
+[4] 红基线抽查（sed 改 3 条断言为错值后单跑 visual.spec）
+  改动：L78 A1 height 38px→39px；L92 B10 shell padding 9px→10px；L193 D4 height 32px→33px
+  结果：2 failed，exit code 1
+    Error: A1        （亮、暗各 1 次）
+    Error: B10 shell （亮、暗各 1 次）
+    Error: D4        （亮、暗各 1 次）
+  git checkout -- 恢复后单跑：2 passed (12.0s)
+
+[5] NewBotDialog flaky 族单跑（bots.spec.ts）
+  6 passed (16.5s)，含 #3 新建对话框全旅程，零 flaky
+
+[6] 断言计数（静态）
+  具名 expect.soft 31 位（29 字面名 + 规则15 模板名 × light/dark）
+  themed() 亮暗成对；b6b8 helper 收起+展开两轮各亮暗 → 执行条数 = 24×2 + 5×4 + 2 = 70 ≥ 40
+
+[7] 复跑期间 worktree 全程干净，HEAD 未漂移；结束复核 git status 空、HEAD 仍 83a39ab

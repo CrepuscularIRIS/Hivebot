@@ -1,0 +1,18 @@
+/* T78 · 全局 overlay thin 滚动条（ui-quality U5）。
+ * 来源: grok-bot 0.78.1 index-Dh7EWA8t.css ui 面滚动条原子类合并：
+ * ui-12o6m6d(scrollbar 8px) ui-1uowca5/122zoth(bg/track 透明) ui-1nz211u(thumb
+ * text-quaternary 45%) ui-h4bufa(:hover 70%) ui-9xsh1y(radius full)
+ * ui-1ftd4sf(clip padding-box) + 四边 2px 透明 border（ui-9z2bt5…xefvfb 12 类）。
+ * 1.1.0 核查（MIGRATION-DELTA §2 滚动跟随行）：此面逐字同，锚有效。
+ * ponytail: 全局一段等价原版「全平台同 overlay thin」；按区域 none（ui-fk6m8 系）与
+ * sand 面 6px 皮肤未配对消费区域——不做，泄漏再补。 */
+*::-webkit-scrollbar { width: 8px; height: 8px; background-color: #0000; }
+*::-webkit-scrollbar-track { background-color: #0000; }
+*::-webkit-scrollbar-corner { background-color: #0000; }
+*::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--cursor-text-quaternary) 45%, transparent);
+  border: 2px solid #0000;
+  background-clip: padding-box;
+  border-radius: var(--cursor-radius-full);
+}
+*:hover::-webkit-scrollbar-thumb { background-color: color-mix(in srgb, var(--cursor-text-quaternary) 70%, transparent); }

@@ -1,0 +1,7 @@
+$ playwright test --grep 'D4②'
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/m2-port.spec.ts:314:5 › ⑤ D4② 断开 mux socket 再重连：未决 waterfall 带新 clientId 重新下发，批准后执行 (3.0s)
+
+  1 passed (3.4s)

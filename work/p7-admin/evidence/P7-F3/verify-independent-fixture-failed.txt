@@ -1,0 +1,18 @@
+file:///home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/verify-independent.mjs:41
+  const delivery=new Delivery(ctx,()=>hst.current);const sent=delivery.send(agent,{id:'pbots-report:x',source:{kind:'pbots-worker'}}).catch(e=>e)
+  ^^^^^
+
+SyntaxError: Unexpected token 'const'
+    at compileSourceTextModule (node:internal/modules/esm/utils:319:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:89:18)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12)
+    at node:internal/modules/esm/loader:636:32
+    at TracingChannel.tracePromise (node:diagnostics_channel:370:14)
+
+Node.js v24.22.2
+EXIT 1

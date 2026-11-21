@@ -1,0 +1,11 @@
+import cp from 'node:child_process';
+import fs from 'node:fs';
+import {syncBuiltinESMExports} from 'node:module';
+const {startSshHost}=await import('/dev/shm/bot-T2/app/sdk/tests/support/ssh-host.ts');
+const born=[]; const spawn=cp.spawn;
+cp.spawn=(...a)=>{const c=spawn(...a); born.push(c.pid); return c}; syncBuiltinESMExports();
+const host=await startSshHost();
+const cmds=born.map(pid=>({pid,cmd:fs.readFileSync(`/proc/${pid}/cmdline`,'utf8').split('\0')}));
+const ownDshDirs=cmds.flatMap(({cmd})=>cmd.flatMap((v,i)=>v==='-S'?[cmd[i+1].replace(/\/master$/,'')]:[]));
+fs.writeFileSync(`${process.env.HOME}/state.json`,JSON.stringify({runner:process.pid,dir:host.dir,port:host.port,born,ownDshDirs}));
+await new Promise(()=>{});

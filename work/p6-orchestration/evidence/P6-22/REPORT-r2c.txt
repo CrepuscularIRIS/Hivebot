@@ -1,0 +1,65 @@
+P6-22 第2轮补采 r2c（6.1 Sol 执行 harness，被测 glm-5.3 / litellm）
+分支 feat/P6-22；起点 ffe98e6；采集器已有修复 5092c75；本次采集支持提交 f7ba26f、e75bbbf；证据提交 SHA 见本文件所在提交。
+范围：只补采 held-out 原未采18组 + 原超时 par1-two-tasks-2，共19组；随后仅重采 dev 追加组。不调文案，不跑r3，不跑48组定案。
+
+一、结果（完整36组计划已全部采过；35组闭合、1组超时invalid，不冒充36组全闭合）
+- 原17完整组保留，sha256逐一相同；补采19/19，逐组来源已标在 rounds/r2/SCORE.txt。
+- 保守计分子集 28/30；单派12/12、并行6/6、追加5/6、停止5/6。
+- 36组分布：34正确（含6哨兵）、1完整路由失败、1超时invalid、0缺失、0其他错误。
+- 哨兵误派0/6，完整6/6（直接答4、闲聊2）。
+- 观测硬指标：42批回报，污染回合工具成功0，tailTexts!=1为0；不能据此替超时worker的未观测后续作保证。
+- attach2-backup-index-3：outcome=timeout，timeouts=worker2；评分回合create=1/send=0。保持invalid，不能当成完整回合“模型确实没调send”的路由失败；未额外重采第20组，也未读取heldout/raw诊断原因。
+- stop2-archive-3：outcome=turn/end、无timeouts，计分回合stop=0；这是完整回合没调stop的路由失败。只使用冻结计分表作以上描述，不读原文、不推测模型动机。
+- 冻结评分器保留 converged=false：它额外要求所有组闭合，故本报告不是正式收敛PASS。没有修改score.mjs来消掉此标记。
+
+二、dev追加组与修复采集器验证
+- dev-attach-recipe-allergy-1 新采成功：outcome=turn/end、timeouts=[]、worker=1、retryCount=0；dev整体10/10（单派4、并行2、追加1、停止1、直接答1、闲聊1），全部闭合。
+- 只读dev raw的时间线：主raw第338行create_bot；第418行首批回报、第810行消化闭合；第815行第二次用户消息、第1186行send_to_bot；第1240行第二批回报、第1495行消化闭合。
+- 这是真实重采，不是旧dev raw回放后回填；原r2b的429追加raw保留为.prev2。rounds/r2/dev/OBSERVATIONS-r2c.txt包含可复核时间线。
+- 修复后的waitReportConsumed确实越过追加用户回合，观察到第二批回报后再闭合。本轮无需据dev失败模式做r3建议。
+
+三、429、串行、隔离与基线
+- 本轮新held-out和dev均未遇429：当前主/worker终态429=0，llm/retry=0，组级重试总数0；raw meta retryCount=0。退避分支经确定性测试覆盖，本次真模型没有触发，不能声称实测了429恢复。
+- f7ba26f：增加精确组筛选和有界组级重采，最多3次、至少30秒；每次新会话，前次raw由reserveName另存.prevN；主和worker raw meta写retryCount。
+- e75bbbf：按用户“数千秒才停止”补900/1000秒边界测试并将长封阈值对齐为>=1000秒；小于1000秒尊重retry-after后再试，未知retry-after按30秒有界重试，最多3次。
+- 已启动held-out进程载入的是f7ba26f（>120秒停）的旧阈值；dev载入e75bbbf（>=1000秒停）。由于本次双方429和重试均为0，此阈值差没有触发；没有把两个版本谎称完全相同。本轮没有长封剩余组。
+- 两阶段严格串行，组间5000ms；dev在held-out收尾后才启动。19组补采之外的原17组没有重新请求模型。
+- shell HOME=/tmp/bot-p622r2c-shell-home；SDK child HOME=/tmp/bot-p622r2c-{heldout,dev}/home，显式P2SDK_ORCH_DATA_DIR=/tmp/bot-p622r2c-{heldout,dev}/data；首会话前预写bots.json。
+- 产品基线仍c33efa8，文案仍0ed1ed4；ROUTING_PROMPT SHA256=8bc4ea57810cbfcc2ac21c6cb4a510449df88c174dd22efc0d753bea81f04fc8。
+- 主会话raw的模型glm-5.3、provider litellm、三件编排工具、完整r2 section输入全部由盲布尔审计核对通过。held-out raw只供既有评分器与布尔/计数审计机器处理，从未在模型上下文展开；无held-out原文分析或调词。
+- Git对四个产品文案文件、prompts.json、score.mjs相对0ed1ed4零差异。没有引入P6-24/P6-25安全与工作区变更，不将本轮当成新基线的最终验收。
+
+四、对比与门槛建议
+- r1子集3/30（单派0/12、并行3/6、追加0/6、停止0/6），哨兵误派0/6，dev6/10。
+- r2现已覆盖全部36组计划，保守正确28/30（比r1多25个已证实正确组）；另1超时保持invalid，而非漏调统计。r2 dev10/10，比r1多4。
+- 本轮判据：子集>=22/30且哨兵误派0/6、硬指标全过→建议定案；<12/30→建议转§12.3；12–21→只据dev raw总结失败模式供r3。
+- 建议：28个已证实正确组即使将该超时保守算0也超过22，因此按用户本轮门槛建议进入定案阶段，不再调r3；不是宣称冻结评分器converged=true或正式PASS。保留1超时与1完整路由失败供后续正式48组重新测量。
+- 48组不在本轮跑，必须等P6-24/P6-25.f1等合并后按生产布局与新安全基线定案；不开放P6-14b闸门，不自行推进依赖任务。
+
+五、复测命令与末行输出
+（下列脚本均在 /tmp/bot-wt/P6-22/work/p6-orchestration/evidence/D3-orch/ 下）
+node rounds/r2/test-retry-r2c.mjs
+PASS: 7 bounded 429 retry checks
+node rounds/r2/test-report-wait.mjs
+PASS: 5 report-wait checks; real dev replay sees second batch; no held-out raw read
+node score.mjs --selftest
+17/17，含追加/停止/污染回合/回合缺失/turn-error invalid。
+HOME=/tmp/bot-p622r2c-shell-home /tmp/bot-wt/P6-22/app/sdk/node_modules/.bin/vitest run --root /tmp/bot-wt/P6-22/app/sdk tests/unit/orchestration-routing-live.test.ts tests/unit/orchestration-routing.test.ts
+Test Files 2 passed (2)
+Tests 14 passed (14)
+Duration 2.92s
+node run.mjs --smoke（隔离root=/tmp/bot-p622r2c-smoke，输出rounds/r2/smoke-r2c）
+SMOKE PASS：通道往返 / assign首条 / 回报投递+消化 / 主worker工具表 / raw形状。
+node rounds/r2/score-round.mjs heldout；node rounds/r2/score-round.mjs dev；node rounds/r2/summarize-r2c.mjs
+preserved=17; supplemented=19/19; collected=36/36; complete=35/36
+subset=28/30; sentinel-misdispatch=0/6; dev=10/10
+node rounds/r2/audit-inputs.mjs
+model/provider/tools/routing-input PASS；heldout timeout=1、dev timeout=0；两边llm/retry=0、terminal429=0、groupRetries=0；credential-value matches=0。
+未跑全量回归。纯采集改造复用已有run.mjs、scoreGroup、fake provider，无新依赖。
+
+六、交付文件与清理
+- 完整绝对路径清单见 /tmp/bot-wt/P6-22/work/p6-orchestration/evidence/D3-orch/rounds/r2/FILES-r2c.txt；主要为run.mjs、退避测试、盲审计/盲汇总、补采raw、分表、旧分表/旧raw归档、fake smoke、本报告。
+- SDK/dsh由采集器finally回收；运行时root（含凭证）均已删除。只用/home/lingxufeng/bot/scripts/bot-reap回收本次剩余tail/grep终态监视器；bot-reap --dry-run --match p622及--match P6-22均已无匹配。
+- 临时依赖软链移除；既有未跟踪VERIFY-r0.txt、vfy-r0/不动、不提交；不接触真实HOME、桌面或训练进程。
+- 未完成项：上述1超时未裁决、1完整路由失败；正式48组按依赖等待，不属于本轮；短429真恢复未被实际触发。
+待 verifier 验收。

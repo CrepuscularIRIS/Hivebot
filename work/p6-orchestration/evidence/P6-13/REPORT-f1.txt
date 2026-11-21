@@ -1,0 +1,8 @@
+P6-13.f1 report · 2026-11-04 17:30 · branch feat/P6-13 @ 23b0ac5（基于 79899b0）
+改动：app/sdk/src/orchestration/stop.mjs（空闲分支短路：status!=='running' 直接回 {accepted:true,wasRunning:false}，不触 cancel；running 分支不变）；app/sdk/tests/unit/orchestration-stop.test.ts（原 :139-145 断言 cancel=1 翻转为 0，先红后绿；+1 条 idle 短路后 running 停止仍恰 1 cancel）。
+红：改断言后单测 2 failed（两条零 cancel 断言）/ 14 passed。
+绿：HOME=/tmp/bot-p613f1-green-* vitest run tests/unit/orchestration-stop.test.ts tests/unit/orchestration-stop-live.test.ts → 2 files / 21 tests passed（原 20，+1 不降）。
+探针：HOME=/tmp/bot-p613f1-probe-* node evidence/P6-13/vfy-guards.mjs → idle {accepted:true,wasRunning:false,cancelCalls:0} PASS，exit=0（修前 exit 1）。
+自查：bot-reap --dry-run --match p613 无匹配 exit=0；worktree git status 空，HEAD=23b0ac5。
+未完成/新问题：无。
+待 verifier 验收。

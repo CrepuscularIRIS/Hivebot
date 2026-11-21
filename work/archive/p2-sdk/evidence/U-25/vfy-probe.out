@@ -1,0 +1,23 @@
+[probe] fixture index at http://127.0.0.1:41461/index.json
+[probe] runtime ready, home = /tmp/vfy-u25-home-iT1k4w
+[probe] PASS listing: connector entry found :: total=111
+[probe] PASS listing: exact npm coordinate spec present :: spec=@agent-infra/mcp-server-filesystem@1.2.29
+[probe] PASS ② install via wrapper: not failed :: outcome={"stage":"enable","target":"@p2sdk-market/agent-infra__mcp-server-filesystem","enabled":false,"changed":true,"application":"applied","registries":[null],"packageResult":{"exitCode":0,"output":"\ndependencies:\n+ @p2sdk-m…
+[probe] PASS ② listBundles: wrapper bundle present :: names=@deepseek-ai/dsh-base,…,@p2sdk-market/agent-infra__mcp-server-filesystem,…
+[probe] PASS ② wrapper enabled === false :: enabled=false
+[probe] PASS ② bare package never a bundle
+[probe] PASS ②b wrapper declares dsh.bundle.patch
+[probe] PASS ②b stdio row + required arg baked :: args=["/tmp/bot-wt/U-25/app/sdk/node_modules/.pnpm/@agent-infra+mcp-server-filesystem@1.2.29/node_modules/@agent-infra/mcp-server-filesystem/dist/index.cjs","--allowed-directories","/tmp/vfy-u25-home-iT1k4w/workspace"]
+[probe] PASS ②b serverName shape (≤32, [A-Za-z0-9_-]) :: mcp-server-filesystem-3408f957
+[probe] PASS ②b wrapper name ↔ dir segment :: @p2sdk-market/agent-infra__mcp-server-filesystem
+[probe] PASS ③ X tool table has connector tool :: tool=mcp__mcp-server-filesystem-3408f957__read_file
+[probe] PASS ③ Y has no mcp__ tool :: []
+[probe] PASS ③ X stream shows tool/call of connector tool
+[probe] PASS ③ X stream shows tool/result with REAL server output
+[probe] PASS ③ Y stays mcp__-less after X used the tool
+[probe] PASS ④ bare spec: application failed (dsh refusal, as-is) :: outcome={"stage":"install","target":"@agent-infra/mcp-server-filesystem","enabled":false,"changed":false,"application":"failed",…
+[probe] PASS ④ bare spec: structured error code :: code=not-bundle
+[probe] PASS ④ bare spec: target passthrough unchanged :: target=@agent-infra/mcp-server-filesystem
+[probe] PASS ④ no new wrapper dir generated for the bare spec :: new=
+[probe] SUMMARY 19/19 checks passed
+PROBE-EXIT=0

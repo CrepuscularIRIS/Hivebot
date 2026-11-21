@@ -1,0 +1,4 @@
+     × 50 个并发 recipe 写与 patch 全部落盘、无丢更新 22ms
+     × 同 key 同值重复写幂等；不同值覆盖为最后一次（队列序） 1ms
+ FAIL  tests/unit/m3/store.test.ts > BotsMetaStore · D10e 单一 Promise 队列 > 50 个并发 recipe 写与 patch 全部落盘、无丢更新
+ FAIL  tests/unit/m3/store.test.ts > BotsMetaStore · D10e 单一 Promise 队列 > 同 key 同值重复写幂等；不同值覆盖为最后一次（队列序）

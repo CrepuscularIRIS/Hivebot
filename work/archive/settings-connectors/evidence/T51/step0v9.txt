@@ -1,0 +1,12 @@
+# T51 step0v9 @ 2026-11-11T12:21:18.759Z
+Q1 listIndexes(初)=[]
+Q2 setIndexes([real]) 成功=undefined
+Q2 profiles/web/cordis.patch.yml=
+- id: plugin-market
+  name: "@deepseek-ai/dsh-plugin-market"
+  config:
+    indexes:
+      - http://127.0.0.1:43801/real/index.json
+
+Q3 listIndexes=[{"url":"http://127.0.0.1:43801/real/index.json"}]
+Q4 重启后 listIndexes=[{"url":"http://127.0.0.1:43801/real/index.json"}]

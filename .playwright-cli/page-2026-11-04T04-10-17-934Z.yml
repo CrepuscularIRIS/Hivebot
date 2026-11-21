@@ -1,0 +1,61 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - complementary "Agents" [ref=e7]:
+        - button "New" [ref=e10] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e11]: 
+        - button "Search" [ref=e12] [cursor=pointer]:
+          - generic [ref=e13]:
+            - generic [aria-hidden] [ref=e14]: 
+            - text: Search
+        - region "Agent list" [ref=e15]:
+          - generic "New chat chat preview" [ref=e19]:
+            - button "New chat" [ref=e20] [cursor=pointer]:
+              - strong [ref=e31]: New chat
+        - separator "Resize sidebar" [ref=e32]
+      - button "Connect apps" [ref=e34] [cursor=pointer]
+      - button "Account" [ref=e37] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e38]: P
+    - generic [ref=e39]:
+      - main [ref=e40]:
+        - group "New chat" [ref=e41]:
+          - button "View agent settings" [ref=e42] [cursor=pointer]:
+            - generic [ref=e51]: New chat
+        - log "Conversation transcript" [ref=e52]
+      - textbox "Prompt" [ref=e57]:
+        - paragraph [ref=e58]: Message New chat
+  - dialog [ref=e910]:
+    - banner [ref=e61]:
+      - heading "Connect Apps" [level=2] [ref=e911]
+      - button "Close" [ref=e63] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e64]: 
+    - generic [ref=e912]:
+      - generic [ref=e913]:
+        - generic [aria-hidden] [ref=e914]: 
+        - searchbox "Search plugins" [ref=e915]
+      - combobox "Catalog" [ref=e916]:
+        - option "MCP official registry snapshot (offline mirror)"
+        - option "U-23 本地目录" [selected]
+    - generic [ref=e70]:
+      - button "Your plugins" [ref=e1328] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e1330]: P
+        - generic [ref=e1331]: "1"
+        - generic [aria-hidden] [ref=e1332]: 
+      - list [ref=e1333]:
+        - listitem [ref=e1334]:
+          - button "Open Demo connector" [ref=e1335] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e1336]: D
+            - generic [ref=e1337]:
+              - generic [ref=e1338]: Demo connector
+              - generic [ref=e1339]: U-23 可安装连接器（ping MCP）
+          - button "Connect Demo connector" [disabled] [ref=e1342]:
+            - generic [ref=e1343]: Connecting…
+        - listitem [ref=e1344]:
+          - button "Open Bare package" [ref=e1345] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e1346]: B
+            - generic [ref=e1347]:
+              - generic [ref=e1348]: Bare package
+              - generic [ref=e1349]: U-26 无 dsh.bundle 声明的裸 npm 包（not-bundle 旅程）
+          - button "Connect Bare package" [disabled] [ref=e1352]:
+            - generic [ref=e1353]: Connect
+      - generic [ref=e1354]: Showing 2 of 2

@@ -1,0 +1,42 @@
+{
+ "id": "08-onboarding-connect",
+ "platform": "linux",
+ "geo": {
+  ".sand-onboarding__connect": {
+   "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 1280,
+    "h": 752
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": "Connect your appsGmailConnectGoogle Cale"
+  },
+  ".sand-onboarding__connect [role=\"listitem\"]": {
+   "rect": {
+    "x": 440,
+    "y": 229,
+    "w": 400,
+    "h": 50
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": "GmailConnect"
+  }
+ },
+ "meta": {
+  "platform": "Linux x86_64",
+  "uaPlatform": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.7977.130 Electron/44.7.0 Safari/537.36",
+  "dpr": 1,
+  "innerW": 1280,
+  "innerH": 752,
+  "loadedFonts": [
+   "cursor-icons/normal",
+   "cursor-icons/normal"
+  ],
+  "scrollY": 752
+ }
+}

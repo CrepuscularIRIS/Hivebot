@@ -1,0 +1,9 @@
+searching tablet-magenta  ours ink=370 rgb=(240, 85, 165)  harness ink=373 rgb=(240, 85, 165)  dRGB=0  area%=1
+searching teardrop-red      ours ink=364 rgb=(239, 65, 83)  harness ink=370 rgb=(239, 67, 84)  dRGB=2  area%=2
+searching wedge-brown    ours ink=393 rgb=(156, 119, 84)  harness ink=400 rgb=(156, 119, 85)  dRGB=1  area%=2
+thinking  tablet-magenta  ours ink=365 rgb=(240, 83, 164)  harness ink=369 rgb=(240, 83, 164)  dRGB=0  area%=1
+thinking  teardrop-red      ours ink=367 rgb=(239, 65, 83)  harness ink=372 rgb=(239, 67, 84)  dRGB=2  area%=1
+thinking  wedge-brown    ours ink=398 rgb=(156, 119, 85)  harness ink=398 rgb=(155, 118, 83)  dRGB=2  area%=0
+working   tablet-magenta  ours ink=365 rgb=(240, 84, 165)  harness ink=372 rgb=(240, 85, 165)  dRGB=1  area%=2
+working   teardrop-red      ours ink=364 rgb=(239, 65, 83)  harness ink=371 rgb=(240, 67, 84)  dRGB=2  area%=2
+working   wedge-brown    ours ink=395 rgb=(156, 120, 85)  harness ink=401 rgb=(157, 120, 85)  dRGB=1  area%=1

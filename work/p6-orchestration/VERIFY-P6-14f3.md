@@ -1,0 +1,89 @@
+# VERIFY P6-14.f3
+
+> 转正自 evidence/P6-14f3/VERIFY.txt。
+
+verdict: FAIL
+commit: 8db963608560e0dc0dba7ad64c47159313550c55
+P6-14 修复链整体判定: FAIL（正常路径及安全回归通过，但“init 必先于首会话”的启动闸门硬标准仍存在可复现反例）
+branch: feat/P6-14f2
+worktree: /tmp/bot-wt/P6-14f2
+验证范围: 5873660..8db9636（44e8b11、8db9636），并复跑 P6-14/.f1/.f2 相关拒绝面。
+报告按本会话禁止写报告 .md 的约束，落用户指定兜底 evidence/P6-14f3/VERIFY.txt；未改产品代码。
+E = /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14f3/vfy/
+
+| 验收项 | 结果 | 证据（命令/文件/输出） |
+| 1① 独立构造合法零 worker 文档（无 bots）主 bot create_bot 放行 | PASS | E/probe-vfy.mjs production-main；E/probe-production-main.log：before=after=1，create_bot 返回 main-unavailable（无 main 通道订阅者），不是 pbots/forbidden，工具可见。未把通道不可用当成已完成 worker 创建；本项只证明信封放行。 |
+| 1② 正常冷启动全程无 unknown、主 bot 工具表完整 | PASS（正常连接路径） | E/probe-vfy.mjs cold-boot 真 Loader + 真生产 BotsMetaStore：init 在空临时 dataDir 写骨架，建立会话，再 patchMainBotId（与生产先 create 后 patch 顺序一致）。E/probe-cold-boot.log 明确 ASSERT unknownCount=0：session/created、agent/created、tools/pre-execute 三观察点均 main。设主后17个信封名单工具全可见，调用 create_bot 后仍全可见。设主前14个委派/作业名可见；3个协调者名受其自身 mainBotId when 条件隐藏，这是正常权限设计，不是 unknown/restrict。 |
+| 2 missing / corrupt / rename 三安全探针 | PASS | E/probe-missing.log、probe-corrupt.log：subagent 皆拒绝，session/list 1→1，live agent/session 仅原会话，子 agent/created 0，子回合/工具执行0。E/probe-rename.log：改名 rvw_delegate 真实调用被 session/created 同步 veto，无 started subagent，无子 agent/created、子 turn/tool，默认子模型脚本 job_list 未执行。原始持久 session/list 1→2（已有 minor 孤儿行上限）；live sessions 仍仅父会话；孤儿 events=[]，公开 prompt 返回 session/agent-busy（不谎称 resume 再次触发 veto）。 |
+| 3 resolveWorkerStatus unknown 收窄 + version 不符 fail closed | PASS | 逐行读 envelope.mjs:95-108；E/states-vfy.mjs / E/states.log 的14态实测：文件缺失/坏JSON/null顶层/缺version/v2/字符串version/bots=null/数组/数字 → unknown、create_bot deny；合法省略bots/空bots/空createdBy/无当前记录 → main、pass；createdBy非空即使mainBotId同名 → worker、deny。异常读盘统一catch→unknown；无正常零worker态落入unknown。E/faults.log 亦验证version不符deny。此函数是身份判定，不是完整BotsMeta schema校验，未声称校验recipes等无关字段。 |
+| 4 恢复撤销三挂点，pre-execute 真链路，上限评估 | PASS（含注释措辞问题） | envelope.mjs:290-314 明确三挂点。E/states.log：session/created、agent/created、tools/pre-execute 各撤销一次；真worker三挂点均不撤。E/probe-recovery.log 真 Loader：缺文件建会话→恢复健康文件→首个job_list一次UNKNOWN_TOOL，但本次pre-execute已撤restrict、表立即可见；第二回合job_list真实成功。代码有ponytail注释；其“本次不经过pre-execute”措辞与真链路不符，见minor。 |
+| 5 store.init ENOENT 写骨架；启动闸门保证 init 在首会话前；app/ui 478 | FAIL（闸门有旁路） | store.ts:71-96、116-127 ENOENT 确实await原子flush；已有/坏文件只读，错误留loadError，正常冷启动探针证明实际骨架。UI 41 files /478 passed。但 index.ts:276-279 的 dshStart.catch 未等m3.init便setRestoreSettled；ready.ts:49/51永久放行，重连wireRestoreOnReconnect不重置gate。E/startup.test.ts + E/startup-gate.log 复现init尚在等待且首连超时时，session/create在bots.json不存在时到达dsh适配器，身份unknown。详见下节。 |
+| 6 SDK定向79、相邻157、faults19×3 | PASS | E/sdk-target.log 6 files /79 passed；E/sdk-adjacent.log 5 files /157 passed；E/faults.log throw/missing/definitions-throw 各19 worker calls denied，dispatched=0，主bot subagent与worker read放行，晚注册schedule_create仍deny，拒绝结果不泄漏注入异常细节。 |
+
+一、阻塞反例：正常闸门成立，不代表所有启动分支成立
+
+已读实际生产链：
+- m3-meta/index.ts:70-71 构建store并立即启动init。
+- main/index.ts:248-264 的M1/M2确实用restoreGated包裹。
+- 正常onConnected路径 index.ts:165-168 确实await m3.init后ensureThenReady。
+- 但首次连接超时路径 index.ts:276-279 直接ready.setRestoreSettled([...m3.failed])，不等init。
+- ready.ts:49把restoreReady永久置true；waitRestore():51随后立即resolve。
+- 重连事件只是排队await init，没有把已开放的闸门重新关上。
+- wrapM1WithOrchestration→createSessionForcedWorkspace不等store.init，故session/create能先到dsh。
+
+实际对抗探针（不是只做静态推断）：
+E/startup.test.ts 对生产BotsMetaStore的init入口注入受控I/O延迟，使用真实registerM3Meta、wireRestoreOnReconnect、createReadyGate、restoreGated、wrapM1WithOrchestration；dsh传输为记录调用的fake，不启动Electron。首次连接失败分支不是手写近似实现：从本HEAD main/index.ts提取dshStart.catch函数体原文执行（记录injected first-connect timeout），然后触发真实重连接线，发真实M1 session/create请求。
+- 正常对照：50ms内调用未完成、dsh调用0；释放init后，session/create时fileExists=true、identity=main。
+- 超时反例：init仍未释放，50ms内session/create已完成；dsh记录 [{"method":"session/create","identity":"unknown","fileExists":false}]。
+- 两格各有断言，2 tests passed的含义是“成功证明正常对照和提前放行反例”，不是产品通过。
+
+触发条件是首次连接超时先于init完成（慢/阻塞存储，或配置较短PBOTS_DSH_START_TIMEOUT_MS），随后连接恢复/调用到达时init仍未完成。不是每次正常冷启动都会发生；本次未谎称启动了真实网络断线或Electron浏览器。真实Loader的missing/recovery探针已独立证明同样的缺文件建会话会挂restrict、恢复后需要事件撤销。该问题属于主bot可用性/启动契约，未发现worker安全开门。
+
+结论：builder“既有闸门链已保证顺序，所以index.ts零改动即可”的无条件论断不成立。不能在硬标准要求保证init先于首会话时给修复链PASS。建议修复方向：把身份存储init作为M1/M2独立前置，超时释放restore不应同时跳过init；不建议简单取消原有连接失败退路，也不能通过放宽unknown解决。
+
+二、恢复上限是否可接受
+
+可接受为“身份文件故障后恢复”的有界可用性简化：不使用fs.watch；仅已有三个事件点重判；执行期unknown仍fail closed；真worker不撤；真Loader证明强制首调隐藏工具只失败一次，随后表恢复、重试成功。对于无人触发任何事件的闲置agent，不承诺磁盘恢复即刻推送工具表。模型若不主动调用隐藏工具，则需要下一次其他工具调用/新会话或agent创建触发恢复，不应宣称无事件自动恢复。
+该上限不能代替冷启动init前置，也不能用来接受上一节的闸门旁路。
+注释存在，但 envelope.mjs:295 的“不经过pre-execute”与实测不一致：首调确有pre-execute（并撤销restrict），只是本次工具解析快照仍报UNKNOWN_TOOL；应修正文案，保持“一次失败/重试恢复”的实证上限。
+
+三、复跑命令与输出尾部
+
+1. cd /tmp/bot-wt/P6-14f2/app/sdk
+HOME=/tmp/bot-p614f3-vfy-home ./node_modules/.bin/vitest run tests/unit/orchestration-envelope.test.ts tests/unit/orchestration-envelope-live.test.ts tests/unit/orchestration-create-live.test.ts tests/unit/orchestration-send-live.test.ts tests/unit/orchestration-stop-live.test.ts tests/unit/orchestration-report-live.test.ts --reporter=verbose
+E/sdk-target.log：Test Files 6 passed (6)；Tests 79 passed (79)；Duration 83.16s。
+
+2. 同目录
+HOME=/tmp/bot-p614f3-vfy-home ./node_modules/.bin/vitest run tests/unit/orchestration-foundation.test.ts tests/unit/orchestration-create.test.ts tests/unit/orchestration-send.test.ts tests/unit/orchestration-stop.test.ts tests/unit/orchestration-report.test.ts --reporter=verbose
+E/sdk-adjacent.log：Test Files 5 passed (5)；Tests 157 passed (157)；Duration 3.01s。
+
+3. cd /tmp/bot-wt/P6-14f2/app/ui
+HOME=/tmp/bot-p614f3-vfy-home ./node_modules/.bin/vitest run tests/unit/
+E/ui-unit.log：Test Files 41 passed (41)；Tests 478 passed (478)；Duration 3.90s。
+这是用户明确要求的UI全量单测，未跑SDK全量/全套e2e，未启动UI，不作视觉/截图结论。
+
+4. HOME=/tmp/bot-p614f3-vfy-home node --experimental-strip-types E/probe-vfy.mjs <production-main|cold-boot|missing|corrupt|rename|recovery>
+E替换为上述绝对目录。六格最终均exit0且日志无未捕获异常/AssertionError；最终版观察器回调不返回push的数值，避免影响serial事件传播。临时运行根mkdtemp('/tmp/bot-p614f3-vfy-probe-')，HOME、运行时、data、handoff、fake脚本路径均从根派生；finally bot-reap清理自己生成的SDK进程再删根。evidence无运行时凭证。
+冷启动尾部：BOOT ASSERT unknownCount=0（三事件状态均main）；f3 production-main: create_bot passed envelope, error = main-unavailable (no subscriber), tool visible = true。
+恢复尾部：f3 recovery undo: first call one-shot UNKNOWN_TOOL, table restored immediately, second call executed ok。
+
+5. HOME=/tmp/bot-p614f3-vfy-home node E/faults-vfy.mjs
+E/faults.log：throw/missing/definitions-throw: 各19 worker calls denied；f3 semantics: omitted-bots pass; version-mismatch/bad-shape/worker deny；f3 recovery: restrict lifted after healthy no-bots doc。
+探针独立改为每次mkdtemp根并finally删除，修正builder脚本首次unlink尚不存在文件的探针自身前置错误；不改产品。
+HOME=/tmp/bot-p614f3-vfy-home node E/states-vfy.mjs
+E/states.log：14态；三recoveryHook均lifts=1/layers=0；real worker restriction never lifted at any of 3 hooks; PASS。
+
+6. cd /tmp/bot-wt/P6-14f2/app/ui
+HOME=/tmp/bot-p614f3-vfy-home ./node_modules/.bin/vitest run --config E/vitest.config.mts --reporter=verbose
+E/startup-gate.log：正常fileExists=true/identity=main；CONFIRMED timeout bypass ... identity=unknown,fileExists=false；Tests 2 passed (2)。
+
+四、收尾与范围
+
+验收结束HEAD仍为8db963608560e0dc0dba7ad64c47159313550c55，worktree git status --porcelain为空。
+/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p614f3 无匹配项，exit0，记录E/cleanup.log。实际清理仅探针自己的SDK子进程，未操作桌面/系统进程。
+额外只读扫描P6-14f2发现6个进程启动于19:21/19:26/19:27，早于本次20:09验收；未按worktree名批量清理他人既有进程。
+f2遗留PLAN区域缺index.mjs的记账项仍在，不把其写成已解决；rename持久孤儿minor也仍在，非本次新安全绕过。
+
+新问题（每条一行，可直接成为修复任务）：
+- [FIX] 首连超时提前开放restore闸门，init未完成时session/create仍能到达dsh、命中unknown；修复链启动前置硬标准未满足 | 复现：运行E/startup.test.ts，延迟真实store.init，执行生产dshStart.catch原文，触发重连并发M1 session/create；释放init前已记录fileExists=false/identity=unknown | 疑似位置：/tmp/bot-wt/P6-14f2/app/ui/main/index.ts:276-279（旁路）、:255-263（入口前置仅restore）及 /tmp/bot-wt/P6-14f2/app/ui/main/ready.ts:49-51 | major（阻塞本次保证顺序验收；可用性，不是worker安全放行）
+- [FIX] 恢复撤销ponytail注释称隐藏工具首调不经过pre-execute，与真Loader实测矛盾 | 复现：E/probe-vfy.mjs recovery，首调UNKNOWN_TOOL的同时restrict已被pre-execute撤销，第二回合成功 | 疑似位置：/tmp/bot-wt/P6-14f2/app/sdk/src/orchestration/envelope.mjs:294-296 | minor（文档，不阻塞安全项）

@@ -1,0 +1,70 @@
+Already up to date
+Done in 300ms using pnpm v11.0.9
+$ vitest run -- tests/unit/orchestration-report.test.ts tests/unit/p7-admin-channel.test.ts tests/unit/p7-authority.test.ts
+
+ RUN  v5.0.5 /tmp/bot-wt/P7-F3/app/sdk
+
+[p2sdk] ready http://127.0.0.1:41289
+WARN p2sdk: PBOTS_DATA_DIR unset, assuming /home/lingxufeng/.config/pbots-ui
+p2sdk: dsh pid 2308105
+p2sdk: handoff /tmp/p2sdk-handoff-omD0rx
+p2sdk: no ready line within 1ms
+p2sdk: forwarding SIGTERM to dsh
+p2sdk: forwarding SIGTERM to dsh
+ ❯ tests/e2e/subagent-policy.test.ts (3 tests | 1 failed) 44843ms
+   × P5-05 ③ workflow: agent() child bash under the pinned never policy is denied; the root still asks 33790ms
+ ❯ tests/e2e/security.test.ts (8 tests | 1 failed) 54963ms
+   × ⑤ real-key D2 smoke re-scan: same scanner, key from env, hits=0 33103ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/e2e/security.test.ts > ⑤ real-key D2 smoke re-scan: same scanner, key from env, hits=0
+AssertionError: D2 smoke must pass first (T-01④ scenario):
+session session-3f337b73-448d-4531-bbac-bf43bb2b93e1
+assistant chunks: 12 text=""
+turn end: true reason=error
+
+min-client FAIL: no text-delta chunk arrived (error stream is not a demo pass)
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/e2e/security.test.ts:404:95
+    402|     timeout: 120_000,
+    403|   })
+    404|   expect(d2.status, `D2 smoke must pass first (T-01④ scenario):\n${d2.…
+       |                                                                                               ^
+    405|
+    406|   const logDir = mkdtempSync(join(tmpdir(), 'p2sdk-t08-real-logs-'))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/e2e/subagent-policy.test.ts > P5-05 ③ workflow: agent() child bash under the pinned never policy is denied; the root still asks
+Error: no child model call observed outside session-4467d790-84a3-4687-86bc-cbfd51492078 within 30000ms
+ ❯ childSessionId tests/e2e/subagent-policy.test.ts:228:13
+    226|     if (hit) return hit.sessionId as string
+    227|     if (Date.now() >= deadline) {
+    228|       throw new Error(`no child model call observed outside ${exclude}…
+       |             ^
+    229|     }
+    230|     await new Promise((r) => setTimeout(r, 50))
+ ❯ assertChildDenied tests/e2e/subagent-policy.test.ts:271:17
+ ❯ runDelegationCase tests/e2e/subagent-policy.test.ts:303:5
+ ❯ tests/e2e/subagent-policy.test.ts:326:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 55 passed (57)
+      Tests  2 failed | 712 passed | 1 skipped (715)
+   Start at  08:59:41
+   Duration  91.25s (tests 98%, transform 1%)
+
+[ELIFECYCLE] Test failed. See above for more details.
+
+COMMAND: pnpm -C /tmp/bot-wt/P7-F3/app/sdk test -- tests/unit/orchestration-report.test.ts tests/unit/p7-admin-channel.test.ts tests/unit/p7-authority.test.ts
+EXIT_CODE=1

@@ -1,0 +1,75 @@
+== 最终 bwrap argv（dry-run，每行一元素）==
+  0 /usr/bin/bwrap
+  1 --ro-bind
+  2 /
+  3 /
+  4 --dev
+  5 /dev
+  6 --unshare-pid
+  7 --proc
+  8 /proc
+  9 --die-with-parent
+ 10 --unshare-net
+ 11 --tmpfs
+ 12 /home/lingxufeng
+ 13 --tmpfs
+ 14 /tmp/bot-p551f2-home-3HkLtk
+ 15 --tmpfs
+ 16 /tmp/p2sdk-handoff-mDLrQ1
+ 17 --tmpfs
+ 18 /run/user/1000
+ 19 --perms
+ 20 0644
+ 21 --ro-bind-data
+ 22 3
+ 23 /etc/ppp/chap-secrets
+ 24 --perms
+ 25 0644
+ 26 --ro-bind-data
+ 27 4
+ 28 /etc/ppp/pap-secrets
+ 29 --ro-bind
+ 30 /home/lingxufeng/miniconda3
+ 31 /home/lingxufeng/miniconda3
+ 32 --ro-bind
+ 33 /home/lingxufeng/.local/bin
+ 34 /home/lingxufeng/.local/bin
+ 35 --ro-bind
+ 36 /home/lingxufeng/.npm-global
+ 37 /home/lingxufeng/.npm-global
+ 38 --tmpfs
+ 39 /tmp
+ 40 --bind
+ 41 /tmp/bot-U-00-KoI48W/data/workspaces/session-aaaa
+ 42 /tmp/bot-U-00-KoI48W/data/workspaces/session-aaaa
+ 43 --ro-bind
+ 44 /tmp/bot-wt/P5-51f2/app/sdk
+ 45 /tmp/bot-wt/P5-51f2/app/sdk
+ 46 --ro-bind
+ 47 /tmp/bot-wt/P5-51f2/.claude
+ 48 /tmp/bot-wt/P5-51f2/.claude
+ 49 --ro-bind
+ 50 /home/lingxufeng/bot/.git/worktrees/P5-51f2
+ 51 /home/lingxufeng/bot/.git/worktrees/P5-51f2
+ 52 --perms
+ 53 0644
+ 54 --ro-bind-data
+ 55 5
+ 56 /home/lingxufeng/miniconda3/.condarc
+ 57 --perms
+ 58 0644
+ 59 --ro-bind-data
+ 60 6
+ 61 /home/lingxufeng/miniconda3/etc/aau_token
+ 62 --
+ 63 /bin/bash
+ 64 -c
+ 65 true
+
+tmpfs /tmp 参数位=38（值位 39）；工作区 --bind 参数位=40（值位 41）
+>> 工作区 bind 在 --tmpfs /tmp 之后（后挂载者可见）
+
+== 真实执行：touch 工作区内 /tmp/bot-U-00-KoI48W/data/workspaces/session-aaaa/inside-ok → rc=0 
+   宿主可见: true
+== 真实执行：touch 工作区外(e2e 的 ws) /tmp/bot-p551-ws-UefpXr/p551-ok → rc=1 stderr=touch: cannot touch '/tmp/bot-p551-ws-UefpXr/p551-ok': No such file or directory
+   宿主可见: false

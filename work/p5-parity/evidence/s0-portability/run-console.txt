@@ -1,0 +1,114 @@
+[page:log] [STUB] stub-installed undefined
+[page:log] [STUB] coordinatorPort.claim undefined
+[page:log] [STUB] coordinatorPort.request undefined
+[page:log] [STUB] coord.hello v1
+[page:log] [STUB] cursorAccount.onStatusChanged [null]
+[page:log] [STUB] cursorAccount.onStatusChanged [null] x2
+[page:log] [STUB] experiments.onChanged [null]
+[page:log] [STUB] experiments.onChanged [null] x2
+[page:log] [STUB] update.getStatus 
+[page:log] [STUB] update.onStatusEvent [null]
+[page:log] [STUB] update.onStatusEvent [null] x2
+[page:log] [STUB] update.getStatus  x2
+[page:log] [STUB] foreverBox.onVncUserPresence [null]
+[page:log] [STUB] foreverBox.onVncUserPresence [null] x2
+[page:log] [STUB] cursorAccount.getStatus 
+[page:log] [STUB] agent.clientPersistence.read ["sand.client.slice.ui-layout"]
+[page:log] [STUB] cursorAccount.getStatus  x2
+[page:log] [STUB] onboarding.getSeen 
+[page:log] [STUB] desktop.getWindowState 
+[page:log] [STUB] desktop.getWindowState undefined
+[page:log] [STUB] theme.onChanged [null]
+[page:log] [STUB] theme.onChanged [null] x2
+[page:log] [STUB] desktop.onWindowStateEvent [null]
+[page:log] [STUB] desktop.onWindowStateEvent [null] x2
+[page:log] [STUB] desktop.onFocusAgent [null]
+[page:log] [STUB] desktop.onFocusAgent [null] x2
+[page:log] [STUB] desktop.onDeepLink [null]
+[page:log] [STUB] desktop.onDeepLink [null] x2
+[page:log] [STUB] desktop.onForceOnboarding [null]
+[page:log] [STUB] desktop.onForceOnboarding [null] x2
+[page:log] [STUB] onboarding.onSkip [null]
+[page:log] [STUB] onboarding.onSkip [null] x2
+[page:log] [STUB] desktop.onOpenFeedback [null]
+[page:log] [STUB] desktop.onOpenFeedback [null] x2
+[page:log] [STUB] desktop.onOpenAbout [null]
+[page:log] [STUB] desktop.onOpenAbout [null] x2
+[page:log] [STUB] desktop.deepLinksReady 
+[page:log] [STUB] desktop.deepLinksReady undefined
+[page:log] [STUB] desktop.getZoomFactor 
+[page:log] [STUB] desktop.getZoomFactor undefined
+[page:log] [STUB] desktop.onZoomFactorEvent [null]
+[page:log] [STUB] desktop.onZoomFactorEvent [null] x2
+[page:log] [STUB] agent.clientPersistence.read ["sand.sidebar.width"]
+[page:log] [STUB] agent.clientPersistence.read ["sand.sidebar.collapsed"]
+[page:log] [STUB] agent.clientPersistence.read ["sand.infoPane.open"]
+[page:log] [STUB] agent.clientPersistence.read ["sand.infoPane.width"]
+[page:log] [STUB] agent.clientPersistence.read ["sand.boxDesktopModal.stageHeight"]
+[page:log] [STUB] cursorAccount.getAvatar 
+[page:log] [STUB] mcp.onAuthCompleted [null]
+[page:log] [STUB] mcp.onAuthCompleted [null] x2
+[page:log] [STUB] mcp.catalog 
+[page:log] [STUB] mcp.list 
+[page:log] [STUB] agent.getPinnedAgents 
+[page:log] [STUB] agent.clientPersistence.read ["sand.client.slice.account.stub-auth.roster.last-roster"]
+[page:log] [STUB] cursorAccount.getSandAccessFresh 
+[page:log] [STUB] desktop.onBoxMigration [null]
+[page:log] [STUB] desktop.onBoxMigration [null] x2
+[page:log] [STUB] desktop.getBoxMigrationStatus 
+[page:log] [STUB] onboarding.getSeen  x2
+[page:log] [STUB] desktop.getWindowState  x2
+[page:log] [STUB] desktop.getWindowState undefined x2
+[page:log] [STUB] desktop.deepLinksReady  x2
+[page:log] [STUB] desktop.deepLinksReady undefined x2
+[page:log] [STUB] agent.clientPersistence.read ["sand.client.slice.account.stub-auth.selection.last-agent"]
+[page:log] [STUB] agent.clientPersistence.read ["sand.client.slice.account.stub-auth.composer-drafts"]
+[page:log] [STUB] agent.clientPersistence.read ["sand.client.slice.account.stub-auth.ui-agent-refs"]
+[page:log] [STUB] agent.clientPersistence.read ["sand.client.slice.account.stub-auth.sidebar.last-sections"]
+[page:log] [STUB] agent.clientPersistence.read ["sand.pinnedAgentIds"]
+[page:log] [STUB] agent.clientPersistence.read ["sand.reactions.pinned"]
+[page:log] [STUB] agent.clientPersistence.read ["sand.mention.recents"]
+[page:log] [STUB] agent.getSidebarSections 
+[page:log] [STUB] desktop.getBoxMigrationStatus  x2
+[page:log] [STUB] agent.getSidebarSections  x2
+[page:log] [STUB] coord.request getTrays {}
+[page:log] [STUB] coord.request getListenerIntegrations {}
+[page:log] [STUB] coord.request getForeverBoxStatus {"id":"forever-box"}
+[page:log] [STUB] coord.request listAgents {}
+[page:log] [STUB] coord.request getTrays {} x2
+[page:log] [STUB] coord.request listAgents {} x2
+[page:log] [STUB] coord.request isAgentNetworkEnabled {}
+[page:log] [STUB] coord.request listAllAutomations {}
+[page:log] [STUB] coord.request isGlobalSearchEnabled {}
+[page:log] [STUB] coord.request isGlobalSearchEnabled {} x2
+[page:log] [STUB] coord.request isAgentNetworkEnabled {} x2
+[page:log] [STUB] coord.request listAllAutomations {} x2
+[page:log] [STUB] mcp.list  x2
+[page:log] [STUB] mcp.catalog  x2
+[page:log] [STUB] agent.clientPersistence.write ["sand.client.slice.account.stub-auth.selection.last-agent","{\"schemaVersion\":1,\"value\":{\"agentId\":\"ag_main\"}}"]
+[page:log] [STUB] coord.request getAgentWorkflows {"id":"ag_main"}
+[page:log] [STUB] coord.request getTeachRecordingStatus {}
+[page:log] [STUB] coord.request getListenerIntegrations {} x2
+[page:log] [STUB] coord.request getForeverBoxStatus {"id":"ag_main"}
+[page:log] [STUB] coord.request getSubagents {"id":"ag_main"}
+[page:log] [STUB] coord.request getAsyncTasks {"id":"ag_main"}
+[page:log] [STUB] coord.request openAgentTail {"id":"ag_main","limit":200}
+[page:log] [STUB] coord.event.push transcript
+[page:log] [STUB] agent.clientPersistence.write ["sand.client.slice.account.stub-auth.composer-drafts","{\"schemaVersion\":1,\"value\":{\"agents\":{\"ag_main\":{\"draft\":{\"prompt\":\"Summarize the top risk for Q4\",\"attachments\":[],\"richText\":\"{\\\"type\\\":\\\"doc\\\",\\\"content\\\":[{\\\"type\\\":\\\"paragraph\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Summarize the top risk for Q4\\\"}]}]}\"},\"draftId\":\"51981c40-edcb-46e0-bf7d-3ae0b7ddb259\",\"recovery\":null}}}}"]
+[page:log] [STUB] coord.request getForeverBoxStatus {"id":"ag_main"} x2
+[driver] type -> typed:Summarize the top risk for Q4|send:true {"count":1,"tag":"tiptap ProseMirror sand-prompt-field"}
+[driver] send -> sent
+[page:log] [STUB] coord.request sendPrompt {"agentId":"ag_main","prompt":"Summarize the top risk for Q4","directAddressedAcceptance":true,"attachmentPaths":[],"attachmentNames":[],"clientNonce":"362cc1d1-2651-4313-bf30-8da071ed9f30","enterEpochMs":1793727986052,"composedAtMs":1793727986052,"richText":"
+[page:log] [STUB] sendPrompt.payload {"agentId":"ag_main","text":{"agentId":"ag_main","prompt":"Summarize the top risk for Q4","directAddressedAcceptance":true,"attachmentPaths":[],"attachmentNames":[],"clientNonce":"362cc1d1-2651-4313-bf30-8da071ed9f30","enterEpochMs":1793727986052,"composedAtMs":1793727986052,"richText":"{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Summarize the top risk for Q4\"}]}]}"},"keys":["agentId","prompt","directAddressedAccept
+[page:log] [STUB] localToolPermission.clearApprovals 
+[page:log] [STUB] agent.clientPersistence.write ["sand.client.slice.account.stub-auth.composer-drafts","{\"schemaVersion\":1,\"value\":{\"agents\":{}}}"]
+[driver] open bot -> clicked
+[page:log] [STUB] mcp.onAuthCompleted [null] x10
+[page:log] [STUB] agent.clientPersistence.write ["sand.client.slice.account.stub-auth.selection.last-agent","{\"schemaVersion\":1,\"value\":{\"agentId\":\"ag_research\"}}"]
+[page:log] [STUB] coord.request openAgentTail {"id":"ag_research","limit":200}
+[page:log] [STUB] coord.event.push transcript x2
+[page:log] [STUB] coord.request getAgentWorkflows {"id":"ag_research"}
+[page:log] [STUB] coord.request getTeachRecordingStatus {} x2
+[page:log] [STUB] coord.request getForeverBoxStatus {"id":"ag_research"}
+[page:log] [STUB] coord.request getSubagents {"id":"ag_research"}
+[page:log] [STUB] coord.request getAsyncTasks {"id":"ag_research"}

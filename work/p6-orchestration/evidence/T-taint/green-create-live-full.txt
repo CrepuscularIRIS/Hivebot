@@ -1,0 +1,9 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-taint/app/sdk
+
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  11:51:40
+   Duration  55.22s (tests 100%)
+

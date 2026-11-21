@@ -1,0 +1,130 @@
+[
+  {
+    "id": "registry-shape-and-canonical-deny",
+    "status": "REFUTED",
+    "detail": {
+      "definitionCount": 19,
+      "denied": 17
+    }
+  },
+  {
+    "id": "unicode-case-alias-of-native-tool",
+    "status": "REFUTED",
+    "detail": {
+      "variants": [
+        "SUBAGENT",
+        "Subagent",
+        "subagent​",
+        "ｓｕｂａｇｅｎｔ",
+        "subagent ",
+        "mcp__server__subagent"
+      ],
+      "reason": "exact Map lookup; names are UNKNOWN_TOOL, not native subagent aliases"
+    }
+  },
+  {
+    "id": "mcp-public-name-collision",
+    "status": "REFUTED",
+    "detail": {
+      "publicNames": [
+        "mcp__probe__subagent",
+        "mcp__probe__Subagent",
+        "mcp__probe__subagent__2a0ff441bb77",
+        "mcp__probe___________bfc9264671f9",
+        "mcp__probe__subagentsubagentsubagentsubagentsubagen_cf1b923feaf8"
+      ],
+      "reason": "MCP list can add independent names, cannot alias/overwrite native names via publicToolName"
+    }
+  },
+  {
+    "id": "malformed-definitions-and-restrict",
+    "status": "REFUTED",
+    "detail": [
+      {
+        "shape": "object",
+        "warnings": 1,
+        "calls": 0,
+        "ms": 0.39
+      },
+      {
+        "shape": "object",
+        "warnings": 1,
+        "calls": 0,
+        "ms": 0.06
+      },
+      {
+        "shape": "string",
+        "warnings": 1,
+        "calls": 0,
+        "ms": 0.03
+      },
+      {
+        "shape": "number",
+        "warnings": 1,
+        "calls": 0,
+        "ms": 0.03
+      },
+      {
+        "shape": "array:1",
+        "warnings": 1,
+        "calls": 0,
+        "ms": 0.03
+      },
+      {
+        "shape": "array:1",
+        "warnings": 0,
+        "calls": 0,
+        "ms": 0.02
+      },
+      {
+        "shape": "array:1",
+        "warnings": 0,
+        "calls": 0,
+        "ms": 0.02
+      },
+      {
+        "shape": "array:20",
+        "warnings": 0,
+        "calls": 0,
+        "ms": 0.02
+      },
+      {
+        "shape": "array:100000",
+        "warnings": 0,
+        "calls": 0,
+        "ms": 15.48
+      },
+      {
+        "shape": "array:1",
+        "warnings": 1,
+        "calls": 1,
+        "ms": 0.15
+      }
+    ]
+  },
+  {
+    "id": "malformed-call-arguments",
+    "status": "REFUTED",
+    "detail": {
+      "cases": 13,
+      "reason": "native tool defineTool validates args; envelope boolean check never coerces strings/numbers"
+    }
+  },
+  {
+    "id": "upgrade-renamed-native-entry-sentinel",
+    "status": "REFUTED",
+    "detail": {
+      "apiSentinelsAloneCatchRename": false,
+      "committedLiveTest1CatchesRename": true,
+      "reason": "live compares all original delegation/jobs names, so replacing/removing a canonical entry fails"
+    }
+  },
+  {
+    "id": "upgrade-additional-entry-sentinel",
+    "status": "CONFIRMED-TEST-GAP",
+    "detail": {
+      "severity": "minor",
+      "reason": "new independent entry leaves whitelist-derived oracle green; no installed production bypass shown and no real delegation executed"
+    }
+  }
+]

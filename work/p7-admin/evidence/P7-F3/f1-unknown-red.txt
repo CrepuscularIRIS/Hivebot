@@ -1,0 +1,51 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F3/app/sdk[39m
+
+ [31m❯[39m tests/unit/p7-host-recovery.test.ts [2m([22m[2m21 tests[22m[2m | [22m[31m1 failed[39m[2m | [22m[33m20 skipped[39m[2m)[22m[32m 52[2mms[22m[39m
+   [31m❯[39m P7-F3 existing Reporter lifecycle recovery barrier [2m(7)[22m
+     [2m[90m↓[39m[22m boot and worker turn/end consume nothing until recovery, then report the stable key once
+     [2m[90m↓[39m[22m new recovery completion survives an old flush blocked past the default two-second window
+[31m     [31m×[31m a pending new-generation reconcile never replays an unconfirmed old delivery[39m[32m 50[2mms[22m[39m
+     [2m[90m↓[39m[22m withdraw checks the captured lease for every remove and stop cancels retry timers
+     [2m[90m↓[39m[22m start then stop cancels the queued boot pass
+     [2m[90m↓[39m[22m real Delivery: stop after holds enters readLog prevents followup after the await
+     [2m[90m↓[39m[22m changing generation during agentOf cannot wake an old pending report
+   [2m[90m↓[39m[22m P7-F3 peer-bound process recovery [2m(5)[22m
+     [2m[90m↓[39m[22m launcher explicitly enables host recovery without changing standalone P6 defaults
+     [2m[90m↓[39m[22m old resolve cannot open a new lease; reconnect keeps process identity; valid new handoff opens once
+     [2m[90m↓[39m[22m rejects self-reported generations and foreign peers; stopped wait settles without resolving readiness
+     [2m[90m↓[39m[22m an untrusted relationship summary cannot be acknowledged as repaired by the peer
+     [2m[90m↓[39m[22m failed native repair never opens the management lease
+   [2m[90m↓[39m[22m P7-F3 durable native interrupted termination [2m(5)[22m
+     [2m[90m↓[39m[22m accepts native fresh M3 metadata with null main and optional bots, but never trusts malformed relationships
+     [2m[90m↓[39m[22m closes claimed/open Assignment with native unknown tool result and stable stopped report, without resuming
+     [2m[90m↓[39m[22m held unconsumed Assignment stays pending and is not resumed
+     [2m[90m↓[39m[22m bad relationship is returned for the main audit, not accepted or resumed
+     [2m[90m↓[39m[22m corrupt identity, live open turn, append failure and non-durable termination all fail closed
+   [2m[90m↓[39m[22m P7-F3 real Loader control stream [2m(2)[22m
+     [2m[90m↓[39m[22m standalone P6 exposes no recovery control without launcher opt-in
+     [2m[90m↓[39m[22m binds native stream and unary RPC to the same Peer; reconnect is not process restart
+   [2m[90m↓[39m[22m P7-F3 post-followup outcome and wake permission [2m(2)[22m
+     [2m[90m↓[39m[22m cancellation after followup is unconfirmed, and concurrent waiters never replay
+     [2m[90m↓[39m[22m same captured lease is checked immediately before wake remove, and after synchronous remove events
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/unit/p7-host-recovery.test.ts[2m > [22mP7-F3 existing Reporter lifecycle recovery barrier[2m > [22ma pending new-generation reconcile never replays an unconfirmed old delivery
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called 1 times, but got 2 times[39m
+[36m [2m❯[22m tests/unit/p7-host-recovery.test.ts:[2m133:34[22m[39m
+    [90m131|[39m     expect(await old).toMatchObject({ unconfirmedStart: true })
+    [90m132|[39m     await sleep(20)
+    [90m133|[39m     expect(f.orch.delivery.send).toHaveBeenCalledTimes(1)
+    [90m   |[39m                                  [31m^[39m
+    [90m134|[39m   })
+    [90m135|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[33m20 skipped[39m[90m (21)[39m
+[2m   Start at [22m 10:46:17
+[2m   Duration [22m 280ms[2m (transform 48%, tests 29%, import 17%, setup 4%, worker 2%)[22m
+

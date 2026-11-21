@@ -1,0 +1,12 @@
+Done in 296ms using pnpm v11.0.9
+Already up to date
+Done in 304ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-wt/T-18/app/sdk
+
+
+ Test Files  3 passed (3)
+      Tests  3 passed (3)
+   Start at  11:30:15
+   Duration  5.08s (tests 99%, import 1%)
+

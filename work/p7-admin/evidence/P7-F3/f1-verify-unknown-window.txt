@@ -1,0 +1,22 @@
+old followup=1; unconfirmedStart=true; current lease open; recovery-complete default 2s timer still pending
+{"expectedAutomaticFollowups":1,"actualAutomaticFollowups":2,"flushes":2,"timer":null,"result":"FAIL"}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: unknown old external effect must not be replayed by already-scheduled recovery window
+
+2 !== 1
+
+    at file:///home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-verify-unknown-window.mjs:26:9 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 2,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.22.2
+
+EXIT 1

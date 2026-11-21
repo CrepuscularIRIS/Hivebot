@@ -1,0 +1,14 @@
+keyframes 0781=147 110=188 {'same': 143, 'changed': 0, 'added': 45, 'removed': 4}
+css vars 0781=1564 110=1607 {'same': 1451, 'changed': 111, 'added': 45, 'removed': 2}
+atomic classes 0781=9583 110=10349 kept=9205 removed=378 added=1144
+RE-BORDERS-0.78.1: anchors=43 intact=43 gone_in_110=0 value_changed=0 :: gone=[] changed=[]
+RE-CONNECTOR-GRANT-0.78.1: anchors=0 intact=0 gone_in_110=0 value_changed=0 :: gone=[] changed=[]
+RE-CONNECTORS-0.78.1: anchors=0 intact=0 gone_in_110=0 value_changed=0 :: gone=[] changed=[]
+RE-CONNECT-PRESETS-0.78.1: anchors=0 intact=0 gone_in_110=0 value_changed=0 :: gone=[] changed=[]
+RE-COVERAGE-MAP-0.78.1: anchors=2 intact=1 gone_in_110=0 value_changed=0 :: gone=[] changed=[]
+RE-KEYBINDINGS-0.78.1: anchors=2 intact=2 gone_in_110=0 value_changed=0 :: gone=[] changed=[]
+RE-MOTION-0.78.1: anchors=198 intact=185 gone_in_110=4 value_changed=1 :: gone=['sand-1bzi508-B', 'sand-1fiuodg-B', 'ui-9ekpj0-B', 'ui-fh2zsw-B'] changed=['--ui-reduced-motion']
+RE-SETTINGS-0.78.1: anchors=0 intact=0 gone_in_110=0 value_changed=0 :: gone=[] changed=[]
+RE-UI-FACES-0.78.1: anchors=7 intact=7 gone_in_110=0 value_changed=0 :: gone=[] changed=[]
+RE-UI-LAYOUT-0.78.1: anchors=115 intact=113 gone_in_110=1 value_changed=0 :: gone=['ui-9ekpj0-B'] changed=[]
+RE-STOP-0.78.1: anchors=4 intact=3 gone_in_110=0 value_changed=0 :: gone=[] changed=[]

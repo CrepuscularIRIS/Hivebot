@@ -1,0 +1,11 @@
+== T-01.f2 acceptance ② real chain: bash /tmp/T-01.f2-tests/test-r5-real.sh (PTY via `script -qec`, mock provider, real pinned dsh) ==
+ready after ~3s; sending single Ctrl-C
+launcher exit=130
+forwarded SIGINT log lines=1
+lock released
+no leftover processes
+R5 REAL RESULT: GREEN
+-- r5-real.log tail (launcher side) --
+p2sdk: dsh pid 1428300
+[p2sdk] ready http://127.0.0.1:38383
+^Cp2sdk: forwarding SIGINT to dsh

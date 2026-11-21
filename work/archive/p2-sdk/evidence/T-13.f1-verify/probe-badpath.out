@@ -1,0 +1,8 @@
+PASS field-22 parsing matches ps(1) lstart (independent oracle) — impl=1631602 ticks; /proc-derived=2026-11-02T08:01:04.020Z ps=2026-11-02T08:01:04.000Z drift=20ms
+PASS old-format live lock refused (conservative) — P2SDK_HOME "/tmp/p2sdk-f1probe-mkUzpd" is already in use by launcher pid 1320563: a second
+PASS refusal carries the manual-removal hint
+PASS malformed row (non-numeric starttime) refused, not reclaimed — P2SDK_HOME "/tmp/p2sdk-f1probe-fV6qVe" has an uninitialized launcher.lock (no pi
+PASS malformed row (negative pid) refused, not reclaimed — P2SDK_HOME "/tmp/p2sdk-f1probe-cZ63Ln" has an uninitialized launcher.lock (no pi
+PASS malformed row (zero pid) refused, not reclaimed — P2SDK_HOME "/tmp/p2sdk-f1probe-kMuxqT" has an uninitialized launcher.lock (no pi
+PASS malformed row (trailing colon) refused, not reclaimed — P2SDK_HOME "/tmp/p2sdk-f1probe-V4dBpL" has an uninitialized launcher.lock (no pi
+PASS R1 live-but-reused runtime pid reclaimable via real acquire

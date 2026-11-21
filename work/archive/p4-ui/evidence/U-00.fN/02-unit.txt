@@ -1,0 +1,13 @@
+== date: 2026-11-02 15:30:04 HEAD: 07d88d6ad54be0be96af2aeeff5d9712137c266a ==
+$ pnpm test
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  20 passed (20)
+      Tests  185 passed (185)
+     Errors  1 error
+   Start at  15:30:05
+   Duration  2.91s (tests 90%, import 6%, transform 2%, worker 1%)
+
+[ELIFECYCLE] Test failed. See above for more details.
+exit=0

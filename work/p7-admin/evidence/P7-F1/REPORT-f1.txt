@@ -1,0 +1,57 @@
+P7-F1.f1 builder 修复回报
+分支：feat/P7-F1
+commit：20c31cb9db68c10594e0c7aaccb4d786a2423354（在 78a3c15 上继续提交）
+worktree：/tmp/bot-wt/P7-F1；提交后 git status --short 无输出。
+
+改动文件清单（仅两文件，公开 API 签名未变）：
+- /tmp/bot-wt/P7-F1/app/ui/main/admin/operations.ts
+- /tmp/bot-wt/P7-F1/app/ui/tests/unit/admin/operations.test.ts
+
+三条 HIGH 对应修复：
+1. 用 Buffer.lastIndexOf(0x0a) 得字节边界，完整前缀严格验证 UTF-8，修复时逐字节保留前缀；droppedBytes 按实际 Buffer 长度计算。新增中文/emoji 完整记录及尾部 UTF-8 字符被截断用例，连续重启两次核对原始字节和投影。
+2. 无换行尾行只按 UTF-8/JSON 能否解析判断撕裂，不把 isTrustedLine 混入；完整未知版本继续走 PBOTS_OPS_UNTRUSTED，读写均拒且文件字节不变。测试覆盖有正常前缀与整文件无换行两种形态。
+3. 不再先 truncate：复用本仓 m3-meta/store.ts 的 tmp+rename 模式，完整前缀与 repaired 一起写同目录 0600 临时文件，文件 fsync/close 后原子 rename，再 fsync 目录。替换前失败保留原撕裂，下一次 init 自动重试；替换后 repaired 已与前缀同册存在。没有另建永久状态文件/审计库，无新依赖。追加/open/sync/rename 四种注入验证失败时原文件未改、当次读取失败关闭、解除故障重启恢复 tailTruncated 与 repaired。
+
+TDD：生产代码改动前运行新增四项，4 failed | 21 passed；中文前缀被改坏、两种未知版本未抛错、重启 tailTruncated=false，均为预期红灯。
+日志：/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1/f1-red.log
+
+最终复测命令与末尾输出：
+$ pnpm -C /tmp/bot-wt/P7-F1/app/ui test tests/unit/admin/operations.test.ts
+ Test Files  1 passed (1)
+      Tests  28 passed (28)
+   Duration  353ms
+exit=0；21 既有测试全部保留，新增 7 项。
+日志：/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1/f1-green.log
+
+$ pnpm -C /tmp/bot-wt/P7-F1/app/ui exec vitest run tests/unit/admin/operations.test.ts --coverage --coverage.provider=v8 --coverage.include=main/admin/operations.ts --coverage.reporter=text --coverage.reportsDirectory=/tmp/bot-p7f1-f1-coverage
+ Test Files  1 passed (1)
+      Tests  28 passed (28)
+Statements   : 88.01% (257/292)
+Branches     : 85.47% (200/234)
+Functions    : 96.87% (31/32)
+Lines        : 93.83% (213/227)
+exit=0。初次因缺少直接链接的 @vitest/coverage-v8 失败；随后只临时链接本 worktree 已缓存的 5.0.5 包运行，结束即删除链接，没有安装依赖或修改 package/lockfile。
+日志：/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1/f1-coverage.log
+
+$ mkdir -p /tmp/bot-p7f1-f1-home
+$ HOME=/tmp/bot-p7f1-f1-home node --experimental-strip-types /home/lingxufeng/bot/work/p7-admin/evidence/P7-F1/verifier-probe.mjs
+PASS concurrent100-undo-four-state-reopen
+DETAIL fsync {"events":["append","sync-start","sync-fail"],"effects":0,"physicalBytes":193}
+PASS fsync-block-and-failure
+PASS repair-audit-fsync-failure-restart
+SUMMARY failures=0
+exit=0，原验收探针九组全部通过。仅 Node MODULE_TYPELESS_PACKAGE_JSON 既有提示。探针运行目录 finally 删除，临时 HOME 已 rmdir。
+日志：/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1/f1-probe.log
+
+$ pnpm -C /tmp/bot-wt/P7-F1/app/ui exec tsc --noEmit --skipLibCheck --target es2022 --module nodenext --moduleResolution nodenext --allowImportingTsExtensions --typeRoots node_modules/.pnpm/@types+node@24.19.2/node_modules/@types main/admin/operations.ts
+无输出，exit=0。
+日志：/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1/f1-typecheck.log
+
+$ git -C /tmp/bot-wt/P7-F1 diff --check
+无输出，exit=0。
+$ /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p7f1
+无匹配进程，无输出，exit=0。未执行任何手工 kill。
+日志：/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1/f1-cleanup.log
+
+未完成项 / 新问题：三条指定修复无遗留；未跑整仓构建/全量回归/UI E2E（只改账本且机器 load=22.87，按约束仅定向测试）。故障注入覆盖修复写入各关键失败点，不声称做过真实掉电实验。硬崩溃可能留下未替换的随机临时文件，但重启只读正式账本并重试，不把临时文件当可信记录；本次正常/注入失败路径均清理自己的临时文件。
+待 verifier 验收。

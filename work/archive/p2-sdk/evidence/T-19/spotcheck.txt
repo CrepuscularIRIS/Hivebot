@@ -1,0 +1,26 @@
+=== A. fixture index.json spot-check (python) ===
+connector: @agent-infra/mcp-server-filesystem @ 1.2.29 | title: io.github.bytedance/mcp-server-filesystem
+with-coordinate: 21 | not-installable: 90 | total: 111
+sample-coord: @2kw/ai-mcp-server | ver: 8.0.3
+sample-coord: filesystem-mcp | ver: 1.3.0
+sample-coord: @adeu/mcp-server | ver: 1.7.1
+sample-bare : @ai.agenticbooks/books | keywords: ['not-installable'] | ver: 0.1.0
+sample-bare : @agency.ottobot/contractor-license-changes | keywords: ['not-installable'] | ver: 0.1.3
+
+=== B. sampled coordinates exist on registry.npmjs.org ===
+@2kw/ai-mcp-server                         latest=8.1.1    has-pinned: True
+filesystem-mcp                             latest=1.3.0    has-pinned: True
+@adeu/mcp-server                           latest=3.0.7    has-pinned: True
+@agent-infra/mcp-server-filesystem         latest=1.2.29   has-pinned: True
+
+=== C. live registry packages[] field shape (extraction-source check) ===
+connector packages[0]: {'registryType': 'npm', 'registryBaseUrl': 'https://registry.npmjs.org', 'identifier': '@agent-infra/mcp-server-filesystem', 'version': 'latest'}
+@adeu/mcp-server -> {'registryType': 'npm', 'identifier': '@adeu/mcp-server', 'version': '1.7.1'}
+@2kw/ai-mcp-server -> {'registryType': 'npm', 'identifier': '@2kw/ai-mcp-server', 'version': '8.0.3'}
+
+=== D. diff region ===
+app/sdk/scripts/fetch-market-fixture.mjs
+app/sdk/tests/e2e/fixtures/market/index.json
+app/sdk/tests/e2e/fixtures/market/source.json
+app/sdk/tests/e2e/market.test.ts
+39ae3eb7acf333b33c36cfef771dd5ce69212fed

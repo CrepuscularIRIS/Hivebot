@@ -1,0 +1,47 @@
+phase=heldout model=glm-5.3 planned=36 collected=36
+single: correct=12/12 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+parallel: correct=6/6 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+attach: correct=5/6 complete-route-fail=0 timeout=1 other-incomplete=0 missing=0
+stop: correct=5/6 complete-route-fail=1 timeout=0 other-incomplete=0 missing=0
+direct: correct=4/4 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+chat: correct=2/2 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+subset=28/30; sentinel-misdispatch=0/6; sentinel-correct=6/6
+hard: polluted-tool-success=0; reports=42; report-tailTexts-not-one=0
+converged=false (requires complete collection; timeout is not a demonstrated routing failure)
+Per-group score table (no raw prose):
+dir1-docker-vm-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+dir2-translate-ja-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+dir3-power-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+dir4-tv-rec-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single1-packing-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single1-packing-2	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single1-packing-3	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single2-date-diary-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single2-date-diary-2	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single2-date-diary-3	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single3-fib-run-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single3-fib-run-2	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single3-fib-run-3	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single4-count-logs-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single4-count-logs-2	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single4-count-logs-3	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+par1-two-tasks-1	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par1-two-tasks-2	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par1-two-tasks-3	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par2-list-and-weekday-1	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par2-list-and-weekday-2	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par2-list-and-weekday-3	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+attach1-hike-append-1	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+attach1-hike-append-2	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+attach1-hike-append-3	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+attach2-backup-index-1	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+attach2-backup-index-2	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+attach2-backup-index-3	INCOMPLETE	outcome=timeout	create=1 send=0 stop=0	timeouts=worker2
+stop1-lowercase-1	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+stop1-lowercase-2	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+stop1-lowercase-3	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+stop2-archive-1	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+stop2-archive-2	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+stop2-archive-3	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+chat1-thanks-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+chat2-greeting-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-

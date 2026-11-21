@@ -1,0 +1,81 @@
+/* T91b · reaction 视觉对齐 0.78.1（功能链 T91 已通；CSS 全仓缺失——原版样式在 JS 原子类里，
+ * 本文件按 0.78.1 形态（hover 条同款按钮+浮层快捷条+pill 气泡）补足）。 */
+
+/* ① hover 笑脸钮字形：组件 span 只有 data-icon-name（不走 SandIcon/ui-icon 字体→豆腐块）——
+ * 先例 p5-55:340（outline 图标同病）。字形码位 = sand-icon-registry smiley-happy 0xf234。 */
+.sand-message-hover-actions [data-icon-name="smiley-happy"]::before {
+  content: "\f234";
+  font-family: cursor-icons;
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* ② 快捷条（ReactionPicker 浮层）：按钮是原生样式——按 hover 条同款（pill 形、无边框、
+ * 透明底 hover 提亮）；容器浮在消息上方右缘。 */
+.sand-message-hover-actions { position: absolute; } /* 已 absolute（view.css:129）——快捷条锚它（T91d） */
+.sand-reaction-picker {
+  position: absolute;
+  /* T91d：锚 hover 条容器（absolute right:0 bottom:-30px=气泡下缘）——往下弹必不碰任何气泡 */
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 9999px;
+  background: var(--sand-bg-elevated);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 12%), 0 0 0 0.5px var(--sand-border-quaternary-translucent);
+}
+.sand-reaction-picker button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  border-radius: 9999px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 4px;
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--sand-text-primary);
+}
+.sand-reaction-picker button:hover, .sand-reaction-picker button[aria-selected="true"] {
+  background: var(--sand-bg-elevated-hover, color-mix(in srgb, var(--sand-text-primary) 8%, transparent));
+}
+
+/* ③ pill 气泡：原版挂在消息下方独立行（不入气泡流、不被气泡 overflow 裁掉）。
+ * anchor（sand-message-action-anchor）position:relative ✓（T74 保），pill 行绝对定位到气泡下方。 */
+.sand-message { position: relative; } /* T91b：pill 参照气泡自身（anchor 高度≠气泡——T74 anchor 定宽断循环后 fit-content） */
+.sand-reaction-pills {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  display: flex;
+  gap: 4px;
+  z-index: 5;
+}
+.sand-reaction-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 9999px;
+  padding: 1px 8px;
+  font-size: 12px;
+  border: 0.5px solid var(--sand-border-quaternary-translucent);
+  background: var(--sand-bg-elevated);
+  color: var(--sand-text-secondary);
+}
+/* 暗色：底色/边线自动走 token；阴影去掉（0.78.1 暗色无影原则） */
+[data-theme="cursor-dark"] .sand-reaction-picker { box-shadow: 0 0 0 0.5px var(--sand-border-quaternary-translucent); }
+
+/* T91c：More emoji 钮——0.78.1 是 smiley-plus 图标（0xeb35）；fallback 文字视觉隐藏（aria-label 保留） */
+.sand-reaction-picker button[aria-label="More emoji"] { font-size: 0; min-width: 28px; max-width: 40px; }
+.sand-reaction-picker button[aria-label="More emoji"]::before {
+  content: "\eb35";
+  font-family: cursor-icons;
+  font-size: 18px;
+}

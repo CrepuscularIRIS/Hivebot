@@ -1,0 +1,41 @@
+== 单跑 security.test.ts（verbose，2 次均 7/7） ==
+ ✓ tests/e2e/security.test.ts > ① ss process-tree criterion: every runtime listener is loopback 4345ms
+ ✓ tests/e2e/security.test.ts > ② admission: no cookie 401, cross-site 403, /connect?token cookie works 2467ms
+ ✓ tests/e2e/security.test.ts > ③ sentinel leak scan: fake run -> kill -9 -> restart -> 0 hits everywhere 3547ms
+ ✓ tests/e2e/security.test.ts > ④ scanner positive control: sentinel in zstd frame 2 and in a plain log both FAIL the scan 718ms
+stdout | tests/e2e/security.test.ts > ⑤ real-key D2 smoke re-scan: same scanner, key from env, hits=0
+  ⑤ real-key scan hits=0 (scanner reported CLEAN)
+ ✓ tests/e2e/security.test.ts > ④b scanner guards: refuses non-pnpm invocation and Node <24.9 54ms
+ ✓ tests/e2e/security.test.ts > ⑤ real-key D2 smoke re-scan: same scanner, key from env, hits=0 108541ms
+ ✓ tests/e2e/security.test.ts > ⑥ real provider path sentinel: loopback stub receives the Bearer key, disk scan stays clean 2280ms
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Duration  122.68s (tests 100%)
+
+== 全量 pnpm test --no-file-parallelism ==
+      Tests  61 passed (61)
+   Start at  16:32:41
+   Duration  108.59s (tests 100%)
+
+
+== GUARD 亲跑 ==
+-- node22 + 伪造 pnpm UA --
+GUARD node 22.23.4 < 24.9.0: multi-frame zstd decode is unsafe here; run through `pnpm -C app/sdk exec node` (devEngines-pinned runtime)
+exit=3
+-- node24 裸跑（空 UA）--
+GUARD scanner must run through pnpm (`pnpm -C app/sdk exec node tests/e2e/security/scan.mjs`): npm_config_user_agent does not start with "pnpm/"
+exit=3
+-- 正路 pnpm exec node（24.22.2）--
+runtime 24.22.2
+
+== 多帧 zstd 解码差异（GUARD 技术前提） ==
+node24: decoded 43/61 bytes (两帧全出) / node22: decoded 17/61 bytes (只第一帧) —— 2026-11-01 亲测输出见 VERIFY
+
+== 离线 netns ⑤ 可达性门 ==
+      Tests  1 passed | 6 skipped (7)
+   Duration  147ms (import 63%, tests 17%, transform 15%, worker 5%)
+
+== 区域 ==
+ app/sdk/tests/e2e/security.test.ts  | 464 ++++++++++++++++++++++++++++++++++++
+ app/sdk/tests/e2e/security/scan.mjs | 171 +++++++++++++
+ 2 files changed, 635 insertions(+)

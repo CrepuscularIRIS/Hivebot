@@ -1,0 +1,9 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-15/app/sdk
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  01:30:40
+   Duration  1.97s (tests 98%, import 1%)
+

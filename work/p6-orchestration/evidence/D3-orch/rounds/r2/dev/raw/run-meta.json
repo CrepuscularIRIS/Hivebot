@@ -1,0 +1,152 @@
+{
+  "ts": "2026-11-05T12:00:57.385Z",
+  "mode": "real",
+  "model": "glm-5.3",
+  "llmBase": "http://127.0.0.1:4001",
+  "litellm": {
+    "ok": true,
+    "hasModel": true,
+    "modelCount": 21
+  },
+  "groupDelayMs": 5000,
+  "entries": [
+    {
+      "id": "dev-attach-recipe-allergy",
+      "rep": 1,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-f8952c8d-96bf-408c-98e6-c943ab362e61",
+      "raw": "dev-attach-recipe-allergy-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-76cf5dcd-3c2c-4425-ba26-1379d5708293",
+          "name": "番茄意面菜谱"
+        }
+      ]
+    },
+    {
+      "id": "dev-chat-tired",
+      "rep": 1,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-9c01561d-ad74-4acf-920d-5d5a10418909",
+      "raw": "dev-chat-tired-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dev-direct-http-status",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-9c9d56aa-57bd-47bd-ae5a-db1ac62f9e36",
+      "raw": "dev-direct-http-status-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dev-parallel-css-units",
+      "rep": 1,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-f6a2546b-575a-4e18-9d4b-410a290bb0aa",
+      "raw": "dev-parallel-css-units-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-007fa1af-c3ab-4a2e-8859-1852b47cc0b4",
+          "name": "蓝色卡片页"
+        },
+        {
+          "sessionId": "session-f79ae509-5f3e-4d35-b1c7-b8e088a28e7c",
+          "name": "单位换算表"
+        }
+      ]
+    },
+    {
+      "id": "dev-parallel-poem-regex",
+      "rep": 1,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-d118c631-e3c1-41c8-84a5-915f5411d478",
+      "raw": "dev-parallel-poem-regex-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-18ca56aa-7944-45b8-8e74-7c26ec02dd49",
+          "name": "月亮小诗"
+        },
+        {
+          "sessionId": "session-f33b6384-5f67-411a-99ef-a9d8ce62cb08",
+          "name": "正则验证"
+        }
+      ]
+    },
+    {
+      "id": "dev-single-csv-json",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-7244eda5-64d5-442c-8d76-6df5122c7b1c",
+      "raw": "dev-single-csv-json-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-7c9b603f-0fdd-4bf7-96fc-34a723d3b570",
+          "name": "csv-to-json"
+        }
+      ]
+    },
+    {
+      "id": "dev-single-extract-links",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-c6ee56c1-b19d-4539-81f1-26a8ad8aa6b3",
+      "raw": "dev-single-extract-links-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-3ed34532-58c5-402e-8fa1-c530a15436f8",
+          "name": "extract-links"
+        }
+      ]
+    },
+    {
+      "id": "dev-single-json-schema",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-e84b00f0-f7cc-42b2-a3b7-e98541c81d06",
+      "raw": "dev-single-json-schema-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-4088c6da-44d5-4c36-8637-b189f8a107dd",
+          "name": "json-validate"
+        }
+      ]
+    },
+    {
+      "id": "dev-single-svg-badge",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-0238a15b-2e4c-4671-b067-178d1a6972dc",
+      "raw": "dev-single-svg-badge-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-fccbccb8-aac9-4efa-90dc-ca4455c0a9ed",
+          "name": "SVG badge"
+        }
+      ]
+    },
+    {
+      "id": "dev-stop-synthetic-benchmark",
+      "rep": 1,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-85fe7e6c-4b80-48b5-9ad0-a00c24fdaf51",
+      "raw": "dev-stop-synthetic-benchmark-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-3a3d8650-e571-43eb-96b3-584230e16660",
+          "name": "定时偏差采样实验"
+        }
+      ]
+    }
+  ]
+}

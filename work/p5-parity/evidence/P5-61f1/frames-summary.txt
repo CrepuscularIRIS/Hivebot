@@ -1,0 +1,4 @@
+cold-dark.frames.json dark n=32 unpresented=0 whole[min,max]=[17,21] strip[min,max]=[21,22]
+cold-light.frames.json light n=32 unpresented=0 whole[min,max]=[249,251] strip[min,max]=[254,254]
+reload-dark.frames.json dark n=62 unpresented=0 whole[min,max]=[17,18] strip[min,max]=[21,21]
+reload-light.frames.json light n=62 unpresented=0 whole[min,max]=[249,253] strip[min,max]=[254,255]

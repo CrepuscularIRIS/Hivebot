@@ -1,0 +1,8 @@
+{"step":"P3-baseline-good","tools":43,"mem":9,"bad":0}
+{"step":"P3-install-bad","application":"failed","error":{"code":"operation-error","diagnostic":"dsh: warning: 1 entry did not activate\nmarket-mcp-bad (file:///home/lingxufeng/bot/app/sdk/node_modules/@deepseek-ai/dsh-mcp-client/lib/index.js): Error: mcp-client(bad-connector): initial connection or tool synchronization failed\nError: spawn /nonexistent/bad-entry ENOENT"}}
+{"step":"P3-new-bot-with-bad","tools":43,"mem":9,"bad":0}
+{"step":"P3-old-bot-b0-next-turn","tools":43,"mem":9,"bad":0}
+{"step":"P4-setEnabled-false","ok":true,"error":null}
+{"step":"P4-new-bot-after-off","tools":31,"mem":0,"bad":0}
+{"step":"P4-old-bot-b1-next-turn","tools":31,"mem":0,"bad":0}
+EXIT=0

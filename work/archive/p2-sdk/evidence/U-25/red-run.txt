@@ -1,0 +1,12 @@
+ ❯ tests/e2e/market.test.ts (6 tests | 4 failed) 27085ms
+ FAIL  tests/e2e/market.test.ts > ② installs the listing spec through the generated wrapper (enabled:false)
+AssertionError: installBundle outcome: {"stage":"install","target":"@agent-infra/mcp-server-filesystem@1.2.29","enabled":false,"changed":false,"application":"failed","registries":[null],"packageResult":{"exitCode":0,"output":"Progress: resolved 1, reused 0, downloaded 0, added 0\nProgress: resolved 21, reused 0, downloaded 0, added 0\nProgress: resolved 48, reused 0, downloaded 0, added 0\n\ndependencies:\n+ @agent-infra/mcp-server-filesystem 1.2.29\n\nPackages: +90\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++: expected 'failed' not to be 'failed' // Object.is equality
+ FAIL  tests/e2e/market.test.ts > ②b the wrapper bundle is real on disk: dsh.bundle.patch present, registry-required arg baked, profile records it
+ FAIL  tests/e2e/market.test.ts > ③ X (connectors) sees and CALLS the real filesystem tool; Y never sees it
+Error: p2temp/session.createWithConnectors failed: {"code":"p2temp/connector-unavailable","message":"p2temp: connector \"@p2sdk-market/agent-infra__mcp-server-filesystem\" is not installed under the profile","details":{"connector":"@p2sdk-market/agent-infra__mcp-server-filesystem"}}
+    161|     throw new MuxError(`${method} failed: ${JSON.stringify(body.result…
+ FAIL  tests/e2e/market.test.ts > preset.ensure is available and rebuilds the exact preset X froze
+Error: p2temp/session.createWithConnectors failed: {"code":"p2temp/connector-unavailable","message":"p2temp: connector \"@p2sdk-market/agent-infra__mcp-server-filesystem\" is not installed under the profile","details":{"connector":"@p2sdk-market/agent-infra__mcp-server-filesystem"}}
+    161|     throw new MuxError(`${method} failed: ${JSON.stringify(body.result…
+ Test Files  1 failed (1)
+      Tests  4 failed | 2 passed (6)

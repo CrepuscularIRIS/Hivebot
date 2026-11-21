@@ -1,0 +1,79 @@
+P6-24 交付报告 · builder（GLM 5.3）· 2026-11-05 07:33
+分支 feat/P6-24（基点 0fa0c37），commits：63683da / 958d557 / aa16137 / f629d59
+
+任务：worker 继承发起者工作区（PLAN P6-24 行 + 决策 36 + panels/D3-r1.md 必须回
+应 5 条转验收 + Q-024 答复 A + 任务自适应）。
+
+改动文件
+- app/ui/main/m3-meta/orchestrate.ts        createWorkerBot：cwd = 主 bot session
+  header cwd（session/list 解析，renderer 不可传）；可选 subdir（⑤ 通道模型参数，
+  单段路径）建子目录；主 bot cwd 不在 workspaces/<mainId> 下 / 不可解析 →
+  pbots/orchestration-failed fail closed 不派；不再 mint 独立工作区
+- app/sdk/src/orchestration/claims.mjs（新） subdir/artifacts 校验 + 写入责任账本
+  （描述符 <subdir|·>/<产物路径>，同主交叉 → pbots/busy；turn/end 释放）
+- app/sdk/src/orchestration/create.mjs      schema 增 subdir/artifacts；冲突拒；
+  未声明 → advisory；请求体带 subdir（artifacts 不出 SDK）
+- app/sdk/src/orchestration/envelope.mjs    INSTRUCTION_FILES（AGENTS.md/CLAUDE.md
+  + .local 变体）：worker 的 write/edit 按 resolve 后 basename 拒（防软链逃逸）；
+  主 bot 不受限；bash 残余风险 ponytail 标注
+- 测试：app/ui/tests/unit/m3/{p624(新),p610,p610f2}、
+  app/sdk/tests/unit/orchestration-p624.test.ts(新，13 条)、
+  app/sdk/tests/e2e/p624-worker-cwd.test.ts(新，5 条，真实 loader+orchestration.yml)
+- app/ui/tests/e2e/p6-stuck.spec.ts          主 bot session 改生产布局 cwd（真
+  create_bot 走 createWorkerBot，不改造布局会 fail closed 假红；PLAN §12.9 同口径）
+- work/p3-contract/CONTRACT.md               v1.6（C-2）：worker 工作区 + 配套防护
+  + Q-024 答复原文入修订账；v1.5 层为重建（见下「注意事项」）
+
+验收对照（PLAN P6-24 行 + D-3 五条）
+① create_bot 后 worker header.cwd === 主 bot cwd：p624.test.ts ①（mock）+
+   p624-worker-cwd e2e ②（真 loader，session/create cwd 即主目录）
+② 真 Loader 双通道：e2e ②——bash echo 与 write 各写一文件均落主 bot 目录，主 bot
+   下一回合 read 两者成功；文件工具 0 卡（恰 2 次 bash 卡，bash 出卡后批准执行）；
+   worker bash 能读到主 bot 先写的 seed.txt（同一挂载视图 = 替换而非叠加）
+③ cwd 不可解析（session 丢失/无 cwd/RPC 失败）→ pbots/orchestration-failed 不回
+   退 mint：p624.test.ts ③ 三态 + ② 布局外 fail closed（含指向别的 bot 工作区）
+④ 删除 worker 后主 bot 目录文件清单不变（硬门槛）：p624.test.ts ④（清单逐文件
+   对照）+ e2e ④（真目录清单 before/after 一致；workspaces/<workerId> 从未建）
+⑤ 无关 bot 仍不可写主 bot 目录：e2e ⑤（普通 bot 写主目录拒、0 卡；worker 写别的
+   bot 工作区拒，P6-14 格）
+⑥ 并行 worker 写不同文件两份都在：单测（不同 subdir/artifacts 放行 + 交叉拒
+   pbots/busy 不占容量）+ e2e（worker 主目录两文件 + workerSub 子目录文件并存）
+⑦ renderer 传 cwd 仍 invalid-args：p610.test.ts D9① 格复跑（未改）
+⑧ 全量：sdk 655 passed / 1 failed / 1 skipped——唯一失败 tests/e2e/
+   subagent-policy.test.ts「P5-05 ③ workflow」在基点 0fa0c37 裸源码上同样失败
+   （已用 git diff+checkout 复证，非本分支引入；疑似 P6-22 r2 合并动荡或环境
+   时序）；ui 单测 498/498；ui e2e 定向 p6-workers 2/2、p6-stuck 2/2（经
+   run-e2e.sh/Xvfb）。全量 ui e2e 按惯例归主会话合并后跑
+
+D-3 必须回应 5 条
+1 指令文件注入：envelope 拒写（含 .local、软链 resolve 后判定）；bash 残余风险
+  ponytail 标注（envelope.mjs 文件头）+ 已在 Q-024 告知文案内
+2 旧主 bot fail closed：布局核对（workspaces/<mainId> 子树或自身），orchestration.ts
+3 同文件并发：artifacts 声明 + 交叉即拒（pbots/busy）+ 未声明 advisory（声明+警告
+  档，派发许可内）；真撞了的上限 = 两个都不声明的 worker，与原版一致，注明
+4 影响面/删除边界：删除只动 bots.json（测试钉清单不变）；⑤ 无关 bot 隔离 e2e 证
+5 （同 4 的硬门槛，见上 ④）
+
+bwrap 挂载面：worker 的 workspaceRoot = header.cwd（替换为主 bot 目录），挂载面
+形状不变（workspaceWritableRoots 派生自本会话 workspaceRoot）；e2e ② 证 worker
+bash 与主 bot 同视图；sandbox-hardened / write-outside / guard-fs 回归在 sdk 全量
+内绿。
+
+注意事项（给派发者/合并者）
+- create.mjs 与 P6-22 r2（main 现 HEAD b138aad/ac991a5 改过 CREATE_BOT_DESCRIPTION）
+  同文件交叠：合并须三方（merge-base 0fa0c37），我的 DESCRIPTION 改动基于旧文案。
+- CONTRACT v1.5 层为重建：C-1 的 v1.5 只在主仓工作树（未提交），P6-22 合并动荡中
+  被还原；重建逐字来自本会话早期读取（§2.4/M3 行/#20/§3.1 bots 键/修订账行）。
+  若 C-1 原稿重新出现，diff 核对一次。
+- subagent-policy e2e 基点即红（非本分支），建议主会话在合并后确认是否 P6-22 r2
+  已带走。
+- p6-stuck 布局改造属 harness 对齐生产（不改产品代码），若 verifier 复跑需先
+  pnpm -C app/ui build。
+
+复测命令
+- pnpm -C app/ui vitest run tests/unit/m3/
+- pnpm -C app/sdk vitest run tests/unit/orchestration-p624.test.ts
+- pnpm -C app/sdk vitest run tests/e2e/p624-worker-cwd.test.ts
+- pnpm -C app/ui test:e2e p6-workers ; pnpm -C app/ui test:e2e p6-stuck
+
+待 verifier 验收。

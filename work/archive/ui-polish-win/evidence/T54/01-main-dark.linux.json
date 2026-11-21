@@ -1,0 +1,90 @@
+{
+ "id": "01-main-dark",
+ "platform": "linux",
+ "geo": {
+  ".sand-agents-sidebar": {
+   "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 280,
+    "h": 752
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": "SearchNew chatnow"
+  },
+  ".sand-agents-sidebar__header": {
+   "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 279,
+    "h": 60
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": ""
+  },
+  ".sand-agents-sidebar__plugins-entry": {
+   "rect": {
+    "x": 60,
+    "y": 700,
+    "w": 203,
+    "h": 36
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": "Connect apps"
+  },
+  ".sand-prompt-shell": {
+   "rect": {
+    "x": 296,
+    "y": 692,
+    "w": 648,
+    "h": 44
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": ""
+  },
+  ".sand-titlebar, .sand-window-controls": {
+   "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 0,
+    "h": 0
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": ""
+  },
+  ".sand-agents-sidebar__new": {
+   "rect": {
+    "x": 227,
+    "y": 12,
+    "w": 36,
+    "h": 36
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "13px",
+   "lineH": "18px",
+   "text": ""
+  }
+ },
+ "meta": {
+  "platform": "Linux x86_64",
+  "uaPlatform": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.7977.130 Electron/44.7.0 Safari/537.36",
+  "dpr": 1,
+  "innerW": 1280,
+  "innerH": 752,
+  "loadedFonts": [
+   "cursor-icons/normal",
+   "cursor-icons/normal"
+  ],
+  "scrollY": 752
+ }
+}

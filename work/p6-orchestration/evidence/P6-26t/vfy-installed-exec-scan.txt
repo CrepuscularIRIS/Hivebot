@@ -1,0 +1,51 @@
+dsh-ptc-runtime-node
+50: 		if (result === void 0) throw new Error(`PTC runtime bootstrap is unavailable in the subprocess execution world: ${path}`);
+56: 	const helper = mapped(resolve(dirname(fileURLToPath(import.meta.resolve("@deepseek-ai/dsh-subprocess/package.json"))), "src/control.ts"));
+908: 			const result = await this.evaluate(spec, bindings);
+930: 	async evaluate(spec, bindings) {
+1100: 		const executable = await this.ctx.subprocess.resolveExecutable(this.config.launch.executable, void 0, this.controller.signal);
+1120: 		const handle = this.ctx.subprocess.spawn({
+1133: 		if (!handle.control || !handle.stdout || !handle.stderr) throw new Error("subprocess provider did not supply the requested control and output pipes");
+1337: 			executionInstructions: "The program contains TypeScript REPL statements; only erasable syntax is accepted, with no enum or namespaces. Type annotations are advisory. Top-level declarations and await are supported; top-level return is not supported. Emit output with console.log(...) or a final lossless JSON expression. Only printed values and that final expression become program output. Variables, functions, and imported modules remain in memory for this Agent across calls. Use await import(...) for modules. Direct filesystem access follows this execution's sandbox policy; process.env starts empty. Changing the session sandbox mode clears retained variables. An approved sandbox escalation runs in a separate temporary environment: it cannot access retained variables, and its declarations are discarded afterward. Restart, Agent disposal, cancellation, timeout, output overflow, or process failure clears the environment. If a variable is undefined, recreate it and reacquire its resources. State is not restored from the conversation, and failed evaluations can leave earlier mutations in memory. Redeclaring an existing let, const, or class name fails; assign to a mutable binding or use a new name. Await all tool calls; background callbacks cannot call tools after their evaluation ends. Await child-process completion before ending an evaluation; raw subprocess output belongs to whichever evaluation is active when it arrives.",
+1343: 			const recovery = config.scriptPersistence ? " Changing the session sandbox mode clears retained variables. An approved sandbox escalation runs in a separate temporary environment: it cannot access retained variables, and its declarations are discarded afterward. Restart, Agent disposal, cancellation, timeout, output overflow, or process failure clears the environment. If a variable is undefined, recreate it and reacquire its resources. State is not restored from the conversation, and failed evaluations can leave earlier mutations in memory. Redeclaring an existing let, const, or class name fails; assign to a mutable binding or use a new name. Await all tool calls; background callbacks cannot call tools after their evaluation ends. Await child-process completion before ending an evaluation; raw subprocess output belongs to whichever evaluation is active when it arrives. If a native top-level let, const, or class initializer throws, its name may remain permanently uninitialized; use a new name or restart the environment." : "";
+1430: 		"subprocess",
+dsh-tool-bash-persistent
+100: 	const status = /^(\d+)\r?\n/.exec(text.slice(end + marker.end.length))?.[1];
+210: 				const spawned = await ctx.terminals.spawn(owner, {
+dsh-tool-bash
+61: * stderr reader carries the provider's `subprocess failed before reporting an
+dsh-tool-executor-ptc
+627: 						result = await runtime.run(runtime.resolve({
+dsh-tool-fs-search
+16: * Both tools execute as ordinary foreground spawns through `ctx.subprocess` —
+22: * subprocess seam, parse only complete in-memory stdout within
+74: * the subprocess seam dropped bytes.
+94: * subprocess seam could not retain complete stdout within the requested
+105: 	throw new SearchError(`${toolName} produced more raw output than the subprocess seam retained within the ${rawOutputMaxBytes}-byte cap; ${narrow}`, "SEARCH_RAW_OUTPUT_OVERFLOW");
+138: * The spawn is unconfined (a plain `ctx.subprocess` call), so `--no-config`
+157: * @param ctx - the plugin context; execution uses its `subprocess` service.
+171: 		handle = ctx.subprocess.spawn({
+194: 		throw new SearchError(`${toolName} subprocess failed before reporting an outcome (ripgrep provider failure)`, "SEARCH_FAILED", { cause: error });
+526: * ripgrep binary (`@vscode/ripgrep`) directly through the subprocess seam
+530: * environment scrubbing, output capture) stay behind `ctx.subprocess`.
+782: *   execution uses its `subprocess` service.
+881: * (`@vscode/ripgrep`) directly through the subprocess seam with a plain argv
+886: * grouping, and formatting; process concerns stay behind `ctx.subprocess`.
+1093: *   execution uses its `subprocess` service.
+1204: * execute through `ctx.subprocess.spawn()` with fixed ripgrep argv templates —
+1209: * retention, formatted-result spill, and timeout declaration; the subprocess
+1212: * `subprocess` — deliberately NOT `fs`, and `ctx.spillStore` is read
+1228: 	"subprocess",
+dsh-tool-fs
+363: 			const body = /^<path>[^\n]*<\/path>\n<type>file<\/type>\n<content>\n([\s\S]*)\n<\/content>$/u.exec(text)?.[1];
+dsh-tool-pwsh-persistent
+109: 	const status = /^(\d+) *\r?\n/.exec(text.slice(end + marker.end.length))?.[1];
+221: 				const spawned = await ctx.terminals.spawn(owner, {
+dsh-tool-pwsh
+61: * stderr reader carries the provider's `subprocess failed before reporting an
+dsh-tool-session-query
+215: 	const match = ISO_TIMESTAMP.exec(value);
+dsh-tool-terminal
+304: 			return await ctx.terminals.spawn(owner, {
+dsh-workflow-ptc
+428: 			const outcome = await this.runtime.run(this.runtime.resolve({

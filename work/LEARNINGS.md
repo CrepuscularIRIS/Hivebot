@@ -1,0 +1,223 @@
+# LEARNINGS
+
+现象 → 根因 → 规则，每条 ≤3 行。
+
+2026-11-01 LOG 时间戳靠感觉写 → 实际比记录慢 10–20 分钟，tick 的对照价值受损 → 写 LOG 行前必须 `date +%H:%M` 实测，不估。
+
+2026-11-01 judge 席（Sol）运行约束禁写文件 → 三席原文回不到 panels/ → 主会话收到回报后机械代录原文并标注「代录，未经改写」；fable 席可自落盘，两种都接受。
+
+2026-11-01 用户在 QUESTIONS 的答复可能答非所问（Q-002 问截图登录，答的是测试用本地 LiteLLM）→ 回答快、问题多时易错位 → 落实前先解析答复内容对不对题；对不上的部分按内容找归属（新事实→落实进 PLAN/任务），歧义按默认解读并加「落实」注记请用户纠正。
+
+2026-11-01 用户 2026-11-01 指令「先把 demo 跑出来」→ 用户要节奏，不要流程完美主义 → 取舍类问题按推荐快速定稿不再等；PLAN/派发排序以最小可跑链路（起→建 session→发消息→流式回复）为先，测试与加固紧随其后但不阻塞 demo。
+
+2026-11-01 ui-shell RE 用 `pkill -f` 差点自杀（exit 144）；Grok Bot 忽略 `--user-data-dir`、首启写真实 ~/.config → ① 给任何会启动/杀进程的 agent（RE、verifier、builder）的提示词都要带「不用 pkill -f，先 pgrep -x 拿 PID」；② 隔离运行 Grok Bot 一律 `HOME=/tmp/<隔离目录>` 覆盖，--user-data-dir 不可信。
+
+2026-11-01 verifier 验收 f3 期间 builder 并发 rebase 导致共享 worktree 出现 UU 冲突 → 验收被中断风险 → verifier 遇 head 漂移：不动 builder 现场，改用独立 `git worktree add --detach` checkout 到申报 SHA 分别验证；这条写进 verifier 派发提示词。
+
+2026-11-01 T-08 合并后 f3 也合并，f3 的 token 位置迁移悄悄弄红 T-08 的 security 测试，两天后由 T-11 builder 发现修复 → 并行分支各自验证绿 ≠ 合并后绿 → 每次合并进 main 后立即全量回归（或至少 grep 受影响符号的测试文件单跑），红则当场修或回退。
+
+2026-11-01 机器重启（18:30 pkill 事故 + 22:28 硬重启）→ /tmp worktree 与 /dev/shm 解包树全丢，git 分支与 work/ 状态文件无损 → 恢复流程：`git worktree prune` + `git worktree add <path> <branch>` 重建 + `pnpm setup` 恢复依赖；被中断的 verifier 无产出直接重派（提示词带「worktree 刚重建先 setup」）；解包树按 RE-unpack §0 复现命令重建。重启后 cron 必丢——skill 启动第 1 步补建。
+
+2026-11-01 用户 2026-11-02 明确表态「不希望重启电脑、不要 kill 行为、之前误杀过系统进程」→ 用户对进程操作高度敏感（有一次桌面会话被注销的事故）→ 所有派发提示词明确三层：①测试内 kill 仅限测试框架自管的子进程（模拟崩溃验收）；②agent shell 手工 kill 全禁（§5 + process_guard hook）；③机器重启/注销绝不自动化，只由用户手动。向用户汇报涉及 kill 的验收时，说明只杀 SDK 自身子进程。
+
+2026-11-02 用户 2026-11-02 06:30 授权边界调整：「这类问题你不用来询问我，我只需要使用什么开源的套件、效率快速复现、全线贯通」→ 技术取舍类（契约方法增减、预设行为、库选型）不再开 QUESTIONS，按推荐项自动推进并在 LOG 记录；仅三类事才问用户：安全红线（凭证/审批默认值放宽要引用用户原话授权）、花钱/对外动作、不可逆决策。用户答复以聊天文字为准（不用 python 改文件，手动 Edit 引用原话）。开源套件选型与全线快速复现是用户的核心验收标准。
+
+2026-11-02 用户 2026-11-02 11:00 UI 定稿指令：「尽量和原来的 UI 保持一致」→ P4 视觉还原度优先：ux-proposer 提案与 frontend-dev 定稿以原版为最高参照（evidence/01-boot.png + RE-theme token + RE-ui-shell 组件树逐页对齐）；dsh 组件骨架只在结构层复用，外观差异按原版改；D12 外观验收以「与原版截图并排对照」为证。
+
+2026-11-02 U-00 builder 实测 Electron 44 三坑 → ①无 postinstall 钩子（依赖安装后需手动触发原生模块配置）；②getLastWebPreferences 不含 devTools（断言 devTools 关要用别的方式，如 webContents 的 devToolsWebContents 判空）；③无手势合成 API，click 到不了 window.open handler（测新窗口拦截要用 setWindowOpenHandler 的直接断言或真实输入事件）；④vitest 5 不再设 VITEST env（Electron 主进程守卫用 process.type === 'browser'）。P4 所有 Electron 测试任务注意。
+
+2026-11-02 U-12 builder 实测 Electron 44 + dsh 三坑 → ①webContents.postMessage 到 renderer 的 event.senderFrame 是 **undefined 非 null**（读 .url 前必须判空，否则 TypeError 杀回调）；②port 帧协议必须是 JSON 文本（上游 RemoteStreamMuxClient 下行只收 string，stream-server.ts:328-331）；③审批作答与 $events 流**同 Peer 绑定**（gateway 拒另一连接代答）——main 代答要走自己那条连接；测断链别用 socket.close() 预置 dead（会抑制 die/重连），反射 terminate 私有 ws 才行。
+
+- 主会话把 RE 回报「dmg/exe 未解」转述成「无 dmg 源」，导致 panel 出现假冲突 → 转述时丢了限定词 → 写 LOG 或派发时，事实性结论要引原文行号，不改写限定词（有/无、未验证/不存在）。
+2026-11-01 用户定：panel 改为两席（A=Opus fable、B=Sol sonnet，都是裁决席），K3 不用、GLM 不进 panel。已按三席派出、还没汇总的 panel：只按 A+B 两席汇总；席 C 带证据的 BLOCKER/HIGH 仍进必须回应清单。D 题 A/B 不一致 → 写 QUESTIONS。
+
+## 2026-11-01 · GLM verifier 用 `pkill -x -P 1` 杀掉桌面会话，机器被迫重启
+- 现象：18:30:47 verifier（T-12 验收）清理 demo runtime 时跑 `pkill -x -P 1`；`systemd --user` 是本用户唯一父进程为 1 的进程，被杀后整个 GNOME 会话注销，GDM 连续 22 次起不来（drmSetMaster 失败），机器停在文字控制台，22:28 被 Ctrl+Alt+Del 重启。
+- 根因：「不用 pkill -f」只禁了一种写法，模型换个参数就绕过；规则靠模型自觉。
+- 规则：按目标限制而不是按模型限制——任何模型都只能清理沙箱内进程（`scripts/bot-reap` 或 `kill <字面 PID>`），pkill/killall/-P/负数 PID 一律禁止；`.claude/hooks/process_guard.py` 强制执行（CLAUDE.md §5）。2026-11-02 修订：最初的「只许 Opus 杀进程」让 auto mode 分类器连测试脚本 kill 自己的子进程都拦，开发停摆。
+
+2026-11-02 L-4 终审 13 发现全在范围外（app/ui 的 P4 代码，审查期间合并进 main 被 finder 扫入工作区）→ mm-review 对「head 漂移期间合并的无关代码」无隔离 → L 档跑在活跃开发期时，报告要按 diff 范围过滤发现再定 verdict；范围外发现按所在 slug 归口不丢弃（转 REVIEW-W1-pre.md）。
+
+2026-11-02 PLAN 决策 2 定「第 2 级集成 dsh client」，依据只是 spike 静态构建能过，到 W2 U-21 才发现 renderer 根本 boot 不起来（boot 依赖服务端注入，ClientSessions 需要的 remote 超出白名单），只能追认改为自写 → spike 验的是「能构建」，不是「在目标宿主里能跑」→ 以后凡是集成决策，spike 验收都必须包含「在目标宿主里实际 boot 并走通一条旅程」；只验构建的，结论标为「未实证」。
+
+2026-11-02 U-18 builder 实测 vitest 5.0.5 teardown 坑 → teardown 会以零参调用 vi.mock 透传的 mock 一次，真 fs.rename 收到 undefined 抛 TypeError 污染已过的测试——测试里 mock fs 原语时在 mock 函数内对无参调用返回 undefined 并注释，别依赖 teardown 顺序。
+
+2026-11-02 verifier 把 VERIFY-U-21.md 写在 worktree 的 work/ 下，worktree remove 时随树丢失（GU 席无法独立核对）→ 派发提示词必须写明「报告一律写主仓 /home/lingxufeng/bot/work/...，绝不写 worktree 内的 work/」；主会话合并前应确认 VERIFY 文件已在主仓出现，再 worktree remove。
+
+2026-11-02 U-23 与 U-25 各自验证绿，合并后名字接缝断（wrapper 名 ≠ entry.name，market.spec main 上 2 红）——GU 前没人跑过合并后全量 → 两分支改动有交叠域（哪怕文件级零交集）时，合并后立即 main 全量回归是派 GU 前的硬闸门，不靠评审席读代码代跑。
+
+2026-11-02 主会话自查发现 PLAN status 列失修（U-00~U-26 全部 done 但显示 todo）+ 3 个 stale worktree + 2 个问题标题未更新 → 根因：builder 自行合并（如 U-15）或 merge 后只记 LOG 没同步 PLAN → 每次合并 commit 后立即 sed 更新 PLAN status 列并 git add work/ 一起提交；worktree remove 是合并的第五步，不能省。
+
+2026-11-02 用户指令「每完成一个 change 都回测一下」→ 每次合并进 main 后，立即在主仓跑该变更所在包的全量测试（app/ui → build+单测+e2e；app/sdk → pnpm test），绿了才算合并完成。跳过这步的合并是不完整的——U-23×U-25 接缝就是这么漏掉的（两分支各自绿，合并后红）。
+
+2026-11-02 R9 修凭证清理时只改了直接目标（sdk-env.ts 给 SDK 子进程的 env 副本），没查同链路其他注入点——launch.ts:33 仍 `...process.env` 把真实凭证 spread 进被测 Electron，L-6 定为 O4（踩 §4「凭证不进容器」字面）→ 修「环境注入」类问题先 grep 所有 env 构造点（`...process.env` / `env:`）统一口径，再动其中一处；单点修复对 env 这种横向铺开的面天然不完整。
+
+2026-11-03 R5 探针跑着的时候主会话 `git add work/` 把 evidence 里的 handoff/launch-token 与 runtime/.credentials.yaml 带进了 commit（均为死 token/mock grant、纯本地仓未 push，已 d9f8659 清除+gitignore）→ agent 在写 evidence 的窗口期，主会话整目录 add 会捞进运行时产物 → ①`git add work/` 前必看 `git status --short` 有无 evidence 下的 handoff/runtime/lock；②.gitignore 已加 work/*/evidence/**/handoff、runtime、*.lock，新探针任务派发提示词写明「evidence 只放报告+脚本+frames，运行时目录用后即删」；③若未来加 remote，先历史清理（LEARNINGS 顶部记录此事故）。
+
+2026-11-03 P5-15（断言锁 main 现值）与 P5-11（改掉该值）各自绿、合并后 A1 红——但 P5-15 报告当时就立了 f1「排 P5-11 后回修+改断言」，预判生效、损失仅一轮回归 → 「断言现值」型任务必须在报告里列出**谁会改这个值**（依赖任务 id），合并顺序对上时立即触发 .f，不必等红；两分支合并窗口重叠时第二个合并前先跑受影响 spec 单文件。
+
+2026-11-03 verifier 发现 run-e2e.sh 不重建 dist：改源码后直接 pnpm test:e2e 会跑旧 build 得假绿（P5-11.f1 抽验头两次摘属性即假绿，重建后才红）→ 派发提示词凡改 renderer/main 源码的任务必须显式「先 pnpm build 再跑 e2e」；后续可给 run-e2e.sh 加 dist 新鲜度检查（mtime 对比，旧则拒绝或警告）——立小任务。
+
+2026-11-03 RE agent 把工作目录建在 /tmp/grok-r3-*（不在 bot 沙箱清单），残留 4 个 server 进程 bot-reap/hook 都拒收 → 给 RE/verifier 的派发提示词统一要求临时目录用 /tmp/bot-<任务> 前缀（沙箱清单内），否则清理只能交用户手工。
+
+2026-11-03 P5-02（基点在 P5-01.f1 之前）也改了 sandbox-hardened.test.ts，主会话按文件清单 checkout 合并时把 .f1 的布局分叉修复整个盖掉、main 复红——清单 checkout 不是合并 → 合并任何分支前先 `git diff <base>..<head> --name-only` 与「合并窗口内该文件已被别的 commit 改过」对一遍，命中就 git merge-file 三方合并（base=分支基点）或让分支先 rebase；.f 修复尤其容易成为受害者。
+
+2026-11-03 P5-03 builder 实测 fake 插件坑：cursors 按会话持内存游标，同会话第二次 writeScriptCalls 覆盖脚本不重置（第二次模型调用按旧游标取新文件条目，拿到纯文本零 tool result）→ e2e 每 turn 用新会话，或一次写全整段脚本；多 turn 工具用例莫名"没调工具"先查这个。
+
+2026-11-03 P5-04.f1 实测：approval.yml insert 行加载顺序不可靠（两种排列 shell-ask 都先注册居 waterfall 外层，guard 收不到 bash exec；此前用例恰好都区分不了顺序）→ 往 pre-execute waterfall 插需要「先于 shell-ask」的插件一律用 cordis prepend（ctx.on(..., true)，vendor/cordis events register unshift），不赌 yaml 行序；凡验收里有「X 在 Y 之前」语义，测试必须能区分顺序（组合差分格），否则是空转。
+
+2026-11-03 P5-06 测试侧五条（builder 实测）：①runtime.ts 硬编码 P2SDK_PROVIDER='mock'，real-provider e2e 必须显式 env 覆盖为 'real'；②委派子会话 id 是裸 uuid 且后台异步，识别须 prompt 标记+日志行边界；③fake 的 toolResults 逐轮累积，断言前按 toolCallId 去重；④ptc worker bootstrap 必须放会话工作区内（/tmp 会被沙箱 --tmpfs 遮掉）；⑤上游 write 有 read-before-write 规则，伪造写用例先满足读前提。
+
+2026-11-03 用户对当前 UI 的反馈：「逆向出来的不是很准，UI 风格不太一样，颜色也好，很多 bot 的动画都不太行」——token 级数值审计（U-27/P5-11~15）逐项都对，但整体观感（色彩氛围、动效节奏、风格）仍明显偏离 → 数值断言防回归可以，**观感对齐必须以「可运行的完整参照」为准**（0.18 重构仓 1:1 移植 + 与 0.78.1 并排跑对照）；「每项都符合规格」不等于「看起来像」。L-UI 路线据此变更（Q-014 落实）。
+
+2026-11-03 L-UI 观感差距根因（BRIEF §12.3，用户「数值对但看起来不对」的教训）：①组件来自 dsh 骨架只换 token——哪个面用哪个 token 是推断的；②审计按差异项逐条列，整屏构件形态（composer 药丸、40px 圆钮、选中态）从没进过清单；③**bot 头像原版是带状态动画的 SVG 角色、我们是首字母圆——头像内容从未被审计**，盒模型审计量不出这个；④原版动效 JS 驱动，CSS 断言测不到；⑤三个来源（0.18/0.78.1/dsh）混用；⑥半透明 token 颜色取决于底层。规则：观感对齐必须有「可运行的完整参照」（0.18 整树移植 + 对照台并排），逐项规格只防回归。
+
+2026-11-03 P5-25×P5-21 事故：git stash 栈（refs/stash）跨 worktree 共享，两 builder 在重叠窗口各自 stash、后 pop 者拿到对方栈顶双向串位（13:02 已恢复+备份 /tmp/bot-p5-25-stash-mixup/）→ **多 worktree 并行期间一律禁用 git stash**；临时收起改动用 `git diff > /tmp/<任务>.patch` + `git checkout --`，恢复 `git apply`；builder 派发提示词加入此条。
+
+## 又一次整树 checkout（P6-22 r2 合并，2026-11-05，第三次同类事故）
+- 现象：`git checkout feat/P6-22 -- .` 把分支基点（ae41ce7）以来 main 的 P6-26/26t 安全改动全部回退；事后补救第一刀「M 文件一律恢复 main 版」又把 P6-22 自己的 DESCRIPTION 文案冲掉。最终以 ae41ce7 为 base 逐文件 `git apply --3way` 修复（b138aad）。
+- 规则（升级 SKILL §7.3 为硬性）：合并一律 `git merge --no-ff`（真三方），清单 checkout 仅限「与 main 无共同改动文件」且交集检查为空；**修复回退时同样禁止一刀切**——M 文件里混着「基点旧导致的假差异」和「分支真实增量」，必须 `git diff <merge-base>..<branch> -- <file> | git apply --3way` 逐文件分辨。
+
+## （记账恢复 2026-11-05 07:4x）以下条目在 P6-22 合并事故中被整树 checkout 抹掉，按上下文重录；原文措辞可能略有出入
+- e2e 里 SDK 数据目录与 UI main 数据目录分裂：挂 orch 插件的测试必须显式 P2SDK_ORCH_DATA_DIR 并预写 {"version":1} 骨架（P6-17.f1）。
+- 裸 sh scripts/run-e2e.sh 会被 miniconda 旧版 playwright 截胡（unknown command 'test'）——一律 pnpm -C app/ui test:e2e。
+- 测试的桌面通知没隔离：Xvfb 只挡窗口不挡 DBus；run-e2e.sh Xvfb 分支已加死总线守卫（P6-18）。
+- 竞态/绕过类 review 派 Sol 可能被其服务商内容策略拦截——改用确定性测试接缝表述，或改派 Opus（fable）。
+- 短时限速 ≠ 长封：429 retry-after 很短或主会话直探 200 = 多消费者并发限速——真模型评测独占 GLM，采集器短 429 有界退避。
+- GLM 限流期 builder/drafter 改派 Sol（用户 2026-11-04）；Opus 限流期 director/judge 席 A/frontend-dev/ux 席 A 亦改派 Sol（用户 2026-11-05），panel 注明代席，续跑中的先 TaskStop 再换发。
+- /tmp/p2sdk-handoff-* 累积泄漏（launchRuntime 不自清）→ P5-64。
+- **work/ 记账文件（PLAN/QUESTIONS/LEARNINGS）的修改此前从未提交，全靠工作区存活——本次事故一次全损。规则：每次合并 commit 一并 `git add work/<slug>/PLAN.md work/QUESTIONS.md work/LEARNINGS.md work/LOG.md work/<slug>/LOG.md`；tick 结束时对当日有改动的记账文件做一次 docs(work) 提交。**
+
+## 「原版即规格」：行为问题去逆向，不要问用户（用户 2026-11-05）
+- 用户原话：「这块不应该去逆向吗 怎么一直在询问我. 你应该只有需求部分询问我才需要.」目标就是 1:1 对齐 Grok Bot，所以**产品行为、权限语义、交互细节的答案在 0.78.1 里**——派 RE 查证后按原版定，写进决策记录并注明 RE 锚点即可，不进 QUESTIONS。
+- 只有这几类才问用户：需求与范围（做什么/不做什么）、品味偏好（原版有两种做法时选哪种，先按 RE 主流做法执行并标注）、法外授权（越过 CLAUDE.md 硬约束的事，如开放真桌面）。
+- BRIEF/PLAN 里现存的 U-* 待确认项按此清理：能 RE 定的转为「按 RE 定（锚点）」，真剩需求类的才保留。
+- 例：plugin_manager 是否全局生效——用户已答「问题不是那么大」；RE 证据（RE-admin-078 §4）显示原版也非裸全局：有 always_allow/auto_review/needs_approval 分层 + CU 的 standing grants。按原版分层定，不自建更重的 Mandate 体系。
+
+## 判 stale 与主仓回测（2026-11-05 H3 事件）
+- 现象：H3 builder 51 分钟无 commit/报告更新，判 stale#1；同窗口主仓 create-live 连跑两次同 3 红（超时 18s/29s+20ms 快败）疑内容回归。
+- 根因：两者同源——builder 正在跑 e2e 长链（guard-fs→w1ap0→sandbox-hardened→全量，单文件负载下 >1000s），stale 判定只看 git/文件 mtime 漏了进程活性；主仓回测与其跨树同文件互踩。
+- 规则：①判 stale 前必须 `pgrep -af 'bot-wt/<task-id>'` 看 agent shell 与子进程是否在干活，有活跃进程就不判 stale；②主仓回测出现红灯且签名是超时/快败混合时，先查有无并行 agent 在跑 e2e/全量（pgrep vitest），再判回归；③干净复跑统一安排在无并行 agent 的窗口。
+
+## ssh 本机测试的四个坑（2026-11-06 manager p9 立项实测）
+- OpenSSH 不认 `$HOME`：`HOME=/tmp/x ssh -G localhost` 仍用 `/home/lingxufeng/.ssh/known_hosts`（按 passwd 取家目录）。隔离 HOME 挡不住真实 `~/.ssh` → 测试在 PATH 最前放 `ssh` 包装脚本 `exec /usr/bin/ssh -F <测试目录>/ssh_config "$@"`。
+- 服务端用普通用户私有 sshd（`/usr/sbin/sshd -D -e -f <私有配置>`，127.0.0.1 高端口、`UsePAM no`、私有 HostKey/AuthorizedKeysFile、ForceCommand 改写 HOME），不要往系统 :22 的真实 `authorized_keys` 加钥。
+- sshd 会 chdir 到 `/`，bot-reap 只认命令行里的白名单路径 → sshd 配置文件必须放在 `/tmp/bot-*` 下。经理探针用了 `/tmp/mgr-sshd-probe.*`，留下一个清不掉的 sshd（PID 3051833，127.0.0.1:22922，配置与公钥已删、无法登录），已交用户手工结束。
+- dsh-ssh 把控制套接字目录写死在 `/tmp/dsh-ssh-*`（不随 TMPDIR），只有 dispose 会删；helper 必须在 bwrap 私有 `/tmp` 之外 → 施工 worktree 放 `/dev/shm/bot-T<N>`。
+- 附：`.claude/hooks/process_guard.py` 会把命令里独立出现的单词 `skill` 当成批量杀进程命令拦下（Linux 有同名命令）；grep 这个词写成 `sk[i]ll`。
+
+2026-11-06 app/ui e2e 两个环境坑：① 项目 playwright 1.64.1 的 chromium 此前未装过——隔离 HOME 跑 e2e 需先 `pnpm -C app/ui exec playwright install chromium`（装到真实缓存）再 `PLAYWRIGHT_BROWSERS_PATH=/home/lingxufeng/.cache/ms-playwright` 指过去；② 裸 `sh scripts/run-e2e.sh` 被截胡（已有条目）的完整规避=一律 `pnpm -C app/ui --config.verify-deps-before-run=false test:e2e <file>`。
+2026-11-06 review 席内容策略第二、三例（T5 设计复审两轮被拦，防御性重述无效）：分类器拦的是**分析输出**——agent 一开始推理「凭证可达性」就被断，不是派发词的问题；凡审查对象本身涉及凭证路径推理，Sol 席都过不去。可靠出路=换模型席（新鲜 Opus 实例代审，记录替代原因），或把该部分降级为纯锚点核验。Sol 补审留 queue 提议。
+
+2026-11-06 UI e2e 数据根对齐（T14 半天教训）：SDK 子进程的 PBOTS_DATA_DIR 与 Electron main 的 dataDir（其 env ?? userData）是**两棵树**——只给 launchSdkRuntime 传 dataDir 时，main 拿到的是 launchShell 经 `shellChildEnv`（`tests/support/sdk-env.ts`）注入的 `PBOTS_DATA_DIR=<shell 自建 home>/data`（不是 userData；经理任务 B 勘误），会话 workspaceRoot 在 main 的树上；写「runtime 遮蔽根内、会话真实根外」的绝对路径会被 guard 正确拒绝。规范写法=workspaces.spec.ts 的 launchAligned（共享 home、dataDir=<home>/data、home 传 launchShell）。另两条：idle 回落可能早于 fake 落盘（读 requests.jsonl 一律轮询）；renderer evaluate 回的是 {ok,value} 信封要拆。
+
+2026-11-06 main 进程碰 bot 工作区（T7a 验收教训）：main 不在沙箱里，而 bot 工作区里的每一层（`.dsh`、`.dsh/skills`…）都可能被 bot 用 bash `ln -s` 换成链接。只 lstat 最外层 `workspaces/<id>` 不够——T7a 的 enable/disable 因此能被引着写/删工作区外。凡 main 侧按路径读写 bot 工作区，逐层 lstat 拒链接（或 realpath 后做包含判断），并配「外部目录没变」的断言格。另：直接 `sh scripts/run-e2e.sh` 会撞上 conda 的 `playwright`（`unknown command 'test'`），一律 `pnpm exec sh scripts/run-e2e.sh …`。
+
+2026-11-06 回执对号表要从 diff 写，不从意图写（T7ab→T7ac 同一行 ⑥ 连续两次虚记「已补断言」，实际只改了消息串）：写「已补/已加」前先 `git diff <起点>..HEAD -- <测试文件> | grep -n '<断言片段>'` 贴原样输出；没有输出就不许写已补。
+
+2026-11-06 断言载体要装得下被断言的东西（T9ab ⑧/⑪）：⑧ 用 `requests.jsonl.userTexts` 断言「工具面不含 workflow」，可 fake 根本不记工具名——删光 PTC 禁行照绿；⑪ 用「kill 前」做 `/tmp/dsh-ssh-*` 基线，目录早在建会话时就有，`added` 恒空。验「不含 X」的格一律配正对照（同一载体里能看到一个**应该在**的东西，如 `bash`）和一个「把 X 放回来就红」的变异。另：launcher 的 dsh 是 `detached: true`（T-13，故意让 launcher 崩了 dsh 照活），SIGKILL launcher 不会带走 dsh/ssh master——要证强杀残留就杀 dsh 本身。
+
+2026-11-06 「孤儿 = ppid 1」在本机不成立（T9ac ⑪）：桌面会话里的孤儿进程会被 `systemd --user`（child subreaper，本机 pid 2050）收养，`ppid===1` 计数恒为 0，断言永远绿。查「某进程名下的子进程退净没有」要在 kill 前记下它们的 PID 集合（例如夹具的 `server.clientPids()` 差集），先断言集合非空，kill 后再断言这些 PID 都不在了。基线同样要取在被测对象创建之前：dsh-ssh 在构造时就 mkdtemp，所以 `/tmp/dsh-ssh-*` 的基线要在 launchRuntime 之前取。
+
+2026-11-06 「防漂移」白名单格要拿**全集**去比，不能在已知名单里找新名字（T9b ③）：`upstream.filter((m) => WRITES.includes(m) && …)` 只会在五个已知写入口里找，上游新增的 `appendText` 永远被过滤掉，格恒绿。正确写法 = 上游原型全部方法名减去 READS ∪ WRITES 必须为空；配一刀证伪（从 READS 删一个名字 → 红）。同单另一课：工单「目标」与「验收」要逐项对得上——转单时验收漏抄了 DESIGN 的 ssh-product ②，施工就照窄单做完，guard 远端根整段没落。
+
+2026-11-06 JS 块注释里写 glob 会被 `*/` 提前闭合（T9b never-roots：`.config/**/credentials*` → SyntaxError 裸 token）。注释里的通配路径用行注释 `//`，或写成 `.config/<任意层>/credentials*`。
+
+2026-11-06 T9b3 guard 的 remoteHome 校验写成 `void ssh.ready.then(...throw)` → cordis/Node 吞 fire-and-forget 拒绝态、进程照常服务；且 guard 先于 ssh 插件注册（apply 时 `ctx.get('ssh')` 为 null，校验整段被跳过）→ 启动期 fail-closed 必须显式（exit / 拒服务），并证明它在产品加载顺序下真的跑了（e2e 先红：配错照常启动）。
+
+- （2026-11-06 T9b 链审查 C1）插件里任何 `setTimeout`/挂起的 Promise 回调都要登记 cordis 释放（`ctx.effect` 或 `ctx.on(dispose)`，先例 request-net.mjs:194、routing-prompt.mjs:74），回调入口判 disposed——已发出的 `.then` 撤不回。手搓 `{on,get}` 假 ctx 没有 dispose 语义，测生命周期必须用真 `new Context()` + `fiber.dispose()`。
+
+- （2026-11-06 T10 终验）沙箱读遮蔽的哨兵**不能放在 /tmp 下**：上游 dsh-sandbox-local 的 workspace-write profile 自带 `--tmpfs /tmp`（lib/index.js:34-35），`mkdtemp(tmpdir())` 出来的哨兵 HOME 在原版沙箱里本来就看不见——「删掉防线」的变异照样绿，测试成了空测。真实 HOME 在 /home/<user>。探针根放 /var/tmp 等 /tmp 之外，并在 beforeAll 断言它不在 /tmp 下；变异要在默认 TMPDIR 下跑。另：先红如果只出现在「某个 bug 还没修」的状态（这里是 mode 丢失落 read-only），修完那个 bug 要重新确认先红还在。
+
+- （2026-11-06 T9b4 终验）测插件里的定时器，`vi.useFakeTimers({ shouldAdvanceTime: true })` 要装在 `root.plugin(...)` **之前**：apply 时建的首个 timer 用的是装假时钟那一刻的 `setTimeout`，装晚了 advance 碰不到，格子变空测（旧代码也绿）。`shouldAdvanceTime` 让 cordis 加载不卡。判一个"释放即停"格有没有用：拿修复前的源码跑，必须红。
+
+- （2026-11-06 T7bd 开单）renderer-grok 的 build（esbuild）**不做类型检查**：overrides 里用了没导入的组件（T7bc 的 `SandIconButton`）照样出包，运行时一渲染就 ReferenceError。所以「build 过了」不等于「能用」；碰 overrides 的单，验收必须跑一格真会渲染到改动组件的 e2e，且先 `git status --short app/ui` 为空、产物 mtime 晚于 HEAD 提交，证据才算来自已提交代码。
+
+- （2026-11-07 T17 终验）**Electron/Chromium 进程的 `/proc/<pid>/environ` 不能当 oracle**：启动即 setproctitle 改写 argv+environ 原内存区，读出来 0 条 `KEY=`（连必在的 `DISPLAY` 都没有），「env 不含 X」断言恒真。要看 Electron 主进程真实 env：`electron --inspect=<port> <entry>`，经 inspector `Runtime.evaluate('k in process.env')`，并带一个必在键当正对照（证据 `work/product-launcher/evidence/probe2.sh`）。node 进程的 environ 可读。
+- （2026-11-07 T17 终验）**e2e 的 pid 集合必须限本实例**（从被测进程沿 `/proc/<pid>/task/*/children` 收），不能按仓内路径扫全机：施工期 SIGKILL 留下的旧 start.mjs/dsh 会被算进来——T17 的 M1「红」证据和 ⑤「environ 偶发不含」都是扫到了 01:42 的旧残留。**变异和复跑前先 `pgrep -af bot-T<N>` 为空**，否则红绿都不可信。
+- （2026-11-07 T17 终验）bash `while IFS='=' read -r k v` 读不到**末行无换行**的行（read 返回非 0）——用户手写配置文件常见，补 `|| [ -n "$k" ]`；带引号的值原样含引号。另：CDP `browser.close()` 是强退 Electron 主进程（Chromium 子进程慢退 20s+），模拟用户关窗用 renderer 里 `window.close()`。
+- （2026-11-07 T17b 终验）**变异前先提交修复**：在未提交的修复上做变异、再用 `git checkout --`/`reset`/`stash` 还原，会把修复本身一起还原掉——T17b 申报「启动器三修 + 全绿」，提交树里启动器零改动、⑦⑧ 红。规矩：修复先 commit；变异只用 `cp` 备份→改→跑→`cp` 还原→`cmp`；commit message 写之前 `git diff --stat <起点> HEAD` 核一遍。
+- （2026-11-07 T17b 终验）**e2e 的 finally 别直接 SIGKILL 被测启动器**：KILL 跳过 bash trap，detached 的 dsh 成孤儿（经理 M2/M4 红跑各留 1 个），下一刀基线就脏了。finally 先收后代 pid → TERM 启动器等 ≤30s → 仍活再 KILL 收集到的全部 pid。
+
+## 2026-11-07（T20/T21/T23 批次）
+- **0.79.3 R3 桩的 CDP evaluate 会超时**：单进程内反复 Page.navigate 重挂载后 evaluate 挂 20s（现象：json 字段变 'undefined' 字符串）。绕法：多挂载采样改外层独立进程循环（每次新 chrome），采样从 bodyText 行抽取聚合，不依赖内联 evaluate。
+- **事实记录一律 json 机器断言**：T20 首验翻车三处全是目测误读（形状 13 数成 24、随机初值巧合当「选形变色」、短语随机起步当固定）——picker 计数/选中态/文案对比必须 evaluate 抓 DOM（aria-label/aria-pressed 比 className 稳）。
+- **e2e worktree 起手三件**：app/ui 与 app/sdk 各 pnpm install --prefer-offline（node_modules 不随 worktree）；跑 e2e 前必 build；隔离 HOME/TMPDIR 先 mkdir -p（mktemp 模板对不存在目录报错）。
+- **vitest coverage-v8 在 ui 仓仍不可用**（P7 F1 同款）：customProviderModule 指向 sdk pnpm 深处可载入但覆盖计 0%（模块 id 对不上）。需要覆盖率时用手工核算表+记录工具问题，别再烧轮次调工具。
+- **面板/对话框等 role=dialog 组件开着会吃 Esc 与指针**（遮罩）——测试链里后续还有 Esc/点击交互时，用完即点 Close。
+<<<<<<< HEAD
+
+## 2026-11-07（T32b 返修）
+- **断言段插入先对齐「当下在哪一步」**：给 walk 测试插段时只看锚点注释不看流程位置——观察器段插在 steps 循环后，实际已在 jobs 页，点的 Next 是 jobs→role 却断 cd heading，红得像「onboarding 退出」（aria 树里的主应用文字是被引导层盖住的侧栏，不是退出证据）。改法：插入前先数清楚此前每次 click 各前进到哪页。
+- **history.back() 不适用于无历史条目的 SPA 引导层**：walk 换步是组件 state 不是路由跳转，history.back() 会把整页退到上一个 URL（about:blank/上一站）——「回到前一步」用 UI Back 钮，或把断言挪到初到该页时做（后者更省）。
+- **miniconda 的 python playwright 会抢 PATH**：repo 里 `sh scripts/run-e2e.sh` 直接 exec playwright，which 命中 miniconda 版就报 `error: unknown command 'test'`——前置 `PATH="$PWD/node_modules/.bin:$PATH"`。
+- **T26b 合并的回归面远超合并回测覆盖**：gate 改「未 seen+空 roster 不建 main」后，所有裸 `launchShell` 的 spec（不走 `launchProduct`/`waitProductReady`）首启必进 onboarding、`.sand-agent-item` 恒 0。T7bd 验收撞出 skills-picker/t7b-shot/grok-dead-entries 三个；另有 persona/shim/ws-write/questions-answer/m2-*/restore/skills-enable/shell 五件待扫（清单在 T7bd 回执）。根修=裸 spec 换 `waitProductReady`。
+- **e2e 期望清单要跟着特性单走**：grok-dead-entries U4′ 行菜单清单在 T21 加「Show full conversation」后过时——加活入口的单应顺手 grep 死入口清单 spec。
+- **（经理 T7bd 终验更正上条）`waitProductReady` 不是完整兜底**：只写 storage + reloadRoster，若壳已用旧 seen 打开引导，引导层会一直盖住主区（裸壳 12 次中 5 次复现，主区按钮点不到）。凡后续有 `page.reload()` 的 spec（如走 `createBots`）自愈，没有的会偶发红。根修走 T7be（helper 内置 seen 后整页 reload + `.sand-onboarding` 计零）；修好前裸壳 spec 别只靠它。
+- **变异刀前本体必须先提交**（T32c 事故）：还原误用 `git checkout --` 抹掉未提交本体改动——正序：本体提交→刀在提交之上改→checkout 还原永远安全。
+=======
+- **变异刀前本体必须先提交**：T32c 首轮 Vi 刀后还原误用 `git checkout --`，把未提交的 spec 本体改动整抹（变异刀只该动产品文件，但还原操作分不清哪个文件属于本体）——正序：本体提交→刀在提交之上改→checkout 还原永远安全。
+>>>>>>> feat/T32
+- **变异刀先决检查（三次事故后根治）**：动刀前必须 `git log --oneline -1 -- <改动文件>` 确认改动已在提交里（或 git diff 为空）——否则 checkout 还原会连实现一起抹掉。T32c/T7db 两日三犯（注释/实现/重放各一次）。另外批量 python replace 后必须验证生效（grep 关键新行），静默不匹配会误提交红态。
+- **waitForFunction 不 await async predicate**（T7beb Sol 证）：playwright-core coreBundle:25707 `const success = predicate(); if (success) fulfill`——async 函数返回的 Promise 恒 truthy，首次调用即结束，`polling` 从未驱动。需要真异步轮询用 `expect.poll`（每轮 await 回调）。
+- **改共享 helper 语义后全部验收必须重跑**（T7beb 漏验收 4）：「只改了一小段」不成立——T7bec 就是漏跑的那格必现红。验收清单当轮全跑完才算施工完。
+- **合并回测只跑「边界内文件」会漏 mock 期望测试**（T7d→H7r2 抓出）：T7d 给 `workspace_ensure` 加两条预建 mkdir，合并回测只跑六件边界内测试，`unit/workspace.test.ts` 的 argv 序列断言红了一整天没人看见。规则：合并回测按 L51 跑整包；至少 `grep -rl <改动模块名> app/*/tests` 把所有引用该模块的测试带上。
+- **全量开跑前先看 `uptime`**（H7r2 load>20 叠 GPU 训练）：结果虽收，过程违 CLAUDE.md §5；load≥8 就等，双全量尤甚。
+- **测试 HOME 不在 /tmp 下**（T34 任务 C）：`uniqueTestHome()` 根是 `/home/lingxufeng/bot/.test-homes`（决策 8），不是 `os.tmpdir()`。任何「只在临时目录下才动手」的测试守卫都要把两根都放进白名单，否则对 e2e 静默不生效——T34 播种因此漏掉，envelope 把根会话当 worker 拒委派，表现为「90s 没观察到子会话模型调用」。排查委派类红先抓根会话 toolResult（fake requests.jsonl），一条 `pbots/forbidden` 就能直接定位。
+- **「等端口可连」不能是单次 connect**（T46b 任务 C）：`net.connect` 到未绑定端口 2ms 就 ECONNREFUSED，单次连接 + 超时 = 立即失败，超时参数形同虚设。施工侧 25 轮排除法都在查子进程/环境，没回头看自己的等待函数——卡住时先用 `ssh -vvv -E` 之类给**被杀方**留日志：日志都没生成 = 它刚起就被我们自己杀了。
+- **夹具 ForceCommand 下起的远端常驻进程，kill 本地 ssh 客户端收不走**（T46b）：spec finally 必须 `bot-reap --match <root>`；临时根要在 bot-reap 白名单（`/tmp/bot-` 等）下，否则连 reap 都拒。
+- **e2e 绿 ≠ HEAD 绿：先确认 out/ 是当前源码构建**（T46b 终验）：审查返修改了 `main/` 却没重建，「八格全绿」跑的是上一版代码，重建后 ① 直接红。回执贴 e2e 前必须贴 build 尾部 + `grep -l <本次独有标识> out/main/*.js` 命中。
+- **`ChildProcess.connected` 是 IPC 通道标志**，无 IPC 的 spawn 恒 `false`——不能当「进程还活着」用；活着看 `exitCode===null && signalCode===null` 或自己在 error/exit 里记标志。**事件回调里 throw 传不到 await 的调用方**（变 uncaughtException），首起失败要在 async 主链里抛。
+
+- 2026-11-11（T48）：本机 `~/miniconda3/bin/playwright`（pip 版，无 test 子命令）在 PATH 抢先解析，`sh scripts/run-e2e.sh` 裸跑报 `unknown command 'test'`——跑 e2e 一律 `PATH=$PWD/node_modules/.bin:$PATH` 前置再调 run-e2e.sh。
+- 2026-11-11（T48）：断言「元素存在」别用 `count()` 判（即时快照不等待，Loading 态下假阴性/假阳性都出过）——一律 `expect(locator).toBeVisible()`（自带等待）。另：playwright 的 toBeVisible 过了≠在视口内，截图前要 `scrollIntoViewIfNeeded()`（滚动容器内元素拍不到栽过一次）；icon font 私有区字形（U+F393 等）会进 innerText，文字断言须清 `-`。
+
+2026-11-11 取证图验收（T54 两次不通过教训）：VNC 拍 VM 会拍到睡眠黑屏或陈旧前台窗口，回执照样写「非黑屏、应用前台」。验收图片类证据先跑像素统计（mean/max/md5，全黑与重复 md5 一眼可见）再逐张 Read；结论里引用的每张图必须看得到所说的东西。另：接受「我们没实现 X」的修单前提前先读码——T55「照原版 win32 titleBarOverlay」在 `main/window.ts` 早已实现。
+
+## 2026-11-11（T49/T49a 探针链）
+
+- **patch 层（--patch 的 yml）给 settings 管的 ns 配 config 是反模式**：①insert 行带 config 会把 ns 锁成「overridden by a home patch」拒写（T51 市场先例）；②config 值用 `!!js` 时，settings 写操作合并校验拿到的是原始节点对象（describe 视图才是求值后的字符串）——update/mutate 全报 `expected string but got [object Object]`。正解：挂载零 config（官方形态），运行时值经 settings 写口进 user 层（T49a 种子）。
+- **wire 形状按 gateway 报错迭代**：dsh typert gateway 对形状不符回 `args fields do not match the descriptor: missing X; unexpected Y`——错误消息就是契约文档。credentials/settings 系顶层参数无 `{request:…}` 壳；session/* 才有壳。
+- real provider 探针的 base URL 环境变量是 `P2SDK_LLM_BASE_URL`（start.ts 读它再覆写 child 的 `P2SDK_LLM_API_BASE`）——设错名字会静默打到默认 LiteLLM:4001，报错只有 400 no_db_connection。
+- 沙箱探针：tool/result 事件在 per-session `client.follow(sessionId)` 流，不在 `$events` 全局流；作答 clientId 取 ready 帧（不等 ready 帧作答会静默丢失）。
+- ui worktree 新建后 `node_modules` 软链主仓会被 pnpm 拒（no TTY purge）——`rm node_modules && CI=true pnpm install`；**app/sdk 与 app/ui 是两个包，worktree 里都要装**（T51 yaml 依赖教训的第二轮）。
+- 设置域 CSS 覆盖战（T57）：recovered `view.css:46` 的 `.sand-settings-dialog button:not(.sand-kit-button):not(.sand-kit-icon-button)`（0,4,1）把域内一切非 kit button 的 padding 钉成 6px 9px、radius 6，且 `font:inherit` 简写连 line-height 一起继承（13×1.4=18.2）；kit icon（--cursor-height-sm=24）与 Close 钮同理压类级覆盖。反压：同形状选择器+目标类尾缀（0,5,1）或两处定点 !important。测量断言里 .5px 边在 DPR=1 环境用 getComputedStyle 读回的是 used 值 1px（原版 0.5 实测出自 DPR=2）——按 ±1px 口径收。
+- **市场 env 源是钉死的**（T58 验收 2026-11-12）：`P2SDK_MARKET_SOURCE_INDEXES` / `P2SDK_MARKET_INDEXES` 经 `app/sdk/profile/patches/market-source.yml`（`market.yml`）以 `!!js` 每次加载写死 plugin-market `indexes`，压在界面写的 `profiles/web/cordis.patch.yml` 上——`setIndexes` 返回成功但 `listIndexes` 仍回 env 值。不是 SDK bug。要测 Index sources 增删 / 空态，走不设 env 源的生产缺省启动（market.spec :289 写法）。
+- **「不被裁」要比字不只比框**（T58）：rect 在滚动容器内、rect 高 = computed 高都过了，Done 字形仍比钮心低 4px（T51 原症状）。按钮类验收加「文字中心 vs 钮中心 ≤1」，并亲看截图量像素行。
+- **骨架屏假绿**（T69b）：`toHaveCount(0)` 类空态断言可被中间帧采过——store `enterMarket(true)` 先置 `sources=null` 渲染 0 行骨架，断言恰在那一瞬命中就绿，什么都证明不了。删/加源后断言要写**终态特征**（如「恰剩内置行+Built-in 标+全页无删除钮」——0 行帧不具备这些特征），不是数量 0。
+- **合并后回测先 install+build**（T69 链回测首红两处）：单若动 app/sdk 依赖（新 package.json 条目），主仓先 `pnpm install`（readManifest 读不到包→wrapper 静默返 null）；若加 renderer 新模块（overrides/modules/*），主仓先 `pnpm build`（e2e 起的是构建产物，源码不进）。
+- **截图亲检分层**（用户 2026-11-12）：主 agent（GLM）不做视觉验收——analyze_image 走 CDN 签名 URL 多次 1210/400 不稳。施工回执只落图+写「每张图应确认什么」；亲检交给 manager（任务 B）/reviewer（Read 图）。派发提示里显式列出确认点。
+- **p2sdk RPC service 三件套**（T73b）：①TypertRemoteService 经 dsh-plugin-market 的 require 域解析（`createRequire(require_.resolve('@deepseek-ai/dsh-plugin-market'))` 再 resolve typert-protocol——从 src/p2sdk 直接 resolve 找不到包，RPC 404 第一因）；②方法进 gateway 表靠 prototype 上的 remote-methods descriptor claims 程序化注册（workspace.mjs 同款，缺了 404 第二因）；③runtime-patch.yml 在 ready 时被 start.ts 故意删（:1142 T-01.f3 反取证）——文件消失≠行没加载。观察 dsh child 的 env 必带 P2SDK_ 前缀（childEnv 白名单）。
+- **e2e 起 runtime 一律带 PBOTS_DATA_DIR**（T73b）：不设时 dataDirs 缺省=~/.config/pbots-ui——SDK 侧任何按 dataDirs 落盘的东西（standing-grants 等）会写进真实用户目录。另：plain `session/create` 审批策略 never 不出卡（bot 真实路径=createWithConnectors）；$events 应答侧用 `connect({interactions:'answer'})+socket.open('$events')`（follow 收不到）；fake 插件脚本游标按 session 跨 turn 递增，多轮要错位写。python 改 start.ts 模板串必须行级插入+assert（多行替换静默未生效第三犯）。
+- 2026-11-13（T80 终验）真模型抽样从 UI 气泡 innerText 取回复会丢 Markdown 结构（编号列表标记、mermaid 换行），据此判「无列表」会假绿；判语气/形态一律从 session.v4.jsonl.zstd 原文取，截图只做同源对照。另：pnpm 的 `--config.verify-deps-before-run=false` 要放在 `pnpm` 与 `vitest` 之间，放在 vitest 参数里 vitest 会崩。
+
+## CSS 定位（T90c 实证）
+- **fixed 子元素不因祖先 transform「脱离」**——transform 的祖先恰是 fixed 后代的定位基准。真坑是：子元素脱离文档流后 **wrapper 高度塌成 0，`translateY(-100%)` 位移跟着归零**（-100%×0）——面板纹丝不动。上弹浮层要让面板留在流内（static）由 wrapper 承担位移
+- caret rect 底到编辑器顶有 ~9px 差+呼吸空隙——上弹偏移 `calc(-100% - 14px)` 实证值
+- `expect.poll(...).toBe(0)` 首拍即过不等待——真防误发要 `waitForTimeout` 后 `toHaveCount`（开单时就写对）
+
+## 2026-11-16 · 覆盖模块三坑（T77/T77b/T96 连续踩）
+
+1. **相对 import 撞目录同名**：overrides/modules/ 里的 `./model` 会命中我们自己的覆盖 model.ts（production 的）而非上游兄弟文件——新覆盖模块的相对 import 一律写全路径 `../../frontend/src/...`（T77b 一次踩 5 处：./model×2+schedule 兄弟×3）
+2. **modules 内 importer 不替换**：覆盖模块 A import 覆盖模块 B 的上游全路径时（importer 在 modules/）resolveId return null 直用上游 B——若上游 B 恰有覆盖版 C，A 拿到的是上游 B 而非 C。要链覆盖就 import C 的路径（modules 相对）或把映射逻辑挪包装层
+3. **worktree e2e 三件套**：app/ui+app/sdk 双 install（yaml 缺→runtime exited early，三犯）；完整 `pnpm build`（漏 electron-vite→electron.launch 挂）；后台 install 后验证 `ls app/sdk/node_modules/yaml` 再跑
+4. **产物层排障法**：运行时 DOM 与源码不符时，先 `grep -o '特征串' renderer-grok/.build/frontend-shell/assets/index-*.js` 确认覆盖版编没编进去，再 `diff <(md5sum .build/...) <(md5sum out/renderer/...)` 查 stage 层——T77b 靠此 10 分钟定位「双版本编译、运行时用 inline 版」
+5. **特异性战升级链**：老单用 (0,N,1) 长选择器反压时，新规则要同形状+尾缀再 +1（T77b 设置导航 hover 从 (0,3,0) 拉到 (0,6,1) 才赢 t57）
+
+## 2026-11-16 · 测试假绿三式（T85c 三轮揭穿）
+
+1. **诊断 probe 自身是副作用**：排障 spec 里 `el.scrollTop = el.scrollHeight` 的 probe 把「到底」做了——产品 bug 被掩盖（工单「不先补底直接断」防的正是这个）。**诊断段必须无副作用或用后立删复跑**
+2. **断言顺序误读**：首断言挂时其后的诊断全没执行——「后面的断言过了」≠「前面的问题解了」。读挂点行号要对着 spec 行序
+3. **状态机要有唯一写入者**：stick（滚动跟随）被 MO/check 两处重判=竞态温床——真修=「用户交互事件是唯一重判入口，观察器只消费不重判」
+4. **等待 locator 被旧内容命中**：`hasText:'长内容测试'`+`.nth(i)` 前文已有同文本 → 等待即时满足，断言只剩定时器兜底。**每轮等待用本轮唯一标记；回归测试须在修前形态红过一次**（T85c ④ → T85d）
+
+## 2026-11-16 · worktree 两禁（T73d 事故实证）
+
+1. **禁 `git checkout main -- <path>`**：worktree 基点常与 main 分叉（feat 分支未并），该命令会把 main 独有文件带进 worktree 且标记为已暂存新增——T73d 带入未并的 agent-row-actions-model.ts。对照基线用 `git show <sha>:<path>` 读内容，不用 checkout
+2. **丢改动先 `git fsck --lost-found`**：`git checkout .` 洗掉未提交改动后，stash 的 dangling commit（「WIP on feat/X」）仍在——`git stash apply <sha>` 全量找回。reflog 只记 HEAD 移动不记工作区，别只看 reflog
+
+## 2026-11-17 · DSH 会话内 e2e：宿主 ELECTRON_RUN_AS_NODE 劫持（T100b）
+
+1. **根因**：DSH 宿主自身跑在 Electron 里，会话 env 注入 `ELECTRON_RUN_AS_NODE=1`——被测 electron 以纯 node 模式启动（`require('electron')` 返回路径字符串、`app` undefined、开不了窗），playwright 全线 "Process failed to launch!"（2 秒内齐挂=环境级）。**诊断特征**：electron 二进制正常（--version 好）、绕过 playwright 直跑零输出即退
+2. **修法**：tests/support/sdk-env.ts `HOST_ONLY_ENV_KEYS=['ELECTRON_RUN_AS_NODE']`，sdkChildEnv 在 {...process.env} 副本上 delete（worker env 不动）。以后宿主再注入别的 Electron 劫持键，加进该数组即可
+3. **通用教训**：宿主注入的 env 键会静默改变被测进程行为模式——凡「昨天还绿今天全挂」且失败模式一致（非断言红、是进程起不来），先 `env | sort` diff 一次正常终端 vs 会话 env，再查代码

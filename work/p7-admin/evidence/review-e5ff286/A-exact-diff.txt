@@ -1,0 +1,883 @@
+diff --git a/app/sdk/src/admin/authority.mjs b/app/sdk/src/admin/authority.mjs
+new file mode 100644
+index 0000000..b03bf66
+--- /dev/null
++++ b/app/sdk/src/admin/authority.mjs
+@@ -0,0 +1,263 @@
++// P7-F2 H1 溯源检查 = 授权三元组（BRIEF v2.3 §6.1.1 H1 + p7-admin PLAN §3.3）。
++// 管理操作与协调者派工执行前，执行器核对（动作，精确目标，受限参数）是否被
++// 「本回合人类来源原文」或「当前有效 Mandate」授权；未授权 → 不执行、转
++// 「需要你处理」（P6-18 通道，由调用方消费 handoff 决定）。全部常量在此，
++// 不用 LLM 判断「像不像授权」；语义不清也不猜意图。
++//
++// 证据来源边界（H2/H4）：本函数只吃宿主传入的 humanUtteranceOfGrant（人类
++// 来源原文）与 Mandate 的 grantUtterance（授予回合人类原文）。worker 回报、
++// 事件正文、同回合工具结果永远不进这两个参数——它们的过滤是宿主采集侧
++// （D-1 后接线）的职责，这里无从伪造也无需识别。
++//
++// 来源: 语义与词表 = 本仓 BRIEF v2.3 §6.1.1 / PLAN §3.3（决策已定）；
++// 实现为 P7-F2 新增。文字 stop 是 P7-L4 的单独入口（只收紧不授权），不进
++// 本词表。
++
++/** §3.3 动作规范名/词表（规范名 → 中英动作词）。 */
++export const ACTION_WORDS = {
++  create: ['建', '创建', '新建', 'create'],
++  modify: ['改', '修改', '改名', '设置', '更换', 'rename', 'modify', 'set', 'change'],
++  archive: ['删', '删除', '归档', 'delete', 'archive'],
++  install: ['装', '安装', 'install'],
++  disable: ['卸', '卸载', '停用', 'uninstall', 'disable'],
++  dispatch: ['派', '派工', '委派', 'dispatch', 'delegate'],
++  restart: ['重启', 'restart', 'relaunch'],
++}
++
++/** 动作的目标在 Mandate 哪个范围桶（null = 无目标：restart）。人类回合的
++ * create 不做目标匹配（§3.3：新对象无名可对），Mandate 路径的 create 按工
++ * 作区桶核对（BRIEF §6.1.1 create_bot 非人类回合：目标工作区/仓 ∈ Mandate）。 */
++export const ACTION_SCOPE = {
++  create: 'workspaces',
++  modify: 'bots',
++  archive: 'bots',
++  install: 'plugins',
++  disable: 'plugins',
++  dispatch: 'workspaces',
++  restart: null,
++}
++
++/** §3.3 否定词：CJK 子串命中；拉丁整 token 命中（含 do not 二连）。 */
++const CJK_NEGATIONS = ['别', '不要', '不许', '禁止', '先别', '暂不', '勿再', '勿', '不']
++const LATIN_NEGATION_TOKENS = ['no', 'not', 'never', "don't", 'without']
++
++/** §3.3：bot 名最短码点（ponytail 常量）——短名一律要求 id，不按名匹配。 */
++export const MIN_BOT_NAME_CODEPOINTS = 2
++
++/** §3.1/§6.2 禁区参数键（凭证 / 账号 / 权限 / 审批档位 / configForms）：
++ * 出现即拒绝，无论授权原文怎么写。键归一 = 小写 + 去 -_ 。 */
++export const PROHIBITED_PARAM_KEYS = [
++  'account', 'accounts', 'accesstoken', 'apikey', 'approval', 'approvals',
++  'approvaltiers', 'approvalyml', 'auth', 'authorization', 'configforms',
++  'cookie', 'credential', 'credentials', 'passwd', 'password', 'permission',
++  'permissions', 'pid', 'ppid', 'privatekey', 'processid', 'refreshtoken',
++  'secret', 'secrets', 'sessiontoken', 'tier', 'tiers', 'token',
++]
++const PROHIBITED_KEY_SET = new Set(PROHIBITED_PARAM_KEYS)
++
++const ZERO_WIDTH_RE = /[​-‏‪-‮⁠﻿]/g
++const CLAUSE_SPLIT_RE = /[。；;！？!?\n，,]+/
++const LATIN_TOKEN_RE = /[a-z0-9_.:/-]+/g
++const LATIN_WORD_RE = /[a-z0-9_']+/g
++
++/** 引号/代码块 span（指令被引用不授权；目标值被引用仍是完整值）。
++ * stripQuoted 只用于动作词识别——否定词与目标匹配用全子句（宁可多拒，不多放）。 */
++const QUOTE_SPANS = [/「[^」]*」/g, /『[^』]*』/g, /“[^”]*”/g, /‘[^’]*’/g, /"[^"]*"/g, /'[^']*'/g, /`[^`]*`/g]
++
++/**
++ * NFKC、Unicode case-fold（近似：toLowerCase）、去零宽/方向控制符、空白归一。
++ * 连字符变体（U+2010/2011/2012/2212）折成 ASCII '-'：目录 id 只含 ASCII
++ * '-'，折错方向也只是把同一 id 的变体拼写对齐，不会折叠成另一个 id。
++ * @param {unknown} text
++ * @returns {string}
++ */
++export function normalizeText(text) {
++  return String(text ?? '')
++    .normalize('NFKC')
++    .toLowerCase()
++    .replace(ZERO_WIDTH_RE, '')
++    .replace(/[‐‑‒−]/g, '-')
++    .replace(/\s+/g, ' ')
++    .trim()
++}
++
++function stripQuoted(clause) {
++  let s = clause
++  for (const re of QUOTE_SPANS) s = s.replace(re, ' ')
++  return s
++}
++
++/**
++ * 子句切分（§3.3）：`。；;！？!?\n` 划分指令子句，`，,` 可切分并列指令
++ * （目标不从否定子句借到肯定子句）。先切分再归一空白，保住换行边界。
++ * @param {string} text @returns {string[]}
++ */
++function splitClauses(text) {
++  const base = String(text ?? '').normalize('NFKC').toLowerCase().replace(ZERO_WIDTH_RE, '')
++  return base.split(CLAUSE_SPLIT_RE).map((c) => c.replace(/\s+/g, ' ').trim()).filter(Boolean)
++}
++
++const wordRegexCache = new Map()
++/** 动作词命中：拉丁词按词边界（installation 不算 install），CJK 词子串。 */
++function wordPresent(clause, word) {
++  if (/^[a-z]+$/.test(word)) {
++    let re = wordRegexCache.get(word)
++    if (!re) { re = new RegExp(`(^|[^a-z0-9])${word}([^a-z0-9]|$)`); wordRegexCache.set(word, re) }
++    return re.test(clause)
++  }
++  return clause.includes(word)
++}
++
++/** 子句里是否出现该动作的动作词（引号/代码块内的指令不授权 → 用 stripQuoted 后的子句）。 */
++function clauseHasAction(clause, action) {
++  const bare = stripQuoted(clause)
++  return ACTION_WORDS[action].some((w) => wordPresent(bare, w))
++}
++
++/** 子句里是否出现任一动作词（Mandate 范围项证据的共现要求）。 */
++function clauseHasAnyAction(clause, actions) {
++  const bare = stripQuoted(clause)
++  return actions.some((a) => ACTION_WORDS[a].some((w) => wordPresent(bare, w)))
++}
++
++/** 子句是否含否定词。用全子句（未剥引号）：被引用的否定宁可多拒（否定优先）。 */
++function clauseNegated(clause) {
++  if (CJK_NEGATIONS.some((w) => clause.includes(w))) return true
++  const tokens = clause.match(LATIN_WORD_RE) ?? []
++  return LATIN_NEGATION_TOKENS.some((t) => tokens.includes(t))
++    || tokens.some((t, i) => t === 'do' && tokens[i + 1] === 'not')
++}
++
++/**
++ * 目标匹配（§3.3 token 相等，非子串）：拉丁/数字目标必须整 token 相等
++ * （id 内 `-_.:/` 保留）；CJK/混合目标在子句内匹配（名称是汉字串，无空格
++ * 可分词，靠 MIN_BOT_NAME_CODEPOINTS 与动作子句共现兜底）。
++ * @param {string} clause 已归一子句（引号内的目标值可作完整值 → 不剥引号）
++ * @param {string} target
++ */
++function targetMatches(clause, target) {
++  const t = normalizeText(target)
++  if (t === '') return false
++  if (/^[\x20-\x7e]+$/.test(t)) return (clause.match(LATIN_TOKEN_RE) ?? []).includes(t)
++  return clause.includes(t)
++}
++
++/**
++ * 禁区参数扫描：plain object / array 深扫，键归一后命中即拒。
++ * @param {unknown} params
++ */
++export function hasProhibitedParam(params, seen = new Set()) {
++  if (params !== null && typeof params === 'object') {
++    if (Array.isArray(params)) return params.some((p) => hasProhibitedParam(p, seen))
++    if (seen.has(params)) return false
++    seen.add(params)
++    for (const [key, value] of Object.entries(params)) {
++      if (PROHIBITED_KEY_SET.has(key.toLowerCase().replace(/[-_]/g, ''))) return true
++      if (hasProhibitedParam(value, seen)) return true
++    }
++  }
++  return false
++}
++
++const allow = (evidenceRef) => ({ decision: 'allow', code: 'allowed', reason: 'authorized', evidenceRef })
++const deny = (code, reason) => ({ decision: 'deny', code, reason })
++const handoff = (code, reason) => ({ decision: 'handoff', code, reason })
++
++/**
++ * 人类原文路径（只对 turnClass 'user' 调用）。
++ * @returns {{decision,code,reason,evidenceRef?} | null} null = 本路径无证据
++ * （动作没提 / 目标没提），继续尝试 Mandate 路径。
++ */
++function humanPath(action, target, utterance) {
++  const clauses = splitClauses(utterance)
++  const actionClauses = clauses.filter((c) => clauseHasAction(c, action))
++  if (actionClauses.length === 0) return null
++  const negated = actionClauses.filter((c) => clauseNegated(c))
++  const positive = actionClauses.filter((c) => !clauseNegated(c))
++  // 人类回合 create 不做目标匹配；restart 无目标（§3.3）
++  if (action === 'create' || action === 'restart') {
++    if (negated.length > 0) return deny('negated', 'human explicitly negated this action')
++    return allow({ source: 'human-utterance', clause: positive[0] })
++  }
++  if (target == null || normalizeText(target) === '') return deny('target-required', 'action requires an exact target')
++  if ([...normalizeText(target)].length < MIN_BOT_NAME_CODEPOINTS) {
++    return deny('target-too-short', `target under MIN_BOT_NAME_CODEPOINTS=${MIN_BOT_NAME_CODEPOINTS}; use an id`)
++  }
++  // 否定优先：同动作同目标的正负冲突、目标只在否定子句出现 → 拒
++  if (negated.some((c) => targetMatches(c, target))) return deny('negated', 'human explicitly negated this action+target')
++  const hit = positive.find((c) => targetMatches(c, target))
++  if (hit !== undefined) return allow({ source: 'human-utterance', clause: hit })
++  return null // 动作在、目标不在：不短路，Mandate 还可能覆盖
++}
++
++/**
++ * Mandate 路径（单 Mandate 原则：一次一份，无并集入口——要 A 的动作 + B 的
++ * 目标只能各自失败）。授予本身受 H1：逐动作、逐范围项都要在授予回合人类
++ * 原文找到非否定且与动作共现的证据。
++ */
++function mandatePath(mandate, action, target, now) {
++  const malformed = typeof mandate !== 'object' || mandate === null
++    || !Array.isArray(mandate.actions) || mandate.actions.length === 0
++    || mandate.actions.some((a) => typeof a !== 'string' || !Object.hasOwn(ACTION_WORDS, a))
++    || typeof mandate.grantUtterance !== 'string' || normalizeText(mandate.grantUtterance) === ''
++    || typeof mandate.scopes !== 'object' || mandate.scopes === null || Array.isArray(mandate.scopes)
++    || Object.values(mandate.scopes).some((v) => !Array.isArray(v) || v.some((s) => typeof s !== 'string' || s === ''))
++  if (malformed) return deny('malformed-mandate', 'mandate is not {actions[], scopes{bucket[]}, grantUtterance}')
++  if (mandate.revoked === true) return deny('mandate-revoked', 'mandate was revoked by the human')
++  if (mandate.deadline != null && now >= mandate.deadline) return deny('mandate-expired', 'mandate deadline passed')
++  const clauses = splitClauses(mandate.grantUtterance)
++  for (const a of mandate.actions) {
++    if (!clauses.some((c) => clauseHasAction(c, a) && !clauseNegated(c))) {
++      return handoff('mandate-grant-unevidenced', `mandate action ${a} has no non-negated evidence in the granting human turn`)
++    }
++    // 授予同样否定优先；只匹配该动作的范围桶，restart 无目标。
++    const bucket = ACTION_SCOPE[a]
++    if (clauses.some((c) => clauseHasAction(c, a) && clauseNegated(c)
++      && (bucket === null || (mandate.scopes[bucket] ?? []).some((v) => targetMatches(c, v))))) {
++      return deny('negated', 'human explicitly negated this mandate action+target')
++    }
++  }
++  for (const values of Object.values(mandate.scopes)) {
++    for (const value of values) {
++      const evidenced = clauses.some((c) => !clauseNegated(c) && clauseHasAnyAction(c, mandate.actions) && targetMatches(c, value))
++      if (!evidenced) return handoff('mandate-grant-unevidenced', `mandate scope ${value} has no grant evidence; item must not be written`)
++    }
++  }
++  if (!mandate.actions.includes(action)) return handoff('mandate-action-uncovered', 'action not covered by this mandate (no union across mandates)')
++  const bucket = ACTION_SCOPE[action]
++  if (bucket !== null) {
++    const allowed = mandate.scopes[bucket] ?? []
++    const normalized = normalizeText(target)
++    if (!allowed.some((v) => normalizeText(v) === normalized)) {
++      return handoff('mandate-target-uncovered', 'target not covered by this mandate (no union across mandates)')
++    }
++  }
++  return allow({ source: 'mandate', mandateId: typeof mandate.id === 'string' ? mandate.id : null })
++}
++
++/**
++ * H1 授权判定。输出 allow / deny（拒绝执行）/ handoff（未授权，转「需要你
++ * 处理」，P6-18 通道）。
++ * @param {{
++ *   turnClass?: 'user' | 'delegated' | 'tainted',
++ *   humanUtteranceOfGrant?: string,      // 宿主传入的本回合人类来源原文（唯一人类证据入口）
++ *   mandate?: object | null,             // 单份 Mandate（K3：按 goalId/routineId 定位）
++ *   action?: string, target?: string, params?: object,
++ *   now?: number,                        // deadline 判定的时钟（测试注入）
++ * }} input
++ * @returns {{ decision: 'allow'|'deny'|'handoff', code: string, reason: string, evidenceRef?: object }}
++ */
++export function authorize(input = {}) {
++  const { turnClass, humanUtteranceOfGrant, mandate, action, target, params, now = Date.now() } = input
++  if (turnClass === 'tainted') return deny('tainted-turn', 'turn claimed pbots-worker; P6 guard rejects everything')
++  if (typeof action !== 'string' || !Object.hasOwn(ACTION_WORDS, action)) {
++    return deny('unknown-action', `unknown action ${JSON.stringify(action ?? null)}; F2 action table is closed`)
++  }
++  if (hasProhibitedParam(params)) return deny('prohibited-param', 'params touch a prohibited zone (credentials / permissions / approval tiers)')
++  if (turnClass === 'user' && typeof humanUtteranceOfGrant === 'string' && normalizeText(humanUtteranceOfGrant) !== '') {
++    const human = humanPath(action, target, humanUtteranceOfGrant)
++    if (human !== null) return human // 显式否定在此短路，压过 Mandate
++  }
++  if (mandate !== null && mandate !== undefined) return mandatePath(mandate, action, target, now)
++  return handoff('no-human-source', 'no human source in this turn and no mandate; route to 需要你处理')
++}
+diff --git a/app/sdk/src/admin/channel.mjs b/app/sdk/src/admin/channel.mjs
+new file mode 100644
+index 0000000..f7998b5
+--- /dev/null
++++ b/app/sdk/src/admin/channel.mjs
+@@ -0,0 +1,165 @@
++// P7-F2 受限 SDK→main 管理桥的 SDK 侧簿记（p7-admin PLAN §3.2「受限管理桥」）。
++// 模式沿用（第 2 级，本仓）：P6-10 ⑤ 通道 app/sdk/src/orchestration/main-channel.mjs
++// 的 CreateChannel——main-only 单订阅请求流、respond 绑持流 Peer、30s 超时
++// outcome unknown 不重试、断流作废在途、迟到 respond 拒、无效 respond 形状
++// 收敛为 invalid-response。本文件只做簿记与形状校验，可脱离 dsh 运行时单测。
++// 差异：请求体 {requestId,generation,sessionId,turnId,originRef,action,target,
++// params}（originRef 是宿主生成可重验的引用，不由模型声明）；入队前先过
++// validateAdminRequest（null / 缺字段 / 超长 → 无越权面）；单订阅由 attach
++// 拒绝第二个订阅者保证；请求盖章订阅时的连接代（旧代鉴别在 main 侧
++// policy 重验）。
++import { createRequire } from 'node:module'
++import { realpathSync } from 'node:fs'
++import { pathToFileURL } from 'node:url'
++import { randomUUID } from 'node:crypto'
++
++// 依赖解析同 orchestration/main-channel.mjs：pnpm peer store 保证同一实例。
++const require = createRequire(
++  realpathSync(new URL('../../node_modules/@deepseek-ai/dsh-plugin-market/lib/index.js', import.meta.url)),
++)
++const { RemoteError } = await import(pathToFileURL(require.resolve('@deepseek-ai/dsh-typert-protocol')))
++
++/** ⑤ 模式端点（namespace 'pbots'；不进 M1/M2 renderer 白名单）。 */
++export const ADMIN_REQUESTS_ENDPOINT = 'pbots/admin.requests'
++export const ADMIN_RESPOND_METHOD = 'pbots/admin.respond'
++/** 决策 30 同款：30s 超时缺省，超时 outcome unknown 不自动重试。 */
++export const DEFAULT_ADMIN_TIMEOUT_MS = 30_000
++/** 超长请求上限（JSON 字符数）：入队前拒绝，不进 main。 */
++export const MAX_ADMIN_REQUEST_CHARS = 8_192
++
++/** 错误构造：message 以 code 前缀开头（tool/result 只能从文本读码，同 P6）。 */
++export function adminError(code, message, details = {}) {
++  return new RemoteError(code, `${code}: ${message}`, details)
++}
++
++/**
++ * 请求体形状校验（wire 不可信）。null / 非对象 / 缺必填字符串 / params 非
++ * plain object / 超长 → 抛 pbots/invalid-args 或 pbots/request-too-large。
++ * @param {unknown} payload 调用方请求体（不含 requestId/generation，通道盖章）
++ * @returns {{ sessionId: string, turnId: string, originRef: string, action: string, target?: string|null, params?: object }}
++ */
++export function validateAdminRequest(payload) {
++  const bad = (why) => { throw adminError('pbots/invalid-args', `admin request is invalid: ${why}`) }
++  if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) bad('expected an object')
++  const p = payload
++  for (const key of ['sessionId', 'turnId', 'originRef', 'action']) {
++    if (typeof p[key] !== 'string' || p[key] === '') bad(`${key} must be a non-empty string`)
++  }
++  if (p.requestId !== undefined || p.generation !== undefined) bad('requestId/generation are stamped by the channel, not caller-supplied')
++  if (p.target !== undefined && p.target !== null && typeof p.target !== 'string') bad('target must be a string or null')
++  if (p.params !== undefined && p.params !== null && (typeof p.params !== 'object' || Array.isArray(p.params))) bad('params must be an object')
++  let size
++  try { size = JSON.stringify(p).length } catch { bad('params are not JSON-serializable') }
++  if (size > MAX_ADMIN_REQUEST_CHARS) {
++    throw adminError('pbots/request-too-large', `admin request is ${size} chars, over MAX_ADMIN_REQUEST_CHARS=${MAX_ADMIN_REQUEST_CHARS}`)
++  }
++  return p
++}
++
++/**
++ * 管理桥请求簿记（照 CreateChannel 安全语义）。副作用类请求超时/断流一律
++ * outcome unknown：不重试，由查询操作状态恢复（P7-F1 账本）。
++ */
++export class AdminChannel {
++  /**
++   * @param {{ timeoutMs?: number }} [options]
++   */
++  constructor({ timeoutMs = DEFAULT_ADMIN_TIMEOUT_MS } = {}) {
++    this.timeoutMs = timeoutMs
++    /** @type {{ peer: unknown, generation: number, queue: object[], wake: null | (() => void) } | null} */
++    this.subscriber = null
++    /** @type {Map<string, { resolve(value: unknown): void, reject(error: unknown): void, peer: unknown, timer: NodeJS.Timeout }>} */
++    this.pending = new Map()
++  }
++
++  /** main 是否持有请求流。 */
++  get subscribed() {
++    return this.subscriber !== null
++  }
++
++  /** 在途请求数（测试 / 观测）。 */
++  pendingCount() {
++    return this.pending.size
++  }
++
++  /**
++   * main 打开请求流。单订阅：已有订阅者时第二个客户端不得抢占（重复订阅拒）。
++   * @param {{ peer: unknown, generation: number, queue: object[], wake?: null | (() => void) }} subscriber
++   */
++  attach(subscriber) {
++    if (this.subscriber !== null) {
++      throw adminError('pbots/forbidden', 'another main client already holds the admin channel')
++    }
++    this.subscriber = { wake: null, ...subscriber }
++  }
++
++  /** 流断开：作废全部在途（作废 ≠ 回滚），弃订阅。 */
++  detach() {
++    this.subscriber = null
++    for (const [, entry] of this.pending) {
++      clearTimeout(entry.timer)
++      entry.reject(adminError('main-unavailable', 'admin request stream closed before main answered (outcome unknown)', { reason: 'stream-closed', outcome: 'unknown' }))
++    }
++    this.pending.clear()
++  }
++
++  /**
++   * 工具侧：排队一个管理请求并等 main 的 respond。请求盖章 requestId + 当前
++   * 订阅代 generation；超时 → outcome unknown 不重试（未知副作用不重试）。
++   * @param {object} payload 请求体（见 validateAdminRequest）
++   * @returns {Promise<{ ok: boolean, operationId?: string } & object>} main 的 value
++   * @throws {RemoteError} main-unavailable / main 的 error outcome
++   */
++  async request(payload) {
++    const checked = validateAdminRequest(payload)
++    const sub = this.subscriber
++    if (sub === null) {
++      throw adminError('main-unavailable', 'main is not subscribed to the admin channel (outcome unknown)', { reason: 'no-subscriber', outcome: 'unknown' })
++    }
++    const requestId = randomUUID()
++    const { promise, resolve, reject } = Promise.withResolvers()
++    const timer = setTimeout(() => {
++      this.pending.delete(requestId)
++      const index = sub.queue.findIndex((entry) => entry.requestId === requestId)
++      if (index >= 0) sub.queue.splice(index, 1)
++      reject(adminError('main-unavailable', `admin request timed out after ${this.timeoutMs}ms (outcome unknown; do not retry automatically)`, { reason: 'timeout', outcome: 'unknown' }))
++    }, this.timeoutMs)
++    this.pending.set(requestId, { resolve, reject, peer: sub.peer, timer })
++    // 盖章字段放最后：即便校验放过，调用方值也不得覆盖 requestId/generation
++    sub.queue.push({ ...checked, requestId, generation: sub.generation })
++    sub.wake?.()
++    return promise
++  }
++
++  /**
++   * main 作答。绑持流 Peer；迟到 / 伪造 requestId 拒；无效形状收敛为
++   * invalid-response（outcome unknown，占位释放），每个分支都 settle。
++   * @param {string} requestId
++   * @param {{ value?: object, error?: { code: string, message: string, details?: object } }} outcome
++   * @param {unknown} peer
++   */
++  respond(requestId, outcome, peer) {
++    const entry = this.pending.get(requestId)
++    if (entry === undefined || entry.peer !== peer) {
++      throw adminError('pbots/forbidden', 'respond rejected: wrong peer or stale request', { requestId })
++    }
++    this.pending.delete(requestId)
++    clearTimeout(entry.timer)
++    const invalidResponse = (why) =>
++      entry.reject(adminError('main-unavailable', `main answered the admin request with an invalid response: ${why} (outcome unknown)`, { reason: 'invalid-response', outcome: 'unknown', invalid: why }))
++    const error = outcome?.error
++    if (error !== undefined) {
++      if (typeof error !== 'object' || error === null || typeof error.code !== 'string' || error.code === '') {
++        invalidResponse('error payload is not {code, message}')
++        return
++      }
++      entry.reject(adminError(error.code, `${error.code}: ${error.message}`, error.details ?? {}))
++      return
++    }
++    if (typeof outcome?.value !== 'object' || outcome.value === null) {
++      invalidResponse('no value object')
++      return
++    }
++    entry.resolve(outcome.value)
++  }
++}
+diff --git a/app/sdk/src/admin/origin.mjs b/app/sdk/src/admin/origin.mjs
+new file mode 100644
+index 0000000..f61cdb5
+--- /dev/null
++++ b/app/sdk/src/admin/origin.mjs
+@@ -0,0 +1,49 @@
++// P7-F2 回合来源三分（BRIEF v2.3 §6.1.0 / §6.1.1 H3；p7-admin PLAN §3.2）：
++// user（人类回合，唯一自主来源）/ delegated（goal·schedule 等委托——内部与
++// 未知 kind 同归此类：不污染【R2-1 不变】但无自主权）/ tainted（认领过
++// pbots-worker，仍走 P6-12 旧 guard 全拒）。沿用 P6 TurnOrigin 实例模式
++//（orchestration/turn-origin.mjs 的 per-agent claim ledger）。
++//
++// D-1 定案后的接线位：跨回合正文隔离（H2/H4）——worker 回报、事件正文、
++// 工具结果永远不是授权证据；authority.mjs 只接收宿主传入的
++// humanUtteranceOfGrant（人类来源原文），本模块只产出分类。正文过滤的采集
++// 接线（哪些原文可以喂给 authority）等 D-1 子题①/② 定案后在此挂接，当前
++// 刻意不实现。
++import { TurnOrigin, TAINT_KIND } from '../orchestration/turn-origin.mjs'
++
++export { TAINT_KIND }
++/** D-1 子题① 定案前唯一人类来源 kind（H3：别名 user-approval 等不算）。 */
++export const HUMAN_KIND = 'user'
++/** 委托来源（goal / schedule）；其余内部与未知 kind 同样落在 delegated（无自主权）。 */
++export const DELEGATED_KINDS = ['goal', 'schedule']
++
++/**
++ * 三分分类一组已认领的 source kinds。
++ * @param {string[]} kinds
++ * @returns {{ originClass: 'user' | 'delegated' | 'tainted', auditKinds: string[] }}
++ *   auditKinds 仅审计；delegated 不等于 tainted——普通未知 kind 的普通工具
++ *   不被连坐全拒（R2-1），只是没有自主授权能力（H3）。
++ */
++export function classifyOrigin(kinds) {
++  const list = [...kinds]
++  const auditKinds = [...new Set(list)]
++  if (list.includes('pbots-worker')) return { originClass: 'tainted', auditKinds }
++  if (list.includes(HUMAN_KIND)) return { originClass: 'user', auditKinds }
++  return { originClass: 'delegated', auditKinds }
++}
++
++/**
++ * 管理轴的 per-agent 回合 claim 账本（沿用 P6 TurnOrigin 实例模式）。
++ * 无 claim 的回合分类为 delegated：污染轴上 P6 仍按 user 处理（没有可拒的
++ * 东西），但自主权轴 fail-closed——没有人类来源就没有授权能力。
++ */
++export class AdminTurnOrigin extends TurnOrigin {
++  /**
++   * @param {string} agentId @param {number} [turn] 缺省取该 agent 最新回合。
++   * @returns {{ originClass: 'user' | 'delegated' | 'tainted', auditKinds: string[] }}
++   */
++  classify(agentId, turn = this.lastTurn(agentId)) {
++    if (turn === undefined || turn === null) return classifyOrigin([])
++    return classifyOrigin(this.claims(agentId, turn))
++  }
++}
+diff --git a/app/sdk/src/admin/tools.mjs b/app/sdk/src/admin/tools.mjs
+new file mode 100644
+index 0000000..589b759
+--- /dev/null
++++ b/app/sdk/src/admin/tools.mjs
+@@ -0,0 +1,38 @@
++// P7-F2 管理工具的动作表（p7-admin PLAN §3.2 / P7-F2 行）：本任务只搭桥，
++// 不接任何真实管理动作——动作表为空，默认全拒。真实动作由 P7-M1/M2/M3 注册、
++// P7-WM 接线；注册前任何 action 都解析为 unknown → 明确 unavailable 拒绝
++//（不静默、不半执行）。工具注册进 dsh（profile/patches/p7-admin.yml）也
++// 属 P7-WM，本文件保持纯函数。
++import { ACTION_WORDS } from './authority.mjs'
++
++/**
++ * 动作注册表（F2：空表）。值 = 动作规格（参数形状 / 撤销句柄等），
++ * P7-M* 系列按动作填充。模型不能传表——只有代码可以。
++ */
++export const ADMIN_ACTIONS = {}
++
++/**
++ * 解析一个管理动作是否已接线。
++ * @param {unknown} action
++ * @returns {{ known: true, spec: object } | { known: false }}
++ */
++export function resolveAdminAction(action) {
++  if (typeof action !== 'string' || !Object.hasOwn(ADMIN_ACTIONS, action)) return { known: false }
++  return { known: true, spec: ADMIN_ACTIONS[action] }
++}
++
++/**
++ * 未接线动作的标准拒绝（明确 unavailable，不是错误吞掉）。
++ * @param {string} action
++ * @returns {{ code: string, message: string, details: { action: string, wired: string[] } }}
++ */
++export function adminRefusal(action) {
++  return {
++    code: 'pbots/admin-unavailable',
++    message: `管理动作未接线（unavailable）：${String(action)}。F2 只搭桥不接真实管理动作，动作表为空；已接线动作：${Object.keys(ADMIN_ACTIONS).length === 0 ? '（无）' : Object.keys(ADMIN_ACTIONS).join(', ')}`,
++    details: { action: String(action), wired: Object.keys(ADMIN_ACTIONS) },
++  }
++}
++
++/** authority 的动作词表透出（工具描述 / 校验复用，不另抄一份）。 */
++export { ACTION_WORDS }
+diff --git a/app/ui/main/admin/channel.ts b/app/ui/main/admin/channel.ts
+new file mode 100644
+index 0000000..a1bcecf
+--- /dev/null
++++ b/app/ui/main/admin/channel.ts
+@@ -0,0 +1,150 @@
++// P7-F2 受限 SDK→main 管理桥的 main 侧（p7-admin PLAN §3.2「受限管理桥」）。
++// 模式沿用（第 2 级，本仓）：P6-10 ⑤ 通道 main 侧 app/ui/main/m3-meta/orch-channel.ts
++// ——main 是纯客户端，常驻订阅 SDK 管理插件的请求流，每代 socket 重开；
++// 单订阅与旧代拒绝在 SDK 侧（channel.mjs）+ 本文件的 policy 重验共同保证。
++// 本文件只做「收帧 → 形状检查 → 重验 → 分发 → respond」，不实现任何管理
++// 动作（consumer 的动作表为空）；p7-admin.yml 未加载时流报错只记 1 行日志。
++import type { AdminReverifyResult } from './policy'
++
++/** SDK 侧管理桥的流 / 应答端点（app/sdk/src/admin/channel.mjs）。 */
++export const ADMIN_REQUESTS_ENDPOINT = 'pbots/admin.requests'
++export const ADMIN_RESPOND_METHOD = 'pbots/admin.respond'
++
++/** mux 下行帧（最小面，同 orch-channel.ts）。 */
++export type AdminChannelFrame =
++  | { type: 'item'; streamId?: string; value?: unknown }
++  | { type: 'end' | 'cancel'; streamId?: string }
++  | { type: 'error'; streamId?: string; error?: { message?: unknown } }
++
++export interface AdminStreamLike {
++  openStream(endpoint: string, args: unknown, onFrame: (frame: AdminChannelFrame) => void): { cancel(): void }
++}
++
++/** DshConnection 满足的最小依赖面。 */
++export interface AdminDshLike {
++  onConnected(listener: (generation: number) => void): unknown
++  ready(): Promise<AdminStreamLike>
++  rpc(method: string, args: unknown): Promise<{ ok: boolean }>
++}
++
++/** 重验后的管理请求（身份四元组 + 动作语义载荷原样透传给 consumer）。 */
++export interface AdminRequest {
++  requestId: string
++  generation: number
++  sessionId: string
++  turnId: string
++  originRef: string
++  action: string
++  target?: string | null
++  params?: Record<string, unknown> | null
++}
++
++export type AdminDispatchResult = { value: object } | { error: { code: string, message: string, details?: object } }
++
++export interface AdminChannelDeps {
++  dsh: AdminDshLike
++  /** 权威重验（policy.reverifyAdminRequest 的组合点，WM 接线时注入台账与当前代）。 */
++  verify(request: unknown): AdminReverifyResult
++  /** 受限分发（consumer.dispatch；F2 动作表为空 → 一律 unavailable）。 */
++  dispatch(request: AdminRequest): Promise<AdminDispatchResult>
++  /** 当前连接代（旧代请求在重验中拒）。 */
++  currentGeneration(): number
++  log?: (message: string) => void
++}
++
++function hasRequestShape(item: Record<string, unknown>): boolean {
++  return typeof item.sessionId === 'string' && item.sessionId !== ''
++    && typeof item.turnId === 'string' && item.turnId !== ''
++    && typeof item.originRef === 'string' && item.originRef !== ''
++    && typeof item.action === 'string' && item.action !== ''
++    && Number.isInteger(item.generation)
++}
++
++/**
++ * Wire the resident admin-channel subscription. Returns a stop handle for
++ * tests; production keeps it for the process lifetime（P7-WM 接线）。
++ */
++export function wireAdminChannel(deps: AdminChannelDeps): { close(): void } {
++  const log = deps.log ?? ((message: string) => console.warn(message))
++  let closed = false
++  let current: { cancel(): void } | undefined
++
++  const respond = async (requestId: string, outcome: { value: object } | { error: { code: string, message: string, details?: object } }): Promise<void> => {
++    // respond 的传输 / 解析失败只记日志（P6 A3 模式）：fire-and-forget 不把
++    // 拒绝甩给宿主；SDK 侧请求按超时语义收敛并释放占位，不重试。
++    try {
++      const response = await deps.dsh.rpc(ADMIN_RESPOND_METHOD, { request: { requestId, ...outcome } })
++      if (!response.ok) log(`[admin] respond failed for ${requestId} (main-side outcome: ${outcome.value !== undefined ? 'value' : 'error'})`)
++    } catch (error) {
++      log(`[admin] respond failed for ${requestId}: ${String(error instanceof Error ? error.message : error)}`)
++    }
++  }
++
++  const handle = async (item: Record<string, unknown>): Promise<void> => {
++    const requestId = item.requestId as string
++    if (!hasRequestShape(item)) {
++      await respond(requestId, { error: { code: 'pbots/invalid-args', message: 'admin request lacks {generation, sessionId, turnId, originRef, action}', details: {} } })
++      return
++    }
++    const verified = deps.verify(item)
++    if (!verified.ok) {
++      await respond(requestId, { error: { code: verified.code, message: verified.message, details: {} } })
++      return
++    }
++    let outcome: AdminDispatchResult
++    try {
++      outcome = await deps.dispatch(item as unknown as AdminRequest)
++    } catch (error) {
++      outcome = { error: { code: 'pbots/admin-failed', message: `admin dispatch crashed: ${String(error instanceof Error ? error.message : error)}`, details: {} } }
++    }
++    await respond(requestId, outcome)
++  }
++
++  const onFrame = (frame: AdminChannelFrame): void => {
++    if (frame.type === 'error' || frame.type === 'end' || frame.type === 'cancel') {
++      // p7-admin.yml 未加载 / 流断开——每代只记 1 行，不重试风暴（P6 验收 ⑧ 模式）
++      log(`[admin] ${ADMIN_REQUESTS_ENDPOINT} stream closed: ${String(frame.type === 'error' ? (frame.error?.message ?? 'error') : frame.type)}`)
++      return
++    }
++    const item = frame.value
++    if (item === undefined) return
++    if (item === null || typeof item !== 'object') {
++      log(`[admin] dropped invalid ${ADMIN_REQUESTS_ENDPOINT} item: value is ${item === null ? 'null' : typeof item}, expected an object`)
++      return
++    }
++    const candidate = item as { requestId?: unknown, ready?: unknown }
++    if (candidate.ready === true || typeof candidate.requestId !== 'string' || candidate.requestId === '') return
++    void handle(item as Record<string, unknown>)
++  }
++
++  let subscribing = false
++  const subscribe = async (): Promise<void> => {
++    // 首连竞态下每代只开一条流（P6 D-2 模式：in-flight / 已建立直接返回）
++    if (closed || subscribing || current !== undefined) return
++    subscribing = true
++    try {
++      const socket = await deps.dsh.ready()
++      if (closed || current !== undefined) return
++      current = socket.openStream(ADMIN_REQUESTS_ENDPOINT, {}, onFrame)
++    } catch (error) {
++      log(`[admin] subscribe failed: ${String(error instanceof Error ? error.message : error)}`)
++    } finally {
++      subscribing = false
++    }
++  }
++
++  deps.dsh.onConnected(() => {
++    // 新一代连接：旧流作废（socket 已断），重开一条
++    current?.cancel()
++    current = undefined
++    void subscribe()
++  })
++  void subscribe()
++
++  return {
++    close() {
++      closed = true
++      current?.cancel()
++    },
++  }
++}
+diff --git a/app/ui/main/admin/consumer.ts b/app/ui/main/admin/consumer.ts
+new file mode 100644
+index 0000000..1df6e5e
+--- /dev/null
++++ b/app/ui/main/admin/consumer.ts
+@@ -0,0 +1,78 @@
++// P7-F2 管理桥的 main 侧分发器（p7-admin PLAN §3.2：consumer.ts 初版只实现
++// 已具备的账本查询 / 受限分发，未接动作明确 unavailable）。F2 只搭桥：默认
++// 动作表为空，任何 action → pbots/admin-unavailable，不执行任何真实管理
++// 动作。真实动作由 P7-M1/M2/M3 注册、P7-WM 接线。回复统一过
++// sanitizeAdminValue（不返 token / PID / 凭证——键集与 SDK authority.mjs 的
++// PROHIBITED_PARAM_KEYS 同源语义，按 UI 侧最小集维护）。
++import type { AdminRequest, AdminDispatchResult } from './channel'
++
++export type AdminActionHandler = (request: AdminRequest) => Promise<AdminDispatchResult>
++
++/** 禁区回复键（归一 = 小写 + 去 -_）：出现在 value 里就整键剥除。 */
++const REDACTED_KEYS = new Set([
++  'account', 'accounts', 'accesstoken', 'apikey', 'auth', 'authorization',
++  'cookie', 'credential', 'credentials', 'passwd', 'password', 'permission',
++  'permissions', 'pid', 'ppid', 'privatekey', 'processid', 'refreshtoken',
++  'secret', 'secrets', 'sessiontoken', 'token', 'tokens',
++])
++
++/**
++ * 深剥回复里的禁区键（返回新对象，不改原值）；非 plain object / array 原
++ * 样透传。遇环保留截断副本，不递归。
++ */
++export function sanitizeAdminValue(value: unknown, seen: Set<object> = new Set()): unknown {
++  if (typeof value === 'string') return value
++  if (Array.isArray(value)) {
++    if (seen.has(value)) return []
++    seen.add(value)
++    return value.map((item) => sanitizeAdminValue(item, seen))
++  }
++  if (value !== null && typeof value === 'object') {
++    if (seen.has(value)) return {}
++    seen.add(value)
++    const out: Record<string, unknown> = {}
++    for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
++      if (REDACTED_KEYS.has(key.toLowerCase().replace(/[-_]/g, ''))) continue
++      out[key] = sanitizeAdminValue(item, seen)
++    }
++    return out
++  }
++  return value
++}
++
++export interface AdminConsumer {
++  dispatch(request: AdminRequest): Promise<AdminDispatchResult>
++  /** 已接线动作名（F2：空表）。 */
++  readonly actions: string[]
++}
++
++/**
++ * 管理动作分发器。默认（F2）无任何动作：一切 dispatch → 明确 unavailable。
++ * `actions` 是 P7-M 系列 / P7-WM 的注册缝——只有代码能注册，模型不能传表。
++ */
++export function createAdminConsumer(options: { actions?: Record<string, AdminActionHandler> } = {}): AdminConsumer {
++  const actions = options.actions ?? {}
++  return {
++    actions: Object.keys(actions),
++    async dispatch(request) {
++      const handler = Object.hasOwn(actions, request.action) ? actions[request.action] : undefined
++      if (typeof handler !== 'function') {
++        return {
++          error: {
++            code: 'pbots/admin-unavailable',
++            message: `管理动作未接线（unavailable）：${request.action}。F2 只搭桥不接真实管理动作；已接线动作：${Object.keys(actions).length === 0 ? '（无）' : Object.keys(actions).join(', ')}`,
++            details: { action: request.action, wired: Object.keys(actions) },
++          },
++        }
++      }
++      let outcome: AdminDispatchResult
++      try {
++        outcome = await handler(request)
++      } catch (error) {
++        outcome = { error: { code: 'pbots/admin-failed', message: `管理动作 ${request.action} 执行异常：${String(error instanceof Error ? error.message : error)}`, details: {} } }
++      }
++      if ('value' in outcome) return { value: sanitizeAdminValue(outcome.value) as object }
++      return outcome
++    },
++  }
++}
+diff --git a/app/ui/main/admin/policy.ts b/app/ui/main/admin/policy.ts
+new file mode 100644
+index 0000000..8d3bde6
+--- /dev/null
++++ b/app/ui/main/admin/policy.ts
+@@ -0,0 +1,98 @@
++// P7-F2 main 侧权限边界（p7-admin PLAN §3.2「权限边界」行）：SDK 从宿主
++// turn/source/message 原文取证（sdk/src/admin/origin.mjs + authority.mjs），
++// main 按权威身份、generation、记录重验——originRef 是宿主生成且可重验的
++// 引用，不是模型声明；伪 source / 旧代 / 记录不存在一律拒。
++// 语义级 H1 判定（动作/目标/参数三元组）在 SDK 侧 authority；本文件只做
++// 身份与代际核验，defense-in-depth，不重复实现词表。
++import { randomUUID } from 'node:crypto'
++
++/** originRef 记录（宿主为某个 (session, turn) 签发；F3 接生命周期后由宿主侧生成）。 */
++export interface AdminOriginRefRecord {
++  originRef: string
++  sessionId: string
++  turnId: string
++  generation: number
++  originClass: 'user' | 'delegated' | 'tainted'
++}
++
++export type AdminReverifyResult = { ok: true } | { ok: false, code: string, message: string }
++
++/** 铸一个新的 originRef（不可推导：uuid v4）。 */
++export function mintOriginRef(): string {
++  return `admin-origin:${randomUUID()}`
++}
++
++function validRecordShape(record: AdminOriginRefRecord): boolean {
++  return typeof record.originRef === 'string' && record.originRef !== ''
++    && typeof record.sessionId === 'string' && record.sessionId !== ''
++    && typeof record.turnId === 'string' && record.turnId !== ''
++    && Number.isInteger(record.generation) && record.generation >= 0
++    && (record.originClass === 'user' || record.originClass === 'delegated' || record.originClass === 'tainted')
++}
++
++/**
++ * main 侧 originRef 台账：签发与查询。originRef 不可重复签发（一个引用一
++ * 个回合一代）；重复 / 形状坏 → 抛错（程序错误，不是用户输入）。
++ */
++export class AdminOriginRefLedger {
++  #records = new Map<string, AdminOriginRefRecord>()
++
++  issue(record: AdminOriginRefRecord): AdminOriginRefRecord {
++    if (!validRecordShape(record)) throw new Error('invalid origin-ref record: {originRef, sessionId, turnId, generation, originClass} required')
++    if (this.#records.has(record.originRef)) throw new Error(`duplicate origin-ref: ${record.originRef}`)
++    this.#records.set(record.originRef, { ...record })
++    return { ...record }
++  }
++
++  lookup(originRef: string): AdminOriginRefRecord | undefined {
++    const hit = this.#records.get(originRef)
++    return hit === undefined ? undefined : { ...hit }
++  }
++}
++
++/** wire 请求的最小面（重验只看身份四元组，动作语义在 SDK 侧）。 */
++export interface AdminRequestIdentity {
++  requestId: string
++  generation: number
++  sessionId: string
++  turnId: string
++  originRef: string
++}
++
++function isIdentity(value: unknown): value is AdminRequestIdentity {
++  if (value === null || typeof value !== 'object') return false
++  const v = value as Record<string, unknown>
++  return typeof v.requestId === 'string' && v.requestId !== ''
++    && Number.isInteger(v.generation)
++    && typeof v.sessionId === 'string' && v.sessionId !== ''
++    && typeof v.turnId === 'string' && v.turnId !== ''
++    && typeof v.originRef === 'string' && v.originRef !== ''
++}
++
++const reject = (code: string, message: string): { ok: false, code: string, message: string } => ({ ok: false, code, message })
++
++/**
++ * 权威重验：请求身份与台账记录、当前连接代逐项对上。
++ * 拒绝码：pbots/invalid-args（形状）/ unknown-origin-ref（伪 source、模型
++ * 自报）/ stale-generation（旧代）/ origin-ref-mismatch（引用不属于该回合）/
++ * tainted-turn（污染来源）。
++ */
++export function reverifyAdminRequest(request: unknown, record: AdminOriginRefRecord | undefined, currentGeneration: number): AdminReverifyResult {
++  if (!isIdentity(request)) return reject('pbots/invalid-args', 'admin request lacks {requestId, generation, sessionId, turnId, originRef}')
++  if (record === undefined || record.originRef !== request.originRef) {
++    return reject('unknown-origin-ref', 'originRef is not host-issued; model-declared refs are rejected')
++  }
++  if (request.generation !== currentGeneration) {
++    return reject('stale-generation', `request generation ${request.generation} is not the current generation ${currentGeneration}`)
++  }
++  if (record.generation !== currentGeneration) {
++    return reject('stale-generation', `origin-ref record generation ${record.generation} is not the current generation ${currentGeneration}`)
++  }
++  if (record.sessionId !== request.sessionId || record.turnId !== request.turnId) {
++    return reject('origin-ref-mismatch', 'originRef belongs to a different session/turn')
++  }
++  if (record.originClass === 'tainted') {
++    return reject('tainted-turn', 'turn claimed pbots-worker; reject all admin requests from it')
++  }
++  return { ok: true }
++}

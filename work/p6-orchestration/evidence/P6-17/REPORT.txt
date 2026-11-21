@@ -1,0 +1,50 @@
+P6-17 · D8 真链路 e2e（编排链收官验收的脚本半程）
+分支 feat/P6-17（基点 main@09f627b），交付 app/ui/tests/e2e/p6-stuck.spec.ts（2 用例）。
+
+一、真链路（Test 1「P6-17 D8 全条真链路」）
+- 挂载方式：P2SDK_PATCH = presets.yml : fakeOverlay : inspectOverlay : 生产 orchestration.yml
+  （闸门只管生产默认链，测试经 P2SDK_PATCH 挂插件不违反 P6-14b）。
+- 旅程全走通：主 bot create_bot('Test fixer')（真 ⑤ 通道 → Electron main 建会话 + bots.json
+  createdBy + 真派活 pbots-assign:* 落 worker transcript 首条 user/message）→ worker 真 bash ASK
+  （'git push origin docs'）→ Reporter 回报 1 项 ask(awaiting approval) → 主 bot 点名
+  （Messaging 行 + 主 bot 行 blocked 汇总 + 回报卡 Needs you / Review in Test fixer）→
+  用户从 Workers 进 worker、在生产 dock 点 Allow once、经 $events/result 用**原卡同一 eventId**
+  作答（answers === [{eventId: waterfallEventId, value:'allowed-once'}]，且 eventId ∈ view.asked 双认）→
+  worker end 回报 1 项 completed，ask 翻 Answered、第二张卡 Done。
+- 断言：主 bot 模型侧作答调用数 === 0（requests.jsonl 共 4 调，无一含 'allowed-once'）。
+
+二、GU-P6-15-r1 并入三条（Test 2「P6-17 GU 真链路」）
+1. 真链路重拍 4 关键图（本目录，亮暗各 5 张）：
+   - sidebar-4states：Workers [Asker blocked(警示点) / Runner running(Working) / Unreader
+     unread(Research done: 3 sources found.)] + Done [Failer]。顺序断言 [asker,runner,failer,unreader]。
+   - sidebar-failed-row：Workers 4 行，Failer 预览 "Failed: push rejected by remote"（/^Failed:/）。
+   - worker-dock-focused：From Main Bot 任务卡 + 权限 dock；暗色下文字按钮清晰（GU 原投诉点）。
+   - main-report-batch：合批卡 "4 worker updates"，Asker=Needs you、Runner/Unreader/Failer=Answered；
+     另有 Unreader 提问项卡与 Failer 失败卡。
+   目检：5 张关键图（亮 4 + 暗 dock）经视觉模型逐项核对通过，URL↔文件 md5 已核。
+2. 「worker 完成瞬间无标记窗口」观察（no-marker-window.json / no-marker-stats.json）：
+   以 ~50ms 采样 Unreader 完成前后侧栏行状态，t=37ms 'running' → t=161ms 'unread'，
+   'none'（无标记）样本 0、最大无标记间隙 0ms —— 未观察到 ≥1 个采样周期的无标记窗口
+   （running 指示与 unread 点的交接在同一采样粒度内完成）。
+3. notice-view 导航定位 eventId：真链路下作答用 $events waterfall eventId，且断言其 ∈
+   worker view.asked（P6-15 备的双认：waterfall id 与 approval asked.id 两条路都指向同一卡）。
+
+三、关键发现（建议进 LEARNINGS）
+- start.ts childEnv 不透传 PBOTS_DATA_DIR（P5-01 决策 15：mask root 不进模型侧 env，只放行
+  PATH/HOME/P2SDK_*/DSH_*）。经 UI 起 dsh 会话时，orchestration 插件 identity 会回落到真实
+  $HOME/.config/pbots-ui → mainBotId 对不上 → create_bot 工具被 when 隐藏（unknown tool）。
+  修法：launchSdkRuntime 传 env P2SDK_ORCH_DATA_DIR=<测试 dataDir>（SDK live 测试同款）。
+  spec 内已注释；后续任何「经 UI 挂 orch 插件」的测试都要带这一条。
+
+四、缺口
+- P5-33 提问卡 UI 未建（blocked）：worker 侧真提问经 ask_user_question + 生产作答路径
+  （$events/result）覆盖了链路与断言，卡面 UI 留待 P5-33。
+
+五、测试结果（Xvfb only，run-e2e.sh；PATH 需前置本地 node_modules/.bin）
+- 新 spec：2 passed（11.0s / 16.9s）。
+- 回归抽跑：p6-fold ×2、p6-workers ×2、theme-dual、theme-flash ×6、visual-hairline ——
+  12 passed (1.7m)，EXIT=0，无回归。
+
+六、文件
+- 本目录：*.png 亮暗 10 张 + no-marker-window.json + no-marker-stats.json + 本报告。
+- 产物 spec：app/ui/tests/e2e/p6-stuck.spec.ts（worktree /tmp/bot-wt/P6-17）。

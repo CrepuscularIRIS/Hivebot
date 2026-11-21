@@ -1,0 +1,4 @@
+name: @agent-infra/mcp-server-filesystem | latest: 1.2.29 | pinned devDep: 1.2.29 = latest: true
+time.created: 2025-04-01T02:27:31.968Z | 1.2.29 published: 2025-12-15T06:30:54.226Z | modified: 2026-05-14T05:36:18.142Z
+maintainers: songhn,oanakiaja,ulivz,ycjcl868,skychx,zhaoheh,chenjian-bzh
+repository: git+https://github.com/bytedance/UI-TARS-desktop.git packages/agent-infra/mcp-servers/filesystem

@@ -1,0 +1,514 @@
+// #4 编排（D8/D10a/D10b/D7/⑦ 屏障）与 deriveBots（D10d）。
+// presetIdOf 直接 import app/sdk/src/p2temp/preset-id.mjs（REUSE v1.1 决策行，不复制第二份）。
+import { describe, expect, it } from 'vitest'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs' 
+import { join } from 'node:path'
+import { tmkdir } from '../../support/tmp-sweep.ts'
+import { BOTS_JSON, BotsMetaStore, type BotsMeta } from '../../../main/m3-meta/store'
+import {
+  GATE_4_ENV,
+  createBotWithConnectors,
+  createSessionForcedWorkspace,
+  deriveBots,
+  type DshLike,
+} from '../../../main/m3-meta/orchestrate'
+import { presetIdOf } from '../../../main/m3-meta/preset-id'
+
+const tmpHome = (): string => tmkdir('bot-p4-U-13-orch-')
+/** 拒绝路径不写盘：文件可能根本不存在。 */
+const readMetaOrMissing = (dir: string): BotsMeta | null => {
+  try {
+    return JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8')) as BotsMeta
+  } catch {
+    return null
+  }
+}
+const INVALID = (message: string) => ({
+  ok: false as const,
+  error: { code: 'pbots/invalid-args', message, details: {} },
+})
+
+interface MockCall { method: string; args: unknown; at: number }
+
+/** mock dsh：handlers[method](args) 返回 ConnectionRpcResult；全部调用记入 calls。 */
+function mockDsh(handlers: Record<string, (args: unknown, call: MockCall) => unknown> = {}): DshLike & { calls: MockCall[] } {
+  const calls: MockCall[] = []
+  let seq = 0
+  return {
+    calls,
+    async rpc(method: string, args: unknown) {
+      const call = { method, args, at: (seq += 1) }
+      calls.push(call)
+      const handler = handlers[method]
+      if (handler === undefined) {
+        return { ok: false, error: { code: 'gateway/internal', message: `no mock for ${method}`, details: {} } }
+      }
+      return handler(args, call) as ReturnType<DshLike['rpc']> extends Promise<infer T> ? T : never
+    },
+  }
+}
+
+const rosterOk = {
+  ok: true as const,
+  value: {
+    presets: [
+      { id: 'p2-alpha', isDefault: true },
+      { id: 'p2-beta', isDefault: false },
+      { id: 'p2temp-zzz', isDefault: false },
+    ],
+  },
+}
+
+const create4Ok = (sessionId: string) => ({ ok: true as const, value: { sessionId } })
+
+describe('presetIdOf 共用模块（D8 后半：缺省输入抛错）', () => {
+  it('agentPreset 缺省/空白 → throw；换序 connectors 同 id', () => {
+    expect(() => presetIdOf(undefined as unknown as string, ['a'])).toThrow()
+    expect(() => presetIdOf('  ', ['a'])).toThrow()
+    expect(presetIdOf('p2-alpha', ['b', 'a'])).toBe(presetIdOf('p2-alpha', ['a', 'b']))
+    expect(presetIdOf('p2-alpha', ['a'])).not.toBe(presetIdOf('p2-beta', ['a']))
+  })
+})
+
+describe('createBotWithConnectors · 校验（拒绝时 dsh 计数 === 0）', () => {
+  it.each([
+    ['connectors 缺失', { agentPreset: 'p2-alpha' }],
+    ['connectors 空数组', { agentPreset: 'p2-alpha', connectors: [] }],
+    ['connectors 非字符串元素', { agentPreset: 'p2-alpha', connectors: ['a', 1] }],
+    ['connectors 空白字符串', { agentPreset: 'p2-alpha', connectors: [' '] }],
+    ['R1 connectors 含 ../.. 逃逸名', { agentPreset: 'p2-alpha', connectors: ['a', '../..'] }],
+    ['R1 connectors 含 @scope/.. 逃逸名', { agentPreset: 'p2-alpha', connectors: ['@scope/..'] }],
+    ['R1 connectors 含绝对路径名', { agentPreset: 'p2-alpha', connectors: ['/abs/x'] }],
+    ['R1 connectors 含反斜杠逃逸名（Windows 形态）', { agentPreset: 'p2-alpha', connectors: ['..\\..\\x'] }],
+    ['agentPreset 是 p2temp-*（#1 过滤掉的 preset）', { agentPreset: 'p2temp-xxx', connectors: ['a'] }],
+    ['args 非对象', null],
+  ])('%s → invalid-args', async (_name, args) => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh()
+    const result = await createBotWithConnectors(dsh, store, args as never)
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.code).toBe('pbots/invalid-args')
+    expect(dsh.calls.length).toBe(0)
+    expect(readMetaOrMissing(dir)?.recipes ?? {}).toEqual({})
+  })
+})
+
+describe('createBotWithConnectors · D8 agentPreset 单点解析', () => {
+  it('省略与显式 defaultId 两次得同一 id，同一值贯穿 recipe 与 dsh 请求', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({ 'agentPresets/list': () => rosterOk, 'p2temp/session.createWithConnectors': () => create4Ok('s-1') })
+    const omitted = await createBotWithConnectors(dsh, store, { connectors: ['b', 'a'] }, { dataDir: join(dir, 'data') })
+    expect(omitted).toEqual(create4Ok('s-1'))
+    const explicit = await createBotWithConnectors(dsh, store, { agentPreset: 'p2-alpha', connectors: ['a', 'b'] }, { dataDir: join(dir, 'data') })
+    expect(explicit).toEqual(create4Ok('s-1'))
+
+    const expectedId = presetIdOf('p2-alpha', ['a', 'b'])
+    const meta = JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8')) as BotsMeta
+    expect(Object.keys(meta.recipes)).toEqual([expectedId])
+    expect(meta.recipes[expectedId]).toEqual({ agentPreset: 'p2-alpha', connectors: ['a', 'b'] })
+    const createCalls = dsh.calls.filter((c) => c.method === 'p2temp/session.createWithConnectors')
+    expect(createCalls.length).toBe(2)
+    for (const call of createCalls) {
+      // typert wire {request:…} 壳（U-15 联调修正）+ P5-25：main 注入 sessionId 与强制 cwd
+      const request = (call.args as { request: Record<string, unknown> }).request
+      expect(request.connectors).toEqual(['a', 'b'])
+      expect(request.agentPreset).toBe('p2-alpha')
+      expect(request.cwd).toBe(join(dir, 'data', 'workspaces', request.sessionId as string))
+      expect(typeof request.sessionId).toBe('string')
+      expect(existsSync(request.cwd as string)).toBe(true) // 目录建好（验收 ①）
+    }
+    expect((createCalls[0].args as { request: { sessionId: string } }).request.sessionId)
+      .not.toBe((createCalls[1].args as { request: { sessionId: string } }).request.sessionId) // 每次 mint 新 botId
+    // 缺省解析恰好调一次未过滤 #1；显式传入不调
+    expect(dsh.calls.filter((c) => c.method === 'agentPresets/list').length).toBe(1)
+  })
+
+  it('缺省解析时 #1 失败 → pbots/unavailable，不写 recipe', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({
+      'agentPresets/list': () => ({ ok: false, error: { code: 'gateway/internal', message: 'boom', details: {} } }),
+    })
+    const result = await createBotWithConnectors(dsh, store, { connectors: ['a'] }, { dataDir: join(dir, 'data') })
+    expect(result).toEqual({ ok: false, error: { code: 'pbots/unavailable', message: 'agentPresets/list failed: gateway/internal boom', details: {} } })
+    expect(readMetaOrMissing(dir)?.recipes ?? {}).toEqual({})
+  })
+})
+
+describe('createBotWithConnectors · D10b 编排顺序（recipe 先于 #4）', () => {
+  it('#4 被调时 recipe 已在盘上（mock #4 内同步读文件断言）', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    let recipeOnDiskAtCall: unknown = 'not-checked'
+    const dsh = mockDsh({
+      'p2temp/session.createWithConnectors': () => {
+        recipeOnDiskAtCall = (JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8')) as BotsMeta).recipes
+        return create4Ok('s-9')
+      },
+    })
+    await createBotWithConnectors(dsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { dataDir: join(dir, 'data') })
+    const ids = Object.keys(recipeOnDiskAtCall as Record<string, unknown>)
+    expect(ids).toEqual([presetIdOf('p2-alpha', ['a'])])
+  })
+
+  it('#4 挂起不返回时 recipe 已落盘（直接读盘断言）', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({
+      'p2temp/session.createWithConnectors': () => new Promise(() => {}) as never,
+    })
+    const pending = createBotWithConnectors(dsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { dataDir: join(dir, 'data') })
+    await new Promise((r) => setTimeout(r, 50))
+    const meta = JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8')) as BotsMeta
+    expect(Object.keys(meta.recipes)).toEqual([presetIdOf('p2-alpha', ['a'])])
+    void pending
+  })
+
+  it('#4 返回 !ok → 原样透传（含 details），孤儿 recipe 留在盘上不删', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({
+      'p2temp/session.createWithConnectors': () => ({
+        ok: false,
+        error: { code: 'p2temp/connector-unavailable', message: 'p2temp: connector "nope" is not installed', details: { connector: 'nope' } },
+      }),
+    })
+    const result = await createBotWithConnectors(dsh, store, { agentPreset: 'p2-alpha', connectors: ['nope'] }, { dataDir: join(dir, 'data') })
+    expect(result).toEqual({
+      ok: false,
+      error: { code: 'p2temp/connector-unavailable', message: 'p2temp: connector "nope" is not installed', details: { connector: 'nope' } },
+    })
+    const meta = JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8')) as BotsMeta
+    expect(Object.keys(meta.recipes)).toEqual([presetIdOf('p2-alpha', ['nope'])])
+  })
+})
+
+describe('createBotWithConnectors · D10a 并发同 id', () => {
+  it('并发两次同 id 的 #4 都成功、recipe 恰一条（register 单飞在 SDK 侧 in-flight 表）', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({
+      'p2temp/session.createWithConnectors': () => create4Ok('s-x'),
+    })
+    const [a, b] = await Promise.all([
+      createBotWithConnectors(dsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { dataDir: join(dir, 'data') }),
+      createBotWithConnectors(dsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { dataDir: join(dir, 'data') }),
+    ])
+    expect(a).toEqual(create4Ok('s-x'))
+    expect(b).toEqual(create4Ok('s-x'))
+    expect(dsh.calls.filter((c) => c.method === 'p2temp/session.createWithConnectors').length).toBe(2)
+    const meta = JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8')) as BotsMeta
+    expect(Object.keys(meta.recipes)).toEqual([presetIdOf('p2-alpha', ['a'])])
+  })
+})
+
+describe('⑦ env 门控的 #4 编排屏障', () => {
+  it('未设 env：屏障路径不触发（waitGate 未被调用）', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({ 'p2temp/session.createWithConnectors': () => create4Ok('s-1') })
+    const waitGate = async () => { throw new Error('gate must not fire when env unset') }
+    delete process.env[GATE_4_ENV]
+    const result = await createBotWithConnectors(dsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { waitGate, dataDir: join(dir, 'data') })
+    expect(result).toEqual(create4Ok('s-1'))
+  })
+
+  it('设 env：停在 recipe 已落盘、#4 已返回（session 已建）、调用方未收到返回；touch 后放行', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    let createReturned = false
+    const dsh = mockDsh({
+      'p2temp/session.createWithConnectors': () => {
+        createReturned = true
+        return create4Ok('s-2')
+      },
+    })
+    let release: (() => void) | undefined
+    const waitGate = async () => { await new Promise<void>((r) => { release = r }) }
+    process.env[GATE_4_ENV] = '/tmp/bot-p4-U-13-gate-file'
+    try {
+      const pending = createBotWithConnectors(dsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { waitGate, dataDir: join(dir, 'data') })
+      const winner = await Promise.race([pending.then(() => 'resolved'), new Promise<'timeout'>((r) => setTimeout(() => r('timeout'), 100))])
+      expect(winner).toBe('timeout')
+      // 屏障停点：#4 已返回（session 已建）且 recipe 已落盘，调用方未收到返回
+      expect(createReturned).toBe(true)
+      const meta = JSON.parse(readFileSync(join(dir, BOTS_JSON), 'utf8')) as BotsMeta
+      expect(Object.keys(meta.recipes)).toEqual([presetIdOf('p2-alpha', ['a'])])
+      release!()
+      expect(await pending).toEqual(create4Ok('s-2'))
+    } finally {
+      delete process.env[GATE_4_ENV]
+    }
+  })
+
+  it('默认 waitGate：轮询 env 指定的 gate 文件出现后放行（真实 fs）', async () => {
+    const dir = tmpHome()
+    const gateFile = join(tmpHome(), 'gate-4')
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({ 'p2temp/session.createWithConnectors': () => create4Ok('s-3') })
+    process.env[GATE_4_ENV] = gateFile
+    try {
+      const pending = createBotWithConnectors(dsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { dataDir: join(dir, 'data') })
+      await new Promise((r) => setTimeout(r, 80))
+      const { writeFileSync: wf } = await import('node:fs')
+      wf(gateFile, '')
+      expect(await pending).toEqual(create4Ok('s-3'))
+    } finally {
+      delete process.env[GATE_4_ENV]
+    }
+  })
+})
+
+describe('deriveBots（D10d runtime 恒 dsh；孤儿不产生行）', () => {
+  const view = (recipes: Record<string, { agentPreset: string; connectors: string[]; live: boolean }>, mainBotId: string | null = null) =>
+    ({ version: 1 as const, mainBotId, recipes })
+  const sessions = [
+    { sessionId: 's-plain', running: true, updatedAt: 1, agentPreset: 'p2-alpha' },
+    { sessionId: 's-conn', running: false, updatedAt: 2, agentPreset: 'p2temp-abc' },
+    { sessionId: 's-stale', running: false, updatedAt: 3, agentPreset: 'p2temp-xyz' },
+  ]
+
+  it('按 session 产生行；孤儿 recipe（无 session）不出现', () => {
+    const rows = deriveBots(sessions, view({ 'p2temp-abc': { agentPreset: 'p2-alpha', connectors: ['a'], live: true }, 'p2temp-orphan': { agentPreset: 'p2-beta', connectors: ['b'], live: true } }, 's-conn'))
+    expect(rows.length).toBe(3)
+    expect(rows.map((r) => r.id)).toEqual(['s-plain', 's-conn', 's-stale'])
+    expect(rows.every((r) => r.runtime === 'dsh')).toBe(true)
+  })
+
+  it('connectors/readOnly/mainBot/preset 按 C §3.1 推导', () => {
+    const rows = deriveBots(sessions, view({ 'p2temp-abc': { agentPreset: 'p2-alpha', connectors: ['a'], live: true } }, 's-conn'))
+    expect(rows[0]).toEqual({ id: 's-plain', preset: 'p2-alpha', connectors: [], readOnly: false, mainBot: false, runtime: 'dsh', running: true, updatedAt: 1, createdBy: null })
+    expect(rows[1]).toEqual({ id: 's-conn', preset: 'p2-alpha', connectors: ['a'], readOnly: false, mainBot: true, runtime: 'dsh', running: false, updatedAt: 2, createdBy: null })
+    // p2temp-* 且无 recipe → 只读
+    expect(rows[2]).toEqual({ id: 's-stale', preset: null, connectors: [], readOnly: true, mainBot: false, runtime: 'dsh', running: false, updatedAt: 3, createdBy: null })
+  })
+
+  it('recipe.live=false → 该 bot 只读；普通 preset 的 bot 不因此只读', () => {
+    const rows = deriveBots(sessions, view({ 'p2temp-abc': { agentPreset: 'p2-alpha', connectors: ['a'], live: false } }))
+    expect(rows[1].readOnly).toBe(true)
+    expect(rows[0].readOnly).toBe(false)
+  })
+
+  it('header.agentPreset 缺失（SessionSummary 无 header 时）→ preset null', () => {
+    const rows = deriveBots([{ sessionId: 's-1', running: false, updatedAt: 0 }], view({}))
+    expect(rows[0]).toEqual({ id: 's-1', preset: null, connectors: [], readOnly: false, mainBot: false, runtime: 'dsh', running: false, updatedAt: 0, createdBy: null })
+  })
+})
+
+// U-28 R5：failed 集合可清除 —— 启动恢复失败的 presetId，用户修复连接器后以同配置
+// 重新创建（#4 成功）必须清掉失败标记，否则 M3 get 恒 live=false、bot 恒只读（终审 R5）。
+describe('createBotWithConnectors · failed 清除（U-28 R5）', () => {
+  it('#4 成功注册同 presetId → 从 opts.failed 删除；#4 失败 → 不清', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const presetId = presetIdOf('p2-alpha', ['a'])
+    const failed = new Set([presetId])
+
+    // #4 失败：保留失败标记（recipe 落盘为孤儿，§8-1）
+    const failDsh = mockDsh({ 'p2temp/session.createWithConnectors': () => ({ ok: false, error: { code: 'p2temp/connector-unavailable', message: 'not installed', details: {} } }) })
+    const bad = await createBotWithConnectors(failDsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { failed, dataDir: join(dir, 'data') })
+    expect(bad.ok).toBe(false)
+    expect([...failed]).toEqual([presetId])
+
+    // #4 成功：清除
+    const okDsh = mockDsh({ 'p2temp/session.createWithConnectors': () => create4Ok('s-1') })
+    const good = await createBotWithConnectors(okDsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { failed, dataDir: join(dir, 'data') })
+    expect(good).toEqual(create4Ok('s-1'))
+    expect([...failed]).toEqual([])
+  })
+
+  it('未传 failed → 行为不变（成功路径不炸）', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({ 'p2temp/session.createWithConnectors': () => create4Ok('s-1') })
+    const result = await createBotWithConnectors(dsh, store, { agentPreset: 'p2-alpha', connectors: ['a'] }, { dataDir: join(dir, 'data') })
+    expect(result).toEqual(create4Ok('s-1'))
+  })
+})
+
+// P5-25（Q-015 C2-②，R4 §4）：#3/#4 的 cwd 由 main 强制为 $PBOTS_DATA_DIR/workspaces/<botId>（目录建好），
+// renderer 传入即拒（invalid-args、dsh 计数 0）。
+describe('P5-25 工作目录强制 · #4', () => {
+  const WS_ROOT = (dir: string): string => join(dir, 'data')
+
+  it('② renderer 传 cwd（任意字符串）→ pbots/invalid-args，dsh 计数 0，不建目录不写 recipe', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({ 'agentPresets/list': () => rosterOk })
+    const result = await createBotWithConnectors(dsh, store, { connectors: ['a'], agentPreset: 'p2-alpha', cwd: '/tmp/elsewhere' }, { dataDir: WS_ROOT(dir) })
+    expect(result).toEqual({
+      ok: false,
+      error: { code: 'pbots/invalid-args', message: expect.stringContaining('cwd'), details: {} },
+    })
+    expect(dsh.calls.length).toBe(0)
+    expect(existsSync(WS_ROOT(dir))).toBe(false)
+    expect(readMetaOrMissing(dir)?.recipes ?? {}).toEqual({})
+  })
+
+  it('② renderer 传非字符串 cwd → 同样 invalid-args（不再有「cwd must be a string」放行路径）', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh()
+    const result = await createBotWithConnectors(dsh, store, { connectors: ['a'], agentPreset: 'p2-alpha', cwd: 42 }, { dataDir: WS_ROOT(dir) })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.code).toBe('pbots/invalid-args')
+    expect(dsh.calls.length).toBe(0)
+  })
+
+  it('① 无 dataDir 且 env 未设 → pbots/unavailable（fail loud，不落不确定 cwd）', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({ 'agentPresets/list': () => rosterOk })
+    const prev = process.env.PBOTS_DATA_DIR
+    delete process.env.PBOTS_DATA_DIR
+    try {
+      const result = await createBotWithConnectors(dsh, store, { connectors: ['a'], agentPreset: 'p2-alpha' })
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error.code).toBe('pbots/unavailable')
+      expect(dsh.calls.length).toBe(0)
+    } finally {
+      if (prev !== undefined) process.env.PBOTS_DATA_DIR = prev
+    }
+  })
+
+  it('① env 回退：opts 未传 dataDir 时读 PBOTS_DATA_DIR，cwd 落其下 workspaces/', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    const dsh = mockDsh({ 'agentPresets/list': () => rosterOk, 'p2temp/session.createWithConnectors': () => create4Ok('ignored-by-sdk') })
+    const prev = process.env.PBOTS_DATA_DIR
+    process.env.PBOTS_DATA_DIR = WS_ROOT(dir)
+    try {
+      await createBotWithConnectors(dsh, store, { connectors: ['a'], agentPreset: 'p2-alpha' })
+      const request = (dsh.calls.find((c) => c.method === 'p2temp/session.createWithConnectors')!.args as { request: { sessionId: string; cwd: string } }).request
+      expect(request.cwd).toBe(join(WS_ROOT(dir), 'workspaces', request.sessionId))
+    } finally {
+      if (prev !== undefined) process.env.PBOTS_DATA_DIR = prev; else delete process.env.PBOTS_DATA_DIR
+    }
+  })
+
+  it('① 工作区目录建好先于 #4（mock #4 内同步断言目录存在），mkdir 失败 → pbots/storage 且不调 #4', async () => {
+    const dir = tmpHome()
+    const store = new BotsMetaStore(dir)
+    await store.init()
+    let workspaceAtCall: string | null = null
+    const dsh = mockDsh({
+      'agentPresets/list': () => rosterOk,
+      'p2temp/session.createWithConnectors': (_args, call) => {
+        void call
+        const request = (_args as { request: { cwd: string } }).request
+        workspaceAtCall = request.cwd
+        return create4Ok('s-ws')
+      },
+    })
+    await createBotWithConnectors(dsh, store, { connectors: ['a'], agentPreset: 'p2-alpha' }, { dataDir: WS_ROOT(dir) })
+    expect(workspaceAtCall).not.toBeNull()
+    expect(existsSync(workspaceAtCall!)).toBe(true) // #4 被调时目录已在（同步读 fs，非事后）
+
+    // mkdir 失败：dataDir 指向一个文件路径之下 → recursive mkdir 抛 ENOTDIR
+    const badFile = join(dir, 'not-a-dir')
+    writeFileSync(badFile, 'blocker')
+    const dsh2 = mockDsh({ 'agentPresets/list': () => rosterOk })
+    const result = await createBotWithConnectors(dsh2, store, { connectors: ['a'], agentPreset: 'p2-alpha' }, { dataDir: join(badFile, 'data') })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.code).toBe('pbots/storage')
+    expect(dsh2.calls.filter((c) => c.method === 'p2temp/session.createWithConnectors').length).toBe(0)
+  })
+})
+
+describe('P5-25 工作目录强制 · #3 session/create', () => {
+  const WS_ROOT = (dir: string): string => join(dir, 'data')
+
+  it('② renderer 传 cwd → pbots/invalid-args，dsh 计数 0；workspaceId 同拒（与注入 cwd 冲突）', async () => {
+    const dir = tmpHome()
+    const dsh = mockDsh()
+    for (const args of [{ cwd: '/tmp/x' }, { agentPreset: 'p2-alpha', cwd: '/tmp/x' }, { workspaceId: 'w1' }]) {
+      const result = await createSessionForcedWorkspace(dsh, args, { dataDir: WS_ROOT(dir) })
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error.code).toBe('pbots/invalid-args')
+    }
+    expect(dsh.calls.length).toBe(0)
+  })
+
+  it('① 空 request → 注入 sessionId + cwd（$dataDir/workspaces/<sessionId>），目录建好；agentPreset 原样透传', async () => {
+    const dir = tmpHome()
+    const dsh = mockDsh({ 'session/create': () => ({ ok: true as const, value: { sessionId: 'echoed' } }) })
+    const result = await createSessionForcedWorkspace(dsh, {}, { dataDir: WS_ROOT(dir) })
+    expect(result).toEqual({ ok: true, value: { sessionId: 'echoed' } })
+    expect(dsh.calls.length).toBe(1)
+    const request = (dsh.calls[0].args as { request: Record<string, unknown> }).request
+    expect(typeof request.sessionId).toBe('string')
+    expect(request.sessionId).toMatch(/^session-[0-9a-f-]{36}$/)
+    expect(request.cwd).toBe(join(WS_ROOT(dir), 'workspaces', request.sessionId as string))
+    expect(existsSync(request.cwd as string)).toBe(true)
+    expect('agentPreset' in request).toBe(false) // 未传不注入
+
+    const withPreset = await createSessionForcedWorkspace(dsh, { agentPreset: 'p2-alpha' }, { dataDir: WS_ROOT(dir) })
+    expect(withPreset.ok).toBe(true)
+    const request2 = (dsh.calls[1].args as { request: Record<string, unknown> }).request
+    expect(request2.agentPreset).toBe('p2-alpha')
+    expect(request2.cwd).toBe(join(WS_ROOT(dir), 'workspaces', request2.sessionId as string))
+  })
+
+  it('T11b B：ssh 模式（handoff ssh-mode/remote-root）→ workspace_ensure RPC；cwd=canonical 非 path；本机不建；RPC 失败→pbots/storage+0 次 session/create', async () => {
+    const dir = tmpHome()
+    // handoff：ssh-mode + remote-root（mintWorkspace 的 sshRemoteRoot() 读这里）
+    const hb = join(dir, 'handoff')
+    mkdirSync(hb, { recursive: true })
+    writeFileSync(join(hb, 'ssh-mode'), 'ssh\n')
+    writeFileSync(join(hb, 'remote-root'), '/r/workspaces-root\n')
+    process.env.PBOTS_DSH_HANDOFF = hb
+    let ensureArgs: unknown[] = []
+    const dsh = mockDsh({
+      'p2sdk/workspace_ensure': (args) => {
+        ensureArgs.push(args)
+        return { ok: true as const, value: { path: '/r/workspaces-root/workspaces/bot-1', canonical: '/real/ws/workspaces/bot-1' } }
+      },
+      'session/create': () => ({ ok: true as const, value: { sessionId: 'echoed' } }),
+    })
+    try {
+      const result = await createSessionForcedWorkspace(dsh, {}, { dataDir: WS_ROOT(dir) })
+      expect(result.ok, JSON.stringify(result)).toBe(true)
+      const request = (dsh.calls.find((c) => c.method === 'session/create')!.args as { request: Record<string, unknown> }).request
+      expect(request.cwd, 'cwd=canonical（P2 收口：header.cwd 存远端真实路径）').toBe('/real/ws/workspaces/bot-1')
+      expect(request.cwd, 'cwd 不是原串 path').not.toBe('/r/workspaces-root/workspaces/bot-1')
+      const botId = ((ensureArgs[0] as { request?: { botId?: string } })?.request)?.botId
+      expect(botId, 'ensure 收 botId').toBeTruthy()
+      expect(existsSync(join(WS_ROOT(dir), 'workspaces')), '本机 workspaces 未建').toBe(false)
+      // RPC 失败路径
+      const dshFail = mockDsh({ 'p2sdk/workspace_ensure': () => ({ ok: false as const, error: { code: 'p2sdk/x', message: 'boom', details: {} } }) })
+      const fail = await createSessionForcedWorkspace(dshFail, {}, { dataDir: WS_ROOT(dir) })
+      expect(fail.ok).toBe(false)
+      if (!fail.ok) expect(fail.error.code).toBe('pbots/storage')
+      expect(dshFail.calls.filter((c) => c.method === 'session/create').length, 'RPC 失败 → 0 次 session/create').toBe(0)
+    } finally {
+      delete process.env.PBOTS_DSH_HANDOFF
+    }
+  })
+
+  it('保留 base 行为：agentPreset p2temp-* → invalid-args（CONTRACT §2 表 1 过滤），dsh 计数 0', async () => {
+    const dir = tmpHome()
+    const dsh = mockDsh()
+    const result = await createSessionForcedWorkspace(dsh, { agentPreset: 'p2temp-abc' }, { dataDir: WS_ROOT(dir) })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.code).toBe('pbots/invalid-args')
+    expect(dsh.calls.length).toBe(0)
+  })
+})

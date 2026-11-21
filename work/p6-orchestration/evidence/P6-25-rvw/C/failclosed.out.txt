@@ -1,0 +1,33 @@
+[Q1] baseline.inside => "next"
+[Q1] baseline.outside => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] a.fs=undefined => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] a.fs={} => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] a.fs=null => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] a.noCtxGet => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] b.throw => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] b.malformed => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] b.null => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] c.policy=undefined => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] c.policy.resolve throws => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] c.no workspaceRoot => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] c.workspaceRoot non-string => {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+[Q1] d.upstream.noCwd => {"mode":"workspace-write","workspaceRoot":"/","sessionId":"s"}
+[Q1] d.upstream.agentless => {"mode":"workspace-write","workspaceRoot":"/"}
+[Q1] d.write(/tmp) noCwd => "next"
+[Q1] d.write(/tmp) agentless => "next"
+[Q1] e.corruptTiers.outside => {"kind":"ask","reason":"p2sdk policy: tier table unavailable; failing closed to per-call approval"}
+[Q1] f.missing => "next"
+[Q1] f.array => "next"
+[Q1] f.empty => "next"
+[Q1] mcp.write_file => {"kind":"ask","reason":"p2sdk policy: connector tools require user approval (metadata bridge pending)"}
+[Q1] mcp.write_file.never => {"kind":"deny","reason":"approval unavailable in this session"}
+ ✓ failclosed.test.ts > Q1 baseline: fs+policy healthy → inside next(), outside deny 7ms
+ ✓ failclosed.test.ts > Q1a ctx.fs 不可用（get 返回 undefined / 无 resolve / ctx.get 不是函数）→ deny 1ms
+ ✓ failclosed.test.ts > Q1b 路径解析抛错 / 返回畸形 → deny 1ms
+ ✓ failclosed.test.ts > Q1c 工作区根未知：sandboxPolicy 缺失 / resolve 抛错 / 无 workspaceRoot 字段 → deny 1ms
+ ✓ failclosed.test.ts > Q1d 上游真实 resolve：session header 无 cwd → 回落到部署 workspaceRoot（dsh-base 配 process.cwd()），不是「未知」 58ms
+ ✓ failclosed.test.ts > Q1e 档位表损坏（A9 ②）→ 写类区外从 deny 退成 ASK 卡（P6-25「不出卡」在表坏时不成立） 1ms
+ ✓ failclosed.test.ts > Q1f 无路径候选（file_path 缺失/非字符串/空串）→ total=0 → next()（交执行层 schema 校验） 0ms
+ ✓ failclosed.test.ts > Q2 MCP 连接器写类工具：mcp__ 前缀 → ASK（出卡）；never 会话 → deny 0ms
+ Test Files  1 passed (1)
+      Tests  8 passed (8)

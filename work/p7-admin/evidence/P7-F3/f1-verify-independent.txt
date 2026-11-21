@@ -1,0 +1,13 @@
+{"name":"old lease canceled at main-agent: send+wake","actual":0,"expected":0,"result":"PASS"}
+{"name":"old lease canceled at main-log: send+wake","actual":0,"expected":0,"result":"PASS"}
+{"name":"old lease canceled at worker-log: send+wake","actual":0,"expected":0,"result":"PASS"}
+{"name":"old generation has consumed zero before release","actual":0,"expected":0,"result":"PASS"}
+{"name":"new completed lease automatically reports after old in-flight flush cancellation","actual":1,"expected":1,"result":"PASS"}
+{"name":"positive control: explicit flush can deliver the valid new generation","actual":1,"expected":1,"result":"PASS"}
+{"name":"real Delivery flush cancellation: followup","actual":0,"expected":0,"result":"PASS"}
+{"name":"real Delivery open cancellation: followup","actual":0,"expected":0,"result":"PASS"}
+{"name":"real Delivery read cancellation: followup","actual":0,"expected":0,"result":"PASS"}
+{"name":"real Delivery close cancellation: followup","actual":0,"expected":0,"result":"PASS"}
+CONFIRMED_FAILURES 0
+
+EXIT 0

@@ -1,0 +1,27 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/P7-F3/app/ui
+
+ ❯ tests/unit/admin/recovery.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/admin/recovery.test.ts [ tests/unit/admin/recovery.test.ts ]
+Error: Cannot find module '../../../main/admin/recovery' imported from /tmp/bot-wt/P7-F3/app/ui/tests/unit/admin/recovery.test.ts
+ ❯ tests/unit/admin/recovery.test.ts:6:1
+      4| import { afterEach, describe, expect, it, vi } from 'vitest'
+      5| import { OperationsLedger } from '../../../main/admin/operations'
+      6| import { wireAdminRecovery } from '../../../main/admin/recovery'
+       | ^
+      7| import { restartSdk } from '../../../main/admin/restart'
+      8| import { createReadyGate } from '../../../main/ready'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  09:30:58
+   Duration  193ms (transform 64%, setup 26%, worker 9%)
+
+
+EXIT_CODE=1

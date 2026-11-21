@@ -1,0 +1,105 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - complementary "Agents" [ref=e7]:
+        - button "New" [ref=e10] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e11]: 
+        - button "Search" [ref=e12] [cursor=pointer]:
+          - generic [ref=e13]:
+            - generic [aria-hidden] [ref=e14]: 
+            - text: Search
+        - region "Agent list" [ref=e15]:
+          - generic [ref=e16]:
+            - generic "New chat chat preview" [ref=e1527]:
+              - button "New chat" [ref=e1528] [cursor=pointer]:
+                - strong [ref=e1539]: New chat
+                - status "Unread activity" [ref=e1637]
+            - generic "New chat chat preview" [ref=e19]:
+              - button "New chat" [ref=e20] [cursor=pointer]:
+                - strong [ref=e31]: New chat
+        - separator "Resize sidebar" [ref=e32]
+      - button "Connect apps" [ref=e34] [cursor=pointer]
+      - button "Account" [ref=e37] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e38]: P
+    - generic [ref=e1540]:
+      - main [ref=e1541]:
+        - group "New chat" [ref=e1542]:
+          - button "View agent settings" [active] [ref=e1543] [cursor=pointer]:
+            - generic [ref=e1552]: New chat
+        - log "Conversation transcript" [ref=e1553]:
+          - separator [ref=e1568]: Today 11:13 PM
+          - article "You 11/3/2026, 11:13:39 PM" [ref=e1569]:
+            - generic [ref=e1570]:
+              - group [ref=e1571]:
+                - paragraph [ref=e1573]: read hello.txt please
+              - toolbar "Message actions for your message (145e499c-c4a5-41f3-84ee-deeaee2f3fed)":
+                - button "More message actions":
+                  - generic [aria-hidden]: 
+          - listitem [ref=e1574]:
+            - button "Mcp__mcp-server-filesystem-3408f957__read_file /tmp/p2sdk-runtime-HqEN3M/workspace/hello.txt" [ref=e1575] [cursor=pointer]:
+              - generic [aria-hidden] [ref=e1576]: 
+              - generic [ref=e1577]: Mcp__mcp-server-filesystem-3408f957__read_file
+              - generic [ref=e1578]: /tmp/p2sdk-runtime-HqEN3M/workspace/hello.txt
+          - article "New chat 11/3/2026, 11:13:51 PM" [ref=e1609]:
+            - generic [ref=e1610]:
+              - group "Agent message" [ref=e1611]:
+                - paragraph [ref=e1613]: D5 读取完成
+              - toolbar "Message actions for New chat (t1-s2)":
+                - button "More message actions":
+                  - generic [aria-hidden]: 
+          - article "You 11/3/2026, 11:15:08 PM" [ref=e1614]:
+            - generic [ref=e1615]:
+              - group [ref=e1616]:
+                - paragraph [ref=e1618]: ping the demo server
+              - toolbar "Message actions for your message (8134b483-6b2d-49c5-9570-30d285555c8a)":
+                - button "More message actions":
+                  - generic [aria-hidden]: 
+          - listitem [ref=e1619]:
+            - button "Mcp__demo__ping pong" [ref=e1638] [cursor=pointer]:
+              - generic [aria-hidden] [ref=e1621]: 
+              - generic [ref=e1622]: Mcp__demo__ping
+              - generic [ref=e1623]: pong
+          - article "New chat 11/3/2026, 11:15:21 PM" [ref=e1644]:
+            - generic [ref=e1645]:
+              - group "Agent message" [ref=e1646]:
+                - paragraph [ref=e1648]: demo ping 调用成功
+              - toolbar "Message actions for New chat (t2-s2)":
+                - button "More message actions":
+                  - generic [aria-hidden]: 
+      - textbox "Prompt" [ref=e1558]:
+        - paragraph [ref=e1559]: Message New chat
+  - complementary "Conversation details" [ref=e1649]:
+    - button "Close details" [ref=e1652] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e1653]: 
+    - region "Agent settings" [ref=e1654]:
+      - generic [ref=e1655]:
+        - generic [ref=e1656]: Name
+        - textbox "Agent name" [ref=e1657]:
+          - /placeholder: Bob
+          - text: New chat
+        - generic [ref=e1658]: Description
+        - textbox "Agent description" [ref=e1659]:
+          - /placeholder: What this agent is for
+    - region "Bot configuration" [ref=e1660]:
+      - generic [ref=e1661]: Configuration
+      - generic [ref=e1662]:
+        - generic [aria-hidden] [ref=e1663]: 
+        - generic [ref=e1664]: Preset
+        - generic [ref=e1665]: standard
+      - generic [ref=e1666]:
+        - generic [aria-hidden] [ref=e1667]: 
+        - generic [ref=e1668]: Connectors
+        - generic [ref=e1669]: "@bot-u23/demo-connector"
+      - paragraph [ref=e1670]: Locked when the bot was created. To change it, create a new bot.
+      - button "New bot with this configuration" [ref=e1671] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e1672]: 
+      - generic [ref=e1674]: Model
+      - generic [ref=e1675]:
+        - combobox "Model" [ref=e1676]:
+          - option "Preset default (p2fake)" [disabled] [selected]
+          - option "p2fake · p2fake"
+          - option "Mock Replay · mock"
+        - status [ref=e1677]: Only this bot. Takes effect from the next reply.
+      - generic [ref=e1678]: Main bot
+      - button "Set as main bot" [ref=e1680] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e1681]: 

@@ -1,0 +1,195 @@
+{
+  "version": 1,
+  "frozenAt": "2026-11-04",
+  "note": "P6-19 D3' 冻结路由提示集（BRIEF p6-orchestration v2.2 §6 D3′；PLAN v4 P6-19 行）。16 条：4 直接答、4 单派、2 并行、2 追加、2 停止、2 闲聊，覆盖决策 11 全部 5 个去向（直接答 / create / send / stop / 忽略）；每条 ×3 = 48 组（P6-20 实测与计分）。held-out：本文件在任何协调者工具 description 文案（P6-10）之前提交，之后的 description 调词不得改动本文件，也不得据本文件条目调平措辞。单派 / 并行 / 追加 / 停止条目的任务句均为可在空目录内完成的文件类多步任务。两回合条目（追加 / 停止）的 turn[1] 是计分回合：expect 中 createCalls / stopCalls 均指计分回合，turn[0] 仅作前置铺垫（期望恰 1 次 create）。提示文本一律为用户口语原话，不含任何工具名或路由实现措辞。",
+  "cases": [
+    {
+      "id": "dir1-docker-vm",
+      "kind": "direct",
+      "prompt": "用大白话说说 Docker 和虚拟机有啥区别？",
+      "expect": {
+        "route": "direct-answer",
+        "createCalls": 0,
+        "stopCalls": 0,
+        "detail": "主 bot 直接回答，不派工、不停工"
+      }
+    },
+    {
+      "id": "dir2-translate-ja",
+      "kind": "direct",
+      "prompt": "把「明天见」翻译成日语，只给译文。",
+      "expect": {
+        "route": "direct-answer",
+        "createCalls": 0,
+        "stopCalls": 0,
+        "detail": "主 bot 直接给出译文"
+      }
+    },
+    {
+      "id": "dir3-power",
+      "kind": "direct",
+      "prompt": "3 的 5 次方是多少？直接说答案。",
+      "expect": {
+        "route": "direct-answer",
+        "createCalls": 0,
+        "stopCalls": 0,
+        "detail": "主 bot 直接答 243"
+      }
+    },
+    {
+      "id": "dir4-tv-rec",
+      "kind": "direct",
+      "prompt": "推荐一部下饭的轻松美剧呗，一句话就行。",
+      "expect": {
+        "route": "direct-answer",
+        "createCalls": 0,
+        "stopCalls": 0,
+        "detail": "主 bot 一句话推荐，不派工"
+      }
+    },
+    {
+      "id": "single1-packing",
+      "kind": "single",
+      "prompt": "在当前目录建一个 packing.txt，写入三行：充电器、雨伞、水杯。然后读回来，检查有没有写错。",
+      "expect": {
+        "route": "create",
+        "createCalls": 1,
+        "stopCalls": 0,
+        "detail": "多步文件任务，恰派 1 个 worker，主 bot 不自己动手"
+      }
+    },
+    {
+      "id": "single2-date-diary",
+      "kind": "single",
+      "prompt": "先查一下今天几号，再建一个 diary.txt，把日期写在第一行。",
+      "expect": {
+        "route": "create",
+        "createCalls": 1,
+        "stopCalls": 0,
+        "detail": "恰 1 个 worker 完成「查日期 → 写文件」两步"
+      }
+    },
+    {
+      "id": "single3-fib-run",
+      "kind": "single",
+      "prompt": "写一个 fib.py，打印前 10 个斐波那契数，跑一遍，把输出原样存进 out.txt。",
+      "expect": {
+        "route": "create",
+        "createCalls": 1,
+        "stopCalls": 0,
+        "detail": "恰 1 个 worker 完成写、跑、存三步"
+      }
+    },
+    {
+      "id": "single4-count-logs",
+      "kind": "single",
+      "prompt": "数一下当前目录里有几个 .log 文件，把数字写进 logs-count.txt。",
+      "expect": {
+        "route": "create",
+        "createCalls": 1,
+        "stopCalls": 0,
+        "detail": "恰 1 个 worker，不因步骤少而由主 bot 代劳"
+      }
+    },
+    {
+      "id": "par1-two-tasks",
+      "kind": "parallel",
+      "prompt": "两件事没依赖：一件是把「今日待办」写进 todo.md，另一件是算 1 加到 100 等于多少，把算式过程写进 sum.txt。这两件事可以同时弄。",
+      "expect": {
+        "route": "create",
+        "createCalls": 2,
+        "stopCalls": 0,
+        "detail": "两个独立任务各派 1 个 worker，共恰 2 次 create"
+      }
+    },
+    {
+      "id": "par2-list-and-weekday",
+      "kind": "parallel",
+      "prompt": "帮我同时干两个活：一个把当前目录所有文件名列出来存进 files.txt，另一个查一下今天星期几，写进 weekday.txt。",
+      "expect": {
+        "route": "create",
+        "createCalls": 2,
+        "stopCalls": 0,
+        "detail": "恰 2 次 create，不是串成一个 worker 的两步"
+      }
+    },
+    {
+      "id": "attach1-hike-append",
+      "kind": "attach",
+      "turns": [
+        "帮我建个 hike.md，写一份周末爬山计划，先列装备清单。",
+        "对了，刚才那份计划里再补一条：雨天备用方案。"
+      ],
+      "expect": {
+        "route": "send",
+        "createCalls": 0,
+        "stopCalls": 0,
+        "detail": "回合 2 把追加要求投给回合 1 派出的同一 worker（send），不新开 create、不停工；回合 1 前置：恰 1 次 create"
+      }
+    },
+    {
+      "id": "attach2-backup-index",
+      "kind": "attach",
+      "turns": [
+        "在当前目录建个 backup 文件夹，把所有 .txt 文件复制进去。",
+        "顺便再建个 list.txt，把复制过去的文件名都列上。"
+      ],
+      "expect": {
+        "route": "send",
+        "createCalls": 0,
+        "stopCalls": 0,
+        "detail": "回合 2 的补充要求送进同一 worker，不新开 create；回合 1 前置：恰 1 次 create"
+      }
+    },
+    {
+      "id": "stop1-lowercase",
+      "kind": "stop",
+      "turns": [
+        "把当前目录里所有文件名改成小写。",
+        "等等，改名那个先别做了。"
+      ],
+      "expect": {
+        "route": "stop",
+        "createCalls": 0,
+        "stopCalls": 1,
+        "detail": "回合 2 恰 1 次 stop 停掉回合 1 派的 worker，不新开 create；回合 1 前置：恰 1 次 create"
+      }
+    },
+    {
+      "id": "stop2-archive",
+      "kind": "stop",
+      "turns": [
+        "建个 archive 文件夹，把当前目录的旧文件都挪进去归档。",
+        "算了，归档那个不用弄了，停了吧。"
+      ],
+      "expect": {
+        "route": "stop",
+        "createCalls": 0,
+        "stopCalls": 1,
+        "detail": "用户改主意，回合 2 恰 1 次 stop、0 次 create；回合 1 前置：恰 1 次 create"
+      }
+    },
+    {
+      "id": "chat1-thanks",
+      "kind": "chat",
+      "prompt": "好的，谢谢！",
+      "expect": {
+        "route": "ignore",
+        "createCalls": 0,
+        "stopCalls": 0,
+        "detail": "致谢无需任何工具，直接简短回应即可"
+      }
+    },
+    {
+      "id": "chat2-greeting",
+      "kind": "chat",
+      "prompt": "早呀，今天天气真不错。",
+      "expect": {
+        "route": "ignore",
+        "createCalls": 0,
+        "stopCalls": 0,
+        "detail": "闲聊问候，0 次工具，直接搭话"
+      }
+    }
+  ]
+}

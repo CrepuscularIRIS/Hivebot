@@ -1,0 +1,4 @@
+.sand-agent-character__shape
+.sand-avatar-trigger__button
+.sand-info-pane__resize-handle
+.sand-task-thread__resize-handle

@@ -1,0 +1,4 @@
+session session-f565ed8f-9578-4996-841d-53d59d23199e
+assistant chunks: 153 text="你好！👋\n\n我是你的编程助手，由 DeepSeek Harness 驱动。当前工作目录是 `/tmp/t01-real-home/workspace`。\n\n我可以帮你：\n- **编写和修改代码** — 创建文件、编辑、重构\n- **执行命令** — 运行构建、测试、脚本等\n- **搜索和分析** — 在代码库中查找文件和内容\n- **调试问题** — 排查错误、分析日志\n\n有什么我可以帮你的吗？"
+turn end: true reason=completed
+min-client PASS

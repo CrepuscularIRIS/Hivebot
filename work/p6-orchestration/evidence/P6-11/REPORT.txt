@@ -1,0 +1,77 @@
+P6-11 send_to_bot · REPORT
+时间: 2026-11-04 12:00 · builder GLM 5.3
+分支 feat/P6-11 @ c8429c0（基点 main@29c6b1a，worktree /tmp/bot-wt/P6-11）
+
+改动文件（7）
+- 新 app/sdk/src/orchestration/send.mjs          工具本体（registerSendToBot + executeSendToBot）
+- 改 app/sdk/src/orchestration/index.mjs         追加 1 行导出（注册行，P6-12/13 之后继续追加）
+- 改 app/sdk/src/orchestration/main-channel.mjs  +1 import +1 构造行（接线，见「未完成项」1）
+- 新 app/sdk/tests/unit/orchestration-send.test.ts            单测 24 例
+- 新 app/sdk/tests/unit/orchestration-send-live.test.ts       真 Loader 6 例
+- 新 app/sdk/tests/support/orchestration-send-inspect.mjs     测试探针（redeliver 幂等 op）
+- 改 app/sdk/tests/unit/orchestration-foundation.test.ts      barrel 清单机械追加（P6-10 先例）
+
+实现要点（对照 PLAN P6-11 行 + 决策 11/13/27①/29）
+- 白名单 D9②: bots.json bots[id].createdBy === 当前主 bot 才可发；自身/未知 id/
+  他人 worker → pbots/forbidden，目标零触达（prompt 计数 0，单测+live 均断言）。
+- busy D9⑩/决策 13: agent.status==='running' ∨ inbox.nextTurn 非空（覆盖「用户刚
+  在 worker 里发了消息」与「上一条 assign 未认领」）∨ slotHolds 已有该目标 ∨ 同
+  目标在途 send（WeakMap per orch）→ pbots/busy；工具不排队不重试（live 断言
+  tool/call 恰 1 次）。在途集合补 delivery 前的并发窗口（P6-21.f1 同思路）。
+- 容量决策 9: 经 orch.slots（= sharedSlots，未 new Slots）；busy 前置检查与
+  reserve/登记 hold 在同一同步段（无 await）；占位绑 worker turn/end 一shot释放
+  （同 create.mjs）；isConcurrencySafe=true —— 宿主默认 exclusive（pipeline.ts
+  executionMode），不声明则 D9⑥′ 的并发批在宿主侧永不发生。
+- 污染回合决策 29: 复用 P6-10 挂在 orch.turns 的 TurnOrigin 账本（claimed 监听
+  仍在 create 侧注册，勿另建）；when 隐藏 + execute 双拦（R2-1 只认 pbots-worker）。
+- 投递决策 27①: 新 assignmentId，buildAssignMessage 经 orch.delivery 投
+  pbots-assign:*（幂等 + flush 后回执），包装句 sendRelayText（决策 11 send 语义，
+  区分 create 的 relayText）。
+- UI 对接（REPORT-P6-15 约束全遵守）: 实参取 botId|bot|workerId|sessionId|id 与
+  prompt|message|text 按序第一个非空；错误码 busy/forbidden/capacity/invalid-args/
+  main-unavailable（+身份坏文件时 unavailable 同 create 口径）经 orchError 全部
+  code: 前缀进 message。
+
+验收对照（可证伪项全部有测试）
+- 非本主 bot 的 worker 拒 forbidden ........... 单测 D9② 4 例 + live s4（他人 worker）
+- 目标 running 拒 busy 恰一次不重试 ......... 单测 busy 4 形态 + live D9⑩（tool/call==1、assigns==0）
+- 污染回合拒 ............................... 单测（when false + execute forbidden，sends==0）
+                                      + live（UNKNOWN_TOOL、worker activity==0、visible==false）
+- 投递幂等同 assignmentId 两次恰一条 ....... live 末例（p611 redeliver → skipped:true，
+                                      目标 pbots-main user/message 恰 1、无新回合）
+- D9⑥′ 4 并发恰 3 ........................ live（单响应 4 tool-call 块真并发批，2 ok 断言组）
+                                      + 单测 Promise.allSettled 恰 3
+- D9⑧ 手动占容不被拒 ...................... live（W1 手动跑完自己回合、无 assign；W2-W4 恰 2 成功）
+- D7 SDK 部分 ............................. live（own 落 1 条 pbots-assign、source pbots-main、
+                                      起回合且回答在 assign 之后）
+
+测试证据
+- cd app/sdk && pnpm vitest run tests/unit/orchestration-send.test.ts
+  tests/unit/orchestration-send-live.test.ts → 30 passed (24+6)
+- 编排六件（send、send-live、create、create-live、foundation、foundation-delivery）
+  → 123 passed
+- 全量 pnpm test → 451 passed (451)。注：11:52 一轮全量曾出现 1 例非确定性失败
+  （11:50 与 11:56 两轮全绿、定向复跑全绿，未定位到具体用例；如 verifier 复现请记录）
+- TDD: 测试先写先红（module not found / 断言失败）后实现转绿；live 首轮红暴露
+  三个测试侧口径问题（宿主内部 user/message 不算投递、P5-03 fake 游标 per-session、
+  create 即落 3 个静态 header 事件），已按正确口径修正断言，未改产品代码迁就。
+
+未完成项 / 请派发者注意
+1. main-channel.mjs 的 +2 行接线在 PLAN P6-11 区域列之外：orchestration.yml 只挂
+   OrchestrationPlugin 这一个类，send_to_bot 不在构造器注册则生产（P6-14b 开放闸）
+   永远缺这件工具。P6-12/13 将各再 +1 行同款接线，建议 PLAN 把 main-channel.mjs
+   补进这三条任务的区域列，verifier 核对时按此口径。
+2. UI 错误码清单中的 main-unavailable：send 不经 ⑤ 通道，当前实现永不发出该码
+   （UI 文案备而不用，无碍）。
+3. busy 的「用户刚发消息」窗口在 live 里用 running 态覆盖（pending-inbox 态由单测
+   覆盖）：live 里精确卡 idle-but-pending 窗口不可靠（prompt 后 kick 立即翻转
+   status），未强行构造。
+4. 交付闸门未跑 mm-review（已停用，按 LEARNINGS 2026-11-04 用户指示改主会话直派
+   Sol 分方向审）。
+
+环境与清理
+- 临时 HOME/数据: /tmp/bot-p611-*（tmp-sweep 登记，测试结束自动清扫）；
+  调试探针 /tmp/bot-p611-dbg* 已删；无 PBOTS_DATA_DIR 写真实 ~/.config。
+- bot-reap --dry-run --match p611 → 见下方自查输出。
+
+待 verifier 验收。

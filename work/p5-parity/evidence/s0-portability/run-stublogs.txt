@@ -1,0 +1,75 @@
+[STUB] stub-installed undefined
+[STUB] coordinatorPort.claim undefined
+[STUB] coordinatorPort.request undefined
+[STUB] coord.hello v1
+[STUB] cursorAccount.onStatusChanged [null]
+[STUB] experiments.onChanged [null]
+[STUB] update.getStatus 
+[STUB] update.onStatusEvent [null]
+[STUB] foreverBox.onVncUserPresence [null]
+[STUB] cursorAccount.getStatus 
+[STUB] agent.clientPersistence.read ["sand.client.slice.ui-layout"]
+[STUB] onboarding.getSeen 
+[STUB] desktop.getWindowState 
+[STUB] desktop.getWindowState undefined
+[STUB] theme.onChanged [null]
+[STUB] desktop.onWindowStateEvent [null]
+[STUB] desktop.onFocusAgent [null]
+[STUB] desktop.onDeepLink [null]
+[STUB] desktop.onForceOnboarding [null]
+[STUB] onboarding.onSkip [null]
+[STUB] desktop.onOpenFeedback [null]
+[STUB] desktop.onOpenAbout [null]
+[STUB] desktop.deepLinksReady 
+[STUB] desktop.deepLinksReady undefined
+[STUB] desktop.getZoomFactor 
+[STUB] desktop.getZoomFactor undefined
+[STUB] desktop.onZoomFactorEvent [null]
+[STUB] agent.clientPersistence.read ["sand.sidebar.width"]
+[STUB] agent.clientPersistence.read ["sand.sidebar.collapsed"]
+[STUB] agent.clientPersistence.read ["sand.infoPane.open"]
+[STUB] agent.clientPersistence.read ["sand.infoPane.width"]
+[STUB] agent.clientPersistence.read ["sand.boxDesktopModal.stageHeight"]
+[STUB] cursorAccount.getAvatar 
+[STUB] mcp.onAuthCompleted [null]
+[STUB] mcp.catalog 
+[STUB] mcp.list 
+[STUB] agent.getPinnedAgents 
+[STUB] agent.clientPersistence.read ["sand.client.slice.account.stub-auth.roster.last-roster"]
+[STUB] cursorAccount.getSandAccessFresh 
+[STUB] desktop.onBoxMigration [null]
+[STUB] desktop.getBoxMigrationStatus 
+[STUB] agent.clientPersistence.read ["sand.client.slice.account.stub-auth.selection.last-agent"]
+[STUB] agent.clientPersistence.read ["sand.client.slice.account.stub-auth.composer-drafts"]
+[STUB] agent.clientPersistence.read ["sand.client.slice.account.stub-auth.ui-agent-refs"]
+[STUB] agent.clientPersistence.read ["sand.client.slice.account.stub-auth.sidebar.last-sections"]
+[STUB] agent.clientPersistence.read ["sand.pinnedAgentIds"]
+[STUB] agent.clientPersistence.read ["sand.reactions.pinned"]
+[STUB] agent.clientPersistence.read ["sand.mention.recents"]
+[STUB] agent.getSidebarSections 
+[STUB] coord.request getTrays {}
+[STUB] coord.request getListenerIntegrations {}
+[STUB] coord.request getForeverBoxStatus {"id":"forever-box"}
+[STUB] coord.request listAgents {}
+[STUB] coord.request isAgentNetworkEnabled {}
+[STUB] coord.request listAllAutomations {}
+[STUB] coord.request isGlobalSearchEnabled {}
+[STUB] agent.clientPersistence.write ["sand.client.slice.account.stub-auth.selection.last-agent","{\"schemaVersion\":1,\"value\":{\"agentId\":\"ag_main\"}}"]
+[STUB] coord.request getAgentWorkflows {"id":"ag_main"}
+[STUB] coord.request getTeachRecordingStatus {}
+[STUB] coord.request getForeverBoxStatus {"id":"ag_main"}
+[STUB] coord.request getSubagents {"id":"ag_main"}
+[STUB] coord.request getAsyncTasks {"id":"ag_main"}
+[STUB] coord.request openAgentTail {"id":"ag_main","limit":200}
+[STUB] coord.event.push transcript
+[STUB] agent.clientPersistence.write ["sand.client.slice.account.stub-auth.composer-drafts","{\"schemaVersion\":1,\"value\":{\"agents\":{\"ag_main\":{\"draft\":{\"prompt\":\"Summarize the top risk for Q4\",\"attachments\":[],\"richText\":\"{\\\"type\\\":\\\"doc\\\",\\\"content\\\":[{\\\"type\\\":\\\"paragraph\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Summarize the top risk for Q4\\\"}]}]}\"},\"draftId\":\"51981c40-edcb-46e0-bf7d-3ae0b7ddb259\",\"recovery\":null}}}}"]
+[STUB] coord.request sendPrompt {"agentId":"ag_main","prompt":"Summarize the top risk for Q4","directAddressedAcceptance":true,"attachmentPaths":[],"attachmentNames":[],"clientNonce":"362cc1d1-2651-4313-bf30-8da071ed9f30","enterEpochMs":1793727986052,"composedAtMs":1793727986052,"richText":"
+[STUB] sendPrompt.payload {"agentId":"ag_main","text":{"agentId":"ag_main","prompt":"Summarize the top risk for Q4","directAddressedAcceptance":true,"attachmentPaths":[],"attachmentNames":[],"clientNonce":"362cc1d1-2651-4313-bf30-8da071ed9f30","enterEpochMs":1793727986052,"composedAtMs":1793727986052,"richText":"{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Summarize the top risk for Q4\"}]}]}"},"keys":["agentId","prompt","directAddressedAcceptance","attachmentPaths","attachmentNames","clientNonce","enterEpochMs","composedAtMs","richText"]}
+[STUB] localToolPermission.clearApprovals 
+[STUB] agent.clientPersistence.write ["sand.client.slice.account.stub-auth.composer-drafts","{\"schemaVersion\":1,\"value\":{\"agents\":{}}}"]
+[STUB] agent.clientPersistence.write ["sand.client.slice.account.stub-auth.selection.last-agent","{\"schemaVersion\":1,\"value\":{\"agentId\":\"ag_research\"}}"]
+[STUB] coord.request openAgentTail {"id":"ag_research","limit":200}
+[STUB] coord.request getAgentWorkflows {"id":"ag_research"}
+[STUB] coord.request getForeverBoxStatus {"id":"ag_research"}
+[STUB] coord.request getSubagents {"id":"ag_research"}
+[STUB] coord.request getAsyncTasks {"id":"ag_research"}

@@ -1,0 +1,4 @@
+# T51 step0v2 @ 2026-11-11T12:12:13.572Z
+serveMarket: real=http://127.0.0.1:41475/real/index.json
+Q0 listIndexes(初)=[]
+Q1 setIndexes({urls}) 失败=Error: pluginMarket/setIndexes failed: {"code":"gateway/internal","message":"Configuration for \"plugin-market\" is overridden by a home patch or command-line overlay","details":{}}

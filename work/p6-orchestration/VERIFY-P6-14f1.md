@@ -1,0 +1,75 @@
+# VERIFY P6-14.f1（P6-14 整体终验）
+
+> 转正自 evidence/P6-14/VERIFY-f1.txt。P6-14 整体判定：PASS。verifier 独立实证：全局交集漏 14 个 preset 入口，agent 交集全部隐藏且强拒、主 bot 深等不变。
+
+verdict: PASS
+commit: 828aa90e025334cd1986093edfa9e3e3237228f1
+P6-14 整体判定: PASS（含 P6-14.f1 restrict 集成；覆盖原 VERIFY 的唯一 FAIL 项）
+分支 / worktree：feat/P6-14 / /tmp/bot-wt/P6-14
+日期：2026-11-04
+报告位置说明：遵循本次验收员“不得写报告 .md”约束，正文落主仓 evidence/P6-14/VERIFY-f1.txt，非 worktree 内文件。
+
+证据根 E=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14
+所有下文 E/ 路径均指该绝对目录。本结论仅适用于上述 HEAD；HEAD 改变必须重验。
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+| --- | --- | --- |
+| 1. 原 vfy-probe 复跑：restrict 生效、主 bot before/after 深等、默认链闸门 | PASS | 原脚本未改，命令 C2，E/vfy-f1-probe.log:4-7。restriction.ok=true、hasAgentCtx=true；worker subagent/workflow 隐藏，主 bot 完整工具表深等；disposer 恢复 worker；mode=default 主/worker 均无协调者三件。 |
+| 2. 关键发现：preset 工具不在全局注册表，必须取 definitions(agent) | PASS | 独立真实 Loader 探针 C3，E/vfy-f1-registry-probe.mjs + vfy-f1-registry-inspect.mjs；E/vfy-f1-registry.log:1-5。14 个再委派/后台工具均不在全局定义中、却在 agent scoped 定义与 restrict 前工具表中；错误全局交集 deny 只有协调者三件，14 个工具全部仍可见（真实负对照）。改调用产品 applyWorkerRestriction(agent, ctx.tools) 后三族17件全部隐藏，bash/read/write/edit 保留，主 bot 工具表深等不变。14 个 preset 工具强制调用全返 pbots/forbidden，零审批卡、新增会话0。另一个生产顺序 worker 不做手动 restrict，自动隐藏三族17件。 |
+| 3. 拒绝面单测25 + live7全项复跑，含⑥生产顺序工具表收窄和⑦字面串先于 UNKNOWN_TOOL | PASS | C1 的189项通过；C4 再独立跑这两个文件，E/vfy-f1-envelope-verbose.log:6-40，逐项列出25单测、7live，32/32 PASS、RC=0。⑦13个工具结果全拒、含信封字面串、零审批卡、新增子会话0；⑤真实worker隔离矩阵亦通过。 |
+| 4. rebase/基点完整性，index STOP接线与原3 commit保留 | PASS | E/vfy-f1-integrity.log，HEAD直接父为05d8dfc，05d8dfc..HEAD只有1 commit；944afa0、c038ca4、0057d1a、05d8dfc均为HEAD祖先。原judgeWorkerCall/enumerateInstalledEntries/registerEnvelope函数逐字相等，旧12+5测试标题全部保留；stop.mjs与start.ts相对944afa0零差异；index.mjs:50 STOP导出保留，main-channel.mjs:214 stop接线、:220 envelope、:223 restrict均在。定向stop单测亦在C1复跑。 |
+| 5. 上场通过项抽3快测：工具表、顺序差分、默认链隔离 | PASS | C2的E/vfy-f1-probe.log:1-7：main有create/send/stop、worker无；固定同一command/description，仅翻run_in_background，true信封拒+asked=0，false asked=1且allowed-once后成功输出p614-vfy-order；默认不加载orchestration时两个会话均无协调者三件。 |
+| 6. 三格API形状哨兵在，升级形状分叉能报警 | PASS | E/vfy-f1-envelope-verbose.log:35-37三格实际通过；C5的E/vfy-f1-sentinel.log独立负对照：在内存中逐项移除已装依赖的scoped-context/unknown-global-tool/layers.effect标签字符串，原相同判定各自变红（assert.throws捕获），未改依赖文件。边界：这是源码字符串形状tripwire，不保证任意上游语义变化都被捕获。 |
+| 原P6-14整体剩余标准：157编排单测不降、矩阵与审批、worker工作区隔离 | PASS | C1=157+25+7=189/189（原157+12+5全部保留）；C6 matrix10+approval5=15/15；live⑤拒/proc/self/environ、拒读写其他工作区、自区write成功。E/vfy-f1-targeted.log、vfy-f1-matrix.log、vfy-f1-envelope-verbose.log。 |
+| 额外坏路径：restrict后的preset工具传空对象/缺失必填参数 | PASS | C3独立构造14工具调用均args={}，全部执行前拒pbots/forbidden且无UNKNOWN_TOOL，说明不是仅因工具已隐藏/参数无效而误判通过；14个结果、0审批卡、session/list不增。E/vfy-f1-registry.log:4。 |
+
+真实环境命令与输出尾部（均由验收员本次独立执行，不采用 builder 旧输出）：
+工作目录：/tmp/bot-wt/P6-14/app/sdk
+外层HOME=/tmp/bot-p614f1-vfy-home；live和探针再派生独立 /tmp/bot-p614* 隔离根。
+
+C1:
+HOME=/tmp/bot-p614f1-vfy-home pnpm exec vitest run tests/unit/orchestration-envelope.test.ts tests/unit/orchestration-envelope-live.test.ts tests/unit/orchestration-foundation.test.ts tests/unit/orchestration-create.test.ts tests/unit/orchestration-send.test.ts tests/unit/orchestration-report.test.ts tests/unit/orchestration-stop.test.ts --maxWorkers=1
+日志：E/vfy-f1-targeted.log
+尾部：Test Files 7 passed (7)；Tests 189 passed (189)；Duration 8.60s；RC=0。
+
+C2:
+HOME=/tmp/bot-p614f1-vfy-home ./node_modules/.bin/node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14/vfy-probe.mjs
+日志：E/vfy-f1-probe.log
+输出：PASS four sampled entrances + invalid arguments ... 7 results; no child session；PASS exact order differential；SCOPED_RESTRICT_PROBE restriction.ok=true；CONFIRMED ... worker-only restriction succeeds; main unchanged；PASS default chain ...；RC=0。
+旧探针“builder assertion false”是旧版降级理由的反证文案，不代表f1仍失败；本次C3另外直接验证了f1自动接线。
+
+C3:
+HOME=/tmp/bot-p614f1-vfy-home ./node_modules/.bin/node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14/vfy-f1-registry-probe.mjs
+日志：E/vfy-f1-registry.log
+输出：REAL_REGISTRY_SPLIT；CONFIRMED_WRONG_GLOBAL_LEAK；PASS_CORRECT_AGENT_RESTRICT；PASS_BAD_PATH_ALL_14_PRESET_TOOLS_DENIED；PASS_AUTOMATIC_PRODUCTION_RESTRICT；RC=0。
+全局注册表本次观测为6件：create_bot/p612_conn_write/request_network/send_to_bot/stop_bot/working_directory。与builder报告“agent/created时5件”采样时点不同；关键14件preset入口全局缺失事实一致，不依赖精确计数。
+负对照明确是“工具表限制层漏拦”，不是当前产品安全绕过：错误全局交集时pre-execute兜底仍可拒；本次f1的scoped交集与执行层拒均成功。
+
+C4:
+HOME=/tmp/bot-p614f1-vfy-home pnpm exec vitest run tests/unit/orchestration-envelope.test.ts tests/unit/orchestration-envelope-live.test.ts --maxWorkers=1 --reporter=verbose
+日志：E/vfy-f1-envelope-verbose.log
+尾部：Test Files 2 passed (2)；Tests 32 passed (32)；Duration 5.07s；RC=0。
+
+C5:
+HOME=/tmp/bot-p614f1-vfy-home ./node_modules/.bin/node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-14/vfy-f1-sentinel-probe.mjs
+日志：E/vfy-f1-sentinel.log
+输出：3条 PASS static sentinel baseline + negative control；RC=0。
+
+C6:
+HOME=/tmp/bot-p614f1-vfy-home pnpm exec vitest run tests/e2e/w1ap0-matrix.test.ts tests/e2e/approval.test.ts --maxWorkers=1
+日志：E/vfy-f1-matrix.log
+尾部：Test Files 2 passed (2)；Tests 15 passed (15)；Duration 99.38s；RC=0。
+这两项为SDK headless API测试，不启动Electron/UI。
+
+基点检查命令：git -C /tmp/bot-wt/P6-14 merge-base --is-ancestor <944afa0|c038ca4|0057d1a|05d8dfc> HEAD；git rev-parse HEAD^；git rev-list --count 05d8dfc..HEAD；git show <05d8dfc|HEAD>:<file> 比对原函数/旧测试标题；git diff 944afa0..HEAD -- app/sdk/src/orchestration/stop.mjs app/sdk/src/start.ts；git status --porcelain。断言脚本stdout已落E/vfy-f1-integrity.log，PASS integrity、RC=0。
+
+最终自查：
+/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p614
+输出为空、REAP_RC=0，见E/vfy-f1-final-state.log。
+结束前HEAD仍828aa90e025334cd1986093edfa9e3e3237228f1；worktree git status为空。
+无产品代码改动；仅写主仓E目录的验证脚本/日志/本报告；不跑全量回归；不读真实凭证、不调真实外部模型；所有运行使用临时HOME。Runtime.stop仅结束自己spawn的SDK子进程，未shell kill、未碰系统/桌面进程。此任务非UI，没有打开桌面窗口或截图要求。
+
+已知边界（不扩本次判定）：agent先建立、随后手工写createdBy的旧会话不会自动补挂restrict，执行期守卫仍全拒；本次特意用此场景作全局交集负对照。生产顺序先落createdBy再session/create的自动restrict已独立实证。既有bots.json不可读/自定义preset改名边界未在f1扩大。
+
+新问题（每条一行，可直接成为修复任务）：
+- 无本次验收新增的[FIX]。原P6-14唯一major（未采用可行per-agent restrict集成）已被f1修复并通过真实Loader负对照、生产自动接线和拒绝面复跑验证。

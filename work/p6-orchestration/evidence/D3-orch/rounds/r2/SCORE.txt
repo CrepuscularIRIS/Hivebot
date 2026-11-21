@@ -1,0 +1,118 @@
+P6-22 r2c — 合并原17完整组与本轮补采（只读评分输出，无held-out原文）
+generated=2026-11-05T12:05:23.124Z executor=6.1 Sol target=glm-5.3/litellm
+文案冻结0ed1ed4；采集器5092c75 + f7ba26f（held-out）/e75bbbf（dev，千秒长封边界）；ROUTING_PROMPT SHA256=8bc4ea57810cbfcc2ac21c6cb4a510449df88c174dd22efc0d753bea81f04fc8
+preserved=17 (all sha256 unchanged); supplemented=19/19; collected=36/36; complete=35/36
+subset=28/30; sentinel-misdispatch=0/6; sentinel-complete=6/6
+hard: polluted-tool-success=0; reports=42; report-tailTexts-not-one=0
+dev=10/10; dev-complete=10/10
+r1=3/30 (single0 parallel3 attach0 stop0); r2=28/30; delta-lower-bound=25; invalid=1 (timeouts remain invalid, not proven routing failures)
+recommendation=按本轮门槛建议进入定案阶段；本轮不跑48组，等待P6-24/P6-25.f1等合并后再跑。超时组保留invalid，不能声称冻结评分器converged=true或正式PASS
+判据：完整子集≥22/30且哨兵误派0/6、硬指标全过→建议定案（48组不在本轮跑）；<12/30→§12.3；12–21→只据dev raw总结r3失败模式。
+
+phase=heldout model=glm-5.3 planned=36 collected=36
+single: correct=12/12 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+parallel: correct=6/6 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+attach: correct=5/6 complete-route-fail=0 timeout=1 other-incomplete=0 missing=0
+stop: correct=5/6 complete-route-fail=1 timeout=0 other-incomplete=0 missing=0
+direct: correct=4/4 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+chat: correct=2/2 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+subset=28/30; sentinel-misdispatch=0/6; sentinel-correct=6/6
+hard: polluted-tool-success=0; reports=42; report-tailTexts-not-one=0
+converged=false (requires complete collection; timeout is not a demonstrated routing failure)
+Per-group score table (no raw prose):
+dir1-docker-vm-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+dir2-translate-ja-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+dir3-power-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+dir4-tv-rec-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+single1-packing-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single1-packing-2	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single1-packing-3	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single2-date-diary-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single2-date-diary-2	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single2-date-diary-3	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single3-fib-run-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single3-fib-run-2	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single3-fib-run-3	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single4-count-logs-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single4-count-logs-2	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+single4-count-logs-3	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+par1-two-tasks-1	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par1-two-tasks-2	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par1-two-tasks-3	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par2-list-and-weekday-1	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par2-list-and-weekday-2	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+par2-list-and-weekday-3	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+attach1-hike-append-1	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+attach1-hike-append-2	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+attach1-hike-append-3	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+attach2-backup-index-1	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+attach2-backup-index-2	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+attach2-backup-index-3	INCOMPLETE	outcome=timeout	create=1 send=0 stop=0	timeouts=worker2
+stop1-lowercase-1	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+stop1-lowercase-2	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+stop1-lowercase-3	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+stop2-archive-1	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+stop2-archive-2	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+stop2-archive-3	ROUTE-FAIL	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+chat1-thanks-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+chat2-greeting-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+
+补采来源（补采包含par1-two-tasks-2的重采；原超时raw由.prevN保存）：
+dir1-docker-vm-1	r2a保留	OK
+dir2-translate-ja-1	r2a保留	OK
+dir3-power-1	r2a保留	OK
+dir4-tv-rec-1	r2a保留	OK
+single1-packing-1	r2a保留	OK
+single1-packing-2	r2a保留	OK
+single1-packing-3	r2a保留	OK
+single2-date-diary-1	r2a保留	OK
+single2-date-diary-2	r2a保留	OK
+single2-date-diary-3	r2a保留	OK
+single3-fib-run-1	r2a保留	OK
+single3-fib-run-2	r2a保留	OK
+single3-fib-run-3	r2a保留	OK
+single4-count-logs-1	r2a保留	OK
+single4-count-logs-2	r2a保留	OK
+single4-count-logs-3	r2a保留	OK
+par1-two-tasks-1	r2a保留	OK
+par1-two-tasks-2	r2c补采	OK
+par1-two-tasks-3	r2c补采	OK
+par2-list-and-weekday-1	r2c补采	OK
+par2-list-and-weekday-2	r2c补采	OK
+par2-list-and-weekday-3	r2c补采	OK
+attach1-hike-append-1	r2c补采	OK
+attach1-hike-append-2	r2c补采	OK
+attach1-hike-append-3	r2c补采	OK
+attach2-backup-index-1	r2c补采	OK
+attach2-backup-index-2	r2c补采	OK
+attach2-backup-index-3	r2c补采	INCOMPLETE
+stop1-lowercase-1	r2c补采	OK
+stop1-lowercase-2	r2c补采	OK
+stop1-lowercase-3	r2c补采	OK
+stop2-archive-1	r2c补采	OK
+stop2-archive-2	r2c补采	OK
+stop2-archive-3	r2c补采	ROUTE-FAIL
+chat1-thanks-1	r2c补采	OK
+chat2-greeting-1	r2c补采	OK
+
+phase=dev model=glm-5.3 planned=10 collected=10
+single: correct=4/4 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+parallel: correct=2/2 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+attach: correct=1/1 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+stop: correct=1/1 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+direct: correct=1/1 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+chat: correct=1/1 complete-route-fail=0 timeout=0 other-incomplete=0 missing=0
+subset=8/8; sentinel-misdispatch=0/2; sentinel-correct=2/2
+hard: polluted-tool-success=0; reports=11; report-tailTexts-not-one=0
+converged=false (requires complete collection; timeout is not a demonstrated routing failure)
+Per-group score table (no raw prose):
+dev-single-csv-json-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+dev-single-svg-badge-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+dev-single-json-schema-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+dev-single-extract-links-1	OK	outcome=turn/end	create=1 send=0 stop=0	timeouts=-
+dev-parallel-css-units-1	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+dev-parallel-poem-regex-1	OK	outcome=turn/end	create=2 send=0 stop=0	timeouts=-
+dev-attach-recipe-allergy-1	OK	outcome=turn/end	create=0 send=1 stop=0	timeouts=-
+dev-stop-synthetic-benchmark-1	OK	outcome=turn/end	create=0 send=0 stop=1	timeouts=-
+dev-direct-http-status-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-
+dev-chat-tired-1	OK	outcome=turn/end	create=0 send=0 stop=0	timeouts=-

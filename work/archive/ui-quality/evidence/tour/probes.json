@@ -1,0 +1,1166 @@
+{
+ "empty-chat": {
+  "type": {
+   "16px/16px/400": {
+    "n": 3,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "0px/18px/400": {
+    "n": 1,
+    "ex": [
+     "span.「Search」"
+    ]
+   },
+   "14px/20px/500": {
+    "n": 4,
+    "ex": [
+     "strong.sand-agent-item__name「Tour Bot」",
+     "strong.sand-agent-item__name「New chat」",
+     "span.「Connect apps」",
+     "span.「Tour Bot」"
+    ]
+   },
+   "16px/normal/400": {
+    "n": 3,
+    "ex": [
+     "span.sand-agent-hover-card__name「Tour Bot」",
+     "time.sand-agent-hover-card__time「now」",
+     "span.sand-agent-hover-card__preview「No messages yet」"
+    ]
+   },
+   "13px/normal/500": {
+    "n": 1,
+    "ex": [
+     "span.「P」"
+    ]
+   }
+  },
+  "center": {
+   "total": 8,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 8,
+   "noHoverChange": 4,
+   "list": [
+    "button[Tour Bot] cursor=pointer",
+    "button[Connect apps] cursor=pointer",
+    "button[Account] cursor=pointer",
+    "button[View agent settings] cursor=pointer"
+   ]
+  }
+ },
+ "conversation": {
+  "type": {
+   "16px/16px/400": {
+    "n": 3,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "0px/18px/400": {
+    "n": 1,
+    "ex": [
+     "span.「Search」"
+    ]
+   },
+   "14px/20px/500": {
+    "n": 4,
+    "ex": [
+     "strong.sand-agent-item__name「Tour Bot」",
+     "strong.sand-agent-item__name「New chat」",
+     "span.「Connect apps」",
+     "span.「Tour Bot」"
+    ]
+   },
+   "13px/normal/500": {
+    "n": 1,
+    "ex": [
+     "span.「P」"
+    ]
+   },
+   "12px/16px/400": {
+    "n": 1,
+    "ex": [
+     "div.sand-transcript-time-separator「Today 9:00 AM」"
+    ]
+   },
+   "14px/20px/400": {
+    "n": 2,
+    "ex": [
+     "p.「Hello, give me a sample 」",
+     "span.「」"
+    ]
+   },
+   "11px/normal/400": {
+    "n": 2,
+    "ex": [
+     "span.「」",
+     "span.「」"
+    ]
+   },
+   "14px/22px/400": {
+    "n": 4,
+    "ex": [
+     "p.「Here is a short answer w」",
+     "li.「one」",
+     "li.「two」",
+     "p.「and .」"
+    ]
+   },
+   "14px/22px/700": {
+    "n": 1,
+    "ex": [
+     "strong.「bold」"
+    ]
+   },
+   "12.6px/22px/400": {
+    "n": 1,
+    "ex": [
+     "code.「inline code」"
+    ]
+   },
+   "13px/18px/400": {
+    "n": 1,
+    "ex": [
+     "code.language-js「const a = 1」"
+    ]
+   }
+  },
+  "center": {
+   "total": 13,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 8,
+   "noHoverChange": 4,
+   "list": [
+    "button[Tour Bot] cursor=pointer",
+    "button[Connect apps] cursor=pointer",
+    "button[Account] cursor=pointer",
+    "button[View agent settings] cursor=pointer"
+   ]
+  }
+ },
+ "approval:ERROR": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[aria-label=\"Local tool permissions\"]')\nExpected: visible\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('[aria-label=\"Local tool permissions\"]') with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for locator('[aria-label=\"Local tool permissions\"]')\u001b[22m",
+ "sidebar-menu": {
+  "type": {
+   "12px/12px/400": {
+    "n": 2,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "12px/16px/400": {
+    "n": 7,
+    "ex": [
+     "span.「Edit Profile」",
+     "span.「Show full conversation」",
+     "span.「Move to new section」",
+     "span.「Pin」"
+    ]
+   }
+  },
+  "center": {
+   "total": 7,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 7,
+   "noHoverChange": 0,
+   "list": []
+  }
+ },
+ "info-pane": {
+  "type": {
+   "14px/14px/400": {
+    "n": 1,
+    "ex": [
+     "span.ui-icon「」"
+    ]
+   },
+   "13px/normal/600": {
+    "n": 6,
+    "ex": [
+     "div.sand-info-pane__section-heading「Name」",
+     "div.sand-info-pane__section-heading「Description」",
+     "div.sand-info-pane__section-heading「Configuration」",
+     "div.sand-info-pane__section-heading「Model」"
+    ]
+   },
+   "10px/10px/400": {
+    "n": 2,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "13px/normal/400": {
+    "n": 2,
+    "ex": [
+     "span.pb-pane-key「Preset」",
+     "span.pb-pane-key「Connectors」"
+    ]
+   },
+   "13px/normal/500": {
+    "n": 2,
+    "ex": [
+     "span.pb-pane-val「standard」",
+     "span.pb-pane-val「None」"
+    ]
+   },
+   "13px/16px/400": {
+    "n": 2,
+    "ex": [
+     "p.pb-pane-text「Locked when the bot was 」",
+     "div.pb-pane-text「None yet.」"
+    ]
+   },
+   "12px/12px/400": {
+    "n": 3,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "12px/16px/400": {
+    "n": 4,
+    "ex": [
+     "span.「New bot with this config」",
+     "span.pb-pane-status「Only this bot. Takes eff」",
+     "span.「Set as main bot」",
+     "span.「Pick from your skills」"
+    ]
+   }
+  },
+  "center": {
+   "total": 4,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 4,
+   "noHoverChange": 0,
+   "list": []
+  }
+ },
+ "palette": {
+  "type": {
+   "13px/normal/400": {
+    "n": 11,
+    "ex": [
+     "button.「All」",
+     "button.「Agents」",
+     "button.「Actions」",
+     "span.「Tour Bot」"
+    ]
+   },
+   "10.8333px/normal/400": {
+    "n": 14,
+    "ex": [
+     "small.「Agent」",
+     "small.「Agent」",
+     "small.「Current chat」",
+     "small.「Action」"
+    ]
+   }
+  },
+  "center": {
+   "total": 11,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 11,
+   "noHoverChange": 4,
+   "list": [
+    "button[All] cursor=pointer",
+    "button[Agents] cursor=pointer",
+    "button[Actions] cursor=pointer",
+    "button[Tour BotAgent] cursor=pointer"
+   ]
+  }
+ },
+ "account-menu": {
+  "type": {
+   "13px/18px/400": {
+    "n": 2,
+    "ex": [
+     "div.ui-menu__row「Settings」",
+     "div.ui-menu__row「About」"
+    ]
+   }
+  },
+  "center": {
+   "total": 2,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 2,
+   "noHoverChange": 0,
+   "list": []
+  }
+ },
+ "settings-general": {
+  "type": {
+   "15px/15px/400": {
+    "n": 2,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "13px/18px/400": {
+    "n": 2,
+    "ex": [
+     "span.「General」",
+     "span.「Models」"
+    ]
+   },
+   "12px/12px/400": {
+    "n": 2,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "17px/24px/500": {
+    "n": 1,
+    "ex": [
+     "h2.「General」"
+    ]
+   },
+   "12px/16px/400": {
+    "n": 4,
+    "ex": [
+     "h3.「Account」",
+     "h3.「Appearance」",
+     "h3.「Agent」",
+     "span.「Clear」"
+    ]
+   },
+   "13px/18.2px/400": {
+    "n": 6,
+    "ex": [
+     "span.sand-account-card__avatar「P」",
+     "span.「Theme」",
+     "button.ui-select-trigger「Follow System」",
+     "span.「Timezone」"
+    ]
+   },
+   "13px/18.2px/700": {
+    "n": 1,
+    "ex": [
+     "strong.「Pbots」"
+    ]
+   },
+   "11px/15.4px/400": {
+    "n": 1,
+    "ex": [
+     "span.「pbots-local@pbots.local」"
+    ]
+   }
+  },
+  "center": {
+   "total": 7,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 7,
+   "noHoverChange": 4,
+   "list": [
+    "button[General] cursor=pointer",
+    "button[Models] cursor=pointer",
+    "button[Theme] cursor=pointer",
+    "button[Timezone] cursor=pointer"
+   ]
+  }
+ },
+ "settings--models": {
+  "type": {
+   "15px/15px/400": {
+    "n": 2,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "13px/18px/400": {
+    "n": 2,
+    "ex": [
+     "span.「General」",
+     "span.「Models」"
+    ]
+   },
+   "12px/12px/400": {
+    "n": 1,
+    "ex": [
+     "span.ui-icon「」"
+    ]
+   },
+   "17px/24px/500": {
+    "n": 1,
+    "ex": [
+     "h2.「Models」"
+    ]
+   },
+   "12px/16px/400": {
+    "n": 1,
+    "ex": [
+     "h3.「Models」"
+    ]
+   },
+   "13px/18.2px/400": {
+    "n": 1,
+    "ex": [
+     "p.t50-models__empty「No model routes configur」"
+    ]
+   }
+  },
+  "center": {
+   "total": 3,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 3,
+   "noHoverChange": 2,
+   "list": [
+    "button[General] cursor=pointer",
+    "button[Models] cursor=pointer"
+   ]
+  }
+ },
+ "market-list": {
+  "type": {
+   "15px/20px/600": {
+    "n": 1,
+    "ex": [
+     "h2.「Connect Apps」"
+    ]
+   },
+   "14px/14px/400": {
+    "n": 1,
+    "ex": [
+     "span.ui-icon「」"
+    ]
+   },
+   "12px/12px/400": {
+    "n": 1,
+    "ex": [
+     "span.ui-icon「」"
+    ]
+   },
+   "13px/18px/400": {
+    "n": 19,
+    "ex": [
+     "span.pb-note「From Hivebot picks」",
+     "span.pb-row__desc「Knowledge-graph memory t」",
+     "span.pb-row__desc「A scratchpad tool for st」",
+     "span.pb-row__desc「Up-to-date library docs 」"
+    ]
+   },
+   "13px/20px/500": {
+    "n": 1,
+    "ex": [
+     "span.pb-installed-preview__label「Installed」"
+    ]
+   },
+   "12px/12px/500": {
+    "n": 1,
+    "ex": [
+     "span.ui-icon「」"
+    ]
+   },
+   "17px/20px/600": {
+    "n": 17,
+    "ex": [
+     "span.pb-mono「S」",
+     "span.pb-mono「S」",
+     "span.pb-mono「C」",
+     "span.pb-mono「S」"
+    ]
+   },
+   "14px/20px/500": {
+    "n": 17,
+    "ex": [
+     "span.pb-row__title「Memory」",
+     "span.pb-row__title「Sequential thinking」",
+     "span.pb-row__title「Context7 docs」",
+     "span.pb-row__title「Gmail」"
+    ]
+   },
+   "12px/16px/400": {
+    "n": 3,
+    "ex": [
+     "span.「Connect」",
+     "span.「Connect」",
+     "span.「Connect」"
+    ]
+   },
+   "13px/20px/400": {
+    "n": 14,
+    "ex": [
+     "span.pb-status「Needs sign-in」",
+     "span.pb-status「Needs sign-in」",
+     "span.pb-status「Needs sign-in」",
+     "span.pb-status「Needs sign-in」"
+    ]
+   }
+  },
+  "center": {
+   "total": 39,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 20,
+   "noHoverChange": 7,
+   "list": [
+    "button[Open Memory] cursor=pointer",
+    "button[Open Sequential thinking] cursor=pointer",
+    "button[Open Context7 docs] cursor=pointer",
+    "button[Open Gmail] cursor=pointer",
+    "button[Open Google Calendar] cursor=pointer",
+    "button[Open Google Drive] cursor=pointer",
+    "button[Open Slack] cursor=pointer"
+   ]
+  }
+ },
+ "market-detail": {
+  "type": {
+   "14px/14px/400": {
+    "n": 2,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "15px/20px/600": {
+    "n": 1,
+    "ex": [
+     "h2.「Connect Apps」"
+    ]
+   },
+   "24px/20px/600": {
+    "n": 1,
+    "ex": [
+     "span.pb-mono「S」"
+    ]
+   },
+   "18px/24px/600": {
+    "n": 1,
+    "ex": [
+     "h3.pb-detail__title「Memory」"
+    ]
+   },
+   "13px/18px/400": {
+    "n": 12,
+    "ex": [
+     "span.pb-row__desc「@modelcontextprotocol/se」",
+     "span.「Connect」",
+     "p.pb-note「Connecting checks that t」",
+     "dt.「Package」"
+    ]
+   },
+   "14px/20px/400": {
+    "n": 1,
+    "ex": [
+     "p.pb-detail__desc「Knowledge-graph memory t」"
+    ]
+   },
+   "13px/20px/600": {
+    "n": 2,
+    "ex": [
+     "h4.「Information」",
+     "h4.「About」"
+    ]
+   }
+  },
+  "center": {
+   "total": 3,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 3,
+   "noHoverChange": 0,
+   "list": []
+  }
+ },
+ "new-bot": {
+  "type": {
+   "16px/16px/400": {
+    "n": 3,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "0px/18px/400": {
+    "n": 1,
+    "ex": [
+     "span.「Search」"
+    ]
+   },
+   "14px/20px/500": {
+    "n": 10,
+    "ex": [
+     "strong.sand-agent-item__name「Tour Bot」",
+     "strong.sand-agent-item__name「New chat」",
+     "span.「Connect apps」",
+     "span.「Tour Bot」"
+    ]
+   },
+   "13px/normal/500": {
+    "n": 3,
+    "ex": [
+     "span.「P」",
+     "span.pb-pane-val「standard」",
+     "span.pb-pane-val「None」"
+    ]
+   },
+   "12px/16px/400": {
+    "n": 7,
+    "ex": [
+     "div.sand-transcript-time-separator「Today 9:00 AM」",
+     "span.「New bot with this config」",
+     "span.pb-pane-status「Only this bot. Takes eff」",
+     "span.「Set as main bot」"
+    ]
+   },
+   "14px/20px/400": {
+    "n": 3,
+    "ex": [
+     "p.「Hello, give me a sample 」",
+     "span.「」",
+     "p.「run a command」"
+    ]
+   },
+   "11px/normal/400": {
+    "n": 4,
+    "ex": [
+     "span.「」",
+     "span.「」",
+     "span.「」",
+     "span.「」"
+    ]
+   },
+   "14px/22px/400": {
+    "n": 5,
+    "ex": [
+     "p.「Here is a short answer w」",
+     "li.「one」",
+     "li.「two」",
+     "p.「and .」"
+    ]
+   },
+   "14px/22px/700": {
+    "n": 1,
+    "ex": [
+     "strong.「bold」"
+    ]
+   },
+   "12.6px/22px/400": {
+    "n": 1,
+    "ex": [
+     "code.「inline code」"
+    ]
+   },
+   "13px/18px/400": {
+    "n": 6,
+    "ex": [
+     "code.language-js「const a = 1」",
+     "div.pb-muted「No connectors installed 」",
+     "button.pb-link「Open Connect apps」",
+     "p.pb-muted「Configuration is locked 」"
+    ]
+   },
+   "14px/14px/400": {
+    "n": 2,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "13px/normal/600": {
+    "n": 6,
+    "ex": [
+     "div.sand-info-pane__section-heading「Name」",
+     "div.sand-info-pane__section-heading「Description」",
+     "div.sand-info-pane__section-heading「Configuration」",
+     "div.sand-info-pane__section-heading「Model」"
+    ]
+   },
+   "10px/10px/400": {
+    "n": 2,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "13px/normal/400": {
+    "n": 2,
+    "ex": [
+     "span.pb-pane-key「Preset」",
+     "span.pb-pane-key「Connectors」"
+    ]
+   },
+   "13px/16px/400": {
+    "n": 2,
+    "ex": [
+     "p.pb-pane-text「Locked when the bot was 」",
+     "div.pb-pane-text「None yet.」"
+    ]
+   },
+   "12px/12px/400": {
+    "n": 3,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "15px/20px/600": {
+    "n": 1,
+    "ex": [
+     "h2.「Create New Bot」"
+    ]
+   },
+   "13px/20px/400": {
+    "n": 1,
+    "ex": [
+     "summary.「More options」"
+    ]
+   },
+   "12px/20px/500": {
+    "n": 3,
+    "ex": [
+     "legend.「Preset」",
+     "legend.「Connectors」",
+     "span.pb-field__label「Model」"
+    ]
+   }
+  },
+  "center": {
+   "total": 50,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 0,
+   "noHoverChange": 0,
+   "list": []
+  }
+ },
+ "new-bot-more": {
+  "type": {
+   "16px/16px/400": {
+    "n": 3,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "0px/18px/400": {
+    "n": 1,
+    "ex": [
+     "span.「Search」"
+    ]
+   },
+   "14px/20px/500": {
+    "n": 10,
+    "ex": [
+     "strong.sand-agent-item__name「Tour Bot」",
+     "strong.sand-agent-item__name「New chat」",
+     "span.「Connect apps」",
+     "span.「Tour Bot」"
+    ]
+   },
+   "13px/normal/500": {
+    "n": 3,
+    "ex": [
+     "span.「P」",
+     "span.pb-pane-val「standard」",
+     "span.pb-pane-val「None」"
+    ]
+   },
+   "12px/16px/400": {
+    "n": 7,
+    "ex": [
+     "div.sand-transcript-time-separator「Today 9:00 AM」",
+     "span.「New bot with this config」",
+     "span.pb-pane-status「Only this bot. Takes eff」",
+     "span.「Set as main bot」"
+    ]
+   },
+   "14px/20px/400": {
+    "n": 3,
+    "ex": [
+     "p.「Hello, give me a sample 」",
+     "span.「」",
+     "p.「run a command」"
+    ]
+   },
+   "11px/normal/400": {
+    "n": 4,
+    "ex": [
+     "span.「」",
+     "span.「」",
+     "span.「」",
+     "span.「」"
+    ]
+   },
+   "14px/22px/400": {
+    "n": 5,
+    "ex": [
+     "p.「Here is a short answer w」",
+     "li.「one」",
+     "li.「two」",
+     "p.「and .」"
+    ]
+   },
+   "14px/22px/700": {
+    "n": 1,
+    "ex": [
+     "strong.「bold」"
+    ]
+   },
+   "12.6px/22px/400": {
+    "n": 1,
+    "ex": [
+     "code.「inline code」"
+    ]
+   },
+   "13px/18px/400": {
+    "n": 6,
+    "ex": [
+     "code.language-js「const a = 1」",
+     "div.pb-muted「No connectors installed 」",
+     "button.pb-link「Open Connect apps」",
+     "p.pb-muted「Configuration is locked 」"
+    ]
+   },
+   "14px/14px/400": {
+    "n": 2,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "13px/normal/600": {
+    "n": 6,
+    "ex": [
+     "div.sand-info-pane__section-heading「Name」",
+     "div.sand-info-pane__section-heading「Description」",
+     "div.sand-info-pane__section-heading「Configuration」",
+     "div.sand-info-pane__section-heading「Model」"
+    ]
+   },
+   "10px/10px/400": {
+    "n": 2,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "13px/normal/400": {
+    "n": 2,
+    "ex": [
+     "span.pb-pane-key「Preset」",
+     "span.pb-pane-key「Connectors」"
+    ]
+   },
+   "13px/16px/400": {
+    "n": 2,
+    "ex": [
+     "p.pb-pane-text「Locked when the bot was 」",
+     "div.pb-pane-text「None yet.」"
+    ]
+   },
+   "12px/12px/400": {
+    "n": 3,
+    "ex": [
+     "span.ui-icon「」",
+     "span.ui-icon「」",
+     "span.ui-icon「」"
+    ]
+   },
+   "15px/20px/600": {
+    "n": 1,
+    "ex": [
+     "h2.「Create New Bot」"
+    ]
+   },
+   "13px/20px/400": {
+    "n": 1,
+    "ex": [
+     "summary.「More options」"
+    ]
+   },
+   "12px/20px/500": {
+    "n": 3,
+    "ex": [
+     "legend.「Preset」",
+     "legend.「Connectors」",
+     "span.pb-field__label「Model」"
+    ]
+   }
+  },
+  "center": {
+   "total": 50,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 0,
+   "noHoverChange": 0,
+   "list": []
+  }
+ },
+ "onboarding-0": {
+  "type": {
+   "32px/normal/700": {
+    "n": 1,
+    "ex": [
+     "h1.「Welcome to Grok Bot」"
+    ]
+   },
+   "16px/normal/400": {
+    "n": 2,
+    "ex": [
+     "button.「Get started」",
+     "button.「Skip」"
+    ]
+   }
+  },
+  "center": {
+   "total": 2,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 2,
+   "noHoverChange": 2,
+   "list": [
+    "button[Get started] cursor=pointer",
+    "button[Skip] cursor=pointer"
+   ]
+  }
+ },
+ "onboarding-1": {
+  "type": {
+   "28px/34px/500": {
+    "n": 1,
+    "ex": [
+     "h1.「Meet Grok Bot」"
+    ]
+   },
+   "16px/normal/400": {
+    "n": 4,
+    "ex": [
+     "p.「Hand off any task to you」",
+     "button.「+」",
+     "button.「↑」",
+     "button.「Next」"
+    ]
+   }
+  },
+  "center": {
+   "total": 3,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 3,
+   "noHoverChange": 3,
+   "list": [
+    "button[Attach] cursor=pointer",
+    "button[Send] cursor=pointer",
+    "button[Next] cursor=pointer"
+   ]
+  }
+ },
+ "onboarding-2": {
+  "type": {
+   "28px/34px/500": {
+    "n": 1,
+    "ex": [
+     "h1.「Grok Bot has its own com」"
+    ]
+   },
+   "16px/normal/400": {
+    "n": 2,
+    "ex": [
+     "button.「Next」",
+     "button.「Back」"
+    ]
+   }
+  },
+  "center": {
+   "total": 2,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 2,
+   "noHoverChange": 2,
+   "list": [
+    "button[Next] cursor=pointer",
+    "button[Back] cursor=pointer"
+   ]
+  }
+ },
+ "onboarding-3": {
+  "type": {
+   "28px/34px/500": {
+    "n": 1,
+    "ex": [
+     "h1.「Give each Bot a job」"
+    ]
+   },
+   "17px/22px/500": {
+    "n": 3,
+    "ex": [
+     "span.sand-onboarding__job-bubble「Invoice Chaser」",
+     "span.sand-onboarding__job-bubble「Weekly Standup」",
+     "span.sand-onboarding__job-bubble「Sales Forecast」"
+    ]
+   },
+   "16px/normal/400": {
+    "n": 2,
+    "ex": [
+     "button.「Next」",
+     "button.「Back」"
+    ]
+   }
+  },
+  "center": {
+   "total": 2,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 2,
+   "noHoverChange": 2,
+   "list": [
+    "button[Next] cursor=pointer",
+    "button[Back] cursor=pointer"
+   ]
+  }
+ },
+ "onboarding-4": {
+  "type": {
+   "28px/34px/700": {
+    "n": 1,
+    "ex": [
+     "h1.「What will you be working」"
+    ]
+   },
+   "16px/20px/400": {
+    "n": 9,
+    "ex": [
+     "span.「Engineering」",
+     "span.「Design」",
+     "span.「Marketing」",
+     "span.「Customer Support」"
+    ]
+   },
+   "16px/normal/400": {
+    "n": 2,
+    "ex": [
+     "button.「Skip」",
+     "button.「Back」"
+    ]
+   }
+  },
+  "center": {
+   "total": 2,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 11,
+   "noHoverChange": 11,
+   "list": [
+    "button[Engineering] cursor=pointer",
+    "button[Design] cursor=pointer",
+    "button[Marketing] cursor=pointer",
+    "button[Customer Support] cursor=pointer",
+    "button[Product] cursor=pointer",
+    "button[Ops & Finance] cursor=pointer",
+    "button[Recruiting & Peopl] cursor=pointer",
+    "button[Sales] cursor=pointer",
+    "button[Productivity] cursor=pointer",
+    "button[Skip] cursor=pointer",
+    "button[Back] cursor=pointer"
+   ]
+  }
+ },
+ "onboarding-5": {
+  "type": {
+   "28px/34px/700": {
+    "n": 1,
+    "ex": [
+     "h1.「How did you first hear a」"
+    ]
+   },
+   "16px/20px/400": {
+    "n": 12,
+    "ex": [
+     "span.「X (Twitter)」",
+     "span.「YouTube」",
+     "span.「Search engine」",
+     "span.「Influencer or creator」"
+    ]
+   },
+   "16px/normal/400": {
+    "n": 2,
+    "ex": [
+     "button.「Skip」",
+     "button.「Back」"
+    ]
+   }
+  },
+  "center": {
+   "total": 14,
+   "off": 0,
+   "bad": []
+  },
+  "hover": {
+   "tested": 14,
+   "noHoverChange": 14,
+   "list": [
+    "button[X (Twitter)] cursor=pointer",
+    "button[YouTube] cursor=pointer",
+    "button[Search engine] cursor=pointer",
+    "button[Influencer or crea] cursor=pointer",
+    "button[TikTok] cursor=pointer",
+    "button[TV or outdoor ad] cursor=pointer",
+    "button[App stores] cursor=pointer",
+    "button[Instagram or Faceb] cursor=pointer",
+    "button[Reddit] cursor=pointer",
+    "button[AI assistant] cursor=pointer",
+    "button[Friend or colleagu] cursor=pointer",
+    "button[LinkedIn] cursor=pointer",
+    "button[Skip] cursor=pointer",
+    "button[Back] cursor=pointer"
+   ]
+  }
+ }
+}

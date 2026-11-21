@@ -1,0 +1,111 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - complementary "Agents" [ref=e7]:
+          - button "New" [ref=e10] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e11]: 
+          - button "Search" [ref=e12] [cursor=pointer]:
+            - generic [ref=e13]:
+              - generic [aria-hidden] [ref=e14]: 
+              - text: Search
+          - region "Agent list" [ref=e15]:
+            - generic "New chat chat preview" [ref=e19]:
+              - button "New chat" [ref=e20] [cursor=pointer]:
+                - strong [ref=e31]: New chat
+          - separator "Resize sidebar" [ref=e32]
+        - button "Connect apps" [ref=e34] [cursor=pointer]
+        - button "Account" [ref=e37] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e38]: P
+      - generic [ref=e39]:
+        - main [ref=e40]:
+          - group "New chat" [ref=e41]:
+            - button "View agent settings" [ref=e42] [cursor=pointer]:
+              - generic [ref=e51]: New chat
+          - log "Conversation transcript" [ref=e52]
+        - textbox "Prompt" [ref=e57]:
+          - paragraph [ref=e58]: Message New chat
+    - dialog [ref=e910]:
+      - banner [ref=e61]:
+        - button "Back to Marketplace" [ref=e1356] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e1357]: 
+        - heading "Connect Apps" [level=2] [ref=e911]
+        - button "Close" [ref=e63] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e64]: 
+      - article [ref=e1358]:
+        - generic [ref=e1359]:
+          - generic [aria-hidden] [ref=e1360]: D
+          - generic [ref=e1361]:
+            - heading "Demo connector" [level=3] [ref=e1362]
+            - generic [ref=e1363]: "@bot-u23/demo-connector · v1.0.0"
+          - generic [ref=e1365]:
+            - generic [aria-hidden] [ref=e1366]: 
+            - text: Connected
+        - paragraph [ref=e1367]: U-23 可安装连接器（ping MCP）
+        - generic [ref=e1368]:
+          - paragraph [ref=e1369]: Connected apps aren't turned on for every bot. Pick this one when you create a bot.
+          - button "New bot with this app" [ref=e1370] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e1372]: 
+        - region "Information" [ref=e1373]:
+          - heading "Information" [level=4] [ref=e1374]
+          - generic [ref=e1375]:
+            - generic [ref=e1376]:
+              - term [ref=e1377]: Package
+              - definition [ref=e1378]: "@bot-u23/demo-connector"
+            - generic [ref=e1379]:
+              - term [ref=e1380]: Version
+              - definition [ref=e1381]: 1.0.0
+            - generic [ref=e1382]:
+              - term [ref=e1383]: Catalog
+              - definition [ref=e1384]: U-23 本地目录
+            - generic [ref=e1385]:
+              - term [ref=e1386]: Availability
+              - definition [ref=e1387]: Connected
+        - region "About" [ref=e1388]:
+          - heading "About" [level=4] [ref=e1389]
+          - paragraph [ref=e1390]: No details available.
+  - dialog [ref=e1391]:
+    - generic [ref=e1392]:
+      - banner [ref=e1393]:
+        - heading "New bot with this app" [level=2] [ref=e1394]
+        - button "Close" [ref=e1395] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e1396]: 
+      - paragraph [ref=e1397]: "@bot-u23/demo-connector is selected. Pick a preset and create."
+      - group "Preset" [ref=e1398]:
+        - generic [ref=e1400] [cursor=pointer]:
+          - radio "standard (default)" [checked] [active] [ref=e1401]
+          - generic [ref=e1402]: standard (default)
+        - generic [ref=e1403] [cursor=pointer]:
+          - radio "ptc" [ref=e1404]
+          - generic [ref=e1405]: ptc
+        - generic [ref=e1406] [cursor=pointer]:
+          - radio "minimal" [ref=e1407]
+          - generic [ref=e1408]: minimal
+        - generic [ref=e1409] [cursor=pointer]:
+          - radio "cordis" [ref=e1410]
+          - generic [ref=e1411]: cordis
+        - generic [ref=e1412] [cursor=pointer]:
+          - radio "p2-alpha P2SDK D4 fixture alpha (persona + fs tools)" [ref=e1413]
+          - generic [ref=e1414]: p2-alpha
+          - generic [ref=e1415]: P2SDK D4 fixture alpha (persona + fs tools)
+        - generic [ref=e1416] [cursor=pointer]:
+          - radio "p2-beta P2SDK D4 fixture beta (different persona + fs + search tools)" [ref=e1417]
+          - generic [ref=e1418]: p2-beta
+          - generic [ref=e1419]: P2SDK D4 fixture beta (different persona + fs + search tools)
+      - group "Connectors" [ref=e1420]:
+        - generic [ref=e1422] [cursor=pointer]:
+          - checkbox "@bot-u23/demo-connector" [checked] [ref=e1423]
+          - generic [ref=e1424]: "@bot-u23/demo-connector"
+        - generic [ref=e1425] [cursor=pointer]:
+          - checkbox "pretrip-mcp" [ref=e1426]
+          - generic [ref=e1427]: pretrip-mcp
+      - generic [ref=e1428]:
+        - generic [ref=e1429]: Model
+        - combobox "Model" [ref=e1430]:
+          - option "Preset default (p2fake)" [selected]
+          - option "p2fake · p2fake"
+          - option "Mock Replay · mock"
+      - paragraph [ref=e1431]: Configuration is locked when the bot is created. To change it, create a new bot.
+      - contentinfo [ref=e1432]:
+        - button "Cancel" [ref=e1433] [cursor=pointer]
+        - button "Create" [ref=e1435] [cursor=pointer]

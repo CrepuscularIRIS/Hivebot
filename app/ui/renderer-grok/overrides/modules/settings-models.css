@@ -1,0 +1,9 @@
+/* T50 Models 区（行样式复用 sand-settings-row/copy 体系——T57 校正时自动跟上） */
+.t50-models__row { align-items: center; display: flex; gap: 8px; }
+.t50-models__controls { align-items: center; display: flex; gap: 6px; margin-left: auto; }
+.t50-models__controls input { min-width: 200px; }
+.t50-models__dot { border-radius: 9999px; flex: none; height: 8px; width: 8px; }
+.t50-models__dot[data-key-dot='on'] { background: var(--sand-status-success, #2da44e); }
+.t50-models__dot[data-key-dot='off'] { background: var(--sand-status-danger, #cf222e); }
+.t50-models__empty { color: inherit; opacity: 0.8; }
+.t50-models__error { color: var(--sand-status-danger, #cf222e); }

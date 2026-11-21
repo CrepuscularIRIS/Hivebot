@@ -1,0 +1,121 @@
+ENV {'HOME': '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-home', 'TMPDIR': '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp', 'PATH': '/home/lingxufeng/.npm-global/bin:/usr/bin:/bin', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/tmp/bot-P7-F3-no-dbus'}
+COMMAND ['/home/lingxufeng/.npm-global/bin/pnpm', '-C', '/tmp/bot-wt/P7-F3/app/sdk', '--config.verify-deps-before-run=false', 'exec', 'vitest', 'run', '--config', '/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-ui.config.mjs', '--maxWorkers=1', '--no-file-parallelism', 'tests/unit/admin/recovery.test.ts', 'tests/unit/admin/operations.test.ts', 'tests/unit/admin/channel.test.ts', 'tests/unit/shell/restore-wiring.test.ts', 'tests/unit/shell/ready.test.ts', 'tests/unit/shell/connect.test.ts', 'tests/unit/shell/startup-gate.test.ts', 'tests/unit/shell/wire.test.ts', 'tests/unit/shell/document-path.test.ts', 'tests/unit/shell/single-instance.test.ts', 'tests/unit/shell/load-abort.test.ts', 'tests/unit/m3/restore.test.ts', 'tests/unit/m3/orch-channel.test.ts']
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F3/app/ui[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m tests/unit/admin/operations.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 82[2mms[22m[39m
+[90mstderr[2m | tests/unit/admin/recovery.test.ts[2m > [22m[2mP7-F3 main recovery gate[2m > [22m[2mmain entry wires real F1 and recovery to M3 and disposes the control stream before quit without a desktop
+[22m[39m[m3] dsh connected (generation 1); running preset restore
+
+ [32m✓[39m tests/unit/admin/recovery.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 431[2mms[22m[39m
+ [32m✓[39m tests/unit/admin/channel.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 99[2mms[22m[39m
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m① 首连失败按指数退避重试到成功；重试期间 rpc 排队，连接后放行（不永久挂）
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m① 首连失败按指数退避重试到成功；重试期间 rpc 排队，连接后放行（不永久挂）
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m①② 首连持续失败：start() 按 startTimeoutMs 有界 reject；rpc 按.rpcTimeoutMs 返回结构化错误且不发请求
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m①② 首连持续失败：start() 按 startTimeoutMs 有界 reject；rpc 按.rpcTimeoutMs 返回结构化错误且不发请求
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m①② 首连持续失败：start() 按 startTimeoutMs 有界 reject；rpc 按.rpcTimeoutMs 返回结构化错误且不发请求
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m①② 首连持续失败：start() 按 startTimeoutMs 有界 reject；rpc 按.rpcTimeoutMs 返回结构化错误且不发请求
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m①② 首连持续失败：start() 按 startTimeoutMs 有界 reject；rpc 按.rpcTimeoutMs 返回结构化错误且不发请求
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m①② 首连持续失败：start() 按 startTimeoutMs 有界 reject；rpc 按.rpcTimeoutMs 返回结构化错误且不发请求
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m① 退避形状：间隔按 2^n 指数增长，且受 backoffMaxMs 封顶
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m① 退避形状：间隔按 2^n 指数增长，且受 backoffMaxMs 封顶
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m① 退避形状：间隔按 2^n 指数增长，且受 backoffMaxMs 封顶
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-17（R2/R3/R13）[2m > [22m[2m① 退避形状：间隔按 2^n 指数增长，且受 backoffMaxMs 封顶
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-28（R3/R4）：onConnected[2m > [22m[2mstart() 超时 reject 后服务恢复 → 后台重连成功仍触发 onConnected（generation 1）
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-28（R3/R4）：onConnected[2m > [22m[2mstart() 超时 reject 后服务恢复 → 后台重连成功仍触发 onConnected（generation 1）
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-28（R3/R4）：onConnected[2m > [22m[2mstart() 超时 reject 后服务恢复 → 后台重连成功仍触发 onConnected（generation 1）
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-28（R3/R4）：onConnected[2m > [22m[2mstart() 超时 reject 后服务恢复 → 后台重连成功仍触发 onConnected（generation 1）
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-28（R3/R4）：onConnected[2m > [22m[2mstart() 超时 reject 后服务恢复 → 后台重连成功仍触发 onConnected（generation 1）
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-28（R3/R4）：onConnected[2m > [22m[2mstart() 超时 reject 后服务恢复 → 后台重连成功仍触发 onConnected（generation 1）
+[22m[39m[dsh] connect failed: Error: token exchange failed: HTTP 500
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-28（R3/R4）：onConnected[2m > [22m[2m断线重连 → 再次触发（generation 2）；listener 抛错不破坏后续 waiter
+[22m[39m[dsh] onConnected listener failed: Error: listener boom
+
+[90mstderr[2m | tests/unit/shell/connect.test.ts[2m > [22m[2mDshConnection U-28（R3/R4）：onConnected[2m > [22m[2m断线重连 → 再次触发（generation 2）；listener 抛错不破坏后续 waiter
+[22m[39m[dsh] onConnected listener failed: Error: listener boom
+
+ [32m✓[39m tests/unit/shell/connect.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 3628[2mms[22m[39m
+   [32m✓[39m DshConnection [2m(2)[22m
+     [33m[2m✓[22m[39m start 后 generation===1；断线后自动重连 generation===2[33m 707[2mms[22m[39m
+   [32m✓[39m DshConnection U-17（R2/R3/R13） [2m(4)[22m
+     [33m[2m✓[22m[39m ①② 首连持续失败：start() 按 startTimeoutMs 有界 reject；rpc 按.rpcTimeoutMs 返回结构化错误且不发请求[33m 353[2mms[22m[39m
+     [33m[2m✓[22m[39m ③ socket 死亡即从可用集合清除：ready() 挂起等新代，不返回死柄；rpc 结构化报错且不发请求[33m 502[2mms[22m[39m
+     [33m[2m✓[22m[39m ① 退避形状：间隔按 2^n 指数增长，且受 backoffMaxMs 封顶[33m 349[2mms[22m[39m
+   [32m✓[39m DshConnection U-28（R3/R4）：onConnected [2m(2)[22m
+     [33m[2m✓[22m[39m start() 超时 reject 后服务恢复 → 后台重连成功仍触发 onConnected（generation 1）[33m 702[2mms[22m[39m
+     [33m[2m✓[22m[39m 断线重连 → 再次触发（generation 2）；listener 抛错不破坏后续 waiter[33m 902[2mms[22m[39m
+ [32m✓[39m tests/unit/m3/orch-channel.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 166[2mms[22m[39m
+ [32m✓[39m tests/unit/shell/wire.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/unit/m3/restore.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 110[2mms[22m[39m
+ [32m✓[39m tests/unit/shell/restore-wiring.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 95[2mms[22m[39m
+[90mstderr[2m | tests/unit/shell/startup-gate.test.ts[2m > [22m[2mP6-14.f4 启动闸门：全部放行路径先等 store.init[2m > [22m[2m首连超时分支：init 未完成前闸门不放行；就位后首会话 identity=main 且 bots.json 已存在
+[22m[39m[m3] first connect timed out; restore deferred to reconnect: Error: injected first-connect timeout
+
+ [32m✓[39m tests/unit/shell/startup-gate.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 72[2mms[22m[39m
+ [32m✓[39m tests/unit/shell/single-instance.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/unit/shell/ready.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 67[2mms[22m[39m
+ [32m✓[39m tests/unit/shell/load-abort.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/unit/shell/document-path.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m13 passed[39m[22m[90m (13)[39m
+[2m      Tests [22m [1m[32m110 passed[39m[22m[90m (110)[39m
+[2m   Start at [22m 10:44:06
+[2m   Duration [22m 7.07s[2m (tests 87%, import 5%, worker 4%, setup 2%, transform 2%)[22m
+
+[2m    Isolate [22m [33m13 workers spawned[39m[2m · ~82ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~988ms faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+--------------|---------|----------|---------|---------|------------------------
+File          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s      
+--------------|---------|----------|---------|---------|------------------------
+All files     |    82.5 |     78.6 |   76.59 |   88.56 |                        
+ main         |   70.05 |    69.44 |      58 |   76.87 |                        
+  index.ts    |   62.74 |     62.5 |   44.73 |   71.42 | ...306,317,320,328-329 
+  ready.ts    |   95.45 |    89.28 |     100 |     100 | 51-52,65               
+ main/admin   |   94.79 |    89.39 |   94.44 |   98.59 |                        
+  recovery.ts |   94.73 |    89.39 |   94.11 |   98.57 | 93                     
+  restart.ts  |     100 |      100 |     100 |     100 |                        
+ main/dsh     |   94.39 |    85.36 |     100 |     100 |                        
+  connect.ts  |   94.39 |    85.36 |     100 |     100 | 21,104,117-123,142-160 
+--------------|---------|----------|---------|---------|------------------------
+ERROR: Coverage for functions (76.59%) does not meet global threshold (80%)
+ERROR: Coverage for branches (78.6%) does not meet global threshold (80%)
+
+EXIT 1

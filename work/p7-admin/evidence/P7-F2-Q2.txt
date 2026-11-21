@@ -1,0 +1,62 @@
+P7-F2 重规划 Q2：现有策略、ceiling 与真实审核服务（只读）
+结论：N1 的可信管理四档/ceiling 数据源未找到，触发 replan §5:46 停止条件；不可直接派六文件实现。
+重要区分：已装 dsh 确有真正 LLM 审核插件，不是只有模型参数或静态枚举；但未证明本仓已挂载/可用于管理四档，不能宣布 auto_review 已打通。
+
+1. 范围与版本
+产品树 T=/tmp/bot-wt/P7-F2-Q2，detached ed336c9a39660a30f23f415debc9e07f22b026ea；首尾 HEAD 一致、status --porcelain 为空。
+记录树 W=/home/lingxufeng/bot/work；安装包根 P=/home/lingxufeng/bot/app/sdk/node_modules/.pnpm。
+下文 D(pkg)=P 下该 @deepseek-ai+pkg@0.2.2-alpha.2_*/node_modules/@deepseek-ai/pkg；只读已装发布制品，未把包版本当源码 git SHA。
+必读完成：W/p7-admin/evidence/P7-F2-replan.txt §4 Q2/§5/§7；PLAN K3/F2/§3；LEARNINGS 全文；RE-admin-078 §2；p5-parity/RE-approval-model §1.4/§2.2/§3。
+只查源码/制品接口；无 Agent、联网、安装、依赖链接写入、宿主/测试/桌面/模型运行、凭证/用户 env 读取、提交/合并/推送。
+
+2. 逐项判定（“不存在”限定本次固定源码的对应能力，不声称机器所有外部服务不存在）
+[不存在] 已接线的管理四档权威表/查询服务：T/app/sdk/src/admin/tools.mjs:8–21 的 ADMIN_ACTIONS 为空；authority.mjs:271–283 只收来源、动作、目标、参数、mandate、时间，无档位/ceiling/审核结果读取。
+[不存在] always_allow 的可信“管理动作已始终允许”数据：authority.mjs:1–4 仅注释承认分层另有任务，当前 allow 来自 H1/旧 mandate，不是 always_allow。
+[存在但非四档服务] needs_approval 可复用原生人工审批机制：D(dsh-tools)/lib/pipeline.js:608–658 消费 approval.request 的 allowed-once/rejected/cancelled/unavailable；仅 allowed-once 放行。
+[不存在] needs_approval 的 admin 实际接线：tools.mjs:1–5/12 未注册工具；authority.mjs:164/179/283 只返回 handoff；普通返回对象不会产生原生审批。
+[存在但非四档表] blocked 的现行等效硬拒：T/app/sdk/src/policy/guard.mjs:32–38 对 plugin_manager 整工具 NEVER；T/app/sdk/profile/patches/approval.yml:43–56、184–186/316–318/444–446 禁用各 preset 插件管理工具。
+这可证明现在管理工具被封，不可证明已按动作/工具存有原版 blocked/always_allow 等四档配置；不能为了成功格删掉硬拒。
+[不存在] 管理/插件四档 ceiling 的可信本地/团队输入：本仓运行源码未找到 localToolPermissionCeiling/toolPermissions 的 main/SDK 权威存取或合成器。
+[存在但仅常量桩] T/app/ui/renderer-grok/shim/src/desktop.ts:200–207：autoReviewInstructions.get 恒 disabled，set 原样返回；localToolPermission.get/set/ceiling 恒 ask，recordApproval 无操作。
+ceiling 恒 ask 不是团队/宿主管理策略数据；不可据此生成管理四档，更不可拿 renderer 声明作授权。
+[存在但不同能力] profile/tiers.json 与 shell-ask 的 allow/ask/sandbox-allow/workspace 档，以及 policy-state 实例/暂停门，不是插件四档或团队 ceiling。
+证据 T/app/sdk/src/policy/shell-ask.mjs:105–131/147–163/258–265/299–313/349–354；start.ts:293–306 只向现有策略注入 handoff 和状态路径。
+[未证实] 任何运行中的外部审核服务、有效四档配置或真实审核结果：没有启动宿主/读取用户 profile，本次不以静态源码宣布运行态存在。
+
+3. 真 auto-review：必须保留的正面发现与适配限制
+[存在] D(dsh-experimental-auto-review)@0.2.2-alpha.2 是真正执行审核的已安装上游插件，不是 stub。
+其 lib/index.js:505–518 以当前 session requestHeader 的 provider/model、固定 REVIEW_POLICY 构造请求，实际调用 ctx.llm.stream；:459–503 严格解析风险/允许/拒绝结果。
+:120–127 要求 approval/llm/permissionPresets/sessions/tools/workingDirectory；:563–596 在 tools/pre-execute prepend 挂 gate。
+:565–566 只审有 agent、当前 permission preset 为 AUTO_PRESET 的调用，排除外层 run_code；不是按插件工具四档配置运行。
+:585–591 审核失败返回 deny；审核 deny 在 override never 时拒，否则先消费 downstream gate，只有 downstream allow 才转人工 ask；审核 allow 也不覆盖 downstream deny/ask。
+[存在] 原生结果消费者：同插件 :585–591 消费真实分类结果；pipeline.js:386–387/608–658 消费 gate/人工 outcome；原生 UI D(dsh-client-ui-tool)/lib/client.js:180–184 识别 AutoReviewDeniedError/AUTO_REVIEW_DENIED，只展示拒绝，不授予权限。
+[不存在于本仓默认配置/未证实运行挂载] 本仓 sdk/src、profile 的 auto-review 搜索无插件装载行，dsh-base/cordis.patch.yml 现有权限组合无此行；插件自身 cordis.patch.yml:1–3 提供 insert auto-review，并不意味着本仓已加载该 bundle。
+[阻塞] D(dsh-permission-presets)/lib/index.js:53–62 的 AUTO_PRESET 固定 sandbox=danger-full-access、approval=ask；不能把开启 Auto 当成无风险配置补空。
+T/app/sdk/src/policy/guard.mjs:55–70/73–81 对 DFA 会话 bash/write/edit 硬拒，原 plugin_manager 也仍 NEVER；原样启用 Auto 不等于管理成功，更不允许削弱现有 guard。
+[不存在] 该插件输出原版 auto_review 四档/团队 ceiling 的持久数据；它实现的是 session Auto preset 的审核门，不能直接冒称与 RE78 四档等价。
+[未证实] 在不改白名单外策略、不开 DFA/不新增协议前提下，将此插件原样整合成 admin 专用 auto_review；没有可直接调用的 exported review API（index.js:615 仅导出 apply/inject/name）。
+因此“上游根本没有审核实现”是错误结论；正确口径是“已装实现存在，本仓可复用的管理级服务/可信接线未证实，真 auto_review 成功格仍 blocked”。
+
+4. 接口交接与最小文件（不重复 Q1 逐调用链）
+人工交接面：tools/pre-execute 返回 {kind:'ask',reason} → 原生 pipeline.serviceAsk → approval.request；无 approval/agent 或非授予 outcome 均 deny，详见 Q1 绑定结论。
+本仓 UI 作答消费者 T/app/ui/main/dsh/ledger.ts:143–158 只接 clientId 匹配的 pending eventId，值仅 allowed-once/rejected；它不是审核模型结果来源，也没有 always/grant 写入口。
+main 管理 consumer.ts:53–75 只是 handler 分发/输出过滤，不是档位或审核消费者；main/admin/policy.ts:80–97 只重验身份/代际，不提供授权档位。
+条件成立后的最小 admin 适配位置仍是 T/app/sdk/src/admin/tools.mjs（注册/原生 gate 接缝）、authority.mjs（硬约束/H1 档内判定）、profile/patches/p7-admin.yml（开发显式挂载）。
+测试位置仍限 unit/p7-admin-approval.test.ts、e2e/p7-admin-approval.test.ts、unit/p7-authority.test.ts；此处未创建或运行。
+但当前缺可信四档/ceiling 输入，这三个产品文件不能靠新增 config 常量、模型 arguments、stub 审核 PASS 填空；replan:46 明确要求此时停止。
+原 plugin_manager 的现有工具还在 D(dsh-plugin-manager)/lib/types/tools.js:93–99 请求 approveEscalation（DFA 或本次审批），approvedBuilds :84 是安装脚本构建许可，不是 auto_review 或插件策略档位。
+若要解开原 plugin_manager 整禁，须触及 guard.mjs/approval.yml，二者均在六文件白名单之外；此路线明确阻塞，交 director，不擅自扩表。
+若要复用实验 Auto，必须先由 director 解决 DFA preset 与现有硬拒/管理粒度不等价，并证明无需新授权协议/持久格式；否则同样阻塞，不临时复制修改审核插件或引入新服务。
+目前只能保留既有拒绝；有合成管理工具且 Q1 接线成立时可走人工 ask 回退（缺 answerer/取消/拒绝为0副作用），不是把 auto_review 真审核成功格改名通过。
+
+5. 制品内容 hash（SHA-256；均同代 alpha.2，路径按 D 别名解析）
+D(dsh-experimental-auto-review)/lib/index.js = 5e95452680af921673e7ecaf4d3f9a18f742b6aadb1f64a75d9901a2d3b78ad4。
+D(dsh-tools)/lib/pipeline.js = f6c850cefce30831c4c5f160e831856b105935331bacd1ae0823129001614bc6。
+D(dsh-user-approval)/lib/index.js = 45b7c170b6897f15a338037b1951997a1b99018c30b5fc95f7e08ad798075be2。
+D(dsh-permission-presets)/lib/index.js = 08f06dac668d2639e963753c127230ec8818b47be72e5aed7f5bf637c9f6c16e。
+D(dsh-base)/cordis.patch.yml = e8269baedbd434f04a9ec3c9106e874e744e195d27fd8476a5006a85eab8d3f7。
+D(dsh-client-ui-tool)/lib/client.js = 35e576d78bc459925dc60da8a9326ce9a4080241a4a8de858d4e87a4b3797de4。
+
+6. 原版参照边界与停止
+W/p7-admin/RE-admin-078.md:44–52 证明原版插件四档；W/p5-parity/RE-approval-model.md:61–90/113–130 区分本机三档/subject grant，:149–163 说明原版云端审核；这些都不证明本机已有等价服务。
+本次证据足够回答 Q2 即停止：不建议自建策略表/ceiling 数据库、不发明授权字段，不改 PLAN/LOG/产品/依赖。唯一写入本 TXT；N1 与真 auto_review 成功格仍 blocked，待 director 收口。

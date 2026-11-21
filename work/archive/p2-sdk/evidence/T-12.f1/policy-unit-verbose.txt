@@ -1,0 +1,17 @@
+ ✓ tests/unit/policy.test.ts > exports the function-plugin shape (named name/apply, no default export) 1ms
+ ✓ tests/unit/policy.test.ts > asks for an ordinary bash call (no sandbox_permissions) 1ms
+ ✓ tests/unit/policy.test.ts > delegates a bash call whose sandbox_permissions is strictly wider than the effective mode 0ms
+ ✓ tests/unit/policy.test.ts > asks for a bash call whose sandbox_permissions repeats the effective mode 0ms
+ ✓ tests/unit/policy.test.ts > asks for a bash call whose sandbox_permissions is narrower or unknown (fail closed) 0ms
+ ✓ tests/unit/policy.test.ts > asks when the current effective mode cannot be resolved (no sandboxPolicy service) 0ms
+ ✓ tests/unit/policy.test.ts > delegates every non-bash tool untouched 0ms
+ ✓ tests/unit/policy.test.ts > treats absent/null arguments as ordinary (asks) 1ms
+ ✓ tests/unit/policy.test.ts > T-12.f1: explicit approval=never releases the ask > delegates an ordinary bash call when the session override is never 0ms
+ ✓ tests/unit/policy.test.ts > T-12.f1: explicit approval=never releases the ask > delegates even with sandbox_permissions set (an ask under never is a guaranteed deny) 0ms
+ ✓ tests/unit/policy.test.ts > T-12.f1: explicit approval=never releases the ask > delegates when only the deployment config policy is never (no session override yet) 0ms
+ ✓ tests/unit/policy.test.ts > T-12.f1: explicit approval=never releases the ask > still asks when the override is the default preset pinned ask 0ms
+ ✓ tests/unit/policy.test.ts > T-12.f1: explicit approval=never releases the ask > still asks for any non-never policy value (only exact never releases) 0ms
+ ✓ tests/unit/policy.test.ts > T-12.f1: explicit approval=never releases the ask > still asks when the approval service or its state is unreadable (fail closed) 0ms
+ ✓ tests/unit/policy.test.ts > T-12.f1: explicit approval=never releases the ask > still asks when the exec carries no agent/session (cannot prove never) 0ms
+ Test Files  1 passed (1)
+      Tests  15 passed (15)

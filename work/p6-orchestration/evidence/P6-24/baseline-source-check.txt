@@ -1,0 +1,6 @@
+base: 0fa0c37
+file: app/sdk/tests/e2e/subagent-policy.test.ts
+archive SHA256: 54e746ef0a8c121fe2f2e938e316a9fc80466a01453c438270f79bb7e3e21f97
+git SHA256: 54e746ef0a8c121fe2f2e938e316a9fc80466a01453c438270f79bb7e3e21f97
+equal: True
+source archive removed after run; recreate with git archive 0fa0c37 app/sdk

@@ -1,0 +1,58 @@
+[
+  {
+    "name": "@agent-infra/mcp-server-filesystem",
+    "version": "1.2.29",
+    "title": "Filesystem",
+    "description": "Read and write files under the bot workspace (offline, no account).",
+    "keywords": [
+      "files",
+      "filesystem",
+      "edit"
+    ],
+    "listed": false,
+    "launch": {
+      "args": [
+        "--allowed-directories",
+        "{workspace}"
+      ]
+    }
+  },
+  {
+    "name": "@modelcontextprotocol/server-memory",
+    "version": "2.1.1",
+    "title": "Memory",
+    "description": "Knowledge-graph memory the bot can write facts to and recall across turns.",
+    "keywords": [
+      "memory",
+      "knowledge-graph",
+      "notes"
+    ],
+    "launch": {
+      "env": {
+        "MEMORY_FILE_PATH": "{workspace}/memory.jsonl"
+      }
+    }
+  },
+  {
+    "name": "@modelcontextprotocol/server-sequential-thinking",
+    "version": "2.1.1",
+    "title": "Sequential thinking",
+    "description": "A scratchpad tool for step-by-step reasoning before answering.",
+    "keywords": [
+      "thinking",
+      "reasoning",
+      "planning"
+    ]
+  },
+  {
+    "name": "@upstash/context7-mcp",
+    "version": "4.6.0",
+    "title": "Context7 docs",
+    "description": "Up-to-date library docs lookup (needs internet at runtime, no account).",
+    "keywords": [
+      "docs",
+      "libraries",
+      "context7"
+    ]
+  }
+]

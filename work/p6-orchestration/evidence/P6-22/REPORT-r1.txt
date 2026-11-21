@@ -1,0 +1,55 @@
+P6-22 第1轮真模型测量（r1，未调词）
+状态：dev 10/10、held-out 36/36 均已采集；第1轮未收敛（子集3/30，哨兵误派0/6）。未运行全48组，未改文案。
+
+范围与隔离
+- 被测模型 glm-5.3，provider=litellm，经本机 LiteLLM；本执行席仅运行 harness。
+- 产品基线 c33efa89bf84bee58cd651b1aa205d7112e456c5；r1 文案仍为首稿 d92d5b4。app/sdk、held-out prompts.json、score.mjs 判据零改动。
+- 复用 P6-20 evidence/D3-orch/run.mjs 与 score.mjs。采集入口改造提交 1599276：临时根/证据目录/dev 输入/reps/单次哨兵参数、逐组 checkpoint、429 收尾；评分包装器加载冻结 scoreGroup 的原始代码，不改任何路由或硬指标判据。
+- dev: /tmp/bot-p622r1-dev/home；held-out: /tmp/bot-p622r1-heldout/home。每个 SDK 子进程显式设 P2SDK_ORCH_DATA_DIR=<对应临时根>/data，bots.json 在会话创建前落盘。
+- 串行组循环，组间延迟 5000ms。沿用主回合300s、worker420s、回报240s、组总额900s的预算；没有因外部负载缩短预算，没有 --force 或重采已有组。
+- held-out 抽样固定为四种委派类各原有条目×3，共30组；4个直接答+2个闲聊各rep1，共6个误派哨兵。没有打开 held-out 原始回复；模型正文仅由机械评分器读取。未基于 held-out 提出文案建议。
+- 注意 harness 版本时间差：dev 启动于1599276提交前，未带随后追加的 llm-retry disabled overlay 和 settleWorkers(...).ok 检查；held-out 使用1599276版本。dev全部10组 outcome=turn/end、timeouts为空，完成组事件未出现llm/retry；此差异不改变已采集dev路由计分。held-out显式关闭默认llm-retry，以满足429不重试。
+
+实测提示核对
+- dev全部10组实际system/message均命中完整ROUTING_PROMPT；路由文本SHA256=5e89aec8de696df5e0e2c81895b39578a20ac288daa045e67ed59c44abbd3420。
+- dev raw meta显示model=glm-5.3、provider=litellm，主工具表含create_bot/send_to_bot/stop_bot。
+- 冻结文件哈希、17/17 scorer自测、fake冒烟与负载快照见 ../D3-orch/rounds/r1/CHECKS.txt。
+
+Dev结果与失败模式（只据dev raw，不据held-out）
+- 总体6/10；单派1/4、并行2/2、追加0/1、停止1/1、直接答1/1、闲聊1/1。全部完整，无超时。污染回合工具成功0；6批回报的末工具后正文均恰1。
+- 漏派而非工具隐藏：dev-single-csv-json-1.jsonl:221 明说“quick single-step”“just two tool calls”，随后直接write、bash；dev-single-svg-badge-1.jsonl:403 视为“simple single-file”“Quick work”，直接write、read；dev-single-extract-links-1.jsonl:203 明说“directly in the main chat without delegating”，直接write、read。三个案例create_bot都是0。它把“文件生成+验证”视为小而快的单任务，优先套用Keep quick规则，而没有把多步/执行验证稳定归入worker。
+- 追加失败继承了首轮漏派：dev-attach-recipe-allergy-1.jsonl:844 首轮按“simple single-file”“quick, non-blocking”主对话write；:1702、:2344、:2402第二轮直接edit/read原文件，无worker可续派、send_to_bot=0。不是已有worker目标选错，也不是多创建worker。
+- 边界犹豫的正例：dev-single-json-schema-1.jsonl:1233 在“quick/non-blocking”与“multi-step”间多次摇摆后才create_bot；说明section已到达模型，但两种规则的优先级对小文件任务仍不稳定。
+- 并行正例：dev-parallel-css-units-1.jsonl:469、dev-parallel-poem-regex-1.jsonl:610明确依据用户“分头/各做各的”建2个worker。本轮dev未观察到调错目标或多调create_bot的路由失败。
+- 停止正例：dev-stop-synthetic-benchmark-1.jsonl:3929将十分钟采样识别为阻塞任务而create；:4151调用stop_bot，回报确认stopped。说明明显长任务的路由边界可被识别。
+- 给第2轮的dev依据：可围绕“小文件写入+校验属于多步，不能仅按工具调用少/耗时短判为主对话快问快答”澄清边界，并说明追加应沿用已有worker。这里不实际改文案，也不据held-out提出案例化规则。
+- dev完整原始帧、计分和可读摘录见 ../D3-orch/rounds/r1/dev/{raw/,scores.json,SCORE.txt,observations.txt}；observations按raw行号给出锚点，含所有10组而非只挑失败。
+
+新问题（不扩范围）
+- dev worker多次报告主会话目标目录不在自身沙箱内，产物落到worker工作区等价路径；主bot收到回报后尝试glob/bash核实，被污染回合守卫拒绝。锚点dev-parallel-poem-regex-1.jsonl:1313、:1769及dev-single-json-schema-1.jsonl:1432。这不是本轮路由漏派原因，未改产品代码；需要另任务核对真实产物交付路径语义。
+- dev worker的write绝对路径实际在工作树根留下probe2.txt（内容probe2）：dev-single-json-schema-1.w1.jsonl:8760，随后:8830用bash检查可见性。收尾stat确认00:48:38创建，本轮已删除该自建探针残留；未改动其他产品文件。需另任务核对write工具允许根与worker工作区的边界；本轮不扩范围修复。
+- 既有采集器settleAll原先对waitWorkersEnded返回对象做布尔判断，漏查.ok，可能漏记worker超时；1599276已仅修正该元数据判断，评分判据不动。dev无超时，未重采。
+
+最终held-out计分（仅机械表，不作原文归因）
+| 类别 | 去向正确 | 完整回合路由失败 | 超时 | 其他不完整/缺失 |
+| 单派 | 0/12 | 12 | 0 | 0 |
+| 并行 | 3/6 | 3 | 0 | 0 |
+| 追加 | 0/6 | 6 | 0 | 0 |
+| 停止 | 0/6 | 6 | 0 | 0 |
+| 直接答哨兵 | 4/4 | 0 | 0 | 0 |
+| 闲聊哨兵 | 2/2 | 0 | 0 | 0 |
+- 委派子集3/30；误派哨兵0/6（哨兵正确6/6）；合计9/36。
+- 污染回合工具成功0；6批回报的末工具后正文均恰1。硬指标未见违规，但路由阈值不达标。
+- 全部36组outcome=turn/end、timeouts=[]；27组为完整模型回合的路由失败，不是负载超时。没有429，没有llm/retry。未完成组：无。
+- 收敛判据不满足：3<22，虽然误派0/6、硬指标过关，仍不建议跑全48组定案。本轮是r1，无上一轮可比较，“提升<3提前停”还不适用；交第2轮，仅可依据上文dev失败模式修改文案。未使用held-out正文作任何调词建议。
+- root汇总：../D3-orch/rounds/r1/SCORE.txt；逐组机器表：heldout/scores.json；原始帧在dev/raw与heldout/raw（共46个主会话raw、12个worker raw，另各有run-meta.json）。原始帧完整提交，不排除大文件。
+
+复测与收尾
+- node work/p6-orchestration/evidence/D3-orch/rounds/r1/score-round.mjs dev：10/10收集，总体6/10。
+- node work/p6-orchestration/evidence/D3-orch/rounds/r1/score-round.mjs heldout：36/36收集，subset=3/30，sentinel-misdispatch=0/6，converged=false。
+- node work/p6-orchestration/evidence/D3-orch/score.mjs --selftest：17/17；隔离fake --smoke最终版本PASS。只改探针，无产品代码变更，不跑高负载下的全量SDK回归。
+- 盲完整性审计：46/46主raw的model/provider、三件协调工具、完整r1系统路由输入均正确；dev/heldout重试事件均0；环境凭证值在本轮证据中匹配0。该审计仅输出布尔/计数，不展开held-out模型回复。
+- 2026-11-05T01:32:45-05:00完成计分。负载快照与实际检查输出在CHECKS.txt；未把高load直接当作超时原因。
+- dev/heldout采集进程均退出0；停止两个自身日志monitor；bot-reap --dry-run --match p622及--match P6-22均exit 0、无匹配残留。只清理自己临时依赖链接和沙箱文件，不动主仓/其他进程。
+- 改动文件范围：evidence/D3-orch/run.mjs；evidence/D3-orch/rounds/r1/{score-round.mjs,inspect-dev.mjs,CHECKS.txt,SCORE.txt,dev/**,heldout/**}；本REPORT-r1.txt。产品文案、冻结prompts、score判据保持零改动。r0 verifier未跟踪文件不包含在本次提交中。
+待 verifier 验收。

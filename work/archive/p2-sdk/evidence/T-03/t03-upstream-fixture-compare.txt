@@ -1,0 +1,38 @@
+== upstream repos/deepseek-harness ... creator-plugin-manager.expected.e2e.ts:33-41 ==
+  await mkdir(join(root, 'workspace'))
+  const bundle = join(root, 'demo-mcp')
+  await mkdir(bundle)
+  await writeFile(join(bundle, 'package.json'), JSON.stringify({ name: '@test/creator-mcp', version: '1.0.0',
+    dsh: { bundle: { patch: './cordis.patch.yml' } } }))
+  await writeFile(join(bundle, 'cordis.patch.yml'), JSON.stringify([{ insert: [{ id: 'demo',
+    name: '@deepseek-ai/dsh-mcp-client', config: { serverName: 'demo', transport: 'streamable-http',
+      url: mcp.url, failOnStartupError: true },
+  }] }]))
+
+== ours: tests/market/support.ts writeBundleFixture (39-62) ==
+export function writeBundleFixture(dir: string): string {
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, 'package.json'), `${JSON.stringify({
+    name: BUNDLE_NAME,
+    version: '1.0.0',
+    dsh: { bundle: { patch: './cordis.patch.yml' } },
+  }, null, 1)}\n`)
+  const mcpRow = {
+    id: 'demo-mcp',
+    // Absolute specifier: the $DSH_HOME profile workspace has no node_modules.
+    name: pathToFileURL(join(PKG_ROOT, 'node_modules', '@deepseek-ai', 'dsh-mcp-client', 'lib', 'index.js')).href,
+    config: {
+      serverName: 'demo',
+      transport: 'stdio',
+      command: process.execPath,
+      args: [join(FIXTURES, 'mcp-stdio-server.mjs')],
+      env: {},
+      cwd: '',
+      failOnStartupError: true,
+    },
+  }
+  writeFileSync(join(dir, 'cordis.patch.yml'), `${JSON.stringify([{ insert: [mcpRow] }])}\n`)
+  return dir
+}
+
+结构一致性：package.json dsh.bundle.patch → cordis.patch.yml(JSON insert 行, id+name+config{serverName,transport,...,failOnStartupError}) 相同；差异 = stdio(command/args) vs streamable-http(url)、file:// 绝对路径 vs 裸包名（ 无 node_modules，support.ts:48 注释说明）

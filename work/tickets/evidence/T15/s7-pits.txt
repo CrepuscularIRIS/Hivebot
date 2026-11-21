@@ -1,0 +1,24 @@
+# §7 踩坑对照（字面计数，a2 vs rc1 tarball）
+P1 dsh-ssh 不传 -F（'-F' 字面）	a2=0	rc1=0
+P1b dsh-ssh execFile ssh	a2=1	rc1=1
+P4 客户端控制目录写死 /tmp/dsh-ssh-	a2=1	rc1=1
+P4b helper 远端 mkdtemp /tmp/dsh-ssh-	a2=1	rc1=1
+P5 README: outside bwrap private /tmp	a2=1	rc1=1
+P6 --disable-sigusr1	a2=2	rc1=2
+P7 不重连（README never reconnected）	a2=1	rc1=1
+P8 Web workspace views 假定宿主（ssh README Known Limitations）	a2=1	rc1=1
+T4-1 断连串 outcome is unknown	a2=0	rc1=0
+T4-1b SSH connection is closed	a2=1	rc1=1
+T4-3 tool-fs-search 宿主 rg 路径（@vscode/ripgrep）	a2=7	rc1=7
+T4-3b spill-local tmpdir()	a2=2	rc1=2
+T6 agentsHome 默认 homedir()/.agents（skill-filesystem）	a2=4	rc1=4
+D9 skill-filesystem chokidar	a2=2	rc1=2
+D4 helper 无配置挂 LocalSandboxProvider	a2=1	rc1=1
+P6-25 fs-sandbox 围栏含 /tmp（writableRoots 调用）	a2=1	rc1=1
+P6-25b dsh-sandbox writableRoots 加 /tmp	a2=1	rc1=1
+P5-04 cordis prepend unshift（vendor cordis 由 dsh 带）	a2=1	rc1=1
+T4 ReplayEntry kind chunks	a2=11	rc1=11
+P5-06⑤ tool-fs read-before-write	a2=0	rc1=0
+T7a/T14 sandbox-policy resolve 实现（行数）	a2=3	rc1=3
+U-12② RemoteStreamMux 下行只收 string	a2=0	rc1=0
+T4-1 outcome is unknown (protocol.js): a2=1 rc1=1

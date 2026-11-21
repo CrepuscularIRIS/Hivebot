@@ -1,0 +1,11 @@
+Already up to date
+Done in 368ms using pnpm v11.0.9
+
+ RUN  v5.0.5 /tmp/bot-p625f1-vfy/e2e
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  04:15:53
+   Duration  5.54s (tests 98%, transform 1%)
+

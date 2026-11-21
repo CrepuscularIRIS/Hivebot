@@ -1,0 +1,91 @@
+view	part	property	ref(0.78.1)	app	disposition	reason
+conv-rest.light	sidebar.search-entry	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+conv-rest.light	sidebar.item-name	width	55.25px	50.5859px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-rest.light	transcript.user-message	width	418.156px	418.148px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-rest.light	transcript.assistant-message	width	287.047px	287.031px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-rest.light	transcript.assistant-message	height	168px	168.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-rest.light	transcript.assistant-message	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+conv-rest.light	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+conv-rest.light	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+conv-rest.light	permission.card	height	252px	181.398px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.light	permission.card	padding-top	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.light	permission.card	padding-right	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.light	permission.card	padding-bottom	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.light	permission.card	padding-left	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.light	permission.card	gap	normal	8px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-running.light	sidebar.search-entry	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+conv-running.light	sidebar.item-name	width	55.25px	50.5859px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-running.light	chat.header-name	width	55.25px	50.5859px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-running.light	transcript.user-message	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.light	transcript.assistant-message	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.light	permission.card	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.light	permission.card-primary-btn	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+sidebar-collapsed.light	sidebar.header-first-btn	(element)	MISSING	present	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	sidebar.footer-pill	(element)	MISSING	present	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.light	chat.header	height	35px	61px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	chat.header-name	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	transcript.user-message	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	transcript.assistant-message	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+sidebar-collapsed.light	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+sidebar-collapsed.light	permission.card	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.light	permission.card-primary-btn	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+info-pane.light	sidebar.search-entry	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+info-pane.light	sidebar.item-name	width	55.25px	50.5859px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+info-pane.light	transcript.user-message	width	418.156px	418.148px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.light	transcript.assistant-message	width	287.047px	287.031px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.light	transcript.assistant-message	height	168px	168.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.light	transcript.assistant-message	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+info-pane.light	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+info-pane.light	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+info-pane.light	permission.card	height	252px	181.398px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.light	permission.card	padding-top	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.light	permission.card	padding-right	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.light	permission.card	padding-bottom	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.light	permission.card	padding-left	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.light	permission.card	gap	normal	8px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.dark	sidebar.search-entry	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+conv-rest.dark	sidebar.item-name	width	55.25px	50.5859px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-rest.dark	transcript.user-message	width	418.156px	418.148px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-rest.dark	transcript.assistant-message	width	287.047px	287.031px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-rest.dark	transcript.assistant-message	height	168px	168.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+conv-rest.dark	transcript.assistant-message	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+conv-rest.dark	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+conv-rest.dark	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+conv-rest.dark	permission.card	height	252px	181.398px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.dark	permission.card	padding-top	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.dark	permission.card	padding-right	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.dark	permission.card	padding-bottom	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.dark	permission.card	padding-left	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-rest.dark	permission.card	gap	normal	8px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+conv-running.dark	sidebar.search-entry	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+conv-running.dark	sidebar.item-name	width	55.25px	50.5859px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-running.dark	chat.header-name	width	55.25px	50.5859px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+conv-running.dark	transcript.user-message	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.dark	transcript.assistant-message	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.dark	permission.card	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+conv-running.dark	permission.card-primary-btn	(element)	present	MISSING	waived:data	app 列 conv-running 打开的是 Ops Bot 的挂起回合（主 bot 有待决审批时 fake LLM 不能再起一轮），ref 是主 bot 会话；会话内容部位按数据缺席
+sidebar-collapsed.dark	sidebar.header-first-btn	(element)	MISSING	present	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	sidebar.footer-pill	(element)	MISSING	present	waived:arch	折叠态 New / Connect apps：0.78.1 是 rail 底部独立的 28 ghost icon 钮（头部钮与药丸隐藏），0.18 复用头部 rail-new 与 footer 药丸元素；覆盖已把两者挪到 rail 底部同位置同形态（截图对齐），探针按选择器仍取到 0.18 的原元素
+sidebar-collapsed.dark	chat.header	height	35px	61px	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	chat.header-name	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	transcript.user-message	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	transcript.assistant-message	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+sidebar-collapsed.dark	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+sidebar-collapsed.dark	permission.card	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+sidebar-collapsed.dark	permission.card-primary-btn	(element)	MISSING	present	waived:fixture	对照台 sidebar-collapsed 视图 ref 侧不 openAgent（views.mjs clickAgent:false，0.78.1 不点不出会话），ref 的会话部位是空态；app 侧开着会话
+info-pane.dark	sidebar.search-entry	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+info-pane.dark	sidebar.item-name	width	55.25px	50.5859px	waived:data	文本宽度随数据：app 侧边栏按最近活动排序首项是 Ops Bot（ref 首项 Main Bot）、conv-running 头部名字是 Ops Bot；字体字号字重一致（同行其余属性 0 差）
+info-pane.dark	transcript.user-message	width	418.156px	418.148px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.dark	transcript.assistant-message	width	287.047px	287.031px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.dark	transcript.assistant-message	height	168px	168.5px	waived:subpixel	|Δ| ≤ 1px：字形宽度 / 行盒取整（同字体同字号，排版引擎小数位差），非版式差
+info-pane.dark	transcript.assistant-message	min-height	auto	0px	waived:computed-equiv	min-height:auto 在非 flex/grid 子项（或绝对定位）上计算值为 0px：两侧都是「无最小高约束」，版式等价
+info-pane.dark	transcript.thinking-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+info-pane.dark	transcript.tool-row	(element)	MISSING	present	waived:arch	R10：0.78.1 会话流对 tool-call / thinking 零渲染（行只在 Full conversation outline 面板），0.18 直渲；按 outline 锚 sand-outline-item 的 0.78.1 值换皮，不改架构
+info-pane.dark	permission.card	height	252px	181.398px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.dark	permission.card	padding-top	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.dark	permission.card	padding-right	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.dark	permission.card	padding-bottom	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.dark	permission.card	padding-left	0px	16px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）
+info-pane.dark	permission.card	gap	normal	8px	waived:arch	审批卡：0.18 = dock 单容器（inline style 的一块 div）；0.78.1 = transcript 内 send-message 卡，section 分段（标题条「Computer」+ 关闭钮 + target 代码块 + 按钮段，内边距在子段上）。外壳（r24 / elevated 底 / 阴影 / 宽）已对齐，分段结构与内容属 P5-31（L-AP 卡适配）

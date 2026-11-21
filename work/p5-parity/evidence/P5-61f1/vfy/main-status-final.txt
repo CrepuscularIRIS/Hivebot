@@ -1,0 +1,126 @@
+?? work/p5-parity/evidence/P5-61f1/REPORT.txt
+?? work/p5-parity/evidence/P5-61f1/cold-dark-window.png
+?? work/p5-parity/evidence/P5-61f1/cold-dark.frames.json
+?? work/p5-parity/evidence/P5-61f1/cold-light-window.png
+?? work/p5-parity/evidence/P5-61f1/cold-light.frames.json
+?? work/p5-parity/evidence/P5-61f1/frames-summary.txt
+?? work/p5-parity/evidence/P5-61f1/red/cold-dark-first3.png
+?? work/p5-parity/evidence/P5-61f1/red/flake-light-15-20.png
+?? work/p5-parity/evidence/P5-61f1/reload-dark-contact.png
+?? work/p5-parity/evidence/P5-61f1/reload-dark-media.png
+?? work/p5-parity/evidence/P5-61f1/reload-dark-media.trace.json
+?? work/p5-parity/evidence/P5-61f1/reload-dark.frames.json
+?? work/p5-parity/evidence/P5-61f1/reload-dark.png
+?? work/p5-parity/evidence/P5-61f1/reload-dark.trace.json
+?? work/p5-parity/evidence/P5-61f1/reload-light-contact.png
+?? work/p5-parity/evidence/P5-61f1/reload-light-media.png
+?? work/p5-parity/evidence/P5-61f1/reload-light-media.trace.json
+?? work/p5-parity/evidence/P5-61f1/reload-light.frames.json
+?? work/p5-parity/evidence/P5-61f1/reload-light.png
+?? work/p5-parity/evidence/P5-61f1/reload-light.trace.json
+?? work/p5-parity/evidence/P5-61f1/switch-dark.png
+?? work/p5-parity/evidence/P5-61f1/switch-light.png
+?? work/p5-parity/evidence/P5-61f1/switch.trace.json
+?? work/p5-parity/evidence/P5-61f1/vfy/.playwright-cli/page-2026-11-04T17-19-13-678Z.yml
+?? work/p5-parity/evidence/P5-61f1/vfy/.playwright-cli/page-2026-11-04T17-19-15-017Z.yml
+?? work/p5-parity/evidence/P5-61f1/vfy/.playwright-cli/page-2026-11-04T17-21-05-254Z.yml
+?? work/p5-parity/evidence/P5-61f1/vfy/.playwright-cli/page-2026-11-04T17-21-06-565Z.yml
+?? work/p5-parity/evidence/P5-61f1/vfy/cli-account-light.png
+?? work/p5-parity/evidence/P5-61f1/vfy/cli-account.txt
+?? work/p5-parity/evidence/P5-61f1/vfy/cli-attach.txt
+?? work/p5-parity/evidence/P5-61f1/vfy/cli-dark.png
+?? work/p5-parity/evidence/P5-61f1/vfy/cli-menu.txt
+?? work/p5-parity/evidence/P5-61f1/vfy/cli-snapshot.txt
+?? work/p5-parity/evidence/P5-61f1/vfy/dark-reload-f27.png
+?? work/p5-parity/evidence/P5-61f1/vfy/extra.spec.ts
+?? work/p5-parity/evidence/P5-61f1/vfy/independent-summary.json
+?? work/p5-parity/evidence/P5-61f1/vfy/independent-summary.txt
+?? work/p5-parity/evidence/P5-61f1/vfy/initial-dom.json
+?? work/p5-parity/evidence/P5-61f1/vfy/initial-mixed-pixels.json
+?? work/p5-parity/evidence/P5-61f1/vfy/initial-mixed-probe.py
+?? work/p5-parity/evidence/P5-61f1/vfy/initial.spec.ts
+?? work/p5-parity/evidence/P5-61f1/vfy/main-status-final.txt
+?? work/p5-parity/evidence/P5-61f1/vfy/main-status.txt
+?? work/p5-parity/evidence/P5-61f1/vfy/mirror-divergence.json
+?? work/p5-parity/evidence/P5-61f1/vfy/probe.config.ts
+?? work/p5-parity/evidence/P5-61f1/vfy/recordings-contact.png
+?? work/p5-parity/evidence/P5-61f1/vfy/red-independent-22.100.png
+?? work/p5-parity/evidence/P5-61f1/vfy/red-independent-24.733.png
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240 /cold-dark.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240 /cold-dark.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240 /cold-light.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240 /cold-light.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240\342\221\242/reload-dark.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240\342\221\242/reload-dark.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240\342\221\242/reload-dark.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240\342\221\242/reload-dark.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240\342\221\242/reload-light.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240\342\221\242/reload-light.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240\342\221\242/reload-light.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\240\342\221\242/reload-light.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\241\342\221\242/switch-dark.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\241\342\221\242/switch-light.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-0/\342\221\241\342\221\242/switch.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240 /cold-dark.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240 /cold-dark.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240 /cold-light.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240 /cold-light.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240\342\221\242/reload-dark.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240\342\221\242/reload-dark.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240\342\221\242/reload-dark.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240\342\221\242/reload-dark.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240\342\221\242/reload-light.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240\342\221\242/reload-light.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240\342\221\242/reload-light.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\240\342\221\242/reload-light.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\241\342\221\242/switch-dark.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\241\342\221\242/switch-light.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-1/\342\221\241\342\221\242/switch.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240 /cold-dark.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240 /cold-dark.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240 /cold-light.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240 /cold-light.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240\342\221\242/reload-dark.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240\342\221\242/reload-dark.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240\342\221\242/reload-dark.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240\342\221\242/reload-dark.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240\342\221\242/reload-light.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240\342\221\242/reload-light.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240\342\221\242/reload-light.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\240\342\221\242/reload-light.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\241\342\221\242/switch-dark.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\241\342\221\242/switch-light.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-2/\342\221\241\342\221\242/switch.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240 /cold-dark.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240 /cold-dark.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240 /cold-light.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240 /cold-light.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240\342\221\242/reload-dark.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240\342\221\242/reload-dark.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240\342\221\242/reload-dark.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240\342\221\242/reload-dark.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240\342\221\242/reload-light.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240\342\221\242/reload-light.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240\342\221\242/reload-light.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\240\342\221\242/reload-light.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\241\342\221\242/switch-dark.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\241\342\221\242/switch-light.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-3/\342\221\241\342\221\242/switch.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240 /cold-dark.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240 /cold-dark.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240 /cold-light.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240 /cold-light.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240\342\221\242/reload-dark.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240\342\221\242/reload-dark.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240\342\221\242/reload-dark.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240\342\221\242/reload-dark.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240\342\221\242/reload-light.frames.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240\342\221\242/reload-light.mkv"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240\342\221\242/reload-light.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\240\342\221\242/reload-light.trace.json"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\241\342\221\242/switch-dark.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\241\342\221\242/switch-light.png"
+?? "work/p5-parity/evidence/P5-61f1/vfy/repeat-4/\342\221\241\342\221\242/switch.trace.json"
+?? work/p5-parity/evidence/P5-61f1/vfy/repeated.spec.ts
+?? work/p5-parity/evidence/P5-61f1/vfy/summarize.py
+?? work/p5-parity/ui/P5-61f1-final.md

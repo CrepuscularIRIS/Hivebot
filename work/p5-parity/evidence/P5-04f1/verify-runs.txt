@@ -1,0 +1,43 @@
+# P5-04.f1 验收实测输出（verifier 独立复跑，2026-11-03）
+# 环境：worktree /tmp/bot-wt/P5-04f1 @ a21cc2cd55af81821cad914654fc89fe958d20ed，外层 HOME=/tmp/bot-p504f1-vfy（临时）
+# 所有命令在 app/sdk 下执行
+
+## 1. 全量：HOME=/tmp/bot-p504f1-vfy pnpm test
+ Test Files  29 passed (29)
+      Tests  236 passed (236)
+   Start at  08:34:08
+   Duration  38.70s (tests 99%, import 1%)
+
+## 2. guard-escalation 单文件（含新 3 格 ④b / ⑤主 / ⑤差分）
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Duration  10.95s
+
+## 3. ⑤ 红基线（证伪 prepend 修复）
+# sed -i 's/^  }, true)$/  })/' app/sdk/src/policy/guard.mjs（guard.mjs:311 去掉第三参 true，退回 append）
+# vitest run tests/e2e/guard-escalation.test.ts -t '顺序格'
+ ❯ tests/e2e/guard-escalation.test.ts (7 tests | 1 failed | 6 skipped) 68789ms
+   × ⑤ 顺序格：组合会话（mode=dfa 且 approval≠never）普通 bash → guard 先拦，deny 会话级字面串 + asked 0 60095ms
+Error: turn/end 未到；尾部：[...]{"type":"event","event":{"type":"tool/call","seq":16,...,"name":"bash",...}},
+  {"type":"event","event":{"type":"approval/asked","seq":17,...,"toolName":"bash",...
+  "reason":"p2sdk policy: ordinary shell commands require user approval"}}]
+# ↑ 无 prepend 时 shell-ask 先收 bash exec、出卡（approval/asked），guard 永不执行，⑤ 主格红——prepend 是顺序的唯一来源
+
+## 4. 恢复（git checkout -- guard.mjs，:311 回到 '}, true)'）后复跑
+ Tests  1 passed | 6 skipped (7)   # ⑤ 主格复绿
+
+## 5. ④b / ⑤差分 单格
+ -t '④b'            → 1 passed | 6 skipped   # dfa 启动态：bash+write 会话级 deny、read 工作区照常读到、宿主无副作用
+ -t '差分：同组合不挂 guard' → 1 passed | 6 skipped   # asked 1、批准后真实执行
+
+## 6. 单测
+ tests/unit/guard.test.ts → 21 passed（含新会话级格）
+
+## 7. 区域
+ git diff --stat 21d7f16..a21cc2c：
+  app/sdk/profile/patches/approval.yml       |  12 +-
+  app/sdk/src/policy/guard.mjs               |  49 +++++++-
+  app/sdk/src/start.ts                       |   5 +-
+  app/sdk/tests/e2e/guard-escalation.test.ts | 175 ++++++++++++++++++++++++++++-
+  app/sdk/tests/unit/guard.test.ts           |  32 +++++-
+  5 files changed, 257 insertions(+), 16 deletions(-)   # 与申报 5 文件 +257/-16 一致

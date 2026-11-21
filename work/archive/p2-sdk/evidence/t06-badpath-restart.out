@@ -1,0 +1,7 @@
+C bogus-token: token exchange failed: HTTP 401
+A cold list count: 2 session-62a49b99-4143-43ba-a37a-f21d77cbf0bf,session-b830e967-993d-4dbc-9ca0-76c980437881 agentAvailable: false,false
+A cold events: {"sessionId":"session-b830e967-993d-4dbc-9ca0-76c980437881","users":["重启前·第二问"],"turnEnds":["completed"]}
+A cold events: {"sessionId":"session-62a49b99-4143-43ba-a37a-f21d77cbf0bf","users":["重启前·第一问"],"turnEnds":["completed"]}
+B bogus-sessionid error: session/events failed: {"code":"session/not-found","message":"session \"00000000-dead-beef-0000-000000000000\" not found","details":{"sessionId":"00000000-dead-
+B runtime still alive, list count: 2
+cleanup killed pids: 1775817,1775830 parent exit: null null

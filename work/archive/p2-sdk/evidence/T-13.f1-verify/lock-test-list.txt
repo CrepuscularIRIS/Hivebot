@@ -1,0 +1,21 @@
+ ✓ tests/unit/launcher-lock.test.ts > T-13 R10 ① — SIGKILLed launcher with a live detached dsh still holds the home > the lock records launcher+dsh pids; a second instance is refused until the dsh dies, then the home is reclaimable 163ms
+ ✓ tests/unit/launcher-lock.test.ts > T-13 R2 ② — launcher death by uncaught EPIPE leaves the lock behind > an EPIPE crash (stdout consumer gone) keeps the lock; a second instance is refused while dsh lives 1337ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — review R1 interleave 1: uninitialized lock window > refuses on an empty lock file instead of reclaiming it as stale 1ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — review R1 interleave 1: uninitialized lock window > refuses on a malformed (non-pid) lock file 1ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — review R1 interleave 1: uninitialized lock window > ignores leftover temp files from a crashed publisher and acquires cleanly 0ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — review R1 interleave 2: stale-reclaim race > a stale-reclaimer resuming after another racer reclaimed must refuse, not delete the live lock 1ms
+ ✓ tests/unit/launcher-lock.test.ts > release — review R1 interleave 3: ownership check > a stolen holder releases without deleting the next holder’s lock (same-pid steal proves inode check) 1ms
+ ✓ tests/unit/launcher-lock.test.ts > release — review R1 interleave 3: ownership check > release is idempotent 0ms
+ ✓ tests/unit/launcher-lock.test.ts > T-13.f1 R1/R3 — lock rows carry pid identity (starttime) > ① publish records `<pid>:<starttime>`; recordChildPid appends the runtime row with its own identity 2ms
+ ✓ tests/unit/launcher-lock.test.ts > T-13.f1 R1/R3 — lock rows carry pid identity (starttime) > ① a live pid with a MATCHING starttime still holds — identity must not over-reclaim 1ms
+ ✓ tests/unit/launcher-lock.test.ts > T-13.f1 R1/R3 — lock rows carry pid identity (starttime) > ② R1: a runtime-row pid alive but reused (starttime mismatch) is a stale lock, reclaimable 1ms
+ ✓ tests/unit/launcher-lock.test.ts > T-13.f1 R1/R3 — lock rows carry pid identity (starttime) > ③ R3: the launcher row naming THIS process pid with a foreign starttime is stale, reclaimable 1ms
+ ✓ tests/unit/launcher-lock.test.ts > T-13.f1 R1/R3 — lock rows carry pid identity (starttime) > ④ the refuse message points at the lock file for manual recovery 0ms
+ ✓ tests/unit/launcher-lock.test.ts > T-13.f1 R1/R3 — lock rows carry pid identity (starttime) > an old-format row (pre-T-13.f1 lock, no starttime) with a live pid still holds — conservative transition 0ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — T-01.f2 acceptance ① behavior preserved > second acquire on a live lock is refused and touches nothing 0ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — T-01.f2 acceptance ① behavior preserved > a stale dead-pid lock is taken over 0ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — T-01.f2 acceptance ① behavior preserved > after release the next instance boots on the same home 0ms
+ ✓ tests/unit/launcher-lock.test.ts > acquireHomeLock — real multiprocess race > two child processes racing on one home: exactly one acquires, per round (5 rounds) 3410ms
+ ✓ tests/unit/launcher-lock.test.ts > T-13 R7/R8 ③ — three-racer strand: the pre-startRuntime gate admits at most one > B and C both acquire, yet only C (the lockPath owner) passes the gate; B aborts 279ms
+ Test Files  1 passed (1)
+      Tests  19 passed (19)

@@ -1,0 +1,1 @@
+export default {"root":"/tmp/bot-p610f2a-verify/base/app/sdk","test":{"include":["/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10f2/f2a-vfy-guard-base.test.ts"],"setupFiles":["/tmp/bot-p610f2a-verify/base/app/sdk/tests/support/tmp-sweep.setup.ts"],"testTimeout":120000,"hookTimeout":120000}}

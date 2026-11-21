@@ -1,0 +1,248 @@
+diff --git a/app/sdk/src/admin/authority.mjs b/app/sdk/src/admin/authority.mjs
+index b03bf66..db9ac38 100644
+--- a/app/sdk/src/admin/authority.mjs
++++ b/app/sdk/src/admin/authority.mjs
+@@ -1,7 +1,7 @@
+-// P7-F2 H1 溯源检查 = 授权三元组（BRIEF v2.3 §6.1.1 H1 + p7-admin PLAN §3.3）。
+-// 管理操作与协调者派工执行前，执行器核对（动作，精确目标，受限参数）是否被
+-// 「本回合人类来源原文」或「当前有效 Mandate」授权；未授权 → 不执行、转
+-// 「需要你处理」（P6-18 通道，由调用方消费 handoff 决定）。全部常量在此，
++// P7-F2 H1 核对（BRIEF v2.4 §6.1）：仅是 needs_approval 档的一种检查，
++// 不是 always_allow / auto_review 的逐词原文引擎；原版分层接线另有任务。
++// 核对（动作，精确目标，受限参数）；复用本回合人类原文或现有 grant 字段，
++// 未能核验则 handoff 给现有审批，不增设 Mandate 格式或数据库。
+ // 不用 LLM 判断「像不像授权」；语义不清也不猜意图。
+ //
+ // 证据来源边界（H2/H4）：本函数只吃宿主传入的 humanUtteranceOfGrant（人类
+@@ -163,12 +163,28 @@ const allow = (evidenceRef) => ({ decision: 'allow', code: 'allowed', reason: 'a
+ const deny = (code, reason) => ({ decision: 'deny', code, reason })
+ const handoff = (code, reason) => ({ decision: 'handoff', code, reason })
+ 
++function allowWithParams(evidenceRef, action, target, params, utterance) {
++  if (params == null) return allow(evidenceRef)
++  const keys = Object.keys(params)
++  if (!Array.isArray(params) && typeof params === 'object' && keys.length === 0) return allow(evidenceRef)
++  // ponytail: H1 仅识别明确改名的单个 name 值；其他参数交回现有审批，
++  // 不从值的“出现”推导字段授权，也不扩建通用原文解析引擎。
++  if (action === 'modify' && keys.length === 1 && keys[0] === 'name' && typeof params.name === 'string') {
++    const matched = String(utterance).split(CLAUSE_SPLIT_RE).some((clause) => {
++      const match = clause.trim().match(/^rename\s+(\S+)\s+to\s+(.+)$/i)
++      return match !== null && normalizeText(match[1]) === normalizeText(target) && match[2] === params.name
++    })
++    if (matched) return allow(evidenceRef)
++  }
++  return handoff('params-uncovered', 'H1 cannot verify the requested restricted parameters; route to existing approval')
++}
++
+ /**
+  * 人类原文路径（只对 turnClass 'user' 调用）。
+  * @returns {{decision,code,reason,evidenceRef?} | null} null = 本路径无证据
+  * （动作没提 / 目标没提），继续尝试 Mandate 路径。
+  */
+-function humanPath(action, target, utterance) {
++function humanPath(action, target, utterance, params) {
+   const clauses = splitClauses(utterance)
+   const actionClauses = clauses.filter((c) => clauseHasAction(c, action))
+   if (actionClauses.length === 0) return null
+@@ -177,7 +193,7 @@ function humanPath(action, target, utterance) {
+   // 人类回合 create 不做目标匹配；restart 无目标（§3.3）
+   if (action === 'create' || action === 'restart') {
+     if (negated.length > 0) return deny('negated', 'human explicitly negated this action')
+-    return allow({ source: 'human-utterance', clause: positive[0] })
++    return allowWithParams({ source: 'human-utterance', clause: positive[0] }, action, target, params, utterance)
+   }
+   if (target == null || normalizeText(target) === '') return deny('target-required', 'action requires an exact target')
+   if ([...normalizeText(target)].length < MIN_BOT_NAME_CODEPOINTS) {
+@@ -186,7 +202,7 @@ function humanPath(action, target, utterance) {
+   // 否定优先：同动作同目标的正负冲突、目标只在否定子句出现 → 拒
+   if (negated.some((c) => targetMatches(c, target))) return deny('negated', 'human explicitly negated this action+target')
+   const hit = positive.find((c) => targetMatches(c, target))
+-  if (hit !== undefined) return allow({ source: 'human-utterance', clause: hit })
++  if (hit !== undefined) return allowWithParams({ source: 'human-utterance', clause: hit }, action, target, params, utterance)
+   return null // 动作在、目标不在：不短路，Mandate 还可能覆盖
+ }
+ 
+@@ -195,7 +211,7 @@ function humanPath(action, target, utterance) {
+  * 目标只能各自失败）。授予本身受 H1：逐动作、逐范围项都要在授予回合人类
+  * 原文找到非否定且与动作共现的证据。
+  */
+-function mandatePath(mandate, action, target, now) {
++function mandatePath(mandate, action, target, now, params) {
+   const malformed = typeof mandate !== 'object' || mandate === null
+     || !Array.isArray(mandate.actions) || mandate.actions.length === 0
+     || mandate.actions.some((a) => typeof a !== 'string' || !Object.hasOwn(ACTION_WORDS, a))
+@@ -232,7 +248,12 @@ function mandatePath(mandate, action, target, now) {
+       return handoff('mandate-target-uncovered', 'target not covered by this mandate (no union across mandates)')
+     }
+   }
+-  return allow({ source: 'mandate', mandateId: typeof mandate.id === 'string' ? mandate.id : null })
++  // 桶成员资格不能把 install X / disable Y 交叉组合为 disable X。
++  if (!clauses.some((c) => clauseHasAction(c, action) && !clauseNegated(c)
++    && (bucket === null || targetMatches(c, target)))) {
++    return handoff('mandate-pair-uncovered', 'requested action+target has no matching grant clause')
++  }
++  return allowWithParams({ source: 'mandate', mandateId: typeof mandate.id === 'string' ? mandate.id : null }, action, target, params, mandate.grantUtterance)
+ }
+ 
+ /**
+@@ -255,9 +276,9 @@ export function authorize(input = {}) {
+   }
+   if (hasProhibitedParam(params)) return deny('prohibited-param', 'params touch a prohibited zone (credentials / permissions / approval tiers)')
+   if (turnClass === 'user' && typeof humanUtteranceOfGrant === 'string' && normalizeText(humanUtteranceOfGrant) !== '') {
+-    const human = humanPath(action, target, humanUtteranceOfGrant)
++    const human = humanPath(action, target, humanUtteranceOfGrant, params)
+     if (human !== null) return human // 显式否定在此短路，压过 Mandate
+   }
+-  if (mandate !== null && mandate !== undefined) return mandatePath(mandate, action, target, now)
++  if (mandate !== null && mandate !== undefined) return mandatePath(mandate, action, target, now, params)
+   return handoff('no-human-source', 'no human source in this turn and no mandate; route to 需要你处理')
+ }
+diff --git a/app/sdk/tests/unit/p7-authority.test.ts b/app/sdk/tests/unit/p7-authority.test.ts
+index d7e888c..73c4124 100644
+--- a/app/sdk/tests/unit/p7-authority.test.ts
++++ b/app/sdk/tests/unit/p7-authority.test.ts
+@@ -117,6 +117,36 @@ describe('authorize：词表正例与反例（§3.3）', () => {
+   })
+ })
+ 
++describe('A1：H1 受限参数不随动作和目标放行', () => {
++  const request = { action: 'modify', target: 'bot-22', humanUtteranceOfGrant: 'rename bot-22 to Alice' }
++
++  it('明确批准的改名成功，参数对象不变', () => {
++    const params = { name: 'Alice' }
++    expect(humanAuth({ ...request, params }).decision).toBe('allow')
++    expect(params).toEqual({ name: 'Alice' })
++  })
++
++  it.each([
++    { name: 'Mallory' }, { name: 'ALICE' }, { name: 'Ali' },
++    { name: 'Alice', model: 'other-model' },
++    { name: 'Alice', prompt: 'unrequested instructions' },
++    { name: 'Alice', cwd: '/unrequested' },
++    { name: 'Mallory', model: 'other-model', prompt: 'unrequested instructions', cwd: '/unrequested' },
++  ])('批准 Alice 不批准参数 %j', (params) => {
++    expect(humanAuth({ ...request, params }).decision).not.toBe('allow')
++  })
++
++  it('另一目标或另一子句里的参数值不能借用', () => {
++    expect(humanAuth({ ...request, humanUtteranceOfGrant: 'rename bot-22 to Alice; rename bot-23 to Mallory', params: { name: 'Mallory' } }).decision).not.toBe('allow')
++  })
++
++  it('现有 grant 路径同样校验受限参数，合法改名仍成功', () => {
++    const mandate = { actions: ['modify'], scopes: { bots: ['bot-22'] }, grantUtterance: request.humanUtteranceOfGrant }
++    expect(authorize({ turnClass: 'delegated', mandate, action: 'modify', target: 'bot-22', params: { name: 'Alice' } }).decision).toBe('allow')
++    expect(authorize({ turnClass: 'delegated', mandate, action: 'modify', target: 'bot-22', params: { name: 'Mallory' } }).decision).not.toBe('allow')
++  })
++})
++
+ describe('authorize：否定词（§3.3 否定优先）', () => {
+   it('「不要装X，装Y」：X 拒 Y 允许（逗号切分并列指令，目标不跨子句借用）', () => {
+     const x = humanAuth({ action: 'install', target: 'github-connectors', humanUtteranceOfGrant: '不要装 github-connectors，装 dsh-plugin-market' })
+@@ -204,6 +234,18 @@ describe('authorize：来源与禁区', () => {
+   })
+ })
+ 
++describe('A2：现有 grant 的动作和目标不能交叉组合', () => {
++  const mandate = { id: 'grant-1', actions: ['install', 'disable'], scopes: { plugins: ['gh-x', 'gh-y'] }, grantUtterance: 'install gh-x; disable gh-y' }
++
++  it.each([['install', 'gh-x'], ['disable', 'gh-y']])('合法 %s %s 保持成功', (action, target) => {
++    expect(authorize({ turnClass: 'delegated', mandate, action, target }).decision).toBe('allow')
++  })
++
++  it.each([['disable', 'gh-x'], ['install', 'gh-y']])('未批准组合 %s %s 不执行', (action, target) => {
++    expect(authorize({ turnClass: 'delegated', mandate, action, target }).decision).not.toBe('allow')
++  })
++})
++
+ describe('authorize：Mandate 路径（单 Mandate 原则）', () => {
+   const mandate = {
+     id: 'm-1', goalId: 'g-1',
+diff --git a/app/ui/main/admin/consumer.ts b/app/ui/main/admin/consumer.ts
+index 1df6e5e..eced8cd 100644
+--- a/app/ui/main/admin/consumer.ts
++++ b/app/ui/main/admin/consumer.ts
+@@ -72,7 +72,7 @@ export function createAdminConsumer(options: { actions?: Record<string, AdminAct
+         outcome = { error: { code: 'pbots/admin-failed', message: `管理动作 ${request.action} 执行异常：${String(error instanceof Error ? error.message : error)}`, details: {} } }
+       }
+       if ('value' in outcome) return { value: sanitizeAdminValue(outcome.value) as object }
+-      return outcome
++      return { error: { ...outcome.error, details: sanitizeAdminValue(outcome.error.details) as object | undefined } }
+     },
+   }
+ }
+diff --git a/app/ui/tests/unit/admin/channel.test.ts b/app/ui/tests/unit/admin/channel.test.ts
+index 4b1f31b..e353884 100644
+--- a/app/ui/tests/unit/admin/channel.test.ts
++++ b/app/ui/tests/unit/admin/channel.test.ts
+@@ -11,6 +11,7 @@ import {
+   type AdminChannelFrame, type AdminDshLike,
+ } from '../../../main/admin/channel'
+ import { createAdminConsumer, sanitizeAdminValue } from '../../../main/admin/consumer'
++import { AdminChannel } from '../../../../sdk/src/admin/channel.mjs'
+ 
+ // ---- policy：main 按权威身份 / generation / 记录重验 ----
+ 
+@@ -237,6 +238,63 @@ describe('createAdminConsumer', () => {
+   })
+ })
+ 
++describe('A3：error.details 与 value 使用等价过滤', () => {
++  const details = { token: 'SYNTHETIC-BRIDGE-MARKER', process: { pid: 4242, keep: 1 }, rows: [{ access_token: 'SYNTHETIC', process_id: 4243, keep: true }] }
++  const clean = { process: { keep: 1 }, rows: [{ keep: true }] }
++
++  it('错误详情深剥禁区键，保留 code/message 和普通字段且不改输入', async () => {
++    const consumer = createAdminConsumer({ actions: { list: async () => ({ error: { code: 'mock-upstream-error', message: 'failed', details } }) } })
++    const valueConsumer = createAdminConsumer({ actions: { list: async () => ({ value: details }) } })
++    expect(await consumer.dispatch({ ...REQUEST, action: 'list' })).toEqual({ error: { code: 'mock-upstream-error', message: 'failed', details: clean } })
++    expect(await valueConsumer.dispatch({ ...REQUEST, action: 'list' })).toEqual({ value: clean })
++    expect(details.token).toBe('SYNTHETIC-BRIDGE-MARKER')
++    expect(details.process.pid).toBe(4242)
++  })
++
++  it('实际 main→同 Peer respond→SDK rejection 只收到过滤后的详情', async () => {
++    const sdk = new AdminChannel({ timeoutMs: 1000 })
++    const peer = {}
++    const queue: object[] = []
++    const frames: unknown[] = []
++    sdk.attach({ peer, generation: 3, queue })
++    let sink: ((frame: AdminChannelFrame) => void) | undefined
++    const consumer = createAdminConsumer({ actions: { list: async () => ({ error: { code: 'mock-upstream-error', message: 'failed', details } }) } })
++    const main = wireAdminChannel({
++      dsh: {
++        onConnected() {},
++        async ready() { return { openStream(_endpoint, _args, callback) { sink = callback; return { cancel() { sink = undefined } } } } },
++        async rpc(method, args) {
++          expect(method).toBe(ADMIN_RESPOND_METHOD)
++          frames.push(args)
++          const { requestId, ...outcome } = (args as { request: { requestId: string } }).request
++          sdk.respond(requestId, outcome, peer)
++          return { ok: true }
++        },
++      },
++      verify: (request) => reverifyAdminRequest(request, RECORD, 3),
++      dispatch: consumer.dispatch,
++      currentGeneration: () => 3,
++    })
++    try {
++      await settled()
++      const pending = sdk.request({ sessionId: RECORD.sessionId, turnId: RECORD.turnId, originRef: RECORD.originRef, action: 'list', params: {} })
++        .then(() => { throw new Error('expected SDK rejection') }, (error) => error)
++      expect(queue).toHaveLength(1)
++      sink!({ type: 'item', value: queue.shift() })
++      const rejection = await pending
++      expect(rejection.code).toBe('mock-upstream-error')
++      expect(rejection.details).toEqual(clean)
++      expect(frames).toHaveLength(1)
++      expect((frames[0] as { request: { error: { details: object } } }).request.error.details).toEqual(clean)
++      expect(JSON.stringify(frames)).not.toContain('SYNTHETIC-BRIDGE-MARKER')
++      expect(sdk.pendingCount()).toBe(0)
++    } finally {
++      main.close()
++      sdk.detach()
++    }
++  })
++})
++
+ describe('sanitizeAdminValue（不返 token / PID / 凭证）', () => {
+   it('深剥禁区键，保留普通字段，不改原对象', () => {
+     const value = { ok: true, token: 'sk-1', nested: { apiKey: 'k', keep: 1 }, rows: [{ password: 'p', name: 'x' }], pid: 4242 }

@@ -1,0 +1,32 @@
+# VERIFY P6-25.f1a（P6-25.f1 整体终验）
+
+> 转正自 evidence/P6-25f1/VERIFY-f1a.txt。P6-25.f1 整体判定：PASS；残余窄窗口为非阻塞跟进（director 规划中）。
+
+P6-25.f1a 复验 / P6-25.f1 整体判定
+verdict: PASS
+P6-25.f1 整体: PASS（本轮限定增量快验；承接上一场已通过的行为验收，不表示残余竞态已关闭）
+commit: d6af82eba1464f87075979001dbfcc66d3ed717b
+worktree: /tmp/bot-wt/P6-25f1
+branch: feat/P6-25f1
+
+本报告按当前环境禁止写报告 .md 的约束，落在用户指定的 evidence 文本备用路径。无产品代码修改，未跑全量回归或全套 e2e。本轮无 UI 改动，不涉及浏览器截图。
+
+| 验收项 | 结果 | 证据（命令/文件/输出） |
+| 1 来源头与真实上游文件 | PASS | Read app/sdk/src/policy/fs-zone.mjs:1，来源完整为 https://github.com/deepseek-ai/deepseek-harness@ce7073d51254c26cd63b22a60835b8f948deb447:packages/fs/fs-sandbox/src/index.ts；ls /home/lingxufeng/bot/repos/deepseek-harness/packages/fs/fs-sandbox/src/index.ts 成功；git -C /home/lingxufeng/bot/repos/deepseek-harness cat-file -e ce7073d51254c26cd63b22a60835b8f948deb447:packages/fs/fs-sandbox/src/index.ts，exit 0。 |
+| 2 ponytail 注释如实描述窗口与升级路径 | PASS | fs-zone.mjs:6–9 明写读侧二次解析不比对/身份未绑定、写侧锁队列、任意宿主路径含 NEVER、ptc 无卡并发，以及同 bash 的 bwrap 命名空间升级路径；f1a-toctou.txt 格 10/11 独立复现读侧泄漏及写侧落盘，吻合上一场残余窗口实测。 |
+| 3 拒绝文本契约及新增断言 | PASS | fs-zone.mjs:27 使用 code: 前缀及 FS_PERMISSION_DENIED。新增单测“后端拒绝向模型保留 code 前缀和准确原因，不泄漏宿主路径或建议升权”通过；独立探针格 9 经真实上游 tool-fs 调用后收到 code: p2sdk policy: write-outside-workspace denied ...，断言无 escalation/sandbox_permissions/justification、无临时宿主根路径且无区外落盘；假凭证拒绝也保留 code: ... never-root。证据 f1a-unit-exec.txt、f1a-toctou.test.mjs、f1a-toctou.txt。 |
+| 4 指定两份单测 86/86 | PASS | HOME=/tmp/bot-p625f1a-home TMPDIR=/tmp/bot-p625f1a-home/tmp pnpm exec vitest run tests/unit/fs-zone.test.ts tests/unit/policy.test.ts，在 /tmp/bot-wt/P6-25f1/app/sdk 执行，exit 0；输出 Test Files 2 passed (2), Tests 86 passed (86)。 |
+| 5 增量范围及 TOCTOU 抽验 | PASS | git -C /tmp/bot-wt/P6-25f1 diff a6e5b8f..HEAD --name-only 仅 app/sdk/src/policy/fs-zone.mjs 与 app/sdk/tests/unit/fs-zone.test.ts；差异为来源/注释、拒绝错误码与文本、相应断言及新增文本格。HOME=/tmp/bot-p625f1a-home TMPDIR=/tmp/bot-p625f1a-home/tmp node --test /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-25f1/f1a-toctou.test.mjs，exit 0，11 tests / 11 pass / 0 fail。 |
+
+命令兼容性说明：用户给出的 pnpm -C /tmp/bot-wt/P6-25f1/app/sdk vitest run ... 在当前 pnpm v11.0.9 被解释成执行目录，exit 1/EACCES，记录于 f1a-unit.txt；改用绝对目录 cd + pnpm exec 的等价命令，指定两份文件全部通过，不是跳过测试。
+
+独立探针改动说明：以此前 verifier 的 toctou-f1.test.mjs 为底本，临时根改从 TMPDIR 派生；仅将已修订的后端错误码 FS_SANDBOX_DENIED 更新为 FS_PERMISSION_DENIED，及错误原因从 cause.message 转到 message，增加实际 tool-fs 返回文本的前缀、无升权提示和无宿主路径断言。未删减原有文件不落盘、原内容不变、凭证不泄漏等安全行为断言。11/11 是包含对照与残余窗口观测的测试数，不是 11 次拒绝。
+
+额外坏路径：格 9 在 tools/execute 区域包装已放行后再将路径换到区外和假凭证目录，写被第二层后端拒绝、均未落盘；格 10/11 继续确认更晚接缝仍有已知残余窗口。本轮仅确认文档如实说明，不宣称修复这一跟进问题。
+
+新问题：无新增阻塞项。
+保留上一场非阻塞跟进：[FIX] 判定至 syscall 残余竞态仍存在，可触及任意本用户可达宿主路径，含 NEVER；ptc 并发行动方可达 | 复现：f1a-toctou.test.mjs 格 10/11（确定性接缝），ptc 行动方证据承接上一场 ptc-actor.json | 疑似位置：fs-zone.mjs 与上游文件 I/O | major（上一场已明确不阻塞本任务，非本轮新增）。
+
+结束检查：git rev-parse HEAD 仍为上述完整 SHA；git status --porcelain 无输出，工作树干净。/home/lingxufeng/bot/scripts/bot-reap --dry-run --match p625f1，exit 0，无输出，证据 f1a-reap.txt。探针不 spawn 子进程，未执行任何进程清理/kill，未读真实凭证。临时数据仅在 /tmp/bot-p625f1a-home 下；为遵守只写 evidence 的职责边界未额外删除目录。
+
+本轮证据均位于 /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-25f1/。

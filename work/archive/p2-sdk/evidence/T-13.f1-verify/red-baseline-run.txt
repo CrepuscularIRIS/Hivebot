@@ -1,0 +1,103 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-13.f1-red/app/sdk
+
+ ❯ tests/unit/launcher-lock.test.ts (19 tests | 5 failed | 13 skipped) 17ms
+   ❯ T-13.f1 R1/R3 — lock rows carry pid identity (starttime) (6)
+     × ① publish records `<pid>:<starttime>`; recordChildPid appends the runtime row with its own identity 8ms
+     × ① a live pid with a MATCHING starttime still holds — identity must not over-reclaim 3ms
+     × ② R1: a runtime-row pid alive but reused (starttime mismatch) is a stale lock, reclaimable 1ms
+     × ③ R3: the launcher row naming THIS process pid with a foreign starttime is stale, reclaimable 1ms
+     × ④ the refuse message points at the lock file for manual recovery 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/launcher-lock.test.ts > T-13.f1 R1/R3 — lock rows carry pid identity (starttime) > ① publish records `<pid>:<starttime>`; recordChildPid appends the runtime row with its own identity
+AssertionError: expected '1299623\n' to be '1299623:1610311\n' // Object.is equality
+
+- Expected
++ Received
+
+- 1299623:1610311
++ 1299623
+
+
+ ❯ tests/unit/launcher-lock.test.ts:269:52
+    267|     const home = newHome()
+    268|     const hold = acquireHomeLockDetailed(home) as HomeLockHold
+    269|     expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid…
+       |                                                    ^
+    270|     // A live child pid gets ITS OWN starttime recorded (never the lau…
+    271|     const child = spawn(process.execPath, ['-e', 'setTimeout(() => {},…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/unit/launcher-lock.test.ts > T-13.f1 R1/R3 — lock rows carry pid identity (starttime) > ① a live pid with a MATCHING starttime still holds — identity must not over-reclaim
+AssertionError: expected 'P2SDK_HOME "/tmp/p2sdk-lock-b9ktva" h…' to contain 'launcher pid 1299623'
+
+Expected: "launcher pid 1299623"
+Received: "P2SDK_HOME "/tmp/p2sdk-lock-b9ktva" has an uninitialized launcher.lock (no pid recorded): if no launcher is mid-start on this home, remove /tmp/p2sdk-lock-b9ktva/launcher.lock and retry"
+
+ ❯ tests/unit/launcher-lock.test.ts:292:15
+    290|     const r = acquireHomeLock(home)
+    291|     expect(r).toBeTypeOf('string')
+    292|     expect(r).toContain(`launcher pid ${process.pid}`)
+       |               ^
+    293|     // The genuinely-held lock is untouched.
+    294|     expect(readFileSync(lockPathOf(home), 'utf8')).toBe(`${process.pid…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/unit/launcher-lock.test.ts > T-13.f1 R1/R3 — lock rows carry pid identity (starttime) > ② R1: a runtime-row pid alive but reused (starttime mismatch) is a stale lock, reclaimable
+AssertionError: expected 'P2SDK_HOME "/tmp/p2sdk-lock-4DpClw" h…' to be type of 'function'
+
+Expected: "function"
+Received: "string"
+
+ ❯ tests/unit/launcher-lock.test.ts:302:15
+    300|     writeFileSync(lockPathOf(home), `${DEAD_PID}:1\n${process.pid}:${f…
+    301|     const r = acquireHomeLock(home)
+    302|     expect(r).toBeTypeOf('function')
+       |               ^
+    303|     ;(r as () => void)()
+    304|     expect(tempLeftovers(home)).toEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  tests/unit/launcher-lock.test.ts > T-13.f1 R1/R3 — lock rows carry pid identity (starttime) > ③ R3: the launcher row naming THIS process pid with a foreign starttime is stale, reclaimable
+AssertionError: expected 'P2SDK_HOME "/tmp/p2sdk-lock-qhyjkG" h…' to be type of 'function'
+
+Expected: "function"
+Received: "string"
+
+ ❯ tests/unit/launcher-lock.test.ts:311:15
+    309|     writeFileSync(lockPathOf(home), `${process.pid}:${foreignStarttime…
+    310|     const r = acquireHomeLock(home)
+    311|     expect(r).toBeTypeOf('function')
+       |               ^
+    312|     ;(r as () => void)()
+    313|     expect(tempLeftovers(home)).toEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  tests/unit/launcher-lock.test.ts > T-13.f1 R1/R3 — lock rows carry pid identity (starttime) > ④ the refuse message points at the lock file for manual recovery
+AssertionError: expected 'P2SDK_HOME "/tmp/p2sdk-lock-DjkpBV" i…' to contain '如确认无实例运行'
+
+Expected: "如确认无实例运行"
+Received: "P2SDK_HOME "/tmp/p2sdk-lock-DjkpBV" is already in use by launcher pid 1299623: a second instance would clobber its runtime-patch.yml and handoff files"
+
+ ❯ tests/unit/launcher-lock.test.ts:322:20
+    320|     const second = acquireHomeLock(home)
+    321|     expect(second).toBeTypeOf('string')
+    322|     expect(second).toContain('如确认无实例运行')
+       |                    ^
+    323|     expect(second).toContain(lockPathOf(home))
+    324|     ;(first as () => void)()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 1 passed | 13 skipped (19)
+   Start at  02:57:31
+   Duration  232ms (transform 57%, import 25%, tests 15%, worker 3%)
+

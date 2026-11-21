@@ -1,0 +1,16 @@
+sha=7bd189b3b5aa9d2fb74dd795b2def3ae8b3c2045
+date=2026-10-14T08:22:58Z
+msg:
+feat(ssh): support guarded patch delete and move RPCs
+files:
+modified	+2	-2	packages/ssh/fs-ssh/README.i18n.yaml
+modified	+1	-1	packages/ssh/fs-ssh/README.md
+modified	+1	-1	packages/ssh/fs-ssh/README.zh.md
+modified	+26	-2	packages/ssh/fs-ssh/src/index.ts
+modified	+37	-0	packages/ssh/fs-ssh/tests/provider.spec.ts
+modified	+2	-2	packages/ssh/ssh/README.i18n.yaml
+modified	+2	-0	packages/ssh/ssh/README.md
+modified	+2	-0	packages/ssh/ssh/README.zh.md
+modified	+23	-1	packages/ssh/ssh/src/helper.ts
+modified	+26	-0	packages/ssh/ssh/src/schemas.ts
+modified	+51	-2	packages/ssh/ssh/tests/helper-runtime.spec.ts

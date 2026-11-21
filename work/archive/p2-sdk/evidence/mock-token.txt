@@ -1,0 +1,4 @@
+== launch-token mode: 600
+== base-url mode: 600
+== token value in log (0=absent): 0
+== literal 'token=' in log (0=absent): 0

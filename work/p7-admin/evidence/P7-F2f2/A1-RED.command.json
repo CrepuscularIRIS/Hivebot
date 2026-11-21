@@ -1,0 +1,18 @@
+{
+  "cwd": "/tmp/bot-wt/P7-F2f2/app/sdk",
+  "env": {
+    "PATH": "/usr/bin:/bin:/home/lingxufeng/.npm-global/bin",
+    "HOME": "/tmp/bot-P7-F2f2/home",
+    "TMPDIR": "/tmp/bot-P7-F2f2/tmp"
+  },
+  "command": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "tests/unit/p7-authority.test.ts",
+    "-t",
+    "A1",
+    "--maxWorkers=1"
+  ]
+}

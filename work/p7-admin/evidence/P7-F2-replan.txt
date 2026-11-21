@@ -1,0 +1,74 @@
+P7-F2 修复上限后的 REDUCE 重规划建议（6.1 Sol 代 director）
+状态：仍 blocked；这是方案判断，不是新一轮修复授权、ready、实现或验收 PASS。
+基点：/tmp/bot-wt/P7-F2-replan，detached ed336c9a39660a30f23f415debc9e07f22b026ea；首尾 HEAD 一致、status --porcelain 均空。
+本次仅阅读固定产品树、主仓指定记录与既有 RE/source 报告；未跑测试/构建/模型/桌面/外部动作，未派 agent/panel，未修改产品或记账、提交或合并。
+以下产品路径均相对上述固定树；证据路径均相对 /home/lingxufeng/bot/work/。
+
+1. 为什么不能再直接派 f3
+F2 首验 FAIL → f1 后审测 FAIL → f2 本次仍 FAIL；原方案的字符串授权修补预算已耗尽，不能换任务名重置次数。
+目标仍是合法管理能成功、正文不能扩权；REDUCE 砍的是自然语言自动核验宽度，不砍 Alice、install X/disable Y 或来源隔离。
+主仓 p7-admin/PLAN.md v1.1 §1 K2/K3、§3、F2/f2 与 REUSE.md 已读；原版分层缺口是独立旧差距，不能用两个 major 修复冒充已完成。
+A3 在 p7-admin/evidence/P7-F2f2/VERIFY.txt:21–22 独立 PASS；保留 consumer.ts:75 的 error.details 过滤与现有桥，不重写、不回退。
+F1 已合并 6439f56，但本固定树不自行引入；F3 在另树验收，本方案不动其文件或恢复生命周期。
+
+2. 根因与可复用事实
+C1：authority.mjs:173–177 用整段原文重新 split；:205 已命中的 clause 没有传给参数核验。
+更早的 :95–97 也先切标点、后由 :84–87 去引号，完整 quoted span 已被破坏；只把 utterance 换成 normalized evidenceRef.clause 仍不够，Alice 大小写原值也会丢。
+C2：:252–256 仍是 clauseHasAction 与 targetMatches 的独立存在性判断；“install gh-x and disable gh-y”同 clause，关系没有绑定。
+残留输入/输出以 P7-F2f2/VERIFY.txt:42–58 为准；最初 A1/A2/A3 以 review-e5ff286/A-REVIEW.txt 为准，不重称真实管理副作用或真实凭证泄漏。
+已查 SDK src 与 UI main 的调用：authorize 当前没有生产调用者；tools.mjs:12 为空动作表，UI consumer.ts:53–75 只分发注册 handler；handoff 返回值本身不会出审批卡。
+现成正路：policy/shell-ask.mjs:258–265 在 tools/pre-execute 返回 ask；:349–354 展示现有档位走 next/ask，profile/tiers.json 不是原版四档表。
+既有 source 报告 p5-parity/reuse/r4-tool-gates.md §1/§5：锁定 dsh alpha.2 的 pipeline 仅 ask 进入 serviceAsk，复用原执行/审批链，不另写审批器。
+已有审批事件/作答链：SDK tests/e2e/approval.test.ts:192–229、UI main/dsh/ledger.ts；这证明现有工具链先例，不证明 admin 已接通。
+原版依据：p7-admin/RE-admin-078.md §2 四档；p5-parity/RE-approval-model.md §1.4/§2.2/§3 精确批准、subject 限定 standing grant、云端 auto-review。
+这些 RE 是静态证据；不能凭四档枚举假造本机 auto-review 服务，不能把 bash always/原生 never 直接等同插件 always_allow/blocked。
+
+3. 两条路线及选择
+A，继续只改 authority + unit：保留完整引用区间、绑定同一原始命中子句可窄修 C1；C2 则需关系识别或缩到单动作子句。
+代价：单补 and/then 分隔会继续发展字符串引擎；不明确文本即使返回 handoff，目前也没有执行闭环。两文件绿仍不能交付 F2。
+B，推荐：先补既定原生分层/审批的最小接缝，再把 H1 缩为档内可证快捷路径；不明确多动作文本转原生逐调用批准。
+选 B、不先派 A：失效点不只正则，还包括“未接审批的 handoff 被当成方案出口”；先让不确定文本有可验证成功路径，才有资格收窄 H1。
+不删 H1、也不将 H1 强加 always_allow；不建新 Mandate 格式/数据库、通用句法 AST、LLM 本地授权平台或新依赖。
+三个月后最可能死因：每修一个文本样例再漏一种写法，或所有不确定请求永远卡住。防线是有限快捷路径 + 真实原生批准成功计数，不以纯拒绝通过。
+
+4. 先决窄题（仅交主会话；本次不自行调查或派发）
+Q1 → scout：只核锁定 @deepseek-ai/dsh-* 0.2.2-alpha.2 的 tools pipeline/user-approval 与本仓现有审批接线。
+给出 admin 工具怎样复用 pre-execute→原生 ask→允许一次→同次执行的最小源码锚点；原生 request/call/session/参数关联及取消/不可用如何阻止执行？无需启动真实应用。
+Q2 → scout：只核当前已有的管理/插件策略与 ceiling 数据源、原生审核结果消费者；是否真有可复用的四档/auto-review 执行服务？
+产出明确存在/不存在/未证实与最小适配文件，不查竞品、不重问原版语义。没有审核服务就复用人工审批回退，auto-review 真审核子项仍 blocked，不能伪造 PASS。
+两题只读固定源码/锁定安装制品并绑定版本；不读凭证。若其答案要求超出下列白名单，先回主会话，不让 builder 临时扩表。
+
+5. 条件实施白名单与顺序（待主会话接纳重规划且 Q1/Q2 有据；不是直接派 f3）
+owner=builder，安全风险 M；独立树从确认基点开始，先测试 RED。两个步骤串行，作为一次有界重规划包，不重置历史失败记录。
+N1 原生最小接缝先做，只挂开发 patch、合成管理 handler；真实 M1/M3 动作与默认开放仍留原任务。
+N1 产品仅：app/sdk/src/admin/tools.mjs；app/sdk/src/admin/authority.mjs；app/sdk/profile/patches/p7-admin.yml（新，开发显式加载，不改默认）。
+N1 测试仅：app/sdk/tests/unit/p7-admin-approval.test.ts（新）；app/sdk/tests/e2e/p7-admin-approval.test.ts（新）。
+已有 tools 模块承接最少原生适配，不新建策略服务；复用宿主可信档位/审核结果，不能从模型 arguments 接收“已批准/档位”。若无法复用现成可信数据源，N1 停止，不自造配置替代。
+硬约束/blocked 优先；always_allow 合法走原生执行链且不追加 H1；auto_review 只消费真实结果，无服务/无结果转已有 ask 或拒，不能静默放行。
+needs_approval 的 handoff 必须在 bridge.request 前进入真实原生 ask；允许仅继续该次调用，拒绝/取消/不可用副作用0；不得把普通对象 {decision:'handoff'} 当卡片已出。
+N2 在 N1 成功后收窄 H1，产品仅：app/sdk/src/admin/authority.mjs；测试仅：app/sdk/tests/unit/p7-authority.test.ts。
+C1 只把现有子句切分改为完整引用区间先保留、后切标点；传同一命中原始片段给参数检查，原始值精确比较，normalized 副本仅作动作/目标匹配。
+不能再扫描整段原文找参数；未闭合/无法可靠界定的引用转原生 ask。引号内目标原子值与整段引用指令要区分，不能统一剥掉目标来假安全。
+C2 不新增 and/then 语法；多动作同子句不走 H1 自动 allow，整次请求交 N1 的精确调用审批；分号单动作对子保持原有正例。
+人类与已有单 grant 路径共用此收窄，保留禁区、撤销/过期、否定优先、token边界与跨回合隔离；不扩展现有 grant 字段或承诺其为适用 standing grant。
+实现/测试写白名单合计仅上述六文件；不得改 consumer/channel/origin、F3、F1、start.ts、shell-ask、guard、tiers.json、approval.yml、锁/依赖、renderer/IPC。
+若挂载必须改 start.ts 或需要新增协议字段/持久授权格式，立即停交主会话重定范围，不自动放大。A3 产品文件保持 ed336c9 字节。
+
+6. 可证伪验收（由独立 verifier，固定新 SHA；下列均未运行）
+命令统一 env -i，PATH=/usr/bin:/bin，隔离 HOME/TMPDIR/数据根；用已锁定本地 runner，无安装、桌面、真实模型/外部副作用。
+U1：pnpm -C app/sdk test -- tests/unit/p7-authority.test.ts tests/unit/p7-admin-channel.test.ts tests/unit/p7-admin-approval.test.ts。
+U2：pnpm -C app/ui test -- tests/unit/admin/channel.test.ts；A3 另复跑既有独立合成 main→SDK 桥用例，对新 SHA 重绑定，不改其预期。
+I1：pnpm -C app/sdk test -- tests/e2e/p7-admin-approval.test.ts；复用现有 fake-provider/runtime harness，只用计数 handler，不落真实管理操作。
+C1：原 VERIFY:43 的完整原文，Alice 精确参数 H1 allow，Mallory 不得自动 allow；追加 model/prompt/cwd 不得借权；人类/现有 grant 双路径均测，证据片段不能指 Alice 却执行 Mallory。
+C2：分号、and、then 各四格；分号合法 install X/disable Y 自动成功、交叉0。and/then 合法两次各经原生批准成功1，未批准的 disable X/install Y 各0，不能仅断言四格都 handoff 就绿。
+C2 的卡/原生请求须显示并绑定实际动作、目标、参数；install X 的批准不能在执行前换为 disable X、Y 或追加参数；新明确批准另一个动作是新权限，不冒称旧原文授予。
+不确定引用/多动作文本：证明真实 ask 事件到达、允许后仅本次执行1；拒绝/取消/无 answerer 为0且返回明确状态。通知/返回 handoff 字符串不代替批准链证据。
+分层：always_allow 正常成功且无 H1/重复卡，blocked/硬禁区0；auto-review 无真结果不得自动执行，有效结果格只能用实际复用服务证明，纯 stub 不能关闭其缺口。
+保留旧 SDK 76/UI25 回归及否定/子串/伪来源/跨回合/旧代/wrong Peer/断流格；A3 合成 error.details/value 等价过滤与非敏感字段保留、输入不变继续成立。
+U1 对 authority.mjs/tools.mjs 按真实执行产品模块取官方覆盖，statements/branches/functions/lines 各≥80%；覆盖绿与计数绿不能替代原生链实证。
+
+7. 停止条件与剩余阻塞
+Q1/Q2 未能证明现成接缝、需扩白名单/改协议/新数据库，或需新文本语法才能保持正常成功：立即停止；不启动“再补一个正则”。
+重规划包只送一次独立验收；任一 C1/C2/A3/正常成功/硬边界失败则冻结回主会话，不自动续 f3/f4，不删除红例、不换成全拒或空动作表假绿。
+本次仅把最小可复用路线和先决事实拆清；未改变 PLAN 状态。F2/f2 仍 blocked，原版分层与生产来源/管理接线仍未完成；N1 模块成功也不等于 P7 完成。
+完成即停；唯一写入本 TXT，未触碰 PLAN/LOG/LEARNINGS/产品或 A3 成果。

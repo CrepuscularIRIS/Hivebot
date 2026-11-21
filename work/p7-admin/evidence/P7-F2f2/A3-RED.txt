@@ -1,0 +1,97 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F2f2/app/ui[39m
+
+ [31m❯[39m tests/unit/admin/channel.test.ts [2m([22m[2m25 tests[22m[2m | [22m[31m2 failed[39m[2m | [22m[33m23 skipped[39m[2m)[22m[32m 20[2mms[22m[39m
+   [2m[90m↓[39m[22m AdminOriginRefLedger [2m(1)[22m
+     [2m[90m↓[39m[22m issue / lookup；originRef 不可重复签发
+   [2m[90m↓[39m[22m reverifyAdminRequest [2m(5)[22m
+     [2m[90m↓[39m[22m 完整对上（代 / 会话 / 回合 / 来源类）→ ok
+     [2m[90m↓[39m[22m 记录不存在（模型自报 originRef / 伪 source）→ unknown-origin-ref
+     [2m[90m↓[39m[22m 旧代请求拒绝（request.generation ≠ 当前代；记录代过期同样拒）
+     [2m[90m↓[39m[22m originRef 与 session/turn 不属于同一回合 → origin-ref-mismatch
+     [2m[90m↓[39m[22m 污染来源记录 → tainted-turn 拒
+   [2m[90m↓[39m[22m wireAdminChannel [2m(6)[22m
+     [2m[90m↓[39m[22m 合法请求：重验 → 分发 → respond value（含 operationId 信封）
+     [2m[90m↓[39m[22m 重验失败（伪 source / 旧代）→ respond 错误码，不分发
+     [2m[90m↓[39m[22m null / 非对象帧只记 1 行日志丢弃，不 respond 不炸常驻回调
+     [2m[90m↓[39m[22m 形状坏但带 requestId 的请求 → respond pbots/invalid-args（让 SDK 侧立即收敛）
+     [2m[90m↓[39m[22m 新一代连接：旧流作废重开一条（onConnected → cancel + reopen）
+     [2m[90m↓[39m[22m dispatch 异常 → respond 内部错误，不向上抛
+   [2m[90m↓[39m[22m createAdminConsumer [2m(9)[22m
+     [2m[90m↓[39m[22m 默认无任何动作：一切 dispatch → pbots/admin-unavailable（明确不可用，不执行）
+     [2m[90m↓[39m[22m 默认空动作表的原型成员 constructor 必须 unavailable
+     [2m[90m↓[39m[22m 默认空动作表的原型成员 toString 必须 unavailable
+     [2m[90m↓[39m[22m 默认空动作表的原型成员 hasOwnProperty 必须 unavailable
+     [2m[90m↓[39m[22m 默认空动作表的原型成员 __proto__ 必须 unavailable
+     [2m[90m↓[39m[22m 只路由自有函数属性，不调用自定义原型上的 handler 或非函数
+     [2m[90m↓[39m[22m 自有函数即使与原型成员同名也可显式注册
+     [2m[90m↓[39m[22m 注册进来的 handler 才被路由（WM 接线用缝），回复统一过 sanitize
+     [2m[90m↓[39m[22m 未知动作即使有人伪造请求也不落进 handler
+   [31m❯[39m A3：error.details 与 value 使用等价过滤 [2m(2)[22m
+[31m     [31m×[31m 错误详情深剥禁区键，保留 code/message 和普通字段且不改输入[39m[32m 8[2mms[22m[39m
+[31m     [31m×[31m 实际 main→同 Peer respond→SDK rejection 只收到过滤后的详情[39m[32m 9[2mms[22m[39m
+   [2m[90m↓[39m[22m sanitizeAdminValue（不返 token / PID / 凭证） [2m(2)[22m
+     [2m[90m↓[39m[22m 深剥禁区键，保留普通字段，不改原对象
+     [2m[90m↓[39m[22m 非对象透传；数组 / 嵌套数组照样剥
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/unit/admin/channel.test.ts[2m > [22mA3：error.details 与 value 使用等价过滤[2m > [22m错误详情深剥禁区键，保留 code/message 和普通字段且不改输入
+[31m[1mAssertionError[22m: expected { error: { …(3) } } to deeply equal { error: { …(3) } }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -2,15 +2,19 @@[39m
+[2m    "error": {[22m
+[2m      "code": "mock-upstream-error",[22m
+[2m      "details": {[22m
+[2m        "process": {[22m
+[2m          "keep": 1,[22m
+[31m+         "pid": 4242,[39m
+[2m        },[22m
+[2m        "rows": [[22m
+[2m          {[22m
+[31m+           "access_token": "SYNTHETIC",[39m
+[2m            "keep": true,[22m
+[31m+           "process_id": 4243,[39m
+[2m          },[22m
+[2m        ],[22m
+[31m+       "token": "SYNTHETIC-BRIDGE-MARKER",[39m
+[2m      },[22m
+[2m      "message": "failed",[22m
+[2m    },[22m
+[2m  }[22m
+
+[36m [2m❯[22m tests/unit/admin/channel.test.ts:[2m248:69[22m[39m
+    [90m246|[39m     const consumer = createAdminConsumer({ actions: { list: async () =…
+    [90m247|[39m     const valueConsumer = createAdminConsumer({ actions: { list: async…
+    [90m248|[39m     expect(await consumer.dispatch({ ...REQUEST, action: 'list' })).to…
+    [90m   |[39m                                                                     [31m^[39m
+    [90m249|[39m     expect(await valueConsumer.dispatch({ ...REQUEST, action: 'list' }…
+    [90m250|[39m     expect(details.token).toBe('SYNTHETIC-BRIDGE-MARKER')
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/unit/admin/channel.test.ts[2m > [22mA3：error.details 与 value 使用等价过滤[2m > [22m实际 main→同 Peer respond→SDK rejection 只收到过滤后的详情
+[31m[1mAssertionError[22m: expected '[{"request":{"requestId":"72e1d287-c0…' not to contain 'SYNTHETIC-BRIDGE-MARKER'[39m
+
+Expected: [32m"SYNTHETIC-BRIDGE-MARKER"[39m
+Received: [31m"[{"request":{"requestId":"72e1d287-c0dd-431e-ab06-ff7b40019bc9","error":{"code":"mock-upstream-error","message":"failed","details":{"token":"SYNTHETIC-BRIDGE-MARKER","process":{"pid":4242,"keep":1},"rows":[{"access_token":"SYNTHETIC","process_id":4243,"keep":true}]}}}}]"[39m
+
+[36m [2m❯[22m tests/unit/admin/channel.test.ts:[2m287:42[22m[39m
+    [90m285|[39m       expect(frames).toHaveLength(1)
+    [90m286|[39m       expect(frames[0]).toMatchObject({ request: { error: { details: c…
+    [90m287|[39m       expect(JSON.stringify(frames)).not.toContain('SYNTHETIC-BRIDGE-M…
+    [90m   |[39m                                          [31m^[39m
+    [90m288|[39m       expect(JSON.stringify(frames)).not.toContain('4242')
+    [90m289|[39m       expect(sdk.pendingCount()).toBe(0)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[33m23 skipped[39m[90m (25)[39m
+[2m   Start at [22m 09:57:01
+[2m   Duration [22m 227ms[2m (transform 61%, tests 16%, import 13%, setup 8%, worker 3%)[22m
+

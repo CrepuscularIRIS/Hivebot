@@ -1,0 +1,47 @@
+{
+  "mode": "missing",
+  "worker": "session-d34a7371-66fd-4407-ad28-a765fd22317d",
+  "tool": "subagent",
+  "before": 1,
+  "after": 1,
+  "results": [
+    {
+      "seq": 16,
+      "type": "tool/result",
+      "callId": "probe-call",
+      "isError": true,
+      "error": null,
+      "text": "Error: pbots/forbidden: worker sessions cannot delegate further (tool \"subagent\" denied; run the task yourself)"
+    }
+  ],
+  "childEvents": [],
+  "snapshot": {
+    "agents": [
+      {
+        "id": "session-d34a7371-66fd-4407-ad28-a765fd22317d",
+        "names": [
+          "request_network",
+          "working_directory",
+          "p612_conn_write",
+          "present",
+          "read",
+          "write",
+          "edit",
+          "glob",
+          "grep",
+          "skill",
+          "web_search",
+          "web_fetch",
+          "bash",
+          "read_image",
+          "get_goal",
+          "create_goal",
+          "update_goal",
+          "ask_user_question",
+          "todo_write",
+          "exit_plan_mode"
+        ]
+      }
+    ]
+  }
+}

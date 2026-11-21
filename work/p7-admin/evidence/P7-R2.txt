@@ -1,0 +1,100 @@
+P7-R2 本地限定侦察与宿主加载探针实录
+日期：2026-11-05
+范围：SA stored work/Restart/Report 文本；官方 pstack 两份验证 playbook；已装 dsh 加载与 P6 Assignment/Report 接口。
+不含产品实现、不含真实桌面、不含外网调查或远端操作。
+
+一、隔离与初次准备（压缩前已执行）
+命令：git -C /home/lingxufeng/bot worktree add --detach /tmp/bot-wt/P7-R2 e5ff286
+退出码：0
+基点完整SHA：e5ff286e686994b489766ea7d3bd1f74614a342b
+
+命令：ln -s /home/lingxufeng/bot/app/sdk/node_modules /tmp/bot-wt/P7-R2/app/sdk/node_modules
+退出码：0
+说明：只在临时树链接已安装依赖，无安装/升级；此未跟踪软链不属于产品变更，diff --exit-code不会检查未跟踪文件。
+
+环境：系统node v22.23.4；实际使用 /home/lingxufeng/bot/app/sdk/node_modules/.bin/node v24.22.2。
+初次组合只读/准备命令曾被process_guard以“skill按模式批量杀进程”拒绝；该组合未执行，没有shell退出码。随后使用明确的独立命令；未更改hook或权限配置。
+
+二、最终复跑真实命令与退出码
+命令：/home/lingxufeng/bot/app/sdk/node_modules/.bin/node /home/lingxufeng/bot/work/p7-admin/evidence/P7-R2-probe.mjs
+PROBE_EXIT=0
+脱敏stdout（不含临时端口、token、PID、runtime事件或模型输入）：
+{
+  "task": "P7-R2",
+  "base": "e5ff286e686994b489766ea7d3bd1f74614a342b",
+  "checks": [
+    "default project .agents/skills discovered",
+    "bare profile/skills NOT auto-discovered",
+    "DSH_BUNDLED_SKILL_DIR discovers both original and adapted playbooks",
+    "create-verification-skill: P6 pbots-main source preserved",
+    "original: model tool invocation refused",
+    "pbots-main slash text does NOT cause explicit user skill injection",
+    "create-verification-skill: P6 assignment fold + report tail usable",
+    "create-verification-skill-adapted: P6 pbots-main source preserved",
+    "create-verification-skill-adapted: real skill tool loaded body",
+    "create-verification-skill-adapted: P6 assignment fold + report tail usable",
+    "maintain-verification-skill-adapted: P6 pbots-main source preserved",
+    "maintain-verification-skill-adapted: real skill tool loaded body",
+    "maintain-verification-skill-adapted: P6 assignment fold + report tail usable",
+    "original: genuine user slash invocation injects body"
+  ],
+  "stages": [
+    {"label":"default","boot":"ready","bundledRoot":false,"exit":{"code":0,"signal":null}},
+    {"label":"bundled","boot":"ready","bundledRoot":true,"exit":{"code":0,"signal":null}}
+  ],
+  "pass": true,
+  "cleanup": "owned launcher stopped; temporary runtime removed"
+}
+
+命令：/home/lingxufeng/bot/app/sdk/node_modules/.bin/node --check /home/lingxufeng/bot/work/p7-admin/evidence/P7-R2-probe.mjs
+SYNTAX_EXIT=0
+
+命令：git -C /tmp/bot-wt/P7-R2 rev-parse HEAD
+stdout：e5ff286e686994b489766ea7d3bd1f74614a342b
+说明：与探针summary.base一致；本次组合没有单独打印该命令退出码，不补造独立退出码标签。
+命令：git -C /tmp/bot-wt/P7-R2 symbolic-ref -q HEAD
+DETACHED_CHECK_EXIT=1（预期：detached HEAD，无符号分支）
+命令：git -C /home/lingxufeng/bot branch --show-current
+stdout：docs/rebuild-p6-p5-plan
+MAIN_BRANCH_EXIT=0
+命令：git -C /home/lingxufeng/bot diff --exit-code -- app
+stdout：空
+PRODUCT_DIFF_EXIT=0
+命令：git -C /tmp/bot-wt/P7-R2 diff --exit-code -- app
+stdout：空
+PROBE_TREE_PRODUCT_DIFF_EXIT=0
+
+三、限定调查证据（压缩前执行）
+命令：rg -n '12\.3|结构化执行者|structured.executor|verification.executor' /home/lingxufeng/bot/work/p6-orchestration/PLAN.md /home/lingxufeng/bot/work/p6-orchestration/BRIEF.md /home/lingxufeng/bot/work/p6-orchestration/panels/PLAN-r4.5-snapshot.md
+P6_INTERFACE_ANCHOR_SEARCH_EXIT=1（无匹配，不是读文件失败）
+当前P6 PLAN为162行；历史LOG有§12.3引用，但不能据引用恢复正式契约。
+
+已读取本地源与完整LICENSE，未调用GitHub/npm/WebSearch；无需get_me。
+SA：repos/dsh-superagent-prototype
+HEAD：6337fc823ce20251c8de8085948165c81aaa701e
+本地HEAD日期：2026-10-31T20:05:39+08:00；MIT。
+pstack：repos/cursor__plugins
+HEAD：bb68f2365eceafa0cb2d253112f675acf5f144cc
+本地HEAD日期：2026-11-03T23:20:06-08:00；pstack/LICENSE为MIT。
+dsh参考：repos/deepseek-harness
+HEAD：ce7073d51254c26cd63b22a60835b8f948deb447
+本地HEAD日期：2026-10-30T00:13:15+08:00；MIT。
+说明：本地浅仓HEAD日期不是完整issue响应或远端最新版本证明；不额外宣称在维护标准全部核验。
+安装制品：dsh-skill-filesystem、dsh-tool-skill package.json实查version均0.2.2-alpha.2、license均MIT；该查询命令组INSTALLED_METADATA_EXIT=0。
+完整来源URL@SHA:path与源码证据位置见：
+/home/lingxufeng/bot/work/p7-admin/reuse/sa-skill-adapters.md
+
+四、探针边界与清理
+- 临时HOME/workspace/runtime/profile/observer/fake脚本/handoff均位于每次新建的/tmp/bot-P7-R2-*。
+- 子进程环境采用白名单，不spread真实process.env；只使用临时mock provider。
+- 仅在进程内读取本次新生成handoff用于连接，不输出凭证，不读用户凭证目录。
+- 只对脚本自己spawn的launcher调用ChildProcess.kill('SIGTERM')，launcher收尾自己的child；两阶段均正常退出码0。
+- 临时runtime、日志、输入和handoff已删；未复制进evidence。隔离worktree与依赖软链保留供重跑，未提交。
+- 真实dsh skill加载、P6 delivery与日志投影已走；fake模型被指定调用skill，不代表真实模型自主选对技能。
+- 失败的原版skill回合也可正常completed并回报MODEL_CLAIM_ONLY：这是反例，证明completed/模型正文不等于验证PASS。
+
+五、决策与未验证项
+F3：可解除R2文本来源/恢复语义这一项阻塞；不是F3实现/验收PASS。
+L5：尚不能按当前白名单直接解锁完整实现。profile/skills默认不发现，需先回写最小bundled-root生产接线及测试白名单；另需定位/恢复PLAN所引用的P6 §12.3执行者正式契约。模型禁调用frontmatter须作适配，保留pbots-main，不能伪造user。
+未验证：F3实际恢复代际闸、消费冻结与旧代拒绝；未知副作用不重放；L5真实好仓PASS/坏仓FAIL完整旅程；可信执行退出码/证据与verified投影；真模型选用与遵循技能；生产默认接线；create_bot/UI-main建worker及Reporter通知全链；上游issue响应及远端最新release。
+未修改产品、PLAN、REUSE、LOG、参考repos或MANIFEST；未安装同名旧pstack；未调用Agent、提交、push、sudo、重启/注销、批量进程操作或真实桌面。

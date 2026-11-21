@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "frozenAt": "2026-11-03",
+  "note": "P6-02 D3 冻结提示集（BRIEF p6-orchestration v2.1 §6 D3 口径）。d3 数组 10 条（5 multi + 5 simple），每条 x3 = 30 回合；d3 是 held-out：preset 调词（P6-04 未达标后的调词轮）不得使用 d3 条目，只能用 dev。本文件在 p6-reply-style.yml 首个提交之前冻结，之后不得改动（验收 ①）。multi 条目自包含：会话 cwd 为每回合新建的空目录，任务只需 fs/bash 即可完成。simple 条目一个词/一句话即可回答，不应调用任何工具。",
+  "d3": [
+    {
+      "id": "m1-create-todo",
+      "kind": "multi",
+      "prompt": "在当前目录创建 todo.txt，写入三行内容：买牛奶、寄快递、还书。然后读回文件，确认内容正确。",
+      "expect": {
+        "ack": "提到要创建 todo.txt 并读回核对",
+        "plan": "写文件 → 读回确认",
+        "result": "todo.txt 已创建，三行内容无误"
+      }
+    },
+    {
+      "id": "m2-count-md",
+      "kind": "multi",
+      "prompt": "先在当前目录创建 a.md 和 b.md 两个空文件，然后统计当前目录下 .md 文件的个数，把数字写入 count.txt。",
+      "expect": {
+        "ack": "提到建两个文件、统计、写 count.txt",
+        "plan": "创建 → 统计 → 写结果",
+        "result": "count.txt 内容为 2"
+      }
+    },
+    {
+      "id": "m3-date-note",
+      "kind": "multi",
+      "prompt": "用命令查看今天的日期，然后把「日期已确认：<日期>」这一行写入 note.txt。",
+      "expect": {
+        "ack": "提到查日期并写 note.txt",
+        "plan": "跑 date → 写文件",
+        "result": "note.txt 含今日日期"
+      }
+    },
+    {
+      "id": "m4-largest-file",
+      "kind": "multi",
+      "prompt": "先创建 data.txt 写入一行 hello，再创建空文件 empty.txt，然后找出当前目录中字节数最大的文件，把文件名写入 largest.txt。",
+      "expect": {
+        "ack": "提到建两个文件、比较大小、写 largest.txt",
+        "plan": "创建 → 比较 → 写结果",
+        "result": "largest.txt 内容为 data.txt"
+      }
+    },
+    {
+      "id": "m5-run-python",
+      "kind": "multi",
+      "prompt": "创建 hello.py，内容是 print('hello')，运行它，把程序输出原样写入 out.txt。",
+      "expect": {
+        "ack": "提到写脚本、运行、存输出",
+        "plan": "写 hello.py → 运行 → 写 out.txt",
+        "result": "out.txt 内容为 hello"
+      }
+    },
+    {
+      "id": "s1-env-var",
+      "kind": "simple",
+      "prompt": "用一句话解释什么是环境变量。",
+      "expect": { "ack": "无（快问快答不 ack）", "plan": "直接回答", "result": "恰 1 个气泡，一句话定义，无工具调用" }
+    },
+    {
+      "id": "s2-arithmetic",
+      "kind": "simple",
+      "prompt": "17 + 25 等于多少？直接给出答案。",
+      "expect": { "ack": "无", "plan": "直接回答", "result": "恰 1 个气泡：42，无工具调用" }
+    },
+    {
+      "id": "s3-translate",
+      "kind": "simple",
+      "prompt": "把「读书破万卷」翻译成英语，只给译文。",
+      "expect": { "ack": "无", "plan": "直接回答", "result": "恰 1 个气泡：仅译文，无工具调用" }
+    },
+    {
+      "id": "s4-git-diff",
+      "kind": "simple",
+      "prompt": "用一句话说明 git commit 和 git push 的区别。",
+      "expect": { "ack": "无", "plan": "直接回答", "result": "恰 1 个气泡：一句话区别（本地入库 vs 推到远端），无工具调用" }
+    },
+    {
+      "id": "s5-color-mix",
+      "kind": "simple",
+      "prompt": "红光和绿光叠加是什么颜色？一个词回答。",
+      "expect": { "ack": "无", "plan": "直接回答", "result": "恰 1 个气泡：黄（yellow），无工具调用" }
+    }
+  ],
+  "dev": [
+    {
+      "id": "d1-notes-md",
+      "kind": "multi",
+      "prompt": "在当前目录创建 notes.md，第一行写「会议记录」，然后读回确认。",
+      "expect": { "ack": "提到建 notes.md 并读回", "plan": "写 → 读回", "result": "notes.md 首行为「会议记录」" }
+    },
+    {
+      "id": "d2-boiling",
+      "kind": "simple",
+      "prompt": "标准大气压下水的沸点是多少摄氏度？直接回答。",
+      "expect": { "ack": "无", "plan": "直接回答", "result": "恰 1 个气泡：100，无工具调用" }
+    },
+    {
+      "id": "d3-sum",
+      "kind": "multi",
+      "prompt": "创建 nums.txt，写入 1 到 5 各占一行，然后求这五个数的和，把结果写入 sum.txt。",
+      "expect": { "ack": "提到写 nums.txt、求和、写 sum.txt", "plan": "写 → 求和 → 写结果", "result": "sum.txt 内容为 15" }
+    }
+  ]
+}

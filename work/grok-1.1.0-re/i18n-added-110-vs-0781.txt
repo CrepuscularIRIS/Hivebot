@@ -1,0 +1,536 @@
+Acknowledge
+Add AWS keys
+Add a description
+Add another (
+Add from your skills
+Add it in Microsoft Teams. Open it there, then add it to a 1:1 chat, a group chat or a team.
+Add it in Microsoft Teams. Open it there, then add it to start a 1:1 chat.
+Add to Teams
+Add to cart
+Add to chat
+Add your number
+Added to 
+Adding to Slack was cancelled
+All your skills are already on this Bot
+Allow reads
+Already connected
+An admin needs to approve Cursor in Slack. Then try again.
+Any stops
+Apple ID email
+Approve in the X app
+Apps to connect
+Archive all
+Archived
+Arrives by 
+Ask a Cursor team admin to reconnect it
+Ask a manager of this Bot to add it to Slack
+Ask for changes
+Ask my Bot
+Ask this Bot to do something on a schedule, and it shows up here
+Ask this Bot to do something on a schedule, and it shows up here with the meetings it joins
+Ask your team admin to allow it
+Back to chat
+Bad response
+Before You Record Other People
+Blocked by the team's MCP allowlist
+Bot configuration
+Bot details
+Bot invites are for personal accounts
+Bot not in channel
+Bot's connectors
+Bot's vault
+Browse Team Bots
+Call ended
+Camera preview
+Canceled
+Change email
+Change number
+Change your try-on of 
+Cheapest nonstop
+Check that it's a mobile number that can get texts. If you texted STOP to Grok Bot, text START to 
+Check that it's a mobile number that can get texts. If you texted STOP to Grok Bot, text START to Grok Bot first.
+Check that it's the email you use for iMessage. If you texted STOP to Grok Bot, text START to 
+Check that it's the email you use for iMessage. If you texted STOP to Grok Bot, text START to Grok Bot first.
+Checking with Slack
+Choose Auto-review, Needs approval, Blocked, or Always allow for each tool
+Choose a PNG, JPEG, or WebP image
+Choose a selfie
+Choose how 
+Choose the vault folder on this Mac
+Classifier
+Cleaning up your inbox
+Clear search
+Codes come from 
+Command not found on Grok Bot's computer. Use the command's full path, or set PATH in the connector's env. Details: 
+Completed 
+Computer audio isn't recording
+Connect a dedicated 
+Connect an app as this Bot
+Connect it on its own
+Connect more Google apps
+Connect more Microsoft apps
+Connect your apps
+Connected with partial access
+Connected with your Microsoft account
+Connecting 
+Connector: 
+Connectors
+Copy details for admin
+Couldn't Check Privacy Mode
+Couldn't Create Team Bot
+Couldn't add
+Couldn't add to Slack
+Couldn't change who this routine runs for
+Couldn't check whether your team admin enabled Microsoft Teams
+Couldn't choose that folder
+Couldn't confirm Privacy Mode. Try connecting QuickBooks again.
+Couldn't connect
+Couldn't create 
+Couldn't create a try-on from your photo
+Couldn't create your Bot
+Couldn't create your teammate
+Couldn't create your try-on. Try again.
+Couldn't delete the factory. Try again.
+Couldn't delete your try-on. Try again.
+Couldn't link your number. Try again.
+Couldn't load Bot's connectors
+Couldn't load Bot's vault
+Couldn't load hours and photos from Yelp
+Couldn't load similar products
+Couldn't load the Obsidian vault
+Couldn't load this Bot's details
+Couldn't load your Slack workspaces
+Couldn't load your cart
+Couldn't load your selfie
+Couldn't load your team's policy. Try again in a moment.
+Couldn't make that change. Try describing it another way.
+Couldn't prepare the image. Try again.
+Couldn't reach Grok Bot. Try again.
+Couldn't remove it. Try again.
+Couldn't send a new code. Your last code still works.
+Couldn't send the invite
+Couldn't send your answer
+Couldn't set up your team. Try again.
+Couldn't start recording
+Couldn't start the routine. Try again.
+Couldn't start the run. Try again.
+Couldn't turn on Privacy Mode. Try again
+Couldn't turn on data sharing. Try again.
+Couldn't update the vault folder
+Country code
+Create Profile
+Create a Bot
+Create an OAuth app in 
+Create task
+Created 
+Creating your try-on
+Data sharing
+Data sharing can't be turned on for this account
+Delete factory
+Delete try-on
+Describe a change
+Describe edits
+Did you want me to do this?
+Didn't finish
+Didn't get it?
+Disconnect your Microsoft account
+Dismiss 
+Dismiss phone app banner
+Don't show again
+Each person connects their own
+Edit Avatar
+Edit Bot avatar
+Email search
+Enter a full email address
+Enter a full phone number
+Enter a name for your team
+Enter a valid email address
+Enter the code
+Error code: 
+Event search
+Everyone in the Workspace
+Everyone on the Slack workspace
+Everyone on the channel
+Everyone on your team will be able to use everything below
+Everyone with access
+Face forward
+Factory actions
+Feedback request dismissed
+Feedback requests turned off
+Files give your Bot context to draw on when it answers
+Files, skills, credentials, and connectors get shared with collaborators by default
+Filter by tag
+Filter tasks
+Find and read notes in your vault
+Find and save notes in your vault
+Finding similar products
+Finishing setup in Microsoft Teams
+For Review
+Friend's email
+Get additional Grok Bot usage
+Get the phone app to chat with your Bots on the go
+Gift receipt included
+Give your Bots a task and they'll show up here
+Good response
+Google apps
+Google didn't give access
+Grok Bot can't make this Bot a Team Bot, so no Team Bot was created
+Grok Bot can't reach this group chat right now, so the Bot stays in it but no longer replies there
+Grok Bot can't use your camera. Allow camera access in System Settings, or choose a photo instead.
+Grok Bot couldn't check your team right now. Try again.
+Grok Bot couldn't share the new Bot with your team, so no Team Bot was created. Try again.
+Grok Bot is busy right now
+Grok Bot just texted you at 
+Grok Bot on your phone
+Grok Bot refreshes on its own when you're back online
+Help improve Grok Bot
+Here's an outcome I want you to own: 
+How it checks 
+How it works for the team
+How it works for you
+How often
+How should 
+How this Bot should do this, step by step
+How was this response?
+How will you use this Bot?
+Improve Grok Bot and more
+In Progress
+Incident search
+Include additional device diagnostics
+Includes Docs, Sheets, and Slides
+Invite a friend by email
+Invite sent to 
+Issue list
+Issue search
+It can reply again when 
+It can reply again when the owner's usage resets
+It may have reached 
+Keeps items it's at least 
+LINK_CODE_LENGTH
+Last active 
+Last ran
+Learn more about your privacy options
+Learned rules
+Leave group chat
+Lie-flat
+Limits reset!
+Link your phone
+Listening
+Listening to Conversation
+Live transcript
+Loads on Grok Bot's next turn
+Log search
+Looks for
+Made by 
+Make default
+Make private
+Manage details from 
+Microphone access is off
+Microphone isn't recording
+Microsoft Entra application ID: 
+Microsoft Teams couldn't update the app. Try again.
+Microsoft Teams didn't accept the app
+Microsoft Teams is still making 
+Microsoft Teams stopped working for 
+Microsoft Teams stopped working for your team
+Microsoft apps
+Microsoft didn't give access
+Missing Bot
+Mobile number
+Monitor search
+Move it here
+Move this number here?
+Needed by 
+Needs you
+New learnings show up here before this Bot applies them for everyone
+New outcome
+New reply 
+New routine
+New task
+New teammate
+Next run
+Next run 
+No Slack access yet
+No Team Bots yet
+No audio is coming in
+No connectors yet
+No gift receipt
+No matching Slack channels
+No notes about you yet
+No outcomes yet
+No routines yet
+No tasks yet
+No updates yet
+No vault logins yet
+No, thanks
+Nobody has messaged it in this range
+Not enabled for your team
+Nothing learned yet
+Nothing to do
+Notify me
+Now in iMessage
+Obsidian
+On track
+Only Team Bots can join group chats
+Only iMessage lets a Bot leave a group, so the Bot stays in this group but no longer replies there
+Only this Bot's owner can see its outcomes for now
+Only this Bot's owner can see its updates for now
+Only when
+Open App Store
+Open Messages
+Open chat
+Open the pull request
+Opening Slack
+Other airports
+Outcomes
+Pages, files, and apps this Bot makes show up here
+Pages, files, and apps this Bot makes show up here, private to you until you share them
+Paid with
+Part of routine 
+Pay with, 
+People in 
+People in other teams
+People in the 7 days before each day
+People it worked with
+Personal assistant
+Phone number
+Price at checkout
+Private channel
+QR code that opens Grok Bot in your phone's app store
+QuickBooks is connected. Its tools will show here once they load.
+QuickBooks needs Privacy Mode. Turn it on in Cursor settings, then try again.
+QuickBooks tools
+RUM event search
+Re-run Started
+Read and build presentations
+Read and draft email
+Read and edit spreadsheets
+Read, write, and edit documents
+Read-only is on. Grok Bot runs reads and blocks anything that would make changes.
+Recent runs
+Reconnect Microsoft Teams
+Recording stopped unexpectedly
+Remove this login?
+Replied in chat
+Reply in chat
+Reset limits
+Resources
+Results from Yelp
+Review Photo
+Run by hand
+Run history unavailable
+Same Grok Bot, just a text away
+Save a username and password
+Save settings
+Saving notes
+Scan to install
+Scan with your camera to get the app
+Search Bots, Chats, Settings...
+Search Slack channels
+Search Team Bots...
+Search archived tasks
+Search events and schedule
+Search older
+Search to add the 
+Search your skills
+Search, read, and create files
+Searched recent messages
+Searches
+See it on you
+Send a new code
+Send a new code in 
+Send a new code to keep going
+Send again
+Send again in 
+Send another
+Send this to your call?
+Set up a routine to tell me when a store has the 
+Set up a routine to tell me when the 
+Set up a routine: 
+Share context with your call
+Share your account
+Shared when you share this Bot
+Shared with everyone who uses this Bot
+Shares learnings, context, and skills with invitees. Can chat with others.
+Ship to, 
+Shipping 
+Similar products
+Skills teach this Bot how to handle repeated tasks
+Skills, team memory, and plugins are shared with everyone who uses it
+Skip for now
+Slack Access
+Slack Access, 
+Slack didn't finish. Try again.
+Something look wrong? Ask 
+Something went wrong on our side. Try again in a moment.
+Span search
+Still creating 
+TRY_ON_IMAGES_PER_PRODUCT
+TV or billboard
+Take Grok Bot with you
+Take Selfie
+Take photo
+Tasks completed aren't counted yet, so this shows messages and the people who sent them
+Tasks you archive, and tasks finished more than a few days ago, show up here
+Team Bot by 
+Team Bots unlock once a teammate joins your team
+Team Bots work alongside your team. Invite teammates to use it, or Managers to help run it
+Team approved
+Team name
+Tell me more about 
+Text me at 
+Texting is busy right now
+Texting isn't available right now
+Thank you for helping us improve Grok Bot. Please enjoy your reset usage limits.
+Thank you!
+Thanks for the feedback!
+That code didn't match. 
+The Bot couldn't leave the group chat. Try again.
+The Bot leaves the iMessage group and stops replying there. Everyone in the group sees that it left.
+The camera isn't available. Choose a photo instead.
+The connector printed other output on stdout before starting. Send its logs to stderr. Details: 
+The new Bot couldn't be removed and is still in your sidebar as a personal Bot. Delete it there.
+The owner hasn't written a description yet
+The remote server behind mcp-remote returned an error. Check its URL and credentials. Details: 
+The store confirms 
+These settings are saved for everyone using your Bot. Each teammate still signs in to 
+They come from the owner's own chats with it
+This Bot can no longer read this file. You can upload it again at any time.
+This Bot can no longer use this skill. You can add it again at any time.
+This Bot can reply again when usage resets
+This Bot can't be shared because no one else is on this team yet. 
+This Bot can't be shared because you don't have any teammates to share it with yet. Your personal Bots aren't affected.
+This Bot can't use 
+This Bot can't use your 
+This Bot has no connectors yet
+This Bot has no vault logins yet
+This Bot is no longer in the group chat
+This Bot will stop using 
+This Bot's computer is still updating so it can reach your tailnet. Try again in a few minutes.
+This Bot's free team credit is used up
+This Bot's owner is out of usage
+This account is part of a team
+This code expired
+This computer's audio
+This group chat lives in iMessage
+This group chat lives in iMessage. Message the group there to talk to the Bot.
+This is a Team Bot
+This number has had all the codes it can get for now. Try again in about an hour, or use a different number.
+This number is on another account
+This routine can't be re-run from here
+This routine is already starting
+Too many codes
+Too many codes for now. Try again in a minute. Your last code still works.
+Too many codes for now. Try again in about 
+Too many codes for now. Try again in about an hour. Your last code still works.
+Too many invites at once
+Too many tries
+Too many tries for now. Try again later.
+Try again in 
+Try again in a few hours
+Try again in a minute
+Try again in about 
+Try again in about an hour
+Try again to connect 
+Try-on isn't available on your account
+Turn On Privacy Mode
+Turning this on applies to Cursor and Grok Bot, and data isn't used for training
+Update try-on
+Updated 
+Updating your try-on
+Upload a file
+Usage limit reached
+Use a different number
+Use a phone number instead
+Use a reset to keep going now
+Use a reset to keep going now, or buy credits
+Use a reset to keep going now, or upgrade
+Use an Apple ID email instead
+Use individual accounts
+Use my X account for reads
+Used by everyone with access
+Wait a moment, then send again
+Waiting on admin approval
+Waiting on you 
+We can't send an invite to this address
+We can't send an invite to this address. Check it, or try another.
+We couldn't confirm the invite was sent
+We couldn't text that Apple ID
+We couldn't text that number
+We'll email them your invite. Their first 2 weeks of Grok Bot are on us.
+We'll text you a code from Grok Bot
+What gets shared
+What it knows about you
+What should a Bot take on?
+What the Bot was told
+What your Google sign-in connected
+What your Microsoft sign-in connected
+What's your Apple ID email?
+What's your number?
+When on, reads use your X account's rate limits and are billed at X API pricing
+Who can use this routine?
+Who it worked with
+Who it worked with, last 90 days
+Works on iPhone and Android
+Workspace
+Write a new skill
+Write the steps this Bot should follow for a task
+Written by this Bot
+You approved Grok Bot for a whole Slack organization. Pick a single workspace in Slack, then try again.
+You can always change this later
+You can keep 
+You can send up to 20 invites a day. Try again 
+You can send up to 20 invites a day. Try again after 
+You can send up to 20 invites a day. Try again tomorrow.
+You can still share your link with Copy link
+You can't invite yourself
+You can't invite yourself. Enter a friend's email.
+You don't have any skills to add yet
+You must be 18 or older to use Grok Bot
+You wearing 
+You'll earn a free usage reset 7 days after their first payment
+You're all set
+You're no longer in this group, so its chat isn't shown here
+You're offline
+You've reached this week's usage limit
+You've reached today's invite limit
+You've reached your usage limit
+Your Bots can work as a factory
+Your Google apps
+Your Microsoft account
+Your Microsoft apps
+Your account can't send invites
+Your browser is signed in to a different Grok Bot account. Sign in to this account in your browser, then try again.
+Your choice is saved. Thank you for helping us improve Grok Bot.
+Your organization's Microsoft 365 admin needs to approve connecting these apps together
+Your own assistant, with Files, skills, and context kept private to you
+Your plan becomes a team plan when your first teammate joins. Each teammate adds a seat, billed to you.
+Your profile is saved privately to your account so you only add it once
+Your search
+Your selfie
+Your team admin approved this Bot
+Your team admin blocked 
+Your team admin blocked it
+Your team admin turned off connectors, so 
+Your team's Microsoft Teams connection stopped working. A team admin needs to reconnect it.
+Your text arrived as SMS. Turn on iMessage, or RCS chats in Google Messages, and send it again.
+appCount
+applicationId
+audienceName
+deliverBy
+errorCode
+fileCount
+inviteeEmail
+just now
+last check
+needs attention
+paymentSpoken
+pricePart
+recipientName
+sentry-dbid-79217498-6e60-4b34-a985-630bc59cd0e5
+shipToSpoken
+skillName
+syncedSkillName
+timePart
+toolText
+userCount

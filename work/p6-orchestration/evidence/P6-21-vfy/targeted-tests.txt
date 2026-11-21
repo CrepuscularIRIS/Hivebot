@@ -1,0 +1,9 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/P6-21/app/sdk
+
+
+ Test Files  2 passed (2)
+      Tests  51 passed (51)
+   Start at  06:30:38
+   Duration  3.63s (tests 96%, transform 2%, import 2%, setup 1%)
+

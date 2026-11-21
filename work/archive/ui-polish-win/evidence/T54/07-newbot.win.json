@@ -1,0 +1,54 @@
+{
+ "id": "07-newbot",
+ "platform": "win",
+ "geo": {
+  "dialog[data-dialog=\"new-bot\"]": {
+   "rect": {
+    "x": 420,
+    "y": 48,
+    "w": 440,
+    "h": 656
+   },
+   "font": "system-ui, sans-serif",
+   "size": "14px",
+   "lineH": "20px",
+   "text": "Create New Bot             More options"
+  },
+  "details.pb-more": {
+   "rect": {
+    "x": 441,
+    "y": 546,
+    "w": 383,
+    "h": 352
+   },
+   "font": "system-ui, sans-serif",
+   "size": "14px",
+   "lineH": "20px",
+   "text": "More optionsPresetstandard (default)ptcm"
+  },
+  "[data-connectors]": {
+   "rect": {
+    "x": 441,
+    "y": 752,
+    "w": 383,
+    "h": 44
+   },
+   "font": "system-ui, sans-serif",
+   "size": "14px",
+   "lineH": "20px",
+   "text": "ConnectorsNo connectors installed yet · "
+  }
+ },
+ "meta": {
+  "platform": "Win32",
+  "uaPlatform": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) pbots-ui/0.1.0 Chrome/152.0.7977.130 Electron/44.7.0 Safari/537.36",
+  "dpr": 1,
+  "innerW": 1280,
+  "innerH": 752,
+  "loadedFonts": [
+   "cursor-icons/normal",
+   "cursor-icons/normal"
+  ],
+  "scrollY": 752
+ }
+}

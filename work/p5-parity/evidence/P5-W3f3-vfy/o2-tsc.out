@@ -1,0 +1,18 @@
+renderer-grok/frontend/src/production/runtime-assets.ts(6,28): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+renderer-grok/frontend/src/recovered/features/conversation/cards/transcript-card/message-actions.tsx(159,24): error TS2488: Type 'NodeListOf<HTMLButtonElement>' must have a '[Symbol.iterator]()' method that returns an iterator.
+renderer-grok/frontend/src/recovered/features/conversation/workspace/transcript.tsx(627,25): error TS2488: Type 'NodeListOf<HTMLElement>' must have a '[Symbol.iterator]()' method that returns an iterator.
+renderer-grok/frontend/src/recovered/features/permissions/local-tool/view.tsx(80,25): error TS2488: Type 'NodeListOf<Element>' must have a '[Symbol.iterator]()' method that returns an iterator.
+renderer-grok/frontend/src/recovered/ui/overlay-primitives.tsx(208,14): error TS2488: Type 'NodeListOf<HTMLElement>' must have a '[Symbol.iterator]()' method that returns an iterator.
+renderer-grok/frontend/src/recovered/ui/sand-floating-primitives.tsx(132,26): error TS2488: Type 'NodeListOf<HTMLElement>' must have a '[Symbol.iterator]()' method that returns an iterator.
+renderer-grok/frontend/src/recovered/ui/sand-floating-primitives.tsx(354,23): error TS2488: Type 'NodeListOf<HTMLElement>' must have a '[Symbol.iterator]()' method that returns an iterator.
+renderer-grok/overrides/modules/local-tool-view.tsx(30,25): error TS2488: Type 'NodeListOf<Element>' must have a '[Symbol.iterator]()' method that returns an iterator.
+renderer-grok/overrides/modules/market-store.ts(8,31): error TS7016: Could not find a declaration file for module '../../../../sdk/src/market/wrapper-name.mjs'. '/tmp/bot-wt/P5-W3f3/app/sdk/src/market/wrapper-name.mjs' implicitly has an 'any' type.
+renderer-grok/overrides/vite.config.ts(8,22): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+renderer/carrier/index.ts(12,23): error TS2352: Conversion of type '(event: CarrierWindowEvent) => void' to type 'EventListener' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of parameters 'event' and 'evt' are incompatible.
+    Type 'Event' is missing the following properties from type 'CarrierWindowEvent': source, origin, data, ports
+renderer/fold/turn-fold.ts(50,25): error TS18047: 'cur' is possibly 'null'.
+renderer/fold/turn-fold.ts(50,52): error TS18047: 'cur' is possibly 'null'.
+renderer/fold/turn-fold.ts(51,25): error TS18047: 'cur' is possibly 'null'.
+renderer/fold/turn-fold.ts(51,44): error TS18047: 'cur' is possibly 'null'.
+renderer/fold/turn-fold.ts(53,5): error TS18047: 'cur' is possibly 'null'.

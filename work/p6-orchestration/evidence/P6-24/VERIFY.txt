@@ -1,0 +1,113 @@
+verdict: FAIL
+commit: ba4ec3c6f55e0c7c6dace4f9efd310d157196659
+branch: feat/P6-24
+worktree: /tmp/bot-wt/P6-24
+base: 0fa0c37
+验收日期: 2026-11-05
+说明: 验收员当前上级约束禁止写报告类 .md，故采用派发允许的 evidence/P6-24/VERIFY.txt。未修改产品代码、测试源码或任务记账。
+
+证据目录 E = /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-24
+命令工作目录 W = /tmp/bot-wt/P6-24
+所有运行命令 HOME=/tmp/bot-p624-verify-home；SDK e2e 经 xvfb-run -a，UI e2e 经项目 scripts/run-e2e.sh/Xvfb。真实 runtime 的 HOME 另由测试从自己的临时根派生。进程只由测试框架 teardown 结束自己启动的子进程；没有 shell kill、pkill、重启或注销操作。
+开始与结束 git status --short 均空；最后 HEAD 与申报一致。git diff --check 0fa0c37..HEAD 通过。
+负载开始约 55.56、结束约 71.48，vmstat iowait 0%。按项目高负载约束没有追加 SDK 全量或 UI 全量 e2e；以下是独立执行的定向验收，不引用 builder 的全量绿数作为自验结果。
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+| D-3① worker write/edit 拒写四种指令文件及软链变体 | FAIL | 原有 SDK e2e 5/5 通过，但独立反向软链 e2e 成功修改 CLAUDE.local.md 的实际内容；E/verify-adversarial.log:6-10、60-75 |
+| D-3② 旧主 bot cwd 布局外 fail closed | PASS（词面正常路径） | UI 全量单测 498/498，含 p624.test.ts ②/②′/③；orchestrate.ts:350-365。subdir 软链逃逸另列 FAIL，不将普通布局格的绿泛化为软链安全 |
+| D-3③ artifacts 交叉 pbots/busy、advisory 语义 | FAIL | 新增单测 13/13 对已登记 worker 的顺序创建交叉可拒；并发两个同文件声明均 created，2 次 main 请求、2 格容量；E/verify-adversarial.log:11-15、27-42 |
+| D-3④ 删除后完整文件清单字节级不变 | 部分 PASS / 严格真实删除证据不足 | 原 e2e ④只是直接重写 bots.json，且 inventory 用 utf8 并排除两个名字；独立探针增加 binary.bin、SHA256 和软链，直接移除 bots 元数据后全部一致，E/verify-adversarial.log:19。未发现产品 session/delete/removeBot 入口，不能把直接重写元数据等同于一条真实删除用户旅程 |
+| D-3④影响面告知及⑤无关 bot 不可写主 bot | 正常布局隔离 PASS，告知仅可核对现存题目 | E/verify-sdk-e2e.log 5/5，⑤普通 bot 写主目录拒且 0 卡、worker 写 other 拒。现存 Q-024:224 只概括影响面/并发/拒写并引用 D3；原详细告知正文不可恢复。subdir 软链可授予 other 工作区是独立 HIGH |
+| Q-024 无 subdir 直接主目录，有 subdir 到该子目录 | 正常路径 PASS / 对软链目录 FAIL | UI p624 单测正常格通过；独立真实 FS 探针 subdir='out'、out→other 后 createWorkerBot 返回 ok，session/create 的 cwd 实际解析为另一 bot 目录，E/verify-adversarial.log:17-19、46-55 |
+| bwrap 替换而非叠加 | PASS（无 subdir 正常继承格） | 独立扩展真实 Loader e2e，主 bot 与 worker 各执行 pwd + grep workspaces /proc/self/mountinfo；过滤 mount id 后逐项相同，且没有 workspaces/<workerId> 挂载；E/verify-mount.log:6-11，5/5 通过 |
+| CONTRACT v1.6 保留 v1.5 三要点 | 三要点存在 PASS；与 C-1 原稿 diff FAIL（缺原稿） | E/verify-contract.diff:19-29、42-46、55-59。version 1、bots?/{createdBy}、旧写者抹除降级、#20 防提升、⑤四类错误码及 forbidden/busy 归属均存在；但基点与全 git 历史只找到 v1.4→本次 v1.6，不能证明与已丢 C-1 原文语义完全未变 |
+| setup + build | PASS | E/verify-setup-sdk.log、verify-setup-ui.log；E/verify-build.log，均 exit 0 |
+| UI 单测 498、新 SDK 单测 13、SDK p624 e2e 5 | PASS | E/verify-ui-unit.log 44 files / 498 passed；E/verify-sdk-unit.log 13 passed；E/verify-sdk-e2e.log 5 passed |
+| build 后 UI p6-workers / p6-stuck | PASS | E/verify-ui-e2e.log：4 passed (1.1m)，真实 Electron/renderer/fake runtime 的点击、作答与跳转旅程 |
+| P5-05③基点裸源码已红申报 | PASS（独立证实申报） | git archive 0fa0c37 app/sdk 解出独立源码，使用现有锁定依赖；E/verify-baseline-p505.log：1 failed / 2 passed，③ no child model call ... within 30000ms；E/baseline-source-check.txt 哈希与 git show 相同 |
+| diff 范围属于 PLAN 区域（含 claims.mjs） | FAIL（区域列缺记） | 主仓重建 PLAN.md:70 只列 orchestrate.ts/store.ts/契约 C-2，没有 SDK orchestration、SDK 测试、UI 测试；完整差异清单见下。claims.mjs 是新文件，不能据当前区域列宣称零越界 |
+| create.mjs 与 P6-22 r2 DESCRIPTION 兼容 | PASS，必须真三方 | E/verify-create-worker.diff、verify-create-r2.diff；git merge-file -p worker base r2 exit 0；E/create-three-way.mjs 同时保留 r2 动磁盘判据与 P6-24 workspace/subdir/artifacts 文案，不是直接 checkout 整文件 |
+
+一、失败探针详情
+1. 指令文件反向软链逃逸，真实 Loader（不是仅模拟 fs.resolve）
+   在主 bot 工作区写 innocent.md='innocent'，造 CLAUDE.local.md -> innocent.md。worker 在已有脚本中先 read CLAUDE.local.md 满足上游 read-before-edit，再 edit CLAUDE.local.md，把 innocent 改为 injected-instruction。
+   实际 tool/result isError=false，宿主 innocent.md 字节变为 injected-instruction。CLAUDE.local.md 本身仍指向该文件，指令内容因此已修改。
+   根因：instructionFileDenial 在 resolvedPath 存在时完全舍弃 rawPath；只判断最终 target basename。正向 link.md→AGENTS.md 已拦，反向 AGENTS/CLAUDE 名→普通文件却放行。
+   证据 E/inverse-symlink.test.ts（从申报 e2e 导出，改动仅证据副本），生成器 E/prepare-probes.py；日志明确保留工具结果及实际内容。
+
+2. 同文件并发窗口
+   用真实 registerCreateBot、Slots、真实身份读取；仅把 main 请求响应延迟。两个 definition.execute 并发，artifacts 都为 ['shared.txt']。在 main 响应任何一个之前，两次请求均已进入 channel。回应 w0、w1 后两个 Promise 都 fulfilled，均拿到 sessionId。
+   根因：create.mjs:134-138 查冲突；直到 await channel.request 返回后的 :169 才 registerClaims。pending create 没有声明占位，所以同一时间窗口互相看不见。
+   这不是「未声明 advisory 档」的已知上限：本探针两边都显式声明相同文件，仍然双双通过。
+
+3. subdir 软链引出主 bot 工作区
+   真实临时目录 workspaces/main、workspaces/other；main/out 软链指向 other。真实 BotsMetaStore + createWorkerBot，请求 subdir='out'，RPC 只模拟 session/list/create/rename 并记录参数。
+   实际 result.ok=true，session/create 恰一次，传入的 cwd 经过 realpath 后是 workspaces/other。证明 main 编排已接受主 bot 子树外工作区；本项没有伪称完成了恶意 worker 的真实 Loader 写入，证据边界是「实际调用了创建接口并授予错误 cwd」。
+   根因：orchestrate.ts:415-418 join + recursive mkdir 会接受已有目录软链，未 canonicalize 后再核对属于 main cwd。布局父路径检查也仅是词面，但本探针只针对这次新增 subdir 面。
+
+二、advisory 精确语义
+   create.mjs:207 只有 subdir===undefined && artifacts===undefined 才返回 advisory。subdir 已传但未声明文件、或 artifacts=[]，没有写入责任也不会警告。claims 是声明级而非文件写强制级，不检查 worker 实际写到的其他文件；turn/end 释放；不持久化，不恢复跨重启声明。这些限制不得描述为强制文件所有权。本次主要 FAIL 是显式相同声明的 pending-create 竞态，不据此扩写未授权功能。
+
+三、契约核对
+   独立读了 Q-022、Q-024、D3-r1 与重建 PLAN。C-1 的历史 LOG 04:42 仅能证明曾回报 v1.5 及其概括，不是原稿。
+   git log --all -- work/p3-contract/CONTRACT.md 未找到 C-1 v1.5 提交；git show 0fa0c37:... 是 v1.4。因此 verify-contract.diff 是「v1.4→v1.6（含 v1.5 重建）」而非原稿 C-1→v1.6，不能把它误标为后者。
+   指定三要点现文全部保留；本次 C-2 另加 workspace/subdir、拒指令文件、artifacts 与删除边界，且记录了决策 37/P6-25。现文仍有 Q-021 未决标签，与主仓 Q-021 已 answered 的记账不一致，非本轮主要产品阻断原因。
+
+四、diff 全清单与 DESCRIPTION hunk
+   app/sdk/src/orchestration/claims.mjs（新）
+   app/sdk/src/orchestration/create.mjs
+   app/sdk/src/orchestration/envelope.mjs
+   app/sdk/tests/e2e/p624-worker-cwd.test.ts（新）
+   app/sdk/tests/unit/orchestration-p624.test.ts（新）
+   app/ui/main/m3-meta/orchestrate.ts
+   app/ui/tests/e2e/p6-stuck.spec.ts
+   app/ui/tests/unit/m3/p610.test.ts
+   app/ui/tests/unit/m3/p610f2.test.ts
+   app/ui/tests/unit/m3/p624.test.ts（新）
+   work/p3-contract/CONTRACT.md
+   work/p6-orchestration/evidence/P6-24-REPORT.txt
+   P6-24 DESCRIPTION hunk: @@ -30,6 +36,7 @@，在原有 worker reports 句后插入 workspace/subdir/artifacts 句。
+   P6-22 r2 DESCRIPTION hunk: @@ -26,8 +26,11 @@，替换原开头两句为“creates or changes files / runs commands / regardless of size”等五句。
+   两者同文件但本次上下文可三方自动合并；实测合并输出第 35-39 行是 r2 新开头、第 42 行是 P6-24 新工作区句。整文件 checkout 将丢失另一侧行为，禁止这样合并。
+
+五、执行命令与结果尾部（E 下原始日志为准）
+   HOME=/tmp/bot-p624-verify-home pnpm -C app/sdk setup
+   HOME=/tmp/bot-p624-verify-home pnpm -C app/ui setup
+   → 均 exit 0。
+   HOME=/tmp/bot-p624-verify-home pnpm -C app/sdk exec vitest run tests/unit/orchestration-p624.test.ts --maxWorkers=1
+   → Test Files 1 passed; Tests 13 passed。
+   HOME=/tmp/bot-p624-verify-home pnpm -C app/ui exec vitest run --maxWorkers=1
+   → Test Files 44 passed; Tests 498 passed。
+   HOME=/tmp/bot-p624-verify-home nice -n 15 pnpm -C app/ui build
+   → exit 0，先 build 后才执行下列 e2e。
+   HOME=/tmp/bot-p624-verify-home xvfb-run -a pnpm -C app/sdk exec vitest run tests/e2e/p624-worker-cwd.test.ts --maxWorkers=1
+   → Tests 5 passed。
+   HOME=/tmp/bot-p624-verify-home pnpm -C app/ui test:e2e p6-workers p6-stuck --workers=1
+   → 4 passed (1.1m)。
+   python3 -I E/prepare-probes.py
+   HOME=/tmp/bot-p624-verify-home xvfb-run -a pnpm -C app/sdk exec vitest run --config E/probes.config.mjs
+   → Tests 3 failed | 4 passed；三项对应上面三个复现。
+   python3 -I E/prepare-mount.py
+   HOME=/tmp/bot-p624-verify-home xvfb-run -a pnpm -C app/sdk exec vitest run --config E/mount.config.mjs --silent=false
+   → Tests 5 passed；mount 行与 cwd 已原样留在日志。
+   基点复跑：git archive 0fa0c37 app/sdk | tar -x -C E/baseline-source；为其 app/sdk/node_modules 链接验收分支锁定的已装依赖；在 baseline-source/app/sdk 运行：
+   HOME=/tmp/bot-p624-verify-home xvfb-run -a /tmp/bot-wt/P6-24/app/sdk/node_modules/.bin/node /tmp/bot-wt/P6-24/app/sdk/node_modules/vitest/vitest.mjs run tests/e2e/subagent-policy.test.ts --maxWorkers=1
+   → ③ workflow 红，另外两项绿。最初尝试 pnpm exec 被自动安装/无 TTY 拒绝，不计为复证；以上直接运行 vitest 的第二次结果才是复证。源码归档运行后已移除，哈希见 baseline-source-check.txt，可按命令重建。
+
+六、截图亲眼核对
+   本轮截图从 W/app/ui/test-output/P6-17/ 复制，源文件 mtime 分别为 2026-11-05 07:38:23 与 07:38:21，属于本次独立 e2e。不是 worktree 内旧 work/evidence 的 builder 截图。
+   已用 Read 打开 E/verify-worker-dock.png：左侧 Main Bot 与 Workers 下的 Test fixer，主区域标题 Test fixer，显示来自 Main Bot 的任务卡，以及 git push origin docs 的 Allow once / Deny once 审批卡。
+   已用 Read 打开 E/verify-main-report.png：标题 Main Bot，侧栏一个 Test fixer；主区域 Messaging Test fixer、Needs you 卡与 Review in Test fixer 链接。
+   两张都是 Playwright 的目标 renderer 页面截图，未截真实桌面/全屏。该 git push 只是 fake 工具脚本展示内容，无外部推送操作。
+
+七、清理与证据边界
+   最后执行 /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p624，无候选、exit 0。E/verify-reap-dry-run.log 为空是首次同命令无候选的结果，不代表命令未运行。
+   没有清理其他会话进程；没有修改主仓 LOG/PLAN/LEARNINGS。未在这里为已有红基线修代码。
+
+新问题（可直接派发）：
+- [FIX] worker 可经 CLAUDE.local.md→普通文件反向软链 edit 修改指令内容，绕过拒写 | 复现：python3 -I E/prepare-probes.py 后经 Xvfb 跑 E/probes.config.mjs，观察 INVERSE_SYMLINK_RESULT isError=false、BYTES injected-instruction | 疑似位置：app/sdk/src/orchestration/envelope.mjs:176-180、219-233（只选 resolved basename，应同时保护原始指令路径及解析后目标） | HIGH
+- [FIX] 两个并发 create_bot 都显式声明 shared.txt 仍同时创建，未返回 pbots/busy | 复现：E/adversarial.test.ts 第一项，延迟 main response 后同时 execute，mainRequests=2、outcomes=[created,created] | 疑似位置：app/sdk/src/orchestration/create.mjs:134-169、claims.mjs（pending create 没有声明占位，检查与登记跨 await） | HIGH
+- [FIX] subdir 已有软链指向另一 bot 工作区时仍创建 worker 并授予错误 cwd | 复现：造 main/out→workspaces/other，请求 subdir=out，E/adversarial.test.ts 第二项 result.ok=true 且 realpath(cwd)=other | 疑似位置：app/ui/main/m3-meta/orchestrate.ts:412-420（join/mkdir 后缺实际路径包含检查） | HIGH
+- [FIX] 重建 PLAN 的 P6-24 区域列未登记 SDK orchestration（含新增 claims.mjs）及相关测试 | 复现：对照主仓 PLAN.md:70 与 git diff --name-only 0fa0c37..ba4ec3c | 疑似位置：work/p6-orchestration/PLAN.md:70 | MEDIUM（记账/区域闸门）
+- [FIX] C-1 原稿缺失，当前证据无法完成要求的原稿→v1.6 语义 diff | 复现：git log --all -- work/p3-contract/CONTRACT.md 只有 v1.4 与本次 v1.6；现存 LOG 只有概括 | 疑似位置：work/p3-contract/CONTRACT.md 与 C-1 原始证据归档 | MEDIUM（验收证据缺口；指定三要点现文均在，不宣称已发现三要点被篡改）
+- [FIX] 删除边界测试仅手改 bots.json，不能作为真实删除 worker 全旅程的证明 | 复现：查看 app/sdk/tests/e2e/p624-worker-cwd.test.ts:327-335，直接 writeBots({})，inventory 还按 utf8 读并跳过两类条目；本轮仅补了元数据删除后的二进制哈希对照 | 疑似位置：app/sdk/tests/e2e/p624-worker-cwd.test.ts 与 app/ui/tests/unit/m3/p624.test.ts 删除验收用例 | MEDIUM（真实删除证据缺口；未证实产品会删除共享文件）

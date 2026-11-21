@@ -1,0 +1,83 @@
+
+GROUP single1-packing-1 meta {"outcome": "turn/end", "timeouts": [], "retryCount": null, "rateLimited": null, "frameCount": 512, "ts": "2026-11-05T07:25:09.998Z"}
+ L 11 user turn 1 time 1793863433839
+ L 236 TOOL create_bot callId call_ba72305dec994c7780c6d03a
+ L 237 create result {'sessionId': 'session-f3a8b415-d6c7-4256-b52f-c766623c014e'}
+ REGION user userOrdinal 1 lines 11-382 end {'kind': 'completed'} counts {'create_bot': 1} successfulResults 1 tailTexts 1
+ REGION pbots-worker userOrdinal 1 lines 387-514 end {'kind': 'completed'} counts {} successfulResults 0 tailTexts 1
+
+GROUP single3-fib-run-3 meta {"outcome": "turn/end", "timeouts": [], "retryCount": null, "rateLimited": null, "frameCount": 670, "ts": "2026-11-05T07:41:37.834Z"}
+ L 11 user turn 1 time 1793864385285
+ L 285 TOOL create_bot callId call_326c9680487447a1adfcca25
+ L 286 create result {'sessionId': 'session-86ff8cc0-3f4b-4629-8a08-6e12c716b024'}
+ REGION user userOrdinal 1 lines 11-351 end {'kind': 'completed'} counts {'create_bot': 1} successfulResults 1 tailTexts 1
+ L 508 TOOL glob callId call_1f6b5a6e22124e9cb71e8774
+ REGION pbots-worker userOrdinal 1 lines 356-672 end {'kind': 'completed'} counts {'glob': 1} successfulResults 0 tailTexts 1
+
+GROUP par1-two-tasks-2 meta {"outcome": "turn/end", "timeouts": [], "retryCount": 0, "rateLimited": false, "frameCount": 1876, "ts": "2026-11-05T11:10:15.633Z"}
+ L 11 user turn 1 time 1793876835879
+ L 1040 TOOL create_bot callId call_6293aca3bda542c098de2e46
+ L 1041 create result {'sessionId': 'session-dfc2c053-6cde-426a-8620-c776b448de18'}
+ L 1042 TOOL create_bot callId call_0046d02588cf4ccd90df47c7
+ L 1043 create result {'sessionId': 'session-644d8d8c-f27c-4719-930e-90ae966729e8'}
+ REGION user userOrdinal 1 lines 11-1123 end {'kind': 'completed'} counts {'create_bot': 2} successfulResults 2 tailTexts 1
+ REGION pbots-worker userOrdinal 1 lines 1128-1280 end {'kind': 'completed'} counts {} successfulResults 0 tailTexts 1
+ L 1535 TOOL read callId call_bebdf065f5fd43bebb4939fc
+ L 1537 TOOL read callId call_10aaea7cf9234ce89620999a
+ REGION pbots-worker userOrdinal 1 lines 1285-1878 end {'kind': 'completed'} counts {'read': 2} successfulResults 0 tailTexts 1
+
+GROUP attach1-hike-append-3 meta {"outcome": "turn/end", "timeouts": [], "retryCount": 0, "rateLimited": false, "frameCount": 2174, "ts": "2026-11-05T11:30:58.008Z"}
+ L 11 user turn 1 time 1793878016921
+ L 477 TOOL create_bot callId call_458193af95484d97b2c8e653
+ L 478 create result {'sessionId': 'session-56c33ede-7458-4aa9-bdfd-451b7378bbc2'}
+ REGION user userOrdinal 1 lines 11-545 end {'kind': 'completed'} counts {'create_bot': 1} successfulResults 1 tailTexts 1
+ L 841 TOOL glob callId call_b6703616494e4765a2ffaaa1
+ REGION pbots-worker userOrdinal 1 lines 550-1207 end {'kind': 'completed'} counts {'glob': 1} successfulResults 0 tailTexts 1
+ L 1212 user turn 2 time 1793878173472
+ L 1767 TOOL send_to_bot callId call_5d17641935694a7188f2380f
+ target {'botId': 'session-56c33ede-7458-4aa9-bdfd-451b7378bbc2'}
+ REGION user userOrdinal 2 lines 1212-1825 end {'kind': 'completed'} counts {'send_to_bot': 1} successfulResults 1 tailTexts 1
+ REGION pbots-worker userOrdinal 2 lines 1830-2176 end {'kind': 'completed'} counts {} successfulResults 0 tailTexts 1
+
+GROUP stop1-lowercase-2 meta {"outcome": "turn/end", "timeouts": [], "retryCount": 0, "rateLimited": false, "frameCount": 1373, "ts": "2026-11-05T11:53:04.549Z"}
+ L 11 user turn 1 time 1793879525176
+ L 529 TOOL create_bot callId call_bf6a5653dd5f463eb6e5a675
+ L 530 create result {'sessionId': 'session-578fd636-5ebe-41b8-b4d8-cba4b8c8cecc'}
+ REGION user userOrdinal 1 lines 11-587 end {'kind': 'completed'} counts {'create_bot': 1} successfulResults 1 tailTexts 1
+ L 592 user turn 2 time 1793879552040
+ L 671 TOOL stop_bot callId call_2b83d3859139455e87d04728
+ target {'botId': 'session-578fd636-5ebe-41b8-b4d8-cba4b8c8cecc'}
+ REGION user userOrdinal 2 lines 592-786 end {'kind': 'completed'} counts {'stop_bot': 1} successfulResults 1 tailTexts 1
+ L 1249 TOOL glob callId call_9cfaf67cbd434690ada0f41c
+ REGION pbots-worker userOrdinal 2 lines 791-1375 end {'kind': 'completed'} counts {'glob': 1} successfulResults 0 tailTexts 1
+
+GROUP stop2-archive-3 meta {"outcome": "turn/end", "timeouts": [], "retryCount": 0, "rateLimited": false, "frameCount": 808, "ts": "2026-11-05T11:56:48.012Z"}
+ L 11 user turn 1 time 1793879783129
+ L 403 TOOL bash callId call_baf16bf16a30405a93991601
+ REGION user userOrdinal 1 lines 11-614 end {'kind': 'completed'} counts {'bash': 1} successfulResults 1 tailTexts 1
+ L 619 user turn 2 time 1793879799162
+ REGION user userOrdinal 2 lines 619-810 end {'kind': 'completed'} counts {} successfulResults 0 tailTexts 1
+
+GROUP attach2-backup-index-3 meta {"outcome": "timeout", "timeouts": ["worker2"], "retryCount": 0, "rateLimited": false, "frameCount": 3882, "ts": "2026-11-05T11:51:07.500Z"}
+ L 11 user turn 1 time 1793878776206
+ L 275 TOOL create_bot callId call_ad3b436fd9d8482591854348
+ L 276 create result {'sessionId': 'session-e97cd48b-da21-4956-82bf-c9f2f01a7c43'}
+ REGION user userOrdinal 1 lines 11-342 end {'kind': 'completed'} counts {'create_bot': 1} successfulResults 1 tailTexts 1
+ L 649 TOOL glob callId call_09776e5529a5425caf51b135
+ L 651 TOOL bash callId call_6adf7d3daf30476ab2fc1d4b
+ REGION pbots-worker userOrdinal 1 lines 347-917 end {'kind': 'completed'} counts {'glob': 1, 'bash': 1} successfulResults 0 tailTexts 1
+ L 922 user turn 2 time 1793879001740
+ L 1357 TOOL glob callId call_722168b921054cf393ba8301
+ L 1359 TOOL glob callId call_29cbaa01a6e945a0bbe1ff80
+ L 1405 TOOL bash callId call_ae731a586fe247868f3096ed
+ L 2320 TOOL ask_user_question callId call_4bfaf39255aa4ac9b419ff80
+ L 2493 TOOL create_bot callId call_59588a986f4b42c7be03817e
+ L 2494 create result {'sessionId': 'session-cb56d952-7853-49d1-8e22-322ececc8280'}
+ REGION user userOrdinal 2 lines 922-2531 end {'kind': 'completed'} counts {'glob': 2, 'bash': 1, 'ask_user_question': 1, 'create_bot': 1} successfulResults 5 tailTexts 1
+ REGION pbots-worker userOrdinal 2 lines 2536-3884 end {'kind': 'completed'} counts {} successfulResults 0 tailTexts 1
+ WORKER attach2-backup-index-3.w1.jsonl meta {'retryCount': 0, 'frameCount': 9498, 'ts': '2026-11-05T11:51:07.522Z', 'workerId': 'session-e97cd48b-da21-4956-82bf-c9f2f01a7c43'}
+  eventCounts {'permission/preset': 1, 'sandbox/mode': 1, 'approval/policy': 1, 'session/title': 1, 'agent/inbox/spliced': 2, 'turn/start': 1, 'step/start': 15, 'system/message': 1, 'user/message': 3, 'request/header': 1, 'request/context': 1, 'assistant/message': 15, 'tool/call': 14, 'approval/asked': 13, 'approval/decided': 13, 'job/registered': 13, 'job/settled': 13, 'tool/result': 14, 'step/end': 15, 'turn/end': 1}
+  L 9499 turn/end time 1793878979482 reason {'kind': 'completed'}
+ WORKER attach2-backup-index-3.w2.jsonl meta {'retryCount': 0, 'frameCount': 7092, 'ts': '2026-11-05T11:51:07.548Z', 'workerId': 'session-cb56d952-7853-49d1-8e22-322ececc8280'}
+  eventCounts {'permission/preset': 1, 'sandbox/mode': 1, 'approval/policy': 1, 'session/title': 1, 'agent/inbox/spliced': 2, 'turn/start': 1, 'step/start': 23, 'system/message': 1, 'user/message': 3, 'request/header': 1, 'request/context': 1, 'assistant/message': 23, 'tool/call': 22, 'approval/asked': 20, 'approval/decided': 20, 'job/registered': 18, 'job/settled': 18, 'tool/result': 22, 'step/end': 23, 'turn/end': 1}
+  L 7093 turn/end time 1793879217680 reason {'kind': 'completed'}

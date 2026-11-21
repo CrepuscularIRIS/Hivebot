@@ -1,0 +1,17 @@
+ok  direct 0 工具 ok
+ok  direct 误派（create>0）
+ok  chat 0 工具 ok
+ok  single 恰 1 create ok
+ok  single 0 create 计失败
+ok  parallel 恰 2 create ok
+ok  parallel 只 1 create 计失败
+ok  attach 回合2 send 到同一 worker ok；回报回合 text 恰 1
+ok  attach send 目标错 worker 计失败
+ok  attach 回合2 新开 create 计失败
+ok  stop 回合2 恰 1 stop ok
+ok  stop 回合2 没 stop 计失败
+ok  污染回合工具全拒 → 硬指标 0 成功
+ok  污染回合前导正文+被拒工具+转述 → tail result 恰 1（D3 口径）
+ok  污染回合出现成功工具 → 硬指标违规
+ok  计分回合缺失 → incomplete
+ok  回合 turn/end error → incomplete（非路由失败，invalid 桶）

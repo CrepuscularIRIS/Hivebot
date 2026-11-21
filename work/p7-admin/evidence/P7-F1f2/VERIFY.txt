@@ -1,0 +1,56 @@
+verdict: FAIL
+commit: d8765b6e779c397801be48651d8830a45995d3a4
+任务: P7-F1.f2 独立验收 + 定向代码审查（Sol 代席）
+结论分层: B1/B2 模块行为 PASS；定向 review 未发现新的 CONFIRMED 缺陷；整体完成门槛 BLOCKED（修改逻辑覆盖≥80%未验，不是覆盖率已低于80%）。不得据此标记完整 PASS。
+固定树: /tmp/bot-wt/P7-F1f2-verify；开头/结尾 HEAD 相同，git status --short 均空。
+证据根 E: /home/lingxufeng/bot/work/p7-admin/evidence/P7-F1f2
+
+验收项 | 结果 | 证据
+B1 首次真实append后sync EIO失败关闭、保留真实字节、禁止第二created:true | PASS | verify-probe.test.ts 的 B1 adapted；verify-all.log:4-5；多次重试begin、finish、receipt/read拒 APPEND_FAILED，字节完全相同
+B1 同key重开只恢复首ID，finish不LOST、不指向第二ID | PASS | 同探针：重开created:false且ID等于磁盘首行ID；finish+receipt成功；再重开status=completed，只有1条begin
+B2 idle close旧引用永久停写且不误释新锁 | PASS | B2 adapted + 原operations的idle close回归；old.begin/init拒CLOSED，重复old.close后构造仍LOCKED，新writer仅1条begin
+B2 close前已排队但未启动的写与init拒绝 | PASS | verify-probe.test.ts 的4阶段交错，每阶段排队begin/finish/receipt/init共4项均CLOSED；另测init启动前close
+B2 在途append/sync/handle.close未结算前锁不得移交 | PASS | verify-all.log:7-17；append-before/after/sync/close四屏障内构造均LOCKED；释放后active允许成功、队列全拒，fresh才取得锁
+B2 init读盘/写修复/rename/目录sync交错 | PASS | verify-all.log:19-32；read/repair-before/repair-sync/rename/dir-sync五屏障；修复期间close不提前交锁，fresh保留原ID，只有1条repaired
+B2 失败结算后不复活、锁不泄漏 | PASS | close+failed inflight sync探针；verify-extra.test.ts的newline/torn修复sync失败：排队拒CLOSED，old读失败/init拒CLOSED，fresh恢复同ID并可finish
+B2 在途finish/receipt也允许结算，而非仅begin | PASS | verify-extra.test.ts的finish/receipt两项，fresh读回对应终态或receipt；old后续写永久CLOSED
+坏路径：局部真实写后appendFile抛错 | PASS | partial append EIO探针：真实17字节尾巴保留，旧实例重试拒；新实例修尾，原先完整begin保留；零字节失败控制可重试
+正常并发占位/UTF8撕裂/无换行/投影/undo/receipt | PASS | verify-probe.test.ts controls：12并发同key恰1 created:true，去换行重开投影相等，undo不丢，同代/重复receipt拒，UTF8尾修复；原34 operations亦绿
+原定向operations + 必要邻接channel | PASS | verify-original.log:4-10，2 files / 57 passed，exit 0（34+23）
+先RED/GREEN | 历史日志可见，不作本轮独立RED实证 | 已读B1-red/green、B2-red/green、native-forks；本轮仅固定SHA运行，不倒退修改产品源码。作者RED分别1 failed/28 passed和5 failed/29 passed，GREEN34 passed；本轮独立重验见上
+修改逻辑覆盖≥80% | FAIL（证据缺失/阻塞） | verify-coverage.log:1：Cannot find dependency '@vitest/coverage-v8'；exit 1，未生成可信覆盖报告。未安装新依赖/升级/改产品配置凑绿
+
+独立review与反证（精确diff a2279cd..d8765b6；只两文件，不含F3）
+1. B1旧反例输入→actual→expected：空账本+首sync抛EIO（appendFile和close真实）→begin拒APPEND_FAILED，真实完整行仍在，后续重试/finish/receipt也拒，重开相同key返回首ID且created:false，finish成功→符合预期，不再产生第二ID或LOST。
+   相关产品行：operations.ts:565-584；appended在真实append返回后置true，sync异常将loadError锁定；assertHealthy:530-532阻止重试。反证尝试包含同实例重复init后再写，仍不复活；零字节失败的正常重试没有被全拒。
+2. B2旧反例输入→actual→expected：old.close→fresh.init→old.begin→fresh.begin→old拒CLOSED/fresh唯一created:true→符合预期。重复old.close不能删除fresh锁（316-318身份比较）。
+   相关产品行：310-323、535-547；pending在入队同步增加，close设置closed，任务真正启动前再查closed，settled才减pending/释放锁。反证不是只测idle：真实append前、后、sync前及handle.close前均尝试新构造，全部LOCKED；排队四API拒CLOSED；active允许结算。
+3. init原先绕过queue可能修改磁盘，现321-322也排队。反证跨读盘、临时文件append、sync、rename和目录sync；再注入newline/torn修复sync失败，确认旧实例失败而新实例可恢复。相关load修复:378-414。没有观察到提前移交、失败复活或锁泄漏。
+4. readOperations/readUndo未因closed拒读：本次close定义为永久停写而非销毁只读快照，未将此当缺陷。close():void不保证调用返回时磁盘任务已排空；保证已启动任务可完成、未启动任务拒绝、全部结算才释放锁。调用方若要新开，必须等既有任务结算；提前new抛LOCKED是预期，不是回归。
+5. 原B探针的输入与正确性预期由verify-probe前两项承接；未沿用旧脚本里“重试成功后继续访问”的旧实际路径，因为修复后的正确行为正是重试拒绝；未放宽“一条begin、ID一致、无第二created:true”的预期。独立控制项和19项交错不是仅复跑作者34项。
+
+命令与原始输出
+统一环境白名单：env -i PATH=/usr/bin:/bin:/home/lingxufeng/.npm-global/bin HOME=/tmp/bot-P7-F1f2-verify/home TMPDIR=/tmp/bot-P7-F1f2-verify/tmp CI=1。
+统一前缀（下述pnpm命令之前均带以上env）：pnpm -C /tmp/bot-wt/P7-F1f2-verify/app/ui。
+1. install --frozen-lockfile --ignore-scripts
+   exit 0；verify-install.log:1-2 Lockfile is up to date；:41 Done in 21.6s using pnpm v11.0.9。只安装已锁定依赖、不执行postinstall，不是build。
+2. exec vitest run tests/unit/admin/operations.test.ts tests/unit/admin/channel.test.ts --maxWorkers=1 --no-file-parallelism
+   exit 0；verify-original.log尾部：Test Files 2 passed (2)；Tests 57 passed (57)；Duration 575ms。
+3. exec vitest run --config /home/lingxufeng/bot/work/p7-admin/evidence/P7-F1f2/verify-probe.config.mjs
+   exit 0；verify-probe.log尾部：Test Files 1 passed (1)；Tests 15 passed (15)；Duration 248ms。
+4. exec vitest run tests/unit/admin/operations.test.ts --maxWorkers=1 --no-file-parallelism --coverage --coverage.provider=v8 --coverage.include=main/admin/operations.ts --coverage.reportsDirectory=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1f2/verify-coverage
+   exit 1；verify-coverage.log全文：MISSING DEPENDENCY Cannot find dependency '@vitest/coverage-v8'。没有继续尝试安装provider，没有用NODE_V8_COVERAGE原始计数或测试数量伪称≥80%。
+5. exec vitest run --config /home/lingxufeng/bot/work/p7-admin/evidence/P7-F1f2/verify-all.config.mjs
+   exit 0；verify-all.log:34-40：15+4 tests，Test Files 2 passed (2)，Tests 19 passed (19)，Duration 377ms。
+6. git -C /tmp/bot-wt/P7-F1f2-verify rev-parse HEAD；git -C /tmp/bot-wt/P7-F1f2-verify status --short
+   均exit 0；SHA d8765b6e779c397801be48651d8830a45995d3a4，status无输出。
+
+资源与边界
+开始load=3.93/5.44/5.03，采样wa=0、idle=88%；结束load=2.82/4.02/4.53、wa=0、idle=95%。所有测试单worker、文件串行；未全量、build、Electron、模型、真实桌面、重启/注销、sudo、shell kill、Agent/SendMessage。
+脚本临时根均mkdtempSync(join(tmpdir(),'bot-...'))，由隔离TMPDIR派生；finally/afterEach只删除自己创建的目录。数据目录不放evidence，未读真实凭证，未输出token。隔离环境无用户env spread。
+只写本主仓E下verify-*脚本/log/diff及本VERIFY.txt；未改产品源码、原测试、PLAN/LOG，未commit/merge/push，未触碰builder树。
+未验：真实OS断电/EIO、跨进程宿主单实例、生产管理旅程、UI/SDK live接线、F3恢复屏障、全量/build、改动覆盖≥80%。局部故障注入不等于物理断电。57+19项绿只证明上述模块范围。
+
+新问题（可派发）
+- 无新的CONFIRMED产品缺陷；B1/B2在本轮探针范围闭合。
+- [BLOCK] 修改逻辑覆盖≥80%未证实 | 复现：上述命令4 | 实际：锁定环境缺@vitest/coverage-v8，exit 1 | 预期：经允许的锁定工具产出可核对的修改逻辑覆盖≥80%证据 | 位置：app/ui/package.json:27-34 / verify-coverage.log | 完成门槛阻塞，不能写完整PASS。

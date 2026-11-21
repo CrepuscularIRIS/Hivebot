@@ -1,0 +1,152 @@
+{
+ "forged-wrong-hash": {
+  "rc": 0,
+  "stderr_tail": "",
+  "out": {
+   "gw": 101,
+   "lh": 111,
+   "d127": 111,
+   "lan": 101,
+   "dns": "gai-3",
+   "resolv": "# This is /run/systemd/resolve/stub-resolv.conf managed by man:systemd-resolved(8).\n# Do not edit.\n#\n# This file might be symlinked as /etc/resolv.conf. If you're looking at\n# /etc/resolv.conf and seeing this text, you have followed the symlink.\n#\n# This is a dynamic resolv.conf file for connecting local clients to the\n# internal DNS stub resolver of systemd-resolved. This file lists all\n# configured search domains.\n#\n# Run \"resolvectl status\" to see details about the uplink DNS servers\n# currently in use.\n#\n# Third party programs should typically not access this file directly, but only\n# through the symlink at /etc/resolv.conf. To manage man:resolv.conf(5) in a\n# different way, replace this symlink by a static file or a different symlink.\n#\n# See man:systemd-resolved.service(8) for details about the supported modes of\n# operation for /etc/resolv.conf.\n\nnameserver 127.0.0.53\noptions edns0 trust-ad\nsearch .",
+   "permits_visible": false
+  },
+  "permits_before": [
+   "p1.json"
+  ],
+  "permits_after": [
+   "p1.json"
+  ],
+  "secs": 0.1,
+  "CHECK": true
+ },
+ "forged-expired": {
+  "rc": 0,
+  "stderr_tail": "",
+  "out": {
+   "gw": 101,
+   "lh": 111,
+   "d127": 111,
+   "lan": 101,
+   "dns": "gai-3",
+   "resolv": "# This is /run/systemd/resolve/stub-resolv.conf managed by man:systemd-resolved(8).\n# Do not edit.\n#\n# This file might be symlinked as /etc/resolv.conf. If you're looking at\n# /etc/resolv.conf and seeing this text, you have followed the symlink.\n#\n# This is a dynamic resolv.conf file for connecting local clients to the\n# internal DNS stub resolver of systemd-resolved. This file lists all\n# configured search domains.\n#\n# Run \"resolvectl status\" to see details about the uplink DNS servers\n# currently in use.\n#\n# Third party programs should typically not access this file directly, but only\n# through the symlink at /etc/resolv.conf. To manage man:resolv.conf(5) in a\n# different way, replace this symlink by a static file or a different symlink.\n#\n# See man:systemd-resolved.service(8) for details about the supported modes of\n# operation for /etc/resolv.conf.\n\nnameserver 127.0.0.53\noptions edns0 trust-ad\nsearch .",
+   "permits_visible": false
+  },
+  "permits_before": [
+   "p2.json"
+  ],
+  "permits_after": [],
+  "secs": 0.1,
+  "CHECK": true
+ },
+ "forged-other-session": {
+  "rc": 0,
+  "stderr_tail": "",
+  "out": {
+   "gw": 101,
+   "lh": 111,
+   "d127": 111,
+   "lan": 101,
+   "dns": "gai-3",
+   "resolv": "# This is /run/systemd/resolve/stub-resolv.conf managed by man:systemd-resolved(8).\n# Do not edit.\n#\n# This file might be symlinked as /etc/resolv.conf. If you're looking at\n# /etc/resolv.conf and seeing this text, you have followed the symlink.\n#\n# This is a dynamic resolv.conf file for connecting local clients to the\n# internal DNS stub resolver of systemd-resolved. This file lists all\n# configured search domains.\n#\n# Run \"resolvectl status\" to see details about the uplink DNS servers\n# currently in use.\n#\n# Third party programs should typically not access this file directly, but only\n# through the symlink at /etc/resolv.conf. To manage man:resolv.conf(5) in a\n# different way, replace this symlink by a static file or a different symlink.\n#\n# See man:systemd-resolved.service(8) for details about the supported modes of\n# operation for /etc/resolv.conf.\n\nnameserver 127.0.0.53\noptions edns0 trust-ad\nsearch .",
+   "permits_visible": false
+  },
+  "permits_before": [
+   "p3.json"
+  ],
+  "permits_after": [
+   "p3.json"
+  ],
+  "secs": 0.1,
+  "CHECK": true
+ },
+ "forged-version2": {
+  "rc": 0,
+  "stderr_tail": "",
+  "out": {
+   "gw": 101,
+   "lh": 111,
+   "d127": 111,
+   "lan": 101,
+   "dns": "gai-3",
+   "resolv": "# This is /run/systemd/resolve/stub-resolv.conf managed by man:systemd-resolved(8).\n# Do not edit.\n#\n# This file might be symlinked as /etc/resolv.conf. If you're looking at\n# /etc/resolv.conf and seeing this text, you have followed the symlink.\n#\n# This is a dynamic resolv.conf file for connecting local clients to the\n# internal DNS stub resolver of systemd-resolved. This file lists all\n# configured search domains.\n#\n# Run \"resolvectl status\" to see details about the uplink DNS servers\n# currently in use.\n#\n# Third party programs should typically not access this file directly, but only\n# through the symlink at /etc/resolv.conf. To manage man:resolv.conf(5) in a\n# different way, replace this symlink by a static file or a different symlink.\n#\n# See man:systemd-resolved.service(8) for details about the supported modes of\n# operation for /etc/resolv.conf.\n\nnameserver 127.0.0.53\noptions edns0 trust-ad\nsearch .",
+   "permits_visible": false
+  },
+  "permits_before": [
+   "p4.json"
+  ],
+  "permits_after": [
+   "p4.json"
+  ],
+  "secs": 0.1,
+  "CHECK": true
+ },
+ "replay": {
+  "run1": {
+   "gw": 101,
+   "lh": 111,
+   "d127": 111,
+   "lan": "conn",
+   "dns": "172.66.147.243",
+   "resolv": "nameserver 1.1.1.1",
+   "permits_visible": false
+  },
+  "run1_permits": [],
+  "run2": {
+   "gw": 101,
+   "lh": 111,
+   "d127": 111,
+   "lan": 101,
+   "dns": "gai-3",
+   "resolv": "# This is /run/systemd/resolve/stub-resolv.conf managed by man:systemd-resolved(8).\n# Do not edit.\n#\n# This file might be symlinked as /etc/resolv.conf. If you're looking at\n# /etc/resolv.conf and seeing this text, you have followed the symlink.\n#\n# This is a dynamic resolv.conf file for connecting local clients to the\n# internal DNS stub resolver of systemd-resolved. This file lists all\n# configured search domains.\n#\n# Run \"resolvectl status\" to see details about the uplink DNS servers\n# currently in use.\n#\n# Third party programs should typically not access this file directly, but only\n# through the symlink at /etc/resolv.conf. To manage man:resolv.conf(5) in a\n# different way, replace this symlink by a static file or a different symlink.\n#\n# See man:systemd-resolved.service(8) for details about the supported modes of\n# operation for /etc/resolv.conf.\n\nnameserver 127.0.0.53\noptions edns0 trust-ad\nsearch .",
+   "permits_visible": false
+  },
+  "rc1": 0,
+  "rc2": 0,
+  "CHECK": true
+ },
+ "gw-guard-on": {
+  "rc": 0,
+  "stderr_tail": "",
+  "out": {
+   "gw": 101,
+   "lh": 111,
+   "d127": 111,
+   "lan": "conn",
+   "dns": "172.66.147.243",
+   "resolv": "nameserver 1.1.1.1",
+   "permits_visible": false
+  },
+  "permits_before": [
+   "g1.json"
+  ],
+  "permits_after": [],
+  "secs": 0.1,
+  "CHECK": true
+ },
+ "gw-guard-off": {
+  "rc": 0,
+  "stderr_tail": "",
+  "out": {
+   "gw": "conn",
+   "lh": 111,
+   "d127": 111,
+   "lan": "conn",
+   "dns": "172.66.147.243",
+   "resolv": "nameserver 1.1.1.1",
+   "permits_visible": false
+  },
+  "permits_before": [
+   "g2.json"
+  ],
+  "permits_after": [],
+  "secs": 0.1,
+  "CHECK": true
+ },
+ "fail-closed": {
+  "rc": 1,
+  "stderr": "bwrap: spawn slirp4netns /nonexistent-slirp-helper failed: [Errno 2] No such file or directory: '/nonexistent-slirp-helper'\nbwrap: Can't get type of source /tmp/bwrap-wrap-resolv-207di5we: No such file or directory\n",
+  "command_ran": false,
+  "CHECK": true
+ }
+}

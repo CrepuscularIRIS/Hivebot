@@ -1,0 +1,72 @@
+P7-F3.f1 有界修复交接（不自评 PASS，待独立 verifier）
+
+固定提交
+分支 feat/P7-F3
+SHA de36bbc587d604c2672ede53c32d4554973082ec
+父提交 4da62902c7a9c26452eafc4e98cf40c6d6a6d452
+工作树 /tmp/bot-wt/P7-F3；提交后 git status --short 无输出，diff --check 退出 0。
+本轮精确提交三个文件（未提交任何 evidence/work 文件）
+/tmp/bot-wt/P7-F3/app/sdk/src/orchestration/report.mjs
+/tmp/bot-wt/P7-F3/app/sdk/tests/unit/p7-host-recovery.test.ts
+/tmp/bot-wt/P7-F3/app/ui/tests/unit/admin/recovery.test.ts
+
+根因与改动
+默认两秒窗口触发时，旧 readLog 尚未释放单飞，flush 直接返回，旧许可取消后没有剩余触发。复用 Reporter 单飞状态记一个 reconcilePending 布尔；旧许可取消且生命周期仍有效时，在释放单飞后只补一次 microtask，重新读取权威日志。不忙等、不增加队列/账本、不无界重试。
+进一步反例发现：旧 delivery 已 followup 但持久化结果未知时，补跑会重复 send。遇 unconfirmedStart 清除本次待补触发并保留错误传播，不把未知副作用认作零消费，不自动重放。其余原 stop/dispose/换代负例保留。
+
+RED / GREEN
+1. f1-red.txt：修改前默认 BATCH_WINDOW_MS=2000，旧读挂起超过窗口，自动 send=0；随后手动正对照 send=1 成功，最终自动计数断言失败。1 failed /18 skipped，命令真实退出 1。
+2. 初步修复 f1-green.txt：39 passed，退出 0；此日志不是最终版本验收依据。
+3. f1-unknown-red.txt：新调度的未知副作用反例，旧投递返回 unconfirmedStart 后 send=2，预期 1；1 failed /20 skipped，真实退出 1。随后加入上述禁止重放 guard。
+4. f1-final-green.txt：最终版本 p7-host-recovery + orchestration-report，Test Files 2 passed (2)，Tests 41 passed (41)，EXIT 0。
+默认两秒 V1 在新代自动投递一次后再执行手动正对照，日志幂等保证总 send 仍为 1；旧代放行前 send=0。未知副作用负例总 send=1，不借手动/无关事件凑绿。
+
+最终命令与退出码
+以下命令使用 env -i 白名单 HOME/TMPDIR/PATH/DBUS_SESSION_BUS_ADDRESS，具体值及 coverage 完整参数见 f1-run.py 和各 f1-*-run.txt 首两行。
+ENV: HOME=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-home
+TMPDIR=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-tmp
+PATH=/home/lingxufeng/.npm-global/bin:/usr/bin:/bin
+DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-P7-F3-no-dbus
+最终非 coverage 命令：env -i [上述四项] /home/lingxufeng/.npm-global/bin/pnpm -C /tmp/bot-wt/P7-F3/app/sdk --config.verify-deps-before-run=false exec vitest run --config /home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-sdk-worker.config.mjs --coverage.enabled=false --maxWorkers=1 --no-file-parallelism tests/unit/p7-host-recovery.test.ts tests/unit/orchestration-report.test.ts
+结果 41 passed，退出 0。
+python3 -I /home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-run.py sdk-worker sdk-child
+sdk-worker：7 files /236 tests passed；覆盖全文件全局阈值失败，内层 EXIT 1。
+sdk-child：真实 Loader 两项 passed /19 skipped；覆盖全文件全局阈值失败，内层 EXIT 1。
+python3 -I /home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-run.py ui
+UI：13 files /110 tests passed；全文件 functions=76.59%、branches=78.6% 未达全局 80%，内层 EXIT 1。此采集在 10:44:06，之后 UI 生产/测试字节未改。
+注意 f1-run.py 自身没有传播内层非零退出，外层 0 不是 coverage 成功。只认每组日志 EXIT。
+python3 -I /home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f1-map-coverage.py
+提交后重跑，退出 0，JSON sha 为上述固定 SHA、dirty=false。
+测试输出含故意注入的失败/abort/crashAt 警告，均有相应负例，不等于无 stderr。
+
+官方覆盖映射（S/B/F/L，百分比）
+比较基点 e5ff286，覆盖完整 F3 修改，而非仅本轮几行；保留全部十个生产文件，零上下文新侧行与官方 source span 相交，保留包围修改的 legacy span 与 branch 全部 arm；line 使用官方 statement 起点最大 count。完整 maps/counts/provenance 在 f1-coverage-diff-map.json。
+start.ts                100 /100 /100 /100
+admin/host.mjs           98.91 /92.50 /100 /100
+orchestration/delivery   90.91 /81.82 /100 /100
+orchestration/main-channel 97.30 /94.44 /90.91 /100
+orchestration/report     88.71 /89.29 /83.33 /95.24
+ui/main/index           96.77 /80 /100 /100
+ui/main/ready           93.33 /80 /100 /100
+ui/main/admin/recovery  94.74 /89.39 /94.12 /98.57
+ui/main/admin/restart   100 /N.A.(0 arms) /100 /100
+ui/main/dsh/connect     100 /N.A.(0 arms) /100 /100
+SDK 聚合 94.93 /91.30 /92.86 /98.77；UI 聚合 95.36 /86.81 /97.22 /99.07。
+每文件适用映射指标均 >=80%；零 arm 不冒充覆盖 100%。整文件全局 coverage 阈值仍未过，不删旧代码/文件凑绿。
+
+覆盖 provenance 与边界
+最初 autoAttachSubprocess 混合 worker Vite transformed 与裸 Loader raw 同 URL 坐标，存在错位；f1-sdk-coverage.txt/f1-coverage-sdk 仅保留作诊断，不用于最终映射。
+最终 SDK worker-only 官方 f1-coverage-sdk-worker/coverage-final.json 用于 start/host/report/delivery；main-channel 仅取真实 Loader autoAttachSubprocess 官方 f1-coverage-sdk-child/coverage-final.json 的该文件 record，不把不同坐标 counts 混加。UI 取官方 f1-coverage-ui/coverage-final.json。采集 include 保留所有修改生产文件。
+真实 Loader 用原 runtime 启动器/原生 stream 与 unary RPC，覆盖 standalone 未启用拒绝、重复订阅拒绝、foreign peer、prepare/complete、重连身份与旧 challenge；不是仅 mock RPC。真实子进程官方 coverage 已采集，不再标作未采集。
+UI 执行真实 main index 入口、OperationsLedger、M3 store、wireAdminRecovery；仅 mock Electron/窗口/transport，观察 Prepare→Complete、before-quit cancel/stop/释放单写锁、晚帧无效。真实 DshConnection 测 socket dead/stop 通知与异常 listener 隔离。
+这不是生产桌面 E2E。冷原生孤儿→真实 SDK RPC→真实 main→恢复生产消费的完整全链本轮未验证；独立 VERIFY 中该项 UNKNOWN 不被本报告抹去。不合入 F1/F2，其最新修复整合后回归由派发者另行安排。
+
+执行偏差与安全说明
+最初 f1-red/f1-green 用原 Vitest 配置，未显式 cacheDir，可能写本工作树 node_modules/.vite 结果缓存；不能声明全程 node_modules 零写。后续全部定向/coverage 配置显式将 cacheDir 指向 evidence/f1-* 并关闭 test cache。未擅自清/还原 node_modules，未安装/升级依赖、未改锁或产品配置、未整体链接其他树 node_modules。
+UI 新测试曾有两个不同 fixture 错误：假设 F1 init 创建空日志（实际只持单写锁），及忽略 onConnected 已取消一次 stream 导致 quit 计数偏差；查实现后分别改为单写锁正反对照、quit 前计数增量。最终 110 项行为通过。前者失败见 f1-ui-new-tests.txt；后一失败的旧 run 日志被同名最终日志覆盖，不能再作为可重读原始证据。
+测试凭证均隔离临时根合成值；不读真实凭证，不使用真实桌面/真模型，不 sudo、不 shell kill/pkill/killall、不重启注销，只使用测试框架自管子进程 stop。未派 agent、未触其他任务、未 push/merge/stash/reset/clean。未跑全量或 build。原 VERIFY 与 verify-* 独立脚本未改，工作记账未改。
+
+未完成/待核
+整文件全局覆盖仍低于 80%；本次达到的是用户指定的官方 JSON 修改逻辑映射指标，需独立 verifier 复核 source 坐标选择及完整反例。
+真实生产全链与 F1/F2 整合回归仍未验证；本任务不扩展 F4/WM、不创建 sdk-owner。
+待 verifier 验收。

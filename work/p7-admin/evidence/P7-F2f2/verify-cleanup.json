@@ -1,0 +1,14 @@
+{
+  "head": "ed336c9a39660a30f23f415debc9e07f22b026ea",
+  "status": "",
+  "runtime_removed": true,
+  "report": "/home/lingxufeng/bot/work/p7-admin/evidence/P7-F2f2/VERIFY.txt",
+  "exits": {
+    "sdk": "0",
+    "ui": "0",
+    "extra": "1",
+    "red-sdk": "1",
+    "red-ui": "1",
+    "boundaries": "0"
+  }
+}

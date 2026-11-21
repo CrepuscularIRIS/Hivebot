@@ -1,0 +1,39 @@
+# 红验证：R2 用例在没有修复时确实抓到死锁（2026-11-02 09:58）
+# 复现步骤（红仓已按规约用后即删，以下为当次运行的原始输出节选）：
+#   git worktree add --detach /tmp/vfy-T-12.f1-red f13bbc5
+#   cd /tmp/vfy-T-12.f1-red && git checkout d0a8008 -- app/sdk/src/policy/shell-ask.mjs
+#   cd app/sdk && CI=true HOME=/tmp/bot-vfy-T-12.f1/h pnpm install --frozen-lockfile
+#   HOME=/tmp/bot-vfy-T-12.f1/h pnpm exec vitest run tests/e2e/approval.test.ts \
+#     --no-file-parallelism -t "R2:"
+# 即：测试代码 = f13bbc5，产品代码中仅 shell-ask.mjs 还原到父提交 d0a8008。
+
+ ❯ tests/e2e/approval.test.ts (5 tests | 1 failed | 4 skipped) 1824ms
+   × R2: an explicit danger-full-access preset (approval=never) runs ordinary bash without asking 1823ms
+
+ FAIL  tests/e2e/approval.test.ts > R2: an explicit danger-full-access preset (approval=never) runs ordinary bash without asking
+AssertionError: ordinary bash ran under the explicit never preset: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/e2e/approval.test.ts:430:85
+    428|     await sendPrompt(rt.client, s1, 'dfa 摸 canary')
+    429|     await waitForTurnEnds(stream.frames, 1)
+    430|     expect(existsSync(canary), 'ordinary bash ran under the explicit n…
+       |                                                                                             ^
+    431|     expect(
+    432|       feed.frames.some((f) => f.type === 'waterfall' && f.event === 'a…
+
+ Test Files  1 failed (1)
+    Tests  1 failed | 4 skipped (5)
+ Start at 09:58:42
+   Duration  2.01s (tests 96%, transform 3%, import 1%)
+
+# 解读：断言失败发生在 :430（canary 未创建），而 :421 catalog.defaultPreset
+# 与 :427 session pin 断言已先行通过（否则走不到 430）——即组合确实是
+# danger-full-access + never、且 bash 仍没有运行：死锁签名被用例真实捕获，
+# 绿（f13bbc5 下 5/5）不是假绿。失败仅 1.8s 完成，符合「ask 被 user-approval
+# 对 never 确定性 rejected（上游 index.ts:301），无人被询问」的死锁链。

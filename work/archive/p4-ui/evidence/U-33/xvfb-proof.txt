@@ -1,0 +1,14 @@
+全量 e2e（pnpm test:e2e → sh scripts/run-e2e.sh）运行中实测，2026-11-02 23:22：
+
+$ pgrep -ax Xvfb
+523810 Xvfb :99 -screen 0 1600x1000x24 -nolisten tcp -auth /tmp/xvfb-run.ASGQLL/Xauthority
+
+$ ps -o args= -p 523800   (Xvfb 的父进程)
+/bin/sh /usr/bin/xvfb-run -a --server-args=-screen 0 1600x1000x24 playwright test
+
+wrapper 523800 的两个子进程：
+  523810 Xvfb :99 -screen 0 1600x1000x24 -nolisten tcp -auth /tmp/xvfb-run.ASGQLL/Xauthority
+  523819 /tmp/bot-wt/U-33/app/ui/node_modules/.bin/node …（playwright test 主进程）
+
+→ playwright 及其全部 Electron 子进程都在 xvfb-run 会话内（DISPLAY=:99），真实桌面零弹窗。
+Electron 由 playwright 自带 --disable-gpu 启动（GL 软渲染异常未出现，无需额外 app.disableHardwareAcceleration）。

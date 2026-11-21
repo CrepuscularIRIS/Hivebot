@@ -1,0 +1,1 @@
+export default { test: { include: ['/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-12/vfy/crash-probe.test.ts'], setupFiles: ['/tmp/bot-wt/P6-12/app/sdk/tests/support/tmp-sweep.setup.ts'], testTimeout: 120000, hookTimeout: 120000, fileParallelism: false } }

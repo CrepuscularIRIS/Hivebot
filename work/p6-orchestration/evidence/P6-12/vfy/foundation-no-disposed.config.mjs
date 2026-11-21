@@ -1,0 +1,1 @@
+export default {test:{include:['/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-12/vfy/foundation-no-disposed.test.ts'],testNamePattern:'target replaced during|clears the in-flight',testTimeout:10000}}

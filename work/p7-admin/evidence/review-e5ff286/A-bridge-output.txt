@@ -1,0 +1,18 @@
+{"input":{"sessionId":"s","turnId":"t","originRef":"host-origin","action":"list","params":{}},"path":"AdminChannel.request -> wireAdminChannel.verify -> registered consumer -> main rpc -> same-peer AdminChannel.respond -> SDK rejection","rpcFrames":[{"method":"pbots/admin.respond","args":{"request":{"requestId":"221e86e3-580f-4a2a-a316-1ae0c755128b","error":{"code":"mock-upstream-error","message":"failed","details":{"token":"SYNTHETIC-BRIDGE-MARKER","pid":4242}}}}}],"actual":{"error":{"code":"mock-upstream-error","message":"mock-upstream-error: mock-upstream-error: failed","details":{"token":"SYNTHETIC-BRIDGE-MARKER","pid":4242}}}}
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: error details reached SDK without redaction
+    at file:///home/lingxufeng/bot/work/p7-admin/evidence/review-e5ff286/A-bridge-probe.mjs:29:8 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v22.23.4
+
+EXIT_CODE=1

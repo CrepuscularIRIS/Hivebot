@@ -1,0 +1,157 @@
+anchor	in110
+3IrDfA	1
+Add all connectors	1
+Add connector	1
+Added	1
+Allow	1
+Allow all connectors?	1
+Allow once	1
+Allowed	1
+Always	1
+Always allow	1
+Always allow for your messages to every Team Bot	1
+Always allow for your messages to this Bot	1
+Cancel	1
+Choose	1
+Clear	1
+Clear connector preferences?	1
+Configure	1
+Configure sections	1
+Connect	1
+Connect once and every member can use	1
+Create	1
+GetAvailableMcpServers	1
+GetAvailableMcpServersRequest	1
+Gmail	1
+McpServerInfo	1
+Members	1
+Members connect their own accounts	1
+Only a connector served through Grok can be turned off here.	1
+Open a Bot to add skills	1
+Others	1
+PROTO	1
+Remove	1
+S.enabled	0
+Service	1
+Service accounts	1
+SetGrokConnectorEnabledRequest	1
+Share	1
+Share my account	1
+Skipped	1
+Use your own account	0
+Ye.syncPluginSkills	0
+accessToken	1
+account	1
+accountScopeOfToken	1
+accounts	1
+acknowledgedWarningVersion	1
+addServerIds	1
+again	1
+agentId	1
+agentId:n	1
+agentId:t	1
+agentName	1
+all_team_bots	1
+allow	1
+allowed	1
+always	1
+always_all_team_bots	1
+always_this_bot	1
+answer	1
+ask expired	1
+authenticateMcpServer	1
+authenticateServer	1
+cacheScope	1
+catalog	1
+chunk-chat-blA0OBsh.js	0
+clearGrokBotConnectorAlwaysAllow	1
+clearedCount	1
+connect	1
+connector	1
+connectors	1
+disabledByUser:	1
+disabledByUser:!0	1
+disabled_by_team_admin_policy	1
+e.getGrokBotAgentMcpServers	1
+enabled	1
+entryId	1
+entryPoint	1
+every	1
+every Team Bot	1
+expired	1
+fetchAccountMcpServers	1
+fetchGrokBotAgentMcpServers	1
+for this reply only	1
+getAvailableMcpServers	1
+getMcpState	1
+grokBotAgentId	1
+grokBotAgentId?	1
+grok_bot_plugin_scope	1
+h.useState	1
+here.	1
+index.eager-common-DbK3Oi_r.js	0
+installEntry	1
+interrupted	1
+interruptedBy	1
+is_team_server	1
+is_unseen	1
+kLf4Qs	1
+listGrokBotAgentServers	1
+member	1
+messages	1
+messages.	1
+nCancel	1
+nCreate	1
+needs_grant	1
+never	1
+person	1
+personal	1
+pluginId	1
+plugins	1
+preferences	1
+read:t	1
+remembered	1
+removeServerIds	1
+reply	1
+requestId	1
+requireAccountWriter	1
+requireAccountWriter()	1
+resolution	1
+resolveConnectorGrant	1
+resolveDisplayServer	1
+resolveGrokBotConnectorGrant	1
+response	1
+rowScope	1
+sections	1
+served	1
+servedBy	1
+served_by	1
+server	1
+serverId	1
+server_identifier	1
+servers	1
+service	1
+sessionId	1
+setGrokConnectorEnabled	1
+setMcpCustomInstructions	1
+settings.getActiveAccountScope	1
+settings.getActiveAccountScope()	1
+shareWithBot	1
+skill	1
+skills	1
+skipped	1
+syncPluginSkills	1
+team-bot-connector-preferences	1
+team-bot-connector-shared-space-allowlist	1
+their	1
+these	1
+these plugins	1
+this_bot	1
+through	1
+turned	1
+useState	1
+user_has_access_token	1
+waitingOn	1
+which	1
+will ask again the next time they need one	1
+yours	1

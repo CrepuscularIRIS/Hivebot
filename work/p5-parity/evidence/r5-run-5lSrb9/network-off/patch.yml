@@ -1,0 +1,18 @@
+- id: agent-default-model
+  config:
+    provider: p2fake
+    model: p2fake
+- insert:
+    - id: p2sdk-fake-llm
+      name: 'file:///home/lingxufeng/bot/app/sdk/tests/support/fake/plugin.mjs'
+      config:
+        providers:
+          - id: p2fake
+            name: P2 Fake
+            models:
+              - id: p2fake
+                contextWindow: 131072
+- id: sandbox
+  config:
+    runnerCommand: ['/usr/bin/bwrap', '--unshare-net']
+    runnerFailureSignatures: ['bwrap: ']

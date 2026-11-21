@@ -1,0 +1,365 @@
+{
+  "ts": "2026-11-05T06:32:35.754Z",
+  "mode": "real",
+  "model": "glm-5.3",
+  "llmBase": "http://127.0.0.1:4001",
+  "litellm": {
+    "ok": true,
+    "hasModel": true,
+    "modelCount": 21
+  },
+  "groupDelayMs": 5000,
+  "entries": [
+    {
+      "id": "attach1-hike-append",
+      "rep": 1,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-08763662-604e-4e28-9978-be9d048095e3",
+      "raw": "attach1-hike-append-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "attach1-hike-append",
+      "rep": 2,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-4b720b3a-5640-4730-8569-315cb68927c4",
+      "raw": "attach1-hike-append-2.jsonl",
+      "workers": []
+    },
+    {
+      "id": "attach1-hike-append",
+      "rep": 3,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-a5a2910a-d031-4c2a-b309-8f0e078779a5",
+      "raw": "attach1-hike-append-3.jsonl",
+      "workers": []
+    },
+    {
+      "id": "attach2-backup-index",
+      "rep": 1,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-6533f83d-6b02-4b70-a8fa-f815e09cc2ee",
+      "raw": "attach2-backup-index-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "attach2-backup-index",
+      "rep": 2,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-68f9734c-bd6b-4c31-a8e8-0c8c30176c26",
+      "raw": "attach2-backup-index-2.jsonl",
+      "workers": []
+    },
+    {
+      "id": "attach2-backup-index",
+      "rep": 3,
+      "kind": "attach",
+      "outcome": "turn/end",
+      "sessionId": "session-9c77db3c-c972-4467-8f7b-a79b69d57295",
+      "raw": "attach2-backup-index-3.jsonl",
+      "workers": []
+    },
+    {
+      "id": "chat1-thanks",
+      "rep": 1,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-d5d60547-517e-4926-bb68-9200d0d8bf9f",
+      "raw": "chat1-thanks-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "chat2-greeting",
+      "rep": 1,
+      "kind": "chat",
+      "outcome": "turn/end",
+      "sessionId": "session-17812852-3903-4ed6-be46-efc412469d1b",
+      "raw": "chat2-greeting-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dir1-docker-vm",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-19e7a5e7-e897-484c-8164-78c58b86f27e",
+      "raw": "dir1-docker-vm-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dir2-translate-ja",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-3a43415a-1f12-44a5-a0a9-05eb266ef9d4",
+      "raw": "dir2-translate-ja-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dir3-power",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-673c476e-1015-4923-a3a6-a64bb7609998",
+      "raw": "dir3-power-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "dir4-tv-rec",
+      "rep": 1,
+      "kind": "direct",
+      "outcome": "turn/end",
+      "sessionId": "session-2af86aba-8120-4e5a-be7b-c214fc7ee975",
+      "raw": "dir4-tv-rec-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "par1-two-tasks",
+      "rep": 1,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-897c0b61-a5de-4bb8-8297-9013949fafcc",
+      "raw": "par1-two-tasks-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "par1-two-tasks",
+      "rep": 2,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-78d07aba-9812-4d93-959f-507d5a9a9fba",
+      "raw": "par1-two-tasks-2.jsonl",
+      "workers": []
+    },
+    {
+      "id": "par1-two-tasks",
+      "rep": 3,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-22355a78-1b33-4746-921a-c4595a546022",
+      "raw": "par1-two-tasks-3.jsonl",
+      "workers": []
+    },
+    {
+      "id": "par2-list-and-weekday",
+      "rep": 1,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-5c6e3931-f92d-49b8-bd87-b3c9e062e8fe",
+      "raw": "par2-list-and-weekday-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-b51b1ae6-171c-437c-8aef-3814915ac8b0",
+          "name": "列文件名"
+        },
+        {
+          "sessionId": "session-8ad3b569-533f-4795-84f0-a93a448cde49",
+          "name": "查星期几"
+        }
+      ]
+    },
+    {
+      "id": "par2-list-and-weekday",
+      "rep": 2,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-26f1f203-14d5-4406-b43f-bdb8136a7135",
+      "raw": "par2-list-and-weekday-2.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-d51641f3-3e43-43b8-8b1b-9c33e2714a95",
+          "name": "列出文件名"
+        },
+        {
+          "sessionId": "session-b0e1c060-b5fc-4ac5-9d9d-ce97a07fdd6e",
+          "name": "查星期几"
+        }
+      ]
+    },
+    {
+      "id": "par2-list-and-weekday",
+      "rep": 3,
+      "kind": "parallel",
+      "outcome": "turn/end",
+      "sessionId": "session-e83d98ee-d3dc-4570-9358-ccfaae976c9c",
+      "raw": "par2-list-and-weekday-3.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-fb8e2f5c-c890-43c7-add4-e1d12746d615",
+          "name": "列出文件名"
+        },
+        {
+          "sessionId": "session-c41a8d05-fa88-4bce-88e7-763fe67c8613",
+          "name": "查询星期几"
+        }
+      ]
+    },
+    {
+      "id": "single1-packing",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-1775b85c-a85d-489c-bd97-be4f0a0b4d3a",
+      "raw": "single1-packing-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "single1-packing",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-4a53319a-bb81-44e0-83c9-0012158db311",
+      "raw": "single1-packing-2.jsonl",
+      "workers": []
+    },
+    {
+      "id": "single1-packing",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-1d55c1ab-90b8-4848-8f09-7d7217efe2b2",
+      "raw": "single1-packing-3.jsonl",
+      "workers": []
+    },
+    {
+      "id": "single2-date-diary",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-7fa403a1-23be-49ac-a1c6-ac3e69541338",
+      "raw": "single2-date-diary-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "single2-date-diary",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-b1afbdef-b8dd-420d-82fe-abfd5539350d",
+      "raw": "single2-date-diary-2.jsonl",
+      "workers": []
+    },
+    {
+      "id": "single2-date-diary",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-a709d0b9-8004-4ef2-91d2-cdec83f3421d",
+      "raw": "single2-date-diary-3.jsonl",
+      "workers": []
+    },
+    {
+      "id": "single3-fib-run",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-a57d7f8b-a0b4-4e11-8cd6-5363587a501b",
+      "raw": "single3-fib-run-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "single3-fib-run",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-f1179751-1657-4e72-8996-02c8dcd0060a",
+      "raw": "single3-fib-run-2.jsonl",
+      "workers": []
+    },
+    {
+      "id": "single3-fib-run",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-d62e9ecf-2d54-43f8-97de-a3a947108b57",
+      "raw": "single3-fib-run-3.jsonl",
+      "workers": []
+    },
+    {
+      "id": "single4-count-logs",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-99b703c9-5fe5-483a-8323-abfd9281cb10",
+      "raw": "single4-count-logs-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "single4-count-logs",
+      "rep": 2,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-fdc823b5-6c08-42d5-af54-ca1dcb68bf2f",
+      "raw": "single4-count-logs-2.jsonl",
+      "workers": []
+    },
+    {
+      "id": "single4-count-logs",
+      "rep": 3,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-59ab1cbd-dc5e-4d17-8264-d3ec55fc9842",
+      "raw": "single4-count-logs-3.jsonl",
+      "workers": []
+    },
+    {
+      "id": "stop1-lowercase",
+      "rep": 1,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-9a69f5e8-fea6-41c2-855b-2d0d80d28cb7",
+      "raw": "stop1-lowercase-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "stop1-lowercase",
+      "rep": 2,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-e330f502-40d9-474b-84ea-d4d5bff803c5",
+      "raw": "stop1-lowercase-2.jsonl",
+      "workers": []
+    },
+    {
+      "id": "stop1-lowercase",
+      "rep": 3,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-0783ff5b-1022-4b83-b960-dcfcdd565bc3",
+      "raw": "stop1-lowercase-3.jsonl",
+      "workers": []
+    },
+    {
+      "id": "stop2-archive",
+      "rep": 1,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-e5fe29ca-ca55-4021-b744-7476e3934ed6",
+      "raw": "stop2-archive-1.jsonl",
+      "workers": []
+    },
+    {
+      "id": "stop2-archive",
+      "rep": 2,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-d6b86440-f862-4ab0-a613-0703079a1219",
+      "raw": "stop2-archive-2.jsonl",
+      "workers": []
+    },
+    {
+      "id": "stop2-archive",
+      "rep": 3,
+      "kind": "stop",
+      "outcome": "turn/end",
+      "sessionId": "session-4b8cea6d-e6b8-4789-9cda-43c1d2c44110",
+      "raw": "stop2-archive-3.jsonl",
+      "workers": []
+    }
+  ]
+}

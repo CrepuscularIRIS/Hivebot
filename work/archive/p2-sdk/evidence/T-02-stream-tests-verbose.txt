@@ -1,0 +1,13 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-02/app/sdk
+
+ ✓ tests/e2e/stream.test.ts > ① harness: temp DSH_HOME, real keys cleared, keyless scripted turn completes 1915ms
+ ✓ tests/e2e/stream.test.ts > ② first-chunk barrier: gate released only after the client receives chunk 1; K deltas in order before turn end 1887ms
+ ✓ tests/e2e/stream.test.ts > ③ negative control: a whole-turn-buffering relay makes the same first-chunk wait reject 6620ms
+ ✓ tests/e2e/stream.test.ts > ④ re-run with a different prompt: same barrier assertions hold, fake recorded the new prompt 1885ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  14:43:05
+   Duration  12.44s (tests 100%)
+

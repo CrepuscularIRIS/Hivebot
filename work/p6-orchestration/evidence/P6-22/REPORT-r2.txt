@@ -1,0 +1,55 @@
+P6-22 第2轮（6.1 Sol执行，glm-5.3被测）
+状态：PARTIAL / 429中断；文案已提交0ed1ed4，dev10/10已采，held-out18/36已采。未重试，未定案，未跑48组。
+
+一、范围与提交顺序
+- 在 /tmp/bot-wt/P6-22、feat/P6-22 上，起点7ea8fcc。产品基线仍c33efa8，未引入P6-24/P6-25。
+- 以主仓PLAN §12.5–12.6为准，只改routing-prompt.mjs的section文本/来源注释，以及create/send/stop.mjs三个DESCRIPTION常量。
+- 主bot身份首句、按写文件/跑命令划界、write/edit/bash前转create、反驳文件少/调用少/耗时短等理由；追加回原worker改产物；保留并行、subagent分工、回报非指令、哨兵边界。
+- 对应定向测试只更新固定SHA与live marker，并加入身份/禁词/触发器/反例断言。先红1 failed / 12 passed，再绿2 files / 14 tests passed。文案+测试单独commit后才起真模型。
+- ROUTING_PROMPT SHA256=8bc4ea57810cbfcc2ac21c6cb4a510449df88c174dd22efc0d753bea81f04fc8。
+- 直接复用r1采集器与评分包装器；run.mjs唯一改动是隔离根允许/tmp/bot-p622r2-*。冻结prompts.json、score.mjs判据零改动。score-round.mjs/inspect-dev.mjs原样复制到rounds/r2。
+- 没有独立p6 REUSE.md；既有PLAN明确第3级复制改造与上游锚点，本轮未自建能力或新增依赖。
+
+二、隔离与采集
+- dev临时HOME=/tmp/bot-p622r2-dev/home，held-out=/tmp/bot-p622r2-heldout/home；子进程env显式P2SDK_ORCH_DATA_DIR=<对应临时根>/data，bots.json首会话前预写。
+- dev P622_PROMPTS_FILE=.../D3-orch/dev-prompts.json、P622_REPS=1；held-out使用冻结prompts、P622_REPS=3、P622_SENTINEL_ONCE=1。P2SDK_LLM_MODEL=glm-5.3。
+- 两阶段都P620_GROUP_DELAY_MS=5000，串行，不--force、不重采；主300s/worker420s/回报240s/组900s原预算不变。主cwd沿用r1 work/<group>，本轮不改生产布局。
+- 所有已采主raw均盲审计确认glm-5.3/litellm、三件协调工具、完整r2 section输入；没有读取或展示held-out原始回复，只用机械score/audit布尔计数。
+- dev retry0/429终态0；held-out retry0/429终态1；审计凭证值匹配0。未把宿主凭证作为模型输入或容器环境；模型路由key由既有harness传本地provider，值不打印、不落证据。
+
+三、结果（完整逐组分表与剩余组在rounds/r2/SCORE.txt）
+类别         r1正确/计划   r2正确/计划   r2超时   r2缺失
+单派         0/12          12/12         0        0
+并行         3/6           1/6           1        4
+追加         0/6           0/6           0        6
+停止         0/6           0/6           0        6
+直接答哨兵   4/4           4/4           0        0
+闲聊哨兵     2/2           0/2           0        2
+- 机械子集13/30，但其中16组委派未测、1组超时；已完整的13个委派组均正确，无完整回合路由失败。
+- 机械sentinel-misdispatch=0/6，仅完成4/6，已测0/4误派；未测2个闲聊，不宣称完整哨兵通过。
+- 硬指标污染回合工具成功0；16批回报里1批tailTexts=0，属于par1-two-tasks-2超时/429组，不能宣称硬指标完整通过。
+- par1-two-tasks-2主回合create=2；随后429，采集器记report超时，立即停止后续组。日志明确stop without retry；18个未采组见SCORE.txt。不把启动器exit0误当完整成功。
+- dev为9/10（单派4/4、并行2/2、追加0/1、停止1/1、直接答1/1、闲聊1/1），对比r1的6/10。追加为采集器假超时，不是没派工或没send。
+
+四、只据dev的观察与新问题
+- dev-single-csv-json-1.jsonl:340、svg-badge:343、json-schema:432、extract-links:413均明确以“创建文件/执行命令必须worker”派出；r1文件少/调用少的豁免已纠正。
+- dev-attach-recipe-allergy-1.jsonl:255先create，:785明确send到原worker修改其产物；:1012已给第二批回报正文。没有从held-out回复推导任何调词建议。
+- 已独立复现原采集器缺陷：waitReportConsumed从首帧扫到第一次回报后，遇追加user/message就break，永远看不到后续第二批回报；本dev两批回报raw行359、836，最后回报后turn/end存在，仍标report超时。探针probe-dev-report-wait.mjs与dev/report-wait-probe.txt。为保持同r1口径，本轮不改逻辑、不回填分、不重采；交派发者另定修复及可比口径。
+- worker产物路径与主目录不一致仍存在（例如dev observations:97、118、140），属于已规划P6-24/P6-25，不扩范围修改。
+
+五、门槛建议
+- 当前13/30不是完整轮次的12–21档，不能据此启动r3；也不能把缺失算成失败去触发<12停线。
+- 严格执行429不重试，本轮到此提交证据，交派发者安排额度恢复及采集器问题的处置/是否续本轮。暂不建议定案或换文案。
+- 完整≥22/30且哨兵0/6且硬指标完整通过才建议等P6-24/P6-25合并main后定案48；完整<12则“r3不跑，转§12.3”；完整12–21再只据dev总结r3。本轮dev没有新的完整路由失败可据以调词。
+
+六、复测、文件与收尾
+- /tmp/bot-wt/P6-22/app/sdk：HOME=/tmp/bot-p622r2-tests ./node_modules/.bin/vitest run tests/unit/orchestration-routing*.test.ts
+  Test Files  2 passed (2)
+       Tests  14 passed (14)
+- node .../D3-orch/score.mjs --selftest：17/17；run.mjs --smoke：PASS。
+- node .../rounds/r2/score-round.mjs dev / heldout：可重算本轮机械分表；node .../rounds/r2/audit-inputs.mjs：仅布尔/计数审计；node .../rounds/r2/probe-dev-report-wait.mjs：dev假超时探针PASS。
+- 使用现成依赖临时软链，pnpm exec因临时HOME触发pnpm安装检查而报无TTY，未装依赖/未改共享依赖；改直接已装vitest执行，软链已清理。系统Python3等待本harness的pidfd，不轮询输出、不发kill。
+- 修改文件：上述4个产品mjs、2个路由测试（0ed1ed4）；run.mjs根校验；rounds/r2/{score-round.mjs,inspect-dev.mjs,audit-inputs.mjs,probe-dev-report-wait.mjs,CHECKS.txt,SCORE.txt,dev/**,heldout/**}；本REPORT-r2.txt。
+- 原始证据10个dev主raw+10个worker、18个held-out主raw+16个worker，全部提交；运行时根/凭证文件不入git，429后保留的自身临时根已删。没有删除r0 verifier既有未跟踪文件。
+- 两个采集进程已退出0；两个自身日志monitor已停；bot-reap --dry-run --match p622及--match P6-22均无匹配残留。测试清理仅自身SDK/dsh子进程，未碰桌面/系统/训练进程。
+待 verifier 验收。

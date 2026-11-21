@@ -1,0 +1,71 @@
+方向 A：信任边界 / 输入 / 来源 / 授权 / SDK-main Peer
+review_verdict: FAIL（3 条模块级 CONFIRMED；不是 P7 整体验收结论）
+commit: e5ff286e686994b489766ea7d3bd1f74614a342b
+工作树：/tmp/bot-wt/P7-review-A，detached；开始及结束 status --porcelain 均为空，HEAD 未漂移。
+精确审查增量：git diff 713763c^1 713763c -- app/sdk/src/admin/{authority,channel,origin,tools}.mjs app/ui/main/admin/{policy,channel,consumer}.ts
+增量原文：A-exact-diff.txt；固定 SHA 的文件行号用于以下定位。只读必要 TurnOrigin 上游，没有审 F3；F1 operations 未进入本次受测调用路径，因此未扩读。
+
+一、方法、环境与真实退出码
+先读主仓 work/LEARNINGS.md、当前 p7 PLAN F1/F2、BRIEF §6 和 VERIFY-P7-F2f1.md 的已知差距。
+负载：开始 load 3.87/3.33/3.71，vmstat 最后样本 iowait=0%、idle=91%；结束 load 3.72/3.41/3.63。只运行低负载定向单测与裸 Node 探针。
+未安装/升级依赖，未跑全量、build、Electron、浏览器、模型、外部服务。所有实际测试进程显式 env -i，仅 PATH=/usr/bin:/bin、隔离 HOME/TMPDIR；无凭证读取、真实桌面访问或外部进程清理。
+原独立树没有 node_modules，两次原地测试退出 127，原始失败保留 A-sdk-tests.txt、A-ui-tests.txt，未隐去。
+为遵守只能写 evidence 的边界，将 17 个范围内源码/测试/测试 setup/config 逐字复制进 evidence 的自有 A-runtime/project，再仅链接主仓已锁定 node_modules。A-prepare.py 可重建；A-prepare-output.txt exit=0 验证全部文件与固定提交 git show 字节一致。A-mirror-hashes.json 保存 SHA256。A-final-state.json 记录两包 package.json、pnpm-lock.yaml 与依赖所属主仓一致。镜像不是改写实现。
+用后只移除了自己创建的 A-runtime（源码副本、缓存、依赖 symlink）；完整探针和输出仍在。重新运行先执行 A-prepare.py。
+
+以下命令中 E=/home/lingxufeng/bot/work/p7-admin/evidence/review-e5ff286，M=$E/A-runtime/project；ENV 表示 env -i PATH=/usr/bin:/bin HOME=$E/A-runtime/home TMPDIR=$E/A-runtime/tmp。
+1. python3 -I "$E/A-prepare.py"：exit 0（17 文件提交字节一致）。
+2. ENV /bin/bash --noprofile --norc -c 'cd <M>/app/sdk && ./node_modules/.bin/vitest run tests/unit/p7-authority.test.ts tests/unit/p7-admin-channel.test.ts --maxWorkers=1'：exit 0；62/62（47+15），2 文件通过，384ms。完整 A-sdk-tests-rerun.txt。
+3. ENV /bin/bash --noprofile --norc -c 'cd <M>/app/ui && ./node_modules/.bin/vitest run tests/unit/admin/channel.test.ts --maxWorkers=1'：exit 0；23/23，1 文件通过，288ms。完整 A-ui-tests-rerun.txt。
+4. ENV node --experimental-strip-types "$E/A-probe.mjs"：exit 1；24 个具名输入/输出记录，3 个安全断言反例，末尾 assert 3 !== 0。完整 A-probe-output.txt。
+5. ENV node --experimental-strip-types "$E/A-bridge-probe.mjs"：exit 1；main→同 Peer respond→SDK 错误详情传播复现。完整 A-bridge-output.txt。
+
+二、CONFIRMED（每条先尝试反证，再运行最小反例）
+
+A1 [major] H1 只核动作/目标，未核受限参数；同一改名批准可替换名字并夹带其他修改。
+定位：app/sdk/src/admin/authority.mjs:171-190、250-261（尤其 256-259）。params 仅扫描禁区键，未与人类原文或 grant 的参数边界核对。
+输入：turnClass=user，humanUtteranceOfGrant='rename bot-22 to Alice'，action=modify，target=bot-22；先 params={name:'Alice'}。
+正向反证：上述合法参数 allow；把 params 换成嵌套 apiKey 时 deny/prohibited-param，证明不是禁区键扫描整体失灵。
+错误行为：保持同一原文/目标，将 params 换为 {name:'Mallory',model:'other-model',prompt:'unrequested instructions',cwd:'/unrequested'}，仍返回 allow，evidenceRef 仍指向 rename ... Alice。
+预期：在当前实现选择 H1 的这条路径中，批准 Alice 不应授予 Mallory 或其他未批准参数；不能核验就 handoff/deny，不能以成功核验三元组返回 allow。
+规格依据：当前 BRIEF:71-73 明确 H1 的“动作、精确目标、受限参数”与精确核验；不是要求 always_allow 逐词匹配。
+证据：命令 4；A-probe-output.txt:1-3，错误行为在第 2 行；exit 1。
+当前可达性限定：authorize 为纯函数，生产管理动作尚未接线；本条证明现有 H1 判定器的错误授权，不声称已修改真实 bot。应在后续复用它作需批准档核验前修正；不建议复活独立 Mandate 引擎。
+[FIX] H1 参数替换仍 allow | 复现：运行 A-prepare.py 后执行命令4，查看 A1-parameter-substitution | 疑似位置：app/sdk/src/admin/authority.mjs:250-259、171-190 | major
+
+A2 [major] 单份现有 grant 内将动作与目标做笛卡尔扩张，产生未被原文授予的“同目标异动作”。
+定位：app/sdk/src/admin/authority.mjs:208-235，特别 220-223 使用 clauseHasAnyAction；226-232 只分别判断动作列表、目标桶成员。
+输入：delegated；mandate={id:'grant-1',actions:['install','disable'],scopes:{plugins:['gh-x','gh-y']},grantUtterance:'install gh-x; disable gh-y'}；请求 action=disable,target=gh-x。
+错误行为：allow，evidenceRef={source:'mandate',mandateId:'grant-1'}，把仅可安装的 gh-x 扩成可停用。
+反证：同一个 grant 请求 disable gh-y 正常 allow；显式否定冲突另有实测为 deny/negated；本条不依赖否定解析、跨多份 grant 合并或伪造来源。
+预期：既然使用原文作为现有 grant 的权限证据，install gh-x 与 disable gh-y 不应组合授权 disable gh-x；应只在批准的动作+目标关系内通过，缺匹配则 handoff/deny。
+规格依据：BRIEF:73 既有 scope/批准不可跨对象拼接，:84 保留同目标异动作反例；此处是在已有实现中消除扩权，不要求新增 Mandate 格式、逐词平台或跨 Mandate 协议。
+证据：命令4；A-probe-output.txt:4-5，错误行为在第 4 行；exit 1。
+当前可达性限定：与 A1 相同，仅证明当前纯函数的授权结果；现有动作表为空，未复现生产执行。
+[FIX] 单 grant 的动作和目标被交叉组合扩权 | 复现：命令4中 A2-cross-action-target-cartesian-expansion，安装X/停用Y的授予允许停用X | 疑似位置：app/sdk/src/admin/authority.mjs:220-232 | major
+
+A3 [major] 回复脱敏只处理 value，error.details 的 token/PID 可原样穿过 main→SDK 桥。
+定位：app/ui/main/admin/consumer.ts:68-75；channel.ts:94-100、72-76 透传错误；app/sdk/src/admin/channel.mjs:150-156 保留 error.details。
+输入：通过现有 createAdminConsumer actions 注册缝安装一个纯内存 list handler，返回 error={code:'mock-upstream-error',message:'failed',details:{token:'SYNTHETIC-BRIDGE-MARKER',pid:4242}}。全部是合成标记，不是真凭证/进程信息。
+错误行为：consumer.dispatch 返回未脱敏 error；进一步以真实 AdminChannel + wireAdminChannel + reverifyAdminRequest + 同 Peer respond 串起来，SDK 最终收到 RemoteError.details.token 与 pid 原值。
+反证：同样内容放在 value 时已有实际探针删除 token 与嵌套 pid，保留正常 keep=1；证明不是断言误把正常字段当敏感字段，也不是 wrong-peer 绕过，合法同 Peer 错误分支本身漏过滤。
+预期：错误分支也必须满足“不返 token/PID/凭证”边界，至少结构化 details 与 value 使用等价限制；不能因 handler 返回 error 而绕过。
+证据：命令4，A-probe-output.txt:22-23；命令5，A-bridge-output.txt:1 的 rpcFrames 与 actual 均有标记及 pid，最终断言失败；两命令均 exit 1。
+当前可达性限定：实际生产 handler 尚未注册；用公开注册缝与纯内存传输替身验证整段现有桥逻辑，没有宣称真实凭证已泄漏或 live RPC 接线已经完成。错误 message 的任意字符串脱敏不在本次已证明范围内。
+[FIX] 管理错误详情绕过 token/PID 回复过滤 | 复现：运行 A-prepare.py 后执行命令5，SDK rejection.details 含 SYNTHETIC-BRIDGE-MARKER/4242 | 疑似位置：app/ui/main/admin/consumer.ts:74-75；app/sdk/src/admin/channel.mjs:150-156 | major
+
+三、REFUTED / 覆盖边界
+- 既有否定冲突修复：同动作同目标正负冲突，含可覆盖 grant，实测 deny/negated；未重新报告原版否定漏洞。输出第6行；原套件还有 create/restart/授予冲突格。
+- 拉丁目标子串 gh-x→gh-xy 不授予，handoff；输出第7行。CJK 任意语义歧义未穷举。
+- worker+user 同回合来源保持 tainted，authorize 的 tainted 即使带 grant 也 deny；跨回合旧 user 不自动令新 agent-message 回合成为 user。输出8-10行。这只是分类/判定器，不是宿主原文采集全链证明。
+- SDK null、8192 以上载荷、调用方伪造 generation 在排队前拒；输出11-13行，定向 suite 另覆超时/断流/重复订阅/迟到 respond。
+- 非持流 Peer respond forbidden 且 pending 保留，正确 Peer 可结算；输出14行。未运行 loader/live RPC，不能据此断言 main-only 端点生产注册已安全接通。
+- 原型动作 __proto__/constructor/toString 在 SDK 解析和默认 consumer 都 unavailable；输出15-17行；UI suite 另覆 inherited handler、非函数、自有同名 handler。
+- policy 的旧 request 代、旧 record 代、其他 turn、伪 originRef 均拒；输出18-21行。
+- sanitize 的 __proto__ 输入未造成全局 Object.prototype 污染（输出24行），不报全局原型污染；本测试不证明其输出对象原型没有变化，也不覆盖未来非 JSON 消费路径。
+
+四、已知缺口与未验（不作为新回归，不用全拒替代完成证据）
+- always_allow/auto_review/needs_approval/blocked 原版分层尚未实现、管理动作表为空未接线、宿主可信原文采集与 Loader/live RPC 未完成，沿用 VERIFY-P7-F2f1.md 已登记状态，不重新列成回归。
+- 本次三个 finding 都是现存模块契约的运行反例；不能将当前空表的默认拒绝称为上述漏洞已修，亦不能把模拟注册缝说成已具真实管理能力。
+- 未测跨回合真实工具结果进入宿主采集器、真实 worker→模型→管理工具长链、真实审批服务/standing grant、F1 持久操作副作用、UI 窗口、F3 生命周期、覆盖率、全量 541/569 和 build；明确遵从本次定向范围。
+- 没有改产品源码、原测试、PLAN/LOG；没有 commit/merge/push，没有登记 coverage。由主会话按本报告归口。

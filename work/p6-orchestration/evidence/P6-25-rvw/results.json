@@ -1,0 +1,526 @@
+[
+  {
+    "name": "write",
+    "label": "null-args",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"arguments\" must be an object",
+    "ms": 1
+  },
+  {
+    "name": "write",
+    "label": "array-args",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"arguments\" must be an object",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "string-args",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"arguments\" must be an object",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "missing",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "null",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"file_path\" must be a string",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "empty",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "Error",
+    "message": "file_path must be a non-empty string",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "blank",
+    "decision": "deny",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "number",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"file_path\" must be a string",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "boolean",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"file_path\" must be a string",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "object",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"file_path\" must be a string",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "array",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"file_path\" must be a string",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "nul",
+    "decision": "deny",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "long-segment",
+    "decision": "deny",
+    "ms": 2
+  },
+  {
+    "name": "write",
+    "label": "long-depth",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "Error",
+    "message": "ENAMETOOLONG: name too long, stat '/tmp/vfy-r-p625-a/ws/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/",
+    "ms": 193
+  },
+  {
+    "name": "write",
+    "label": "inside-relative",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 5
+  },
+  {
+    "name": "write",
+    "label": "outside-relative",
+    "decision": "deny",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "outside-absolute",
+    "decision": "deny",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "file-url",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/file:/tmp/vfy-r-p625-a/outside.txt",
+    "ms": 2
+  },
+  {
+    "name": "write",
+    "label": "windows-drive",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/C:\\tmp\\outside.txt",
+    "ms": 1
+  },
+  {
+    "name": "write",
+    "label": "windows-traversal",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/..\\outside.txt",
+    "ms": 2
+  },
+  {
+    "name": "write",
+    "label": "windows-mixed",
+    "decision": "deny",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "unc",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/\\\\localhost\\tmp\\outside.txt",
+    "ms": 2
+  },
+  {
+    "name": "write",
+    "label": "path-only",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "path-with-canonical",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 2
+  },
+  {
+    "name": "write",
+    "label": "filePath-only",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "filePath-with-canonical",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 1
+  },
+  {
+    "name": "write",
+    "label": "filename-only",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "filename-with-canonical",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 2
+  },
+  {
+    "name": "write",
+    "label": "file-only",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "file-with-canonical",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 2
+  },
+  {
+    "name": "write",
+    "label": "target_path-only",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "write",
+    "label": "target_path-with-canonical",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 2
+  },
+  {
+    "name": "edit",
+    "label": "null-args",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"arguments\" must be an object",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "array-args",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"arguments\" must be an object",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "string-args",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"arguments\" must be an object",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "missing",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "null",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"file_path\" must be a string",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "empty",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "Error",
+    "message": "file_path must be a non-empty string",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "blank",
+    "decision": "deny",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "number",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"file_path\" must be a string",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "boolean",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"file_path\" must be a string",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "object",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"file_path\" must be a string",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "array",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: \"file_path\" must be a string",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "nul",
+    "decision": "deny",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "long-segment",
+    "decision": "deny",
+    "ms": 1
+  },
+  {
+    "name": "edit",
+    "label": "long-depth",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "Error",
+    "message": "ENAMETOOLONG: name too long, stat '/tmp/vfy-r-p625-a/ws/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/",
+    "ms": 221
+  },
+  {
+    "name": "edit",
+    "label": "inside-relative",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 3
+  },
+  {
+    "name": "edit",
+    "label": "outside-relative",
+    "decision": "deny",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "outside-absolute",
+    "decision": "deny",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "file-url",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "FsError",
+    "message": "old_string was not found in \"/tmp/vfy-r-p625-a/ws/file:/tmp/vfy-r-p625-a/outside.txt\"",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "windows-drive",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "FsError",
+    "message": "old_string was not found in \"/tmp/vfy-r-p625-a/ws/C:\\tmp\\outside.txt\"",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "windows-traversal",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "FsError",
+    "message": "old_string was not found in \"/tmp/vfy-r-p625-a/ws/..\\outside.txt\"",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "windows-mixed",
+    "decision": "deny",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "unc",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "FsError",
+    "message": "old_string was not found in \"/tmp/vfy-r-p625-a/ws/\\\\localhost\\tmp\\outside.txt\"",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "path-only",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "path-with-canonical",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 1
+  },
+  {
+    "name": "edit",
+    "label": "filePath-only",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "filePath-with-canonical",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 1
+  },
+  {
+    "name": "edit",
+    "label": "filename-only",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "filename-with-canonical",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 1
+  },
+  {
+    "name": "edit",
+    "label": "file-only",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "file-with-canonical",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 1
+  },
+  {
+    "name": "edit",
+    "label": "target_path-only",
+    "decision": "next",
+    "execution": "rejected",
+    "error": "ToolArgsError",
+    "message": "invalid arguments: missing required property \"file_path\"",
+    "ms": 0
+  },
+  {
+    "name": "edit",
+    "label": "target_path-with-canonical",
+    "decision": "next",
+    "execution": "success",
+    "path": "/tmp/vfy-r-p625-a/ws/inside.txt",
+    "ms": 1
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "probe": "mut-f1-taint",
+    "exit": 1,
+    "command": [
+      "/home/lingxufeng/bot/app/sdk/node_modules/.bin/vitest",
+      "run",
+      "--root",
+      "/tmp/vfy-r-p610-d/sdk",
+      "tests/unit/orchestration-create.test.ts",
+      "-t",
+      "create_bot taint guard",
+      "--reporter=verbose"
+    ]
+  },
+  {
+    "probe": "mut-f1a-adoption",
+    "exit": 1,
+    "command": [
+      "/home/lingxufeng/bot/app/sdk/node_modules/.bin/vitest",
+      "run",
+      "--root",
+      "/tmp/vfy-r-p610-d/sdk",
+      "tests/unit/orchestration-create.test.ts",
+      "-t",
+      "N 起跑|create 流程释放占位|成对续",
+      "--reporter=verbose"
+    ]
+  },
+  {
+    "probe": "mut-p621-current",
+    "exit": 0,
+    "command": [
+      "/home/lingxufeng/bot/app/sdk/node_modules/.bin/vitest",
+      "run",
+      "--root",
+      "/tmp/vfy-r-p610-d/sdk",
+      "tests/unit/orchestration-foundation.test.ts",
+      "-t",
+      ".",
+      "--reporter=verbose"
+    ]
+  },
+  {
+    "probe": "mut-p621-restored",
+    "exit": 1,
+    "command": [
+      "/home/lingxufeng/bot/app/sdk/node_modules/.bin/vitest",
+      "run",
+      "--root",
+      "/tmp/vfy-r-p610-d/sdk",
+      "tests/unit/legacy-f1.test.ts",
+      "-t",
+      "crash log|live ask regression",
+      "--reporter=verbose"
+    ]
+  }
+]

@@ -1,0 +1,9 @@
+X=35 Y(default)=31 Y(explicit standard)=31
+X only: [
+  'list_mcp_resource_templates',
+  'list_mcp_resources',
+  'mcp__demo__ping',
+  'read_mcp_resource'
+]
+Y only: []
+Ystd identical to Y(default): true

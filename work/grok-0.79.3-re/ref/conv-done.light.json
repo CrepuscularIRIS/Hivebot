@@ -1,0 +1,45 @@
+{
+ "scene": "conv-done",
+ "theme": "light",
+ "asserts": {
+  "hasA": true,
+  "hasE": true,
+  "noB": true,
+  "noToolSummary": true,
+  "noToolRowDom": true
+ },
+ "facts": {},
+ "statusLineSamples": [],
+ "bodyText": "Main Bot\nResearch Bot\nOps Bot\nSD\nStub Dev\nConnect apps\nMain Bot\nToday 5:38 AM\nYou\n\nCheck the environment and summarize.\n\n5:38 AM\nMain Bot\n\nA first answer: got it, checking the environment first.\n\n5:38 AM\nMain Bot\n\nE final answer: all checks passed, nothing to fix.\n\n5:38 AM\n\n\n",
+ "errors": [
+  "[error] Sentry SDK failed to establish connection with the Electron main process.\n  - Ensure you have initialized the SDK in the main process\n  - If your renderers use custom sessions, be sure to set 'getSessions' in the main process options\n  - If you are bundling your main process code and using Electron < v5, you'll need to manually configure a preload script"
+ ],
+ "nonLoopbackRequests": [],
+ "consoleTail": [
+  "[log] [STUB] coord.request getAgentTranscriptTail {\"id\":\"ag_research\",\"limit\":500,\"background\":true}",
+  "[log] [STUB] coord.request getAgentTranscriptTail {\"id\":\"ag_ops\",\"limit\":500,\"background\":true}",
+  "[log] [STUB] main.exposeFeatureGate [{\"name\":\"sand_hide_at_mentions\"}]",
+  "[log] [STUB] main.exposeFeatureGate [{\"name\":\"sand_hide_slash_commands\"}]",
+  "[error] Sentry SDK failed to establish connection with the Electron main process.\n  - Ensure you have initialized the SDK in the main process\n  - If your renderers use custom sessions, be sure to set 'getSessions' in the main process options\n  - If you are bundling your main process code and using Electron < v5, you'll need to manually configure a preload script",
+  "[log] [STUB] main.writeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.roster.last-roster\",\"value\":\"{\\\"schemaVersion\\\":4,\\\"value\\\":{\\\"rows\\\":[{\\\"id\\\":\\\"ag_main\\\",\\\"name\\\":\\\"Main Bot\\\",\\\"description\\\":\\\"Main Bot — fixture\\\",\\\"memberIds\\\":[]},{\\\"id\\\":\\\"ag_research\\\",\\\"name\\\":\\\"Research Bot\\\",\\\"description\\\":\\\"Research Bot — fixture\\\",\\\"memberIds\\\":[]},{\\\"id\\\":\\\"ag_ops\\\",\\\"name\\\":\\\"Ops Bot\\\",\\\"description\\\":\\\"Ops Bot — fixture\\\",\\\"memberIds\\\":[]}]}}\"}]",
+  "[log] [STUB] main.listClientPersistenceKeys [{\"prefix\":\"sand.client.slice.account.stub-auth.transcript.replicas.\"}]",
+  "[log] [STUB] main.writeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.transcript.replicas.ag_main\",\"value\":\"{\\\"schemaVersion\\\":1,\\\"value\\\":{\\\"entries\\\":[{\\\"id\\\":\\\"s1u\\\",\\\"seq\\\":10,\\\"kind\\\":\\\"message\\\",\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"Check the environment and summarize.\\\",\\\"timestampMs\\\":1794047932865,\\\"status\\\":\\\"done\\\"},{\\\"id\\\":\\\"s1a\\\",\\\"seq\\\":11,\\\"kind\\\":\\\"message\\\",\\\"role\\\":\\\"assistant\\\",\\\"content\\\":\\\"A first answer: got it, checking the environment first.\\\",\\\"timestampMs\\\":17940479",
+  "[log] [STUB] main.writeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.transcript.replicas.ag_research\",\"value\":\"{\\\"schemaVersion\\\":1,\\\"value\\\":{\\\"entries\\\":[{\\\"id\\\":\\\"s1u\\\",\\\"seq\\\":10,\\\"kind\\\":\\\"message\\\",\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"Check the environment and summarize.\\\",\\\"timestampMs\\\":1794047932865,\\\"status\\\":\\\"done\\\"},{\\\"id\\\":\\\"s1a\\\",\\\"seq\\\":11,\\\"kind\\\":\\\"message\\\",\\\"role\\\":\\\"assistant\\\",\\\"content\\\":\\\"A first answer: got it, checking the environment first.\\\",\\\"timestampMs\\\":1794",
+  "[log] [STUB] main.writeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.transcript.replicas.ag_ops\",\"value\":\"{\\\"schemaVersion\\\":1,\\\"value\\\":{\\\"entries\\\":[{\\\"id\\\":\\\"s1u\\\",\\\"seq\\\":10,\\\"kind\\\":\\\"message\\\",\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"Check the environment and summarize.\\\",\\\"timestampMs\\\":1794047932865,\\\"status\\\":\\\"done\\\"},{\\\"id\\\":\\\"s1a\\\",\\\"seq\\\":11,\\\"kind\\\":\\\"message\\\",\\\"role\\\":\\\"assistant\\\",\\\"content\\\":\\\"A first answer: got it, checking the environment first.\\\",\\\"timestampMs\\\":179404793",
+  "[log] [STUB] main.noteSentryConversation [{\"agentId\":\"ag_main\"}]",
+  "[log] [STUB] main.signalBoxIntent [{\"agentId\":\"ag_main\",\"intent\":\"composer_focus\"}]",
+  "[log] [STUB] main.listCursorTeamMemberships ",
+  "[log] [STUB] main.exposeFeatureGate [{\"name\":\"grok_bot_all_bots_color_theming\"}]",
+  "[log] [STUB] main.setViewingAgent [{\"agentId\":\"ag_main\"}]",
+  "[log] [STUB] main.writeClientPersistence [{\"key\":\"sand.client.slice.account.stub-auth.selection.last-agent\",\"value\":\"{\\\"schemaVersion\\\":1,\\\"value\\\":{\\\"agentId\\\":\\\"ag_main\\\"}}\"}]",
+  "[log] [STUB] coord.request openAgentTail {\"id\":\"ag_main\",\"limit\":500}",
+  "[log] [STUB] coord.request getBotTemplateForSourceAgent {\"sourceAgentId\":\"ag_main\"}",
+  "[log] [STUB] coord.request getAsyncTasks {\"id\":\"ag_main\"}",
+  "[log] [STUB] coord.request getForeverBoxStatus {\"id\":\"ag_main\"}",
+  "[log] [STUB] coord.request getSubagents {\"id\":\"ag_main\"}",
+  "[log] [STUB] coord.request noteTranscriptOpened {\"id\":\"ag_main\"}",
+  "[log] [STUB] coord.request getAgentAutomations {\"id\":\"ag_main\"}",
+  "[log] [STUB] main.reportClientFailure [{\"kind\":\"client_resource\",\"domain\":\"automations\",\"operation\":\"getAgentAutomations\",\"failureCode\":\"source/malformed-reply\",\"boundary\":\"host\",\"retryOwner\":\"none\",\"state\":\"failed\"}]",
+  "[log] [STUB] main.reportClientFailure [{\"kind\":\"transcript_first_layout\",\"reason\":\"settled\",\"heldMs\":57.700000047683716,\"unsettledBodies\":0,\"unsettledPlaceholders\":0,\"cloudAgentCards\":0}]"
+ ]
+}

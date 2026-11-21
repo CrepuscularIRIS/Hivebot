@@ -1,0 +1,101 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3/f2-source/app/sdk[39m
+
+[90mstderr[2m | tests/unit/p7-host-recovery.test.ts[2m > [22m[2mP7-F3 existing Reporter lifecycle recovery barrier[2m > [22m[2mwithdraw checks the captured lease for every remove and stop cancels retry timers
+[22m[39m[pbots-orchestration] withdrew 1 pending report message(s) after an aborted main-bot turn
+
+[90mstderr[2m | tests/unit/p7-host-recovery.test.ts[2m > [22m[2mP7-F3 existing Reporter lifecycle recovery barrier[2m > [22m[2mchanging generation during agentOf cannot wake an old pending report
+[22m[39m[pbots-orchestration] wake main/pbots-report:old failed: This operation was aborted
+
+ [31m❯[39m tests/unit/p7-host-recovery.test.ts [2m([22m[2m24 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 12250[2mms[22m[39m
+   [31m❯[39m P7-F3 existing Reporter lifecycle recovery barrier [2m(10)[22m
+     [32m✓[39m boot and worker turn/end consume nothing until recovery, then report the stable key once[32m 40[2mms[22m[39m
+     [33m[2m✓[22m[39m new recovery completion survives an old flush blocked past the default two-second window[33m 2155[2mms[22m[39m
+     [32m✓[39m a pending new-generation reconcile never replays an unconfirmed old delivery[32m 43[2mms[22m[39m
+[31m     [31m×[31m unknown delivery resolved after 0 ms never replays through the default recovery window[39m[33m 2164[2mms[22m[39m
+     [33m[2m✓[22m[39m unknown delivery resolved after 2100 ms never replays through the default recovery window[33m 4254[2mms[22m[39m
+[31m     [31m×[31m a later legitimate report must not rebatch an unknown old key even when no recovery timer was pending[39m[32m 26[2mms[22m[39m
+     [32m✓[39m withdraw checks the captured lease for every remove and stop cancels retry timers[32m 62[2mms[22m[39m
+     [32m✓[39m start then stop cancels the queued boot pass[32m 31[2mms[22m[39m
+     [32m✓[39m real Delivery: stop after holds enters readLog prevents followup after the await[32m 2[2mms[22m[39m
+     [32m✓[39m changing generation during agentOf cannot wake an old pending report[32m 2[2mms[22m[39m
+   [32m✓[39m P7-F3 peer-bound process recovery [2m(5)[22m
+     [32m✓[39m launcher explicitly enables host recovery without changing standalone P6 defaults[32m 1[2mms[22m[39m
+     [32m✓[39m old resolve cannot open a new lease; reconnect keeps process identity; valid new handoff opens once[32m 1[2mms[22m[39m
+     [32m✓[39m rejects self-reported generations and foreign peers; stopped wait settles without resolving readiness[32m 1[2mms[22m[39m
+     [32m✓[39m an untrusted relationship summary cannot be acknowledged as repaired by the peer[32m 0[2mms[22m[39m
+     [32m✓[39m failed native repair never opens the management lease[32m 0[2mms[22m[39m
+   [32m✓[39m P7-F3 durable native interrupted termination [2m(5)[22m
+     [32m✓[39m accepts native fresh M3 metadata with null main and optional bots, but never trusts malformed relationships[32m 2[2mms[22m[39m
+     [32m✓[39m closes claimed/open Assignment with native unknown tool result and stable stopped report, without resuming[32m 2[2mms[22m[39m
+     [32m✓[39m held unconsumed Assignment stays pending and is not resumed[32m 1[2mms[22m[39m
+     [32m✓[39m bad relationship is returned for the main audit, not accepted or resumed[32m 1[2mms[22m[39m
+     [32m✓[39m corrupt identity, live open turn, append failure and non-durable termination all fail closed[32m 2[2mms[22m[39m
+   [32m✓[39m P7-F3 real Loader control stream [2m(2)[22m
+     [33m[2m✓[22m[39m standalone P6 exposes no recovery control without launcher opt-in[33m 1687[2mms[22m[39m
+     [33m[2m✓[22m[39m binds native stream and unary RPC to the same Peer; reconnect is not process restart[33m 1767[2mms[22m[39m
+   [32m✓[39m P7-F3 post-followup outcome and wake permission [2m(2)[22m
+     [32m✓[39m cancellation after followup is unconfirmed, and concurrent waiters never replay[32m 1[2mms[22m[39m
+     [32m✓[39m same captured lease is checked immediately before wake remove, and after synchronous remove events[32m 2[2mms[22m[39m
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · batching & triggers (决策 15/27③)[2m > [22m[2mmain bot turn/end aborted withdraws pending pbots-report messages and does NOT flush
+[22m[39m[pbots-orchestration] withdrew 1 pending report message(s) after an aborted main-bot turn
+
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · guards[2m > [22m[2mcrashAt exits at the three injected points (P6-09 f5 同法)
+[22m[39m[pbots-orchestration] boot reconcile failed: exit
+
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · guards[2m > [22m[2mcrashAt exits at the three injected points (P6-09 f5 同法)
+[22m[39m[pbots-orchestration] boot reconcile failed: exit
+
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · guards[2m > [22m[2mcrashAt exits at the three injected points (P6-09 f5 同法)
+[22m[39m[pbots-orchestration] boot reconcile failed: exit
+
+ [32m✓[39m tests/unit/orchestration-report.test.ts [2m([22m[2m20 tests[22m[2m)[22m[33m 2868[2mms[22m[39m
+   [32m✓[39m Reporter · batching & triggers (决策 15/27③) [2m(6)[22m
+     [33m[2m✓[22m[39m busy main bot holds reports; its turn/end flushes them as ONE batched message[33m 609[2mms[22m[39m
+     [33m[2m✓[22m[39m idle main bot: first item opens a ≤2s window that collects the second (决策 15)[33m 319[2mms[22m[39m
+     [33m[2m✓[22m[39m decision 16: a pending user message holds delivery; the report goes after that turn ends[33m 618[2mms[22m[39m
+     [33m[2m✓[22m[39m main bot turn/end aborted withdraws pending pbots-report messages and does NOT flush[33m 770[2mms[22m[39m
+   [32m✓[39m Reporter · guards [2m(3)[22m
+     [33m[2m✓[22m[39m no main bot / unreadable identity → nothing is ever sent (fail closed)[33m 450[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/unit/p7-host-recovery.test.ts[2m > [22mP7-F3 existing Reporter lifecycle recovery barrier[2m > [22munknown delivery resolved after 0 ms never replays through the default recovery window
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called 1 times, but got 2 times[39m
+[36m [2m❯[22m tests/unit/p7-host-recovery.test.ts:[2m168:24[22m[39m
+    [90m166|[39m     expect(await old).toMatchObject({ unconfirmedStart: true })
+    [90m167|[39m     await sleep(2_150)
+    [90m168|[39m     expect(f.followup).toHaveBeenCalledTimes(1)
+    [90m   |[39m                        [31m^[39m
+    [90m169|[39m   })
+    [90m170|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/unit/p7-host-recovery.test.ts[2m > [22mP7-F3 existing Reporter lifecycle recovery barrier[2m > [22ma later legitimate report must not rebatch an unknown old key even when no recovery timer was pending
+[31m[1mAssertionError[22m: expected [ 'old:end', 'old:end' ] to have a length of 1 but got 2[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 2[39m
+
+[36m [2m❯[22m tests/unit/p7-host-recovery.test.ts:[2m198:61[22m[39m
+    [90m196|[39m     const keys = messages.flatMap((message) => message.source.items.ma…
+    [90m197|[39m     expect(keys.filter((key: string) => key === 'fresh:end')).toHaveLe…
+    [90m198|[39m     expect(keys.filter((key: string) => key === 'old:end')).toHaveLeng…
+    [90m   |[39m                                                             [31m^[39m
+    [90m199|[39m   })
+    [90m200|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m42 passed[39m[22m[90m (44)[39m
+[2m   Start at [22m 11:13:30
+[2m   Duration [22m 15.50s[2m (tests 99%, transform 1%)[22m
+
+
+EXIT 1

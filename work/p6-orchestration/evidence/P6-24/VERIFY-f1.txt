@@ -1,0 +1,95 @@
+verdict: FAIL
+commit: 71826d2aff6ded077893a30de4f7c44a4c4c4fd5
+scope: ba4ec3c6f55e0c7c6dace4f9efd310d157196659..71826d2aff6ded077893a30de4f7c44a4c4c4fd5（九文件）
+worktree: /tmp/bot-wt/P6-24
+date: 2026-11-05 09:06（本机 -05:00）
+reviewer: 独立验收；未采用 builder 绿数代替运行；未修改产品及产品测试，未提交/合并/push，未派 agent。
+
+结论摘要
+原 VERIFY.txt 的三个 HIGH 均已在本固定 SHA 闭合；本轮没有复现未闭合 HIGH。
+但不能给包含原 P6-24 硬门槛的完整验收 PASS：删除目前只证明 BotsMetaStore.removeBot 的存储行为，不是实际删除会话的生产链路。独立真实 Loader 探针在 removeBot 后调用 session/list，两个 worker 会话均仍存在。原 D3-r1.md:16 将「删 worker 后发起者完整清单不变」列为硬门槛，原 VERIFY.txt:19/113 又明确要求严格真实删除证据；不能把新增但未接生产的存储方法重新定义为整个删除动作而消除这个缺口。
+这是删除链路证据缺口/完成标准未满足，不是已证实发生文件误删，也不是要求本修复擅自增加一个新 UI。若派发者只验三 HIGH，可采纳下列三项 PASS；不得转述为原 P6-24 全部完成。
+
+证据约定
+E=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-24
+W=/tmp/bot-wt/P6-24
+下文 E/xxx 均为主仓证据绝对目录下文件。所有测试完整 stdout+stderr 均保留于列出的 .log，真实退出码另存同名 .exit。没有 pipeline 尾部成功掩盖失败；退出码均在命令返回后直接捕获。
+
+| 验收项 | 结果 | 证据（命令/文件/日志） |
+| 原 HIGH#1：raw/resolved 两端 basename，正反指令软链拒绝 | PASS | E/f1-independent-loader5.log 5/5；E/f1-independent-original7.log:6-7 显示反向软链 read 成功、edit isError=true、BYTES innocent；SDK18 的纯判定覆盖四种文件名，正向 link→AGENTS.md 和反向 CLAUDE.local.md→innocent.md；envelope.mjs:179-190 同时检查两端 |
+| basename 不误伤同名目录 | PASS（真实 Loader） | E/f1-independent-extra.log:6-7：worker write normal/AGENTS.md/notes.md isError=false，宿主字节 ordinary-directory-success；不是只给 pure function 一个伪路径。主 bot 自写 AGENTS.md、worker read 也继续正常 |
+| 原 HIGH#2：显式相同 artifacts 并发只一次创建 | PASS | 原探针原样复跑，E/f1-independent-original7.log:13-17 mainRequests=1、slots=1、outcomes=['created','pbots/busy']。代码检查与 pending claim 登记之间无 await；回应后同步换成 sessionId 键 |
+| artifacts 通道/投递失败释放，turn/end 释放 | PASS | SDK18 包含 channel detach 与 delivery throw，容量与 claims 均归零后同文件重试成功；E/f1-independent-sdk18.log。原并发探针/SDK18 也验证正常 turn/end 再占 |
+| 额外坏路径：主响应成功后 persistence.flush 抛错，再同文件创建 | PASS | E/f1-independent-boundaries.test.ts 第二项；E/f1-independent-extra.log:16-17 INDEPENDENT_FLUSH_RETRY requests=2、claims=0、slots=0；失败后 slotHolds 也为空。成功对照取得 w2，最后 turn/end 归零 |
+| 原 HIGH#3：subdir 必须在发起者实际 cwd 子树内，不仅在 mainId 根内 | PASS（静态 FS 边界） | M3 p624 11 项含 inner/out→同主 sibling 的拒绝、other bot 的拒绝；原探针 sessionCreate=0。独立补 inner-evil 前缀兄弟拒绝，E/f1-independent-extra.log:13-14；拒绝时 bots 元数据未落 worker |
+| 区内软链正常放行，传 session/create 的参数 canonical | PASS | M3 p624 区内 out→target；独立 safe→target 成功，实际参数是 .../inner/target 而不是 .../inner/safe，E/f1-independent-extra.log:14 |
+| 额外坏路径：subdir 软链自循环 | PASS | 独立 loop→loop 返回 pbots/storage/ELOOP，0 次 session/create、0 worker 元数据；同 store 随后 safe 创建成功。E/f1-independent-boundaries.test.ts 第一项与 extra.log:14 |
+| 旧 P6-24 ②共用目录、bash/write、主下一回合读取、⑤无关 bot 隔离、普通 subdir | PASS（指定定向覆盖） | E/f1-independent-loader5.log 5/5；原探针的 Loader5 亦绿；M3 44 绿含旧 cwd fail closed、主 cwd 缺失/其他 bot cwd、普通子目录；SDK18 保留参数校验、advisory、分区正常成功格 |
+| 删除后完整字节清单与存储持久化 | PASS，仅存储 API 层 | Loader5 ④ removeBot 两次后重开 store，无 bots 键；完整清单包含 SHA256、空目录及 readlink 原文，无 utf8 解码/名字过滤。M3 44 包含 put/remove 同队列、保留主/配方/其他项、rename 失败回滚及重试 |
+| 原删除硬门槛：真实 worker 删除生产旅程 | FAIL/阻塞完整完成 | E/f1-independent-scope.log:13-17 生产路径中只有 removeBot 定义/注释，无调用；E/f1-independent-session-check.log:9-10 AFTER_REMOVE_BOT_SESSIONS={workerStillPresent:true,subWorkerStillPresent:true}。该探针调用真实 session/list，不是 mock RPC。不存在已被验证的 session/delete RPC/UI 删除旅程 |
+| f1 九文件范围、固定 SHA、工作树无产品改动 | PASS | E/f1-independent-scope.log:1-11；diff --check=0，status --porcelain 无输出，末次另核 HEAD 仍为固定 SHA |
+| create 路由与 P6-22 r2 文案兼容 | PASS，仅三方文本兼容 | 使用 0fa0c37 公共基点、固定 SHA、0ed1ed42dcbba2d4bc53a11123d2f6d6f40db220 做 git merge-file，exit=0；E/f1-compat-threeway.mjs:35-45 同时保留 r2「creates or changes files / runs commands / regardless of size」五句与 workspace/subdir/artifacts 句。f1 本身未改 DESCRIPTION，不把该分支旧文案当成已合入 r2 |
+| 构建与邻接回归 | PASS | E/f1-independent-build.log exit 0，有现存 Vite renderer/outDir/large chunk/dynamic import 警告，不宣称无警告或 tsc 类型检查完成；E/f1-independent-adjacent.log 3 files / 85 passed，含真实 Loader 创建、错 peer、容量、timeout 与测试自管子进程崩溃恢复 |
+
+一、实际执行命令（按串行执行顺序；日志完整保留）
+所有测试/构建命令的环境前缀均为：
+env -i PATH="$PATH" HOME=/tmp/bot-p624-independent-f1-home DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/bot-p624-independent-f1-home/no-dbus
+只保留 PATH 与隔离 HOME/死 DBus。没有继承真实 DISPLAY、真实 HOME、服务凭证或用户 DBus。SDK 每次 launchRuntime 的测试 HOME 又从测试临时根派生。Xvfb 只为本测试创建虚拟显示。未运行 Electron、未连接真实桌面，所以本轮无 UI 截图或 UI 旅程结论。
+
+1. <环境前缀> pnpm -C W/app/sdk exec vitest run tests/unit/orchestration-p624.test.ts --maxWorkers=1
+   真实 exit=0；E/f1-independent-sdk18.log；尾部 Test Files 1 passed / Tests 18 passed / Duration 2.61s。
+2. <环境前缀> pnpm -C W/app/ui exec vitest run tests/unit/m3/p624.test.ts tests/unit/m3/store.test.ts tests/unit/m3/store-lock-flush.test.ts tests/unit/m3/p610.test.ts tests/unit/m3/p610f2.test.ts --maxWorkers=1
+   真实 exit=0；E/f1-independent-m344.log；尾部 Test Files 5 passed / Tests 44 passed / Duration 736ms。
+3. <环境前缀> xvfb-run -a pnpm -C W/app/sdk exec vitest run tests/e2e/p624-worker-cwd.test.ts --maxWorkers=1
+   真实 exit=0；E/f1-independent-loader5.log；尾部 Tests 5 passed / Duration 5.03s。
+4. <环境前缀> xvfb-run -a pnpm -C W/app/sdk exec vitest run --config E/probes.config.mjs
+   真实 exit=0；E/f1-independent-original7.log；尾部 2 files / 7 passed / Duration 6.10s。
+   原 adversarial.test.ts、inverse-symlink.test.ts、probes.config.mjs 未修改。旧探针中的 deletion 仍是手改元数据，仅作为原探针回归，绝不计入 removeBot 或真实删除证据。
+5. python3 -I E/f1-independent-prepare.py
+   真实 exit=0；生成 evidence 专用 Loader 副本和配置；来源固定 W 的 e2e，仅改绝对 import/包根、加 normal/AGENTS.md/notes.md 正常写入及断言。没有修改产品测试。
+   <环境前缀> xvfb-run -a pnpm -C W/app/sdk exec vitest run --config E/f1-independent-extra.config.mjs
+   真实 exit=0；E/f1-independent-extra.log；尾部 2 files / 7 passed / Duration 5.02s（原 Loader5 的证据副本 + 独立坏路径2，非七个全新不重叠场景）。
+6. <环境前缀> pnpm -C W/app/ui build
+   真实 exit=0；E/f1-independent-build.log；尾部 shim 15 modules transformed / built in 30ms。
+7. <环境前缀> pnpm -C W/app/sdk exec vitest run tests/unit/orchestration-create.test.ts tests/unit/orchestration-create-live.test.ts tests/unit/orchestration-envelope.test.ts --maxWorkers=1
+   真实 exit=0；E/f1-independent-adjacent.log；尾部 3 files / 85 passed / Duration 56.33s。
+   这是对改动共享入口的必要邻接回归，不是整包全量；其中 SIGKILL/崩溃只由测试框架处理其自己 spawn 的 SDK 子进程，无 shell 手工信号或外部进程操作。
+8. python3 -I E/f1-independent-session-check.py
+   真实 exit=0；在上面 evidence Loader 副本上加 removeBot 后真实 session/list 检查，生成另一份独立证据测试/配置。
+   <环境前缀> xvfb-run -a pnpm -C W/app/sdk exec vitest run --config E/f1-independent-session-check.config.mjs
+   真实 exit=0；E/f1-independent-session-check.log；尾部 1 file / 5 passed / Duration 5.04s。
+   此处测试绿的断言是「两个 session 仍存在」，是存储删除不等于会话删除的反证，不是删除旅程成功证据。
+9. git -C W diff --check ba4ec3c..71826d2
+   真实 exit=0；E/f1-independent-scope.log。git status --porcelain 起止均空。
+10. git -C W show 0fa0c37:app/sdk/src/orchestration/create.mjs > E/f1-compat-base.mjs
+    git -C W show 71826d2:app/sdk/src/orchestration/create.mjs > E/f1-compat-worker.mjs
+    git -C W show 0ed1ed4:app/sdk/src/orchestration/create.mjs > E/f1-compat-r2.mjs
+    git merge-file -p E/f1-compat-worker.mjs E/f1-compat-base.mjs E/f1-compat-r2.mjs > E/f1-compat-threeway.mjs
+    merge-file 真实 exit=0，E/f1-compat-threeway.exit。只合并证据副本，未改 worktree。
+
+二、独立核对范围
+九文件与用户范围一致：
+app/sdk/src/orchestration/create.mjs
+app/sdk/src/orchestration/envelope.mjs
+app/sdk/tests/e2e/p624-worker-cwd.test.ts
+app/sdk/tests/unit/orchestration-p624.test.ts
+app/ui/main/m3-meta/orchestrate.ts
+app/ui/main/m3-meta/store.ts
+app/ui/tests/unit/m3/p624.test.ts
+app/ui/tests/unit/m3/store-lock-flush.test.ts
+app/ui/tests/unit/m3/store.test.ts
+已核产品四文件 diff、相关调用点、测试五文件与原基点差异。三个 HIGH 的因果修补分别是双端 basename、同步 pending claim、subdir 双端 realpath + 发起者实际 cwd 包含判断及 canonical 参数，不是仅改断言。
+
+三、未验/不能外推的边界
+- 用户指定只跑定向，未跑 SDK/UI 整包全量、覆盖率、冷安装或独立 tsc。既有锁定依赖可用，pnpm 测试输出有 Already up to date；不是全新容器安装证明。不要求本分支尚未合入的新 main 测试。
+- 没有 UI/Electron 旅程，本轮没有截图；旧截图不冒充本 SHA 的新证据。若后续确需 Electron，仍须先 build，再 pnpm test:e2e 经 Xvfb+死 DBus。
+- r2 只证三方文本可合并，未执行合并后的模型路由评测，不声明主分支已有双边代码。
+- artifacts 是 SDK 进程内声明冲突保护，不是底层实际文件所有权；未声明写入、路径别名归一、跨进程/重启恢复不是这三项 HIGH 的闭合结论。delivery unconfirmedStart 仍按原 fail-closed 设计暂留占位，不笼统宣称所有失败一概释放。
+- subdir 证明静态 FS 包含，不证明可抵御检查后整树并发替换；无 subdir 的旧 main cwd 布局仍是词面校验，本轮未扩写这个旧策略。
+- bash 写指令文件的既知残余风险未解决，审批/沙箱未放宽。
+- 原 VERIFY 中的 C-1 原稿缺失、旧 PLAN 区域缺记与告知原文缺档并非九文件修复，本轮未恢复，也未将其标成已闭合。CONTRACT 本轮无 diff；既有三要点存在不等于已恢复 C-1 原稿语义 diff。
+- 开始 load 1.86/4.05/7.78、iowait 0%；构建前 4.09/5.62/7.71；末段 2.66/4.64/7.12、iowait 0%。测试串行、maxWorkers=1，无并发全量。
+- 未读取真实凭证文件、未把真实凭证进模型/容器；没有 sudo、重启、注销、pkill、killall、shell 手工 kill 或操作外部进程。只测试框架 teardown/崩溃用例管理自己启动的 SDK 子进程。
+
+新问题（每条一行，可直接派修复）：
+- [FIX] 删除完整验收仍只有未接生产的 removeBot 存储 API，不能证明实际删 worker 后完整清单不变 | 复现：python3 -I E/f1-independent-prepare.py；python3 -I E/f1-independent-session-check.py；按命令8运行，AFTER_REMOVE_BOT_SESSIONS 两项均 true；生产路径搜索只有定义无调用 | 疑似位置：app/ui/main/m3-meta/store.ts:206、尚缺生产删除入口/调用接线、app/sdk/tests/e2e/p624-worker-cwd.test.ts:342-371 | MEDIUM，原 D-3④ 硬门槛阻塞；补真正删除链路证据，若产品本来不提供删除，则由派发者显式修订该验收范围，不能由 builder/verifier 以存储动作自行替换。

@@ -1,0 +1,10 @@
+total=16 kinds={'direct': 4, 'single': 4, 'parallel': 2, 'attach': 2, 'stop': 2, 'chat': 2}
+FAIL
+ - par1-two-tasks: createCalls=3 != 2
+ - stop1-lowercase: turns=1 != 2
+ - single1-packing#0: 3 句 > 2
+ - single1-packing#0: 含工具/路由措辞「create_bot」
+ - single1-packing#0: 含工具/路由措辞「worker」
+ - single1-packing#0: 含工具/路由措辞「bot」
+ - single1-packing#0: 含工具/路由措辞「派个」
+ - chat2-greeting#0: 3 句 > 2

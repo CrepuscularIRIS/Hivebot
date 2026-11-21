@@ -1,0 +1,11 @@
+[d3o] spawn start.mjs mode=smoke(fake) model=glm-5.3
+[sdk] p2sdk: dsh pid 4031668
+p2sdk: handoff /tmp/bot-p622r2b-smoke/handoff
+[sdk] [p2sdk] ready http://127.0.0.1:39605
+[sdk] [pbots-orchestration] main bot p620-boot unresolvable, reports stay due: pbots/orchestration-failed: worker session p620-boot unresolvable: RemoteError: session "p620-boot" not found
+[d3o] smoke 脚本就绪（worker 走 default.json）
+[d3o] worker created #1
+[d3o] smoke1-1 outcome=turn/end mainFrames=56 workers=1 approvals=0 questions=0 timeouts=-
+[d3o] run-meta → /tmp/bot-wt/P6-22/work/p6-orchestration/evidence/D3-orch/rounds/r2/smoke-r2b/raw/run-meta.json
+SMOKE PASS：通道往返 / assign 首条 / 回报投递+消化 / 主工具表含协调者 / worker 工具表不含 / raw 形状
+[sdk] p2sdk: forwarding SIGTERM to dsh

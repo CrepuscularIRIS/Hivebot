@@ -1,0 +1,542 @@
+{
+ "_source": "0.79.3 chunk-onboarding-flow-D-TfK2Rr.js (je@1392, Gn@56093 role, yn@45065 attribution, xn@45827 connect, _n@43931 choice list, Gt nav footer, Et/kt/yt glyph+tone+connectors) + index.eager-app (dh/Qge walk @~380k, odr hand-off runner @~4.54M, h9e roles, u9e creatorContext) + /tmp/grokbot-0.79.3/i18n-en.json; extracted 2026-11-07 by manager T28",
+ "walk": {
+  "full": [
+   "landing",
+   "meet",
+   "computer-demo",
+   "jobs",
+   "role",
+   "attribution",
+   "connect",
+   "tools",
+   "create"
+  ],
+  "removed_from_walk": [
+   "tools",
+   "create"
+  ],
+  "setup_entry": [
+   "landing",
+   "create"
+  ],
+  "gates": {
+   "role": "onboardingJobRoleEnabled",
+   "attribution": "onboardingAttributionSurveyEnabled",
+   "connect": "onboardingConnectorStepEnabled (and entry!==setup)",
+   "roleUseCaseBots": "onboardingRoleUseCaseBotsEnabled"
+  },
+  "terminal": "hand-off"
+ },
+ "nav": {
+  "next_default": "Next",
+  "back": "Back",
+  "continue": "Continue",
+  "skip": "Skip",
+  "skip_for_now": "Skip for now"
+ },
+ "role": {
+  "title": "What will you be working on most?",
+  "layout": "stacked",
+  "aria": "radiogroup of role=radio buttons, aria-checked, data-choice=<id>",
+  "forward": "none selected -> Skip (tertiary); selected -> Continue if role is last step else Next",
+  "choices": [
+   [
+    "engineering",
+    "Engineering",
+    "keyboard",
+    "accent"
+   ],
+   [
+    "design",
+    "Design",
+    "brush",
+    "warning"
+   ],
+   [
+    "marketing",
+    "Marketing",
+    "megaphone",
+    "danger"
+   ],
+   [
+    "customer-support",
+    "Customer Support",
+    "headset",
+    "cyan"
+   ],
+   [
+    "product",
+    "Product",
+    "hammer",
+    "magenta"
+   ],
+   [
+    "ops-finance",
+    "Ops & Finance",
+    "banknotes-stack",
+    "success"
+   ],
+   [
+    "recruiting-people",
+    "Recruiting & People",
+    "people-3",
+    "orange"
+   ],
+   [
+    "sales",
+    "Sales",
+    "chart-line",
+    "brown"
+   ],
+   [
+    "productivity",
+    "Productivity",
+    "brain",
+    "neutral"
+   ]
+  ]
+ },
+ "attribution": {
+  "title": "How did you first hear about Grok Bot?",
+  "layout": "inline",
+  "order": "Fisher-Yates shuffled once per onboarding run (c_e)",
+  "forward": "finishesWalk=true always: none selected -> Skip (tertiary); selected -> Continue",
+  "report": "reportOnboardingAttribution({source, sourcePosition(1-based in shuffled order)}) once, at hand-off",
+  "choices": [
+   [
+    "x",
+    "X (Twitter)",
+    "brand:x",
+    "neutral"
+   ],
+   [
+    "instagram-facebook",
+    "Instagram or Facebook",
+    "brand:instagram",
+    "magenta"
+   ],
+   [
+    "youtube",
+    "YouTube",
+    "brand:youtube",
+    "danger"
+   ],
+   [
+    "tiktok",
+    "TikTok",
+    "brand:tiktok",
+    "neutral"
+   ],
+   [
+    "reddit",
+    "Reddit",
+    "brand:reddit",
+    "orange"
+   ],
+   [
+    "linkedin",
+    "LinkedIn",
+    "brand:linkedin",
+    "accent"
+   ],
+   [
+    "search-engine",
+    "Search engine",
+    "icon:magnifying-glass",
+    "success"
+   ],
+   [
+    "app-stores",
+    "App stores",
+    "brand:app-store",
+    "cyan"
+   ],
+   [
+    "tv-outdoor-ad",
+    "TV or outdoor ad",
+    "icon:megaphone",
+    "warning"
+   ],
+   [
+    "influencer-creator",
+    "Influencer or creator",
+    "icon:person",
+    "brown"
+   ],
+   [
+    "friend-colleague",
+    "Friend or colleague",
+    "icon:people",
+    "accent"
+   ],
+   [
+    "ai-assistant",
+    "AI assistant",
+    "icon:sparkles",
+    "magenta"
+   ]
+  ]
+ },
+ "connect": {
+  "title": "Connect your apps",
+  "connectors": {
+   "google (default / any non-MS email)": [
+    "Gmail",
+    "Google Calendar"
+   ],
+   "microsoft (outlook.com hotmail.com live.com msn.com passport.com)": [
+    "Outlook",
+    "Outlook Calendar"
+   ]
+  },
+  "card": "chunk-connector-card variant=connect, button text Connect",
+  "forward": "any listed connector connected -> Continue; else Skip for now (tertiary); both -> hand-off",
+  "flag": "isConnectScreenShown -> provision(onboardingConnectScreenShown:true)"
+ },
+ "hand_off": "yt(): report attribution once -> enterHandOff -> start({creatorContext, role, roleUseCaseBots}) -> provision primary bot (createAgentFromTemplate default name/shape/color, isAutomatic, creatorContext) -> markOnboardingSeen -> kickstart primary -> create roleUseCaseBots sequentially (each kickstart)",
+ "creatorContext": {
+  "role": "The user primarily works in {label} — tailor suggestions and work to that area.",
+  "tools": "The user works with {label} every day — start with those tools when suggesting connectors or taking on work.",
+  "join": "space; role label = englishLabel; tools always [] in 0.79.3"
+ },
+ "roleUseCaseBots": "Me(roleId,2): first 2 templates of that role in je order -> {name, description: templateDesc + \" \" + creatorContext, isKickstartRequested:true, isAutomatic:true, templateId}",
+ "templates": [
+  {
+   "id": "bug-reproduction",
+   "role": "engineering",
+   "name": "Bug Reproduction",
+   "description": "Repros the bug in staging and drops a pack with steps and screenshots",
+   "nameId": "pgWIy0",
+   "descId": "NAwnOU"
+  },
+  {
+   "id": "product-performance",
+   "role": "engineering",
+   "name": "Product Performance",
+   "description": "Walks observability tools and writes up the hotspots",
+   "nameId": "XSSheb",
+   "descId": "wE0AfD"
+  },
+  {
+   "id": "cloud-agent-orchestrator",
+   "role": "engineering",
+   "name": "Cloud Agent Orchestrator",
+   "description": "Kicks off cloud agent runs, chases what's stuck, and summarizes",
+   "nameId": "/zRn9q",
+   "descId": "wuqxoF"
+  },
+  {
+   "id": "playtest-operator",
+   "role": "engineering",
+   "name": "Playtest Operator",
+   "description": "Drives the product UI and returns a tight findings pack",
+   "nameId": "70icG5",
+   "descId": "gRE/Q7"
+  },
+  {
+   "id": "prototype-builder",
+   "role": "engineering",
+   "name": "Prototype Builder",
+   "description": "Writes on its computer and comes back with a screenshot and a live URL",
+   "nameId": "eTCfyK",
+   "descId": "LTIHc+"
+  },
+  {
+   "id": "figma-bot",
+   "role": "design",
+   "name": "Figma Bot",
+   "description": "Handles repetitive Figma work while keeping layouts and variants consistent",
+   "nameId": "TOE0OI",
+   "descId": "lyb+CB"
+  },
+  {
+   "id": "motion-help",
+   "role": "design",
+   "name": "Motion Help",
+   "description": "Builds a playground around real assets to tune motion and interactions",
+   "nameId": "phuzrm",
+   "descId": "RHSGlN"
+  },
+  {
+   "id": "design-exploration",
+   "role": "design",
+   "name": "Design Exploration",
+   "description": "Turns loose ideas into prototypes of varying fidelities you can try",
+   "nameId": "B3sYtj",
+   "descId": "HsmTE6"
+  },
+  {
+   "id": "devbot",
+   "role": "design",
+   "name": "Devbot",
+   "description": "Answers engineering questions and helps other Bots understand implementation",
+   "nameId": "8h180U",
+   "descId": "Pk74dV"
+  },
+  {
+   "id": "paid-media",
+   "role": "marketing",
+   "name": "Paid Media",
+   "description": "Pulls campaign data and recommends a budget reallocation for your approval",
+   "nameId": "v6FlLW",
+   "descId": "29KFlZ"
+  },
+  {
+   "id": "competitive-intelligence",
+   "role": "marketing",
+   "name": "Competitive Intelligence Analyst",
+   "description": "Monitors launches overnight and flags messaging that needs a refresh",
+   "nameId": "xxjBvL",
+   "descId": "IXIdF2"
+  },
+  {
+   "id": "newsletter-writer",
+   "role": "marketing",
+   "name": "Newsletter Writer",
+   "description": "Pulls what's new and drafts the issue in your voice for review",
+   "nameId": "EKa9o8",
+   "descId": "7g0vuv"
+  },
+  {
+   "id": "social-media-manager",
+   "role": "marketing",
+   "name": "Social Media Manager",
+   "description": "Drafts posts in your voice when something noteworthy ships",
+   "nameId": "zSD10Z",
+   "descId": "Jsz5/r"
+  },
+  {
+   "id": "seo-aeo-auditor",
+   "role": "marketing",
+   "name": "SEO / AEO Auditor",
+   "description": "Tracks keyword and competitor movement and returns an optimization plan",
+   "nameId": "k07KmM",
+   "descId": "6yKokT"
+  },
+  {
+   "id": "account-health",
+   "role": "customer-support",
+   "name": "Account Health",
+   "description": "Reads usage and signals across your book and turns them into a watch list",
+   "nameId": "rUCao5",
+   "descId": "5SKsVi"
+  },
+  {
+   "id": "account-manager",
+   "role": "customer-support",
+   "name": "Account Manager",
+   "description": "Preps every call from transcripts, CRM, and Slack, then drafts follow-ups",
+   "nameId": "UjlbGM",
+   "descId": "Xro5sU"
+  },
+  {
+   "id": "enablement-fulfillment",
+   "role": "customer-support",
+   "name": "Enablement Fulfillment Specialist",
+   "description": "Finds the recordings, builds the one-pager, and drafts the reply",
+   "nameId": "3mM8xq",
+   "descId": "ni2jh8"
+  },
+  {
+   "id": "ticket-triage",
+   "role": "customer-support",
+   "name": "Ticket Triage Specialist",
+   "description": "Watches the support queue, drafts replies, and stays quiet when it's clean",
+   "nameId": "wmCa/I",
+   "descId": "pLWPAO"
+  },
+  {
+   "id": "beta-adoption-watcher",
+   "role": "product",
+   "name": "Beta Adoption Watcher",
+   "description": "Monitors usage and surfaces which customers are trying the new feature",
+   "nameId": "hRrUE0",
+   "descId": "QoyJUb"
+  },
+  {
+   "id": "call-faq-miner",
+   "role": "product",
+   "name": "Call FAQ Miner",
+   "description": "Tracks questions from calls and links each answer back to the recording",
+   "nameId": "9SYDkv",
+   "descId": "VIXVKT"
+  },
+  {
+   "id": "docs-auditor",
+   "role": "product",
+   "name": "Docs Auditor",
+   "description": "Diffs help center pages against what shipped and drafts the rewrite",
+   "nameId": "5Db7V8",
+   "descId": "xrrn6x"
+  },
+  {
+   "id": "feature-request-tracker",
+   "role": "product",
+   "name": "Feature Request Tracker",
+   "description": "Mines Slack and calls into a living list tied to customers",
+   "nameId": "m0WGSv",
+   "descId": "tyYMhF"
+  },
+  {
+   "id": "product-feedback-analyst",
+   "role": "product",
+   "name": "Product Feedback Analyst",
+   "description": "Clusters feedback, weighs urgency, and drafts routing for approval",
+   "nameId": "sC0BAa",
+   "descId": "bjr+kw"
+  },
+  {
+   "id": "expense-manager",
+   "role": "ops-finance",
+   "name": "Expense Manager",
+   "description": "Builds the weekly spend summary, logs receipts, and nudges missing categories",
+   "nameId": "7Ip7x8",
+   "descId": "nIqut1"
+  },
+  {
+   "id": "contract-desk",
+   "role": "ops-finance",
+   "name": "Contract Desk",
+   "description": "Summarizes the week's paper by stage and owner and flags blocked reviews",
+   "nameId": "v3Fv43",
+   "descId": "BA94No"
+  },
+  {
+   "id": "invoice-coordinator",
+   "role": "ops-finance",
+   "name": "Invoice Coordinator",
+   "description": "Forwards invoices, matches what it can, and nudges the owner when stuck",
+   "nameId": "dllfkA",
+   "descId": "luVbzH"
+  },
+  {
+   "id": "security-questionnaire",
+   "role": "ops-finance",
+   "name": "Security Questionnaire Filler",
+   "description": "Drafts vendor security answers from your trust center and past RFPs",
+   "nameId": "YSEg1U",
+   "descId": "Y8CRgw"
+  },
+  {
+   "id": "vendor-portal-operator",
+   "role": "ops-finance",
+   "name": "Vendor Portal Operator",
+   "description": "Runs renewals and seats on portals with no API and returns exceptions",
+   "nameId": "OrB/Im",
+   "descId": "M3tb/a"
+  },
+  {
+   "id": "talent-scout",
+   "role": "recruiting-people",
+   "name": "Talent Scout",
+   "description": "Sources candidates, drafts outreach in your voice, and skips people already in the ATS",
+   "nameId": "Ha87NR",
+   "descId": "/0a91k"
+  },
+  {
+   "id": "calendar-coordinator",
+   "role": "recruiting-people",
+   "name": "Calendar Coordinator",
+   "description": "Schedules across calendars and chases the holds nobody else has time for",
+   "nameId": "eNAoDO",
+   "descId": "YNrG8r"
+  },
+  {
+   "id": "hiring-screener",
+   "role": "recruiting-people",
+   "name": "Hiring Screener",
+   "description": "Scores applications against a defined bar and hands off an ATS-ready review",
+   "nameId": "CfGwlz",
+   "descId": "Ol5HRM"
+  },
+  {
+   "id": "onboarding-manager",
+   "role": "recruiting-people",
+   "name": "Onboarding Manager",
+   "description": "Builds the new-hire checklist, pulls the docs, and routes day-one questions",
+   "nameId": "xhmJy9",
+   "descId": "xBSdFo"
+  },
+  {
+   "id": "sales-outbound",
+   "role": "sales",
+   "name": "Sales Outbound",
+   "description": "Researches accounts overnight, drafts outreach in your voice, and leaves a review list",
+   "nameId": "ynbwBI",
+   "descId": "CEblAg"
+  },
+  {
+   "id": "account-research",
+   "role": "sales",
+   "name": "Account Research Specialist",
+   "description": "Pulls CRM plus live signals and builds a shareable research pack per account",
+   "nameId": "8qaw7M",
+   "descId": "TFP6nw"
+  },
+  {
+   "id": "meeting-prep",
+   "role": "sales",
+   "name": "Meeting Prep Buddy",
+   "description": "Builds a prep pack from calendar, CRM, and Slack before every meeting",
+   "nameId": "E1Y70f",
+   "descId": "QnOs6F"
+  },
+  {
+   "id": "pipeline-analyst",
+   "role": "sales",
+   "name": "Pipeline Analyst",
+   "description": "Scrubs the pipeline, flags stalls and commit risk, and drops a Monday scoreboard",
+   "nameId": "uiBkJF",
+   "descId": "2S+UCx"
+  },
+  {
+   "id": "sales-call-coach",
+   "role": "sales",
+   "name": "Sales Call Coach",
+   "description": "Reviews calls and leaves timestamped coaching on discovery and objections",
+   "nameId": "WK7v5C",
+   "descId": "xcv+hn"
+  },
+  {
+   "id": "chief-of-staff-readout",
+   "role": "productivity",
+   "name": "Chief of Staff",
+   "description": "Scans Slack, email, and calendar and delivers a readout on what needs you",
+   "nameId": "KCaPy0",
+   "descId": "JVZrRu"
+  },
+  {
+   "id": "daily-briefing-writer",
+   "role": "productivity",
+   "name": "Daily Briefing Writer",
+   "description": "Delivers a tight daily brief of only the stories that matter to you",
+   "nameId": "ZorjjD",
+   "descId": "E//o5O"
+  },
+  {
+   "id": "executive-assistant",
+   "role": "productivity",
+   "name": "Executive Assistant",
+   "description": "Delivers a morning briefing and a catch-up summary when you join a new room",
+   "nameId": "co+050",
+   "descId": "QEBQcG"
+  },
+  {
+   "id": "inbox-manager",
+   "role": "productivity",
+   "name": "Inbox Manager",
+   "description": "Triages email, surfaces urgent threads, and drafts replies for your approval",
+   "nameId": "1S2zaK",
+   "descId": "S/inE1"
+  },
+  {
+   "id": "presentation-designer",
+   "role": "productivity",
+   "name": "Presentation Designer",
+   "description": "Builds an on-brand deck from your notes and leaves an editable link",
+   "nameId": "mp+/Xe",
+   "descId": "vgq4vS"
+  }
+ ]
+}

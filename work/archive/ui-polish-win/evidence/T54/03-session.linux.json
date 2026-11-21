@@ -1,0 +1,54 @@
+{
+ "id": "03-session",
+ "platform": "linux",
+ "geo": {
+  ".sand-agent-item": {
+   "rect": {
+    "x": 12,
+    "y": 64,
+    "w": 255,
+    "h": 54
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": "New chatnow"
+  },
+  ".sand-agents-sidebar__plugins-entry": {
+   "rect": {
+    "x": 60,
+    "y": 700,
+    "w": 203,
+    "h": 36
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": "Connect apps"
+  },
+  ".sand-prompt-shell": {
+   "rect": {
+    "x": 300,
+    "y": 692,
+    "w": 960,
+    "h": 44
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": ""
+  }
+ },
+ "meta": {
+  "platform": "Linux x86_64",
+  "uaPlatform": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.7977.130 Electron/44.7.0 Safari/537.36",
+  "dpr": 1,
+  "innerW": 1280,
+  "innerH": 752,
+  "loadedFonts": [
+   "cursor-icons/normal",
+   "cursor-icons/normal"
+  ],
+  "scrollY": 752
+ }
+}

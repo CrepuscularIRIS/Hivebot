@@ -1,0 +1,18 @@
+PASS: Electron main pid=1649921 attempts dead session bus with ENOENT.
+PASS: traced process tree has no /run/user/<uid>/bus or dbus-* session socket connection.
+Observed system bus connection is Chromium platform initialization, not session notification bus; no claim of zero system DBus usage.
+1649950 connect(20, {sa_family=AF_UNIX, sun_path="/run/dbus/system_bus_socket"}, 29) = 0
+1649921 connect(49, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1650086 connect(56, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649950 connect(56, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)
+1649950 connect(71, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)
+1649921 connect(92, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)
+1649921 connect(100, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)
+1649921 connect(103, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649921 connect(103, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649921 connect(103, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649921 connect(103, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649921 connect(103, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1650130 connect(111, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 110) = -1 ENOENT (No such file or directory)
+1649950 connect(111, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)
+1649950 connect(111, {sa_family=AF_UNIX, sun_path="/tmp/bot-wt/P6-18/app/ui/.build/e2e-dead-bus"}, 46) = -1 ENOENT (No such file or directory)

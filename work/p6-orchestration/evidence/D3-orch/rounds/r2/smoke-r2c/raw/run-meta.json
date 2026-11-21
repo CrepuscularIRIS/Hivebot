@@ -1,0 +1,24 @@
+{
+  "ts": "2026-11-05T11:06:46.755Z",
+  "mode": "smoke",
+  "model": "glm-5.3",
+  "llmBase": "http://127.0.0.1:4001",
+  "litellm": null,
+  "groupDelayMs": 5000,
+  "entries": [
+    {
+      "id": "smoke1",
+      "rep": 1,
+      "kind": "single",
+      "outcome": "turn/end",
+      "sessionId": "session-d533c505-426a-48f6-abaa-c96ecce4db7d",
+      "raw": "smoke1-1.jsonl",
+      "workers": [
+        {
+          "sessionId": "session-2dadbeac-fe77-4c95-8f6b-06ece1f79ecc",
+          "name": "冒烟工"
+        }
+      ]
+    }
+  ]
+}

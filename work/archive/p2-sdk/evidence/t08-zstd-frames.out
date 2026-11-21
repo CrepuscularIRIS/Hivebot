@@ -1,0 +1,5 @@
+== 多帧 zstd（两帧拼接）zstdDecompressSync 行为 ==
+-- node24 (v24.22.2) --
+24.22.2: decoded 43/61 bytes -> "frame-one-payloadframe-two-sentinel-payload"
+-- node22 --
+22.23.4: decoded 17/61 bytes -> "frame-one-payload"

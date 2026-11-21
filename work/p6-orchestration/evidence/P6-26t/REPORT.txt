@@ -1,0 +1,79 @@
+P6-26t builder 回报（待 verifier 验收）
+日期：2026-11-05
+分支：feat/P6-26t
+基点：main@75267c6
+提交：35efed90b25db5033f767fcda7a089f523f39da3
+工作树：/tmp/bot-wt/P6-26t（提交后工作树干净；未切换主检出分支）
+
+一、复用与改动边界
+依据主仓 PLAN.md P6-26t、决策 38、§12.11。该 slug 没有 REUSE.md；采用任务行明确的第 1 级现有档位语义，不增加依赖或自建执行器。
+已查 repos/MANIFEST.tsv、只读 repos/deepseek-harness 源码与已装 @deepseek-ai/dsh 0.2.2-alpha.2。
+上游：https://github.com/deepseek-ai/deepseek-harness @ce7073d512。
+产品改动仅 tiers 增加 run_code / workflow 的 sandbox-allow，及 shell-ask 审批 reason 补充 code/script 正文。权限判定、default、沙箱实现不变。
+UI renderer-grok/shim/src/entries.ts 的 argText 仅抽 command/path/file_path/query/url，故需要最小卡面补充分支；保留 approvalNever 固定拒绝。
+
+二、第 0 步：真实用户可选 preset / 工具枚举
+通过 agentPresets/list 去掉 p2temp-*，逐个建立真实会话，在 llm/stream 记录模型可见工具表。结果与顺序如下。
+standard（默认）：ask_user_question, bash, create_goal, edit, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, list_subagent_models, present, read, read_image, request_network, schedule_create, schedule_delete, schedule_list, schedule_update, send_message, skill, subagent, subagent_fork, todo_write, update_goal, web_fetch, workflow, working_directory, write。
+ptc：run_code。
+minimal：bash, read_image, request_network, working_directory。
+cordis：ask_user_question, bash, cordis_inspect_list, cordis_inspect_query, create_goal, edit, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, list_subagent_models, plugin_market, present, read, read_image, request_network, schedule_create, schedule_delete, schedule_list, schedule_update, send_message, skill, subagent, subagent_fork, todo_write, update_goal, web_fetch, workflow, working_directory, write。
+ptc 的 system ToolArgsMap 还声明嵌套工具：ask_user_question, bash, create_goal, edit, get_goal, glob, grep, interrupt_agent, job_kill, job_list, job_output, list_agents, list_subagent_models, present, read, read_image, request_network, schedule_create, schedule_delete, schedule_list, schedule_update, send_message, skill, subagent, subagent_fork, todo_write, update_goal, web_fetch, working_directory, write。
+
+分类与处理：
+- bash：任意 shell 执行，已有 sandbox-allow，保持。
+- run_code：NodePtcRuntime 经 sandbox.confine / subprocess.spawn 执行用户 JS，能再 spawn；新增 sandbox-allow。已装 dsh-ptc-runtime-node/lib/index.js:1110–1120。
+- workflow：standard / cordis 的用户 JS 执行入口，经 dsh-workflow-ptc runtime.run 进入相同 PTC runtime；新增 sandbox-allow。已装 dsh-tool-workflow/lib/index.js:274,385；dsh-workflow-ptc/lib/index.js:427–439。
+- glob / grep：确实起固定 rg 辅助进程，但不是任意程序入口；现有 workspace-read 明确限制区外读，改成 sandbox-allow 会扩大权限，违反纯收紧，故保持 workspace-read。dsh-tool-fs-search/lib/index.js:171。
+- request_network：已有硬分支恒 ASK，审批有范围/期限，不改为 sandbox-allow。
+- subagent / subagent_fork：委派入口，子调用继续各自过权限，不增加自动放行。
+- skill 只加载技能内容，cordis_inspect_query 调 provider 查询，不是任意 JS / shell 执行入口。
+- 包内虽有 pwsh / terminal，实际以上用户可选 preset 没有暴露，未添加猜测行。MCP 原有 ask 不变。
+
+三、TDD 与验收证据
+基点正对照与 run_code 红灯（改生产代码前）：
+HOME=/tmp/bot-p626t-run-home P626T_BASELINE=1 pnpm -C /tmp/bot-wt/P6-26t/app/sdk test tests/e2e/process-tiers.test.ts -t '⓪|①|②'
+日志 red.log：2 passed（枚举及无卡建符号链接正对照），1 failed（缺状态应出 1 卡实际 0），4 skipped。
+workflow 独立红灯（改生产代码前）：
+HOME=/tmp/bot-p626t-run-home P626T_INVENTORY=/tmp/bot-p626t-inventory.json pnpm -C /tmp/bot-wt/P6-26t/app/sdk test tests/e2e/process-tiers.test.ts -t '⓪|workflow is'
+日志 workflow-red.log：1 passed / 1 failed / 6 skipped；缺状态 workflow 实际执行成功，拒绝断言失败。
+
+新增真实 launcher + scripted LLM + 真审批服务 + 真 PTC executor 的断言：
+⓪ 四个用户可选 preset 的工具表已枚举。
+① 基点 run_code 用 fs.symlink 建链，结果 linked、宿主链接存在、卡数 0。
+② 修后缺 policy-state，同程序出 1 卡且包含完整正文；拒绝后 isError 且宿主无链接；allowed-once 后 linked 且链接存在。
+③ 同一 ptc 会话有效实例 0 卡，paused 出卡并拒绝，恢复后再次执行且不增加卡；坏 tiers overlay 退 ASK，reason 为 tier table unavailable。
+④ 有效实例下外层 run_code 免卡；程序内 tools.read 区外路径产生 read 卡并拒绝；tools.write 区外路径返回 write-outside-workspace、无新卡、宿主无文件。未发现绕过。
+⑤ standard bash 缺状态出卡拒绝、有效实例执行；旧 tiers-policy、w1ap0-matrix、guard-escalation、approval、write-outside、unit/policy 定向回归全绿。
+另测 workflow 缺状态拒绝出卡（含 script），有效实例执行不加卡。
+已有会话覆盖：旧表 default=allow 创建并执行过的持久 ptc session，经 runtime reload 后以同 sessionId 恢复，按新表出卡拒绝。单一运行中会话逐调用读取 policy-state，暂停立即生效。
+准确边界：tiers 表仍在插件 apply 时加载并缓存，不支持给已运行旧 runtime 热改 tiers.json；需 reload runtime 才加载新版本。这不是新增热加载承诺，也未改动原判定。旧持久会话不必重建。
+
+四、最终复测（最后一次改动是测试临时 home 登记清扫）
+命令：
+HOME=/tmp/bot-p626t-run-home node /tmp/bot-wt/P6-26t/app/sdk/tests/support/p626t-regression.mjs > /tmp/bot-p626t-final.log 2>&1
+退出码：0
+末尾原始输出：
+ Test Files  7 passed (7)
+      Tests  116 passed | 1 skipped (117)
+   Start at  05:16:55
+   Duration  97.23s (tests 99%)
+仅跳过需 P626T_BASELINE=1 的修前正对照，修后不得期待它无卡成功。
+runner 将旧测试硬编码的 fixture HOME 重定位到本次 /tmp/bot-p626t-regression-*；stock-only 正对照显式保留 workspace-write，并挂回合成 fixture 根，避免 stock bwrap 私有 /tmp 遮掉探针。生产 profile 与 hardened 侧未放宽。
+w1ap0-matrix 原 helper 现在仅对本根会话 workflow 卡批准一次，子会话权限仍不审批，原 NEVER / ASK 断言不变。
+负载高，未跑全量 SDK / UI 回归；没有测得覆盖率数字，不声称达到某个覆盖率。
+git diff --check 无输出。结束前分别执行 scripts/bot-reap --dry-run --match p626t 与 --match P6-26t，均无残留进程输出。
+
+五、提交文件清单（相对 /tmp/bot-wt/P6-26t）
+app/sdk/profile/tiers.json
+app/sdk/src/policy/shell-ask.mjs
+app/sdk/tests/e2e/process-tiers.test.ts
+app/sdk/tests/e2e/w1ap0-matrix.test.ts
+app/sdk/tests/support/p626t-recorder.mjs
+app/sdk/tests/support/p626t-regression.mjs
+
+六、未完成项 / 新问题
+没有实现本任务以外的 P6-26 / P6-27；本补丁不消除已有效获批的区内并发换链能力，不声称修复残余 TOCTOU。
+没有改 tiers 文件热加载机制，部署须重启本 SDK runtime，持久 session 可继续恢复。
+没有自行合并 main、没有运行作者自验通过流程；等待独立 verifier。
+待 verifier 验收。

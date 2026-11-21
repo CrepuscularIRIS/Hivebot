@@ -1,0 +1,32 @@
+id	props	was(旧 renderer)	now light	now dark
+A1 头部	padding,column-gap,min-height,box:height	padding 12px 16px; column-gap 8px; min-height = --sand-titlebar-block	padding=0px 12px 0px 16px; column-gap=normal; min-height=auto; box:height=50px	padding=0px 12px 0px 16px; column-gap=normal; min-height=auto; box:height=50px
+A1 钮	width,height,border-top-left-radius	24px×24px r6	width=24px; height=24px; border-top-left-radius=6px	width=24px; height=24px; border-top-left-radius=6px
+A2 搜索钮	height,border-top-left-radius,font-size	侧栏内搜索框（原位出现）	height=28px; border-top-left-radius=8px; font-size=13px	height=28px; border-top-left-radius=8px; font-size=13px
+A3 列表	padding	padding 4px 12px 24px	padding=4px 12px 24px	padding=4px 12px 24px
+A4 条目	min-height,padding,box:height	min-height 58px; padding 8px（R2：固定 54）	min-height=58px; padding=8px; box:height=58px	min-height=58px; padding=8px; box:height=58px
+A5 条目栅格	display,column-gap	grid 34px …; column-gap 9px（R2：gap 8）	display=grid; column-gap=9px	display=grid; column-gap=9px
+A6 头像	box:width,box:height	34（R2 推断 32）	box:width=34px; box:height=34px	box:width=34px; box:height=34px
+A13 折叠宽		折叠 78（0.18 为 88：visual-sidebar.spec 断言 88）	—（0.18 无此构件）	—（0.18 无此构件）
+A18 调宽把手	width,right,box:height	right -6px; width 12px; 全高	width=12px; right=-6px; box:height=288px	width=12px; right=-6px; box:height=288px
+B1 会话列	row-gap,padding-top,padding-left	row-gap 22px	row-gap=normal; padding-top=28px; padding-left=155px	row-gap=normal; padding-top=28px; padding-left=155px
+B2 会话列宽	max-width,padding	padding 28px 30px; max-width 750px	max-width=none; padding=28px 155px	max-width=none; padding=28px 155px
+B3 用户气泡		反转气泡（R2 B3）；0.18 持久用户条目落 assistant 侧（VERIFY-P5-51 OBS），无用户气泡锚点	—（0.18 无此构件）	—（0.18 无此构件）
+B6 工具行	min-height,padding,border-top-left-radius	min-height 34px; padding 7px 9px（R2：高 28 r8）	min-height=34px; padding=7px 9px; border-top-left-radius=9px	min-height=34px; padding=7px 9px; border-top-left-radius=9px
+B6 chevron	width,height,transform	6×6；收起 rotate(-45deg)	width=6px; height=6px; transform=matrix(0.707107, -0.707107, 0.707107, 0.707107, 0, 0)	width=6px; height=6px; transform=matrix(0.707107, -0.707107, 0.707107, 0.707107, 0, 0)
+B6 预览	font-size,font-family	preview 13px 非等宽（R2）	font-size=10px; font-family=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif	font-size=10px; font-family=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+B7 thinking 行	min-height,padding	thinking 行（P5-12）	min-height=34px; padding=7px 9px	min-height=34px; padding=7px 9px
+B8 审批卡	border-top-left-radius,padding,box-shadow	r10; padding 14px 16px（R2：r24 + 阴影）	border-top-left-radius=0px; padding=12px 16px; box-shadow=none	border-top-left-radius=0px; padding=12px 16px; box-shadow=none
+B8 钮	padding,border-top-left-radius,height	padding 6px 9px r6（R2：药丸 r9999）	padding=6px 9px; border-top-left-radius=6px; height=32.1875px	padding=6px 9px; border-top-left-radius=6px; height=32.1875px
+B10 composer 壳	padding,border-top-left-radius	padding 9px; r16（R2：药丸 r9999）	padding=9px; border-top-left-radius=16px	padding=9px; border-top-left-radius=16px
+B10 输入	min-height,font-size	min-height 48px	min-height=48px; font-size=16px	min-height=48px; font-size=16px
+B10 dock	padding-bottom	padding-bottom 18px	padding-bottom=18px	padding-bottom=18px
+B14 时间分隔	margin-bottom,font-size,color	高 22（P5-12）	margin-bottom=22px; font-size=11px; color=rgb(116, 123, 112)	margin-bottom=22px; font-size=11px; color=rgb(116, 123, 112)
+B15 代码块	border-top-left-radius,padding,font-family	copy 钮 top 6 right 6 opacity 0	border-top-left-radius=8px; padding=11px 12px; font-family=ui-monospace, SFMono-Regular, Menlo, monospace	border-top-left-radius=8px; padding=11px 12px; font-family=ui-monospace, SFMono-Regular, Menlo, monospace
+C1 info pane	box:width,border-left-width	初始 320；范围 280–480	box:width=360px; border-left-width=1px	box:width=360px; border-left-width=1px
+E3 根	font-synthesis,color-scheme	font-synthesis none; color-scheme = mode	font-synthesis=none; color-scheme=light	font-synthesis=none; color-scheme=dark
+E4 正文字体	font-family,font-size,line-height	body 字体含 XVF（D12③）	font-family=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size=13px; line-height=20px	font-family=-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size=13px; line-height=20px
+规则 5/9 链接色	color	light rgb(11,109,211) / dark rgb(77,155,255)	color=rgb(12, 100, 193)	color=rgb(69, 159, 254)
+规则 15 次要文字	color,font-size	light rgba(28,28,28,.68) / dark rgba(245,245,245,.66)（outcome 行）	color=rgb(20, 20, 20); font-size=13px	color=rgb(252, 252, 252); font-size=13px
+D4 市场搜索		r8; h32; padding 0 9（P-C 市场页未移植）	—（0.18 无此构件）	—（0.18 无此构件）
+D6 市场行		padding 12; min-h 56; 行距 7; 头像 36（P-C 市场页未移植）	—（0.18 无此构件）	—（0.18 无此构件）
+C2 pane 头		pane-head padding-left 12（P-D pane 未移植）	—（0.18 无此构件）	—（0.18 无此构件）

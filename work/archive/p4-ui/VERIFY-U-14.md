@@ -1,0 +1,19 @@
+verdict: PASS
+commit: 15b4282af7682735785dc40df32fe82173517d26
+验收环境：/tmp/bot-wt/U-14（HEAD 未漂移，与申报 SHA 一致）；HOME=/tmp/bot-p4-U-14
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+|---|---|---|
+| ① ensure 接通：生产走 dsh rpc 的 #21 渠道，单测直接 import 真 presetEnsure | PASS | 生产链 main/index.ts:131 `ensureThenReady({dsh,…})` → restore.ts:34 `dsh.rpc('p2temp/preset.ensure',{request:…})`（DshConnection.rpc → rpcRaw，main 内部渠道，不进 M1 白名单，orchestrate.ts:12 注明）。真 runtime 双证：e2e restore.spec（真 SDK runtime）good recipe ok=true 且 agentPresets/list 含 good（真注册）；探针 `evidence/U-14/probe-wire-output.txt` C1 带壳过 wire 层、C2 无壳被拒 arguments-invalid（commit 申报属实）。单测 import：ensure.test.ts:19-30 相对路径 file URL 动态 import `app/sdk/src/p2temp/index.mjs` + 真 registry entryListProblem；vitest.config.ts / electron.vite.config.ts 均无 alias（无 vite alias 侵入）；头注释与 serviceDsh:54-55 写明生产渠道 vs 单测剥壳的边界 |
+| ② ready 闸门序：restore settle 前不开、failed set 进载荷不阻断 | PASS | ready.ts 三条件 done()（window+dsh+restore）+ setRestoreSettled(failed) 载荷；ready.test.ts 3 条（缺一不可/含失败 settle+failedPresets 载荷/未配置 dsh 保持 U-00 行为）。gate 晚于 settle：restore.spec:107 `restoreSettledAt <= gateOpenedAt`（真 runtime 观察面时间线）+ ensure.test:115 超时前 gate 不开。gating 只挂 restore 不挂 dsh：ensure.test:156-163（dsh=false+restore settled → 放行，M2 10s 超时语义不破）+ U-12 m2-port e2e 5 条复绿（16/16 内）+ 坏 handoff Electron 实测 stderr `[m3] restore skipped: dsh start failed`（error 分支 settle）见 `evidence/U-14/bad-handoff-output.txt` |
+| ③ 「永不返回」单测在位（30s each 超时按失败） | PASS | ensure.test.ts:96-127：hangRegisterFor 注入 register 永不返回（真 P2TempService），断言超时前 gate 不开/M1 挂起，超时后 hang ok=false、failed=[hang]、good 进真 registry、gate.failedPresets=[hang]。默认常量 RESTORE_ENSURE_TIMEOUT_MS=30_000（restore.ts:9），生产接线（main/index.ts:131）未注入 timeoutMs → 用默认 30s |
+| ④ 全量 | PASS | `evidence/U-14/full-suite-output.txt`：pnpm build 绿；test 138/138（14 文件）；test:e2e 16/16（34.2s，含 restore.spec 真实 SDK runtime 10.7s）。两次独立复跑一致 |
+| 步骤4 裁定：main/index.ts +22（申报例外「接线必需」） | 追认 | diff +25/-3 全部为接线：import、dshStart 提取（error 分支必需）、m1Gated/m2Gated 包装（「M1/M2 不就绪」唯一可挂位置——入口 handler 就在本文件）、restore 编排块（await m3.init + ensureThenReady + error 分支）。m1()/m2()/renderer 内部逻辑零改动 |
+| 步骤5 发现 b 复核（M3 patch session/list 真壳） | 属实，实锤 | `evidence/U-14/probe-wire-output.txt` A1：`session/list {cursor:null}`（m3-meta/index.ts:84 现状）→ gateway/arguments-invalid（missing "_request"; unexpected "cursor"）；A2 `{_request:{}}` → ok。注意正确壳是 `_request`（带下划线）而非申报写的 `{request:{}}`——session/list 与 p2temp/*（`request`）的 typert 壳名不同。另同类扩散：orchestrate.ts:105 createWithConnectors 无壳同样 arguments-invalid（B1/B2 实测），builder 未申报。agentPresets/list {} 现状正确（D 实测 ok）。均 U-13 遗留（mock dsh 测不到），不在 U-14 范围，转 FIX |
+| 步骤6 区域文件清单 | PASS | git diff --stat：9 文件与申报一致——ensure.ts 新 65、ready.ts +46、m3-meta/index.ts +6、restore.ts 壳修复、main/index.ts +25/-3、测试 4 文件（ensure.test 170 新 / restore.spec 136 新 / ready.test 37 新 / restore.test +9 mock 同步壳）。无范围外文件 |
+
+新问题（每条一行，可直接成为修复任务）：
+- [FIX] M3 patch mainBotId 在真 runtime 下永远失败：session/list 无壳+错误字段 → gateway/arguments-invalid，patch 返回 pbots/unavailable | 复现：probe-wire A1（真 runtime 直调 m3-meta/index.ts:84 同形状）；修复=改 `{_request:{}}` + 真 runtime 用例 | 疑似位置：app/ui/main/m3-meta/index.ts:84 | 严重度 MEDIUM（U-21 主 bot 置顶依赖 patch）
+- [FIX] #4 建连接器 bot 主通路真 runtime 不可用：createWithConnectors 无 {request:…} 壳 → arguments-invalid（同类扩散，builder 未申报）| 复现：probe-wire B1/B2；修复=包壳 + e2e 走 M1 #4 真 runtime（U-15 前修）| 疑似位置：app/ui/main/m3-meta/orchestrate.ts:105 | 严重度 HIGH（U-15/U-21 建连接器 bot 必踩）
+- [FIX] dsh 永未连接时 M1 pbots:api 永久挂起：DshConnection.rpc `await this.ready()` 无超时无 unavailable 返回（U-00/U-11 交付层既有，非 U-14 回归；U-14 gate 已正确 settle 放行，挂点在 dsh 层）| 复现：evidence/U-14/bad-handoff-output.txt（坏 handoff 下 M1 HUNG 8s+，stderr 已证 restore settle）| 疑似位置：app/ui/main/dsh/connect.ts:111 | 严重度 MEDIUM
+- [FIX] dsh start 失败时 UnhandledPromiseRejection：`void dshStart.then(() => ready.setDshReady())` 缺 onErr（U-00 原版同构写法，非 U-14 引入，仅 Electron 下 warning 不崩）| 复现：bad-handoff stderr 第二行 | 疑似位置：app/ui/main/index.ts:97 | 严重度 LOW

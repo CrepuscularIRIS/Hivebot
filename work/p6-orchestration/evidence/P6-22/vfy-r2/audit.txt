@@ -1,0 +1,14 @@
+COMMAND HOME=<evidence>/home python -I /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-22/vfy-r2/audit.py
+HEAD cd40f65da5f082329932eebbf20a356f8c89bae6
+RECOMPUTE heldout scores.json and SCORE.txt byte-identical
+RECOMPUTE dev scores.json and SCORE.txt byte-identical
+AGGREGATE SCORE identical except generated timestamp
+MERGE 17 originals hash-identical to a4f1bb3; 19 supplements; 36 distinct exact planned IDs; labels exact; raw hashes exact
+FREEZE only r2 wording commit: ['0ed1ed4'] ; four product files unchanged since 0ed1ed4; prompts/scorer unchanged since r1
+SHA256 work/p6-orchestration/evidence/D3-orch/prompts.json dcea57a26cb22e64150d21dd73da6c2043602444902fb499a372893c6025394f
+SHA256 work/p6-orchestration/evidence/D3-orch/score.mjs 13500f13a6a414125776c1d09c6285c59efc60601207813e2af54b8f49b9ecc7
+REPORT SAMPLE single3-fib-run-3 1 {"start": 356, "tailTexts": 1, "toolSuccess": 0, "calls": [[508, "glob", "call_1f6b5a6e22124e9cb71e8774"]], "results": [[509, "call_1f6b5a6e22124e9cb71e8774", true]], "end": 672, "reason": "completed"}
+REPORT SAMPLE par1-two-tasks-2 2 {"start": 1285, "tailTexts": 1, "toolSuccess": 0, "calls": [[1535, "read", "call_bebdf065f5fd43bebb4939fc"], [1537, "read", "call_10aaea7cf9234ce89620999a"]], "results": [[1536, "call_bebdf065f5fd43bebb4939fc", true], [1538, "call_10aaea7cf9234ce89620999a", true]], "end": 1878, "reason": "completed"}
+REPORT SAMPLE attach1-hike-append-3 1 {"start": 550, "tailTexts": 1, "toolSuccess": 0, "calls": [[841, "glob", "call_b6703616494e4765a2ffaaa1"]], "results": [[842, "call_b6703616494e4765a2ffaaa1", true]], "end": 1207, "reason": "completed"}
+HARD independent audit: reports=42; tool-success=0; tailTexts!=1=0; all closed completed
+PASS audit assertions

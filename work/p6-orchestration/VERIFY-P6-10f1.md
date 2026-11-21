@@ -1,0 +1,47 @@
+# VERIFY P6-10.f1（含 P6-10 整体判定）
+
+> 转正自 evidence/P6-10f1-vfy/VERIFY.txt（txt 兜底，未经改写）。
+
+verdict: FAIL
+commit: baef53ccab2f0cc35e7e9c8f941b865a94bb5fd8
+任务：P6-10.f1 修复验收 + P6-10 整体最终判定
+分支 / 工作树：feat/P6-10 / /tmp/bot-wt/P6-10
+
+总结论：上一场 3 个失败点的原始探针均已转绿，8/8 原样通过；但新增真实 Loader 容量对抗探针确认满额时未收养的人工 worker 会永久漏计，导致实际仍有 3 个 worker running 时 create_bot 又向 main 发出建 bot 请求。P6-10 整体 FAIL，不可据此合并整条 feat/P6-10。
+本运行环境禁止写报告 .md，按约定将完整结论落在 evidence/P6-10f1-vfy/VERIFY.txt 供派发者转正。
+
+证据目录 E=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10f1-vfy
+旧探针目录 O=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10-vfy
+所有测试 shell HOME=/tmp/bot-p610f1-vfy-home；补充真 Loader 各用 mkdtemp('/tmp/bot-p610f1-extra-') 派生 home/data/fake/overlay。仅写主仓证据目录，无产品文件改动。无 renderer / Electron UI 变更或浏览器旅程要求，本次为 SDK + main 后端验收，未启动桌面或截图。
+
+| 验收项 | 结果 | 证据（命令/文件） |
+|---|---|---|
+| 上一场 8 个探针原样重跑 | PASS，4 files / 8 tests 全绿，旧文件未改 | 在 /tmp/bot-wt/P6-10/app/ui 执行 HOME=/tmp/bot-p610f1-vfy-home ./node_modules/.bin/vitest run --config $O/probe.config.mjs；E/probes-original.log：Tests 8 passed (8) |
+| SDK create 26/26 | PASS | 在 app/sdk 执行 vitest run tests/unit/orchestration-create.test.ts tests/unit/orchestration-create-live.test.ts --reporter=verbose；E/create-live.log：create 文件逐项 26 通过、live 逐项 10 通过，总 36 passed (36) |
+| 真 Loader live 10/10 | PASS，含 assign 先落盘/工具可见性/容量/错 Peer/失权/超时/两种崩溃窗口/f1 两例 | 同上 E/create-live.log，耗时 33.78 秒 |
+| foundation | PASS，实际两个 foundation 文件合计 51/51；口径说明见下 | app/sdk：vitest run tests/unit/orchestration-foundation.test.ts tests/unit/orchestration-foundation-delivery.test.ts --reporter=verbose；E/foundation.log：2 passed / 51 passed (51) |
+| UI main m3 97/97 | PASS | app/ui：vitest run tests/unit/m3；E/ui-m3.log：8 files / 97 passed (97) |
+| ① pbots-worker 污染回合 when 隐藏且不向 main 请求 | PASS | 原 probe-taint、live f1 用例及 E/extra-all-final.log：污染工具结果 UNKNOWN_TOOL、main requests=0、visible=false；SDK create 单测独立直调 definition.execute 验证 pbots/forbidden 与 slots=0 |
+| ① 混合回合：认领 pbots-worker 后用户 steer，仍拒；下一纯用户回合恢复 | PASS，真 Loader 的 claimed 账本中 worker 和 user 的 turn 均为 1；混合 requests=0，下一用户回合 requests=1 且 visible=true | E/extra.test.ts 第一例 + E/mixed-inspect.mjs；E/extra-all-final.log / E/extra-final.log |
+| ② 单个人工 worker running 收养及 turn/end 释放 | PASS，容量 0→1→0 | 原 probe-manual；live f1 用例；E/create-live.log |
+| ② SDK 重启打断 worker 后收养不虚占 | PASS：崩溃前 running=true/slots=1；重启后 session 存在/running=false/slots=0；再人工启动 1→0 | E/extra.test.ts 第二例；E/extra-all-final.log：RESTART interrupted worker {exists:true,running:false,slots:0} 与 RESTART capacity 1→crash→0→manual next turn 1→0 |
+| ② 多人工 worker 满额后的容量准确性（额外坏路径） | FAIL，4 running / used=3；第一个结束后仍有 3 running / used=2；此时 create_bot 被放行，main 收到 1 次请求 | E/extra.test.ts 第三例；E/overflow-final.log、E/extra-all-final.log，两个独立执行稳定复现；应为 used≥3 且 main requests=0 |
+| ③ worker session 不存在的 createdBy 日志 | PASS，主 session 存在、worker session 不存在时跳过且恰 1 行日志 | 原 probe.test.ts 对象为 bots.missing.createdBy='main' 而 sessions 只有 main；E/probes-original.log 输出日志；app/ui/tests/unit/m3/p610.test.ts 新测试为同一个正对象，m3 97/97 |
+| ⑫ 原错对象已改正 | PASS，同时保留 creator 不存在的防御用例，不再把它当 worker 不存在的证据 | git diff b1552a2..HEAD -- app/ui/tests/unit/m3/p610.test.ts；新正对象用例有独立 it 与恰一条日志断言 |
+| diff 范围 | PASS，f1 恰 7 文件，无 start.ts / 默认链改动，产品改动均在申报区域；整分支范围对照上一场核准范围无新增区域外产品改动 | git diff b1552a2..HEAD --name-only 与 --numstat；E/diff-files.txt。真 Loader inspect 属对应测试 support；原 foundation 断言型变更沿用上一场核准范围 |
+| 清理 / head 稳定 | PASS，最终 HEAD 仍 baef53ccab2f0cc35e7e9c8f941b865a94bb5fd8；bot-reap dry-run 无匹配进程，退出 0 | /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p610；E/reap-final.log 为空（无匹配）；末次 Bash 输出 bot-reap exit=0。git status 仅原有两个未跟踪 node_modules |
+
+测试计数澄清：builder / 派发中的“foundation 77/77”不是两份 foundation 文件本身的数量；本 HEAD 实跑 foundation.test.ts=50、foundation-delivery.test.ts=1，总 51；加 create=26 正好 77。没有缺跑 foundation delivery，四类定向文件合计为 SDK 26+10+50+1=87，UI m3=97。E/sdk-directed.log 的 86 是 create26+live10+foundation50，之后已另跑 foundation delivery 1 项。
+
+新问题（每条一行，可直接成为修复任务）：
+- [FIX] [major] 满容量时人工 worker 未收养且后续不补记，导致仍有 3 个 worker running 时又放行 create_bot（真实 main 建 bot 请求数=1，应为0） | 复现：在真实 Loader 创建 main 和 4 个带 createdBy 的 worker；4 个经 session/prompt 人工启动，首个 worker 比其余三个先结束；观察 running=4/slots=3 → running=3/slots=2；随后让 main 在纯用户回合调用 create_bot，订阅 main 通道捕获到 1 次请求 | 疑似位置：/tmp/bot-wt/P6-10/app/sdk/src/orchestration/slots.mjs:55-61（slots.reserve() 失败不记录已 running worker；其他 hold 释放后未重新对账），对应测试 app/sdk/tests/unit/orchestration-create.test.ts 中“at capacity an extra manual worker is not adopted”只验证不误释放，没有覆盖另一已收养 worker 结束后仍满额的格子 | 严重度：major
+
+补充探针复跑命令（不修改产品代码）：
+cd /tmp/bot-wt/P6-10/app/ui
+HOME=/tmp/bot-p610f1-vfy-home ./node_modules/.bin/vitest run --config /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10f1-vfy/extra.config.mjs
+最终输出：Tests 1 failed | 2 passed (3)，失败即上述容量漏计。
+只复现新问题：在命令末尾追加 -t 'capacity overflow'。
+
+探针自身一次误判及修正透明记录：初版重启探针用“turn/end 数量增加”判断重启后的新人工回合结束，碰到 SDK 延迟补写旧回合 reason=interrupted 的 end 事件，故 E/extra.log 曾出现 slots=1 的失败。E/extra-final.log 打印完整事件顺序（旧 turn/start seq4、interrupted end seq6、新 turn/start seq9），已将完成条件改为 session/list.running=false 后再验 slots=0。当前探针在 E/extra-all-final.log 重跑通过，未把测试观察时点错误误报为产品缺陷。溢出容量失败不依赖此逻辑。
+
+崩溃模拟仅在测试脚本内杀掉由该 launchRuntime 自己 spawn 的 SDK/dsh 子进程，PID 来自该临时 HOME/launcher.lock；finally 走运行时自己的 stop。没有手工 shell kill，没有碰桌面会话、用户服务、机器重启或真实配置目录。证据目录没有复制 runtime、handoff 或凭证内容。

@@ -1,0 +1,14 @@
+    196|     expect(listener({ name: 'bash', agent, arguments: { command: 'ls',…
+    197|       .toEqual(askShape)
+       |        ^
+    198|   })
+    199|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 skipped (16)
+   Start at  11:18:42
+   Duration  132ms (import 35%, tests 33%, transform 20%, worker 12%)
+

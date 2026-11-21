@@ -1,0 +1,14 @@
+$ sh scripts/run-e2e.sh tests/e2e/session.spec.ts tests/e2e/boot-cover.spec.ts tests/e2e/journeys/d10b-d7.spec.ts
+
+Running 8 tests using 1 worker
+
+  ✓  1 tests/e2e/boot-cover.spec.ts:11:5 › 就绪：封面收起、不挡点击；原版 app 图标资产可加载；无目录源 → 市场空态 (3.8s)
+  ✓  2 tests/e2e/boot-cover.spec.ts:28:5 › 引擎不可达：Starting → Still connecting → Couldn't connect + Reload；亮暗截图 (1.0m)
+  ✓  3 tests/e2e/journeys/d10b-d7.spec.ts:31:5 › D10b：#4 屏障（PBOTS_TEST_GATE_4）中重载 renderer → 同一 session 恢复、连接器完整、放行后可用 (4.9s)
+  ✓  4 tests/e2e/journeys/d10b-d7.spec.ts:71:5 › D7：直调 #4 未装连接器 → !ok 且列表无此 bot；重启孤儿不出行、其他 bot 可用；failNext 真实 UI 报错 (6.5s)
+  ✓  5 tests/e2e/session.spec.ts:17:5 › D3 审批往返：dock 仅本 bot、侧栏 Needs attention；Deny → 不执行；Allow once → 执行；卡只有两钮 + 完整命令 (5.8s)
+  ✓  6 tests/e2e/session.spec.ts:75:5 › composer：Shift+Enter 换行、IME 组字 Enter 不发送、Enter 发送；草稿按 bot 隔离；会话头 Stop → aborted → 可继续 (4.6s)
+  ✓  7 tests/e2e/session.spec.ts:130:5 › 亮/暗截图：侧栏 + 会话（P-A / P-B 存证） (4.7s)
+  ✓  8 tests/e2e/session.spec.ts:151:5 › #11 分页：长历史首窗有限，滚到顶逐页补全；失败只重试该页 (6.2s)
+
+  8 passed (1.6m)

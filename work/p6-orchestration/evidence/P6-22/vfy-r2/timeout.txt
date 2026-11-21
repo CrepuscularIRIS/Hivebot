@@ -1,0 +1,5 @@
+raw outcome=timeout; timeouts=[worker2]; retryCount=0; rateLimited=false; llm/retry=0
+main user turn0 completed create=1; scoring turn completed create=1 send=0; both workers completed; worker turn/end counts=[1,1]
+BAD-PATH PASS: exact waitWorkersEnded(workers,2) returns {ok:false,counts:[1,1]} although both workers already completed; no load, no model inactivity needed
+Diagnostic-only outcome override confirms closed main routing violation; official frozen score remains incomplete/invalid, not reclassified or counted correct
+PASS timeout assertions; no model rerun

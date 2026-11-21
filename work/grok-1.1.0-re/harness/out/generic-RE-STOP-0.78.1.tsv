@@ -1,0 +1,158 @@
+anchor	in110
+"## Role & Persona"	1
+"superseded"	1
+## When they talk over you	1
+8gi/JY	1
+9QwrMz	1
+:return	1
+Agent	1
+AnRu/j	1
+Button	1
+Cancel	1
+Cancel reply	1
+Cancelled	1
+Couldn	1
+Couldn't cancel your message. Try again.	1
+Delete	1
+Escape	1
+InterruptGrokBotAgentRun	1
+InterruptGrokBotAgentRunResponse	1
+Interrupted	1
+MessageSubagent	1
+NnvXp5	1
+Persona	1
+Ran out of steps	1
+Reply	1
+Reply STOP to stop texts.	1
+Retry	1
+Review	1
+Review could not finish	1
+Stop dictation	1
+StopSubagent	1
+Stopped	1
+This whole text is your instruction for this call	1
+Timed	1
+Timed out	1
+Unheard	1
+Vzhfmq	1
+When they talk over you	1
+Xk2FSz	1
+You are ${n}, on a live phone call with the person you work for.	1
+Your Bot isn't doing anything right now.	1
+Your Bot stopped what it was doing.	1
+Zo as de	0
+abort	1
+after:	1
+again	1
+again.	1
+agent	1
+agent.	1
+agentId	1
+anything	1
+args:	1
+aria-label	1
+async	1
+background	1
+burst	1
+caller-interrupted	1
+cancel	1
+cancelQueued	1
+cancelled	1
+chunk-box-desktop-modal-CN4iwwJC.js	0
+chunk-view-ODc_03uE.js	0
+computerRebuild	1
+confirmed	1
+continues	1
+controller.abort	1
+could	1
+current	1
+data-sand-update-status	1
+deleted	1
+dictation	1
+direct	1
+diving	1
+doing	1
+doing.	1
+dropped_caller_barged_in	1
+dropped_superseded	1
+dxyEjQ	1
+e.status	1
+end_the_call	1
+endedBy	1
+endedBy:	1
+episode_timeout	1
+finish	1
+function	1
+generating	1
+had_active_run	1
+hasControl	1
+icon:	1
+instruction	1
+interrupt	1
+interruptAgentRun	1
+interruptAgentRun:	1
+interruptGrokBotAgentRun	1
+interrupted	1
+interruptedLines	1
+isAgentRunning:t	1
+isAgentRunningAtSendStart	1
+isAgentRunningAtSendStart:	1
+isAgentRunningAtSendStart:!0	1
+isRunning	1
+label:	1
+main-app.cjs	1
+message	1
+message.	1
+messaging.replyStop	1
+messaging.turnNotRunning	1
+messaging.turnStopped	1
+mid-reply	1
+mid-task	1
+n-e.startedAtMs	1
+never	1
+nonce	1
+nowMs:n	1
+object	1
+on a live phone call	1
+onClick:n.onStopControl	1
+onHandBack	1
+onStopControl	1
+onTakeControl	1
+onUpdateBox	1
+overheardLine	1
+parent	1
+person	1
+phone	1
+pings	1
+queued	1
+queuedAtMs	1
+reason	1
+reason:	1
+record	1
+recoverable	1
+remainder:	1
+reply	1
+reply:	1
+return	1
+review_interrupted	1
+right	1
+rpcLiteral	1
+running	1
+sand-reply-quote-pill	1
+stay_silent	1
+steps	1
+stopDictation	1
+stopped	1
+subagent	1
+subagent_id	1
+superseded	1
+terminate_success:	1
+texts.	1
+turn_limit	1
+update-computer	1
+vHRDVH	1
+voiceLoopLines	1
+where	1
+while	1
+whole	1
+ygCKqB	1

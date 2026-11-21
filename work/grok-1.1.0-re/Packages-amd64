@@ -1,0 +1,21 @@
+Package: grok-bot
+Version: 1.1.0
+License: unknown
+Vendor: SpaceXAI <hi@cursor.com>
+Architecture: amd64
+Maintainer: SpaceXAI <hi@cursor.com>
+Installed-Size: 383313
+Depends: libgtk-3-0, libnotify4, libnss3, libxss1, libxtst6, xdg-utils, libatspi2.0-0, libuuid1, libsecret-1-0, libasound2t64 | libasound2, libgbm1, libxkbcommon0, libdrm2
+Conflicts: sand
+Provides: sand
+Replaces: sand
+Recommends: libappindicator3-1
+Section: default
+Priority: optional
+Homepage: https://cursor.com
+Filename: pool/grok-bot/g/gr/grok-bot_1.1.0_amd64.deb
+Size: 115408944
+SHA1: bdba072779482bbc1846b8565f8880ec6bfef9aa
+SHA256: 5b02fb215103eded94ec9f381a790d71f6727f017681c7edd1b56f2b8cfa572d
+MD5sum: 5cba2170a70c22bf9b715ad73c24b93a
+Description: Grok Bot desktop agent

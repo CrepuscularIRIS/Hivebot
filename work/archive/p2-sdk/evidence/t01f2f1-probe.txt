@@ -1,0 +1,10 @@
+PASS A1 持有者间隙释放不删 aside
+PASS A2 残留锁记录的是已退出持有者 pid
+FAIL A3 间隙残留陈锁自愈，home 可重新获取
+FAIL A4 释放后锁文件不存在
+PASS A5 无 leftover | []
+PASS B1 活锁被捕获期间(路径空)可获取并正常释放
+PASS C1 leftover 存在时正常获取
+PASS C2 获取/释放后 leftover 原样保留（不属于自己不清理）
+PASS D1 200 轮建删中 inode 重复次数>0（复用真实存在） | repeats=199 distinct=1
+EXIT=1

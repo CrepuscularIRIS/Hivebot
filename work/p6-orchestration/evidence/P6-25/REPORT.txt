@@ -1,0 +1,53 @@
+P6-25 · 工作区外的 write/edit 一律拒绝（安全收紧，决策 37）
+分支 feat/P6-25，基点 main@60e8b02，worktree /tmp/bot-wt/P6-25
+
+改动（app/sdk）：
+- src/policy/shell-ask.mjs：workspace-write 档「区外 → next() 交上游 fence」改为
+  { kind:'deny', reason: ASK.writeOut }，不出卡；fs 服务不可用时的写类同改 deny
+  （证不出区内即区外，fail closed）；文件头第 3/4 行注释同步改写（删「越界写由
+  fence 拒」前提，写明根因与决策 37）。判外三态归一：realpath 后在区外（含 ..
+  逃逸、符号链接）、候选解析失败（targets < total）、workspaceRoot 拿不到。
+  原因串固定字面串（code 前缀 'write-outside-workspace'），不回显宿主绝对路径。
+- tests/unit/policy.test.ts：P5-21 ④ 的「区外写 delegates」翻转为 deny + 新增
+  P6-25 describe 8 格（绝对路径 write/edit、never 会话同拒、先于门判定、
+  无 fs 服务、无 workspaceRoot、解析失败、读语义不变、区内不变）。
+- tests/e2e/write-outside.test.ts（新增 7 格）：① probe2 复刻（绝对路径写宿主
+  /tmp/bot-p6-25/probe-*.txt → deny、宿主无文件、0 卡）；② 预置区外文件 edit →
+  deny、内容不变（读前提满足；区外 read 仍出卡 = 读语义不变差分）；③ .. 逃逸 →
+  拒；④ 工作区内软链指向 /tmp/bot-p6-25 → 经软链写拒；⑤ 区内 write/edit 照常
+  （policy-state 从未 provision 态；本测试自身工作区就在 /tmp 下——防「/tmp 即
+  区外」误判的对照格）；⑥ 普通第二会话（另一工作区）写宿主 /tmp 拒、写他人
+  工作区由 guard 先拒（P5-02 mask 语义不变）；⑦ never 子代理（ptc）写区外 →
+  本地 deny、子会话 0 卡（修复前 never 会话的区外写也无卡成功）。
+- 不改 dsh fence、不改读类（区外读仍 ASK，Q-013 第 3 行）、NEVER 根规则归
+  guard 不变、bash 档不动。
+
+TDD 证据（先红后绿）：
+- red-unit.log：未改代码上 7 红（全部收到 Symbol(next) = 原洞）。
+- red-e2e.log：未改代码上 6 红，每格均为「isError expected false to be true」
+  = write/edit 真实成功（probe2 正对照：宿主文件被无卡创建）；⑤ 区内格绿。
+- green-e2e.log：7/7 绿。green-tiers-escalation.log、green-guardfs-approval.log、
+  green-w1ap0-matrix.log：见下。
+
+定向回归（全量留主会话）：
+- tests/unit 全量：23 files / 451 passed（含 policy、guard、orchestration-*）。
+- e2e：write-outside 7/7；tiers-policy + guard-escalation 13/13；guard-fs +
+  approval 14/14；w1ap0-matrix（L-AP 全矩阵）见 green-w1ap0-matrix.log。
+
+枚举：本仓依赖「文件工具写 /tmp 成功」的用例（验收 ⑦）：
+- app/sdk、app/ui 的 vitest/playwright 套件：无（grep 全量核对；套件内写类目标
+  要么在自身工作区内、要么是 guard 根目标由 guard 先拒；stock 差分侧 shell-ask
+  被整体摘掉，不受影响）。
+- work/p6-orchestration/evidence/D3-orch/run.mjs（P6-22 dev harness）：主 bot
+  cwd 在 ROOT/work/<gid>（/tmp/bot-p620-* 下），worker 写主目录会从「碰巧成功」
+  变为拒——P6-24 合并前属预期；r2 按 PLAN §12.9.8 仍跑 c33efa8 基线不受影响，
+  定案 48 组跑在 P6-24/P6-25 之后的 main 上（harness 主 bot cwd 届时改生产布局）。
+
+工具枚举口径（派发要求「以已装 dsh 的工具注册表为准」）：
+dsh@0.2.2-alpha.2 web profile --dump-config：文件写类工具只有 dsh-tool-fs 的
+write/edit（str_replace_editor 未注册；bash 是独立档）。tiers.json 的
+workspace-write 行（write/edit）即覆盖全部注册写盘工具。
+
+worker 格说明：⑦ 用 ptc never 子代理（子会话）承载；修复点是宿主平面插件、
+对所有会话同一路径（无会话类型分支），ui 侧 p6-*（真 worker 链路）无 write
+工具调用（已核对），留主会话合并后全量回归。

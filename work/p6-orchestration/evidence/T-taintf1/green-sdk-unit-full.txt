@@ -1,0 +1,17 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/T-taintf1/app/sdk
+
+ ❯ tests/unit/orchestration-create-live.test.ts (12 tests | 2 skipped) 50670ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/orchestration-create-live.test.ts > P6-10 live RT2 (timeout + crash window)
+Error: socket hang up
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 29 passed (30)
+      Tests  578 passed | 2 skipped (580)
+   Start at  13:03:04
+   Duration  85.53s (tests 98%, transform 1%, import 1%)
+

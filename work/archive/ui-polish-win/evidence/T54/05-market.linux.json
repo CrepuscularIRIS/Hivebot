@@ -1,0 +1,54 @@
+{
+ "id": "05-market",
+ "platform": "linux",
+ "geo": {
+  "[data-market]": {
+   "rect": {
+    "x": 190,
+    "y": 48,
+    "w": 900,
+    "h": 656
+   },
+   "font": "system-ui, sans-serif",
+   "size": "14px",
+   "lineH": "20px",
+   "text": "Connect AppsNo catalog configuredCatalo"
+  },
+  "#sand-plugins-modal-heading": {
+   "rect": {
+    "x": 207,
+    "y": 63,
+    "w": 102.3,
+    "h": 20
+   },
+   "font": "system-ui, sans-serif",
+   "size": "15px",
+   "lineH": "20px",
+   "text": "Connect Apps"
+  },
+  ".sand-agents-sidebar__plugins-entry": {
+   "rect": {
+    "x": 60,
+    "y": 700,
+    "w": 203,
+    "h": 36
+   },
+   "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+   "size": "16px",
+   "lineH": "normal",
+   "text": "Connect apps"
+  }
+ },
+ "meta": {
+  "platform": "Linux x86_64",
+  "uaPlatform": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.7977.130 Electron/44.7.0 Safari/537.36",
+  "dpr": 1,
+  "innerW": 1280,
+  "innerH": 752,
+  "loadedFonts": [
+   "cursor-icons/normal",
+   "cursor-icons/normal"
+  ],
+  "scrollY": 752
+ }
+}

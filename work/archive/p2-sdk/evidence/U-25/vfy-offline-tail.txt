@@ -1,0 +1,7 @@
+NETNS-OK-CURL-RC=6
+ Test Files  20 passed (20)
+      Tests  148 passed (148)
+   Start at  17:00:27
+   Duration  147.59s (tests 99%)
+
+OUTER-EXIT=0

@@ -1,0 +1,18 @@
+PASS | Electron env 无 P2SDK_LLM_API_KEY
+PASS | Electron env 无 DEEPSEEK_API_KEY
+PASS | Electron env 无 OPENAI_API_KEY
+PASS | Electron env 无 ANTHROPIC_API_KEY
+PASS | Electron env 无 LITELLM_MASTER_KEY
+PASS | HOME 沙箱
+PASS | XDG_CONFIG_HOME
+PASS | XDG_CACHE_HOME
+PASS | PBOTS_DATA_DIR
+PASS | extra 照传
+PASS | PATH 保留(非凭证键不误删)
+PASS | worker process.env 未删 P2SDK_LLM_API_KEY
+PASS | worker process.env 未删 DEEPSEEK_API_KEY
+PASS | worker process.env 未删 OPENAI_API_KEY
+PASS | worker process.env 未删 ANTHROPIC_API_KEY
+PASS | worker process.env 未删 LITELLM_MASTER_KEY
+
+fail=0

@@ -1,0 +1,39 @@
+verdict: PASS
+commit: 000efb657a2ca9da77cd0460a9aeb3d1076d7f03
+任务：P5-61.f2；分支 feat/P5-61f1；工作树 /tmp/bot-wt/P5-61f1
+验收日期：2026-11-04。申报工作树验收前后 clean、HEAD 未变；未改产品代码。
+证据根 E=/home/lingxufeng/bot/work/p5-parity/evidence/P5-61f2/vfy
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+|---|---|---|
+| 1. 旧构建红基线独立复刻、新构建绿 | PASS | git archive 99c3d19 的独立旧树构建（不 stash、不切活动工作树）；old-build-provenance.json：524 个源码文件与该提交逐字节相同。run-e2e.sh -c E/red.config.ts --repeat-each=2：旧版暗 20/19 坏帧、亮 11/11，4 failed 是预期红（E/red-reproduced/e2e.log 及 JSON）。新版五轮同探针坏帧均 0（E/summary.txt）。 |
+| 2. 亮暗冷启+重载各 ≥5 段，按钮底色与十七点归零 | PASS | E/run-0..4：20 个窗口级 ffv1 无损录像，四种场景各 5；共 940 帧。python3 -I probe/pixels.py E：20 movies / region-hits=0；python3 -I E/pixels-strict.py：80 个控件区域 0 bad。独立加严为暗像素不超过 31、亮不低于 252（覆盖封面→控件底色合法包络），没有使用冷启首帧豁免。E/original17.json 记录上一轮真实 17 个坏点时间戳（129–380.2ms），initial17.probe.ts 按 performance.now 对齐重放，亮暗各 17 点、四控件全存在、bad=0（E/points17-*.json、exact17-e2e.log；实时计时有调度抖动，逐 rAF trace 同时覆盖整个区间）。 |
+| 3. theme-flash + theme-dual ≥3 轮；整窗、原生、双向切换、镜像 | PASS | 实跑 5 轮，各轮 9 passed（2 个 initial + 6 个 theme-flash + 1 个 theme-dual），共 45 passed，见 E/run-0..4/e2e.log。整窗暗最大亮度 20.391≤60、亮最小 249.844≥190；原生控件顶条逐帧无反色；每轮 switch.trace.json 含亮→暗、暗→亮，0 中间色且 hover .12s 保持。theme-dual 本身不含“同偏好不写镜像”断言，独立 edge.probe.ts 已补：同偏好 set+reload 3 次 content 与纳秒 mtime 均完全不变（E/edge.json same）。 |
+| 4. 修法局限、上游 332 文件零改动、单测 ≥451 | PASS | git diff 99c3d19..HEAD：desktop.ts +8 行（含注释），只在 createDesktopBridge 建桥阶段赋 data-theme/colorScheme；另两文件为相关测试，见 E/reviewed.diff。node renderer-grok/scripts/check-upstream.mjs：upstream diff=0: 332 files（E/upstream.log）。独立相关单测 desktop.test.ts：17 passed（E/unit-focused.log）；vitest list --no-staticParse --json 动态展开得到 451 tests / 38 files（E/unit-count.txt、unit-collected-expanded.json）。未跑全量单测回归；451 是独立收集数，不冒称重新执行 451 全绿，整包执行留主会话合并后。 |
+| 5. 无持久偏好启动是否固化跟随系统 | PASS | E/edge.probe.ts / edge-e2e.log：3 passed（含两条十七点测试）。初启 saved=null，theme.preference=system，resolved 与 matchMedia 相同，DOM attr/colorScheme 与 resolved 一致。清 Playwright 默认 light 模拟后，nativeTheme dark→light→dark 均翻转 DOM，saved 仍 null，镜像内容 system、纳秒 mtime 不变。reload 后 system 不变，关 Electron 后同临时 HOME 重启仍无持久偏好；再清自动化媒体覆盖后 resolved=dark 与宿主 shouldUseDarkColors=true 相符、nativeTheme.themeSource=system，未固化为 light/dark。 |
+| 额外坏路径：损坏持久偏好 | PASS | localStorage pbots.shim.theme-preference='neon'→reload，theme.preference 回 system，resolved 仍取系统 media，镜像内容/mtime 不变（E/edge.json corrupt）。 |
+| CLI 真操作、截图目检与清理 | PASS | playwright-cli -s=p561f2-vfy attach --cdp=http://127.0.0.1:19362 → snapshot → click Account → screenshot → Escape → 亮色截图 → detach，见 E/cli-*.txt、cli-account-dark.png、cli-light.png。所有 Electron 启动都由 run-e2e.sh 的 Xvfb；录像 ffmpeg -window_id 只采应用窗。结束 bot-reap --dry-run --match p561f2 / P5-61f1 均空，E/cleanup-*.log。 |
+
+红基线口径核对：
+- “17”是上一轮 rAF 采样行数，不是 17 个控件；四选择器依次 composer / Connect apps / 搜索钮 / 加号钮。
+- 旧版独立暗两次：badPerControl=[0,20,10,10] / [0,19,10,10]；composer 已经稳定，混色来自另外三项。时间跨度本次约 53–352ms / 62–347ms；不能把所有重复测试都强称同为 129–380ms。上一轮那 17 个精确时间目标另行重放，已归零。
+- 新版每个控件挂载即等于稳定底色，DOM 全 rAF 与录像像素两种证据交叉成立，不仅看整窗平均数。
+
+初值与边角根因核对：
+- desktop.ts:50–54 从 pbots.shim.theme-preference 读白名单；缺失/非法→system，system.resolved 由 matchMedia('(prefers-color-scheme: dark)').matches 决定。
+- 新增 :82–85 只把 resolved 显示到 DOM，不调用 theme.set、不写 localStorage；:87–90 原来的 media change 监听仍以 preference=system 为条件推送。
+- main/window.ts:52–64 的镜像写 preference，不写 resolved，且相同 preference 提前 return，因此 system 的可变 resolved 不会被固化。
+- 原生主题首次探针未清 Playwright light 模拟而失败，保留 E/pre-emulation-reset-*；最小单变量排除模拟覆盖后 nativeTheme 翻转通过（与产品 theme-dual 使用相同的 colorScheme:null 复位），不是产品回归。
+
+截图已用 Read 打开并亲眼确认：
+- cli-account-dark.png：Grok Bot 产品，左栏只有 New chat，底部 Connect apps 与 composer 暗底，Account 的 Settings/About 菜单展开；不是桌面或编辑器。
+- cli-light.png：同一个 New chat 亮色界面，搜索与加号为亮底圆钮，Connect apps 与 composer 白底。
+- contact-dark.png / contact-light.png：只拼接窗口顶部 60px、底部 100px 的 6 个录像时间点；看见重载封面撤去后，搜索/加号/Connect apps/composer 与原生右上控件同主题，无反色按钮。源录像为应用窗口，不含其他屏幕内容。
+
+执行说明与限制：
+- 全部重现命令在 E/commands.txt。新版本先 pnpm build；旧版归档临时构建已删除，构建日志与源码字节核对证明保留。
+- 初始验收 config 的 testDir='.' 在创建旧归档后误递归发现旧树其他 spec（85 条），发现后中断并精确回收自己启动的沙箱进程，记录 E/aborted-discovery-e2e.log / aborted-discovery-cleanup.log；该次结果完全不计验收。随后改为 cases 专用目录，--list 确认只 9 条（E/test-list.txt），正式五轮各 9 条全绿。没有把误跑的旧树失败作为本任务缺陷，也没有完成全量 e2e。
+- 所有运行时使用临时 HOME；旧构建 scratch 和运行时目录不保留。清理只用 bot-reap，未触及桌面、训练或用户其他会话。
+
+新问题（每条一行，可直接成为修复任务）：
+- 无本任务范围内新问题；无 [FIX]。

@@ -1,0 +1,120 @@
+{
+  "presets": [
+    {
+      "id": "standard",
+      "order": 1,
+      "isDefault": true
+    },
+    {
+      "id": "ptc",
+      "order": 2,
+      "isDefault": false
+    },
+    {
+      "id": "minimal",
+      "order": 3,
+      "isDefault": false
+    },
+    {
+      "id": "cordis",
+      "order": 4,
+      "isDefault": false
+    }
+  ],
+  "inventory": [
+    {
+      "preset": "standard",
+      "sessionId": "session-e8b968ed-e13a-4402-be4d-c2a75f99a8c1",
+      "tools": [
+        "ask_user_question",
+        "bash",
+        "create_goal",
+        "edit",
+        "get_goal",
+        "glob",
+        "grep",
+        "interrupt_agent",
+        "job_kill",
+        "job_list",
+        "job_output",
+        "list_agents",
+        "list_subagent_models",
+        "present",
+        "read",
+        "read_image",
+        "request_network",
+        "schedule_create",
+        "schedule_delete",
+        "schedule_list",
+        "schedule_update",
+        "send_message",
+        "skill",
+        "subagent",
+        "subagent_fork",
+        "todo_write",
+        "update_goal",
+        "web_fetch",
+        "workflow",
+        "working_directory",
+        "write"
+      ]
+    },
+    {
+      "preset": "ptc",
+      "sessionId": "session-7b8ef681-5471-4415-8398-e36129d844e0",
+      "tools": [
+        "run_code"
+      ]
+    },
+    {
+      "preset": "minimal",
+      "sessionId": "session-65aabd5e-2a7a-4009-a694-f2c33f03c836",
+      "tools": [
+        "bash",
+        "read_image",
+        "request_network",
+        "working_directory"
+      ]
+    },
+    {
+      "preset": "cordis",
+      "sessionId": "session-27bc349e-f8fa-4881-b319-e357a9818ace",
+      "tools": [
+        "ask_user_question",
+        "bash",
+        "cordis_inspect_list",
+        "cordis_inspect_query",
+        "create_goal",
+        "edit",
+        "get_goal",
+        "glob",
+        "grep",
+        "interrupt_agent",
+        "job_kill",
+        "job_list",
+        "job_output",
+        "list_agents",
+        "list_subagent_models",
+        "plugin_market",
+        "present",
+        "read",
+        "read_image",
+        "request_network",
+        "schedule_create",
+        "schedule_delete",
+        "schedule_list",
+        "schedule_update",
+        "send_message",
+        "skill",
+        "subagent",
+        "subagent_fork",
+        "todo_write",
+        "update_goal",
+        "web_fetch",
+        "workflow",
+        "working_directory",
+        "write"
+      ]
+    }
+  ]
+}

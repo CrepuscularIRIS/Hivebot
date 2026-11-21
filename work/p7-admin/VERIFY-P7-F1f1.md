@@ -1,0 +1,56 @@
+# VERIFY P7-F1.f1（P7-F1 整体终验）
+
+> 转正自 evidence/P7-F1/VERIFY-f1.txt。P7-F1 整体判定：PASS。
+
+verdict: PASS
+commit: 20c31cb9db68c10594e0c7aaccb4d786a2423354
+任务：P7-F1.f1 三条 HIGH 复验；P7-F1 整体判定：PASS（本任务定向验收范围，非 p7-admin 整阶段验收）。
+日期：2026-11-05；分支 feat/P7-F1；worktree /tmp/bot-wt/P7-F1。
+按会话禁止写报告类 .md 的约束，使用用户指定备用路径 VERIFY-f1.txt；未覆盖旧 VERIFY.txt。
+
+证据根 E=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1
+环境：HOME=/tmp/bot-p7f1-f1-verify-home；自写探针 root 均由 HOME 下 mkdtemp 派生并 finally 删除。原单测使用既有 tmkdir 的临时根（node:os.tmpdir），未引入固定业务路径。未改产品代码、依赖、package/lockfile；验收前后 HEAD 一致且 worktree 干净。负载预检：30 核，load 7.36/11.28/20.63，vmstat 即时 idle 71%、iowait 0%。按本次“快验”只跑指定单文件、独立探针、覆盖率、单文件类型检查；未跑整仓安装/构建/全量回归/UI E2E。无 UI 变动，不涉及截图。
+
+| 验收项 | 结果 | 证据（命令/文件） |
+| 中文行撕裂不破坏完整行，repaired 字节数正确且跨重启存在 | PASS | 原探针 tail-unicode-repair 已绿；新增 verifier-f1-extra.mjs 的 none 用例：中文/emoji begin 完整前缀 214 bytes，与修复后前缀逐字节相等；尾 UTF-8 字符自身被截断，droppedBytes 精确 20；repaired 恰 1 条，连续重开 2 次投影一致且可续写。verifier-f1-extra.log:5 |
+| 完整未知版本无换行，不误删且读写 fail closed | PASS | 原样重放 verifier-probe.mjs 的 unknown-version-no-newline：readOperations、beginOperation 均 PBOTS_OPS_UNTRUSTED，文件字节不变；verifier-f1-replay.log:9。28 项单测另覆盖有/无正常前缀两种未知版本 |
+| 修复追加失败，撕裂标记不丢，解除故障后重试有效 | PASS | 原 open EIO 探针重放通过。额外独立注入真实临时文件部分 append 后 EIO、文件 sync EIO、rename EIO：本次读写拒绝、原撕裂文件字节未改；解除故障重新 init 后 repaired 和 tailTruncated 持久，连续重开 2 次可续写，无 .tmp 残留。verifier-f1-extra.log:6-8 |
+| 额外坏路径：rename 已成功、目录 sync 失败 | PASS | verifier-f1-extra.mjs 的 directory-sync：本实例读写失败关闭；重开后 intact 前缀与 repaired 同册存在，tailTruncated=true、droppedBytes=20、repairCount=1，连续重开可续写；verifier-f1-extra.log:9。本证据为服务级故障注入，不声称真实掉电试验 |
+| 28/28 复跑 | PASS | HOME=$H pnpm -C $W/app/ui test tests/unit/admin/operations.test.ts；verifier-f1-unit.log：1 file passed，28 tests passed，exit=0 |
+| 上一场全部独立探针原样重放，failures=0 | PASS | HOME=$H node --experimental-strip-types $E/verifier-probe.mjs；verifier-f1-replay.log：9 组 PASS，SUMMARY failures=0，exit=0。覆盖 ASCII/中文修复、中段坏行、未知版本含无换行、live 丢文件、并发100、undo 前后投影往返、四态重启、fsync 阻塞及失败、修复 open 失败后重启 |
+| append/flush 失败业务副作用 0，begin 在 fsync 后才返回 | PASS | 原探针 fsync-block-and-failure 独立重放：events=[append,sync-start,sync-fail]、effects=0、内存无操作；physicalBytes=193，明确不是“磁盘零字节”语义。verifier-f1-replay.log:12-13 |
+| 投影 API 签名未变，F3 依赖不变 | PASS | git show 78a3c15 与 20c31cb 比较：全部导出常量/类型/接口/foldOperations 区域逐字节相等；readOperations/readUndo/beginOperation/finishOperation/recordReceipt 到文件末尾实现逐字节相等。verifier-f1-scope.log:1-2；完整 diff 核实变化仅 imports/init/说明 |
+| 增量仅 operations.ts + 测试 | PASS | git diff --name-only 78a3c15..20c31cb 精确 2 文件；verifier-f1-scope.log:3-8。来源锚点 operations.ts:4-12 未变；SA 精确文本仍明确待 R2 回填，不当作已核实外部事实 |
+| P7-F1 覆盖率 >=80% | PASS | 独立复跑 V8：Statements 88.01%，Branches 85.47%，Functions 96.87%，Lines 93.83%，28 tests passed，exit=0；verifier-f1-coverage-final.log:6-23 |
+| 单文件类型检查 / diff whitespace / HEAD 稳定 | PASS | tsc 命令见下，verifier-f1-typecheck.log 无输出、exit=0；git diff --check exit=0；最终 HEAD 仍 20c31cb9db68c10594e0c7aaccb4d786a2423354，git status --short 无输出 |
+
+复跑变量：
+H=/tmp/bot-p7f1-f1-verify-home
+W=/tmp/bot-wt/P7-F1
+E=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F1
+
+新增探针命令：
+HOME=$H node --experimental-strip-types $E/verifier-f1-extra.mjs
+输出尾部：
+PASS none: prefixBytes=214 droppedBytes=20 repairCount=1 reopen=2 appendAfterRepair=true
+PASS append: prefixBytes=214 droppedBytes=20 repairCount=1 reopen=2 appendAfterRepair=true
+PASS sync: prefixBytes=214 droppedBytes=20 repairCount=1 reopen=2 appendAfterRepair=true
+PASS rename: prefixBytes=214 droppedBytes=20 repairCount=1 reopen=2 appendAfterRepair=true
+PASS directory-sync: prefixBytes=214 droppedBytes=20 repairCount=1 reopen=2 appendAfterRepair=true
+SUMMARY failures=0
+exit=0。
+
+覆盖率运行说明（透明记录环境失败及有效重跑）：
+首次常规 --coverage.provider=v8 因 @vitest/coverage-v8 无直接链接而 exit=1（verifier-f1-coverage.log）；只指定 customProviderModule 仍在 worker 内报包解析错误（verifier-f1-coverage-cached.log），仅加 loader 仍被 CLI 预检挡住（verifier-f1-coverage-resolved.log）。这些都不算通过证据。
+最终使用已缓存的同版 5.0.5 provider，证据目录内只读 Node resolve hook 配合 customProviderModule，不安装、不改 node_modules、不绕过断言；有效复跑命令：
+HOME=$H NODE_OPTIONS=--import=$E/verifier-f1-coverage-loader.mjs pnpm -C $W/app/ui exec vitest run tests/unit/admin/operations.test.ts --coverage --coverage.provider=custom --coverage.customProviderModule=$W/app/ui/node_modules/.pnpm/@vitest+coverage-v8@5.0.5_vitest@5.0.5/node_modules/@vitest/coverage-v8/dist/index.js --coverage.include=main/admin/operations.ts --coverage.reporter=text --coverage.reporter=text-summary --coverage.reportsDirectory=$E/verifier-f1-coverage
+有效日志 verifier-f1-coverage-final.log 明确 Coverage enabled with v8，28/28 passed，无 Unhandled Errors，exit=0。
+
+类型检查：
+HOME=$H pnpm -C $W/app/ui exec tsc --noEmit --skipLibCheck --target es2022 --module nodenext --moduleResolution nodenext --allowImportingTsExtensions --typeRoots node_modules/.pnpm/@types+node@24.19.2/node_modules/@types main/admin/operations.ts
+
+整体结论：旧 VERIFY.txt 的三条 [FIX] 在同一最终 SHA 上全部关闭；P7-F1 原有主要验收语义全部由本次 28 单测及 9 组独立探针重验，覆盖率独立满足阈值。因此 P7-F1 整体 PASS。此前 P2TempService 基点环境对照并非本两文件功能条款，本次未重跑、未据此声称全仓构建通过。
+
+清理：仅 /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p7f1，无匹配进程、exit=0，日志 verifier-f1-cleanup.log；未杀任何进程。探针运行数据已 finally 删除；临时 HOME 仅包管理器 .local 缓存保留，无真实 HOME 写入。
+新问题（每条一行，可直接成为修复任务）：
+- 无。本次未发现新增产品缺陷；覆盖率包缺少直接链接属于工具环境限制，已通过只读解析缓存包获得有效独立证据。

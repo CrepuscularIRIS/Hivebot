@@ -1,0 +1,31 @@
+{
+  "outside": {
+    "cards": [],
+    "res": [
+      {
+        "isError": true,
+        "text": "Error: p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"
+      }
+    ],
+    "onHost": false
+  },
+  "inside": {
+    "cards": [
+      {
+        "toolName": "write",
+        "callId": "c-72e9b9",
+        "reason": "p2sdk policy: tier table unavailable; failing closed to per-call approval"
+      }
+    ],
+    "res": [
+      {
+        "isError": false,
+        "text": "<path>/tmp/bot-p625f1-vfy-home-z1B7vw/pbots-data/workspaces/x/corrupt-in-3777cb.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+      }
+    ],
+    "landed": true
+  },
+  "stderrTier": [
+    "p2sdk-shell-ask: tier table invalid (unknown tier \"bogus-tier\" for \"write\"); failing closed to per-call approval"
+  ]
+}

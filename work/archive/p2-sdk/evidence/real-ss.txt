@@ -1,0 +1,7 @@
+tree pids: 1089475,1089477,1089526,1089527,1089548
+dsh pid: 1089548 exe=/tmp/t01-verify/app/sdk/node_modules/.pnpm/node@24.22.2/node_modules/node/bin/node ver=v24.22.2
+== ss -ltnp (tree):
+LISTEN 0      511        127.0.0.1:35165      0.0.0.0:*    users:(("MainThread",pid=1089548,fd=21))  
+== non-loopback lines (empty=none):
+== token file modes: 600 600
+token-in-log: 0  key-in-log: 0  token=-literal: 0

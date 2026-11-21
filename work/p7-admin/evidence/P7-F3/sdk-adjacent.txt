@@ -1,0 +1,54 @@
+Already up to date
+Done in 304ms using pnpm v11.0.9
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/tmp/bot-wt/P7-F3/app/sdk[39m
+
+ [32m✓[39m tests/unit/start.test.ts [2m([22m[2m36 tests[22m[2m)[22m[33m 2699[2mms[22m[39m
+   [32m✓[39m writeRuntimePatch [2m(2)[22m
+     [33m[2m✓[22m[39m mock mode inserts llm-replay with a file:// specifier plus the handoff row[33m 473[2mms[22m[39m
+     [33m[2m✓[22m[39m real mode inserts only the handoff row[33m 451[2mms[22m[39m
+   [32m✓[39m writeRuntimePatch · guard 行 (P5-02 决策 6/13) [2m(1)[22m
+     [33m[2m✓[22m[39m 生成 id: p2sdk-fs-guard 行：roots 五组清单，全部来自 computeRoots 单源[33m 444[2mms[22m[39m
+   [32m✓[39m writeRuntimePatch · shell-ask 行 (P5-21 决策 16a) [2m(2)[22m
+     [33m[2m✓[22m[39m 生成 id: p2sdk-shell-ask 行：handoff + 从数据根推导的 policyStatePaths（无独立 env）[33m 437[2mms[22m[39m
+     [33m[2m✓[22m[39m PBOTS_DATA_DIR 未设时 policyStatePaths 覆盖两个缺省数据根[33m 441[2mms[22m[39m
+   [32m✓[39m writeRuntimePatch · sandbox 行 (P5-01 决策 4) [2m(1)[22m
+     [33m[2m✓[22m[39m 生成 id: sandbox 行：python3 -I wrapper、遮蔽/挂回清单、bwrap: 失败签名[33m 438[2mms[22m[39m
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · batching & triggers (决策 15/27③)[2m > [22m[2mmain bot turn/end aborted withdraws pending pbots-report messages and does NOT flush
+[22m[39m[pbots-orchestration] withdrew 1 pending report message(s) after an aborted main-bot turn
+
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · guards[2m > [22m[2mcrashAt exits at the three injected points (P6-09 f5 同法)
+[22m[39m[pbots-orchestration] boot reconcile failed: exit
+
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · guards[2m > [22m[2mcrashAt exits at the three injected points (P6-09 f5 同法)
+[22m[39m[pbots-orchestration] boot reconcile failed: exit
+
+[90mstderr[2m | tests/unit/orchestration-report.test.ts[2m > [22m[2mReporter · guards[2m > [22m[2mcrashAt exits at the three injected points (P6-09 f5 同法)
+[22m[39m[pbots-orchestration] boot reconcile failed: exit
+
+ [32m✓[39m tests/unit/orchestration-report.test.ts [2m([22m[2m20 tests[22m[2m)[22m[33m 2862[2mms[22m[39m
+   [32m✓[39m Reporter · batching & triggers (决策 15/27③) [2m(6)[22m
+     [33m[2m✓[22m[39m busy main bot holds reports; its turn/end flushes them as ONE batched message[33m 620[2mms[22m[39m
+     [33m[2m✓[22m[39m idle main bot: first item opens a ≤2s window that collects the second (决策 15)[33m 318[2mms[22m[39m
+     [33m[2m✓[22m[39m decision 16: a pending user message holds delivery; the report goes after that turn ends[33m 617[2mms[22m[39m
+     [33m[2m✓[22m[39m main bot turn/end aborted withdraws pending pbots-report messages and does NOT flush[33m 755[2mms[22m[39m
+   [32m✓[39m Reporter · guards [2m(3)[22m
+     [33m[2m✓[22m[39m no main bot / unreadable identity → nothing is ever sent (fail closed)[33m 451[2mms[22m[39m
+[90mstderr[2m | tests/unit/p7-host-recovery.test.ts[2m > [22m[2mP7-F3 existing Reporter lifecycle recovery barrier[2m > [22m[2mwithdraw checks the captured lease for every remove and stop cancels retry timers
+[22m[39m[pbots-orchestration] withdrew 1 pending report message(s) after an aborted main-bot turn
+
+[90mstderr[2m | tests/unit/p7-host-recovery.test.ts[2m > [22m[2mP7-F3 existing Reporter lifecycle recovery barrier[2m > [22m[2mchanging generation during agentOf cannot wake an old pending report
+[22m[39m[pbots-orchestration] wake main/pbots-report:old failed: This operation was aborted
+
+ [32m✓[39m tests/unit/p7-host-recovery.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 2508[2mms[22m[39m
+   [32m✓[39m P7-F3 real Loader control stream [2m(1)[22m
+     [33m[2m✓[22m[39m binds native stream and unary RPC to the same Peer; reconnect is not process restart[33m 2356[2mms[22m[39m
+ [32m✓[39m tests/unit/orchestration-foundation.test.ts [2m([22m[2m58 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+ [32m✓[39m tests/unit/p7-admin-channel.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m tests/unit/p7-authority.test.ts [2m([22m[2m47 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m193 passed[39m[22m[90m (193)[39m
+[2m   Start at [22m 09:56:18
+[2m   Duration [22m 9.12s[2m (tests 96%, transform 2%, import 2%)[22m
+

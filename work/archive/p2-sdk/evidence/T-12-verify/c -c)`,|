@@ -1,0 +1,1 @@
+    `echo DIRECT_READ_BYTES=$(cat ${cfg.handoff}/launch-token 2>/dev/null 

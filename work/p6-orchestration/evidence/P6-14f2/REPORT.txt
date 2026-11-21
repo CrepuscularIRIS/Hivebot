@@ -1,0 +1,91 @@
+P6-14.f2 交付报告（builder：GLM 5.3）
+分支 feat/P6-14f2（worktree /tmp/bot-wt/P6-14f2，基点 main@09f627b）
+输入：work/p6-orchestration/REVIEW-P6-14-C.md（C-1/C-2 两 major）+ A-minor（REVIEW-P6-14-A）
+
+一、修法（app/sdk/src/orchestration/envelope.mjs 为主）
+
+C-1 身份 fail closed（REVIEW-P6-14-C major ①）
+- 新增 resolveWorkerStatus(id, dir)：三态 'worker' | 'main' | 'unknown'。
+  文件缺失 / 坏 JSON / bots 非对象 → unknown；记录在册且 createdBy 非空 → worker；
+  其余（含 createdBy 空——CONTRACT v1.5 旧写入器抹除的已知降级）→ main。
+- registerEnvelope（pre-execute）与 registerWorkerRestriction（restrict 层）的
+  判定从 readWorkerIds().includes(id) 改为 isEnveloped(agent)：
+  worker / unknown（fail closed，宁可误伤）/ worker 直接子代（见 C-2）。
+- slots.readWorkerIds 不动：容量收养保留「读不到=没有可收养」的功能语义，
+  安全判定与功能判定分道（envelope 不再 import readWorkerIds）。
+- 主 bot 正常路径（文件健康且无 createdBy）不受影响；文件坏窗口内建立的会话
+  挂上的 restrict 不自动撤销（恢复后重建会话即恢复全工具表，ponytail 上限，
+  envelope.mjs 注释有说明）。
+
+C-2 改名绕过 + 不继承（REVIEW-P6-14-C major ②）
+- 创建点谱系拒绝：registerWorkerRestriction 新挂 session/created 监听——
+  header.origin === 'subagent' 且 parentSession 判定非 main（含 unknown fail
+  closed）→ 同步抛 pbots/forbidden。上游 dsh-session/src/index.ts:1297-1312
+  「Synchronous throws ... veto publication」：session 发布被否决、attach 回滚，
+  改名委派工具的调用以 isError 结束、子代理无 agent 无 turn。
+  （scope/index.ts:35-37：宿主 ctx 的 listener 收得到 session-scoped 事件。）
+- 执行层谱系（纵深）：isEnveloped 覆盖 worker 直接子代——pre-execute 拒其
+  job_list / 再委派；maybeRestrict 对 bootstrap list 里已 live 的 worker 子代
+  挂 restrict。孙代由创建点在第一环掐断（父建不出来），envelope.mjs 有
+  ponytail 注释说明只看直接父的理由。
+- session/created veto 后持久层可能留一条孤儿行：无 agent、无 turn、resume
+  会再次被 veto（live ⑧ 逐条验证不可复活）。探针量纲见下。
+
+A-minor（REVIEW-P6-14-A minor，哨兵盲区）
+- live ⑧（新增 describe，独立 runtime）：overlay 抠 approval.yml 的
+  preset-standard 段插入第二个 tool-subagent 实例（toolName: delegate_v2，
+  旧名 subagent 保留）= 「升级新增入口且留旧名」。断言主 bot/worker 都能看见
+  delegate_v2（入口真实在册、盲区实存，非 UNKNOWN_TOOL 假绿），worker 同回合
+  新旧名并测：delegate_v2 创建点拒（pbots/forbidden + denied at creation）、
+  subagent/job_list 名单拒、无 started subagent、孤儿 ≤1 且不可复活。
+
+二、测试与证据（全部在 worktree 代码上跑，临时 HOME=/tmp/bot-p614f2-*）
+
+单测 tests/unit/orchestration-envelope.test.ts：32/32（25 原有中 23 不动、
+  2 个按 fail closed 翻转预期——③⑤原断言「不可读放行」正是 C-1 要修的行为，
+  REVIEW 也点名「25 绿不能反证 C-1」；新增 9：三态 ×3、fail closed 格、谱系
+  执行层格、创建点拒绝格 ×2、bootstrap 谱系格）。
+live tests/unit/orchestration-envelope-live.test.ts：8/8（原 7 格不降 + ⑧）。
+拒绝面复跑（faults.mjs 改造后语义，脚本在 evidence/P6-14f2/faults.mjs）：
+  throw/missing/definitions-throw 三种注入故障各 19 worker calls 全 deny、
+  晚到 schedule_create 仍拒、mainBotId collision 仍拒；
+  身份四形状：missing/bad-json/no-bots → deny（fail closed），
+  empty-createdBy → passed（记录在册确认非 worker， CONTRACT 已知降级）。
+review C 两探针复跑（probe.mjs 指到 worktree，断言改修复后语义）：
+  normal：job_list deny、session 数不变（基线不降）。
+  missing（C-1）：subagent 调用 isError（pbots/forbidden ... tool "subagent"
+    denied）——身份文件坏仍拦；before=1 after=1，0 子会话，childEvents 0。
+  rename（C-2）：rvw_delegate 调用 isError（child session of ... denied at
+    creation）——创建点谱系拒绝；childEvents 0（子代理未启动，job_list 无从
+    调用）；session/list 1→2 为持久孤儿行（无 agent 无 turn，resume 被 veto，
+    live ⑧ 验证）。「0 子代理创建」的实质判据（无 started subagent、子代理
+    零执行）两探针均满足。
+相邻回归（f2 改动波及的 live 测试补初始 bots.json——测试原本依赖「读不到
+  放行」旧口径，与 P6-10 已有的「身份未知 fail closed」产品语义同向）：
+  create-live 11/11（⑥ 身份损坏用例仍绿，另补 teardown 恢复健康文件：⑥ 留下
+  的坏文件会让 ⑫ 在 fail-closed 窗口建会话而工具表收窄）、send-live 4/4、
+  stop-live 5/5、report-live 14/14（crash suite 补首跑初始文件）、
+  foundation 58/58（barrel 导出清单 +2）、send/stop/report 单测 81/81。
+
+三、改动文件（9）
+app/sdk/src/orchestration/envelope.mjs（核心）
+app/sdk/src/orchestration/index.mjs（barrel +2 导出）
+app/sdk/tests/unit/orchestration-envelope.test.ts
+app/sdk/tests/unit/orchestration-envelope-live.test.ts
+app/sdk/tests/unit/orchestration-foundation.test.ts
+app/sdk/tests/unit/orchestration-create-live.test.ts
+app/sdk/tests/unit/orchestration-send-live.test.ts
+app/sdk/tests/unit/orchestration-stop-live.test.ts
+app/sdk/tests/unit/orchestration-report-live.test.ts
+
+四、发现的新问题（交派发者裁量，未扩范围）
+1. fail-closed 窗口（bots.json 坏/缺）内建立的会话，restrict 不随文件恢复
+   撤销，需重建会话恢复全工具表——已在注释声明为 ponytail 上限；若产品上
+   不可接受，可加「文件恢复后重判」的小任务。
+2. session/created veto 后持久层留孤儿行（无 agent 无 turn 不可复活）；
+   若嫌脏可立「拒绝时顺手清理持久 session」任务（需要上游删除 API，未查）。
+3. 主 bot 首启顺序依赖「bots.json 先于首个会话建立」；生产 main 启动即写
+   （P6-10 语义），但若 main 有「先建会话后写身份」的路径，主 bot 会被
+   fail-closed 误伤——值得在 P6-14b 开放闸前对 main 侧启动顺序做一次核对。
+
+待 verifier 验收。

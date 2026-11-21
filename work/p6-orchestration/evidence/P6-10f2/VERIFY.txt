@@ -1,0 +1,58 @@
+verdict: FAIL
+commit: 132edd7bea6f0ae7981540c5f43f9d915a7a678f
+任务：P6-10.f2；分支 feat/P6-10f2；worktree /tmp/bot-wt/P6-10f2；基点 29c6b1a。
+报告按当前 verifier 禁写报告 .md 的运行约束落在用户指定 txt 兜底路径；由派发者转正。
+
+证据根目录 E=/home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10f2/。
+所有测试独立运行，未采用 builder 既有日志。无产品代码改动，最终 HEAD 未变、工作树干净。
+仅定向单测/Loader/故障探针，无全量回归、无 e2e。本批改动是后台通道/存储/SDK，不涉及 UI 视觉交互，故没有浏览器截图；ui 168 是 main/m3 与 shell 单测，不冒充真实浏览器证据。
+
+| 验收项（10 项逐条） | 结果 | 证据（命令见后文） |
+| A1 null/非对象 item 不崩，后续合法请求仍答 | PASS | vfy-probes.log；vfy-extra.log：严格子进程 null-child.cjs exit=0，dropped=2，later-request-served=1 |
+| A2 {error:null} ×3 不耗尽容量 | PASS | vfy-extra.mjs/log：每次 code=main-unavailable，details.reason=invalid-response，outcome=unknown；每次 used=0；第 4 个 create 正常应答并成功返回 w（不只验证“不是 capacity”） |
+| A3 respond 非法 JSON，无 unhandled rejection | PASS | vfy-extra.log：子进程显式 node --unhandled-rejections=strict rpc-child.cjs exit=0，respond-failed 日志恰一条；vfy-probes.log 原探针同步通过 |
+| B-1 create 占位 + 人工回合收养归并 | PASS | vfy-probes.log：afterAllEnded=0、holds=[]；vfy-sdk-95.log 同场景单测含中间 used=2→1→0 断言 |
+| B-2 followup 后 flush 失败不提前释放 | PASS | vfy-probes.log：usedAfterFail=1、newCreateAllowed=false、hold=turn；vfy-sdk-95.log 单测 reserve=false 后只靠真实 turn/end 归还至 0（原 probes.mjs 中存在额外 release，故不单靠其最终归零作证） |
+| B-3 换主脏读窗口不创建会话 | PASS | vfy-b3.log：2/2；真实 BotsMetaStore、fs.rename 门控失败回滚，确认内存 B / 磁盘 A 窗口，随后 session/create 调用=0、bots 无残留。断言位于 app/ui/tests/unit/m3/p610f2.test.ts:65-79 |
+| C-1 内部路径脱敏，补验 details | FAIL（原 ENOTDIR PASS；details/warn 残留） | vfy-extra.log：真实 createWorkerBot 在普通文件 dataDir 上 ENOTDIR，message 仅 <path>/workspaces/session-uuid、details={}；但 session/create 失败的嵌套 details.path/cause 原样包含绝对路径；rename 失败的 warn 经真实工具 output.render 仍包含绝对路径。只证实路径泄漏，未证实凭证泄漏 |
+| D-2 首连去重与关闭回收 | PASS | vfy-probes.log：streams=1、active-after-close=0；ui 相关测试通过 |
+| D-3 超时回收未消费载荷 | PASS | vfy-probes.log：20 个超时请求（每个 prompt 100000 字符）后 pending=0、queued=0 |
+| D-⑤ 恢复六条历史用例且保留 P6-10 增量 | PASS | vfy-history.mjs/log：对照 git show 2746c31 原文件和 29c6b1a 基线；六条均恢复，基线 literal titles 35/35 保留；实际执行 foundation=56、delivery=2、create=37，合计 95。foundation 的 50→56 加 delivery 2=58；非仅按源码 it 数估计 |
+
+附加门槛：
+- 原探针 8/8 PASS（vfy-probes.log，exit 0）。注意“探针通过”仅表示其既有断言成立，不覆盖后来补出的 details/warn 泄漏。
+- SDK 定向 95/95 PASS（vfy-sdk-95.log，3 files，exit 0）。
+- create-live 11/11 PASS（vfy-live-11.log，1 file，exit 0）；另有首次组合执行 106/106（vfy-sdk.log）。
+- UI 定向 168/168 PASS（vfy-ui.log，19 files，exit 0）。
+- diff 11 文件；send.*/index.mjs/slots.mjs 均未改。slots 对外接口完全相同（vfy-history.log；git diff 29c6b1a..HEAD -- slots.mjs 空）。
+- 所有 HOME 为 /tmp/bot-p610f2-vfy/home 或 /tmp/bot-p610f2-rerun/home；额外探针的数据目录均从临时根派生，不写真实 HOME。
+- Loader 的崩溃/恢复由现有测试管理其自身 SDK 子进程；没有 shell 手工 kill、pkill、killall 或系统服务操作。末尾 bot-reap --dry-run --match p610f2 无匹配输出、exit 0（vfy-hygiene.log）。
+
+六条恢复用例（均在历史 2746c31 中存在，当前逐名执行成功）：
+1. crash log (claim + approval/asked, no turn/end, idle) → only the end key, the dead ask is not delivered
+2. live ask regression: same crash shape but the worker is busy → the ask is still due (L-9 f1 回归)
+3. idle target: two concurrent same-id sends → exactly one followup, the other skipped
+4. busy target (host rejects duplicate pending id): no throw, exactly one followup, one skipped
+5. a failed in-flight send is retried by the concurrent caller, never falsely reported skipped
+6. different agents / different ids do not share the reservation
+
+独立执行命令及输出尾部：
+1. cd /tmp/bot-wt/P6-10f2/app/sdk && HOME=/tmp/bot-p610f2-vfy/home pnpm exec vitest run --maxWorkers=1 --reporter=verbose tests/unit/orchestration-create.test.ts tests/unit/orchestration-foundation.test.ts tests/unit/orchestration-foundation-delivery.test.ts
+   → Test Files 3 passed (3); Tests 95 passed (95); exit=0；日志 E/vfy-sdk-95.log。
+2. cd /tmp/bot-wt/P6-10f2/app/sdk && HOME=/tmp/bot-p610f2-vfy/home pnpm exec vitest run --maxWorkers=1 --reporter=verbose tests/unit/orchestration-create-live.test.ts
+   → Test Files 1 passed (1); Tests 11 passed (11); exit=0；日志 E/vfy-live-11.log。
+3. cd /tmp/bot-wt/P6-10f2/app/ui && HOME=/tmp/bot-p610f2-vfy/home pnpm exec vitest run --maxWorkers=1 tests/unit/m3 tests/unit/shell
+   → Test Files 19 passed (19); Tests 168 passed (168); exit=0；日志 E/vfy-ui.log。
+4. HOME=/tmp/bot-p610f2-rerun/home node --unhandled-rejections=strict /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10f2/probes.mjs
+   → SUMMARY 8 probes passed；exit=0；日志 E/vfy-probes.log。
+5. HOME=/tmp/bot-p610f2-vfy/home node --unhandled-rejections=strict /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10f2/vfy-extra.mjs
+   → A2 三条 used=0、fourth create succeeds；STRICT 两个子进程 exit=0；真实 ENOTDIR 脱敏；DETAILS_UNREDACTED、MODEL_VISIBLE_WARN_UNREDACTED；exit=0（该脚本断言泄漏存在以确认问题，不代表产品 PASS）；日志 E/vfy-extra.log。
+6. HOME=/tmp/bot-p610f2-vfy/home node /home/lingxufeng/bot/work/p6-orchestration/evidence/P6-10f2/vfy-history.mjs
+   → foundation 56、delivery 2、create 37；11 files；HEAD 132edd7...；exit=0；日志 E/vfy-history.log。
+7. cd /tmp/bot-wt/P6-10f2/app/ui && HOME=/tmp/bot-p610f2-vfy/home pnpm exec vitest run --maxWorkers=1 --reporter=verbose tests/unit/m3/p610f2.test.ts
+   → 2 passed；exit=0；日志 E/vfy-b3.log。
+重跑探针前 mkdir -p /tmp/bot-p610f2-rerun/home /tmp/bot-p610f2-vfy/home，并先跑 probes.mjs（生成严格模式子进程所用的临时 bundle）。
+
+新问题（每条一行，可直接成为修复任务）：
+- [FIX] rename 失败的成功响应 warn 绕过路径脱敏并进入模型工具输出 | 复现：运行 E/vfy-extra.mjs 的最后一段，真实 createWorkerBot 的 session/create 成功、session/rename 返回含临时绝对路径的 storage 错误；CreateChannel→create_bot→output.render 后仍含 /tmp/bot-p610f2-vfy/extra-3/private-data/sessions/worker.json | 疑似位置：app/sdk/src/orchestration/main-channel.mjs:162、app/sdk/src/orchestration/create.mjs:170-171、app/ui/main/m3-meta/orchestrate.ts:381 | 严重度 minor
+- [FIX] session/create 失败的嵌套 details 未脱敏 | 复现：运行 E/vfy-extra.mjs 的 DETAILS_UNREDACTED 段，dsh 的错误 details.path 与 nested.cause 携带临时绝对路径，真实 main 包装并经 CreateChannel 后 RemoteError.details 仍保留原路径；message 已正确脱敏。本探针未证明 details 被当前 toolErrorResult 呈现给模型，不将其冒报为模型文本泄漏 | 疑似位置：app/sdk/src/orchestration/main-channel.mjs:155、app/ui/main/m3-meta/orchestrate.ts:373 | 严重度 minor

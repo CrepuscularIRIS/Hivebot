@@ -1,0 +1,20 @@
+PASS D9-1 credentials/getToken 拒
+PASS D9-2 account/signIn 拒
+PASS D9-3a commands/execute + args.command=/permission… 拒
+PASS D9-3b commands/execute + args.request.command=/permission… 拒
+PASS D9-3c commands/execute + args[0]=/permission… 拒
+PASS D9-3d commands/execute + ls -la 放行（不误伤）
+PASS D9-4a configForms/write 拒
+PASS D9-4b configForms/read 拒（比 D9『写』更严，安全方向）
+PASS D9-5 /permission/grant 方法行拒
+PASS D9-6 session/prompt 不受 D9 影响
+PASS D9-7 Credentials/getToken（大小写绕过尝试）拒
+PASS D9-8 credentialsFoo/x 也拒（前缀匹配偏严，安全方向）
+PASS 坏路径A 并发双答同 eventId：恰一个透传（r1.ok=true, r2.ok=false）
+PASS 坏路径A 未透传的一侧 code=pbots/forbidden
+PASS 坏路径B dsh rpc reject 异常向上传播（threw=socket gone）
+PASS 坏路径C installBundle args=null → invalid-args
+PASS raw details 同一引用（r.error.details === 上游对象）
+PASS U-15③口径 错 clientId → pbots/forbidden
+
+18/18 PASS

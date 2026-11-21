@@ -1,0 +1,1077 @@
+# appearance\ttoken\tvalue_0781_palette\tvalue_110_derived\tstatus
+# status: changed/same/added = sand 求值体系（本表求值）；chrome-static = palette 的 chrome 层静态 token
+#（0.78.1 index css 来源，1.1.0 同层 diff 见 harness/out/tokens.tsv，不在本求值范围）。
+appearance	token	value_0781_palette	value_110_derived	status
+light	--cursor-accent	#1680f3	#1680f3	same
+light	--cursor-accent-fill	#1680f3	#1680f3	same
+light	--cursor-accent-foreground-bright	#1680f3	#1680f3	same
+light	--cursor-added	#10ab61	#10ab61	same
+light	--cursor-added-foreground-bright	#10ab61	#10ab61	same
+light	--cursor-base	#1c1c1c	#1c1c1c	same
+light	--cursor-blue	#1680f3	#1680f3	same
+light	--cursor-blue-fill	#1680f3	#1680f3	same
+light	--cursor-blue-fill-bright	#1e86fc	#1e86fc	same
+light	--cursor-blue-fill-hover	#126fd4	#126fd4	same
+light	--cursor-blue-fill-pressed	#0d5eb6	#0d5eb6	same
+light	--cursor-blue-foreground	#0b6dd3	#0b6dd3	same
+light	--cursor-blue-foreground-bright	#1680f3	#1680f3	same
+light	--cursor-blue-foreground-hover	#085ab2	#085ab2	same
+light	--cursor-brand	#f54e00	#f54e00	same
+light	--cursor-brown	#9d6937	#9d6937	same
+light	--cursor-brown-fill	#9d6937	#9d6937	same
+light	--cursor-brown-fill-bright	#a06b39	#a06b39	same
+light	--cursor-brown-fill-hover	#86592e	#86592e	same
+light	--cursor-brown-fill-pressed	#714a25	#714a25	same
+light	--cursor-brown-foreground	#996b42	#996b42	same
+light	--cursor-brown-foreground-bright	#9d6937	#9d6937	same
+light	--cursor-brown-foreground-hover	#835a34	#835a34	same
+light	--cursor-chrome	#fcfcfc	#fcfcfc	same
+light	--cursor-cyan	#10a693	#10a693	same
+light	--cursor-cyan-fill	#10a693	#10a693	same
+light	--cursor-cyan-fill-bright	#13b7a2	#13b7a2	same
+light	--cursor-cyan-fill-hover	#0d9381	#0d9381	same
+light	--cursor-cyan-fill-pressed	#0a7f70	#0a7f70	same
+light	--cursor-cyan-foreground	#008273	#008273	same
+light	--cursor-cyan-foreground-bright	#10a693	#10a693	same
+light	--cursor-cyan-foreground-hover	#007062	#007062	same
+light	--cursor-danger	#e72e3b	#e72e3b	same
+light	--cursor-danger-fill	#e72e3b	#e72e3b	same
+light	--cursor-danger-fill-bright	#fb2b3e	#fb2b3e	same
+light	--cursor-danger-fill-hover	#c82532	#c82532	same
+light	--cursor-danger-fill-pressed		#ab1e29	added
+light	--cursor-danger-foreground	#cd2834	#cd2834	same
+light	--cursor-danger-foreground-bright	#e72e3b	#e72e3b	same
+light	--cursor-danger-foreground-hover		#ad1f2a	added
+light	--cursor-elevated	#ffffff	#ffffff	same
+light	--cursor-focus	#1e86fc	#1e86fc	same
+light	--cursor-green	#10ab61	#10ab61	same
+light	--cursor-green-fill	#10ab61	#10ab61	same
+light	--cursor-green-fill-bright	#14c16f	#14c16f	same
+light	--cursor-green-fill-hover	#0d9655	#0d9655	same
+light	--cursor-green-fill-pressed	#098249	#098249	same
+light	--cursor-green-foreground	#00854a	#00854a	same
+light	--cursor-green-foreground-bright	#10ab61	#10ab61	same
+light	--cursor-green-foreground-hover	#00723e	#00723e	same
+light	--cursor-magenta	#e52f8b	#e52f8b	same
+light	--cursor-magenta-fill	#e52f8b	#e52f8b	same
+light	--cursor-magenta-fill-bright	#f93498	#f93498	same
+light	--cursor-magenta-fill-hover	#c82779	#c82779	same
+light	--cursor-magenta-fill-pressed	#ab2067	#ab2067	same
+light	--cursor-magenta-foreground	#c62378	#c62378	same
+light	--cursor-magenta-foreground-bright	#e52f8b	#e52f8b	same
+light	--cursor-magenta-foreground-hover	#a71c63	#a71c63	same
+light	--cursor-modified	#da830e	#da830e	same
+light	--cursor-modified-foreground-bright	#da830e	#da830e	same
+light	--cursor-on-primary	#ffffff	#ffffff	same
+light	--cursor-orange	#ee620d	#ee620d	same
+light	--cursor-orange-fill	#ee620d	#ee620d	same
+light	--cursor-orange-fill-bright	#fd690f	#fd690f	same
+light	--cursor-orange-fill-hover	#d2550a	#d2550a	same
+light	--cursor-orange-fill-pressed	#b64907	#b64907	same
+light	--cursor-orange-foreground	#c14c00	#c14c00	same
+light	--cursor-orange-foreground-bright	#ee620d	#ee620d	same
+light	--cursor-orange-foreground-hover	#a23f00	#a23f00	same
+light	--cursor-pane	#ffffff	#ffffff	same
+light	--cursor-purple	#8351e4	#8351e4	same
+light	--cursor-purple-fill	#8351e4	#8351e4	same
+light	--cursor-purple-fill-bright	#8f59f9	#8f59f9	same
+light	--cursor-purple-fill-hover	#7442d1	#7442d1	same
+light	--cursor-purple-fill-pressed	#6539b7	#6539b7	same
+light	--cursor-purple-foreground	#7547d0	#7547d0	same
+light	--cursor-purple-foreground-bright	#8351e4	#8351e4	same
+light	--cursor-purple-foreground-hover	#623aae	#623aae	same
+light	--cursor-red	#e72e3b	#e72e3b	same
+light	--cursor-red-fill	#e72e3b	#e72e3b	same
+light	--cursor-red-fill-bright	#fb2b3e	#fb2b3e	same
+light	--cursor-red-fill-hover	#c82532	#c82532	same
+light	--cursor-red-fill-pressed	#ab1e29	#ab1e29	same
+light	--cursor-red-foreground	#cd2834	#cd2834	same
+light	--cursor-red-foreground-bright	#e72e3b	#e72e3b	same
+light	--cursor-red-foreground-hover	#ad1f2a	#ad1f2a	same
+light	--cursor-removed	#e72e3b	#e72e3b	same
+light	--cursor-removed-foreground-bright	#e72e3b	#e72e3b	same
+light	--cursor-sidebar	#f5f5f5	#f5f5f5	same
+light	--cursor-success	#10ab61	#10ab61	same
+light	--cursor-success-fill	#10ab61	#10ab61	same
+light	--cursor-success-fill-bright	#14c16f	#14c16f	same
+light	--cursor-success-fill-hover	#0d9655	#0d9655	same
+light	--cursor-success-fill-pressed		#098249	added
+light	--cursor-success-foreground	#00854a	#00854a	same
+light	--cursor-success-foreground-bright	#10ab61	#10ab61	same
+light	--cursor-success-foreground-hover		#00723e	added
+light	--cursor-syntax-attribute	oklch(0.191 0 0 / 0.922)		chrome-static
+light	--cursor-syntax-background	oklch(0.991 0 0)		chrome-static
+light	--cursor-syntax-class	oklch(0.488 0.102 243.616)		chrome-static
+light	--cursor-syntax-comment	oklch(0.191 0 0 / 0.678)		chrome-static
+light	--cursor-syntax-constant	oklch(0.488 0.102 243.616)		chrome-static
+light	--cursor-syntax-constant-variable	oklch(0.488 0.102 243.616)		chrome-static
+light	--cursor-syntax-foreground	oklch(0.191 0 0 / 0.922)		chrome-static
+light	--cursor-syntax-function	oklch(0.662 0.144 39.487)		chrome-static
+light	--cursor-syntax-keyword	oklch(0.488 0.195 13.082)		chrome-static
+light	--cursor-syntax-language-variable	oklch(0.488 0.195 13.082)		chrome-static
+light	--cursor-syntax-link	oklch(0.488 0.102 243.616)		chrome-static
+light	--cursor-syntax-number	oklch(0.567 0.168 346.061)		chrome-static
+light	--cursor-syntax-parameter	oklch(0.191 0 0 / 0.922)		chrome-static
+light	--cursor-syntax-property	oklch(0.191 0 0 / 0.922)		chrome-static
+light	--cursor-syntax-punctuation	oklch(0.191 0 0 / 0.922)		chrome-static
+light	--cursor-syntax-string	oklch(0.7 0.095 290.796)		chrome-static
+light	--cursor-syntax-string-expression	oklch(0.7 0.095 290.796)		chrome-static
+light	--cursor-syntax-tag	oklch(0.488 0.195 13.082)		chrome-static
+light	--cursor-syntax-type	oklch(0.488 0.102 243.616)		chrome-static
+light	--cursor-syntax-variable	oklch(0.191 0 0 / 0.922)		chrome-static
+light	--cursor-terminal-ansi-black	#1c1c1c	#1c1c1c	same
+light	--cursor-terminal-ansi-blue	#0b6dd3	#0b6dd3	same
+light	--cursor-terminal-ansi-bright-black	#575757	#1c1c1cbd	changed
+light	--cursor-terminal-ansi-bright-blue	#1e86fc	#1e86fc	same
+light	--cursor-terminal-ansi-bright-cyan	#13b7a2	#13b7a2	same
+light	--cursor-terminal-ansi-bright-green	#14c16f	#14c16f	same
+light	--cursor-terminal-ansi-bright-magenta	#f93498	#f93498	same
+light	--cursor-terminal-ansi-bright-red	#fb2b3e	#fb2b3e	same
+light	--cursor-terminal-ansi-bright-white	#ffffff	#ffffff	same
+light	--cursor-terminal-ansi-bright-yellow	#f59312	#f59312	same
+light	--cursor-terminal-ansi-cyan	#008273	#008273	same
+light	--cursor-terminal-ansi-green	#00854a	#00854a	same
+light	--cursor-terminal-ansi-magenta	#c62378	#c62378	same
+light	--cursor-terminal-ansi-red	#cd2834	#cd2834	same
+light	--cursor-terminal-ansi-white	#ffffff	#ffffff	same
+light	--cursor-terminal-ansi-yellow	#aa6300	#aa6300	same
+light	--cursor-untracked	#10a693	#10a693	same
+light	--cursor-untracked-foreground-bright	#10a693	#10a693	same
+light	--cursor-warn	#da830e	#da830e	same
+light	--cursor-warn-fill	#da830e	#da830e	same
+light	--cursor-warn-fill-bright	#f59312	#f59312	same
+light	--cursor-warn-fill-hover	#c2730b	#c2730b	same
+light	--cursor-warn-fill-pressed		#aa6409	added
+light	--cursor-warn-foreground	#aa6300	#aa6300	same
+light	--cursor-warn-foreground-bright	#da830e	#da830e	same
+light	--cursor-warn-foreground-hover		#905300	added
+light	--cursor-yellow	#da830e	#da830e	same
+light	--cursor-yellow-fill	#da830e	#da830e	same
+light	--cursor-yellow-fill-bright	#f59312	#f59312	same
+light	--cursor-yellow-fill-hover	#c2730b	#c2730b	same
+light	--cursor-yellow-fill-pressed	#aa6409	#aa6409	same
+light	--cursor-yellow-foreground	#aa6300	#aa6300	same
+light	--cursor-yellow-foreground-bright	#da830e	#da830e	same
+light	--cursor-yellow-foreground-hover	#905300	#905300	same
+light	--sand-bg-accent-bright	#1e86fc	#1e86fc	same
+light	--sand-bg-accent-primary	#1680f3	#1680f3	same
+light	--sand-bg-accent-primary-disabled	#1680f32b	#1680f32b	same
+light	--sand-bg-accent-primary-hover	#126fd4	#126fd4	same
+light	--sand-bg-accent-secondary	#1e86fc17	#1e86fc17	same
+light	--sand-bg-accent-secondary-disabled	#1e86fc10	#1e86fc10	same
+light	--sand-bg-accent-secondary-hover	#1e86fc2b	#1e86fc2b	same
+light	--sand-bg-active	#1c1c1c14	#1c1c1c14	same
+light	--sand-bg-blue-bright	#1e86fc	#1e86fc	same
+light	--sand-bg-blue-primary	#1680f3	#1680f3	same
+light	--sand-bg-blue-primary-disabled	#1680f32b	#1680f32b	same
+light	--sand-bg-blue-primary-hover	#126fd4	#126fd4	same
+light	--sand-bg-blue-secondary	#1e86fc17	#1e86fc17	same
+light	--sand-bg-blue-secondary-disabled	#1e86fc10	#1e86fc10	same
+light	--sand-bg-blue-secondary-hover	#1e86fc2b	#1e86fc2b	same
+light	--sand-bg-brown-bright	#a06b39	#a06b39	same
+light	--sand-bg-brown-primary	#9d6937	#9d6937	same
+light	--sand-bg-brown-primary-disabled	#9d69372b	#9d69372b	same
+light	--sand-bg-brown-primary-hover	#86592e	#86592e	same
+light	--sand-bg-brown-secondary	#a06b3917	#a06b3917	same
+light	--sand-bg-brown-secondary-disabled	#a06b3910	#a06b3910	same
+light	--sand-bg-brown-secondary-hover	#a06b392b	#a06b392b	same
+light	--sand-bg-chrome	#fcfcfc	#fcfcfc	same
+light	--sand-bg-cyan-bright	#13b7a2	#13b7a2	same
+light	--sand-bg-cyan-primary	#10a693	#10a693	same
+light	--sand-bg-cyan-primary-disabled	#10a6932b	#10a6932b	same
+light	--sand-bg-cyan-primary-hover	#0d9381	#0d9381	same
+light	--sand-bg-cyan-secondary	#13b7a217	#13b7a217	same
+light	--sand-bg-cyan-secondary-disabled	#13b7a210	#13b7a210	same
+light	--sand-bg-cyan-secondary-hover	#13b7a22b	#13b7a22b	same
+light	--sand-bg-danger-bright	#fb2b3e	#fb2b3e	same
+light	--sand-bg-danger-primary	#e72e3b	#e72e3b	same
+light	--sand-bg-danger-primary-disabled	#e72e3b2b	#e72e3b2b	same
+light	--sand-bg-danger-primary-hover	#c82532	#c82532	same
+light	--sand-bg-danger-secondary	#fb2b3e17	#fb2b3e17	same
+light	--sand-bg-danger-secondary-disabled	#fb2b3e10	#fb2b3e10	same
+light	--sand-bg-danger-secondary-hover	#fb2b3e2b	#fb2b3e2b	same
+light	--sand-bg-elevated	#ffffff	#ffffff	same
+light	--sand-bg-elevated-hover	#f1f1f1	#f1f1f1	same
+light	--sand-bg-green-bright	#14c16f	#14c16f	same
+light	--sand-bg-green-primary	#10ab61	#10ab61	same
+light	--sand-bg-green-primary-disabled	#10ab612b	#10ab612b	same
+light	--sand-bg-green-primary-hover	#0d9655	#0d9655	same
+light	--sand-bg-green-secondary	#14c16f17	#14c16f17	same
+light	--sand-bg-green-secondary-disabled	#14c16f10	#14c16f10	same
+light	--sand-bg-green-secondary-hover	#14c16f2b	#14c16f2b	same
+light	--sand-bg-hover	#1c1c1c0f	#1c1c1c0f	same
+light	--sand-bg-luminous	#ffffff	#ffffff	same
+light	--sand-bg-magenta-bright	#f93498	#f93498	same
+light	--sand-bg-magenta-primary	#e52f8b	#e52f8b	same
+light	--sand-bg-magenta-primary-disabled	#e52f8b2b	#e52f8b2b	same
+light	--sand-bg-magenta-primary-hover	#c82779	#c82779	same
+light	--sand-bg-magenta-secondary	#f9349817	#f9349817	same
+light	--sand-bg-magenta-secondary-disabled	#f9349810	#f9349810	same
+light	--sand-bg-magenta-secondary-hover	#f934982b	#f934982b	same
+light	--sand-bg-orange-bright	#fd690f	#fd690f	same
+light	--sand-bg-orange-primary	#ee620d	#ee620d	same
+light	--sand-bg-orange-primary-disabled	#ee620d2b	#ee620d2b	same
+light	--sand-bg-orange-primary-hover	#d2550a	#d2550a	same
+light	--sand-bg-orange-secondary	#fd690f17	#fd690f17	same
+light	--sand-bg-orange-secondary-disabled	#fd690f10	#fd690f10	same
+light	--sand-bg-orange-secondary-hover	#fd690f2b	#fd690f2b	same
+light	--sand-bg-pane	#ffffff	#ffffff	same
+light	--sand-bg-primary	#1c1c1c	#1c1c1c	same
+light	--sand-bg-primary-disabled	#1c1c1c26	#1c1c1c26	same
+light	--sand-bg-primary-hover	#363636	#363636	same
+light	--sand-bg-purple-bright	#8f59f9	#8f59f9	same
+light	--sand-bg-purple-primary	#8351e4	#8351e4	same
+light	--sand-bg-purple-primary-disabled	#8351e42b	#8351e42b	same
+light	--sand-bg-purple-primary-hover	#7442d1	#7442d1	same
+light	--sand-bg-purple-secondary	#8f59f917	#8f59f917	same
+light	--sand-bg-purple-secondary-disabled	#8f59f910	#8f59f910	same
+light	--sand-bg-purple-secondary-hover	#8f59f92b	#8f59f92b	same
+light	--sand-bg-quaternary	#1c1c1c0a	#1c1c1c0a	same
+light	--sand-bg-red-bright	#fb2b3e	#fb2b3e	same
+light	--sand-bg-red-primary	#e72e3b	#e72e3b	same
+light	--sand-bg-red-primary-disabled	#e72e3b2b	#e72e3b2b	same
+light	--sand-bg-red-primary-hover	#c82532	#c82532	same
+light	--sand-bg-red-secondary	#fb2b3e17	#fb2b3e17	same
+light	--sand-bg-red-secondary-disabled	#fb2b3e10	#fb2b3e10	same
+light	--sand-bg-red-secondary-hover	#fb2b3e2b	#fb2b3e2b	same
+light	--sand-bg-scrim	#00000080	#00000080	same
+light	--sand-bg-scrim-heavy	#000000e5	#000000e5	same
+light	--sand-bg-secondary	#1c1c1c0f	#1c1c1c0f	same
+light	--sand-bg-secondary-active	#1c1c1c2e	#1c1c1c2e	same
+light	--sand-bg-secondary-disabled	#1c1c1c0a	#1c1c1c0a	same
+light	--sand-bg-secondary-hover	#1c1c1c1a	#1c1c1c1a	same
+light	--sand-bg-sidebar	#f5f5f5	#f5f5f5	same
+light	--sand-bg-success-bright	#14c16f	#14c16f	same
+light	--sand-bg-success-primary	#10ab61	#10ab61	same
+light	--sand-bg-success-primary-disabled	#10ab612b	#10ab612b	same
+light	--sand-bg-success-primary-hover	#0d9655	#0d9655	same
+light	--sand-bg-success-secondary	#14c16f17	#14c16f17	same
+light	--sand-bg-success-secondary-disabled	#14c16f10	#14c16f10	same
+light	--sand-bg-success-secondary-hover	#14c16f2b	#14c16f2b	same
+light	--sand-bg-tertiary	#1c1c1c0f	#1c1c1c0f	same
+light	--sand-bg-warn-bright	#f59312	#f59312	same
+light	--sand-bg-warn-primary	#da830e	#da830e	same
+light	--sand-bg-warn-primary-disabled	#da830e2b	#da830e2b	same
+light	--sand-bg-warn-primary-hover	#c2730b	#c2730b	same
+light	--sand-bg-warn-secondary	#f5931217	#f5931217	same
+light	--sand-bg-warn-secondary-disabled	#f5931210	#f5931210	same
+light	--sand-bg-warn-secondary-hover	#f593122b	#f593122b	same
+light	--sand-bg-yellow-bright	#f59312	#f59312	same
+light	--sand-bg-yellow-primary	#da830e	#da830e	same
+light	--sand-bg-yellow-primary-disabled	#da830e2b	#da830e2b	same
+light	--sand-bg-yellow-primary-hover	#c2730b	#c2730b	same
+light	--sand-bg-yellow-secondary	#f5931217	#f5931217	same
+light	--sand-bg-yellow-secondary-disabled	#f5931210	#f5931210	same
+light	--sand-bg-yellow-secondary-hover	#f593122b	#f593122b	same
+light	--sand-border-accent-primary	#1680f3	#1680f3	same
+light	--sand-border-accent-quaternary	#1e86fc2b	#1e86fc2b	same
+light	--sand-border-attachment-card	#1c1c1c14	#1c1c1c14	same
+light	--sand-border-attachment-paper	#1c1c1c1f	#1c1c1c1f	same
+light	--sand-border-blue-primary	#1680f3	#1680f3	same
+light	--sand-border-blue-quaternary	#1e86fc2b	#1e86fc2b	same
+light	--sand-border-brown-primary	#9d6937	#9d6937	same
+light	--sand-border-brown-quaternary	#a06b392b	#a06b392b	same
+light	--sand-border-chrome	#fcfcfc	#fcfcfc	same
+light	--sand-border-cyan-primary	#10a693	#10a693	same
+light	--sand-border-cyan-quaternary	#13b7a22b	#13b7a22b	same
+light	--sand-border-danger-primary	#e72e3b	#e72e3b	same
+light	--sand-border-danger-quaternary	#fb2b3e2b	#fb2b3e2b	same
+light	--sand-border-elevated	#ffffff	#ffffff	same
+light	--sand-border-focus-primary	#1e86fc	#1e86fc	same
+light	--sand-border-green-primary	#10ab61	#10ab61	same
+light	--sand-border-green-quaternary	#14c16f2b	#14c16f2b	same
+light	--sand-border-magenta-primary	#e52f8b	#e52f8b	same
+light	--sand-border-magenta-quaternary	#f934982b	#f934982b	same
+light	--sand-border-orange-primary	#ee620d	#ee620d	same
+light	--sand-border-orange-quaternary	#fd690f2b	#fd690f2b	same
+light	--sand-border-pane	#ffffff	#ffffff	same
+light	--sand-border-primary-translucent	#1c1c1c3d	#1c1c1c3d	same
+light	--sand-border-purple-primary	#8351e4	#8351e4	same
+light	--sand-border-purple-quaternary	#8f59f92b	#8f59f92b	same
+light	--sand-border-quaternary-translucent	#1c1c1c0f	#1c1c1c0f	same
+light	--sand-border-red-primary	#e72e3b	#e72e3b	same
+light	--sand-border-red-quaternary	#fb2b3e2b	#fb2b3e2b	same
+light	--sand-border-secondary-translucent	#1c1c1c1f	#1c1c1c1f	same
+light	--sand-border-success-primary	#10ab61	#10ab61	same
+light	--sand-border-success-quaternary	#14c16f2b	#14c16f2b	same
+light	--sand-border-tertiary-translucent	#1c1c1c14	#1c1c1c14	same
+light	--sand-border-warn-primary	#da830e	#da830e	same
+light	--sand-border-warn-quaternary	#f593122b	#f593122b	same
+light	--sand-border-yellow-primary	#da830e	#da830e	same
+light	--sand-border-yellow-quaternary	#f593122b	#f593122b	same
+light	--sand-dataviz-0	#1084FE		chrome-static
+light	--sand-dataviz-1	#C24E00		chrome-static
+light	--sand-dataviz-2	#9159FE		chrome-static
+light	--sand-dataviz-3	#009957		chrome-static
+light	--sand-dataviz-4	#FF309B		chrome-static
+light	--sand-dataviz-5	#C27400		chrome-static
+light	--sand-dataviz-6	#008F7E		chrome-static
+light	--sand-dataviz-7	#97683D		chrome-static
+light	--sand-dataviz-area	#1084FE24		chrome-static
+light	--sand-dataviz-diverging-0	#C21D2E		chrome-static
+light	--sand-dataviz-diverging-1	#FF8C98		chrome-static
+light	--sand-dataviz-diverging-2	#E8E8E8		chrome-static
+light	--sand-dataviz-diverging-3	#80BEFE		chrome-static
+light	--sand-dataviz-diverging-4	#0C64C1		chrome-static
+light	--sand-dataviz-negative	#C21D2E		chrome-static
+light	--sand-dataviz-other	#777777		chrome-static
+light	--sand-dataviz-sequential-0	#D6EAFF		chrome-static
+light	--sand-dataviz-sequential-1	#80BEFE		chrome-static
+light	--sand-dataviz-sequential-2	#459FFE		chrome-static
+light	--sand-dataviz-sequential-3	#1084FE		chrome-static
+light	--sand-dataviz-sequential-4	#0C64C1		chrome-static
+light	--sand-dataviz-sequential-5	#084382		chrome-static
+light	--sand-dataviz-single-series-rest	#B5D9FF		chrome-static
+light	--sand-fill-accent-bubble-user	#126fd4	#126fd4	same
+light	--sand-fill-attachment-card	#ffffff	#ffffff	same
+light	--sand-fill-attachment-ink	#1c1c1c2e	#1c1c1c2e	same
+light	--sand-fill-attachment-paper	#ffffff	#ffffff	same
+light	--sand-fill-blue-bubble-user	#126fd4	#126fd4	same
+light	--sand-fill-brown-bubble-user	#86592e	#86592e	same
+light	--sand-fill-bubble-agent	#1c1c1c0f	#1c1c1c0f	same
+light	--sand-fill-bubble-user	#1c1c1cff	#1c1c1cff	same
+light	--sand-fill-cyan-bubble-user	#0d9381	#0d9381	same
+light	--sand-fill-danger-bubble-user	#c82532	#c82532	same
+light	--sand-fill-green-bubble-user	#0d9655	#0d9655	same
+light	--sand-fill-magenta-bubble-user	#c82779	#c82779	same
+light	--sand-fill-orange-bubble-user	#d2550a	#d2550a	same
+light	--sand-fill-purple-bubble-user	#7442d1	#7442d1	same
+light	--sand-fill-red-bubble-user	#c82532	#c82532	same
+light	--sand-fill-success-bubble-user	#0d9655	#0d9655	same
+light	--sand-fill-warn-bubble-user	#c2730b	#c2730b	same
+light	--sand-fill-yellow-bubble-user	#c2730b	#c2730b	same
+light	--sand-icon-accent-primary	#1680f3	#1680f3	same
+light	--sand-icon-blue-primary	#1680f3	#1680f3	same
+light	--sand-icon-brown-primary	#9d6937	#9d6937	same
+light	--sand-icon-cyan-primary	#10a693	#10a693	same
+light	--sand-icon-danger-primary	#e72e3b	#e72e3b	same
+light	--sand-icon-green-primary	#10ab61	#10ab61	same
+light	--sand-icon-magenta-primary	#e52f8b	#e52f8b	same
+light	--sand-icon-official	#1680f3	#1680f3	same
+light	--sand-icon-orange-primary	#ee620d	#ee620d	same
+light	--sand-icon-primary	#1c1c1ceb	#1c1c1ceb	same
+light	--sand-icon-purple-primary	#8351e4	#8351e4	same
+light	--sand-icon-quaternary	#1c1c1c52	#1c1c1c52	same
+light	--sand-icon-red-primary	#e72e3b	#e72e3b	same
+light	--sand-icon-secondary	#1c1c1ca8	#1c1c1ca8	same
+light	--sand-icon-success-primary	#10ab61	#10ab61	same
+light	--sand-icon-tertiary	#1c1c1c85	#1c1c1c85	same
+light	--sand-icon-warn-primary	#da830e	#da830e	same
+light	--sand-icon-yellow-primary	#da830e	#da830e	same
+light	--sand-shadow-card	#1c1c1c09	#1c1c1c09	same
+light	--sand-shadow-control	#1c1c1c1f	#1c1c1c1f	same
+light	--sand-shadow-inline-ambient	#1c1c1c14	#1c1c1c14	same
+light	--sand-shadow-inline-key	#1c1c1c0f	#1c1c1c0f	same
+light	--sand-shadow-modal-ambient	#1c1c1c1a	#1c1c1c1a	same
+light	--sand-shadow-modal-key	#1c1c1c1a	#1c1c1c1a	same
+light	--sand-shadow-popover-ambient	#1c1c1c1a	#1c1c1c1a	same
+light	--sand-shadow-popover-key	#1c1c1c1a	#1c1c1c1a	same
+light	--sand-shadow-ring	#1c1c1c01	#1c1c1c01	same
+light	--sand-shadow-secondary	#1c1c1c12	#1c1c1c12	same
+light	--sand-shadow-window-ambient	#1c1c1c8f	#1c1c1c8f	same
+light	--sand-shadow-window-edge	#1c1c1c1a	#1c1c1c1a	same
+light	--sand-specular-primary	#ffffff8f	#ffffff8f	same
+light	--sand-specular-quaternary	#ffffff0f	#ffffff0f	same
+light	--sand-specular-secondary	#ffffff29	#ffffff29	same
+light	--sand-specular-tertiary	#ffffff1f	#ffffff1f	same
+light	--sand-text-accent-primary	#0b6dd3	#0b6dd3	same
+light	--sand-text-accent-quaternary	#1e86fc2b	#1e86fc2b	same
+light	--sand-text-blue-primary	#0b6dd3	#0b6dd3	same
+light	--sand-text-blue-quaternary	#1e86fc21	#1e86fc21	same
+light	--sand-text-brown-primary	#996b42	#996b42	same
+light	--sand-text-brown-quaternary	#a06b3921	#a06b3921	same
+light	--sand-text-cyan-primary	#008273	#008273	same
+light	--sand-text-cyan-quaternary	#13b7a221	#13b7a221	same
+light	--sand-text-danger-primary	#cd2834	#cd2834	same
+light	--sand-text-danger-quaternary	#fb2b3e2b	#fb2b3e2b	same
+light	--sand-text-green-primary	#00854a	#00854a	same
+light	--sand-text-green-quaternary	#14c16f21	#14c16f21	same
+light	--sand-text-inverted	#fcfcfc	#fcfcfc	same
+light	--sand-text-magenta-primary	#c62378	#c62378	same
+light	--sand-text-magenta-quaternary	#f9349821	#f9349821	same
+light	--sand-text-on-primary	#ffffff	#ffffff	same
+light	--sand-text-orange-primary	#c14c00	#c14c00	same
+light	--sand-text-orange-quaternary	#fd690f21	#fd690f21	same
+light	--sand-text-primary	#1c1c1c	#1c1c1c	same
+light	--sand-text-purple-primary	#7547d0	#7547d0	same
+light	--sand-text-purple-quaternary	#8f59f921	#8f59f921	same
+light	--sand-text-quaternary	#1c1c1c66	#1c1c1c66	same
+light	--sand-text-red-primary	#cd2834	#cd2834	same
+light	--sand-text-red-quaternary	#fb2b3e21	#fb2b3e21	same
+light	--sand-text-secondary	#1c1c1cad	#1c1c1cad	same
+light	--sand-text-success-primary	#00854a	#00854a	same
+light	--sand-text-success-quaternary	#14c16f21	#14c16f21	same
+light	--sand-text-tertiary	#1c1c1c8f	#1c1c1c8f	same
+light	--sand-text-warn-primary	#aa6300	#aa6300	same
+light	--sand-text-warn-quaternary	#f5931221	#f5931221	same
+light	--sand-text-yellow-primary	#aa6300	#aa6300	same
+light	--sand-text-yellow-quaternary	#f5931221	#f5931221	same
+dark	--cursor-accent	#116dd2	#116dd2	same
+dark	--cursor-accent-fill	#116dd2	#116dd2	same
+dark	--cursor-accent-foreground-bright	#116dd2	#116dd2	same
+dark	--cursor-added	#0e9f5a	#0e9f5a	same
+dark	--cursor-added-foreground-bright	#0e9f5a	#0e9f5a	same
+dark	--cursor-base	#f5f5f5	#f5f5f5	same
+dark	--cursor-blue	#116dd2	#116dd2	same
+dark	--cursor-blue-fill	#116dd2	#116dd2	same
+dark	--cursor-blue-fill-bright	#1884fc	#1884fc	same
+dark	--cursor-blue-fill-hover	#1784fb	#1784fb	same
+dark	--cursor-blue-fill-pressed	#0c58aa	#0c58aa	same
+dark	--cursor-blue-foreground	#4d9bff	#4d9bff	same
+dark	--cursor-blue-foreground-bright	#116dd2	#116dd2	same
+dark	--cursor-blue-foreground-hover	#7cb5ff	#7cb5ff	same
+dark	--cursor-brand	#f54e00	#f54e00	same
+dark	--cursor-brown	#8c5d31	#8c5d31	same
+dark	--cursor-brown-fill	#8c5d31	#8c5d31	same
+dark	--cursor-brown-fill-bright	#a16b39	#a16b39	same
+dark	--cursor-brown-fill-hover	#aa723d	#aa723d	same
+dark	--cursor-brown-fill-pressed	#704925	#704925	same
+dark	--cursor-brown-foreground	#c59e7d	#c59e7d	same
+dark	--cursor-brown-foreground-bright	#8c5d31	#8c5d31	same
+dark	--cursor-brown-foreground-hover	#ccb39d	#ccb39d	same
+dark	--cursor-chrome	#121212	#121212	same
+dark	--cursor-cyan	#0e9886	#0e9886	same
+dark	--cursor-cyan-fill	#0e9886	#0e9886	same
+dark	--cursor-cyan-fill-bright	#13b8a3	#13b8a3	same
+dark	--cursor-cyan-fill-hover	#12b39f	#12b39f	same
+dark	--cursor-cyan-fill-pressed	#097d6e	#097d6e	same
+dark	--cursor-cyan-foreground	#00b7a2	#00b7a2	same
+dark	--cursor-cyan-foreground-bright	#0e9886	#0e9886	same
+dark	--cursor-cyan-foreground-hover	#59c8b5	#59c8b5	same
+dark	--cursor-danger	#cf2b35	#cf2b35	same
+dark	--cursor-danger-fill	#cf2b35	#cf2b35	same
+dark	--cursor-danger-fill-bright	#fc2c3e	#fc2c3e	same
+dark	--cursor-danger-fill-hover	#f73643	#f73643	same
+dark	--cursor-danger-fill-pressed		#a8222a	added
+dark	--cursor-danger-foreground	#ff6463	#ff6463	same
+dark	--cursor-danger-foreground-bright	#cf2b35	#cf2b35	same
+dark	--cursor-danger-foreground-hover		#ff908b	added
+dark	--cursor-elevated	#1f1f1f	#1f1f1f	same
+dark	--cursor-focus	#1884fc	#1884fc	same
+dark	--cursor-green	#0e9f5a	#0e9f5a	same
+dark	--cursor-green-fill	#0e9f5a	#0e9f5a	same
+dark	--cursor-green-fill-bright	#14c370	#14c370	same
+dark	--cursor-green-fill-hover	#13bb6b	#13bb6b	same
+dark	--cursor-green-fill-pressed	#0a844a	#0a844a	same
+dark	--cursor-green-foreground	#00ba69	#00ba69	same
+dark	--cursor-green-foreground-bright	#0e9f5a	#0e9f5a	same
+dark	--cursor-green-foreground-hover	#29cb78	#29cb78	same
+dark	--cursor-magenta	#cf297e	#cf297e	same
+dark	--cursor-magenta-fill	#cf297e	#cf297e	same
+dark	--cursor-magenta-fill-bright	#fb3499	#fb3499	same
+dark	--cursor-magenta-fill-hover	#f63397	#f63397	same
+dark	--cursor-magenta-fill-pressed	#aa2066	#aa2066	same
+dark	--cursor-magenta-foreground	#ff55a4	#ff55a4	same
+dark	--cursor-magenta-foreground-bright	#cf297e	#cf297e	same
+dark	--cursor-magenta-foreground-hover	#ff8ab9	#ff8ab9	same
+dark	--cursor-modified	#c8770c	#c8770c	same
+dark	--cursor-modified-foreground-bright	#c8770c	#c8770c	same
+dark	--cursor-on-primary	#f5f5f5	#f5f5f5	same
+dark	--cursor-orange	#cd5309	#cd5309	same
+dark	--cursor-orange-fill	#cd5309	#cd5309	same
+dark	--cursor-orange-fill-bright	#f9670e	#f9670e	same
+dark	--cursor-orange-fill-hover	#f4650e	#f4650e	same
+dark	--cursor-orange-fill-pressed	#a84306	#a84306	same
+dark	--cursor-orange-foreground	#fe6600	#fe6600	same
+dark	--cursor-orange-foreground-bright	#cd5309	#cd5309	same
+dark	--cursor-orange-foreground-hover	#ff9464	#ff9464	same
+dark	--cursor-pane	#161616	#161616	same
+dark	--cursor-purple	#7845d7	#7845d7	same
+dark	--cursor-purple-fill	#7845d7	#7845d7	same
+dark	--cursor-purple-fill-bright	#905afb	#905afb	same
+dark	--cursor-purple-fill-hover	#8e59f8	#8e59f8	same
+dark	--cursor-purple-fill-pressed	#6036af	#6036af	same
+dark	--cursor-purple-foreground	#a582ff	#a582ff	same
+dark	--cursor-purple-foreground-bright	#7845d7	#7845d7	same
+dark	--cursor-purple-foreground-hover	#bba5ff	#bba5ff	same
+dark	--cursor-red	#cf2b35	#cf2b35	same
+dark	--cursor-red-fill	#cf2b35	#cf2b35	same
+dark	--cursor-red-fill-bright	#fc2c3e	#fc2c3e	same
+dark	--cursor-red-fill-hover	#f73643	#f73643	same
+dark	--cursor-red-fill-pressed	#a8222a	#a8222a	same
+dark	--cursor-red-foreground	#ff6463	#ff6463	same
+dark	--cursor-red-foreground-bright	#cf2b35	#cf2b35	same
+dark	--cursor-red-foreground-hover	#ff908b	#ff908b	same
+dark	--cursor-removed	#cf2b35	#cf2b35	same
+dark	--cursor-removed-foreground-bright	#cf2b35	#cf2b35	same
+dark	--cursor-sidebar	#0e0e0e	#0e0e0e	same
+dark	--cursor-success	#0e9f5a	#0e9f5a	same
+dark	--cursor-success-fill	#0e9f5a	#0e9f5a	same
+dark	--cursor-success-fill-bright	#14c370	#14c370	same
+dark	--cursor-success-fill-hover	#13bb6b	#13bb6b	same
+dark	--cursor-success-fill-pressed		#0a844a	added
+dark	--cursor-success-foreground	#00ba69	#00ba69	same
+dark	--cursor-success-foreground-bright	#0e9f5a	#0e9f5a	same
+dark	--cursor-success-foreground-hover		#29cb78	added
+dark	--cursor-syntax-attribute	var(--cursor-syntax-parameter)		chrome-static
+dark	--cursor-syntax-background	oklch(0.209 0 0)		chrome-static
+dark	--cursor-syntax-class	var(--cursor-syntax-constant)		chrome-static
+dark	--cursor-syntax-comment	oklch(0.919 0 0 / 0.369)		chrome-static
+dark	--cursor-syntax-constant	oklch(0.854 0.131 83.385)		chrome-static
+dark	--cursor-syntax-constant-variable	var(--cursor-syntax-constant)		chrome-static
+dark	--cursor-syntax-foreground	oklch(0.878 0.01 286.202)		chrome-static
+dark	--cursor-syntax-function	oklch(0.805 0.097 58.138)		chrome-static
+dark	--cursor-syntax-keyword	oklch(0.811 0.079 191.639)		chrome-static
+dark	--cursor-syntax-language-variable	var(--cursor-syntax-keyword)		chrome-static
+dark	--cursor-syntax-link	oklch(0.799 0.106 249.274)		chrome-static
+dark	--cursor-syntax-number	oklch(0.849 0.086 80.222)		chrome-static
+dark	--cursor-syntax-parameter	oklch(0.878 0.01 286.202)		chrome-static
+dark	--cursor-syntax-property	var(--cursor-syntax-foreground)		chrome-static
+dark	--cursor-syntax-punctuation	oklch(0.878 0.01 286.202)		chrome-static
+dark	--cursor-syntax-string	oklch(0.769 0.132 329.919)		chrome-static
+dark	--cursor-syntax-string-expression	oklch(0.769 0.132 329.919)		chrome-static
+dark	--cursor-syntax-tag	var(--cursor-syntax-keyword)		chrome-static
+dark	--cursor-syntax-type	var(--cursor-syntax-constant)		chrome-static
+dark	--cursor-syntax-variable	var(--cursor-syntax-foreground)		chrome-static
+dark	--cursor-terminal-ansi-black	#1f1f1f	#1f1f1f	same
+dark	--cursor-terminal-ansi-blue	#4d9bff	#4d9bff	same
+dark	--cursor-terminal-ansi-bright-black	#f8f8f8	#f5f5f5bd	changed
+dark	--cursor-terminal-ansi-bright-blue	#1884fc	#1884fc	same
+dark	--cursor-terminal-ansi-bright-cyan	#13b8a3	#13b8a3	same
+dark	--cursor-terminal-ansi-bright-green	#14c370	#14c370	same
+dark	--cursor-terminal-ansi-bright-magenta	#fb3499	#fb3499	same
+dark	--cursor-terminal-ansi-bright-red	#fc2c3e	#fc2c3e	same
+dark	--cursor-terminal-ansi-bright-white	#ffffff	#ffffff	same
+dark	--cursor-terminal-ansi-bright-yellow	#f69412	#f69412	same
+dark	--cursor-terminal-ansi-cyan	#00b7a2	#00b7a2	same
+dark	--cursor-terminal-ansi-green	#00ba69	#00ba69	same
+dark	--cursor-terminal-ansi-magenta	#ff55a4	#ff55a4	same
+dark	--cursor-terminal-ansi-red	#ff6463	#ff6463	same
+dark	--cursor-terminal-ansi-white	#f5f5f5	#f5f5f5	same
+dark	--cursor-terminal-ansi-yellow	#e28600	#e28600	same
+dark	--cursor-untracked	#0e9886	#0e9886	same
+dark	--cursor-untracked-foreground-bright	#0e9886	#0e9886	same
+dark	--cursor-warn	#c8770c	#c8770c	same
+dark	--cursor-warn-fill	#c8770c	#c8770c	same
+dark	--cursor-warn-fill-bright	#f69412	#f69412	same
+dark	--cursor-warn-fill-hover	#ea8c10	#ea8c10	same
+dark	--cursor-warn-fill-pressed		#a76308	added
+dark	--cursor-warn-foreground	#e28600	#e28600	same
+dark	--cursor-warn-foreground-bright	#c8770c	#c8770c	same
+dark	--cursor-warn-foreground-hover		#fb9500	added
+dark	--cursor-yellow	#c8770c	#c8770c	same
+dark	--cursor-yellow-fill	#c8770c	#c8770c	same
+dark	--cursor-yellow-fill-bright	#f69412	#f69412	same
+dark	--cursor-yellow-fill-hover	#ea8c10	#ea8c10	same
+dark	--cursor-yellow-fill-pressed	#a76308	#a76308	same
+dark	--cursor-yellow-foreground	#e28600	#e28600	same
+dark	--cursor-yellow-foreground-bright	#c8770c	#c8770c	same
+dark	--cursor-yellow-foreground-hover	#fb9500	#fb9500	same
+dark	--sand-bg-accent-bright	#1884fc	#1884fc	same
+dark	--sand-bg-accent-primary	#116dd2	#116dd2	same
+dark	--sand-bg-accent-primary-disabled	#116dd226	#116dd226	same
+dark	--sand-bg-accent-primary-hover	#1784fb	#1784fb	same
+dark	--sand-bg-accent-secondary	#1884fc12	#1884fc12	same
+dark	--sand-bg-accent-secondary-disabled	#1884fc0a	#1884fc0a	same
+dark	--sand-bg-accent-secondary-hover	#1884fc26	#1884fc26	same
+dark	--sand-bg-active	#f5f5f514	#f5f5f514	same
+dark	--sand-bg-blue-bright	#1884fc	#1884fc	same
+dark	--sand-bg-blue-primary	#116dd2	#116dd2	same
+dark	--sand-bg-blue-primary-disabled	#116dd226	#116dd226	same
+dark	--sand-bg-blue-primary-hover	#1784fb	#1784fb	same
+dark	--sand-bg-blue-secondary	#1884fc12	#1884fc12	same
+dark	--sand-bg-blue-secondary-disabled	#1884fc0a	#1884fc0a	same
+dark	--sand-bg-blue-secondary-hover	#1884fc26	#1884fc26	same
+dark	--sand-bg-brown-bright	#a16b39	#a16b39	same
+dark	--sand-bg-brown-primary	#8c5d31	#8c5d31	same
+dark	--sand-bg-brown-primary-disabled	#8c5d3126	#8c5d3126	same
+dark	--sand-bg-brown-primary-hover	#aa723d	#aa723d	same
+dark	--sand-bg-brown-secondary	#a16b3912	#a16b3912	same
+dark	--sand-bg-brown-secondary-disabled	#a16b390a	#a16b390a	same
+dark	--sand-bg-brown-secondary-hover	#a16b3926	#a16b3926	same
+dark	--sand-bg-chrome	#121212	#121212	same
+dark	--sand-bg-cyan-bright	#13b8a3	#13b8a3	same
+dark	--sand-bg-cyan-primary	#0e9886	#0e9886	same
+dark	--sand-bg-cyan-primary-disabled	#0e988626	#0e988626	same
+dark	--sand-bg-cyan-primary-hover	#12b39f	#12b39f	same
+dark	--sand-bg-cyan-secondary	#13b8a312	#13b8a312	same
+dark	--sand-bg-cyan-secondary-disabled	#13b8a30a	#13b8a30a	same
+dark	--sand-bg-cyan-secondary-hover	#13b8a326	#13b8a326	same
+dark	--sand-bg-danger-bright	#fc2c3e	#fc2c3e	same
+dark	--sand-bg-danger-primary	#cf2b35	#cf2b35	same
+dark	--sand-bg-danger-primary-disabled	#cf2b3526	#cf2b3526	same
+dark	--sand-bg-danger-primary-hover	#f73643	#f73643	same
+dark	--sand-bg-danger-secondary	#fc2c3e12	#fc2c3e12	same
+dark	--sand-bg-danger-secondary-disabled	#fc2c3e0a	#fc2c3e0a	same
+dark	--sand-bg-danger-secondary-hover	#fc2c3e26	#fc2c3e26	same
+dark	--sand-bg-elevated	#1f1f1f	#1f1f1f	same
+dark	--sand-bg-elevated-hover	#2c2c2c	#2c2c2c	same
+dark	--sand-bg-green-bright	#14c370	#14c370	same
+dark	--sand-bg-green-primary	#0e9f5a	#0e9f5a	same
+dark	--sand-bg-green-primary-disabled	#0e9f5a26	#0e9f5a26	same
+dark	--sand-bg-green-primary-hover	#13bb6b	#13bb6b	same
+dark	--sand-bg-green-secondary	#14c37012	#14c37012	same
+dark	--sand-bg-green-secondary-disabled	#14c3700a	#14c3700a	same
+dark	--sand-bg-green-secondary-hover	#14c37026	#14c37026	same
+dark	--sand-bg-hover	#f5f5f50f	#f5f5f50f	same
+dark	--sand-bg-luminous	#f5f5f5	#f5f5f5	same
+dark	--sand-bg-magenta-bright	#fb3499	#fb3499	same
+dark	--sand-bg-magenta-primary	#cf297e	#cf297e	same
+dark	--sand-bg-magenta-primary-disabled	#cf297e26	#cf297e26	same
+dark	--sand-bg-magenta-primary-hover	#f63397	#f63397	same
+dark	--sand-bg-magenta-secondary	#fb349912	#fb349912	same
+dark	--sand-bg-magenta-secondary-disabled	#fb34990a	#fb34990a	same
+dark	--sand-bg-magenta-secondary-hover	#fb349926	#fb349926	same
+dark	--sand-bg-orange-bright	#f9670e	#f9670e	same
+dark	--sand-bg-orange-primary	#cd5309	#cd5309	same
+dark	--sand-bg-orange-primary-disabled	#cd530926	#cd530926	same
+dark	--sand-bg-orange-primary-hover	#f4650e	#f4650e	same
+dark	--sand-bg-orange-secondary	#f9670e12	#f9670e12	same
+dark	--sand-bg-orange-secondary-disabled	#f9670e0a	#f9670e0a	same
+dark	--sand-bg-orange-secondary-hover	#f9670e26	#f9670e26	same
+dark	--sand-bg-pane	#161616	#161616	same
+dark	--sand-bg-primary	#f5f5f5	#f5f5f5	same
+dark	--sand-bg-primary-disabled	#f5f5f521	#f5f5f521	same
+dark	--sand-bg-primary-hover	#dbdbdb	#dbdbdb	same
+dark	--sand-bg-purple-bright	#905afb	#905afb	same
+dark	--sand-bg-purple-primary	#7845d7	#7845d7	same
+dark	--sand-bg-purple-primary-disabled	#7845d726	#7845d726	same
+dark	--sand-bg-purple-primary-hover	#8e59f8	#8e59f8	same
+dark	--sand-bg-purple-secondary	#905afb12	#905afb12	same
+dark	--sand-bg-purple-secondary-disabled	#905afb0a	#905afb0a	same
+dark	--sand-bg-purple-secondary-hover	#905afb26	#905afb26	same
+dark	--sand-bg-quaternary	#f5f5f505	#f5f5f505	same
+dark	--sand-bg-red-bright	#fc2c3e	#fc2c3e	same
+dark	--sand-bg-red-primary	#cf2b35	#cf2b35	same
+dark	--sand-bg-red-primary-disabled	#cf2b3526	#cf2b3526	same
+dark	--sand-bg-red-primary-hover	#f73643	#f73643	same
+dark	--sand-bg-red-secondary	#fc2c3e12	#fc2c3e12	same
+dark	--sand-bg-red-secondary-disabled	#fc2c3e0a	#fc2c3e0a	same
+dark	--sand-bg-red-secondary-hover	#fc2c3e26	#fc2c3e26	same
+dark	--sand-bg-scrim	#000000b2	#000000b2	same
+dark	--sand-bg-scrim-heavy	#000000f2	#000000f2	same
+dark	--sand-bg-secondary	#f5f5f50a	#f5f5f50a	same
+dark	--sand-bg-secondary-active	#f5f5f533	#f5f5f533	same
+dark	--sand-bg-secondary-disabled	#f5f5f505	#f5f5f505	same
+dark	--sand-bg-secondary-hover	#f5f5f514	#f5f5f514	same
+dark	--sand-bg-sidebar	#0e0e0e	#0e0e0e	same
+dark	--sand-bg-success-bright	#14c370	#14c370	same
+dark	--sand-bg-success-primary	#0e9f5a	#0e9f5a	same
+dark	--sand-bg-success-primary-disabled	#0e9f5a26	#0e9f5a26	same
+dark	--sand-bg-success-primary-hover	#13bb6b	#13bb6b	same
+dark	--sand-bg-success-secondary	#14c37012	#14c37012	same
+dark	--sand-bg-success-secondary-disabled	#14c3700a	#14c3700a	same
+dark	--sand-bg-success-secondary-hover	#14c37026	#14c37026	same
+dark	--sand-bg-tertiary	#f5f5f50a	#f5f5f50a	same
+dark	--sand-bg-warn-bright	#f69412	#f69412	same
+dark	--sand-bg-warn-primary	#c8770c	#c8770c	same
+dark	--sand-bg-warn-primary-disabled	#c8770c26	#c8770c26	same
+dark	--sand-bg-warn-primary-hover	#ea8c10	#ea8c10	same
+dark	--sand-bg-warn-secondary	#f6941212	#f6941212	same
+dark	--sand-bg-warn-secondary-disabled	#f694120a	#f694120a	same
+dark	--sand-bg-warn-secondary-hover	#f6941226	#f6941226	same
+dark	--sand-bg-yellow-bright	#f69412	#f69412	same
+dark	--sand-bg-yellow-primary	#c8770c	#c8770c	same
+dark	--sand-bg-yellow-primary-disabled	#c8770c26	#c8770c26	same
+dark	--sand-bg-yellow-primary-hover	#ea8c10	#ea8c10	same
+dark	--sand-bg-yellow-secondary	#f6941212	#f6941212	same
+dark	--sand-bg-yellow-secondary-disabled	#f694120a	#f694120a	same
+dark	--sand-bg-yellow-secondary-hover	#f6941226	#f6941226	same
+dark	--sand-border-accent-primary	#116dd2	#116dd2	same
+dark	--sand-border-accent-quaternary	#1884fc26	#1884fc26	same
+dark	--sand-border-attachment-card	#f5f5f51f	#f5f5f51f	same
+dark	--sand-border-attachment-paper	#f5f5f529	#f5f5f529	same
+dark	--sand-border-blue-primary	#116dd2	#116dd2	same
+dark	--sand-border-blue-quaternary	#1884fc26	#1884fc26	same
+dark	--sand-border-brown-primary	#8c5d31	#8c5d31	same
+dark	--sand-border-brown-quaternary	#a16b3926	#a16b3926	same
+dark	--sand-border-chrome	#121212	#121212	same
+dark	--sand-border-cyan-primary	#0e9886	#0e9886	same
+dark	--sand-border-cyan-quaternary	#13b8a326	#13b8a326	same
+dark	--sand-border-danger-primary	#cf2b35	#cf2b35	same
+dark	--sand-border-danger-quaternary	#fc2c3e26	#fc2c3e26	same
+dark	--sand-border-elevated	#1f1f1f	#1f1f1f	same
+dark	--sand-border-focus-primary	#1884fc	#1884fc	same
+dark	--sand-border-green-primary	#0e9f5a	#0e9f5a	same
+dark	--sand-border-green-quaternary	#14c37026	#14c37026	same
+dark	--sand-border-magenta-primary	#cf297e	#cf297e	same
+dark	--sand-border-magenta-quaternary	#fb349926	#fb349926	same
+dark	--sand-border-orange-primary	#cd5309	#cd5309	same
+dark	--sand-border-orange-quaternary	#f9670e26	#f9670e26	same
+dark	--sand-border-pane	#161616	#161616	same
+dark	--sand-border-primary-translucent	#f5f5f538	#f5f5f538	same
+dark	--sand-border-purple-primary	#7845d7	#7845d7	same
+dark	--sand-border-purple-quaternary	#905afb26	#905afb26	same
+dark	--sand-border-quaternary-translucent	#f5f5f50a	#f5f5f50a	same
+dark	--sand-border-red-primary	#cf2b35	#cf2b35	same
+dark	--sand-border-red-quaternary	#fc2c3e26	#fc2c3e26	same
+dark	--sand-border-secondary-translucent	#f5f5f51a	#f5f5f51a	same
+dark	--sand-border-success-primary	#0e9f5a	#0e9f5a	same
+dark	--sand-border-success-quaternary	#14c37026	#14c37026	same
+dark	--sand-border-tertiary-translucent	#f5f5f50f	#f5f5f50f	same
+dark	--sand-border-warn-primary	#c8770c	#c8770c	same
+dark	--sand-border-warn-quaternary	#f6941226	#f6941226	same
+dark	--sand-border-yellow-primary	#c8770c	#c8770c	same
+dark	--sand-border-yellow-quaternary	#f6941226	#f6941226	same
+dark	--sand-dataviz-0	#1084FE		chrome-static
+dark	--sand-dataviz-1	#FF6700		chrome-static
+dark	--sand-dataviz-2	#9159FE		chrome-static
+dark	--sand-dataviz-3	#00C972		chrome-static
+dark	--sand-dataviz-4	#FF309B		chrome-static
+dark	--sand-dataviz-5	#FF9800		chrome-static
+dark	--sand-dataviz-6	#00BCA6		chrome-static
+dark	--sand-dataviz-7	#97683D		chrome-static
+dark	--sand-dataviz-area	#1084FE24		chrome-static
+dark	--sand-dataviz-diverging-0	#FF5667		chrome-static
+dark	--sand-dataviz-diverging-1	#82131F		chrome-static
+dark	--sand-dataviz-diverging-2	#262626		chrome-static
+dark	--sand-dataviz-diverging-3	#084382		chrome-static
+dark	--sand-dataviz-diverging-4	#459FFE		chrome-static
+dark	--sand-dataviz-negative	#FF263C		chrome-static
+dark	--sand-dataviz-other	#777777		chrome-static
+dark	--sand-dataviz-sequential-0	#052A51		chrome-static
+dark	--sand-dataviz-sequential-1	#084382		chrome-static
+dark	--sand-dataviz-sequential-2	#0C64C1		chrome-static
+dark	--sand-dataviz-sequential-3	#1084FE		chrome-static
+dark	--sand-dataviz-sequential-4	#459FFE		chrome-static
+dark	--sand-dataviz-sequential-5	#80BEFE		chrome-static
+dark	--sand-dataviz-single-series-rest	#084382		chrome-static
+dark	--sand-fill-accent-bubble-user	#116dd2	#116dd2	same
+dark	--sand-fill-attachment-card	#252525	#252525	same
+dark	--sand-fill-attachment-ink	#f5f5f53d	#f5f5f53d	same
+dark	--sand-fill-attachment-paper	#343434	#343434	same
+dark	--sand-fill-blue-bubble-user	#116dd2	#116dd2	same
+dark	--sand-fill-brown-bubble-user	#8c5d31	#8c5d31	same
+dark	--sand-fill-bubble-agent	#f5f5f50a	#f5f5f50a	same
+dark	--sand-fill-bubble-user	#f5f5f52e	#f5f5f52e	same
+dark	--sand-fill-cyan-bubble-user	#0e9886	#0e9886	same
+dark	--sand-fill-danger-bubble-user	#cf2b35	#cf2b35	same
+dark	--sand-fill-green-bubble-user	#0e9f5a	#0e9f5a	same
+dark	--sand-fill-magenta-bubble-user	#cf297e	#cf297e	same
+dark	--sand-fill-orange-bubble-user	#cd5309	#cd5309	same
+dark	--sand-fill-purple-bubble-user	#7845d7	#7845d7	same
+dark	--sand-fill-red-bubble-user	#cf2b35	#cf2b35	same
+dark	--sand-fill-success-bubble-user	#0e9f5a	#0e9f5a	same
+dark	--sand-fill-warn-bubble-user	#c8770c	#c8770c	same
+dark	--sand-fill-yellow-bubble-user	#c8770c	#c8770c	same
+dark	--sand-icon-accent-primary	#116dd2	#116dd2	same
+dark	--sand-icon-blue-primary	#116dd2	#116dd2	same
+dark	--sand-icon-brown-primary	#8c5d31	#8c5d31	same
+dark	--sand-icon-cyan-primary	#0e9886	#0e9886	same
+dark	--sand-icon-danger-primary	#cf2b35	#cf2b35	same
+dark	--sand-icon-green-primary	#0e9f5a	#0e9f5a	same
+dark	--sand-icon-magenta-primary	#cf297e	#cf297e	same
+dark	--sand-icon-official	#4d9bff	#4d9bff	same
+dark	--sand-icon-orange-primary	#cd5309	#cd5309	same
+dark	--sand-icon-primary	#f5f5f5e6	#f5f5f5e6	same
+dark	--sand-icon-purple-primary	#7845d7	#7845d7	same
+dark	--sand-icon-quaternary	#f5f5f54c	#f5f5f54c	same
+dark	--sand-icon-red-primary	#cf2b35	#cf2b35	same
+dark	--sand-icon-secondary	#f5f5f5a3	#f5f5f5a3	same
+dark	--sand-icon-success-primary	#0e9f5a	#0e9f5a	same
+dark	--sand-icon-tertiary	#f5f5f580	#f5f5f580	same
+dark	--sand-icon-warn-primary	#c8770c	#c8770c	same
+dark	--sand-icon-yellow-primary	#c8770c	#c8770c	same
+dark	--sand-shadow-card	#f5f5f500	#f5f5f500	same
+dark	--sand-shadow-control	#f5f5f500	#f5f5f500	same
+dark	--sand-shadow-inline-ambient	#f5f5f500	#f5f5f500	same
+dark	--sand-shadow-inline-key	#f5f5f500	#f5f5f500	same
+dark	--sand-shadow-modal-ambient	#f5f5f500	#f5f5f500	same
+dark	--sand-shadow-modal-key	#f5f5f500	#f5f5f500	same
+dark	--sand-shadow-popover-ambient	#f5f5f500	#f5f5f500	same
+dark	--sand-shadow-popover-key	#f5f5f500	#f5f5f500	same
+dark	--sand-shadow-ring	#f5f5f500	#f5f5f500	same
+dark	--sand-shadow-secondary	#f5f5f500	#f5f5f500	same
+dark	--sand-shadow-window-ambient	#f5f5f500	#f5f5f500	same
+dark	--sand-shadow-window-edge	#f5f5f500	#f5f5f500	same
+dark	--sand-specular-primary	#ffffff1f	#ffffff1f	same
+dark	--sand-specular-quaternary	#ffffff03	#ffffff03	same
+dark	--sand-specular-secondary	#ffffff08	#ffffff08	same
+dark	--sand-specular-tertiary	#ffffff05	#ffffff05	same
+dark	--sand-text-accent-primary	#4d9bff	#4d9bff	same
+dark	--sand-text-accent-quaternary	#1884fc26	#1884fc26	same
+dark	--sand-text-blue-primary	#4d9bff	#4d9bff	same
+dark	--sand-text-blue-quaternary	#1884fc1c	#1884fc1c	same
+dark	--sand-text-brown-primary	#c59e7d	#c59e7d	same
+dark	--sand-text-brown-quaternary	#a16b391c	#a16b391c	same
+dark	--sand-text-cyan-primary	#00b7a2	#00b7a2	same
+dark	--sand-text-cyan-quaternary	#13b8a31c	#13b8a31c	same
+dark	--sand-text-danger-primary	#ff6463	#ff6463	same
+dark	--sand-text-danger-quaternary	#fc2c3e26	#fc2c3e26	same
+dark	--sand-text-green-primary	#00ba69	#00ba69	same
+dark	--sand-text-green-quaternary	#14c3701c	#14c3701c	same
+dark	--sand-text-inverted	#121212	#121212	same
+dark	--sand-text-magenta-primary	#ff55a4	#ff55a4	same
+dark	--sand-text-magenta-quaternary	#fb34991c	#fb34991c	same
+dark	--sand-text-on-primary	#f5f5f5	#f5f5f5	same
+dark	--sand-text-orange-primary	#fe6600	#fe6600	same
+dark	--sand-text-orange-quaternary	#f9670e1c	#f9670e1c	same
+dark	--sand-text-primary	#f5f5f5	#f5f5f5	same
+dark	--sand-text-purple-primary	#a582ff	#a582ff	same
+dark	--sand-text-purple-quaternary	#905afb1c	#905afb1c	same
+dark	--sand-text-quaternary	#f5f5f561	#f5f5f561	same
+dark	--sand-text-red-primary	#ff6463	#ff6463	same
+dark	--sand-text-red-quaternary	#fc2c3e1c	#fc2c3e1c	same
+dark	--sand-text-secondary	#f5f5f5a8	#f5f5f5a8	same
+dark	--sand-text-success-primary	#00ba69	#00ba69	same
+dark	--sand-text-success-quaternary	#14c3701c	#14c3701c	same
+dark	--sand-text-tertiary	#f5f5f58a	#f5f5f58a	same
+dark	--sand-text-warn-primary	#e28600	#e28600	same
+dark	--sand-text-warn-quaternary	#f694121c	#f694121c	same
+dark	--sand-text-yellow-primary	#e28600	#e28600	same
+dark	--sand-text-yellow-quaternary	#f694121c	#f694121c	same
+(root)	--conversation-block-gap			chrome-static
+(root)	--conversation-bubble-max-width			chrome-static
+(root)	--conversation-font-size			chrome-static
+(root)	--conversation-glass-corner-rule			chrome-static
+(root)	--conversation-line-height			chrome-static
+(root)	--conversation-opposed-inset			chrome-static
+(root)	--conversation-opposed-inset-human			chrome-static
+(root)	--conversation-surface-border-radius			chrome-static
+(root)	--conversation-text-font-size			chrome-static
+(root)	--cursor-accent-color			chrome-static
+(root)	--cursor-bg-accent			chrome-static
+(root)	--cursor-bg-accent-hover			chrome-static
+(root)	--cursor-bg-accent-quaternary			chrome-static
+(root)	--cursor-bg-accent-secondary			chrome-static
+(root)	--cursor-bg-accent-tertiary			chrome-static
+(root)	--cursor-bg-active			chrome-static
+(root)	--cursor-bg-blue-primary			chrome-static
+(root)	--cursor-bg-blue-secondary			chrome-static
+(root)	--cursor-bg-brown-primary			chrome-static
+(root)	--cursor-bg-brown-secondary			chrome-static
+(root)	--cursor-bg-card			chrome-static
+(root)	--cursor-bg-chrome			chrome-static
+(root)	--cursor-bg-cyan-primary			chrome-static
+(root)	--cursor-bg-cyan-secondary			chrome-static
+(root)	--cursor-bg-editor			chrome-static
+(root)	--cursor-bg-elevated			chrome-static
+(root)	--cursor-bg-focused			chrome-static
+(root)	--cursor-bg-green-primary			chrome-static
+(root)	--cursor-bg-green-secondary			chrome-static
+(root)	--cursor-bg-hover			chrome-static
+(root)	--cursor-bg-input			chrome-static
+(root)	--cursor-bg-link-hover			chrome-static
+(root)	--cursor-bg-magenta-primary			chrome-static
+(root)	--cursor-bg-magenta-secondary			chrome-static
+(root)	--cursor-bg-orange-primary			chrome-static
+(root)	--cursor-bg-orange-secondary			chrome-static
+(root)	--cursor-bg-primary			chrome-static
+(root)	--cursor-bg-purple-primary			chrome-static
+(root)	--cursor-bg-purple-secondary			chrome-static
+(root)	--cursor-bg-quaternary			chrome-static
+(root)	--cursor-bg-quinary			chrome-static
+(root)	--cursor-bg-red-primary			chrome-static
+(root)	--cursor-bg-red-secondary			chrome-static
+(root)	--cursor-bg-secondary			chrome-static
+(root)	--cursor-bg-selected			chrome-static
+(root)	--cursor-bg-tertiary			chrome-static
+(root)	--cursor-bg-yellow-primary			chrome-static
+(root)	--cursor-bg-yellow-secondary			chrome-static
+(root)	--cursor-border-color			chrome-static
+(root)	--cursor-box-shadow-lg			chrome-static
+(root)	--cursor-box-shadow-md			chrome-static
+(root)	--cursor-box-shadow-sm			chrome-static
+(root)	--cursor-duration-1s			chrome-static
+(root)	--cursor-duration-2s			chrome-static
+(root)	--cursor-duration-drawer			chrome-static
+(root)	--cursor-duration-fast			chrome-static
+(root)	--cursor-duration-instant			chrome-static
+(root)	--cursor-duration-normal			chrome-static
+(root)	--cursor-duration-slow			chrome-static
+(root)	--cursor-duration-slower			chrome-static
+(root)	--cursor-elevation-1			chrome-static
+(root)	--cursor-elevation-2			chrome-static
+(root)	--cursor-focus-ring-color			chrome-static
+(root)	--cursor-focus-ring-offset			chrome-static
+(root)	--cursor-font-size-base			chrome-static
+(root)	--cursor-font-size-lg			chrome-static
+(root)	--cursor-font-size-sm			chrome-static
+(root)	--cursor-font-size-xs			chrome-static
+(root)	--cursor-font-smoothing-moz			chrome-static
+(root)	--cursor-font-smoothing-webkit			chrome-static
+(root)	--cursor-font-weight-bold			chrome-static
+(root)	--cursor-font-weight-medium			chrome-static
+(root)	--cursor-font-weight-medium-code			chrome-static
+(root)	--cursor-font-weight-normal			chrome-static
+(root)	--cursor-font-weight-normal-code			chrome-static
+(root)	--cursor-font-weight-semibold			chrome-static
+(root)	--cursor-font-weight-semibold-code			chrome-static
+(root)	--cursor-foreground			chrome-static
+(root)	--cursor-height-lg			chrome-static
+(root)	--cursor-height-md			chrome-static
+(root)	--cursor-height-sm			chrome-static
+(root)	--cursor-height-xl			chrome-static
+(root)	--cursor-icon-accent-primary			chrome-static
+(root)	--cursor-icon-blue-primary			chrome-static
+(root)	--cursor-icon-brown-primary			chrome-static
+(root)	--cursor-icon-cyan-primary			chrome-static
+(root)	--cursor-icon-git-added-primary			chrome-static
+(root)	--cursor-icon-git-removed-primary			chrome-static
+(root)	--cursor-icon-green-primary			chrome-static
+(root)	--cursor-icon-magenta-primary			chrome-static
+(root)	--cursor-icon-orange-primary			chrome-static
+(root)	--cursor-icon-primary			chrome-static
+(root)	--cursor-icon-purple-primary			chrome-static
+(root)	--cursor-icon-quaternary			chrome-static
+(root)	--cursor-icon-red-primary			chrome-static
+(root)	--cursor-icon-secondary			chrome-static
+(root)	--cursor-icon-tertiary			chrome-static
+(root)	--cursor-icon-yellow-primary			chrome-static
+(root)	--cursor-letter-spacing-2xl			chrome-static
+(root)	--cursor-letter-spacing-3xl			chrome-static
+(root)	--cursor-letter-spacing-base			chrome-static
+(root)	--cursor-letter-spacing-lg			chrome-static
+(root)	--cursor-letter-spacing-sm			chrome-static
+(root)	--cursor-letter-spacing-xl			chrome-static
+(root)	--cursor-letter-spacing-xs			chrome-static
+(root)	--cursor-line-height-base			chrome-static
+(root)	--cursor-line-height-lg			chrome-static
+(root)	--cursor-line-height-sm			chrome-static
+(root)	--cursor-line-height-xs			chrome-static
+(root)	--cursor-radius-2xl			chrome-static
+(root)	--cursor-radius-3xl			chrome-static
+(root)	--cursor-radius-4xl			chrome-static
+(root)	--cursor-radius-base			chrome-static
+(root)	--cursor-radius-full			chrome-static
+(root)	--cursor-radius-lg			chrome-static
+(root)	--cursor-radius-none			chrome-static
+(root)	--cursor-radius-sm			chrome-static
+(root)	--cursor-radius-xl			chrome-static
+(root)	--cursor-radius-xs			chrome-static
+(root)	--cursor-shadow-md			chrome-static
+(root)	--cursor-shadow-primary			chrome-static
+(root)	--cursor-spacing-0			chrome-static
+(root)	--cursor-spacing-1			chrome-static
+(root)	--cursor-spacing-10			chrome-static
+(root)	--cursor-spacing-11			chrome-static
+(root)	--cursor-spacing-12			chrome-static
+(root)	--cursor-spacing-13			chrome-static
+(root)	--cursor-spacing-14			chrome-static
+(root)	--cursor-spacing-15			chrome-static
+(root)	--cursor-spacing-16			chrome-static
+(root)	--cursor-spacing-17			chrome-static
+(root)	--cursor-spacing-18			chrome-static
+(root)	--cursor-spacing-19			chrome-static
+(root)	--cursor-spacing-2			chrome-static
+(root)	--cursor-spacing-20			chrome-static
+(root)	--cursor-spacing-3			chrome-static
+(root)	--cursor-spacing-4			chrome-static
+(root)	--cursor-spacing-5			chrome-static
+(root)	--cursor-spacing-6			chrome-static
+(root)	--cursor-spacing-7			chrome-static
+(root)	--cursor-spacing-8			chrome-static
+(root)	--cursor-spacing-9			chrome-static
+(root)	--cursor-spacing-ne-0-25			chrome-static
+(root)	--cursor-spacing-ne-0-50			chrome-static
+(root)	--cursor-spacing-ne-0-75			chrome-static
+(root)	--cursor-spacing-ne-1			chrome-static
+(root)	--cursor-spacing-ne-10			chrome-static
+(root)	--cursor-spacing-ne-11			chrome-static
+(root)	--cursor-spacing-ne-12			chrome-static
+(root)	--cursor-spacing-ne-13			chrome-static
+(root)	--cursor-spacing-ne-14			chrome-static
+(root)	--cursor-spacing-ne-15			chrome-static
+(root)	--cursor-spacing-ne-16			chrome-static
+(root)	--cursor-spacing-ne-17			chrome-static
+(root)	--cursor-spacing-ne-18			chrome-static
+(root)	--cursor-spacing-ne-19			chrome-static
+(root)	--cursor-spacing-ne-2			chrome-static
+(root)	--cursor-spacing-ne-20			chrome-static
+(root)	--cursor-spacing-ne-3			chrome-static
+(root)	--cursor-spacing-ne-4			chrome-static
+(root)	--cursor-spacing-ne-5			chrome-static
+(root)	--cursor-spacing-ne-6			chrome-static
+(root)	--cursor-spacing-ne-7			chrome-static
+(root)	--cursor-spacing-ne-8			chrome-static
+(root)	--cursor-spacing-ne-9			chrome-static
+(root)	--cursor-specular-primary			chrome-static
+(root)	--cursor-specular-quaternary			chrome-static
+(root)	--cursor-specular-secondary			chrome-static
+(root)	--cursor-specular-tertiary			chrome-static
+(root)	--cursor-stroke-accent			chrome-static
+(root)	--cursor-stroke-cyan-primary			chrome-static
+(root)	--cursor-stroke-focused			chrome-static
+(root)	--cursor-stroke-primary			chrome-static
+(root)	--cursor-stroke-quaternary			chrome-static
+(root)	--cursor-stroke-red			chrome-static
+(root)	--cursor-stroke-secondary			chrome-static
+(root)	--cursor-stroke-tertiary			chrome-static
+(root)	--cursor-text-accent			chrome-static
+(root)	--cursor-text-blue-primary			chrome-static
+(root)	--cursor-text-brown-primary			chrome-static
+(root)	--cursor-text-cyan-primary			chrome-static
+(root)	--cursor-text-git-added-primary			chrome-static
+(root)	--cursor-text-git-removed-primary			chrome-static
+(root)	--cursor-text-green-primary			chrome-static
+(root)	--cursor-text-invert			chrome-static
+(root)	--cursor-text-link			chrome-static
+(root)	--cursor-text-magenta-primary			chrome-static
+(root)	--cursor-text-orange-primary			chrome-static
+(root)	--cursor-text-primary			chrome-static
+(root)	--cursor-text-purple-primary			chrome-static
+(root)	--cursor-text-quaternary			chrome-static
+(root)	--cursor-text-red-primary			chrome-static
+(root)	--cursor-text-secondary			chrome-static
+(root)	--cursor-text-tertiary			chrome-static
+(root)	--cursor-text-yellow-primary			chrome-static
+(root)	--ease			chrome-static
+(root)	--ease-drawer			chrome-static
+(root)	--ease-heavy			chrome-static
+(root)	--ease-linear			chrome-static
+(root)	--ease-sharp			chrome-static
+(root)	--sand-agent-item-avatar-gap			chrome-static
+(root)	--sand-agent-item-radius			chrome-static
+(root)	--sand-agent-item-title-gap			chrome-static
+(root)	--sand-blur-background			chrome-static
+(root)	--sand-chat-min-width			chrome-static
+(root)	--sand-command-palette-radius			chrome-static
+(root)	--sand-command-palette-row-gap			chrome-static
+(root)	--sand-font-mono			chrome-static
+(root)	--sand-font-mono-xvf			chrome-static
+(root)	--sand-font-sans			chrome-static
+(root)	--sand-font-sans-xvf			chrome-static
+(root)	--sand-font-size-base			chrome-static
+(root)	--sand-font-size-lg			chrome-static
+(root)	--sand-font-size-sm			chrome-static
+(root)	--sand-font-size-xl			chrome-static
+(root)	--sand-font-size-xs			chrome-static
+(root)	--sand-font-size-xxl			chrome-static
+(root)	--sand-font-size-xxs			chrome-static
+(root)	--sand-font-size-xxxl			chrome-static
+(root)	--sand-letter-spacing-base			chrome-static
+(root)	--sand-letter-spacing-lg			chrome-static
+(root)	--sand-letter-spacing-sm			chrome-static
+(root)	--sand-letter-spacing-xl			chrome-static
+(root)	--sand-letter-spacing-xs			chrome-static
+(root)	--sand-letter-spacing-xxl			chrome-static
+(root)	--sand-letter-spacing-xxs			chrome-static
+(root)	--sand-letter-spacing-xxxl			chrome-static
+(root)	--sand-line-height-base			chrome-static
+(root)	--sand-line-height-lg			chrome-static
+(root)	--sand-line-height-sm			chrome-static
+(root)	--sand-line-height-xl			chrome-static
+(root)	--sand-line-height-xs			chrome-static
+(root)	--sand-line-height-xxl			chrome-static
+(root)	--sand-line-height-xxs			chrome-static
+(root)	--sand-line-height-xxxl			chrome-static
+(root)	--sand-menu-radius			chrome-static
+(root)	--sand-menu-row-gap			chrome-static
+(root)	--sand-menu-row-height			chrome-static
+(root)	--sand-menu-row-radius			chrome-static
+(root)	--sand-new-chat-menu-radius			chrome-static
+(root)	--sand-new-chat-menu-row-radius			chrome-static
+(root)	--sand-page-title-variation-settings			chrome-static
+(root)	--sand-row-glyph-x-height-nudge			chrome-static
+(root)	--sand-shadow-inline			chrome-static
+(root)	--sand-shadow-modal			chrome-static
+(root)	--sand-shadow-popover			chrome-static
+(root)	--sand-shadow-window			chrome-static
+(root)	--sand-shell-grid			chrome-static
+(root)	--sand-shell-grid-collapsed			chrome-static
+(root)	--sand-sidebar-anim-duration			chrome-static
+(root)	--sand-sidebar-anim-ease			chrome-static
+(root)	--sand-titlebar-block			chrome-static
+(root)	--sand-transcript-prose-block-padding			chrome-static
+(root)	--sand-transcript-prose-bubble-radius			chrome-static
+(root)	--sand-transcript-prose-line-height			chrome-static
+(root)	--sand-transcript-prose-one-line-height			chrome-static
+(root)	--ui-popup-box-shadow			chrome-static
+(root)	--ui-tooltip-border-radius			chrome-static
+(root)	--ui-tooltip-border-width			chrome-static
+(root)	--ui-tooltip-box-shadow			chrome-static
+(root)	--ui-tooltip-font-size			chrome-static
+(root)	--ui-tooltip-letter-spacing			chrome-static
+(root)	--ui-tooltip-line-height			chrome-static
+(root)	--ui-tooltip-padding-x			chrome-static
+(root)	--ui-tooltip-padding-y			chrome-static

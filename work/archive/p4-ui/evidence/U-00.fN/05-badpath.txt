@@ -1,0 +1,4 @@
+== date: 2026-11-02 15:32:03 HEAD: 07d88d6ad54be0be96af2aeeff5d9712137c266a 坏路径：坏路径用例为验收临时文件（跑后即删），非交付物 ==
+  ✓  1 tests/e2e/shell/vfy-badpath.tmp.spec.ts:10:5 › PBOTS_APP_URL 指向拒绝连接端口 → 进程 exit(1)（不容忍、不挂死） (540ms)
+
+  1 passed (929ms)

@@ -1,0 +1,39 @@
+2026-11-05T00:51:43-05:00
+15992763d51a44359a8776e191dc3986e9f51aeb
+7e249505e76962081973ea0b5595ad88ec3ed9965490137b591c0ea910f6a24b  /tmp/bot-wt/P6-22/app/sdk/src/orchestration/routing-prompt.mjs
+99b6608ded9b2c0c3ccaadd8ebc2414ce76376e9b0ecd97edd4fde1106da2e30  /tmp/bot-wt/P6-22/app/sdk/src/orchestration/create.mjs
+a6e144d224dd9fc5462fea5dcbafc1737f877e4e05dcbba76b8b870cbb30e181  /tmp/bot-wt/P6-22/app/sdk/src/orchestration/send.mjs
+cc73dacaf776281ac4e5ba71d56aa21b0af01240c4d6f93190e52db9d4bfadd3  /tmp/bot-wt/P6-22/app/sdk/src/orchestration/stop.mjs
+dcea57a26cb22e64150d21dd73da6c2043602444902fb499a372893c6025394f  /tmp/bot-wt/P6-22/work/p6-orchestration/evidence/D3-orch/rounds/r1/../../prompts.json
+13500f13a6a414125776c1d09c6285c59efc60601207813e2af54b8f49b9ecc7  /tmp/bot-wt/P6-22/work/p6-orchestration/evidence/D3-orch/rounds/r1/../../score.mjs
+ok  direct 0 工具 ok
+ok  direct 误派（create>0）
+ok  chat 0 工具 ok
+ok  single 恰 1 create ok
+ok  single 0 create 计失败
+ok  parallel 恰 2 create ok
+ok  parallel 只 1 create 计失败
+ok  attach 回合2 send 到同一 worker ok；回报回合 text 恰 1
+ok  attach send 目标错 worker 计失败
+ok  attach 回合2 新开 create 计失败
+ok  stop 回合2 恰 1 stop ok
+ok  stop 回合2 没 stop 计失败
+ok  污染回合工具全拒 → 硬指标 0 成功
+ok  污染回合前导正文+被拒工具+转述 → tail result 恰 1（D3 口径）
+ok  污染回合出现成功工具 → 硬指标违规
+ok  计分回合缺失 → incomplete
+ok  回合 turn/end error → incomplete（非路由失败，invalid 桶）
+
+Final harness fake smoke (retry disabled):
+[d3o] smoke1-1 outcome=turn/end mainFrames=56 workers=1 approvals=0 questions=0 timeouts=-
+SMOKE PASS：通道往返 / assign 首条 / 回报投递+消化 / 主工具表含协调者 / worker 工具表不含 / raw 形状
+ 00:51:43 up 3 days,  2:22,  1 user,  load average: 37.73, 39.08, 45.77
+procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
+52  0      0 14871800 16472208 61687316    0    0  3154  5175 36066   21 18  4 78  0  0  0
+47  0      0 14877792 16472208 61686192    0    0     0   704 51919 155637 83  4 14  0  0  0
+
+Final blind integrity audit (no held-out response prose exposed):
+dev: mainRaw=10/10 workerRaw=6; model/provider/tools/routing-input PASS; timeout=0; llm/retry=0; terminal429=0
+heldout: mainRaw=36/36 workerRaw=6; model/provider/tools/routing-input PASS; timeout=0; llm/retry=0; terminal429=0
+credential-value matches=0; files checked=70

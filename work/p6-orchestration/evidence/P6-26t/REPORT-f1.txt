@@ -1,0 +1,30 @@
+P6-26t.f1 单点测试适配
+分支：feat/P6-26tf1
+基点：main 0fa0c37ed1b6650fad0cc61749b1654624e931a6
+提交：1ffdce19a0c16f909002a6fbc988e3819fa56db6
+代码文件：/tmp/bot-wt/P6-26tf1/app/sdk/tests/e2e/subagent-policy.test.ts（10 insertions, 2 deletions）
+工作树在开工时已存在且干净、HEAD 等于当前 main，直接复用；未改主检出分支。
+
+改动：仅 workflow 分支开启 approveWorkflow，在根会话 sendPrompt 后先 waitForApproval，断言 request.toolName 为 workflow，答 allowed-once，之后才等待 child。原 child bash never 拒绝、child 零审批、root bash 仍出卡与拒绝后无文件断言原样保留。没有产品代码/档位改动，没有新增依赖。复用现有 waitForApproval/feed.answer。
+资料：PLAN 已有 P6-26t.f1 行；本需求无 REUSE.md，按用户指定路线直接复用本文件既有测试辅助函数。已读 MANIFEST、本地上游 workflow/workflow-ptc/src/host.ts 的 startActivation 路径及诊断 replay/make-probe；无需搬代码。
+
+TDD：先复跑原测试，workflow 32.307s 超时，2 passed / 1 failed；f1-red.log。
+测试命令（工作目录 /tmp/bot-wt/P6-26tf1/app/sdk；全部 HOME=/tmp/bot-p626tf1-home TMPDIR=/tmp/bot-p626tf1-tmp）：
+./node_modules/.bin/vitest run tests/e2e/subagent-policy.test.ts tests/e2e/tiers-policy.test.ts tests/e2e/w1ap0-matrix.test.ts tests/e2e/guard-escalation.test.ts tests/e2e/process-tiers.test.ts --maxWorkers=1 --reporter=verbose
+最后计数：
+ Test Files  5 passed (5)
+      Tests  34 passed | 1 skipped (35)
+   Duration  164.68s
+其中 subagent-policy 3/3，workflow 3.491s；相关 policy 四文件全绿（已有 skip 保留）。证据：f1-green.log。
+
+坏路径：从修后文件生成临时诊断副本，workflow 卡改答 rejected；用 root turn/end 确认拒绝已处理，而不是盲等。断言无 child 模型请求、m 不存在，再执行原 root bash 出卡/rejected/无文件对照。
+./node_modules/.bin/vitest run --config /tmp/bot-p626tf1-probe/config.mjs -t 'workflow: agent' --reporter=verbose
+ Test Files  1 passed (1)
+      Tests  1 passed | 2 skipped (3)
+   Duration  3.60s
+证据：f1-rejected.log；探针 /tmp/bot-p626tf1-probe/rejected.test.ts（未进产品代码）。process-tiers 的 workflow rejected 回归同时已通过。
+
+环境限制：按要求尝试 pnpm -C 工作树/app/sdk vitest run tests/e2e/subagent-policy.test.ts，pnpm 的默认 verify-deps-before-run=install 尝试重装共享 node_modules，因 ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY 中止（f1-target.log）；未允许重装。尝试命令行关闭自动安装后该全局 pnpm 把目录误当命令而 EACCES（f1-target-no-install.log）；没有第三次盲试。测试证据来自相同已装 Vitest 直接入口，不宣称原 pnpm 命令成功。
+未跑全量（按 builder 定向测试范围）；仅测试改动，不涉及 src 覆盖率变化。
+git diff --check 通过。bot-reap --dry-run --match p626tf1 无输出、退出 0，没有本人残留进程。仅测试框架自管 teardown；未手工 kill。
+待 verifier 验收。

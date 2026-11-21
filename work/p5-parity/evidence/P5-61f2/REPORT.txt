@@ -1,0 +1,31 @@
+P5-61.f2 REPORT  分支 feat/P5-61f1（worktree /tmp/bot-wt/P5-61f1），基点 99c3d19 → 000efb6
+E = /home/lingxufeng/bot/work/p5-parity/evidence/P5-61f2/
+
+红基线（复跑 VERIFY 探针）
+- 17 个采样点 = VERIFY initial.spec 在 data-theme=cursor-dark 下 t=129→380ms 的 17 个 rAF 采样行（不是 17 个控件），每行 4 个控件：
+  [0] .sand-prompt-shell（composer 药丸）[1] .sand-agents-sidebar__plugins-entry button（Connect apps）
+  [2] .sand-agents-sidebar > .sand-agents-sidebar__search（顶部搜索圆钮）[3] .sand-agents-sidebar__header .sand-kit-icon-button（顶部加号圆钮）
+- 自己的红：E/probe/initial.spec.ts（加严：控件挂上即判，含 data-theme 前帧）于 99c3d19 build：暗 reload 20/19 坏帧，亮 reload 11/11（252→255 微混），E/red/*.json、E/red-e2e.log
+
+根因（选择器 + 颜色来源）
+- 三控件 CSS = overrides/p5-55-layout.css:29-39、93-99：background var(--sand-bg-elevated)，transition bg .12s / .3s。
+- 红 trace：t≈53ms 侧栏控件已挂、html 尚无 data-theme → 只命中 index.css :root 亮默认 --sand-bg-elevated:#fcfcfc（252）；
+  t≈75ms 上游 ProductionRenderer useEffect → applyRootShellTheme 设 cursor-dark，palette html[data-theme=cursor-dark] 给 #1f1f1f，
+  过渡把 252 滑到 31（.3s 的 Connect apps 拖到 ~380ms）。composer 在 data-theme 之后才挂 → 无过渡。f1 禁过渡只包 emitTheme，初始化不经过它。
+
+修复（shim 一处，8 行；上游 0 改动）
+- renderer-grok/shim/src/desktop.ts：createDesktopBridge 建桥即按 theme.resolved 写 documentElement.dataset.theme + style.colorScheme
+  （与上游 applyRootShellTheme 同值）。shim 是 defer 经典脚本、先于 module bundle → 控件首帧即按 palette 解析；上游再设为同值空操作。
+
+回归测试
+- 单测 desktop.test.ts +2（暗/亮建桥即落 data-theme/color-scheme），先红后绿。
+- theme-flash.spec.ts：①/①③ trace 增记 4 控件 rAF 底色，断言挂上后=终值；assertFrames 增按钮区逐帧像素（connect/search/plus，暗 min>100、亮 max<150 即坏）。
+  对 99c3d19 build 跑：5 failed / 1 passed（E/spec-red.log，ctl 断言 + cold-dark connect 像素均命中）；修后全绿。
+
+验收
+- 17 采样点复测：E/green/ reload 暗 5 + 亮 5，badCount 全 0，控件首帧即 31 / 255（10 passed，E/green-e2e.log）。
+- 录像 ≥10 段：theme-flash+theme-dual 连跑 5 轮（每轮 7 passed，E/spec-green-0..4.log），E/rec/run-0..4 共 20 段（暗冷启5+暗reload5、亮对称10），
+  E/probe/pixels.py 按 VERIFY 同点复核 region-hits=0（E/rec/pixels.log、pixels.json）；目检 E/reload-dark-contact.png、E/cold-dark-contact.png。
+- 不回退：整窗阈值 / 原生控件像素 / 五轮双向切换(②③) / 同偏好不写镜像（theme-dual）均在上述 5 轮内绿；悬停过渡 0.12s 断言仍绿。
+- 单测 38 files / 451 passed（E/unit.log）；upstream diff=0: 332 files（E/upstream-check.log）；p6-workers P6-15 1 passed（E/workers-e2e.log）。
+- e2e 全经 run-e2e.sh（Xvfb）；临时 HOME bot-p561f2-* / bot-p554-*，tmp-sweep 退出清扫；bot-reap --dry-run --match p561f2 / P5-61f1 均空。

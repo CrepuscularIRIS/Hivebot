@@ -1,0 +1,73 @@
+{
+  "sha": "ed336c9a39660a30f23f415debc9e07f22b026ea",
+  "files": [
+    {
+      "path": "app/sdk/src/admin/authority.mjs",
+      "sha256": "7cb278e5e6c8dbb2b78e3bc922ea5fd5cfeeb64fbe0870dbbe34db4949b225e1"
+    },
+    {
+      "path": "app/sdk/src/admin/channel.mjs",
+      "sha256": "2dcfccac1837bf192954ee6449fde276795952b61410867e1016bc09ab1750b4"
+    },
+    {
+      "path": "app/sdk/src/admin/origin.mjs",
+      "sha256": "69245f6a0830e998dcc8180eefc3ad9cc5145208fdabfaccccac7143e854b9ce"
+    },
+    {
+      "path": "app/sdk/src/admin/tools.mjs",
+      "sha256": "0be02430a8b2be2e2bfe79f518a621c33da9d211219a2631faefde7c6529f207"
+    },
+    {
+      "path": "app/sdk/src/orchestration/turn-origin.mjs",
+      "sha256": "db9f2b5da2844f8b36ed87a287ddacef9c75cea44ed98b790fa95146e3a053de"
+    },
+    {
+      "path": "app/sdk/tests/unit/p7-authority.test.ts",
+      "sha256": "39f1d8e6c65c7b11f5ae6346bf82ce4b5088d2c9d030539524ed005294d25e1f"
+    },
+    {
+      "path": "app/sdk/tests/unit/p7-admin-channel.test.ts",
+      "sha256": "ea5430b2b6ff732450805c43eacc890a189021878b3a003f12cb6bacb3b2b8c2"
+    },
+    {
+      "path": "app/sdk/vitest.config.ts",
+      "sha256": "5233cbb40b1d57462c246ef4e4c53236c3d947d52c515ecd0088b0cd80127fe3"
+    },
+    {
+      "path": "app/ui/main/admin/policy.ts",
+      "sha256": "191923a3332d189c7cd16c16b91733eed9bda92e9b9ff32be98ad94cd4a229ac"
+    },
+    {
+      "path": "app/ui/main/admin/channel.ts",
+      "sha256": "8f41e76229b6fe38dcd7293deddc3d054c110ab6ee7c7965caaa12de0f956405"
+    },
+    {
+      "path": "app/ui/main/admin/consumer.ts",
+      "sha256": "aecad4a19a04a99adf27d5ce901d29f2bcf7c3a6351dffe023aae7492b45a43d"
+    },
+    {
+      "path": "app/ui/tests/unit/admin/channel.test.ts",
+      "sha256": "dec7152bd58c337db2abcc55a30f02fcdf72ad11a7647783cd4eda93bb68ea50"
+    },
+    {
+      "path": "app/ui/vitest.config.ts",
+      "sha256": "9504c9c34fdf043902a4c3446e3c6bd805694bd83f97ee671877d4eb4a65bf96"
+    },
+    {
+      "path": "app/sdk/tests/support/tmp-sweep.setup.ts",
+      "sha256": "79829ba3abe4996dfa3ad5c24e00277872dde7d14718f90540bc4b26dbea6d0c"
+    },
+    {
+      "path": "app/sdk/tests/support/tmp-sweep.ts",
+      "sha256": "3059f204c815f619c292a80b6960ef68d9da8726f724120c8189d3fa8ee36604"
+    },
+    {
+      "path": "app/ui/tests/support/tmp-sweep.setup.ts",
+      "sha256": "79829ba3abe4996dfa3ad5c24e00277872dde7d14718f90540bc4b26dbea6d0c"
+    },
+    {
+      "path": "app/ui/tests/support/tmp-sweep.ts",
+      "sha256": "003ef6ace0d32680f7443d93a4ab5f3f5d8dfe8da850c8ea5ffe76170753522d"
+    }
+  ]
+}

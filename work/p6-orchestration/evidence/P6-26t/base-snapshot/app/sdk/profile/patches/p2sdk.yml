@@ -1,0 +1,169 @@
+# p2sdk overlay on the dsh web profile (T-01).
+# Layer order: dsh-base → dsh-web-app → $DSH_HOME profile layer → this file
+# (and any later --patch overlays from P2SDK_PATCH). A patch row replaces the
+# target row's whole config, so every key the row owns is restated below.
+
+# Never print the authenticated URL (token stays out of stdout) and never open
+# a browser: the token is handed off through $P2SDK_HOME/launch-token by the
+# p2sdk-handoff plugin at the bottom of this file.
+- id: web-runtime
+  inject:
+    - webStartup
+  config:
+    openBrowser: false
+    printUrl: false
+    publicUrl: !!js ctx.webStartup.publicUrl
+    surfaceContext: true
+
+# Title generation would burn one extra model call per session; in mock mode it
+# would also consume a replay script entry. Fallback titles are enough.
+- id: session-title-llm
+  disabled: true
+
+# Route the real provider through dsh-llm-pi-ai to the local LiteLLM endpoint.
+# apiKeyEnv names the environment variable; the key value itself never enters
+# config, logs, or stdout.
+- id: llm-pi-ai
+  config:
+    providers:
+      litellm:
+        api: openai-completions
+        baseURL: !!js process.env.P2SDK_LLM_API_BASE ?? 'http://127.0.0.1:4001/v1'
+        apiKeyEnv: P2SDK_LLM_API_KEY
+        models:
+          - id: !!js process.env.P2SDK_LLM_MODEL ?? 'glm-5.3-flash'
+            contextWindow: 131072
+
+# Default model selection follows the provider mode.
+- id: agent-default-model
+  config:
+    provider: !!js >-
+      process.env.P2SDK_PROVIDER === 'mock' ? 'mock' : 'litellm'
+    model: !!js >-
+      process.env.P2SDK_PROVIDER === 'mock' ? 'mock' :
+      (process.env.P2SDK_LLM_MODEL ?? 'glm-5.3-flash')
+
+# Rows that must carry absolute plugin specifiers (llm-replay, p2sdk-handoff)
+# are generated at boot into $P2SDK_HOME/runtime-patch.yml by
+# src/start.ts#writeRuntimePatch: the $DSH_HOME profile workspace resolves
+# package names against itself and has no node_modules, so inserted rows point
+# at the app/sdk install through file:// URLs instead.
+
+# BRIEF "backend only": the web template's browser UI roster is disabled; the
+# /api + remote.mux surface is unaffected (verified: ready + min-client PASS
+# with all 57 rows off). Regenerate this list from `dsh web --dump-default-config`
+# when the pinned dsh version changes.
+- id: client-hmr
+  disabled: true
+- id: cordis-client-runner
+  disabled: true
+- id: locale
+  disabled: true
+- id: message-quotes
+  disabled: true
+- id: resources
+  disabled: true
+- id: shortcuts
+  disabled: true
+- id: ui-agent-preset
+  disabled: true
+- id: ui-approval
+  disabled: true
+- id: ui-attachment
+  disabled: true
+- id: ui-brand-official
+  disabled: true
+- id: ui-chat
+  disabled: true
+- id: ui-commands
+  disabled: true
+- id: ui-conversation
+  disabled: true
+- id: ui-cordis
+  disabled: true
+- id: ui-deliverables
+  disabled: true
+- id: ui-file-drag
+  disabled: true
+- id: ui-goal
+  disabled: true
+- id: ui-input-trigger
+  disabled: true
+- id: ui-jobs
+  disabled: true
+- id: ui-layout
+  disabled: true
+- id: ui-message-feedback
+  disabled: true
+- id: ui-model-selection
+  disabled: true
+- id: ui-open-in-app
+  disabled: true
+- id: ui-permission
+  disabled: true
+- id: ui-plan
+  disabled: true
+- id: ui-plugin-manager
+  disabled: true
+- id: ui-reference
+  disabled: true
+- id: ui-renderer
+  disabled: true
+- id: ui-schedule
+  disabled: true
+- id: ui-secret-mask
+  disabled: true
+- id: ui-session
+  disabled: true
+- id: ui-settings
+  disabled: true
+- id: ui-settings-account
+  disabled: true
+- id: ui-settings-agent-loop
+  disabled: true
+- id: ui-settings-general
+  disabled: true
+- id: ui-settings-models
+  disabled: true
+- id: ui-settings-plugin-inventory
+  disabled: true
+- id: ui-settings-plugins
+  disabled: true
+- id: ui-settings-session-log
+  disabled: true
+- id: ui-settings-shell
+  disabled: true
+- id: ui-settings-subagent
+  disabled: true
+- id: ui-settings-web-search
+  disabled: true
+- id: ui-shortcuts
+  disabled: true
+- id: ui-sidebar
+  disabled: true
+- id: ui-sidebar-browser
+  disabled: true
+- id: ui-sidebar-documentpreview
+  disabled: true
+- id: ui-sidebar-files
+  disabled: true
+- id: ui-sidebar-right
+  disabled: true
+- id: ui-sidebar-terminal
+  disabled: true
+- id: ui-skill
+  disabled: true
+- id: ui-subagent
+  disabled: true
+- id: ui-theme
+  disabled: true
+- id: ui-tool
+  disabled: true
+- id: ui-trajectory
+  disabled: true
+- id: ui-user-questions
+  disabled: true
+- id: ui-workflow-run
+  disabled: true
+- id: ui-workspace
+  disabled: true

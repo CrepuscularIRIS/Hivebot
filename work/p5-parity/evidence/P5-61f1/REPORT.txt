@@ -1,0 +1,24 @@
+P5-61.f1 主题闪烁修复（DIAG-P5-61 ①②③）· frontend-dev Opus 5.5 · 2026-11-04
+分支 feat/P5-61f1（worktree /tmp/bot-wt/P5-61f1，基点 main@2746c31）；定稿 work/p5-parity/ui/P5-61f1-final.md
+
+改动（产品 6 文件，上游 332 文件 diff=0）
+① shim/src/index.ts 先建 desktop 桥再挂封面；boot-cover.ts 色调取 theme.resolved（data-tone），删掉 prefers-color-scheme 分支，封面期间随 onChanged
+② shim/src/desktop.ts emitTheme：推送监听期间挂 `*:not(#\#){transition:none!important}`，强制样式计算后撤（next-themes disableTransitionOnChange 同法）；p5-55-layout.css 不动，悬停 .12s 保留
+③ preload 加 pbots.window.setTheme → IPC pbots:theme {preference,resolved}；main/window.ts：preference 变了才写 nativeTheme.themeSource + <dataDir>/theme-source 镜像，overlay/窗口底色按页面 resolved 着色；建窗前 restoreThemeSource；backgroundColor 跟色调
+   setTitleBarOverlayTone 仍空实现：它是 computer-use 遮罩色调（43px），不是主题，本产品无调用方传 true
+
+验收（可证伪，全部机械断言）tests/e2e/theme-flash.spec.ts（7 例，只在 run-e2e.sh 的 Xvfb 跑，DISPLAY=:0 跳过）
+- DOM 逐帧 trace（DIAG assert-traces 同法，media 模拟成相反）：封面 rgb 全程 = 偏好、data-theme 全程 = 偏好（亮暗各一）
+- 窗口录像逐帧（x11grab ffv1，含原生控件）reload + 冷启：frames-summary.txt —— 暗整窗亮度 17–21、控件区 21；亮 249–253、控件区 254–255；阈值 暗≤60 / 亮≥190
+- 切换：data-theme 同步到位那一刻起 composer / Connect apps / 顶部按钮 computed bg = 稳定值（0 混色帧，switch.trace.json）；控件区像素随主题（暗 22,22,22 / 亮 255,255,255 ±4）
+- RED 对照：同 spec 跑修复前代码 4/4 红（red/e2e-red.log：封面全程 dark / 冷启白帧 / 混色帧）
+- 单测 447 → 449；renderer-grok check upstream diff=0: 332 files；全量 e2e 76/76 绿（e2e-full.log）
+
+残留与说明
+- 冷启映射窗口到 Chromium 首次 present 之间，Xvfb（无合成 WM）偶拍到 1 帧 GTK 窗底 #fafafa（red/cold-dark-first3.png），与偏好无关、backgroundColor 管不到。spec 只豁免「开头至多 1 帧且整窗+控件区同为 250」，计数写 frames.json unpresented。真实 GNOME 桌面是否可见待用户目检
+- emulateMedia 造出的「media 与偏好相反」在修后产品里不可达（themeSource=偏好），该态下上游 color-scheme: light dark 画布会在封面淡出时露暗底（亮 2/7 次，red/flake-light-15-20.png）；故录像逐帧只跑真实态（reload 0/20 次失败，red/exp-real*.log）
+- 测试路径：Xvfb + --disable-gpu 软件渲染，未覆盖真实 GPU 路径
+- playwright-cli 浏览器旅程未另跑：产品是 Electron，旅程已由 run-e2e.sh 内的真实 Electron 覆盖；playwright-cli 连 :0 违反约束
+
+复测
+cd /tmp/bot-wt/P5-61f1/app/ui && pnpm build && pnpm test && pnpm -C renderer-grok check && pnpm test:e2e tests/e2e/theme-flash.spec.ts

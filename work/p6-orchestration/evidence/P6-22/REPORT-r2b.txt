@@ -1,0 +1,45 @@
+P6-22 第2轮收尾 r2b（6.1 Sol执行，glm-5.3被测）
+状态：采集器已修并独立提交；补采因dev第一组429再次中断，未重试。没有完整子集结果，不能定案。
+分支 feat/P6-22，起点 a4f1bb3；采集器修复 commit 5092c75。
+
+一、采集器修复（不改产品文案与评分判据）
+- run.mjs waitReportConsumed：第一批pbots-worker之后遇到user/message时只重置候选，不再break，继续找追加回合之后的最新回报。
+- 允许隔离根/tmp/bot-p622r2b-*；仍是固定沙箱前缀白名单，不开放任意路径。
+- 复用现有采集器、fake provider、冻结scoreGroup，无新增依赖、无产品实现修改。
+- 回归 test-report-wait.mjs 直接从当前run.mjs提取真实函数，不复制谓词；控制虚拟时钟避免等待240秒。
+- RED：AssertionError completed second batch must close (dev raw replay)，false !== true。
+- GREEN：5格通过（首批闭合、追加用户后旧批不算、第二批未闭合不算、原dev两批闭合可过、第二批动态到达后等静默窗再过）。
+- 原dev回放对应raw行359/836，证据移至rounds/r2/archive-r2a/dev/；不回写原outcome、不回填评分。
+- fake smoke：SMOKE PASS，通道往返、assign首条、回报投递+消化、主/worker工具表、raw形状通过。raw与COLLECT.txt在rounds/r2/smoke-r2b/。
+
+二、补采过程与429
+- 产品文案仍为0ed1ed4，产品基线c33efa8；未引入P6-24/P6-25。
+- ROUTING_PROMPT SHA256=8bc4ea57810cbfcc2ac21c6cb4a510449df88c174dd22efc0d753bea81f04fc8。
+- 先dev追加组一次，只有它通过且没有429才启动held-out。串行、组间5000ms，不--force，不重试。
+- 临时shell HOME=/tmp/bot-p622r2b-shell-home；子进程HOME=/tmp/bot-p622r2b-dev/home，显式P2SDK_ORCH_DATA_DIR=/tmp/bot-p622r2b-dev/data；bots.json首会话前预写。
+- dev-attach-recipe-allergy-1：新建worker=1，但worker首回合turn/end(reason=error)含429，主回合尚未闭合；采集器按rateLimited结束，outcome=timeout，timeouts=turn1。第2用户消息还未发送。不是“完整回合没调create/send”的路由失败，也不是修前的第二批回报假超时。
+- dev主raw终态429=0，worker raw终态429=1；llm/retry=0；没有自动重试。日志明确429 detected: stop without retry。
+- 约2026-11-05T08:01:55Z落盘。本次未能从错误中提取明确恢复秒数，不猜恢复时间。
+- 启动器exit0仅代表正常收尾，不代表采集成功。外层检测429后未启动held-out。
+- 本次held-out补采0/19；17组原完整结果保留，原par1-two-tasks-2超时仍标INCOMPLETE。18未采+1待重采全部列于rounds/r2/SUPPLEMENT-r2b.txt。
+- 所有held-out内容只经原评分器与盲布尔审计处理；未展开heldout/raw，也未据其原始回复调词。
+
+三、分数与建议
+- rounds/r2/SCORE.txt包含全部36计划组分表及r2b来源标注；不是36组完整采集。
+- 机械子集13/30：13完整正确、1超时、16委派缺失。分类：单派12/12，并行1/6（1超时4缺），追加0/6（全缺），停止0/6（全缺）。
+- 哨兵已测0/4误派，2闲聊未采；不能声称完整0/6通过。直接答4/4、闲聊0/2未采。
+- 硬指标：污染回合工具成功0，原held-out记录16批回报中1批tailTexts!=1来自429超时组；未完整通过。
+- dev当前9/10（单派4、并行2、追加0、停止1、直接答1、闲聊1），追加是本次429中断。原追加raw只用于复现修复，不替换本次失败结果。
+- r1完整子集3/30（单派0、并行3、追加0、停止0），r2部分13/30；不能将+10宣称为完整轮次增益。r1 dev6/10，r2部分9/10。
+- 建议：先等待新授权/可用额度续采同文案剩余19组及dev追加，不定案、不开始r3、不因缺失判转§12.3。完整≥22/30且哨兵0/6且硬指标通过才建议定案；完整<12转§12.3；完整12–21仅据dev分析r3。全48定案未运行。
+
+四、复测与收尾
+- node .../rounds/r2/test-report-wait.mjs：PASS: 5 report-wait checks; real dev replay sees second batch; no held-out raw read。
+- node .../run.mjs --smoke：SMOKE PASS；node .../score.mjs --selftest：17/17。
+- HOME=/tmp/bot-p622r2b-shell-home app/sdk/node_modules/.bin/vitest run --root /tmp/bot-wt/P6-22/app/sdk <两条orchestration-routing测试>：Test Files 2 passed (2)，Tests 14 passed (14)。未跑全量回归。
+- node .../rounds/r2/score-round.mjs dev / heldout：机械分表可重算。node .../rounds/r2/audit-inputs.mjs：模型/provider/三件工具/完整r2 section均通过，dev终态429=1、held-out原终态429=1、两者llm/retry=0，credential-value matches=0。
+- git diff 0ed1ed4 对四个产品文案文件、prompts.json、score.mjs为空；判据未变。
+- 自身SDK/dsh已由harness finally回收；429运行时根（含凭证）已删，未碰真实HOME/桌面/训练进程。bot-reap --dry-run --match p622以及--match P6-22均无匹配残留。
+- 未跟踪的既有VERIFY-r0.txt、vfy-r0/原样保留，不提交；临时依赖软链已移除。
+- 改动清单：D3-orch/run.mjs；rounds/r2/{test-report-wait.mjs,probe-dev-report-wait.mjs,audit-inputs.mjs,SCORE.txt,SUPPLEMENT-r2b.txt,CHECKS-r2b.txt,archive-r2a/**,dev/{raw追加与run-meta,scores.json,SCORE.txt,COLLECT-r2b.txt},smoke-r2b/**}；本REPORT-r2b.txt。
+待 verifier 验收。

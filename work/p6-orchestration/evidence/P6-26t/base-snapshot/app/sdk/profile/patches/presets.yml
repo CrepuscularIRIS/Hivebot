@@ -1,0 +1,41 @@
+# T-05 D4 fixture presets: two agent presets with different complete personas
+# (preset-derived instructions) and different tool rosters. Loaded through the
+# launcher's P2SDK_PATCH passthrough next to the generated fake-provider
+# overlay (tests/e2e/config.test.ts); the web bundle's agent-preset-registry
+# (default: standard) stays untouched, and every session in the D4 test
+# selects its preset explicitly at session/create.
+- insert:
+    - id: preset-p2-alpha
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: p2-alpha
+        order: 20
+        description: P2SDK D4 fixture alpha (persona + fs tools)
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: 'P2SDK-D4 preset p2-alpha persona: ALPHA-MARKER-7f3a. 你是 alpha 会话专用的人格。'
+              complete: true
+              includeRuntimeContext: false
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+    - id: preset-p2-beta
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: p2-beta
+        order: 21
+        description: P2SDK D4 fixture beta (different persona + fs + search tools)
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: 'P2SDK-D4 preset p2-beta persona: BETA-MARKER-c91b. 你是 beta 会话专用的人格。'
+              complete: true
+              includeRuntimeContext: false
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false

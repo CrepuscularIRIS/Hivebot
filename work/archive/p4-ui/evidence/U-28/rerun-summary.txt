@@ -1,0 +1,23 @@
+== verifier 复跑（2026-11-02 20:41-20:57, HEAD 0988baa, /tmp/bot-wt/U-28） ==
+-- build --
+pnpm build（rm -rf out 后全新构建）: ✓ built in 1.14s
+
+-- 单测 --
+HOME=/tmp/bot-vfy-u28 pnpm test: Test Files 23 passed (23), Tests 209 passed (209), Duration 3.84s
+
+-- e2e（--workers=1）尾部 --
+         |                                                     ^
+      18 |   const rt = await launchSdkRuntime({
+      19 |     patch: PRESETS_PATCH,
+      20 |     cwd: mkdtempSync(join(tmpdir(), 'bot-u31-ws-')),
+        at /tmp/bot-wt/U-28/app/ui/tests/e2e/journeys/d1-real-model.spec.ts:17:53
+
+    Error Context: test-results/journeys-d1-real-model-D1--d4ee1-rn-end；M2-原帧-tap-chunkCount/error-context.md
+
+  1 failed
+    tests/e2e/journeys/d1-real-model.spec.ts:14:5 › D1+D2 真模型：对话框建 bot → LiteLLM 流式回复 → 定稿 + turn/end；M2 原帧 tap === chunkCount 
+  52 passed (5.3m)
+[ELIFECYCLE] Command failed with exit code 1.
+
+-- d1 单跑（验证 R9 顺序依赖，非 U-28 回归） --
+pnpm exec playwright test tests/e2e/journeys/d1-real-model.spec.ts --workers=1: 1 passed (18.3s)，失败签名= LITELLM_MASTER_KEY undefined（R9：此前 spec 在同一 worker 删 process.env key）

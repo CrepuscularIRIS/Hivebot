@@ -1,0 +1,8 @@
+p2sdk: forwarding SIGTERM to dsh
+p2sdk: forwarding SIGTERM to dsh
+
+ Test Files  20 passed (20)
+      Tests  148 passed (148)
+   Start at  16:59:14
+   Duration  23.55s (tests 99%, import 1%)
+

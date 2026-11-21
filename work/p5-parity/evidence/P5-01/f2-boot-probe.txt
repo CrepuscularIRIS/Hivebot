@@ -1,0 +1,28 @@
+== P5-01.f2 boot 一致性探针（builder，2026-11-03 11:14:20，7.0.0-42-generic，bwrap 0.9.0，非 setuid）==
+--- ① wrapper 直跑 x5 串行（--mask /etc/ppp/chap-secrets，cat）---
+run1: rc=1 bytes=0 stderr=
+run2: rc=1 bytes=0 stderr=
+run3: rc=1 bytes=0 stderr=
+run4: rc=1 bytes=0 stderr=
+run5: rc=1 bytes=0 stderr=
+--- ② wrapper 3 实例并发 ---
+inst: rc=1 bytes=45 err=cat: /etc/ppp/chap-secrets: Permission denied
+inst: rc=1 bytes=45 err=cat: /etc/ppp/chap-secrets: Permission denied
+inst: rc=1 bytes=45 err=cat: /etc/ppp/chap-secrets: Permission denied
+--- ③ 挂载证据（沙箱内 mountinfo 两行 + cat 对照）---
+7887 7886 0:7 /null /dev/null rw,nosuid,relatime master:2 - devtmpfs udev rw,size=65699240k,nr_inodes=16424810,mode=755,inode64
+7895 7845 0:7 /null /etc/ppp/chap-secrets ro,nosuid,nodev,relatime master:2 - devtmpfs udev rw,size=65699240k,nr_inodes=16424810,mode=755,inode64
+native_devnull_rc=0
+--- ④ 修复后同一命令 x3（--ro-bind-data 空普通文件）---
+rc=0 bytes=0 err=
+type=regular empty file mode=644 size=0
+7895 7845 0:109 /bindfileRQR13I//deleted /etc/ppp/chap-secrets ro,nosuid,nodev,relatime - tmpfs tmpfs rw,uid=1000,gid=1000,inode64
+rc=0 bytes=0 err=
+type=regular empty file mode=644 size=0
+7895 7845 0:109 /bindfile3cc6LU//deleted /etc/ppp/chap-secrets ro,nosuid,nodev,relatime - tmpfs tmpfs rw,uid=1000,gid=1000,inode64
+rc=0 bytes=0 err=
+type=regular empty file mode=644 size=0
+7895 7845 0:109 /bindfileuwTILE//deleted /etc/ppp/chap-secrets ro,nosuid,nodev,relatime - tmpfs tmpfs rw,uid=1000,gid=1000,inode64
+--- ⑤ 工具链文件根（.condarc，再遮路径）同验 x1 ---
+rc=0 bytes=0
+type=regular empty file size=0

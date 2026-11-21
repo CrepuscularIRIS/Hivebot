@@ -1,0 +1,5 @@
+Already up to date
+Already up to date
+ ✓ tests/e2e/preset-broken.test.ts > T-18②: broken preset is not cached — ensure fails loud, retry after fixing the patch re-registers the same id 2599ms
+ Test Files  1 passed (1)
+      Tests  1 passed (1)

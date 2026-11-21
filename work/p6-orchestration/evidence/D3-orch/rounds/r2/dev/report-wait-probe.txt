@@ -1,0 +1,2 @@
+dev attach: reports=2; raw lines=359,836; final-report-turn/end=true; existing-wait-lastReportIdx=-1; meta-timeouts=report
+Confirmed: scanning from frame 0 breaks at follow-up user/message after the first report, never reaching the second report. No scorer or collector logic changed; retain timeout/incomplete score.

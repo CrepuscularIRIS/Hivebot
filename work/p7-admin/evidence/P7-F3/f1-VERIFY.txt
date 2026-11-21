@@ -1,0 +1,87 @@
+verdict: FAIL
+commit: de36bbc587d604c2672ede53c32d4554973082ec
+base: e5ff286e686994b489766ea7d3bd1f74614a342b
+incremental-base: 4da62902c7a9c26452eafc4e98cf40c6d6a6d452
+
+结论
+原 F3-V1 默认两秒吞触发已独立复验修复，原修改覆盖未证也已补齐；但新增确认 F3f1-V2：unconfirmedStart 返回早于新代恢复窗口到期时，仍挂着的定时器会自动再次投递。全部作者测试行为绿不能替代此反例。只对上述固定 SHA 有效，不自启下一轮修复。
+
+范围与隔离
+- 已读主仓 LEARNINGS、PLAN F3/f1 与§3、原 VERIFY.txt、f1-REPORT.txt 全文；承接前轮已读 REUSE/PROTOCOL。完整 e5ff286..de36bbc 十二文件审查；增量三文件 report.mjs、SDK p7-host-recovery、UI recovery 均逐行读，十个生产文件完整 diff 见 f1-verify-production.diff。
+- 新 detached 树 /tmp/bot-wt/P7-F3f1-verify 初末 HEAD 一致、status 为空、diff --check=0。无 .codegraph。没有改产品、原测试、锁或配置，没有 commit/merge/push/Agent/SendMessage。
+- 固定树无依赖，以 git archive 固定 SHA 在本 evidence 下建隔离副本；689个源码/测试/配置文件与固定树逐字节一致，测试后重新核哈希仍全部一致，见 f1-verify-source-hashes.txt、f1-verify-target-state.txt。
+- 只复用已安装锁定依赖；node_modules 每个顶层条目单独链接，排除 .vite/.cache，显式 cacheDir 指向本 evidence/f1-verify-cache-*，test cache=false。没有安装/升级/build/全量/Electron/真实模型/桌面，也未把 F1/F2 新修复合入。
+- env 白名单 HOME/TMPDIR/PATH/死 DBus；HOME/TMPDIR/合成数据均本 evidence 隔离根。不读真实凭证/用户env，不 sudo/shell kill/pkill/killall/重启注销，仅既有测试框架自管所生进程。
+- 起始 load 1.98/1.74/1.84，执行中 vmstat iowait=0、idle=90%；定向 Vitest 单 worker、无文件并行，四组串行。无可见 UI 改动验收，本任务明确禁止桌面，未截图。
+
+独立命令与结果
+E=/home/lingxufeng/bot/work/p7-admin/evidence/P7-F3
+S=$E/f1-verify-source/app/sdk
+1. python3 -I "$E/f1-verify-prepare.py"；生成689个 SHA 一致输入和隔离配置，成功。
+2. python3 -I "$E/f1-verify-run.py" sdk-worker sdk-child ui loader。
+   完整逐组命令/白名单env在 f1-verify-*-run.txt 首两行，精确测试路径在 f1-verify-run.py；公共命令为 pnpm -C "$S" --config.verify-deps-before-run=false exec vitest run --config "$E/f1-verify-<group>.config.mjs" --maxWorkers=1 --no-file-parallelism <paths>。
+   SDK worker：7 files /236 passed；EXIT 1，仅整文件全局覆盖阈值失败。
+   SDK child：1 file /2 passed、19 skipped；EXIT 1，仅整文件全局覆盖阈值失败。
+   UI：13 files /110 passed；EXIT 1，仅整文件全局 functions/branches 覆盖阈值失败。
+   原 Loader 同范围：2 files /11 passed、5 skipped；EXIT 0，262.27s。
+   外层 runner EXIT 0 仅表示脚本完成，不能当内层全绿。Python 对旧过滤串给出 invalid escape SyntaxWarning，不影响传给 Vitest 的正则；没有工具执行阻塞。
+3. 独立 node 脚本命令均为 env -i HOME="$E/f1-verify-home" TMPDIR="$E/f1-verify-tmp" PATH=/usr/bin:/bin /tmp/bot-wt/P7-F3/app/sdk/node_modules/.bin/node "$E/<script>"；源码从固定新 SHA 副本导入，不用旧树产品代跑。
+   f1-verify-independent.mjs：EXIT 0，十个结果均PASS；默认 BATCH_WINDOW_MS=2000，挂旧读2100ms，旧代0、新代自动1、随后手动仍1。沿用本人旧探针，补上主日志投递记录，避免无持久状态的fixture制造手动重复。
+   f1-verify-adversarial.mjs：EXIT 0；真实 Delivery.followup 后未知确认且窗口已到期、100并发触发不重放；stop/disposer/再换代/50并发触发无复活、不忙等；各状态和计数见同名 txt。
+   f1-verify-native-storage.mjs：EXIT 0；真实 Cordis+锁定 JSONL provider 冷孤儿→原生closers→flush→readback→dispose/reopen，interrupted 持久、TOOL_OUTCOME_UNKNOWN、不恢复worker、幂等、旧challenge与坏createdBy拒开闸。
+   f1-verify-unknown-window.mjs：EXIT 1；默认2秒、旧followup后unconfirmedStart早于新恢复窗口到期，实际自动followup=2，预期1。
+4. python3 -I "$E/f1-verify-map-coverage.py"：EXIT 0；独立重建作者十文件完整 maps/counts/metrics 与保存JSON精确一致，并对本轮重采官方JSON作相同映射；详见 f1-verify-coverage-audit.txt、f1-verify-coverage-diff-map.json。
+5. 固定树终态检查及689文件哈希：成功；f1-verify-target-state.txt。
+
+验收表
+| 验收项 | 结果 | 独立证据/边界 |
+| 原默认2秒V1，新代自动恢复恰1、旧代0、手动仍1 | PASS | f1-verify-independent.txt:4–6；SDK236中同一作者用例亦复跑，不以作者输出代替 |
+| recovery前不消费、queued boot stop不复活 | PASS（定向） | SDK236；p7-host-recovery boot/stop/holds；非完整生产E2E |
+| 捕获同一permit跨main-agent/main-log/worker-log await | PASS（所测边界） | f1-verify-independent.txt:1–3，旧send+wake=0 |
+| Delivery flush/open/read/close后旧代不followup | PASS（所测边界） | f1-verify-independent.txt:7–10；真实Delivery、受控存储await |
+| post-followup不可声称副作用0、并发未知结果不重放 | PASS（窗口已到期的子场景）；整体见下项FAIL | SDK原post-followup测试+f1-verify-adversarial.txt:1；followup实为1，unconfirmedStart上抛，100并发不重放 |
+| post-followup未知结果在尚未到期的新恢复窗口下不自动重放 | FAIL / CONFIRMED F3f1-V2 | f1-verify-unknown-window.txt:1–22；实际2、预期1，EXIT1 |
+| pending reconcile stop/插件disposer/再换代/并发不复活、不忙等 | PASS（所测边界） | f1-verify-adversarial.txt:2–5；stop/disposer后0，第三代完成后恰1，计数稳定；插件effect的cleanup源码调用同一stop，真实Loader退出另由框架执行 |
+| 冷孤儿原生持久终结、不自动resume held/paused、未知外部工具不重放 | PASS（存储模块链/定向） | f1-verify-native-storage.txt；SDK236中held保留与wake/followup0 |
+| 坏关联留审计、foreign Peer/旧challenge/stop拒开闸 | PASS（组合接缝） | 真实JSONL坏createdBy拒complete；SDK Loader control2；UI110中真实OperationsLedger failed audit |
+| F1健康读回/M3 init+ensure成功后才complete，旧ready不释放新代 | PASS（模块与接缝） | UI110，真实main入口/F1/M3及ready；Electron/transport mock，不冒称真实桌面 |
+| 控制RPC不等待自身恢复、重连不是SDK重启、standalone未opt-in拒绝 | PASS（真实Loader空metadata） | SDK child2 passed；原生stream/unary及foreign/duplicate/旧challenge；无模型调用 |
+| 无owner restart明确unavailable、不伪造未知restart receipt | PASS（定向） | UI110，不扩F4 |
+| 不增第二Assignment状态机 | PASS（源码） | host仅进程内许可，原生日志终结+既有fold，F1仍main持有 |
+| 官方修改覆盖十文件每个适用S/B/F/L≥80% | PASS | 独立重采官方JSON，完整diff映射，见下表 |
+| 冷原生孤儿→真实SDK RPC→真实main F1/M3→生产消费完整全链 | UNKNOWN | 真实JSONL、真实Loader空metadata、main接线分别证明，未组成同一真实全链；不因本轮绿测试抹去此边界 |
+
+CONFIRMED F3f1-V2：未知投递早于恢复窗口到期时仍自动重投（major）
+- 源码：report.mjs:161–166 的窗口独立保存timer；:262仅清reconcilePending；:264–272释放单飞但没有撤销仍未到期的窗口。main-channel.mjs:263–267的complete会开启该窗口。
+- 时序：旧合法lease的Reporter已走真实Delivery.send并followup一次，挂在post-followup persistence.flush；新Peer attach/prepare/complete成功并scheduleFlush；立即释放旧flush使其抛持久确认未知错误（而非等2秒）；Delivery标unconfirmedStart、Reporter如实上抛且reconcilePending=false，但timer仍非null；不发其他事件、不手动flush；约2.15秒后窗口自动再调用Delivery，followup变2。
+- probe的主/worker日志为受控投影，真实Delivery负责holds/inflight/followup/post-flush标记；模拟未知效果没有可供dedupe确认的history/inbox记录。第一followup计数1证明已发生调用，不把它说成0。其后确认flush成功，既有timer仍自动重放。该反例与作者新增用例的差别仅是旧未知结果在timer到期前返回，而作者仅覆盖timer已到期、reconcilePending=true的时序。
+- 证据等级：确认生产Reporter/Delivery在此受控未知结果输入下自动调用followup两次，未声称在真实JSONL故障或真实外部工具上执行两次。未知效果缺少去重证据时不能拿“正常native inbox通常会挡住”替代禁止自动重放闸。
+- 正对照：默认2秒V1新代投递正常且幂等；未知结果等窗口到期后才返回时，本轮adversarial保持1。因此不是取消所有恢复触发或fixture不产生due造成的假红。
+
+官方覆盖审计
+- f1-map-coverage.py逐行读；独立脚本按固定e5ff286..de36bbc零上下文新侧行重建，与作者完整f1-coverage-diff-map.json十文件maps、计数、metrics、来源逐项相等；没有只看表格。
+- 本轮另采官方@vitest/coverage-v8 5.0.5的coverage-final.json：f1-verify-coverage-sdk-worker、f1-verify-coverage-sdk-child、f1-verify-coverage-ui。worker autoAttachSubprocess=false；child只选p7-host-recovery的真实Loader control stream，顶层导入Reporter/Delivery/host/start而不导入main-channel，故main-channel record来源裸Loader子进程，不与worker转换坐标混加。
+- main-channel的原生recoveryRequests/Prepare/Complete映射分别242–256/258–261/263–268，与固定源码一致，独立child函数count分别4/4/5；worker record这三者为0，明确只取child。其余SDK四文件只取worker、UI五文件只取UI；所有十文件保留。
+- 所有官方映射检查不越源码行界；本轮与作者所选statement/branch/function ID、完整loc和修改行交集形状一致。保留包围修改的legacy span和每个branch全部arm，没有删除大跨度旧路径凑绿；line为官方statement起始行最大count，零arm写N.A.。注释/闭括号无statement起点的行列在JSON，不当可执行行补计数。大span可能含旧逻辑是这一口径的已披露限制。
+- 下面是本轮独立采集修改相交指标，不是整个文件指标（S/B/F/L）：
+  app/sdk/src/start.ts                         100 /100 /100 /100
+  app/sdk/src/admin/host.mjs                   98.91 /92.50 /100 /100
+  app/sdk/src/orchestration/delivery.mjs       90.91 /81.82 /100 /100
+  app/sdk/src/orchestration/main-channel.mjs   97.30 /94.44 /90.91 /100
+  app/sdk/src/orchestration/report.mjs         88.71 /89.29 /83.33 /95.24
+  app/ui/main/index.ts                        96.77 /80 /100 /100
+  app/ui/main/ready.ts                         93.33 /80 /100 /100
+  app/ui/main/admin/recovery.ts                94.74 /89.39 /94.12 /98.57
+  app/ui/main/admin/restart.ts                 100 /N.A.(0 arms) /100 /100
+  app/ui/main/dsh/connect.ts                   100 /N.A.(0 arms) /100 /100
+- 整文件阈值仍真实EXIT1，不隐藏：SDK worker S/B/F/L=63.60/58.80/64.93/65.23%；SDK child=20.34/11.98/22.07/20.85%；UI=82.50/78.60/76.59/88.56%。覆盖闸仅按用户明确指定的完整修改逻辑口径判PASS，不能把这些命令说成exit0或整文件≥80%。本轮额外node探针没有并入官方coverage，不拿“执行过”补计数。
+
+Loader范围说明
+- 作者2 passed/19 skipped是p7-host-recovery.test.ts内21项经 -t 'P7-F3 real Loader control stream' 仅选2项；19是过滤未执行项，不等于旧Loader五项skip，也不是同一回归范围。SDK worker整组已执行这21项，不再以child重复计数增加唯一测试总数。
+- 因此另复跑旧原范围：orchestration-report-live与foundation-delivery，-t 'P6-12 live \\(real Loader\\)|delivers each stable|two concurrent same-id'，11 passed/5 skipped；包含合批、用户回合不误报、污染全工具拒/副作用0、人工审批、停止撤回、blocked/max-tokens触发、稳定id幂等与并发same-id。五个既有未选crash项不写PASS。
+
+新问题（每条可直接派发）
+- [FIX] F3f1的unconfirmedStart只清待补标志，尚未到期的新代恢复窗口仍自动重投未知旧副作用 | 复现：f1-verify-unknown-window.mjs；旧followup挂post-flush→新prepare/complete及scheduleFlush→在默认2秒到期前释放旧flush报unconfirmedStart→无新事件等2.15秒，followup=2而非1 | 疑似位置：app/sdk/src/orchestration/report.mjs:161–166,260–272；main-channel.mjs:263–267 | major
+
+交接边界
+原V1与覆盖缺口在本SHA已通过，不沿用原FAIL条目冒充本轮新问题。总体FAIL只基于新增实证V2；完整生产全链仍UNKNOWN。F1/F2后续修复未合入，需要派发者在最终整合SHA重新跑相邻回归，不能沿用本报告盖章。证据与报告只写本目录f1-verify-*和本文件，原VERIFY/verify-*及作者f1-*未改；用后移除本人隔离source/home/tmp/cache/coverage临时子目录，保留原始日志、官方JSON、哈希与脚本。有限验证完成即停。

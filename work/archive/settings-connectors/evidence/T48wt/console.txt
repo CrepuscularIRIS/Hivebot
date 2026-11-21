@@ -1,0 +1,15 @@
+[newbot] console.error: Failed to load resource: the server responded with a status of 405 (Method Not Allowed)
+[newbot] console.error: Failed to load resource: the server responded with a status of 405 (Method Not Allowed)
+[newbot] theme=cursor-light
+[newbot] Connectors 区全文：
+Connectors
+No connectors installed yet · Open Connect apps
+[newbot] data-connectors-empty 出现=true
+[newbot] 点 Open Connect apps 后：市场中心命中=true new-bot 对话框仍开=false
+[newbot] 市场 Close 可关 ✓
+[onboarding] console.error: Failed to load resource: the server responded with a status of 405 (Method Not Allowed)
+[onboarding] theme=cursor-light
+[onboarding] 连接器行=["Gmail | Connect","Google Calendar | Connect"]
+[onboarding] Connect 钮 title="Connector sign-in isn't wired in this build yet"
+[onboarding] Connect 钮 title="Connector sign-in isn't wired in this build yet"
+[onboarding] 主钮文字="Skip for now"

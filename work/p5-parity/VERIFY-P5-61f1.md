@@ -1,0 +1,86 @@
+# VERIFY P5-61.f1
+
+> 转正自 evidence/P5-61f1/VERIFY.txt。
+
+verdict: FAIL
+commit: 99c3d196f85f121ea87cb6a09bbd1304ee197017
+任务：P5-61.f1 UI 验收；2026-11-04；Sol 独立执行。
+报告落用户指定的 TXT 备用路径（本验收会话的更高优先级指令禁止写 Markdown 报告）。
+工作树：/tmp/bot-wt/P5-61f1，分支 feat/P5-61f1。验收前后 HEAD 相同，git status --porcelain 均为空。未改产品代码，所有新增探针和结果均在主仓本 evidence 目录。
+以下证据简称 V = /home/lingxufeng/bot/work/p5-parity/evidence/P5-61f1/vfy/。
+
+| 验收项 | 结果 | 证据（命令/文件/截图路径） |
+| ① 封面反色：暗/亮冷启动和重载各至少 3 轮，逐帧整窗阈值 | PASS（不代表局部按钮无混色） | V/repeated-e2e.log：20 passed；暗、亮各 5 次冷启动和 5 次 reload，20 段窗口级 FFV1 原始录像、1030 帧。V/independent-summary.json：独立解码重算暗 17.885–21.275 ≤60，亮 249.849–253.659 ≥190；bad=0，全部 unpresented=0。每轮 frames.json 和录像均在 V/repeat-0…4/ 下。 |
+| ② 手动亮↔暗至少 5 轮；无混色；600ms 等待及 workers 不冲突 | FAIL（切换本身绿，但初始化路径仍混色） | 五轮双向切换共 10 个方向，switch.trace.json 对所有采样点与最终颜色比较，mixedTotal=0。theme-flash + theme-dual 7/7，workers 1/1；但暗色冷启动 5/5、reload 5/5 的窗口录像出现 Connect apps/顶部钮亮色；V/initial-e2e.log 定向探针真实失败，17 个 data-theme=cursor-dark 的采样点颜色未稳定，详见下文。 |
+| ③ 原生控件暗≈22/亮≈255；同偏好重载不写镜像 | PASS | 录像右上 150×6 区域，暗 RGB 均值约 21.01，亮约 254.26–254.51，符合 ±4；专项 e2e overlayColor 逐主题断言通过。V/mirror-divergence.json：dark 镜像内容及 mtimeNs=1793812858769480176 在 4 次 reload 前后完全一致。 |
+| ④ 两个设计变更依据与 theme-dual 路径 B | PASS（设计依据成立，不消除②残留） | V/mirror-divergence.json initialDivergence：宿主 source=system/dark=true，而页面 media dark=false/data-theme=cursor-light，独立复现 final.md 的 Xvfb 分歧。后续由 nativeTheme dark→light 驱动页面正确翻转，同一 preference=system 不覆盖外设 nativeTheme，镜像 mtime 不变；theme-dual 完整用例绿，含路径 B。按页面实际 resolved 着色有依据。 |
+| ⑤ GTK 窗底首帧 ≥10 次冷启动独立统计 | PASS（统计完成，接受与否由用户决定） | 10 次已保存偏好冷启动，暗5/亮5，30fps 窗口录制中符合“整窗和控件区同为250”的首帧 0/10，豁免0帧。V/independent-summary.json 的 coldRecorded/coldGTK/coldByTheme；各 frames.json 均记录 unpresented。 |
+| ⑥ 单测≥449、renderer-grok check、上游diff=0 | PASS | V/unit.log：38 files / 449 tests passed；V/upstream-check.log：upstream diff=0: 332 files，资产 SHA256 校验成功。先 pnpm build，再跑生产 Electron 专项；未跑全套 e2e、SDK 回归。 |
+| ⑦ 主仓未提交的 builder 证据清单 | PASS | git status --short --untracked-files=all，V/main-status-final.txt；下方列出 builder 既有24项，均为 ??；本轮新增在 V/，另加本 VERIFY.txt。 |
+
+新问题（可直接成为修复任务）：
+- [FIX] 保存暗色后冷启动/重载，正文和 composer 已暗但 Connect apps、顶部搜索/加号圆钮仍亮白并渐变；现有 theme-flash 只在手动 set() 后测部件色，初始化仅测整窗均值，导致全绿漏报 | 复现：在本 SHA pnpm build 后，经 run-e2e.sh 跑 V/initial.spec.ts（命令见下）；或保存 dark 再重载并逐帧查看窗口录像。V/repeat-0/①③/reload-dark.mkv 第27帧，Connect apps=(219,219,219)、搜索/加号=(204,204,204)、composer=(28,28,28)，最终各部件约(31,31,31)；10/10 暗色冷启/重载录像采到局部亮帧。DOM探针 t=129ms、data-theme=cursor-dark、封面opacity=.224 时，composer=31、Connect apps=250、顶部钮=227；混色延续到 t=380.2ms（17个采样点），封面移除后仍存在 | 疑似位置：app/ui/renderer-grok/shim/src/desktop.ts:57-82（禁过渡只包 emitTheme，初始化 theme.initial 被上游消费的路径未受覆盖），以及 overrides/p5-55-layout.css 对应按钮过渡；漏测位置 app/ui/tests/e2e/theme-flash.spec.ts:129-146、175-209 | 严重度：major
+
+失败证据与目检
+1. V/dark-reload-f27.png 已用 Read 打开：画面确为 Grok Bot，左侧 New chat、中央暗色 Starting 封面淡出，Connect apps 白底、顶部搜索/加号亮灰底，正文和 composer 暗底，右上原生控件已暗。不是用户桌面或其他应用。
+2. V/recordings-contact.png 已用 Read 打开：20 个冷启/reload录像中整窗最接近阈值的帧；暗色多帧可直接看见亮白按钮，整窗均值仍仅约21，所以“整窗无反色”不能替代“部件无混色”。
+3. V/initial-dom.json 保存全部65个rAF采样及17个bad；V/initial-e2e.log 输出真实 1 failed，不是静态推测。
+4. V/initial-mixed-probe.py 独立按窗口录像像素复核，V/initial-mixed-probe.log 真实 exit=1：Connect apps亮色帧在暗冷启5/5、暗reload5/5出现，通常每段1–4个30fps采样帧；顶部按钮9/10段出现亮度>100的像素。composer没有对应亮色帧。
+5. V/cli-account-light.png、V/cli-dark.png 已用 Read 打开：均为本测试 Electron 的 New chat 单Bot页面；前者展开 Account 的 Settings/About 菜单，后者是暗色整页和暗色 composer。CLI 经 CDP 仅连接 run-e2e.sh 的 Xvfb Electron，执行了真实 click/press/screenshot，没有连接 :0。
+
+复刻录像诊断与不同时间点
+- 不是只读 builder 的 frames.json：本轮保存20段窗口级无损录像，并由 V/summarize.py 再用 ffmpeg 解码到独立的64×40整窗均值计算，逐帧重算阈值；保留每段原始帧数和首帧豁免数量。
+- 重载前开始录像，独立使用737/900/1063/1226/1389ms五组等待再 reload，不是原始诊断的两个固定触发点。
+- 另从原始 scenes.mp4 独立选22.100s与24.633s，而非22.033s/24.666s。V/red-independent-22.100.png 整窗亮度71.627，暗偏好下仍见反色淡出；V/red-independent-24.633.png 整窗亮度18.367，亮偏好下黑色Starting封面。两张均已 Read 目检确认为目标应用。另有24.733s淡出帧，不能把该帧当作亮色整窗阈值失败。
+
+GTK 残留的边界
+- 本轮观测率0/10不是“GTK首帧已修好”，更不是用户桌面不可见的证明。采样为30fps、软件渲染、无合成WM的Xvfb；ffmpeg在取得窗口XID后才启动，短于采样周期或录制就绪前的底色可能漏采。
+- 首帧豁免仅限冷启第0帧、整窗与原生控件区均≈250；本轮未使用豁免，没有中途放过亮帧。原残留仍交用户在真实桌面目检决定是否接受，验收员未操作真实桌面/GPU路径。
+- 当前总FAIL的原因不是用户尚未签收GTK残留，而是②局部混色有独立、可重复的实证。
+
+实际运行命令（所有e2e均由包装脚本启动Xvfb；测试helper使用临时HOME）
+工作目录 /tmp/bot-wt/P5-61f1/app/ui：
+  pnpm build
+  pnpm -C renderer-grok check
+  pnpm test
+  pnpm test:e2e tests/e2e/theme-flash.spec.ts tests/e2e/theme-dual.spec.ts
+  NODE_PATH=/tmp/bot-wt/P5-61f1/app/ui/node_modules pnpm test:e2e -c /home/lingxufeng/bot/work/p5-parity/evidence/P5-61f1/vfy/probe.config.ts repeated.spec.ts --grep 'reload：|冷启动|亮暗切换' --repeat-each=5
+  NODE_PATH=/tmp/bot-wt/P5-61f1/app/ui/node_modules pnpm test:e2e -c /home/lingxufeng/bot/work/p5-parity/evidence/P5-61f1/vfy/probe.config.ts extra.spec.ts
+  pnpm test:e2e tests/e2e/p6-workers.spec.ts --grep 'P6-15 worker 分组'
+  NODE_PATH=/tmp/bot-wt/P5-61f1/app/ui/node_modules pnpm test:e2e -c /home/lingxufeng/bot/work/p5-parity/evidence/P5-61f1/vfy/probe.config.ts initial.spec.ts
+独立帧分析：
+  python3 -I /home/lingxufeng/bot/work/p5-parity/evidence/P5-61f1/vfy/summarize.py
+  python3 -I /home/lingxufeng/bot/work/p5-parity/evidence/P5-61f1/vfy/initial-mixed-probe.py
+额外坏路径：extra.spec.ts 从主frame推 preference='evil' 或 resolved='evil'，镜像内容/mtime无变化；断言通过，现场值保存于 mirror-divergence.json.invalid。
+
+主仓 builder 未提交清单（24项；证据目录前缀 /home/lingxufeng/bot/work/p5-parity/evidence/P5-61f1/）
+  REPORT.txt
+  cold-dark-window.png
+  cold-dark.frames.json
+  cold-light-window.png
+  cold-light.frames.json
+  frames-summary.txt
+  red/cold-dark-first3.png
+  red/flake-light-15-20.png
+  reload-dark-contact.png
+  reload-dark-media.png
+  reload-dark-media.trace.json
+  reload-dark.frames.json
+  reload-dark.png
+  reload-dark.trace.json
+  reload-light-contact.png
+  reload-light-media.png
+  reload-light-media.trace.json
+  reload-light.frames.json
+  reload-light.png
+  reload-light.trace.json
+  switch-dark.png
+  switch-light.png
+  switch.trace.json
+另一个文件：/home/lingxufeng/bot/work/p5-parity/ui/P5-61f1-final.md。
+主会话若合并应显式选择这些文件及本轮 vfy 的脚本/JSON/PNG/VERIFY.txt，不能整目录盲add运行时内容。*.log和*.mkv被gitignore，磁盘上有证据但不出现在普通git status清单；需要Git长期封存时应单独审查并显式选择。本验收未执行git add、commit或合并。
+
+进程与隐私收尾
+- 录像统一 ffmpeg x11grab -window_id，只截目标应用窗口；CLI截图仅页面，不截全屏。没有 :0、没有真实HOME运行应用、没有读取凭证。
+- finally只关闭本测试启动的Electron/runtime、结束自身ffmpeg；未手工kill其他进程。
+- 最后 /home/lingxufeng/bot/scripts/bot-reap --dry-run --match p561f1 和大小写补查 --match P5-61f1 均无匹配，输出分别 V/cleanup-lower.log、V/cleanup-upper.log（空输出，exit0）。HEAD终检仍为上述SHA，产品工作树干净。

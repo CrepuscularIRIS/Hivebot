@@ -1,0 +1,18 @@
+- id: agent-default-model
+  config:
+    provider: p2fake
+    model: p2fake
+- insert:
+    - id: p2sdk-fake-llm
+      name: 'file:///home/lingxufeng/bot/app/sdk/tests/support/fake/plugin.mjs'
+      config:
+        providers:
+          - id: p2fake
+            name: P2 Fake
+            models:
+              - id: p2fake
+                contextWindow: 131072
+- id: sandbox-local
+  config:
+    runnerCommand: ['/usr/bin/python3', '-I', '/home/lingxufeng/bot/work/p5-parity/evidence/r5-run-rFPpjE/bwrap-wrapper.py', '/home/lingxufeng/bot/work/p5-parity/evidence/r5-run-rFPpjE/hide-read/secret']
+    runnerFailureSignatures: ['bwrap: ']

@@ -1,0 +1,8 @@
+  boot-cover.spec.ts:11:5 › 就绪：封面收起、不挡点击；原版 app 图标资产可加载；无目录源 → 市场空态
+  boot-cover.spec.ts:28:5 › 引擎不可达：Starting → Still connecting → Couldn't connect + Reload；亮暗截图
+  journeys/d10b-d7.spec.ts:31:5 › D10b：#4 屏障（PBOTS_TEST_GATE_4）中重载 renderer → 同一 session 恢复、连接器完整、放行后可用
+  journeys/d10b-d7.spec.ts:71:5 › D7：直调 #4 未装连接器 → !ok 且列表无此 bot；重启孤儿不出行、其他 bot 可用；failNext 真实 UI 报错
+  market.spec.ts:78:5 › P-C ①：入口 Connect apps → 浏览 / 搜索 / 分页 / 切源重置 / 三分类 109-1-1 / 无启用与源写入口
+  market.spec.ts:162:5 › P-C ②③④：Connect 旅程（串行 / 可离开 / 重拉 #16）→ New bot with this app 预勾走 #4 + D5 UI 全条款 + not-bundle
+  workspaces.spec.ts:71:5 › ③ 两个 bot 工作区互不可见（bash 在 wrapper 内，X 看不见 Y 哨兵、自工作区可见）
+Total: 65 tests in 31 files

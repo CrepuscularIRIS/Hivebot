@@ -1,0 +1,33 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e4]:
+    - generic [ref=f4e5]:
+      - complementary "Agents" [ref=f4e7]:
+        - button "New" [ref=f4e10] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e11]: 
+        - button "Search" [ref=f4e12] [cursor=pointer]:
+          - generic [ref=f4e13]:
+            - generic [aria-hidden] [ref=f4e14]: 
+            - text: Search
+        - region "Agent list" [ref=f4e15]:
+          - generic [ref=f4e16]:
+            - generic "VFY-HISTORY-1-EARLIEST chat preview" [ref=f4e19]:
+              - button "VFY-HISTORY-1-EARLIEST" [ref=f4e20] [cursor=pointer]:
+                - strong [ref=f4e31]: VFY-HISTORY-1-EARLIEST
+            - generic "请执行验收命令并显示结果 chat preview" [ref=f4e34]:
+              - button "请执行验收命令并显示结果" [ref=f4e35] [cursor=pointer]:
+                - strong [ref=f4e46]: 请执行验收命令并显示结果
+        - separator "Resize sidebar" [ref=f4e47]
+      - button "Connect apps" [ref=f4e49] [cursor=pointer]
+      - button "Account" [ref=f4e52] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f4e53]: P
+    - generic [ref=f4e54]:
+      - main [ref=f4e55]:
+        - group "VFY-HISTORY-1-EARLIEST" [ref=f4e56]:
+          - button "View agent settings" [ref=f4e57] [cursor=pointer]:
+            - generic [ref=f4e66]: VFY-HISTORY-1-EARLIEST
+        - log "Conversation transcript" [ref=f4e67]
+      - textbox "Prompt" [ref=f4e72]:
+        - paragraph [ref=f4e73]: Message VFY-HISTORY-1-EARLIEST
+  - status:
+    - generic: Grok Bot
+    - generic: Starting…

@@ -1,0 +1,61 @@
+== P5-01.f2 独立复验探针（verifier GLM 5.3，2026-11-03 11:29–11:40，7.0.0-42-generic，bwrap 0.9.0）==
+分支 feat/P5-01f2 @ 71b91be0fa707c3a87a3601c625bc614cad12800（/tmp/bot-wt/P5-01f2，验收期间 git status 干净、HEAD 未漂移）
+
+--- ① 全量 + 三文件自跑（HOME=/tmp/bot-vfy-P5-01f2）---
+$ pnpm -C /tmp/bot-wt/P5-01f2/app/sdk test
+ Test Files  31 passed (31)
+      Tests  249 passed (249)
+$ vitest run sandbox-wrapper sandbox-hardened w1ap0-matrix
+ Test Files  3 passed (3)
+      Tests  29 passed (29)   # wrapper 10 + hardened 9 + matrix 10，与报告 10/10 + 19/19 一致
+
+--- ② 机制抽验（自构哨兵 /var/tmp/bot-vfy-P5-01f2-sec/token='VFY-SECRET-P501F2'，真实 wrapper）---
+$ python3 -I bwrap-wrap.py --home /tmp/vfy-h --mask <token> --ro-bind / / --dev /dev --unshare-pid
+  --proc /proc --die-with-parent --tmpfs /tmp --bind <ws> <ws> -- /bin/sh -c '<probes>'
+cat_rc=0 out=[]            # cat 成功且空
+type_f=0                   # 普通文件
+size_s=1                   # 空文件
+is_chardev=1               # 非字符设备（旧原语是 crw 1,3）
+stat_type=regular empty file size=0
+mountinfo: 7895 7845 0:109 /bindfilerKtFWb//deleted /var/tmp/.../token ro,nosuid,nodev,relatime - tmpfs tmpfs rw,uid=1000,gid=1000,inode64
+                            # 源是 tmpfs bindfile 普通文件，非 devtmpfs /null —— 与 f2-boot-probe.txt ④ 同构
+cat /dev/null → native_devnull_rc=0   # 沙箱原生 /dev/null 不受影响
+宿主不变: HOST_CONTENT=[VFY-SECRET-P501F2]
+
+写入探针: echo X > <token>（沙箱内）→ cannot create ...: Read-only file system，write_rc=2，宿主仍 [VFY-SECRET-P501F2]
+
+--- ③ 红基线（隔离副本 /tmp/bot-vfy-P5-01f2/red，hide_args 退回 ['--ro-bind','/dev/null',path]）---
+$ vitest run sandbox-wrapper sandbox-hardened
+ ❯ sandbox-wrapper.test.ts (10 tests | 2 failed)
+   × 挂载序 dry-run（argv 形状断言：期望 --perms 0644 --ro-bind-data）
+   × f2 文件根遮蔽: AssertionError: expected 'rc=1 bytes=0\ntype_f=1\nsize_s=1\n' to contain 'rc=0 bytes=0'
+ ❯ sandbox-hardened.test.ts (9 tests | 2 failed)
+   × ②: 探针 ppp_cat：期望 0，实际 1
+   × ⑧（同 maskProbeScript 复用，连带红）
+$ vitest run w1ap0-matrix.test.ts
+ ❯ (10 tests | 2 failed)
+   × ①: ppp cat rc=0 且空（f2 已钉死）：1:empty: expected '1:empty' to match /^0:empty$/
+   × ⑧ 格数清点连带红
+恢复绿：71b91be 树未动（红基线只在隔离副本做），全量 31/249 + 三文件 29/29 已在 ① 证明绿。
+字符设备签名与预测一致：rc=1 bytes=0、type_f=1（test -f 对字符设备失败）。
+
+--- ④ 机制论证上游核对（2026-11-03 拉取）---
+bwrap v0.9.0 bind-mount.c bind_mount()（tag v0.9.0, blob 2757cae）:
+  new_flags = current_flags | (devices ? 0 : MS_NODEV) | MS_NOSUID | (readonly ? MS_RDONLY : 0);
+  → 非 BIND_DEVICES 的一切用户 bind 无条件强制 MS_NODEV，与报告引文逐字一致
+linux master fs/namei.c may_open():
+  case S_IFBLK: case S_IFCHR:
+    if (!may_open_dev(path)) return -EACCES;
+  may_open_dev(): !(path->mnt->mnt_flags & MNT_NODEV) && !(path->mnt->mnt_sb->s_iflags & SB_I_NODEV)
+  → 字符设备在 nodev 挂载上 open 必 EACCES，链路成立
+bwrap v0.5.0 bubblewrap.c: "--ro-bind-data FD DEST  Copy from FD to file which is readonly bind-mounted on DEST"
+  → 「--ro-bind-data 自 0.5.0 存在」属实
+分支内 evidence/P5-01/f2-boot-probe.txt（28 行）与上述全部同构；P5-06 verify f2-repro.txt 的 rc=1 侧观察
+（挂载生效 inode 已是 /dev/null 但 open EACCES）与本机制解释一致。
+
+--- ⑤ 坏路径：并发 + 多文件根 ---
+3 实例并发 × 每实例 --mask 两个文件根（含中文内容哨兵）：
+  3×2 全部 cat=0 / tf=0 / ts=1；宿主 HOST_A=[SECRET-A] HOST_B=[SECRET-B-长内容] 不变
+
+--- 观察（非本任务引入，不动手）---
+/tmp 下 213 个历史 p2sdk-handoff-* 与 /tmp/p5-01-* 测试残留跨任务积累（LEARNINGS 已有「运行时目录用后即删」规则，属测试卫生遗留）。

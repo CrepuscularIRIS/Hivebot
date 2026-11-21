@@ -1,0 +1,20 @@
+✔ 对照：无替换时 write 落在工作区内 (39.940521ms)
+✔ 对照：判定前已是区外软链 → shell-ask 直接 deny（P6-25 格④） (5.948573ms)
+[Q1-write] decision=allow error= null result.path= /tmp/vfy-r-p625-b/run-FWHE4E/outside/race.txt
+[Q1-write] outside/race.txt exists= true  ws/sub.orig/race.txt exists= false
+✔ Q1 write：pre-execute 放行后、execute 前把 sub 换成区外软链 → 文件落在哪 (16.005126ms)
+[Q1-edit] decision=allow error= null outside/victim.txt= "PWNED\n"
+✔ Q1 read+edit：两次都在判定后换链 → 区外已有文件被改写 (9.987853ms)
+[Q2] second decision= {"kind":"deny","reason":"p2sdk policy: write-outside-workspace denied (the target is outside this session workspace; the call does not run)"}
+✔ Q2 无缓存：第一次 write 放行后替换目录，第二次 write 重新判定 → deny (5.213111ms)
+[side-read] decision=allow error= null result 含区外真文件第 2 行 "\"name\": \"p2sdk\"," = true 含诱饵= false
+[side-read] result head: {"path":"/home/lingxufeng/bot/app/sdk/package.json","offset":1,"lines":[{"number":1,"text":"{"},{"number":2,"text":"  \"name\": \"p2sdk\","},{"number":3,"text":"  \"version\": \"0.1.0\","},{"number":4
+✔ 旁支（范围外，P5-21 起）read：判定后换链到非 /tmp 区外目录 → 无卡读到区外内容（读不经 fence） (2.775213ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 222.048121

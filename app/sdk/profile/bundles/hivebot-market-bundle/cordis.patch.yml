@@ -1,0 +1,8 @@
+# T51: plugin-market lives in the bundle layer, mirroring DSH's own
+# experimental/plugin-market-bundle. Bundle rows are not "overlays", which is
+# what lets settings.update write index sources to profiles/web/cordis.patch.yml
+# (an insert row on any --patch layer is refused with
+# plugin-market/settings-unavailable — v2/v6 probes).
+- insert:
+    - id: plugin-market
+      name: '@deepseek-ai/dsh-plugin-market'

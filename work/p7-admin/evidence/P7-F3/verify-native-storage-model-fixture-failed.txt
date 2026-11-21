@@ -1,0 +1,16 @@
+file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1_@d_b8f0e35f052bed556289d691eac1cb2a/node_modules/@deepseek-ai/dsh-session-persistence/lib/index.js:194
+		throw new SessionPersistenceCorruptionError(`stored session "${meta.id}" failed validation: ${String(error)}`, { cause: error });
+		      ^
+
+SessionPersistenceCorruptionError: stored session "worker" failed validation: Error: session event at seq 4 message must have model source
+    at validateStoredEvents (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1_@d_b8f0e35f052bed556289d691eac1cb2a/node_modules/@deepseek-ai/dsh-session-persistence/lib/index.js:194:9)
+    at Proxy.decodeStoredLog (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:2876:3) {
+  [cause]: Error: session event at seq 4 message must have model source
+      at assertMessageEventShape (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1_@deepseek-ai+d_4ebf8008c2fec1af54c891a9de043297/node_modules/@deepseek-ai/dsh-session/lib/index.js:1213:82)
+      at adoptSessionEvent (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1_@deepseek-ai+d_4ebf8008c2fec1af54c891a9de043297/node_modules/@deepseek-ai/dsh-session/lib/index.js:1089:2)
+      at validateStoredEvents (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alpha.1_@d_b8f0e35f052bed556289d691eac1cb2a/node_modules/@deepseek-ai/dsh-session-persistence/lib/index.js:191:66)
+      at Proxy.decodeStoredLog (file:///tmp/bot-wt/P7-F3/app/sdk/node_modules/.pnpm/@deepseek-ai+dsh-session-persistence-jsonl@0.2.2-alpha.2_@deepseek-ai+cordis@4.0.6-alph_9128ff8fd2712f5e555643e9b5d9ef64/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js:2876:3)
+}
+
+Node.js v24.22.2
+EXIT 1

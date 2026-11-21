@@ -1,0 +1,34 @@
+
+ RUN  v5.0.5 /tmp/bot-wt/P7-F3/app/ui
+
+ ❯ tests/unit/admin/recovery.test.ts (7 tests | 1 failed) 207ms
+   ❯ P7-F3 main recovery gate (7)
+     × actual M3 reconnect hook exposes success, not merely settled, and fences old completions 35ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/admin/recovery.test.ts > P7-F3 main recovery gate > actual M3 reconnect hook exposes success, not merely settled, and fences old completions
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/admin/recovery.test.ts:57:36
+     55|     calls[0].resolve({ ok: false, error: { code: 'failed', message: 'f…
+     56|     await tick()
+     57|     expect(ready.status().restore).toBe(false)
+       |                                    ^
+     58|     await expect(restored(1)).rejects.toThrow()
+     59|     calls[1].resolve({ ok: true, value: { presetId: 'recipe' } })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  09:42:47
+   Duration  540ms (tests 48%, transform 39%, import 10%, setup 3%, worker 1%)
+

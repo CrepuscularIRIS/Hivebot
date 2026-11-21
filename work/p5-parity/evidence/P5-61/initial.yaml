@@ -1,0 +1,40 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - complementary "Agents" [ref=e7]:
+      - button "New" [ref=e10] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e11]: 
+      - button "Search" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]:
+          - generic [aria-hidden] [ref=e14]: 
+          - text: Search
+      - region "Agent list" [ref=e15]:
+        - generic "Main Bot chat preview" [ref=e20]:
+          - button "Main Bot" [active] [ref=e21] [cursor=pointer]:
+            - strong [ref=e32]: Main Bot
+          - tooltip "Main Bot chat preview" [ref=e33]:
+            - generic [ref=e34]:
+              - generic [ref=e35]: Main Bot
+              - time [ref=e46]: now
+              - text: No messages yet
+        - generic [ref=e47]:
+          - button "Workers" [expanded] [ref=e48] [cursor=pointer]
+          - generic "Doc writer chat preview" [ref=e53]:
+            - button "Doc writer" [ref=e54] [cursor=pointer]:
+              - generic [ref=e64]:
+                - strong [ref=e65]: Doc writer
+                - generic [ref=e66]: Not started yet
+        - button "Done 1" [ref=e68] [cursor=pointer]:
+          - generic [ref=e69]: Done
+          - generic [ref=e70]: "1"
+      - separator "Resize sidebar" [ref=e71]
+    - button "Connect apps" [ref=e73] [cursor=pointer]
+    - button "Account" [ref=e76] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e77]: P
+  - generic [ref=e78]:
+    - main [ref=e79]:
+      - group "Main Bot" [ref=e80]:
+        - button "View agent settings" [ref=e81] [cursor=pointer]:
+          - generic [ref=e90]: Main Bot
+      - log "Conversation transcript" [ref=e91]
+    - textbox "Prompt" [ref=e96]:
+      - paragraph [ref=e97]: Message Main Bot

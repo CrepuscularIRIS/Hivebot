@@ -1,0 +1,6 @@
+# 2026-11-06 manager T5 D7：0.78.1 断连相关文案（LC_ALL=C grep -a -c -F，COM=index.eager-common-DbK3Oi_r.js APP=index.eager-app-iGTgHP_Q.js）
+"xIgsFr":["Connection lost"] => COM 1 APP 0
+"BakXLg":["Reconnecting"] => COM 1 APP 0
+case`channel-disconnected`:return _i._({id:`qAYHaG` => COM 0 APP 1
+xIgsFr => COM 1 APP 1
+解读：原版有「Connection lost」(xIgsFr) 与「Reconnecting」(BakXLg) 文案；xIgsFr 在 APP 的使用点未追到（APP 计数见上）；BakXLg 出现在一组状态 id 表（OKt/kKt/AKt），box 重连由服务端管理，客户端无「结果未知」专用文案。

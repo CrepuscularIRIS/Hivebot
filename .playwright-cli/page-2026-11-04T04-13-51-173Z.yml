@@ -1,0 +1,51 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - complementary "Agents" [ref=e7]:
+      - button "New" [ref=e10] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e11]: 
+      - button "Search" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]:
+          - generic [aria-hidden] [ref=e14]: 
+          - text: Search
+      - region "Agent list" [ref=e15]:
+        - generic [ref=e16]:
+          - generic "New chat chat preview" [ref=e1527]:
+            - button "New chat" [ref=e1528] [cursor=pointer]:
+              - strong [ref=e1539]: New chat
+          - generic "New chat chat preview" [ref=e19]:
+            - button "New chat" [ref=e20] [cursor=pointer]:
+              - strong [ref=e31]: New chat
+      - separator "Resize sidebar" [ref=e32]
+    - button "Connect apps" [ref=e34] [cursor=pointer]
+    - button "Account" [ref=e37] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e38]: P
+  - generic [ref=e1540]:
+    - main [ref=e1541]:
+      - group "New chat" [ref=e1542]:
+        - button "View agent settings" [ref=e1543] [cursor=pointer]:
+          - generic [ref=e1552]: New chat
+        - button "Stop" [ref=e1565] [cursor=pointer]:
+          - generic [aria-hidden] [ref=e1566]: 
+      - log "Conversation transcript" [ref=e1553]:
+        - separator [ref=e1568]: Today 11:13 PM
+        - article "You 11/3/2026, 11:13:39 PM" [ref=e1569]:
+          - generic [ref=e1570]:
+            - group [ref=e1571]:
+              - paragraph [ref=e1573]: read hello.txt please
+            - toolbar "Message actions for your message (145e499c-c4a5-41f3-84ee-deeaee2f3fed)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+        - listitem [ref=e1574]:
+          - button "Mcp__mcp-server-filesystem-3408f957__read_file /tmp/p2sdk-runtime-HqEN3M/workspace/hello.txt" [ref=e1575] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e1576]: 
+            - generic [ref=e1577]: Mcp__mcp-server-filesystem-3408f957__read_file
+            - generic [ref=e1578]: /tmp/p2sdk-runtime-HqEN3M/workspace/hello.txt
+        - article "New chat 11/3/2026, 11:13:51 PM" [ref=e1592]:
+          - generic [ref=e1593]:
+            - group "Agent message" [ref=e1594]:
+              - paragraph [ref=e1596]: D5 读取完成
+            - toolbar "Message actions for New chat (live-stream)":
+              - button "More message actions":
+                - generic [aria-hidden]: 
+    - textbox "Prompt" [ref=e1558]:
+      - paragraph [ref=e1559]: Message New chat

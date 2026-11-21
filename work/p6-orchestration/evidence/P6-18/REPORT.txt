@@ -1,0 +1,61 @@
+P6-18 OS 通知（决策 23）builder 报告 2026-11-04 21:16
+分支 feat/P6-18（worktree /tmp/bot-wt/P6-18，基点 main@ae41ce7）
+commits: b9cf8fa feat(P6-18) + bc86f2e test(P6-18)
+
+== 改动文件（git diff main --name-only）==
+- app/ui/main/notify/worker-notify.ts（新，~180 行）：决策逻辑
+- app/ui/main/index.ts（仅接线：import + 1 行 wireWorkerNotify 调用，diff +5 行含注释/空行）
+- app/ui/tests/unit/notify/worker-notify.test.ts（新，11 用例）
+- app/ui/tests/e2e/p6-notify.spec.ts（新，派发词授权的 e2e 扩展，PLAN 区域列外）
+- app/ui/scripts/run-e2e.sh（测试卫生守卫，见下）
+
+== 验收对照（PLAN P6-18 行，单测 mock Notification）==
+① 同 eventId 恰 1 次（重连不重发）: 测试① PASS（重投同 eventId 后仍 1 条、show 1 次）
+② 窗口聚焦时 0 次: 测试③ PASS（聚焦 0 次；离开后仍未决下一轮补发 1 次——设计取舍：
+   聚焦压下不记 seen，用户在场看得到卡，离开后仍未决才唤起）
+③ 完成类 0 次: 测试④ PASS（cancel 下账后不发；终态事件本就不入 ledger）
+④ 非 worker bot 0 次: 测试⑤ PASS（主 bot 事件 skippedNonWorker）
+⑤ 点击回调打开对应 worker: 测试⑦ PASS（restore→focus→openWorker(botId)；
+   窗口销毁后的迟到点击不抛）
+⑥ git diff main -- app/ui/main/index.ts 只有接线行: PASS（代码 2 行：import + 调用）
+
+== e2e（run-e2e.sh / Xvfb）与覆盖边界（如实注明）==
+Xvfb 无真实通知守护。实测两个硬事实（探针 /tmp/bot-p618-probe）：
+- Linux/libnotify 下 Notification.isSupported() 恒 true（链接期判定），
+  「守护不可达」的真实信号是 Notification 'failed' 事件；
+- Xvfb 下窗口默认聚焦（blur() 可解除）。
+p6-notify.spec.ts：死总线 + blur 窗口 → worker 真链路挂起审批（真 shell-ask
+waterfall → $events → m1Ledger → 巡检）→ 断言 shown=1（恰 1 次尝试）、
+failed=1（降级）、后续 tick 不重试、主进程不崩、非 worker 分支未走。
+不可证范围：真实弹窗呈现、守护端交互、点击导航（无真通知可点）——点击路径
+由单测⑦覆盖，真实呈现留手动验收（PBOTS_E2E_NO_XVFB=1 + 真桌面）。
+
+== 发现与处置 ==
+1. [新守卫] run-e2e.sh 原先只隔离显示不隔离 DBus：P6-18 接线后凡触发 worker 挂起
+   的 e2e（p6-workers 等）会向用户真实桌面弹 OS 通知。已改：Xvfb 分支统一
+   DBUS_SESSION_BUS_ADDRESS=死路径（与无 DBus 的 CI 容器同语义），NO_XVFB 保留真实。
+   坦白：加守卫前我的两次 Electron 探针（真总线）与两轮 p6-workers 回归在用户桌面
+   弹过若干条测试通知（title 't' / 'xvfb-t' / Personal Bots worker 通知）。
+2. [既有问题，非本任务] p6-stuck.spec.ts 两条在基点 ae41ce7 干净树同样红
+   （create_bot result never lands in main log；已用 patch 收起法在基点复跑证实）。
+   疑似环境/链路问题，未扩范围排查。
+3. [契约留口] openWorker 接线为 webContents.send('pbots:open-worker', botId)；
+   renderer 侧无监听者（P6-15/16 已合并但未建此通道）。main 侧点击链已就绪，
+   renderer 消费归 P6-16 后续/新任务（通道名与载荷已定）。
+
+== 复测命令 ==
+cd /tmp/bot-wt/P6-18/app/ui
+HOME=/tmp/bot-p618-unit ./node_modules/.bin/vitest run tests/unit/notify/   # 11 passed
+HOME=/tmp/bot-p618-unit ./node_modules/.bin/vitest run                    # 490 passed (43 files)
+PATH=$PWD/node_modules/.bin:$PATH HOME=/tmp/bot-p618-build pnpm build
+PATH=$PWD/node_modules/.bin:$PATH HOME=/tmp/bot-p618-e2e sh scripts/run-e2e.sh \
+  tests/e2e/p6-notify.spec.ts tests/e2e/p6-workers.spec.ts \
+  tests/e2e/m2-port.spec.ts tests/e2e/boot-cover.spec.ts                  # 11 passed
+（另 batch2：p6-fold/d4-deadline/questions-answer/restore 各绿；p6-stuck 基点即红）
+
+== 观测面 ==
+globalThis.__pbotsNotify.{stats, review(), stop(), testBlurWindow()}（照 __pbotsM2 先例）
+stats: {supported, shown[], failed[], suppressedFocused[], skippedNonWorker[],
+skippedUnsupported[], readErrors}
+
+待 verifier 验收。

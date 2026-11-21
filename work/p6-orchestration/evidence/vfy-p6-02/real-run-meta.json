@@ -1,0 +1,22 @@
+{
+  "ts": "2026-11-03T18:09:29.989Z",
+  "mode": "real",
+  "model": "glm-5.3-flash",
+  "llmBase": "http://127.0.0.1:4001",
+  "litellm": {
+    "ok": true,
+    "hasModel": true,
+    "modelCount": 21
+  },
+  "presetSectionSha256": "c7c53cd4e281e361191cbdecf873d2c6c5a5d9d7e56277091bf0d54a9734b356",
+  "personaBaseFirstLine": "You are a coding agent powered by the {{model}} model.",
+  "entries": [
+    {
+      "id": "s5-color-mix",
+      "rep": 1,
+      "outcome": "turn/end",
+      "sessionId": "session-35bf6be8-d2db-4213-8735-629c740f7257",
+      "raw": "/tmp/bot-wt/P6-02/work/p6-orchestration/evidence/D3/raw/s5-color-mix-1.jsonl"
+    }
+  ]
+}

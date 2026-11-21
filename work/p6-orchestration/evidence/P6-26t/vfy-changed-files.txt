@@ -1,0 +1,6 @@
+app/sdk/profile/tiers.json
+app/sdk/src/policy/shell-ask.mjs
+app/sdk/tests/e2e/process-tiers.test.ts
+app/sdk/tests/e2e/w1ap0-matrix.test.ts
+app/sdk/tests/support/p626t-recorder.mjs
+app/sdk/tests/support/p626t-regression.mjs

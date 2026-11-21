@@ -1,0 +1,5 @@
+(node:2679440) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///tmp/bot-wt/P7-F2f2/app/ui/main/admin/channel.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /tmp/bot-wt/P7-F2f2/app/ui/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"input":{"sessionId":"s","turnId":"t","originRef":"host-origin","action":"list","params":{}},"path":"AdminChannel.request -> wireAdminChannel.verify -> registered consumer -> main rpc -> same-peer AdminChannel.respond -> SDK rejection","rpcFrames":[{"method":"pbots/admin.respond","args":{"request":{"requestId":"cdab8fb1-35c9-412b-beda-4a7c2f6c168f","error":{"code":"mock-upstream-error","message":"failed","details":{}}}}}],"actual":{"error":{"code":"mock-upstream-error","message":"mock-upstream-error: mock-upstream-error: failed","details":{}}}}

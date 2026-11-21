@@ -1,0 +1,8 @@
+ ✓ tests/e2e/mock-demo.test.ts > boots in a mkdtemp home with a 0600 launch token and no token in output 1ms
+ ✓ tests/e2e/mock-demo.test.ts > serves the session API over loopback to the connected client 39ms
+ ✓ tests/e2e/mock-demo.test.ts > release(gateId) touches the barrier file without opening a port 0ms
+ ✓ tests/e2e/mock-demo.test.ts > min-client self-assertions pass under the mock provider 350ms
+ ✓ tests/e2e/mock-demo.test.ts > startRuntime boots in-process (coverage for src/start.ts runtime path) 1393ms
+ ✓ tests/e2e/mock-demo.test.ts > main returns non-zero when no ready line arrives within the timeout 4ms
+ Test Files  1 passed (1)
+      Tests  6 passed (6)

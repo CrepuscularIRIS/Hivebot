@@ -54,7 +54,15 @@ export async function apply(ctx: Context, config: DeploymentConfig): Promise<voi
     const m = location.pathname.match(/(session-[0-9a-f-]{36})/);
     let sessionId = m ? m[1] : null;
     if (!sessionId) {
-      const domHit = (document.body.innerHTML.match(/session-[0-9a-f-]{36}/g) || [])[0];
+      // 纠错轮四（审查 #3）：结构化锚点优先——active 侧栏项/aria-current 是「当前打开会话」的
+      // 语义标记；body.innerHTML 全局 match 取首个命中在侧栏按活跃排序时可能锚到列表顶部的
+      // 另一个会话（串台新形态），降级为最后回退。
+      const structEl = document.querySelector('[class*=active][id^=session-], [aria-current][id^=session-], [class*=active] [id^=session-], [aria-current] [id^=session-]');
+      const attrEl = document.querySelector('[data-session-id]');
+      const fromStruct = (structEl && structEl.id) || (attrEl && attrEl.getAttribute('data-session-id')) || null;
+      const domHit = fromStruct && /^session-[0-9a-f-]{36}$/.test(fromStruct)
+        ? fromStruct
+        : (document.body.innerHTML.match(/session-[0-9a-f-]{36}/g) || [])[0];
       if (domHit) sessionId = domHit;
     }
     // 最后回落：state API 主 bot（仅当 URL 和 DOM 都无会话——如刚打开的主会话页）

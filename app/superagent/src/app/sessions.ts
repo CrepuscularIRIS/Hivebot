@@ -29,7 +29,8 @@ export interface SessionsHost {
   readonly effects: Pick<Effects, 'enqueue' | 'handle' | 'idle' | 'pending'>
   /** The `models` health entry, which reports managed sessions waiting on a model-budget retry. */
   readonly health: HealthEntry
-  readonly masterId: string
+  /** 纠错轮四：活读——rebind 后 relay/preset/resolveAgent/decorate 跟随新段（构造时快照会留永久半切换）。 */
+  masterId(): string
   readonly lifetime: AbortSignal
   closing(): boolean
   /** Execution environment variables for `ticket`, rendered into its worker's system prompt. */
@@ -101,7 +102,7 @@ export class Sessions {
     this.ctx = host.context
     this.agentDelivery = new AgentDelivery(host.context)
     // Deliver relays and notices to the main Session in the order they were queued.
-    host.effects.handle('relay', ({ text }, requestId) => this.prompt(host.masterId, requestId, text, 'steer'), { ordered: true })
+    host.effects.handle('relay', ({ text }, requestId) => this.prompt(host.masterId(), requestId, text, 'steer'), { ordered: true })
     host.effects.handle('notice', ({ value, summary }, name) => this.inject(name, value, summary), { ordered: true })
   }
   /** Subscribes to host agent and session events so newly created sessions are decorated and model-budget retries are reflected in health. Call once at startup. */
@@ -124,7 +125,7 @@ export class Sessions {
     ctx.inject(['agentPresets'], child => {
       child.on('agent-preset/selected', (sessionId, preset) => {
         const ticketId = ticketOfSession(sessionId), agent = ctx.agents.get(sessionId as SessionId)
-        const ours = sessionId === this.host.masterId ? ROUTER_PRESET : ticketId && this.host.store.tickets.get(ticketId) ? WORKER_PRESET : undefined
+        const ours = sessionId === this.host.masterId() ? ROUTER_PRESET : ticketId && this.host.store.tickets.get(ticketId) ? WORKER_PRESET : undefined
         if (!ours || preset === ours || !agent) return
         const presets = child.get('agentPresets') as { select(agent: Agent, preset: string): Promise<string> }
         presets.select(agent, ours).catch(() => {})
@@ -182,7 +183,7 @@ export class Sessions {
   }
   /** Injects a notice into the main Session without waking it; no-op if the main Session does not exist yet. */
   private async inject(name: string, value: Record<string, unknown>, summary: string): Promise<void> {
-    const resolved = await this.ctx.sessionController.resolveAgent(this.host.masterId as SessionId)
+    const resolved = await this.ctx.sessionController.resolveAgent(this.host.masterId() as SessionId)
     if ('error' in resolved) return
     // Deduplicate by notice name and payload hash so retries are idempotent while updated payloads still deliver.
     const text = JSON.stringify(value)
@@ -236,7 +237,7 @@ export class Sessions {
   private async decorate(agent: Agent): Promise<void> {
     if (this.bindings.has(agent)) return
     const host = this.host
-    const master = agent.id === host.masterId
+    const master = agent.id === host.masterId()
     const ticket = master ? undefined : this.ticketOf(agent)
     if (!master && !ticket) { this.limitSubagent(agent); return }
     const binding: SessionBinding = { disposers: [] }

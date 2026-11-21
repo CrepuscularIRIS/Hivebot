@@ -15,7 +15,7 @@ import { mkdirSync , watch as fsWatch } from 'node:fs'
 import { join } from 'node:path'
 import { acquireStateLock } from './lock.js'
 import { Engine, key, reasonText, type EngineForSettings, type ReceiveResult, type Ticket, type Trigger } from '../core/index.ts'
-import { readDsBotMainBotId, readDsBotRoomIds, readDiscoveredMasterId, resolveMasterId, watchBotsMeta, resolveLiveMasterId } from './master-id.ts'
+import { readDsBotMainBotId, readDsBotRoomIds, readDsBotBotParts, readDiscoveredMasterId, resolveMasterId, watchBotsMeta, resolveLiveMasterId } from './master-id.ts'
 import { watchLocalSession } from '../sources/local.ts'
 import { allowedSender, settingsPolicy } from '../policy.ts'
 import { SourceRegistry } from '../sources/registry.ts'
@@ -127,10 +127,10 @@ export class Runtime extends Service implements SourceHost {
       const links: LinkHost = { store, links: this.sourceLinks, commands, sources, lifetime: this.lifetime }
       const link = (trigger: Trigger, signal?: AbortSignal) => sourceLink(links, trigger, signal)
       const environment = (ticket: Ticket) => this.ticketEnvironment(ticket)
-      const resources: ResourceHost = { store, pages: new TextCache(4_000_000), prompts, commands, masterId, context: ctx,
+      const resources: ResourceHost = { store, pages: new TextCache(4_000_000), prompts, commands, masterId: () => this.masterId, context: ctx,
         promptVersion: id => this.sessions.promptVersion(id), mayRead: (id, revision) => this.sessions.mayRead(id, revision),
         feishuPageSize: () => feishuSettings(sources).readPageSize, sourceLink: link }
-      const sessions = this.sessions = new Sessions({ context: ctx, store, prompts, effects, health: board.claim('models'), masterId,
+      const sessions = this.sessions = new Sessions({ context: ctx, store, prompts, effects, health: board.claim('models'), masterId: () => this.masterId,
         lifetime: this.lifetime,
         closing: () => this.closing(), environment,
         tools: (agent, ticket) => ticket ? executorTools(this.toolHost, ticket) : mainTools(this.toolHost, agent) })
@@ -142,7 +142,7 @@ export class Runtime extends Service implements SourceHost {
         repliedTo: trigger => repliedTo({ store, sources }, trigger) })
       this.assessor = new MasterAssessor({ get engine() { return runtime.engine }, commands, get deployment() { return setup.deployment }, effects,
         settings: () => store.settings(), paused: () => this.paused(), threadContext: trigger => sources.threadContext(trigger),
-        deliver: (id, text) => sessions.prompt(masterId, id, text, 'wake'), candidateCard: candidate => candidateCard(links, candidate) })
+        deliver: (id, text) => sessions.prompt(this.masterId, id, text, 'wake'), candidateCard: candidate => candidateCard(links, candidate) })
       const outbox = this.outbox = new Outbox({ store, effects, sources, commands, paused: () => this.paused() })
       const { assessor, executor } = this
       const policy = () => settingsPolicy(store.settings(), sources)
@@ -258,7 +258,8 @@ export class Runtime extends Service implements SourceHost {
    */
   private async rebindMasterIfNeeded(): Promise<void> {
     const sc = this.ctx.sessionController as unknown as { list: (...a: unknown[]) => Promise<{ items?: Array<{ sessionId?: string; updatedAt?: number }> }> }
-    const live = await resolveLiveMasterId(this.masterId, { list: sc.list.bind(sc) }, readDsBotRoomIds(this.machine.dataDir ?? process.env.PBOTS_DATA_DIR))
+    const live = await resolveLiveMasterId(this.masterId, { list: sc.list.bind(sc) }, readDsBotRoomIds(this.machine.dataDir ?? process.env.PBOTS_DATA_DIR),
+      readDsBotBotParts(this.machine.dataDir ?? process.env.PBOTS_DATA_DIR, this.masterId))
     if (live === this.masterId) return
     this.ctx.logger.warn('dsh-superagent: master session rotated (%s → %s); rebinding atomically', this.masterId, live)
     const stopOld = this.masterWatch
@@ -277,8 +278,8 @@ export class Runtime extends Service implements SourceHost {
   }
   private httpHost(): HttpHost {
     const runtime = this
-    const { store, sources, prompts, sessions, settings, engine, executor, health, machine, masterId, ready, sourceLinks, setup, passes } = this
-    return { store, sources, prompts, sessions, settings, engine, executor, health, machine, masterId, ready, sourceLinks,
+    const { store, sources, prompts, sessions, settings, engine, executor, health, machine, ready, sourceLinks, setup, passes } = this
+    return { store, sources, prompts, sessions, settings, engine, executor, health, machine, masterId: () => this.masterId, ready, sourceLinks,
       get deployment() { return setup.deployment },
       get setupProblem() { return setup.problem }, get feishuProblem() { return setup.feishuProblem },
       configured: () => setup.configured(), links: () => runtime.links(), ticketEnvironment: ticket => runtime.ticketEnvironment(ticket),

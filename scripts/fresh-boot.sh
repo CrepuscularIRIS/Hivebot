@@ -145,10 +145,26 @@ for f in files:
     # 不是「调过落盘类工具」这种弱信号。只读会话/ Chief 自写（有编排调用）/无关 bash 会话都不再误判。
     calls = [e.get("data", {}).get("name", "") for e in evs if e.get("type") == "tool/call"]
     WRITE_TOOLS = ("write", "edit", "bash", "pwsh")
-    marker_write = any(
-        e.get("data", {}).get("name", "") in WRITE_TOOLS and "boot-check" in json.dumps(e.get("data", {}).get("arguments", ""))
-        for e in evs if e.get("type") == "tool/call"
-    )
+    # 纠错轮四（审查 #5）：落盘参数须含完整目标路径（workspace 目录 + 文件名），不是裸文件名——
+    # bash -c "grep boot-check" 这类只含文件名的读取/搜索调用不再计入；write/edit 的 path 参数
+    # 本就带全路径。因果链：谁写了 boot-check.txt（带路径）→ 无编排调用 = worker。
+    WS_MARKERS = ("boot-check.txt", "bot/workspace/boot-check")
+    def _writes_marker(ev):
+        name = ev.get("data", {}).get("name", "")
+        args = json.dumps(ev.get("data", {}).get("arguments", ""))
+        if name in ("write", "edit"):
+            args_obj = ev.get("data", {}).get("arguments") or {}
+            if isinstance(args_obj, str):
+                try: args_obj = json.loads(args_obj)   # 真实事件流：arguments 常为 JSON 字符串形态
+                except Exception: args_obj = {}
+            items = args_obj.items() if isinstance(args_obj, dict) else []
+            path_args = " ".join(str(v) for k, v in items if isinstance(v, str) and ("path" in k.lower() or k.lower() in ("file", "file_path", "target")))
+            return any(mk in path_args for mk in WS_MARKERS)   # 只认 path 类参数；content 里提及文件名不算
+        if name in ("bash", "pwsh"):
+            # shell 写入形态：重定向/tee/heredoc 指向 marker 路径才算写；grep/cat 等读取不算
+            return any(mk in args for mk in WS_MARKERS) and any(op in args for op in (">", "tee ", "tee\n", "<<"))
+        return False
+    marker_write = any(_writes_marker(e) for e in evs if e.get("type") == "tool/call")
     if marker_write and not any(c in ("create_bot", "message_bot", "list_bots") for c in calls):
         a4w = True          # 落盘调用确实写了 marker 且无编排工具 = worker 会话（因果级判据）
     if any(c in ("create_bot", "message_bot", "list_bots") for c in calls):

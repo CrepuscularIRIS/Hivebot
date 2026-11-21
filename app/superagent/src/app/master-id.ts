@@ -58,6 +58,8 @@ export async function resolveLiveMasterId(
   candidate: string,
   controller: unknown,
   excludeRoomIds: readonly string[] = [],
+  /** 纠错轮四（审查 #2b）：Chief 身份白名单（其全部段）。非空时只允许白名单内的会话接任。 */
+  identityAllow?: ReadonlySet<string>,
 ): Promise<string> {
   const c = controller as { list?: (...args: unknown[]) => Promise<{ items?: Array<{ sessionId?: string; id?: string; updatedAt?: number | string }> }> }
   const list = c.list?.bind(c)
@@ -72,11 +74,25 @@ export async function resolveLiveMasterId(
     const ranked = items
       .map(item => ({ id: item.sessionId ?? item.id ?? '', at: Number(item.updatedAt ?? 0) }))
       .filter(item => typeof item.id === 'string' && item.id && !excluded.has(item.id) && item.at > candAt)
+      .filter(item => !identityAllow || identityAllow.size === 0 || identityAllow.has(item.id))
       .sort((a, b) => b.at - a.at)
     const found = ranked[0]?.id
     return typeof found === 'string' && found ? found : candidate
   } catch { /* controller unavailable — keep candidate */ }
   return candidate
+}
+
+/** 纠错轮四（审查 #2b）：bot 的全部段会话 id 集（channel.js `parts` 同源数据）。段轮转后新段
+ * 也在其中——用作 Chief 身份白名单，防止误绑到活跃 worker 段。文件缺失/旧格式（无 segments）回空。 */
+export function readDsBotBotParts(dataDir: string | undefined, botId: string): Set<string> {
+  if (!dataDir || !botId) return new Set()
+  try {
+    const raw = JSON.parse(readFileSync(join(dataDir, 'bot', 'state.json'), 'utf8')) as {
+      bots?: Record<string, { segments?: Array<{ sessionId?: string }> } | undefined>
+    }
+    const entry = raw.bots?.[botId]
+    return new Set((entry?.segments ?? []).map(seg => seg.sessionId).filter((id): id is string => typeof id === 'string' && !!id))
+  } catch { return new Set() }
 }
 
 /** goal-0acebfbf R5：ds-bot rooms dict 的 key 集（群聊会话排除清单）。文件缺失回空。 */

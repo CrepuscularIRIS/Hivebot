@@ -46,10 +46,13 @@ STATE_DIR="${STATE_DIR:-$DSH_HOME_DIR/superagent-state}"
 [ -n "${DSH_LITELLM_API_KEY:-}" ] || { echo "DSH_LITELLM_API_KEY not set" >&2; exit 2; }
 
 # 0) superagent 构建产物校验/构建（纠错轮 Codex 审查 #3：干净 checkout 无 lib/——安装器不能依赖本机已构建产物）
+# 纠错轮二（Codex 复测 #4）：干净导出树 devDependencies 也不在（tsdown: not found）——
+# build 前先 npm install 装齐 devDeps（registry 注入让被墙环境可达），--ignore-scripts 防生命周期脚本。
 ENTRY="$SUPERAGENT_SRC/lib/index.js"
 if [ ! -f "$ENTRY" ]; then
   echo "building superagent (lib/ missing)..."
-  ( cd "$SUPERAGENT_SRC" && npm run build >/dev/null ) || { echo "FAIL: superagent build" >&2; exit 1; }
+  ( cd "$SUPERAGENT_SRC" && npm install --ignore-scripts --no-audit --no-fund ${NPM_CONFIG_REGISTRY:+--registry="$NPM_CONFIG_REGISTRY"} >/dev/null 2>&1; npm run build >/dev/null ) \
+    || { echo "FAIL: superagent build (npm install + tsdown)" >&2; exit 1; }
 fi
 [ -f "$ENTRY" ] || { echo "FAIL: superagent entry missing after build: $ENTRY" >&2; exit 1; }
 

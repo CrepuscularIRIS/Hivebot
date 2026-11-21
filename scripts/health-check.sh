@@ -20,7 +20,10 @@ console.log('[3/4 面板] chief='+(chief?'OK '+chief.slice(8,16):'MISSING'));
 if(!chief){console.log('RESULT: Chief 不在');process.exit(1)}
 const orch=await fetch(BASE+'/orchestrator/api/state',{headers:{'x-orchestrator-request':'1',cookie,origin:BASE}}).then(r=>r.json()).catch(()=>null);
 const ready=orch&&orch.health&&orch.health.runtime&&orch.health.runtime.state==='ready';
-console.log('[4/4 SuperAgent] orchestrator='+(ready?'ready':'NOT-READY')+' masterId='+(orch?String(orch.masterId).slice(8,16):'-'));
-console.log(ready?'RESULT: 全链健康':'RESULT: SuperAgent 未就绪');
-process.exit(ready?0:1);
+// 纠错轮二（Codex 复测 #2）：绑定一致性读数——chief（ds-bot state）与 masterId（SuperAgent 绑定）
+// 漂移=半切换（新段能回复但 watch/KV 留旧段），health 不能只报进程绿。
+const bindConsistent = orch && chief && orch.masterId === chief;
+console.log('[4/4 SuperAgent] orchestrator='+(ready?'ready':'NOT-READY')+' masterId='+(orch?String(orch.masterId).slice(8,16):'-')+' bind='+(bindConsistent?'CONSISTENT':'**DRIFTED**'));
+console.log(ready && bindConsistent ?'RESULT: 全链健康':'RESULT: '+(ready?'绑定漂移（masterId≠Chief 当前段）':'SuperAgent 未就绪'));
+process.exit(ready && bindConsistent ?0:1);
 "

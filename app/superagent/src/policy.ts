@@ -117,7 +117,12 @@ export function policyVersion(settings: Settings): string {
   return key(POLICY_REVISION, JSON.stringify({ rules: settings.policy.rules, mode: settings.eval.mode, sources: settings.policy.sources }))
 }
 export function allowedSender(settings: Settings, actor: ActorRef): z.infer<typeof AllowedSchema> | undefined {
-  return settings.policy.sources[actor.source]?.allowed.find(entry => sameName(entry.id, actor.id))
+  const explicit = settings.policy.sources[actor.source]?.allowed.find(entry => sameName(entry.id, actor.id))
+  if (explicit) return explicit
+  // 纠错轮二（Codex 复测 #6）：local 源=本机 owner（watchLocalSession 只收 Chief 会话的用户消息）——
+  // 默认放行（未显式配置时）；本地无外部信任边界，显式拒绝仍可通过空 allowed 覆盖前的显式条目达成。
+  if (actor.source === 'local' && settings.policy.sources.local === undefined) return { id: actor.id, name: 'Local Owner' }
+  return undefined
 }
 /** Look up `actor` in the Source's `bots` policy list (validated by the Source's kind), whose messages are admitted as inferred candidates at most. */
 export function listedBot(settings: Settings, actor: ActorRef): z.infer<typeof AllowedSchema> | undefined {

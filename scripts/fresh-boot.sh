@@ -140,9 +140,13 @@ for f in files:
     else:
         a3 = "SKIP"  # 无独立 kickoff（无 UI 流程下 greeting 未释放）——不掩盖，报告原样呈现
     # 事件级工具断言（纠错轮：文本级 'create_bot' in txt 会被委派转述误伤）
+    # 纠错轮二（Codex 复测 #5 反例）：「有 tool/call 且无编排工具」可被无关会话（只调 read/grep）
+    # 满足——worker 判据收紧为「落盘类工具（write/edit/bash）调用且无编排工具」：marker 是文件，
+    # 写它的会话必然调过落盘工具；只读会话/Chief 自写（有编排调用）都不再误判。
     calls = [e.get("data", {}).get("name", "") for e in evs if e.get("type") == "tool/call"]
-    if calls and not any(c in ("create_bot", "message_bot", "list_bots") for c in calls):
-        a4w = True          # 有干活工具调用且无编排工具 = worker 会话
+    WRITE_TOOLS = ("write", "edit", "bash", "pwsh")
+    if any(c in WRITE_TOOLS for c in calls) and not any(c in ("create_bot", "message_bot", "list_bots") for c in calls):
+        a4w = True          # 落盘类工具调用且无编排工具 = worker 会话（反例固化：只读会话不再满足）
     if any(c in ("create_bot", "message_bot", "list_bots") for c in calls):
         a4c = True          # 有编排工具 = Chief 派活
 print("A3={} A4-worker={} A4-chief={}".format(a3, "PASS" if a4w else "FAIL", "PASS" if a4c else "FAIL"))

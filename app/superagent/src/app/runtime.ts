@@ -11,9 +11,9 @@ import type {} from '@deepseek-ai/dsh-system-prompt'
 import type {} from '@deepseek-ai/dsh-tools'
 import type {} from '@deepseek-ai/dsh-skill'
 import type {} from '@deepseek-ai/dsh-subprocess'
-import { mkdirSync , watch as fsWatch, utimesSync } from 'node:fs'
+import { mkdirSync , watch as fsWatch } from 'node:fs'
 import { join } from 'node:path'
-import { lockSync, unlockSync } from 'proper-lockfile'
+import { acquireStateLock } from './lock.js'
 import { Engine, key, reasonText, type EngineForSettings, type ReceiveResult, type Ticket, type Trigger } from '../core/index.ts'
 import { readDsBotMainBotId, readDsBotRoomIds, readDiscoveredMasterId, resolveMasterId, watchBotsMeta, resolveLiveMasterId } from './master-id.ts'
 import { watchLocalSession } from '../sources/local.ts'
@@ -94,29 +94,10 @@ export class Runtime extends Service implements SourceHost {
     // Lock the state directory before opening the database so another process cannot migrate or write concurrently.
     mkdirSync(machine.stateDir, { recursive: true, mode: 0o700 })
     const compromised = (error: Error) => { this.runtimeHealth.set({ state: 'error', detail: error.message }); this.stopped.abort() }
-    // goal-0acebfbf R17: 引擎 kill -9 后锁残留（pid 已死）——Lock held 时视为 stale 清除重试一次（正常退出不走此路径）
-    // 纠错轮（Codex 审查 #2）: proper-lockfile stale 判定=.lock 目录 mtime——SIGKILL 刚死时 mtime 新鲜，
-    // ELOCKED→unlockSync(ENOTACQUIRED)→ELOCKED 三连挂死（stale 30s 窗口内救不了）。
-    // 修复：仍 ELOCKED 时把 .lock mtime 拨到 stale 之前让机制接管（引擎单实例前提=dsh 进程锁已挡并行，
-    // 语义锚定在 tests/b17-lock-recovery.spec.ts）。
-    let release: ReturnType<typeof lockSync>
-    try {
-      release = lockSync(machine.stateDir, { stale: 30_000, onCompromised: compromised })
-    } catch (first) {
-      if ((first as NodeJS.ErrnoException).code !== 'ELOCKED') throw first
-      ctx.logger.warn('dsh-superagent: stateDir lock held (crashed holder?); recovering: %s', String(first))
-      try { unlockSync(machine.stateDir) } catch { /* ENOTACQUIRED：不是本进程的锁 */ }
-      try {
-        release = lockSync(machine.stateDir, { stale: 30_000, onCompromised: compromised })
-      } catch (second) {
-        if ((second as NodeJS.ErrnoException).code !== 'ELOCKED') throw second
-        const lockDir = `${machine.stateDir}.lock`
-        const past = new Date(Date.now() - 40_000)
-        try { utimesSync(lockDir, past, past) } catch { /* 锁目录不在=竞态，重取自然成败 */ }
-        release = lockSync(machine.stateDir, { stale: 30_000, onCompromised: compromised })
-      }
-    }
-    this.releaseLock = async () => { release() }
+    // 纠错轮二（Codex 复测 #1）：旧「无验尸拨 mtime」会偷活实例的锁——换 acquireStateLock
+    // （owner 证据文件验尸：活→互斥拒；死→强制过期恢复）。语义锚定 tests/b-lock-xproc.spec.ts。
+    const stateLock = acquireStateLock(machine.stateDir, ctx.logger)
+    this.releaseLock = async () => { stateLock.release() }
     let opened: Store | undefined
     try {
       const report = (error: unknown) => { ctx.logger.warn('dsh-superagent: %s', String(error)) }
@@ -212,7 +193,7 @@ export class Runtime extends Service implements SourceHost {
       this.ready = this.initialize()
     } catch (error) {
       // Release the database and state lock if initialization fails so an in-process restart can reacquire them.
-      try { opened?.close() } finally { release() }
+      try { opened?.close() } finally { stateLock.release() }
       throw error
     }
   }
@@ -247,16 +228,13 @@ export class Runtime extends Service implements SourceHost {
   private async initialize(): Promise<void> {
     // Register management HTTP routes before setup completes so operators can fix setup problems in the UI.
     this.disposers.push(registerHttp(this.ctx, this.httpHost()))
-    // goal-0acebfbf R5：ds-bot 重启重建 Chief 会话但 state.json 不更新——live 校验并重挂 watch。
+    // goal-0acebfbf R5 + 纠错轮二（Codex #2）：ds-bot 段轮转后 state.json 不更新——
+    // 一次性校验会留半切换（新段能回复但 watch/KV/ensure 留旧段）。改为初始化校验 + 60s 周期巡检，
+    // 每次漂移都原子重挂（watch+KV+ensure 同步走）。
     if (!this.machine.masterSessionId?.trim()) {
-      const sc = this.ctx.sessionController as unknown as { list: (...a: unknown[]) => Promise<{ items?: Array<{ sessionId?: string; updatedAt?: number }> }> }
-      const live = await resolveLiveMasterId(this.masterId, { list: sc.list.bind(sc) }, readDsBotRoomIds(this.machine.dataDir ?? process.env.PBOTS_DATA_DIR))
-      if (live !== this.masterId) {
-        this.masterWatch()
-        this.masterWatch = (() => { const stop = watchLocalSession(this.ctx, { sessionId: live, receive: t => this.passes.receive(t) }); this.disposers.push(stop); return stop })()
-        this.masterId = live
-        this.store.set(KV.runtime.masterId, live)
-      }
+      await this.rebindMasterIfNeeded()
+      const timer = setInterval(() => { void this.rebindMasterIfNeeded().catch(() => { /* 巡检失败下轮再试 */ }) }, 60_000)
+      this.disposers.push(() => clearInterval(timer))
     }
     if (!await this.setup.run(this.store.settings())) {
       this.runtimeHealth.set({ ...health('paused', 'setupPending'), at: now() })
@@ -272,6 +250,28 @@ export class Runtime extends Service implements SourceHost {
     this.passes.start()
     this.effects.start()
     this.runtimeHealth.set({ state: 'ready', detail: 'Orchestrator is ready', at: now() })
+  }
+  /**
+   * Codex 复测 #2：masterId 漂移的原子重挂。每次调用：live 解析（updatedAt 最新、排除 rooms/自身）→
+   * 漂移则一次完成 旧 watch 停 → 新 watch 挂 → KV 回写 → 新段 ensure（keepTitle）。任何一步失败
+   * 抛给调用方（初始化=致命；巡检=吞掉下轮再试），不产生半切换的中间稳定态。
+   */
+  private async rebindMasterIfNeeded(): Promise<void> {
+    const sc = this.ctx.sessionController as unknown as { list: (...a: unknown[]) => Promise<{ items?: Array<{ sessionId?: string; updatedAt?: number }> }> }
+    const live = await resolveLiveMasterId(this.masterId, { list: sc.list.bind(sc) }, readDsBotRoomIds(this.machine.dataDir ?? process.env.PBOTS_DATA_DIR))
+    if (live === this.masterId) return
+    this.ctx.logger.warn('dsh-superagent: master session rotated (%s → %s); rebinding atomically', this.masterId, live)
+    const stopOld = this.masterWatch
+    this.masterWatch = () => {}
+    try { stopOld() } catch { /* 旧 watch 已停 */ }
+    const stopNew = watchLocalSession(this.ctx, { sessionId: live, receive: t => this.passes.receive(t) })
+    this.disposers.push(stopNew)
+    this.masterWatch = stopNew
+    this.masterId = live
+    this.store.set(KV.runtime.masterId, live)
+    if (this.setup.configured()) {
+      await this.sessions.ensure(live, this.machine.stateDir, 'dsh-superagent orchestrator', 'orchestrator', { keepTitle: true })
+    }
   }
   private httpHost(): HttpHost {
     const runtime = this

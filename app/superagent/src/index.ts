@@ -48,9 +48,16 @@ export async function apply(ctx: Context, config: DeploymentConfig): Promise<voi
     netActive = false;
     // 纠错轮修复：text 与目标 sessionId 在同一决策点（点击时刻）锁定，800ms 后只用闭包值——
     // 之前 id 在 800ms 后重读 location，用户点击后快速切换会话会把 A 的文本发进 B（串台）。
+    // Codex 复测 #3：群聊页 URL 不变（恒 /）——URL 提不到目标会话，旧逻辑回落 mainBotIds[0]
+    // 把群消息发进 Chief 私聊（串台）。判定链改为：URL → 当前打开会话的 DOM 锚点（body 最靠前的
+    // session-* id=打开页的活跃会话；群聊页实测前 3 处命中都是群会话）→ 都无才回落 state 主 bot。
     const m = location.pathname.match(/(session-[0-9a-f-]{36})/);
     let sessionId = m ? m[1] : null;
-    // 主会话页（URL 无 session 前缀）：点击后立刻拉 state 锁定 mainBotIds[0]（不等 800ms）
+    if (!sessionId) {
+      const domHit = (document.body.innerHTML.match(/session-[0-9a-f-]{36}/g) || [])[0];
+      if (domHit) sessionId = domHit;
+    }
+    // 最后回落：state API 主 bot（仅当 URL 和 DOM 都无会话——如刚打开的主会话页）
     const idFromState = sessionId ? null
       : _f('/api/bot', { method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({ endpoint: 'state', payload: { since: 0 } }) })
           .then(r => r.json())

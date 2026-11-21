@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { allowedSender, settingsPolicy } from '../src/policy.ts'
-import type { Settings } from '../src/settings.ts'
+import { allowedSender, settingsPolicy } from '../src/policy.js'
+import { SettingsSchema } from '../src/policy.js'
+import type { z } from 'zod'
+type Settings = z.infer<typeof SettingsSchema>
 
 // 纠错轮二（Codex 复测 #6）：本地 owner 默认放行——本地源无外部信任边界，
 // 默认 not_a_member 挡掉用户最常走的路径（主 bot 会话消息全被拒）。

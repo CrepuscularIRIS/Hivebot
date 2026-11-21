@@ -267,11 +267,13 @@ export class Runtime extends Service implements SourceHost {
     const stopNew = watchLocalSession(this.ctx, { sessionId: live, receive: t => this.passes.receive(t) })
     this.disposers.push(stopNew)
     this.masterWatch = stopNew
-    this.masterId = live
-    this.store.set(KV.runtime.masterId, live)
+    // 纠错轮三自审：ensure 必须在 masterId/KV 提交之前——否则 ensure 失败时 watch/KV 已切到新段，
+    // 下一轮 early-return（live===masterId）永不重试 ensure，留下「新段无 decorate」的半切换稳定态。
     if (this.setup.configured()) {
       await this.sessions.ensure(live, this.machine.stateDir, 'dsh-superagent orchestrator', 'orchestrator', { keepTitle: true })
     }
+    this.masterId = live
+    this.store.set(KV.runtime.masterId, live)
   }
   private httpHost(): HttpHost {
     const runtime = this

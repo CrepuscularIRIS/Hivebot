@@ -37,7 +37,11 @@ foreach ($p in @($Overlay, $Template)) {
 New-Item -ItemType Directory -Force -Path (Split-Path $PluginDst -Parent) | Out-Null
 if (Test-Path $PluginDst) { Remove-Item -Recurse -Force $PluginDst }
 Copy-Item -Recurse (Join-Path $Overlay 'dsh-superagent') $PluginDst
-if (-not (Test-Path (Join-Path $PluginDst 'lib\index.js'))) { throw '插件落盘失败：lib\index.js 缺失' }
+# 落盘后复检（Copy-Item 半途失败不给假成功）：入口 + skills + vendored 依赖
+foreach ($f in @('lib\index.js', 'skills\dsh-superagent-github\SKILL.md',
+                 'node_modules\proper-lockfile\package.json', 'node_modules\zod\package.json')) {
+    if (-not (Test-Path (Join-Path $PluginDst $f))) { throw "插件落盘不完整: $f（重跑本脚本即可修复）" }
+}
 
 # 2) 渲染 cordis.patch.yml（Windows 路径一律正斜杠，YAML 安全）
 $StateDir = (Join-Path $DataRoot 'superagent-state') -replace '\\', '/'
@@ -57,14 +61,13 @@ if (Test-Path $PkgPath) {
     $pkg = Get-Content -Raw -Encoding UTF8 $PkgPath | ConvertFrom-Json
     if (-not $pkg.dsh) { $pkg | Add-Member NoteProperty dsh ([pscustomobject]@{}) }
     if (-not $pkg.dsh.profile) { $pkg.dsh | Add-Member NoteProperty profile ([pscustomobject]@{}) }
-    if (-not $pkg.dsh.profile.bundles) { $pkg.dsh.profile | Add-Member NoteProperty bundles @() }
+    if ($null -eq $pkg.dsh.profile.PSObject.Properties['bundles']) { $pkg.dsh.profile | Add-Member NoteProperty bundles @() }
     if (@($pkg.dsh.profile.bundles) -notcontains 'dsh-superagent') {
         $pkg.dsh.profile.bundles = @($pkg.dsh.profile.bundles) + 'dsh-superagent'
     }
 } else {
     $pkg = [pscustomobject]@{
         name = 'dsh-profile-ds-bot'; private = $true
-        dependencies = [pscustomobject]@{ 'dsh-superagent' = 'file:overlay/dsh-superagent' }
         dsh = [pscustomobject]@{ profile = [pscustomobject]@{ bundles = @(
             '@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app',
             '@deepseek-ai/dsh-experimental-voice-input-bundle', 'ds-bot', 'dsh-superagent') } }

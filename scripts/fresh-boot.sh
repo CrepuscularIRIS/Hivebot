@@ -4,6 +4,7 @@
 # 断言（全过 exit 0）：
 #   A1 干净 home 引擎起（dsh web URL 打出）
 #   A2 Chief 无模型开场（"Pick a model" 文案）
+#   A2.5 SuperAgent 插件激活（orchestrator ready + masterId=Chief——bundle 注册断言）
 #   A3 选模型后 kickoff（人格开场 "Chief of Staff"）
 #   A4 首条编排（api/bot send）→ worker 建+落盘 marker
 set -u
@@ -80,6 +81,19 @@ const st = await call('state', {since:0});
 const chiefId = st.value ? (st.value.mainBotIds||[])[0] : null;
 if (!chiefId) { console.log('A2 FAIL: no chief'); process.exit(1); }
 console.log('A2 OK: chief', chiefId);
+// A2.5: SuperAgent 插件激活断言（2026-11-22 实证缺口：A4 的 TEAM_TOOLS 走引擎原生副手，
+// 插件不激活也能过——bundle 未注册时瘦身模板静默失效，只有 orchestrator 面能证真激活）。
+// fresh home 未走 setup → runtime 是 paused/setupPending 而非 ready；激活证据=路由挂载(200)。
+// masterId 绑定走 60s 巡检收敛（首启时 ds-bot roster 写 state.json 可能晚于插件 init）→ 轮询 ≤90s。
+let orch = null, status = 0;
+for (let i = 0; i < 30 && !(orch && orch.masterId === chiefId); i++) {
+  const res = await fetch(BASE + '/orchestrator/api/state', {headers:{'x-orchestrator-request':'1', cookie, origin: BASE}});
+  status = res.status;
+  if (status === 200) orch = await res.json().catch(() => null);
+  if (!(orch && orch.masterId === chiefId)) await new Promise(r => setTimeout(r, 3000));
+}
+if (status !== 200 || !orch || orch.masterId !== chiefId) { console.log('A2.5 FAIL: orchestrator not activated/bound (status ' + status + ')', JSON.stringify(orch)?.slice(0,160)); process.exit(1); }
+console.log('A2.5 OK: orchestrator activated, masterId=chief');
 // A3: kickoff 人格开场（Chief 会话 jsonl 含 'Chief of Staff'——ds-bot roster kickoff + 真模型）
 // fresh home 的 Chief 会话在 sessions/<encoded-cwd>/ 下，用 zstd 解（node 无 zstd——起 python 辅助或跳过）
 // 此断言走文件层（bash 侧 python 已有），node 侧只发 A4。

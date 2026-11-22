@@ -64,14 +64,19 @@ profile 层只补静态配置——preset 不要在 profile 里重复定义（�
 ```
 
 - `dataDir` 指对了，SuperAgent 才能自动发现主 bot（Chief）。
+- **bundle 层生效的前提**：profile `package.json` 的 `dsh.profile.bundles` 数组含
+  `dsh-superagent`（引擎只对该列表里的包应用包内补丁；`provision.sh` 已自动注册，
+  手动装包时要自己加——漏了插件**静默不激活**，2026-11-22 实证踩坑）。
 - github/feishu 监听源 bundle 层默认 `disabled: true`；要启用写
   `- id: dsh-superagent-github` + `disabled: false`（Feishu 还需配 bot CLI）。
 - 要改 preset（工具集/超时/插件清单）→ 改 `app/superagent/cordis.patch.yml`
   并重建插件，不要在 profile 层抄副本。
 - **怎么验**：`curl -H 'x-orchestrator-request:1' -b <cookie> http://127.0.0.1:<port>/orchestrator/api/state`
-  回 `setup.problem: null` + `masterId` 是 Chief 会话 id = 插件活着；
-  开 ticket 报 `Unknown agent preset` = bundle 层没加载（查引擎日志
-  `declares no dsh.bundle` 警告——插件被装成普通依赖了）。
+  回 `health.runtime.state=ready` + `masterId` 是 Chief 会话 id = 插件活着
+  （`scripts/health-check.sh` 一条命令四段全查）；
+  `/orchestrator/api/state` 404 或开 ticket 报 `Unknown agent preset` = 插件没激活，
+  先查 `dsh.profile.bundles` 有没有 `dsh-superagent`（bundle 未注册），再查引擎日志
+  `declares no dsh.bundle` 警告（插件被装成普通依赖）。
 
 ---
 

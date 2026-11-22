@@ -85,6 +85,19 @@ if [ -d "$SUPERAGENT_SRC/skills" ] && [ ! -d "$PROFILE_DIR/node_modules/dsh-supe
   cp -r "$SUPERAGENT_SRC/skills" "$PROFILE_DIR/node_modules/dsh-superagent/skills"
 fi
 
+# 3) 注册 bundle 层：引擎只对 dsh.profile.bundles 列出的包应用包内 cordis.patch.yml
+#    （profile-boot: bundle layers → cordis.patch.yml → --patch）。pnpm 直装不走插件管理器的
+#    reconcile，不注册的话瘦身模板的 id-targeted override 无锚点，插件静默不激活（2026-11-22 实证）。
+node -e '
+const fs = require("fs"); const p = process.argv[1];
+const m = JSON.parse(fs.readFileSync(p, "utf8"));
+m.dsh ??= {}; m.dsh.profile ??= {}; m.dsh.profile.bundles ??= [];
+if (!m.dsh.profile.bundles.includes("dsh-superagent")) {
+  m.dsh.profile.bundles.push("dsh-superagent");
+  fs.writeFileSync(p, JSON.stringify(m, undefined, 2) + "\n", { mode: 0o600 });
+  console.log("  bundle:  registered dsh-superagent into dsh.profile.bundles");
+}' "$PROFILE_DIR/package.json"
+
 # 4) 崩溃自愈前置：清 stale 锁（kill -9 残留——runtime.ts 已有重试，这里双保险）
 rm -f "$DSH_HOME_DIR/bot/state.lock" 2>/dev/null || true
 

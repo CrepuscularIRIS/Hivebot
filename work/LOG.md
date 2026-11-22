@@ -1564,3 +1564,14 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - B5 尾巴定性：listRoutedMcpTools 在 0.78.1/1.1.0 渲染+协调层+dsh 源三方零命中=我方契约表孤儿；
   真需求（ToolPermissions 工具下拉真源）无 dsh 查询面——与 D2 sdk 注入同款 shortcut（存储/表单真实）
 - 矩阵：VERIFIED 39/58（67%）/PARTIAL 0/BLOCKED 17——**可实现面全 VERIFIED 达成**
+## 2026-11-22 04:06 · 配置收敛：preset 单一权威归 bundle 层（dd64642e）
+- 背景：用户问 SuperAgent 配置能否与 DSH 联合；盘点发现三份 preset 副本（bundle 层 194 行 + provision 模板 238 行 + docs 示例 228 行），profile 副本会静默覆盖 bundle 层改动
+- 改：provision/docs 模板瘦身为 id-targeted override（只剩 llm 路由+默认模型+stateDir/dataDir），CONFIG-GUIDE 补双并发旋钮（executor.maxWorkers 管 ticket worker vs dsh-subagent 管 TEAM_TOOLS fan-out）与 blockedCommands×DSH 审批叠加语义
+- 引擎实锤：dsh-plugin-manager index.js:435 读 dsh.bundle.patch→loadOverlayPatches，bundle 层先于 profile 层应用
+- 验证：fresh-boot.sh 干净 home exit 0——A4-worker=PASS 实证 preset 由 bundle 层加载（A3=SKIP 为合法：kickoff 待 UI 选模型）
+- 结论沉淀：模型配置本已联合（role-models resolveRoleModel 走 ctx.llm、null=继承默认、不污染全局）；静态配置归 profile、热设置归编排 HTTP 面的三层分法维持
+## 2026-11-22 04:33 · 修复: provision 注册 dsh.profile.bundles（dd64642e 回归）
+- 根因：引擎只对 package.json `dsh.profile.bundles` 列出的包应用包内 bundle 补丁（dsh/lib/profile-boot-e2mS45fC.js:123「each bundle in dsh.profile.bundles, then cordis.patch.yml」）；该数组只在插件管理器安装流（dsh-plugin-manager index.js:864 reconcile）写入，provision.sh pnpm 直装从不注册 → 瘦身模板的 `- id: dsh-superagent` override 无锚点，插件静默不激活，/orchestrator/api/state 404
+- 更正前案误判：dd64642e LOG 里「A4-worker=PASS 实证 preset 由 bundle 层加载」是错误推断——A4 的 TEAM_TOOLS 走引擎原生副手，插件不激活也能过（本轮 sa-state-fresh 未被触碰 + tapIndex 无注入双重证伪）
+- 改：provision.sh 装包后幂等注册 dsh-superagent 进 dsh.profile.bundles；fresh-boot.sh 加 A2.5 真激活断言（路由 200 + masterId=chief 轮询 90s——首启 ds-bot roster 写 state.json 可能晚于插件 init，60s 巡检收敛绑定）；CONFIG-GUIDE §1.2 补注册前提与排查顺序
+- 验证：live home 重 provision + 注册 + 重启 → health-check 四段全绿（orchestrator=ready bind=CONSISTENT，sa-state WAL 活跃）；fresh-boot r18 exit 0（A1/A1.5/A2/A2.5/A4-worker/A4-chief 全 PASS，A3=SKIP 合法）

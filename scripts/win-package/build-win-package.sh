@@ -56,9 +56,10 @@ rm -rf "$STAGE"; mkdir -p "$STAGE/overlay/dsh-superagent"
   rm -f package-lock.json
 )
 
-# 4) 组装 zip 根
+# 4) 组装 zip 根（setup.bat 转 CRLF：cmd 对 LF-only bat 的 goto/label 有兼容边界）
 cp "$CACHE/$EXE_NAME" "$STAGE/$EXE_NAME"
 cp "$HERE/install.ps1" "$HERE/cordis.patch.win.yml" "$HERE/README.md" "$STAGE/"
+sed -e 's/$/\r/' "$HERE/setup.bat" > "$STAGE/setup.bat"
 
 # 5) 打包 + 自检（zip 内容断言）
 ( cd "$STAGE" && zip -qr9 "$ZIP" . )
@@ -66,6 +67,7 @@ unzip -l "$ZIP" > "$OUT_DIR/zip-listing.txt"
 check() { grep -q "$1" "$OUT_DIR/zip-listing.txt" || { echo "FAIL: zip 缺 $1" >&2; exit 1; }; }
 check "$EXE_NAME"
 check 'install.ps1'
+check 'setup.bat'
 check 'cordis.patch.win.yml'
 check 'README.md'
 check 'overlay/dsh-superagent/lib/index.js'

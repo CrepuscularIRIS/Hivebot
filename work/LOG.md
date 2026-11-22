@@ -1582,3 +1582,4 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 验证：①build-win-package.sh 自检过（zip 内容断言）；②verify-overlay-linux.sh——zip overlay 按 install.ps1 语义落盘 fresh home，0.3.8 引擎激活断言过（W3 OK masterId=chief）；③「先脚本后首启」路径单独验证：预创建骨架被引擎接受、插件激活、首启后 bundles 数组原样保留不被改写
 - 已知残余风险：install.ps1 的 PowerShell 语义本机无 pwsh 只做了两轮桌面检查（修了 Add-Member 语法/BOM/%VAR% 三处），真机首跑可能暴露小错；Windows 真机端到端（NSIS 装完→UI 会话）留待用户实机
 - 2026-11-22 win-package 顾问复核修正：install.ps1 空 bundles 边界（`-not @()` 为真会 Add-Member 同名中止→改 PSObject.Properties 判存）、落盘后复检 skills+vendored、create 分支删 file:overlay 依赖（引擎已证不解析）。重建 zip + verify-overlay-linux W3 PASS（main 46ea617c 后修正）。
+- 2026-11-22 win-package 一键安装：新增 setup.bat（exe 向导 → 退出 DS-Bot → 自动 overlay，ApiKey 可交互输入），build 打包转 CRLF；README 首行澄清 exe 是官方原版、SuperAgent 来自 overlay。

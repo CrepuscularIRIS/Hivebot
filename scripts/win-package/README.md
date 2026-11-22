@@ -1,9 +1,14 @@
 # DS-Bot 0.3.8 · DSH SuperAgent 增强包（Windows）
 
 一个包 = 官方 DS-Bot 0.3.8 Windows 安装器 + DSH SuperAgent 插件 + 预配置。
+**注意：exe 本身是官方原版安装器，不带 SuperAgent**——SuperAgent 由其后的 overlay 安装（`setup.bat` 会把两步串起来）。
 装完后主 bot 变为 SuperAgent 编排：消息 → Chief 分诊 → worker 会话执行 → 回写。
 
-## 安装三步
+## 安装（推荐：一键）
+
+1. 解压后双击 `setup.bat`：输入 LiteLLM ApiKey（可回车跳过）→ 官方安装向导 → 完全退出自动启动的 DS-Bot → 自动装 overlay → 完成。
+
+## 手动安装（等价三步）
 
 1. **装 DS-Bot**：双击 `DS-Bot-0.3.8-win-x64.exe`（官方 NSIS 向导，可选安装目录）。
 2. **装 SuperAgent overlay**：在本目录右键 `install.ps1` →「使用 PowerShell 运行」，或：

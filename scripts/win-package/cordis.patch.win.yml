@@ -1,0 +1,44 @@
+# cordis.patch 渲染模板（install.ps1 替换占位符；Windows 路径一律正斜杠，YAML 安全）
+#   __STATE_DIR__  SuperAgent 状态目录（默认 <DataRoot>\superagent-state）
+#   __DATA_DIR__   DS-Bot 数据目录（默认 %USERPROFILE%\.ds-bot——discovered 链读 bot\state.json）
+#   __BASE_URL__   LLM 网关 baseURL（默认 http://127.0.0.1:4001/v1）
+#   __MODEL_ID__   默认模型 id（默认 glm-5.3-flash）
+#
+# 单一权威：worker/router preset 与插件 insert 条目只在 bundle 层
+# dsh-superagent\cordis.patch.yml 定义（引擎经 dsh.bundle.patch 加载，先于本层）。
+# 本文件只做：模型路由、默认模型、stateDir/dataDir。
+# 启用外部源（GitHub/飞书）时加：
+#   - id: dsh-superagent-github
+#     disabled: false
+- id: llm-pi-ai
+  config:
+    providers:
+      litellm:
+        apiKeyEnv: DSH_LITELLM_API_KEY
+        api: openai-completions
+        baseURL: __BASE_URL__
+        displayName: LiteLLM (local)
+        models:
+          - id: __MODEL_ID__
+            contextWindow: 1000000
+            input:
+              - text
+              - image
+            reasoningEfforts:
+              low: low
+              medium: medium
+              high: high
+        compat:
+          supportsDeveloperRole: false
+          supportsStore: false
+          maxTokensField: max_tokens
+          requiresReasoningContentOnAssistantMessages: true
+- id: agent-default-model
+  config:
+    provider: litellm
+    model: __MODEL_ID__
+# SuperAgent 静态配置只在此层；policy/eval/executor 等运行时设置走编排 HTTP 面（热生效）。
+- id: dsh-superagent
+  config:
+    stateDir: __STATE_DIR__
+    dataDir: __DATA_DIR__

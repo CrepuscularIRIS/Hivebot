@@ -1575,3 +1575,9 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 更正前案误判：dd64642e LOG 里「A4-worker=PASS 实证 preset 由 bundle 层加载」是错误推断——A4 的 TEAM_TOOLS 走引擎原生副手，插件不激活也能过（本轮 sa-state-fresh 未被触碰 + tapIndex 无注入双重证伪）
 - 改：provision.sh 装包后幂等注册 dsh-superagent 进 dsh.profile.bundles；fresh-boot.sh 加 A2.5 真激活断言（路由 200 + masterId=chief 轮询 90s——首启 ds-bot roster 写 state.json 可能晚于插件 init，60s 巡检收敛绑定）；CONFIG-GUIDE §1.2 补注册前提与排查顺序
 - 验证：live home 重 provision + 注册 + 重启 → health-check 四段全绿（orchestrator=ready bind=CONSISTENT，sa-state WAL 活跃）；fresh-boot r18 exit 0（A1/A1.5/A2/A2.5/A4-worker/A4-chief 全 PASS，A3=SKIP 合法）
+## 2026-11-22 06:22 · Windows 增强包：官方 exe + overlay 单 zip（m00482）
+- 需求：整套（DS-Bot 0.3.8 + SuperAgent + 预配置）打成单一安装包供 Windows 安装，DSH 预配置为 SuperAgent 主 bot；留在 0.3.8 不升 0.3.9
+- 方案（搬运阶梯第 2 级）：单 zip = 官方 DS-Bot-0.3.8-win-x64.exe（sha256 97ff775e…0693 钉死）+ overlay/（npm vendored proper-lockfile/zod 的预构建 dsh-superagent，@deepseek-ai/* peers 由引擎供给）+ install.ps1（渲染 patch/落盘/注册 bundles/写 DSH_LITELLM_API_KEY，幂等）+ README。wine 自建 NSIS 否决（npmRebuild:false + 平台预编译二进制交叉构建不可行）
+- 关键事实：Windows 数据根 = %USERPROFILE%\.ds-bot（0.3.8 源码 first-run.mjs:60 join(homedir(),'.ds-bot') 实锤）；引擎首启生成 package.json 含默认 4 bundle，install.ps1 的 create 分支镜像该形状（丢 web-app 会没界面）
+- 验证：①build-win-package.sh 自检过（zip 内容断言）；②verify-overlay-linux.sh——zip overlay 按 install.ps1 语义落盘 fresh home，0.3.8 引擎激活断言过（W3 OK masterId=chief）；③「先脚本后首启」路径单独验证：预创建骨架被引擎接受、插件激活、首启后 bundles 数组原样保留不被改写
+- 已知残余风险：install.ps1 的 PowerShell 语义本机无 pwsh 只做了两轮桌面检查（修了 Add-Member 语法/BOM/%VAR% 三处），真机首跑可能暴露小错；Windows 真机端到端（NSIS 装完→UI 会话）留待用户实机

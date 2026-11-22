@@ -58,8 +58,11 @@ rm -rf "$STAGE"; mkdir -p "$STAGE/overlay/dsh-superagent"
 
 # 4) 组装 zip 根（setup.bat 转 CRLF：cmd 对 LF-only bat 的 goto/label 有兼容边界）
 cp "$CACHE/$EXE_NAME" "$STAGE/$EXE_NAME"
-cp "$HERE/install.ps1" "$HERE/cordis.patch.win.yml" "$HERE/README.md" "$STAGE/"
+cp "$HERE/cordis.patch.win.yml" "$HERE/README.md" "$STAGE/"
 sed -e 's/$/\r/' "$HERE/setup.bat" > "$STAGE/setup.bat"
+# install.ps1 加 UTF-8 BOM：PS5.1 对无 BOM 文件按 ANSI 解码，中文里的 UTF-8 字节会被当成
+# 弯引号截断字符串导致解析失败（2026-11-22 Win11 26200 实测）；BOM 后按 UTF-8 读，无此问题。
+printf '\xef\xbb\xbf' > "$STAGE/install.ps1"; cat "$HERE/install.ps1" >> "$STAGE/install.ps1"
 
 # 5) 打包 + 自检（zip 内容断言）
 ( cd "$STAGE" && zip -qr9 "$ZIP" . )
@@ -77,6 +80,9 @@ check 'overlay/dsh-superagent/node_modules/proper-lockfile/package.json'
 check 'overlay/dsh-superagent/node_modules/zod/package.json'
 # 模板占位符必须在（渲染是安装器的事，构建期不渲染）
 grep -q '__STATE_DIR__' "$HERE/cordis.patch.win.yml" || { echo "FAIL: 模板缺占位符" >&2; exit 1; }
+# 编码自检：install.ps1 必须 BOM 开头（PS5.1 ANSI 解码坑），setup.bat 必须 CRLF（cmd goto 兼容）
+head -c 3 "$STAGE/install.ps1" | od -An -tx1 | grep -q 'ef bb bf' || { echo "FAIL: install.ps1 缺 UTF-8 BOM" >&2; exit 1; }
+grep -q $'\r' "$STAGE/setup.bat" || { echo "FAIL: setup.bat 缺 CRLF" >&2; exit 1; }
 
 echo "OK: $ZIP ($(du -h "$ZIP" | cut -f1))"
 echo "    listing: $OUT_DIR/zip-listing.txt"

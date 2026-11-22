@@ -49,27 +49,29 @@
 - **怎么验**：起引擎 → 开 web UI → 给 bot 发一条消息 → bot 正常回复 = 路由通。
   若报 `model-unavailable`，九成是 yml 缩进或 provider 名不一致。
 
-### 1.2 SuperAgent 插件装载（insert 条目）
+### 1.2 SuperAgent 插件装载（bundle 层单一权威）
+
+插件 insert 条目和 worker/router preset **只在 bundle 层**（插件包内
+`cordis.patch.yml`，引擎经 `dsh.bundle.patch` 自动加载，先于本层应用）。
+profile 层只补静态配置——preset 不要在 profile 里重复定义（旧模板曾整段抄录，
+改 bundle 层会被 profile 副本静默覆盖，2026-11-22 已收敛）：
 
 ```yaml
-- insert:
-    - id: dsh-superagent
-      name: dsh-superagent
-      config:
-        stateDir: /path/to/sa-state      # ← 编排数据库目录（可任意）
-        dataDir: /path/to/.ds-bot        # ← 引擎数据目录（发现 Chief 用）
-    - id: dsh-superagent-github
-      name: dsh-superagent/github-watch
-      disabled: true                     # 外部源默认关，只跑本地
-    - id: dsh-superagent-feishu
-      name: dsh-superagent/feishu-watch
-      disabled: true
+- id: dsh-superagent
+  config:
+    stateDir: /path/to/sa-state      # ← 编排数据库目录（可任意）
+    dataDir: /path/to/.ds-bot        # ← 引擎数据目录（发现 Chief 用）
 ```
 
 - `dataDir` 指对了，SuperAgent 才能自动发现主 bot（Chief）。
-- worker/router preset 条目也要随包（缺了开 ticket 会报 `Unknown agent preset`）。
+- github/feishu 监听源 bundle 层默认 `disabled: true`；要启用写
+  `- id: dsh-superagent-github` + `disabled: false`（Feishu 还需配 bot CLI）。
+- 要改 preset（工具集/超时/插件清单）→ 改 `app/superagent/cordis.patch.yml`
+  并重建插件，不要在 profile 层抄副本。
 - **怎么验**：`curl -H 'x-orchestrator-request:1' -b <cookie> http://127.0.0.1:<port>/orchestrator/api/state`
-  回 `setup.problem: null` + `masterId` 是 Chief 会话 id = 插件活着。
+  回 `setup.problem: null` + `masterId` 是 Chief 会话 id = 插件活着；
+  开 ticket 报 `Unknown agent preset` = bundle 层没加载（查引擎日志
+  `declares no dsh.bundle` 警告——插件被装成普通依赖了）。
 
 ---
 
@@ -82,6 +84,8 @@
 |---|---|---|---|
 | `policy` | 谁的消息可进编排（allowedSender） | 本地 owner 自动放行 | 显式配了表就按表来；显式空表=全拒 ✅ |
 | `eval` | observe（只看）/ auto（自动决策） | observe | auto 靠主会话 LLM 评估，120s 超时是已知边界 |
+| `executor.maxWorkers` | ticket worker 并发上限 | 3 | 只管 SuperAgent ticket 工人；TEAM_TOOLS 副手 fan-out 走 dsh-subagent（默认 8），两个旋钮各管一条路径 |
+| `executor.blockedCommands` | worker shell 禁用命令名 | 空 | 与 DSH 审批是**叠加**关系：两层都放行才放行，只会更严不会更松 |
 | ticket 兜底 | 异步工单队列 | 实验性 | TEAM_TOOLS 是主编排路径，ticket 是兜底 ⚠️ |
 
 - 会话段轮转自动重绑（60s 巡检）+ 崩溃残锁自愈已内置，无需配置 ✅。

@@ -102,8 +102,9 @@ export function acquireStateLock(target: string, log?: { warn: (f: string, ...a:
     // rename 是原子的：只有一个竞争者能把锁目录改成自己的 tombstone——赢家独占重取权，输家按互斥抛出。
     // 代际复核（审查 F0 二轮）：验尸与 rename 之间锁目录可能已被接管者整代替换——rename 走的必须
     // 仍是验尸那一代（ino+mtime 一致且 owner 文件未被重写），否则归还目录并重抛 ELOCKED。
-    // 残余窗口：接管者 mkdir 与写 owner 之间被 rename 走——双方 proper-lockfile 的 mtime 看护会在
-    // ≤update(2s) 内对双方抛 ECOMPROMISED（fail-closed：双双弃锁，互斥恢复），窗口为 µs 级。
+    // 残余窗口：接管者 mkdir 与写 owner 之间被 rename 走——受损方 proper-lockfile 的 mtime 看护会在
+    // ≤update(2s) 内抛 ECOMPROMISED（onCompromised 默认 throw，lib/lockfile.js:213；fail-closed：
+    // 受损方崩溃退出，收敛到 ≤1 持有者即互斥恢复；通常仅被偷方检测到），窗口为 µs 级。
     const lockDir = `${target}.lock`
     const tomb = `${lockDir}.recovering-${process.pid}-${Date.now()}`
     let gen: { ino: number; mtimeMs: number }

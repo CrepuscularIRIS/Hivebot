@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { spawn, execFileSync } from 'node:child_process'
-import { mkdtempSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, readFileSync, rmSync, existsSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -205,4 +205,34 @@ describe('跨进程 stateDir 锁语义（Codex 复测 #1）', () => {
       rmSync(dir, { recursive: true, force: true })
     }
   }, 60_000)
+
+  it('F 残余窗口兜底：锁目录被偷换后持有者 ≤update+宽限内 ECOMPROMISED 崩溃（审查 F0 二轮实证）', async () => {
+    // proper-lockfile lib/lockfile.js:109-170 update 定时器每 2s stat 锁目录，
+    // ENOENT 或 mtime 非「我最后一次写入」→ setLockAsCompromised → 默认
+    // onCompromised(throw)（lockfile.js:213）→ 持有者进程崩溃。
+    // 即：代际复核的 µs 残余窗口里即便发生偷换，受损方 fail-closed 退出，
+    // 收敛到 ≤1 持有者——互斥恢复（通常仅被偷方检测到，无需「双双弃锁」）。
+    const dir = mkdtempSync(join(tmpdir(), 'sa-xproc5-'))
+    const target = join(dir, 'state')
+    writeFileSync(target, 'x')
+    const child = runHolder({ target, tag: 'holdF.cjs' })
+    try {
+      const held = await waitForHeld(child)
+      expect(held).toContain('HELD')
+      // 模拟残余窗口：输家把持有者的锁目录 rename 走，并在原位另建新目录
+      rmSync(target + '.lock', { recursive: true, force: true })
+      mkdirSync(target + '.lock')
+      let errOut = ''
+      child.stderr!.on('data', d => { errOut += d.toString() })
+      const crashed = await new Promise<boolean>(resolve => {
+        const timer = setTimeout(() => resolve(false), 7000)   // update 2s + utimes 余量 + 缓冲
+        child.on('exit', () => { clearTimeout(timer); resolve(true) })
+      })
+      expect(crashed).toBe(true)
+      expect(errOut).toContain('ECOMPROMISED')
+    } finally {
+      child.kill('SIGKILL')
+      rmSync(dir, { recursive: true, force: true })
+    }
+  }, 30_000)
 })

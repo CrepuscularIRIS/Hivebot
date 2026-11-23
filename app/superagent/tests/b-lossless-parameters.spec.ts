@@ -98,4 +98,24 @@ describe('registered tool parameters stay lossless JSON under the engine snapsho
     }).strict())
     expect(snapshotJsonValue(parameters)).toBeDefined()
   })
+
+  it('round-trip preserves every JSON-visible value (审查 F1：语义零损失)', () => {
+    // toJSONSchema 的输出本身就是给 JSON 消费方（引擎投影）的纯 JSON 文档。
+    // 断言：round-trip 结果与原输出在 JSON 可见内容上 deepEqual——唯一差异只能是非 JSON 的
+    // 不可枚举 ~standard（上面已有 guard 证明它会被引擎拒）。
+    const schemas = [
+      z.string(),
+      z.object({ resource: z.string().min(1), offset: z.number().int().min(0).default(0), limit: z.number().int().min(1).max(8000).optional() }).strict(),
+      z.object({ kind: z.enum(['create', 'update']), ids: z.array(z.string()), meta: z.record(z.string(), z.number()).optional(), note: z.string().default('') }).strict(),
+    ]
+    for (const schema of schemas) {
+      const original = JSON.parse(JSON.stringify(z.toJSONSchema(schema)))  // JSON 可见内容的真值基准
+      expect(jsonSchemaParameters(schema)).toEqual(original)
+    }
+  })
+
+  it('round-trip is idempotent (no hidden non-JSON state leaks back)', () => {
+    const once = jsonSchemaParameters(z.object({ a: z.string().default('x') }).strict())
+    expect(JSON.parse(JSON.stringify(once))).toEqual(once)
+  })
 })

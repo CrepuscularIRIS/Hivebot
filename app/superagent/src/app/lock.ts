@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, unlinkSync, utimesSync, existsSync, statSync, rmSync } from 'node:fs'
+import { readFileSync, writeFileSync, unlinkSync, utimesSync, existsSync, statSync, rmSync, renameSync } from 'node:fs'
 import { createRequire } from 'node:module'
 // proper-lockfile 是 CJS 且 module.exports=lock（promise 版）——default import 在 tsx/ESM 下
 // 解析成 promise 版 lock()，返回 Promise 而非 release 函数。createRequire 点名 lockSync。
@@ -98,7 +98,16 @@ export function acquireStateLock(target: string, log?: { warn: (f: string, ...a:
       if (ageMs < NO_OWNER_GRACE_MS) throw first
       log?.warn?.('dsh-superagent: ownerless stateDir lock is %dms old; recovering (crashed before writing owner evidence)', Math.round(ageMs))
     }
-    rmSync(`${target}.lock`, { recursive: true, force: true })  // stale 永不过期，只能物理删除
+    // 原子收敛回收（审查 F0）：两个竞争者都验到死 owner 时，直接 rmSync 会让后删者删掉先接管者的新锁。
+    // rename 是原子的：只有一个竞争者能把锁目录改成自己的 tombstone——赢家独占重取权，输家按互斥抛出。
+    const lockDir = `${target}.lock`
+    const tomb = `${lockDir}.recovering-${process.pid}-${Date.now()}`
+    try {
+      renameSync(lockDir, tomb)
+    } catch {
+      throw first   // 已被并发回收者接管（或锁目录消失）：互斥优先，不做盲重试（重试窗口可能双持锁）
+    }
+    try { rmSync(tomb, { recursive: true, force: true }) } catch { /* 尸体残留不影响 <target>.lock 互斥 */}
     release = lockSync(target, { stale: NEVER_STALE_MS, update: 2_000 }) as unknown as ReturnType<typeof lockSync>
   }
   // 获取成功：写 owner 证据（release 时删；SIGKILL 残留由下个获取者验尸）

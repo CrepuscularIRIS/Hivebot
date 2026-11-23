@@ -8,6 +8,7 @@ import glob
 import io
 import json
 import os
+import re
 import sys
 
 INJECTED_PREFIXES = ("[Bot team setup]", "[Message from Chief]", "<system-reminder>",
@@ -45,8 +46,11 @@ def _writes_marker(ev):
                              if isinstance(v, str) and ("path" in k.lower() or k.lower() in ("file", "file_path", "target")))
         return any(mk in path_args for mk in WS_MARKERS)
     if name in ("bash", "pwsh"):
+        # 审查 F3：重定向/tee 的**目标**才是写入处——"grep x /ws/boot-check.txt > /tmp/out"
+        # 是读取（marker 只出现在源位置），不得计为 worker 落盘。
         args = json.dumps(ev.get("data", {}).get("arguments", ""))
-        return any(mk in args for mk in WS_MARKERS) and any(op in args for op in (">", "tee ", "tee\n", "<<"))
+        targets = re.findall(r'(?:>>?|tee(?:\s+-a)?)\s*["\']?([^\s"\'|;&]+)', args)
+        return any(any(mk in t for mk in WS_MARKERS) for t in targets)
     return False
 
 
@@ -54,27 +58,31 @@ def judge_sessions(sessions):
     """sessions: {会话标识: [事件dict, ...]} → {"A3": PASS|FAIL|SKIP, "A4-worker": bool, "A4-chief": bool}。
 
     A3: 'Chief of Staff' 人格开场必须出现在首条人类 user 消息之前（真 kickoff），否则该会话 FAIL；
-        无开场=SKIP（无 UI 流程未释放 kickoff，不掩盖）。
+        无开场=SKIP（无 UI 流程未释放 kickoff，不掩盖）。多会话聚合：任一 FAIL 即 FAIL（最严，
+        审查 F3：不允许后遍历会话的结果覆盖先前的 FAIL）。
     A4-worker: 某会话写了 marker（路径级因果）且全程无编排工具 = 真委派落盘。
     A4-chief: 某会话有编排工具 = Chief 派活。
     """
-    a3 = "SKIP"
+    a3_results = []
     a4w = a4c = False
     for evs in sessions.values():
+        session_a3 = None
         for i, ev in enumerate(evs):
             if ev.get("type") != "assistant/message":
                 continue
             content = (ev.get("data", {}) or {}).get("message", {}).get("content", [])
             texts = [p.get("text", "") for p in content if isinstance(p, dict) and p.get("type") == "text"]
             if any("Chief of Staff" in x for x in texts):
-                a3 = "PASS" if not any(_is_human_user(e) for e in evs[:i]) else "FAIL"
+                session_a3 = "PASS" if not any(_is_human_user(e) for e in evs[:i]) else "FAIL"
                 break
+        a3_results.append(session_a3)
         calls = [e.get("data", {}).get("name", "") for e in evs if e.get("type") == "tool/call"]
         if any(_writes_marker(e) for e in evs if e.get("type") == "tool/call") \
                 and not any(c in ORCHESTRATION_TOOLS for c in calls):
             a4w = True
         if any(c in ORCHESTRATION_TOOLS for c in calls):
             a4c = True
+    a3 = "FAIL" if "FAIL" in a3_results else ("PASS" if "PASS" in a3_results else "SKIP")
     return {"A3": a3, "A4-worker": a4w, "A4-chief": a4c}
 
 

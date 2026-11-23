@@ -57,6 +57,15 @@ class A4Causality(unittest.TestCase):
         self.assertTrue(yes["A4-worker"])
         self.assertFalse(no["A4-worker"])
 
+    def test_bash_redirect_away_from_marker_is_read_not_write(self):
+        # 审查 F3：marker 只出现在读取源、重定向目标在别处——读取，不算落盘
+        v = judge_sessions({"w": [tool_call("bash", {"command": "grep x /ws/boot-check.txt > /tmp/out.txt"})]})
+        self.assertFalse(v["A4-worker"])
+
+    def test_bash_tee_to_marker_counts(self):
+        v = judge_sessions({"w": [tool_call("bash", {"command": "echo ok | tee /ws/boot-check.txt"})]})
+        self.assertTrue(v["A4-worker"])
+
     def test_write_content_mention_is_not_a_write(self):
         # content 里提及文件名不算——只有 path 类参数命中才绑因果
         v = judge_sessions({"w": [tool_call("write", {"file_path": "/ws/notes.md", "content": "see boot-check.txt"})]})
@@ -89,6 +98,21 @@ class A3Kickoff(unittest.TestCase):
     def test_injected_messages_do_not_count_as_human(self):
         # [Bot team setup]/<system-reminder> 等注入前缀不算人类首条——开场在其后仍是真 kickoff
         v = judge_sessions({"chief": [human("[Bot team setup] configured"), assistant("Chief of Staff here")]})
+        self.assertEqual(v["A3"], "PASS")
+
+    def test_a3_fail_in_any_session_is_final(self):
+        # 审查 F3：后遍历会话不得覆盖先前会话的 FAIL
+        v = judge_sessions({
+            "good": [assistant("Chief of Staff reporting"), human("hi")],
+            "bad": [human("hi"), assistant("Chief of Staff reporting")],
+        })
+        self.assertEqual(v["A3"], "FAIL")
+
+    def test_a3_pass_in_later_session_counts(self):
+        v = judge_sessions({
+            "quiet": [human("hi")],
+            "good": [assistant("Chief of Staff reporting"), human("hi")],
+        })
         self.assertEqual(v["A3"], "PASS")
 
 

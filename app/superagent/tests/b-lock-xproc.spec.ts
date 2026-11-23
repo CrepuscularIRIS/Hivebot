@@ -8,7 +8,7 @@ import { join } from 'node:path'
 // Holder 与第二实例都用纯 CJS（proper-lockfile 是 CJS，node 直跑；owner 协议与
 // src/app/lock.ts 的 acquireStateLock 同构——跨进程行为验证不需要 TS 源加载器）。
 const ACQUIRE_JS = `
-const { writeFileSync, readFileSync, utimesSync, unlinkSync, existsSync, statSync, rmSync } = require('node:fs')
+const { writeFileSync, readFileSync, utimesSync, unlinkSync, existsSync, statSync, rmSync, renameSync } = require('node:fs')
 // holder 脚本写在 tmpdir——require 解析不从 superagent 出发会找不到包；
 // 用调用方注入的 PKG_DIR createRequire 定位 proper-lockfile。
 const { createRequire } = require('node:module')
@@ -41,7 +41,11 @@ function acquire() {
       try { ageMs = Date.now() - statSync(target + '.lock').mtimeMs } catch {}
       if (ageMs < 60000) throw first
     }
-    rmSync(target + '.lock', { recursive: true, force: true })
+    // 原子收敛回收（与 src/app/lock.ts 同构，审查 F0）：rename 赢家独占重取权；输家按互斥抛出
+    const lockDir = target + '.lock'
+    const tomb = lockDir + '.recovering-' + process.pid + '-' + Date.now()
+    try { renameSync(lockDir, tomb) } catch { throw first }
+    try { rmSync(tomb, { recursive: true, force: true }) } catch {}
     return lockSync(target, { stale: NEVER_STALE_MS, update: 2000 })
   }
 }
@@ -152,6 +156,38 @@ describe('跨进程 stateDir 锁语义（Codex 复测 #1）', () => {
       expect(err).toContain('ELOCKED')
     } finally {
       child.kill('SIGKILL')
+      rmSync(dir, { recursive: true, force: true })
+    }
+  }, 60_000)
+
+  it('E 双实例并发竞争死 owner 锁：恰好一个接管（tombstone 原子收敛，审查 F0）', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'sa-xproc4-'))
+    const target = join(dir, 'state')
+    writeFileSync(target, 'x')
+    const child = runHolder({ target, tag: 'holdE.cjs' })
+    const held = await waitForHeld(child)
+    expect(held).toContain('HELD')
+    child.kill('SIGKILL')          // owner 文件残留、pid 已死：两个竞争者都会走回收路径
+    await new Promise(r => setTimeout(r, 300))
+    const raceOutcome = (c: ReturnType<typeof spawn>): Promise<'won' | 'lost'> => new Promise(resolve => {
+      let buf = ''
+      let done = false
+      const finish = (r: 'won' | 'lost') => { if (!done) { done = true; resolve(r) } }
+      c.stdout!.on('data', d => { buf += d.toString(); if (buf.includes('SECOND')) finish('won') })
+      c.on('close', code => finish(code === 0 && buf.includes('SECOND') ? 'won' : 'lost'))
+      setTimeout(() => finish(buf.includes('SECOND') ? 'won' : 'lost'), 9000)
+    })
+    const racers = [runHolder({ target, tag: 'race1.cjs', label: 'SECOND' }), runHolder({ target, tag: 'race2.cjs', label: 'SECOND' })]
+    try {
+      const results = await Promise.all(racers.map(raceOutcome))
+      const wins = results.filter(r => r === 'won').length
+      // 旧 rmSync 实现：后删者可删掉先接管者的新锁 → 双持锁；tombstone 后必为 1
+      expect(wins).toBe(1)
+      // 接管者的 owner 证据落在锁上（pid = 赢家之一）
+      const owner = JSON.parse(readFileSync(`${target}.lock.owner`, 'utf8'))
+      expect(racers.some(c => c.pid === owner.pid)).toBe(true)
+    } finally {
+      racers.forEach(c => c.kill('SIGKILL'))
       rmSync(dir, { recursive: true, force: true })
     }
   }, 60_000)

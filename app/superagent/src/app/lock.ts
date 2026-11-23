@@ -1,17 +1,31 @@
-import { readFileSync, writeFileSync, unlinkSync, utimesSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { readFileSync, writeFileSync, unlinkSync, utimesSync, existsSync, statSync, rmSync } from 'node:fs'
 import { createRequire } from 'node:module'
 // proper-lockfile 是 CJS 且 module.exports=lock（promise 版）——default import 在 tsx/ESM 下
 // 解析成 promise 版 lock()，返回 Promise 而非 release 函数。createRequire 点名 lockSync。
 const require_ = createRequire(import.meta.url)
-const lockSync = require_('proper-lockfile').lockSync as (target: string, opts?: { stale?: number }) => () => void
+const lockSync = require_('proper-lockfile').lockSync as (target: string, opts?: { stale?: number; update?: number }) => () => void
 
-// 纠错轮二（Codex 复测 #1）：utimesSync 强制过期会偷活实例的锁（mtime 机制分不清持有者死活）。
-// 语义先行：①活实例持有时第二获取必拒 ②SIGKILL 后立即可回收 ③持有者证据可读（pid+starttime）。
-// 实现：锁目录旁写 owner 文件（pid+starttime）；ELOCKED 时验活——死了才强制过期重取。
-// owner 文件在 release 时删除；SIGKILL 残留无害（只在 ELOCKED 路径读取）。
+// 复测 #1（4b922fde）语义：互斥无条件成立；恢复只走两条路——owner 验尸=死，或无证据+超宽限。
+// 旧实现三洞：①stale:30_000 无保活，proper-lockfile 按 mtime 自动偷活锁（长持有的编排器必被偷）
+// ②ELOCKED 无 owner 证据时立即偷——首实例「已持锁未写 owner」的微秒窗口可被第二实例打破
+// ③非 Linux 无 /proc 时 ownerAlive 恒 false——Windows（DS-Bot）活锁必被偷。
+// 修法：stale 设为永不过期；死 owner 直接删锁目录重取；裸锁要求 mtime 超过宽限期才回收；
+// 验活三态 alive/dead/unknown，unknown 不偷（fail-closed）；非 Linux 用 process.kill(pid,0) 探活。
 
 export interface LockOwner { pid: number; startedAt: string }
+export type Liveness = 'alive' | 'dead' | 'unknown'
+
+/** 无 owner 证据的裸锁多久后才可兜底回收（覆盖「持锁后、写 owner 前」崩溃的残留）。 */
+const NO_OWNER_GRACE_MS = 60_000
+/**
+ * proper-lockfile 的 stale：mtime 自动偷锁必须彻底关闭。
+ * 不能传 0——lib/lockfile.js:219 Math.max(stale || 0, 2000) 会钳到 2000ms，事件循环阻塞 2s 即被偷。
+ * 也不能传超大值——内部 update 定时器 Math.min(update, stale/2) 溢出 32 位 setTimeout。
+ * 4e9ms（约 126 年）既够不到，stale/2=2e9 也恰在 32 位有符号上限内。
+ * update: 2000 显式保活 mtime——持有者活着时锁目录 mtime 恒新鲜，
+ * 「无 owner 裸锁宽限」判定（<60s 视为活）因此只会在持有者死亡后开始计时。
+ */
+const NEVER_STALE_MS = 4_000_000_000
 
 function ownerPath(target: string): string {
   return `${target}.lock.owner`
@@ -27,11 +41,21 @@ function processStartTime(pid: number): string | null {
   } catch { return null }
 }
 
-/** 持有者是否活着（pid 存在且 starttime 匹配——不匹配=pid 被复用，视为已死）。 */
-export function ownerAlive(owner: LockOwner): boolean {
+/** 信号探活兜底（非 Linux 或 /proc 不可读）：ESRCH=死；0/EPERM=活；其它错误=unknown。 */
+function probeLiveness(pid: number): Liveness {
+  try {
+    process.kill(pid, 0)
+    return 'alive'
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === 'ESRCH' ? 'dead' : 'unknown'
+  }
+}
+
+/** 持有者三态验活：/proc 可读时按 pid+starttime 判（含 pid 复用防护）；否则退到信号探活。 */
+export function ownerLiveness(owner: LockOwner): Liveness {
   const startedAt = processStartTime(owner.pid)
-  if (startedAt === null) return false          // /proc 无此进程=死
-  return startedAt === owner.startedAt           // pid 复用防护
+  if (startedAt !== null) return startedAt === owner.startedAt ? 'alive' : 'dead'
+  return probeLiveness(owner.pid)
 }
 
 function readOwner(target: string): LockOwner | null {
@@ -47,30 +71,35 @@ export interface StateLock {
 }
 
 /**
- * stateDir 互斥锁（跨进程语义正确版）。
- * - 正常获取：写 owner 证据 → 返回
- * - ELOCKED + owner 活着 → 抛 ELOCKED（互斥）
- * - ELOCKED + owner 死了/无证据 → utimesSync 强制过期（SIGKILL 恢复）→ 重取
+ * stateDir 互斥锁（互斥优先，恢复有证据才做）。
+ * - 正常获取 → 写 owner 证据 → 返回
+ * - ELOCKED + owner 验尸=dead → 删锁目录重取（SIGKILL 立即恢复）
+ * - ELOCKED + owner=alive/unknown，或无 owner 且裸锁 mtime 未超宽限 → 抛 ELOCKED（互斥）
+ * - ELOCKED + 无 owner + 裸锁 mtime 超宽限 → 兜底回收（写 owner 前崩溃的残留）
  */
 export function acquireStateLock(target: string, log?: { warn: (f: string, ...a: unknown[]) => void }): StateLock {
   const myStart = processStartTime(process.pid) ?? String(Date.now())
   let release: ReturnType<typeof lockSync>
   try {
-    release = lockSync(target, { stale: 30_000 }) as unknown as ReturnType<typeof lockSync>
+    release = lockSync(target, { stale: NEVER_STALE_MS, update: 2_000 }) as unknown as ReturnType<typeof lockSync>
   } catch (first) {
     if ((first as NodeJS.ErrnoException).code !== 'ELOCKED') throw first
     const owner = readOwner(target)
-    if (owner && ownerAlive(owner)) throw first    // 活持有者：互斥必须成立
-    log?.warn?.('dsh-superagent: stateDir lock held by dead holder (pid %s); recovering', String(owner?.pid ?? '?'))
-    if (!owner) {
-      // 无 owner 证据的锁（旧版本写的/异常路径）——保守起见仍恢复：SuperAgent 的锁
-      // 只由本产品持有，dsh 引擎单实例前提下无第二持有者。
-      log?.warn?.('dsh-superagent: stateDir lock has no owner evidence; recovering (single-writer assumption)')
+    if (owner) {
+      const liveness = ownerLiveness(owner)
+      if (liveness !== 'dead') throw first     // 活/不确定：互斥必须成立（fail-closed）
+      log?.warn?.('dsh-superagent: stateDir lock held by dead holder (pid %s); recovering', String(owner.pid))
+    } else {
+      // 无 owner 证据：可能是首实例「已持锁未写 owner」的窗口（活），也可能 是写 owner 前崩溃的残留（死）。
+      // mtime 新鲜=窗口（拒）；超宽限=残留（回收）。
+      const lockDir = `${target}.lock`
+      let ageMs = Number.POSITIVE_INFINITY
+      try { ageMs = Date.now() - statSync(lockDir).mtimeMs } catch { /* 目录不在：直接重取 */ }
+      if (ageMs < NO_OWNER_GRACE_MS) throw first
+      log?.warn?.('dsh-superagent: ownerless stateDir lock is %dms old; recovering (crashed before writing owner evidence)', Math.round(ageMs))
     }
-    const lockDir = `${target}.lock`
-    const past = new Date(Date.now() - 40_000)
-    try { utimesSync(lockDir, past, past) } catch { /* 竞态：目录不在则直接重取 */ }
-    release = lockSync(target, { stale: 30_000 }) as unknown as ReturnType<typeof lockSync>
+    rmSync(`${target}.lock`, { recursive: true, force: true })  // stale 永不过期，只能物理删除
+    release = lockSync(target, { stale: NEVER_STALE_MS, update: 2_000 }) as unknown as ReturnType<typeof lockSync>
   }
   // 获取成功：写 owner 证据（release 时删；SIGKILL 残留由下个获取者验尸）
   const op = ownerPath(target)

@@ -17,7 +17,7 @@ import signal
 import sys
 import time
 
-ALLOWED_ROOTS = ("/tmp/bot-wt", "/home/lingxufeng/bot", "/tmp/p2sdk", "/tmp/vfy-", "/tmp/bot-", "/dev/shm/bot-",
+ALLOWED_ROOTS = ("/tmp/bot-wt", "/home/lingxufeng/bot", "/tmp/p2sdk", "/tmp/vfy-", "/tmp/bot-", "/dev/shm/bot-", "/tmp/dsbot-trial",
                  "/dev/shm/pbots")
 
 

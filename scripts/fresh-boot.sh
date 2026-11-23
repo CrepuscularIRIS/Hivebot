@@ -114,78 +114,8 @@ process.exit(marker ? 0 : 1);
 RC=$?
 echo "boot-check exit: $RC"
 # A3+A4 证据（文件层，作者级断言——纠错轮 Codex 审查 #1：关键词命中≠Chief 在首条 user 前开场；marker 存在≠worker 写）
-EVID=$(python3 - <<'PYEV'
-import zstandard, io, glob, json
-import os
-fresh = os.environ.get("DSBOT_TRIAL", "/tmp/dsbot-trial") + "/home-fresh"
-files = sorted(glob.glob(fresh + "/.ds-bot/sessions/**/session-*/session.v4.jsonl.zstd", recursive=True))
-dec = zstandard.ZstdDecompressor()
-
-INJECTED_PREFIXES = ("[Bot team setup]", "[Message from Chief]", "<system-reminder>",
-                     "Current runtime context", "Time sampled while preparing")
-
-def user_text(ev):
-    c = ev.get("data", {}).get("content", [])
-    for part in c:
-        if isinstance(part, dict) and part.get("type") == "text":
-            return part.get("text", "")
-    return ""
-
-def is_human_user(ev):
-    if ev.get("type") != "user/message": return False
-    t = user_text(ev).lstrip()
-    return not t.startswith(INJECTED_PREFIXES)
-
-a3 = a4w = a4c = False
-for f in files:
-    with open(f, "rb") as fh:
-        t = io.TextIOWrapper(dec.stream_reader(fh), encoding="utf-8").read()
-    evs = [json.loads(l) for l in t.splitlines() if l.strip()]
-    # A3: kickoff 人格开场。kickoff 由 ds-bot roster 的 waitForModel->applyModel 路径释放（UI 选模型触发）；
-    # 本脚本无 UI，agent-default-model 兜底下 Chief 的 greeting 可能未走 releaseKickoff——此时判 SKIP 不判 FAIL（产品面由 R11 浏览器走查实证）。
-    # 命中时必须是真 kickoff（assistant text part 含人格语），不能是任务 reasoning 自我引用。
-    for i, ev in enumerate(evs):
-        if ev.get("type") != "assistant/message": continue
-        d = ev.get("data", {}); content = (d.get("message") or {}).get("content", [])
-        text_parts = [p.get("text", "") for p in content if isinstance(p, dict) and p.get("type") == "text"]
-        if any("Chief of Staff" in x for x in text_parts):
-            a3 = "PASS" if not any(is_human_user(e) for e in evs[:i]) else "FAIL"
-            break
-    else:
-        a3 = "SKIP"  # 无独立 kickoff（无 UI 流程下 greeting 未释放）——不掩盖，报告原样呈现
-    # 事件级工具断言（纠错轮：文本级 'create_bot' in txt 会被委派转述误伤）
-    # 纠错轮三自审（Codex 复测 #5 反例仍防不住「无关会话恰好调过 bash」）：worker 判据必须与 marker
-    # 因果绑定——落盘调用的 arguments 里要真的出现 marker 文件名（write/edit/bash 任一含 boot-check），
-    # 不是「调过落盘类工具」这种弱信号。只读会话/ Chief 自写（有编排调用）/无关 bash 会话都不再误判。
-    calls = [e.get("data", {}).get("name", "") for e in evs if e.get("type") == "tool/call"]
-    WRITE_TOOLS = ("write", "edit", "bash", "pwsh")
-    # 纠错轮四（审查 #5）：落盘参数须含完整目标路径（workspace 目录 + 文件名），不是裸文件名——
-    # bash -c "grep boot-check" 这类只含文件名的读取/搜索调用不再计入；write/edit 的 path 参数
-    # 本就带全路径。因果链：谁写了 boot-check.txt（带路径）→ 无编排调用 = worker。
-    WS_MARKERS = ("boot-check.txt", "bot/workspace/boot-check")
-    def _writes_marker(ev):
-        name = ev.get("data", {}).get("name", "")
-        args = json.dumps(ev.get("data", {}).get("arguments", ""))
-        if name in ("write", "edit"):
-            args_obj = ev.get("data", {}).get("arguments") or {}
-            if isinstance(args_obj, str):
-                try: args_obj = json.loads(args_obj)   # 真实事件流：arguments 常为 JSON 字符串形态
-                except Exception: args_obj = {}
-            items = args_obj.items() if isinstance(args_obj, dict) else []
-            path_args = " ".join(str(v) for k, v in items if isinstance(v, str) and ("path" in k.lower() or k.lower() in ("file", "file_path", "target")))
-            return any(mk in path_args for mk in WS_MARKERS)   # 只认 path 类参数；content 里提及文件名不算
-        if name in ("bash", "pwsh"):
-            # shell 写入形态：重定向/tee/heredoc 指向 marker 路径才算写；grep/cat 等读取不算
-            return any(mk in args for mk in WS_MARKERS) and any(op in args for op in (">", "tee ", "tee\n", "<<"))
-        return False
-    marker_write = any(_writes_marker(e) for e in evs if e.get("type") == "tool/call")
-    if marker_write and not any(c in ("create_bot", "message_bot", "list_bots") for c in calls):
-        a4w = True          # 落盘调用确实写了 marker 且无编排工具 = worker 会话（因果级判据）
-    if any(c in ("create_bot", "message_bot", "list_bots") for c in calls):
-        a4c = True          # 有编排工具 = Chief 派活
-print("A3={} A4-worker={} A4-chief={}".format(a3, "PASS" if a4w else "FAIL", "PASS" if a4c else "FAIL"))
-PYEV
-)
+# 判据单一真源在 scripts/fresh_boot_evidence.py（4b922fde 复测 #5：反例回归测试在 scripts/tests/）
+EVID=$(DSBOT_TRIAL="$TRIAL" python3 "$REPO/scripts/fresh_boot_evidence.py")
 echo "evidence: $EVID"
 case "$EVID" in *A3=FAIL*) RC=1;; esac   # PASS/SKIP 均可：SKIP=无 UI 流程未释放 kickoff（见断言内注释）
 echo "$EVID" | grep -q 'A4-worker=PASS' || RC=1

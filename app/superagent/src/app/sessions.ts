@@ -5,12 +5,12 @@ import type { MessageId } from '@deepseek-ai/dsh-llm'
 import { scopeParentOf } from '@deepseek-ai/dsh-scope'
 import type { SessionId } from '@deepseek-ai/dsh-session'
 import { dirname } from 'node:path'
-import { z } from 'zod'
 import { key, liveTicket, type Ticket } from '../core/index.ts'
 import { mandateInstructions, ticketOfSession } from '../executor/dsh.ts'
 import type { HealthEntry } from '../infra/health.ts'
 import { AgentDelivery, messageId } from './delivery.ts'
 import type { Effects } from './effects.ts'
+import { jsonSchemaParameters } from './json-schema.ts'
 import type { Variable } from './execution-environment.ts'
 import { RetryHealth } from './retry-health.ts'
 import { initializeRoleModel } from './role-models.ts'
@@ -29,6 +29,8 @@ export interface SessionsHost {
   readonly effects: Pick<Effects, 'enqueue' | 'handle' | 'idle' | 'pending'>
   /** The `models` health entry, which reports managed sessions waiting on a model-budget retry. */
   readonly health: HealthEntry
+  /** The `tools` health entry: worker sessions missing required work tools (复测 #2 fail-closed 缺口). */
+  readonly toolHealth: HealthEntry
   /** 纠错轮四：活读——rebind 后 relay/preset/resolveAgent/decorate 跟随新段（构造时快照会留永久半切换）。 */
   masterId(): string
   readonly lifetime: AbortSignal
@@ -61,6 +63,17 @@ declare module '@deepseek-ai/cordis' {
  */
 const WORK_TOOLS = ['read', 'write', 'edit', 'read_image', 'glob', 'grep', 'bash', 'pwsh', 'job_output', 'job_list', 'job_kill', 'web_search',
   'web_fetch', 'skill', 'todo_write', 'subagent', 'list_subagent_models', 'send_message', 'list_agents', 'interrupt_agent']
+/**
+ * 复测 #2（4b922fde）工具契约：worker 开工的最小必需集——文件四件套、shell、后台任务管理、待办。
+ * 旧的 workOnly 把缺的工具静默 filter 掉：worker「看起来在跑」但写不了盘/交不了回执，失败无声。
+ * 现在 fail-closed：必需工具缺位 = 配置错误，拒绝执行并把缺口挂上 health（tools 条目）。
+ * pwsh（Windows 侧 shell）、web_*、subagent 一族按宿主可选，不列入必需。
+ */
+export const REQUIRED_WORK_TOOLS = ['read', 'write', 'edit', 'glob', 'grep', 'bash', 'job_output', 'job_list', 'job_kill', 'todo_write']
+/** 必需工具缺口（has 探测某个工具名是否可用）；全可用返回空数组。 */
+export function missingWorkTools(has: (name: string) => boolean): string[] {
+  return REQUIRED_WORK_TOOLS.filter(name => !has(name))
+}
 /** What the main Session is told when it would wait: what it waits for comes to it, and a waiting step holds back the next. */
 const NO_WAIT = 'Reports, follow_up notices, new candidates and a background job\'s end with its output arrive by themselves as messages; '
   + 'end the turn instead of waiting for them.'
@@ -96,6 +109,8 @@ export class Sessions {
   /** Decorated agents mapped to their registered disposers and skill scope until the agent is disposed or `Sessions.dispose()` runs. */
   private readonly bindings = new Map<Agent, SessionBinding>()
   private readonly retryHealth = new RetryHealth()
+  /** Worker sessions mapped to their missing required tools; aggregated onto the 'tools' health entry. */
+  private readonly toolGaps = new Map<string, string[]>()
   private readonly ctx: Context
   /** Registers ordered `relay` and `notice` effect handlers that deliver to the main Session. */
   constructor(private readonly host: SessionsHost) {
@@ -210,7 +225,7 @@ export class Sessions {
   /** Returns a tool registrar for `agent` that renders tool output as JSON text and attaches `output.image` as an image when present. */
   private registerTool(agent: Agent, binding: SessionBinding): RegisterTool {
     return (name, description, schema, execute) => {
-      binding.disposers.push(agent.ctx.tools.register({ name, description, parameters: z.toJSONSchema(schema),
+      binding.disposers.push(agent.ctx.tools.register({ name, description, parameters: jsonSchemaParameters(schema),
         output: { schema: { type: 'object', additionalProperties: true }, render: (_args, value) => {
           const text = { type: 'text' as const, text: JSON.stringify(value) }
           const image = value && typeof value === 'object' && 'image' in value ? (value as { image: never }).image : undefined
@@ -296,11 +311,27 @@ export class Sessions {
   private workOnly(agent: Agent, ticketId: string): (() => void)[] {
     const store = this.host.store
     const parent = scopeParentOf(agent)
+    // 复测 #2：必需工具缺位不再静默丢——fail-closed 拒绝执行 + 挂 health，缺口人人可见。
+    const missing = missingWorkTools(name => Boolean(agent.ctx.tools.get(name, parent)))
+    if (missing.length > 0) {
+      this.toolGaps.set(agent.id, missing)
+      this.ctx.logger.warn('dsh-superagent: worker session %s is missing required tools: %s', agent.id, missing.join(', '))
+    } else this.toolGaps.delete(agent.id)
+    this.updateToolHealth()
     const allow = WORK_TOOLS.filter(name => agent.ctx.tools.get(name, parent))
     return [agent.ctx.tools.restrict({ allow }), agent.ctx.tools.guard(() => {
+      if (missing.length > 0) return `Session is missing required tools (${missing.join(', ')}); report the gap to the orchestrator instead of working around it`
       const current = store.tickets.get(ticketId)
       return !current || !liveTicket(current) ? 'Ticket ended; new work needs a new authorized ticket' : undefined
     })]
+  }
+  /** Aggregates worker tool gaps onto the 'tools' health entry: error naming sessions and tools, ready when complete. */
+  private updateToolHealth(): void {
+    const gaps = [...this.toolGaps]
+    this.host.toolHealth.set(gaps.length
+      ? { state: 'error', detail: gaps.slice(0, 5).map(([id, tools]) => `${id}: missing ${tools.join(', ')}`).join('; ')
+          + (gaps.length > 5 ? `; ${gaps.length - 5} more sessions` : ''), at: new Date().toISOString() }
+      : { state: 'ready', detail: 'Every worker session has its required tools' })
   }
   /**
    * A subagent of an Executor Session, or of one of its subagents, which runs under DSH's `standard` preset with the worker's
@@ -349,6 +380,7 @@ export class Sessions {
     const binding = this.bindings.get(agent)
     if (!binding) return
     this.bindings.delete(agent)
+    if (this.toolGaps.delete(agent.id)) this.updateToolHealth()
     binding.skills?.dispose()
     for (const dispose of binding.disposers.splice(0).reverse()) {
       try { dispose() } catch (error) { this.ctx.logger.warn('dsh-superagent could not release what it registered for a Session: %s', String(error)) }

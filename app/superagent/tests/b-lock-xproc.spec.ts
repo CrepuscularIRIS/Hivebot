@@ -26,6 +26,7 @@ function liveness(o) {
 }
 const target = process.argv[2]
 const myStart = startTime(process.pid) || String(Date.now())
+function readOwnerRaw() { try { return JSON.parse(readFileSync(target + '.lock.owner', 'utf8')) } catch { return null } }
 function acquire() {
   try {
     return lockSync(target, { stale: NEVER_STALE_MS, update: 2000 })
@@ -41,10 +42,23 @@ function acquire() {
       try { ageMs = Date.now() - statSync(target + '.lock').mtimeMs } catch {}
       if (ageMs < 60000) throw first
     }
-    // 原子收敛回收（与 src/app/lock.ts 同构，审查 F0）：rename 赢家独占重取权；输家按互斥抛出
+    // 原子收敛回收（与 src/app/lock.ts 同构，审查 F0）：rename 赢家独占重取权；输家按互斥抛出。
+    // 代际复核（F0 二轮）：rename 后核对 ino+mtime+owner 未变——rename 走新一代活锁时归还重抛。
     const lockDir = target + '.lock'
     const tomb = lockDir + '.recovering-' + process.pid + '-' + Date.now()
+    let gen
+    try { const s = statSync(lockDir); gen = { ino: s.ino, mtimeMs: s.mtimeMs } } catch { throw first }
+    const ownerBefore = owner || readOwnerRaw()
     try { renameSync(lockDir, tomb) } catch { throw first }
+    let sameGen = false
+    try {
+      const s = statSync(tomb)
+      sameGen = s.ino === gen.ino && s.mtimeMs === gen.mtimeMs && JSON.stringify(readOwnerRaw()) === JSON.stringify(ownerBefore)
+    } catch {}
+    if (!sameGen) {
+      try { renameSync(tomb, lockDir) } catch {}
+      throw first
+    }
     try { rmSync(tomb, { recursive: true, force: true }) } catch {}
     return lockSync(target, { stale: NEVER_STALE_MS, update: 2000 })
   }

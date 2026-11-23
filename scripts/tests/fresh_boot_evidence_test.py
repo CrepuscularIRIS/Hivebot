@@ -66,6 +66,16 @@ class A4Causality(unittest.TestCase):
         v = judge_sessions({"w": [tool_call("bash", {"command": "echo ok | tee /ws/boot-check.txt"})]})
         self.assertTrue(v["A4-worker"])
 
+    def test_bash_quoted_redirect_target_counts(self):
+        # 二轮：json.dumps 转义形态（\"boot-check.txt\"）不得截断目标——仍须命中 marker
+        v = judge_sessions({"w": [tool_call("bash", {"command": 'echo ok > "boot-check.txt"'})]})
+        self.assertTrue(v["A4-worker"])
+
+    def test_bash_substring_tee_word_does_not_match(self):
+        # 二轮：tee 无词边界时 "sometee" 子串误配——加 \\b 后不得命中
+        v = judge_sessions({"w": [tool_call("bash", {"command": "sometee /ws/boot-check.txt"})]})
+        self.assertFalse(v["A4-worker"])
+
     def test_write_content_mention_is_not_a_write(self):
         # content 里提及文件名不算——只有 path 类参数命中才绑因果
         v = judge_sessions({"w": [tool_call("write", {"file_path": "/ws/notes.md", "content": "see boot-check.txt"})]})

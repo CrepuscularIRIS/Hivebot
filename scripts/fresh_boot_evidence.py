@@ -48,8 +48,10 @@ def _writes_marker(ev):
     if name in ("bash", "pwsh"):
         # 审查 F3：重定向/tee 的**目标**才是写入处——"grep x /ws/boot-check.txt > /tmp/out"
         # 是读取（marker 只出现在源位置），不得计为 worker 落盘。
-        args = json.dumps(ev.get("data", {}).get("arguments", ""))
-        targets = re.findall(r'(?:>>?|tee(?:\s+-a)?)\s*["\']?([^\s"\'|;&]+)', args)
+        # 二轮：先剥 json.dumps 的 \" 转义（否则捕获会在转义引号处截断成单个反斜杠而漏判），
+        # 再做目标绑定；tee 加 \b 词边界防 "sometee" 子串误配。
+        args = json.dumps(ev.get("data", {}).get("arguments", "")).replace("\\", "")
+        targets = re.findall(r'(?:>>?|\btee(?:\s+-a)?)\s*["\']?([^\s"\'|;&]+)', args)
         return any(any(mk in t for mk in WS_MARKERS) for t in targets)
     return False
 

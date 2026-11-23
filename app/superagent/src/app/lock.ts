@@ -100,12 +100,32 @@ export function acquireStateLock(target: string, log?: { warn: (f: string, ...a:
     }
     // 原子收敛回收（审查 F0）：两个竞争者都验到死 owner 时，直接 rmSync 会让后删者删掉先接管者的新锁。
     // rename 是原子的：只有一个竞争者能把锁目录改成自己的 tombstone——赢家独占重取权，输家按互斥抛出。
+    // 代际复核（审查 F0 二轮）：验尸与 rename 之间锁目录可能已被接管者整代替换——rename 走的必须
+    // 仍是验尸那一代（ino+mtime 一致且 owner 文件未被重写），否则归还目录并重抛 ELOCKED。
+    // 残余窗口：接管者 mkdir 与写 owner 之间被 rename 走——双方 proper-lockfile 的 mtime 看护会在
+    // ≤update(2s) 内对双方抛 ECOMPROMISED（fail-closed：双双弃锁，互斥恢复），窗口为 µs 级。
     const lockDir = `${target}.lock`
     const tomb = `${lockDir}.recovering-${process.pid}-${Date.now()}`
+    let gen: { ino: number; mtimeMs: number }
+    try {
+      const s = statSync(lockDir)
+      gen = { ino: s.ino, mtimeMs: s.mtimeMs }
+    } catch { throw first }
+    const ownerBefore = owner ?? readOwner(target)
     try {
       renameSync(lockDir, tomb)
     } catch {
       throw first   // 已被并发回收者接管（或锁目录消失）：互斥优先，不做盲重试（重试窗口可能双持锁）
+    }
+    let sameGen = false
+    try {
+      const s = statSync(tomb)
+      sameGen = s.ino === gen.ino && s.mtimeMs === gen.mtimeMs
+        && JSON.stringify(readOwner(target)) === JSON.stringify(ownerBefore)
+    } catch { /* tomb 已被他人清理：按竞争失败处理 */ }
+    if (!sameGen) {
+      try { renameSync(tomb, lockDir) } catch { /* 归还失败：目录缺失，下个获取者正常 mkdir */ }
+      throw first
     }
     try { rmSync(tomb, { recursive: true, force: true }) } catch { /* 尸体残留不影响 <target>.lock 互斥 */}
     release = lockSync(target, { stale: NEVER_STALE_MS, update: 2_000 }) as unknown as ReturnType<typeof lockSync>

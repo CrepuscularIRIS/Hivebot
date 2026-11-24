@@ -1,0 +1,6 @@
+B6 观测：新段（session-44df6437-37d4-4a0a-b19c-b74e09cd8fe0）candidate 卡注入次数（/tmp/dsbot-trial/b6watch.py，每 10s 采样，180s 无变化即停）
+03:17:05 cards 4 turn/start 4 turn/end 4 card_times ['03:12:26', '03:12:41', '03:14:28', '03:16:30']
+03:20:05 stable 180s, stop
+final (4, 4, 4)
+解读：新段里 2 条 trigger（旧段带来的 1 条 + 新发 1 条）共收到 4 张 candidate 卡 = 每条真人消息固定 2 张；每张卡触发 1 个额外 turn（Chief 回「Duplicate …」）。
+卡片以 user/message 形式注入（source.kind=dsh-superagent），在 DS-Bot 聊天界面里显示为用户侧的原始 JSON 气泡（见 ui-b2-newpart.png）。

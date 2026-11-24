@@ -1,0 +1,78 @@
+
+> dsh-superagent@0.1.0 check
+> pnpm typecheck && pnpm test && pnpm build
+
+$ tsc --noEmit
+$ vitest run
+
+ RUN  v4.1.8 /home/lingxufeng/bot/app/superagent
+
+ ✓ tests/b32-bundle.spec.ts (2 tests) 56ms
+ ✓ tests/b32-local-channel.spec.ts (3 tests) 20ms
+ ✓ tests/b32-local-trigger.spec.ts (3 tests) 13ms
+ ✓ tests/b17-lock-recovery.spec.ts (4 tests) 57ms
+ ✓ tests/b32-master-id.spec.ts (4 tests) 39ms
+ ✓ tests/b41a-master-discovery.spec.ts (3 tests) 48ms
+ ✓ tests/b-live-master-identity.spec.ts (6 tests) 52ms
+ ✓ tests/b1-local-source-guard.spec.ts (6 tests) 9ms
+ ✓ tests/b-lock-mutex.spec.ts (8 tests) 204ms
+ ✓ tests/b-lossless-parameters.spec.ts (6 tests) 66ms
+ ✓ tests/b41a-watch.spec.ts (2 tests) 140ms
+ ✓ tests/b35-engine-loop.spec.ts (2 tests) 40ms
+ ✓ tests/b-local-admission.spec.ts (3 tests) 6ms
+ ✓ tests/b-work-tools.spec.ts (4 tests) 6ms
+ ✓ tests/b-lock-xproc.spec.ts (6 tests) 5560ms
+     ✓ A 活持有者：第二实例（独立进程）acquire 必拒 ELOCKED  576ms
+     ✓ B SIGKILL 后立即重启：acquire 直接成功（owner 验尸=死）  902ms
+     ✓ C owner 证据可读：持有中文件含 pid+starttime 且验活  512ms
+     ✓ D 首实例「已持锁未写 owner」窗口：第二实例必拒，不得偷锁（复测 #1 的互斥破坏点）  569ms
+     ✓ E 双实例并发竞争死 owner 锁：恰好一个接管（tombstone 原子收敛，审查 F0）  908ms
+     ✓ F 残余窗口兜底：锁目录被偷换后持有者 ≤update+宽限内 ECOMPROMISED 崩溃（审查 F0 二轮实证）  2086ms
+
+ Test Files  15 passed (15)
+      Tests  62 passed (62)
+   Start at  03:20:35
+   Duration  6.25s (transform 6.96s, setup 0ms, import 9.76s, tests 6.31s, environment 3ms)
+
+$ tsdown
+ℹ tsdown v0.22.14 powered by rolldown v1.2.19
+ℹ config file: /home/lingxufeng/bot/app/superagent/tsdown.config.ts 
+ℹ entry: src/index.ts, src/sources/github.ts, src/sources/feishu.ts
+ℹ target: es2024
+ℹ tsconfig: tsconfig.json
+ℹ entry: src/client/index.tsx
+ℹ target: node22.19.0
+ℹ tsconfig: tsconfig.json
+ℹ Build start
+
+ WARN  We recommend using the ESM format instead of CommonJS.
+The ESM format is compatible with modern platforms and runtimes, and most new libraries are now distributed only in ESM format.
+Learn more at https://nodejs.org/en/learn/modules/publishing-a-package#how-did-we-get-here
+
+ℹ Cleaning 12 files
+ℹ [CJS] lib/client.js  357.77 kB │ gzip: 86.58 kB
+ℹ [CJS] 1 files, total: 357.77 kB
+✔ Build complete in 4028ms
+ℹ [ESM] lib/index.js                 469.74 kB │ gzip: 136.66 kB
+ℹ [ESM] lib/github-watch.js           34.01 kB │ gzip:  11.02 kB
+ℹ [ESM] lib/feishu-watch.js            0.36 kB │ gzip:   0.24 kB
+ℹ [ESM] lib/feishu-CBt3ZXPo.js        48.20 kB │ gzip:  14.56 kB
+ℹ [ESM] lib/poll-Cd_7f5T6.js          39.09 kB │ gzip:  14.26 kB
+ℹ [ESM] lib/github-pull-tVExmym2.js   25.42 kB │ gzip:   8.24 kB
+ℹ [ESM] lib/index.d.ts                24.54 kB │ gzip:   7.63 kB
+ℹ [ESM] lib/feishu-watch.d.ts          5.78 kB │ gzip:   1.95 kB
+ℹ [ESM] lib/github-watch.d.ts          0.39 kB │ gzip:   0.22 kB
+ℹ [ESM] lib/kind-DjLHBa_C.d.ts        35.39 kB │ gzip:   9.10 kB
+ℹ [ESM] lib/intake-CkhZRCYG.d.ts      29.58 kB │ gzip:   9.42 kB
+ℹ [ESM] 11 files, total: 712.51 kB
+[33m[PLUGIN_TIMINGS] [0mJavaScript callbacks ran for 4.6s of this 4.9s build (95%).
+The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - plugin rolldown-plugin-dts:generate load (79%, 3.8s, 42 calls)
+Additional callback time came from the callbacks below and from callbacks under 1s.
+3 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+  - plugin rolldown-plugin-dts:resolver resolveId (300 calls)
+  - plugin tsdown:deps resolveId (76 calls)
+  - plugin rolldown-plugin-dts:fake-js transform (42 calls)
+See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+
+✔ Build complete in 5070ms

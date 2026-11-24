@@ -1,0 +1,20 @@
+# health-check.sh 2026-11-24T05:25:31-05:00（scripts/health-check.sh 加桌面安装回退后的实测）
+## T-A 桌面模式、引擎没在跑（期望 exit 1）
+[1/4 引擎] processes=0
+[2/4 web] port=42483 code=000
+RESULT: 引擎/web 未就绪
+[exit 1]
+## T-B 桌面模式（DSBOT_TRIAL=/nonexistent DSBOT_HOME=/tmp/gui-test/home），GUI 实例运行中（期望 exit 0）
+raw: 
+[1/4 引擎] processes=1
+[2/4 web] port=40813 code=401
+[3/4 面板] 跳过（桌面安装拿不到 token；Chief 在不在场看界面）
+[4/4 SuperAgent] http=200 orchestrator=ready masterId=9e1d99f8
+RESULT: SuperAgent 就绪（绑定一致性未核对）
+## T-C 开发试验模式（默认，/tmp/dsbot-trial/engine.sh 在），试验引擎运行中（期望 exit 0，路径未改）
+[1/4 引擎] processes=1
+[2/4 web] port=35347 code=401
+[3/4 面板] chief=OK a3e3aefc
+[4/4 SuperAgent] orchestrator=ready masterId=a3e3aefc bind=CONSISTENT
+RESULT: 全链健康
+## 无 token 的 curl 读编排面（GUI 实例，端口 40813）：带头 200 / 不带头 403 / 根路径无 token 401

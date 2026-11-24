@@ -1,0 +1,140 @@
+# DS-Bot 0.3.8（fresh-boot 所用 AppImage 解包）里 user/message 的 source.kind 生产者与主 bot 身份模型
+# 根目录: /tmp/dsbot-trial/squashfs-root/resources/app/node_modules
+# 摘录均为原样行（行号前缀）；生成脚本: work/retest-4b922fde/evidence/ui-ego/collect_source_kind_evidence.sh
+
+## 1. 引擎消息来源类型 MessageSourceMap（dsh-session-reference/lib/typert.host.js:461，单行声明，截 1500 字符）
+            "declaration": "export interface MessageSourceMap {\n    user: { kind: 'user'; };\n    model: ModelMessageSource;\n    tool: ToolMessageSource;\n    'system-prompt': SystemPromptMessageSource;\n    'model-selection': { kind: 'model-selection'; } & ContextFormed;\n    'tool-registry': { kind: 'tool-registry'; };\n    'action-cards': { kind: 'action-cards'; through: SessionSeq; } & ContextFormed;\n    'runtime-context': { kind: 'runtime-context'; } & ContextFormed;\n    'user-rpc': { kind: 'user'; rpcId: SessionRequestId; clientTimeZone?: string; principal?: Principal; };\n    'working-directory': { kind: 'working-directory'; };\n    'user-approval': { kind: 'user-approval'; } & ContextFormed;\n    'agent-message': AgentMessageSource;\n    'subagent-settled': SubagentSettledMessageSource;\n    'skill-invocation': SkillInvocationSource;\n    'ptc-mode': { kind: 'ptc-mode'; };\n    'compact-checkpoint': CompactionCheckpointSource;\n    'cordis-host-runner': { kind: 'cordis-host-runner'; };\n    'user-question-reply': { kind: 'user-question-reply'; callId: ToolCallId; outcome: 'answered'; };\n    'team-message': TeamMessageSource;\n    goal: GoalMessageSource;\n    'plan-mode': { kind: 'plan-mode'; } & ContextFormed;\n    schedule: { kind: 'schedule'; } & ContextFormed;\n    'session-reference': SessionReferenceSource;\n    webhook: { readonly kind: 'webhook'; readonly provider: string; readonly source: WebhookSourceId; readonly deliveryId: WebhookDeliveryId; readonly 
+
+## 2. dsh-schedule：定时提醒以 source.kind = schedule 投递
+### lib/index.js 1381-1392（send → agent.followup，开新一轮）
+1381: 	async send(agent, text, held) {
+1382: 		const message = createUserMessage({
+1383: 			content: [{
+1384: 				type: "text",
+1385: 				text
+1386: 			}],
+1387: 			source: { kind: "schedule" }
+1388: 		});
+1389: 		for (const id of held) this.executing.add(id);
+1390: 		try {
+1391: 			agent.followup(message);
+1392: 			const execution = held.length > 0 ? agent.whenIdle() : void 0;
+### lib/index.js 2553-2561（inject，不开新一轮）
+2553: 				if (agent === void 0) continue;
+2554: 				try {
+2555: 					const needsFlush = agent.status === "idle";
+2556: 					agent.inject(createUserMessage({
+2557: 						content: [{
+2558: 							type: "text",
+2559: 							text
+2560: 						}],
+2561: 						source: { kind: "schedule" }
+
+## 3. DS-Bot IM 入站：kind 仍是 user，rpcId 以 im: 开头（ds-bot/src/host/im/index.js）
+1444:       const source = event.data?.source
+1445:       const imOrigin = source?.imOrigin
+1446:       const rpcId = source?.rpcId
+1447:       // A late member result or part-switch handoff continues the work the chat asked for;
+1448:       // any other first message starts a fresh turn, which clears the previous turn's origin.
+1449:       if (pendingReset.delete(session.id) && !(typeof imOrigin === 'string' || (source?.kind === SOURCE_KIND && source.role === 'post'))) resetOrigin(session.id)
+1450:       if (typeof imOrigin === 'string') {
+1451:         const resumed = resumedOrigins.get(imOrigin)
+1452:         resumedOrigins.delete(imOrigin)
+1453:         if (resumed === undefined) dropOrigin(session.id)
+1454:         else claimOrigin(session.id, resumed.connId, resumed.chatKey, resumed.senderId, resumed.binding)
+1455:       } else if (typeof rpcId === 'string' && rpcId.startsWith('im:')) {
+1456:         if (Number.isInteger(event.seq)) imVia.set(session.id, { ...imVia.get(session.id), [event.seq]: rpcId.split(':')[1] })
+
+## 4. DS-Bot 手机联通：走同一个 bot API（ds-bot/src/host/phone.js:96）
+96:       handle: (method, params, request) => method === 'bot' ? callBot(params, request.signal) : Promise.reject(Object.assign(new Error(`Unknown method ${method}`), { code: 'METHOD_NOT_FOUND' })),
+
+## 5. DS-Bot 频道投递：source 来自请求方（ds-bot/src/host/channel.js）
+686:             agent.followup(createUserMessage({ content: [{ type: 'text', text: reply.text }], source: reply.source }))
+815:             agent.followup(createUserMessage({ content: [{ type: 'text', text: reply.text }], source: reply.source }))
+934:       agent.followup(createUserMessage({ content: [{ type: 'text', text: reply.text }], source: { ...reply.source, ...(requestId === undefined ? {} : { rpcId: requestId }) } }))
+
+## 6. DS-Bot 的 bot 转播、问题回答与快照类来源（不是新的用户请求）
+1723:       source: { kind: SOURCE_KIND, form: 'relay', role: 'post', exchangeId: randomUUID(), senderName: sender.name, senderSessionId: sender.id, roomId: room.id, ...extra },
+1964:       source: { kind: SOURCE_KIND, form: 'relay', role: 'kickoff', exchangeId: randomUUID(), senderName: 'You', roomId: room.id },
+76:     source: { kind: REPLY_KIND, callId, outcome: 'answered' },
+919:       source: { kind: MEMORY_RECALL_SOURCE, form: 'snapshot', ids: picked.map(item => item.id), sections: [{ name: MEMORY_RECALL_SOURCE, text }] },
+42:         source: { kind: SOURCE, form: 'snapshot', sections: [{ name: SOURCE, text }] },
+
+## 7. 主 bot 身份模型（ds-bot/src/host/store.js，共 692 行）
+### :28 与 :479-508
+28:   const sessionIdOf = id => (typeof id === 'string' && id !== '' ? id : undefined)
+479:   const botOf = id => (id === undefined ? undefined : own(state.bots, id))
+480:   // A group's own Session moves on to a fresh part when the group's folder no longer
+481:   // matches the one it was made in (parts.js), like a Bot's own chat: `room.id` stays
+482:   // the first Session's id and `room.sessionId` the current one, so the group keeps
+483:   // one identity while its Session moves. `roomOwners` maps the current Session.
+484:   const roomOf = id => (id === undefined ? undefined : own(state.rooms, id) ?? own(state.rooms, roomOwners.get(id)))
+485:   const isMain = id => id !== undefined && state.mainBotIds.includes(id)
+486: 
+487:   // Group Sessions. A member speaks in each group from a hidden Session of its own,
+488:   // `room.sessions[botId]`, that renders the same system prompt and tools as its own
+489:   // chat: the provider's prefix cache is shared, and a group turn never re-reads the
+490:   // member's private context. Created on the member's first turn in the group.
+491:   //
+492:   // Segments. A long conversation moves to a fresh Session at a context line (see
+493:   // parts.js), and a group's own Session to a fresh part when the group's folder
+494:   // changes. A Bot's id is the Session id of its first own-chat segment and never
+495:   // changes; `bot.sessionId` is the current one, and `room.sessionId` the group's.
+496:   // Earlier segments, of the own chat (`bot.segments`), of each group Session
+497:   // (`room.segments[botId]`) and of the group's own Session (`room.parts`), are
+498:   // archived and stay readable.
+499:   /** @type {Map<string, string>} */
+500:   const chatOwners = new Map()
+501:   /** @type {Map<string, {botId:string, roomId:string}>} */
+502:   const groupOwners = new Map()
+503:   /** @type {Map<string, string>} */
+504:   const roomOwners = new Map()
+505:   /** @type {Map<string, {botId?:string, roomId?:string}>} */
+506:   const pastOwners = new Map()
+507:   const chatOf = botId => sessionIdOf(botOf(botId)?.sessionId) ?? botId
+508:   const sessionOfRoom = room => (room === undefined ? undefined : sessionIdOf(room.sessionId) ?? room.id)
+### :545-560（own chat 的归属：current + segments + openParts）
+545:     for (const [id, bot] of Object.entries(state.bots)) {
+546:       const botId = sessionIdOf(bot?.id) ?? sessionIdOf(id)
+547:       if (botId === undefined) continue
+548:       indexPast(bot.segments, { botId })
+549:       const currentSid = chatOf(botId)
+550:       if (sessionIdOf(currentSid) !== undefined) chatOwners.set(currentSid, botId)
+551:       // Parts opened while the Bot was busy are its own chat too: a turn there may use
+552:       // the team tools, and the phone still sees only the current part. Their earlier
+553:       // parts stay the Bot's as well, so their history still reads on that thread.
+554:       for (const part of bot.openParts ?? []) {
+555:         const partSid = sessionIdOf(part?.sessionId)
+556:         if (partSid !== undefined) chatOwners.set(partSid, botId)
+557:         indexPast(part?.segments, { botId })
+558:       }
+559:     }
+560:     for (const [id, room] of Object.entries(state.rooms)) {
+### :671-678（sessionsOf）
+671:   const sessionsOf = (bot) => {
+672:     const ids = [bot.id, bot.sessionId, ...(bot.segments ?? []).map(segment => segment?.sessionId)]
+673:     for (const room of Object.values(state.rooms ?? {})) {
+674:       ids.push(room?.sessions?.[bot.id], ...(room?.segments?.[bot.id] ?? []).map(segment => segment?.sessionId))
+675:     }
+676:     return ids.filter(Boolean)
+677:   }
+678:   for (const bot of Object.values(state.bots ?? {})) {
+
+## 8. 插件侧守卫的最终形态（app/superagent/src/sources/local.ts）
+13:     // UI 验收 B1：只有出自用户的消息才产生 trigger（真人输入，或用户订好的定时提醒）。
+14:     // kind === 'user'：UI 输入、/api/bot send、手机联通（phone.js 走同一个 bot API）、IM 入站
+15:     //   （ds-bot im/index.js 以 rpcId 前缀 'im:' 识别，kind 仍是 user）的共同形状。
+16:     // kind === 'schedule'：dsh-schedule 把用户订的提醒当作用户消息投递（send() → agent.followup）。
+17:     // 不算的：引擎每步注入的 runtime-context / skill-catalog / time-context、ds-bot 的 kickoff / request / reply、
+18:     // ask_user_question 的回答（user-question-reply，属于进行中的那一轮）、本插件自己的卡片
+19:     // （delivery.ts 恒标 dsh-superagent）——它们也都以 user/message 回流，旧实现按文本前缀过滤，
+20:     // 实测把它们全当真人请求，Chief 开场即回应两张由自己运行时上下文生成的 candidate 卡（回声）。
+21:     // 按 string 比较：已装 dsh-session 的类型联合里没有 schedule（dsh-schedule 以模块扩充声明），运行时确实会出现。
+22:     const kind: string = event.data.source.kind
+23:     if (kind !== 'user' && kind !== 'schedule') return
+24:     const { id, content } = event.data
+
+## 9. 运行时实测（会话文件）
+- UI 输入与 /api/bot send 的真人消息: source = {kind:"user", rpcId:<uuid>}
+- 引擎与 DS-Bot 的注入: runtime-context / skill-catalog / time-context / bot(form relay) / dsh-superagent（本插件卡片）
+- 守卫放行 user 与 schedule；user-question-reply（ask_user_question 的回答）属于进行中的那一轮，不计新 trigger；webhook 通知不计。

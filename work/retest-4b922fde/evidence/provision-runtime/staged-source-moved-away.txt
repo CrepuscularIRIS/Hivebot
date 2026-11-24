@@ -1,0 +1,65 @@
+[w6c 05:55:28] A1 fresh provision (home currently unprovisioned)
+[w6c 05:55:31] exit=0
+  plugin:  installed dsh-superagent from /home/lingxufeng/bot/app/superagent (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  plugin:  source staged to /tmp/gui-test/home/.ds-bot/superagent-src
+  bundle:  registered dsh-superagent into dsh.profile.bundles
+  plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+[w6c 05:55:31] A2 provision again (expect up to date)
+[w6c 05:55:32] exit=0
+  plugin:  up to date (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+[w6c 05:55:32] A2b legacy reference (old installer pointed file: at the repo) -> expect reinstall + rewrite
+16:    "dsh-superagent": "file:/tmp/gui-test/home/.ds-bot/superagent-src"
+[w6c 05:55:34] exit=0
+  plugin:  up to date (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+16:    "dsh-superagent": "file:/tmp/gui-test/home/.ds-bot/superagent-src"
+[w6c 05:55:34] stage entries: cordis.patch.yml lib locale package.json prompts skills 
+[w6c 05:55:34] installed entries: cordis.patch.yml lib locale package.json prompts skills 
+[w6c 05:55:34] lib/index.js inode stage=67016447 installed=67016447 repo=28882535
+[w6c 05:55:34] stage size: 1.3M
+[w6c 05:55:34] A3 uninstall
+[w6c 05:55:35] exit=0
+  plugin:  pnpm remove dsh-superagent
+  plugin:  removed /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  plugin:  removed /tmp/gui-test/home/.ds-bot/superagent-src
+  profile: no dependencies left — removed node_modules/ and pnpm-lock.yaml
+  patch:   restored /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml from cordis.patch.yml.pre-hivebot
+[w6c 05:55:35] stage removed OK
+[w6c 05:55:35] A4 provision again (clean reinstall)
+[w6c 05:55:37] exit=0
+  plugin:  installed dsh-superagent from /home/lingxufeng/bot/app/superagent (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  plugin:  source staged to /tmp/gui-test/home/.ds-bot/superagent-src
+  bundle:  registered dsh-superagent into dsh.profile.bundles
+  plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+2
+[w6c 05:55:37] B1 brand-new home: first boot
+[w6c 05:55:44] skeleton: cordis.patch.yml cordis.yml package.json pnpm-workspace.yaml 
+[w6c 05:56:25] B2 provision from a source copy exit=0
+  plugin:  installed dsh-superagent from /tmp/w6/sa (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  plugin:  source staged to /tmp/w6/home2/.ds-bot/superagent-src
+  bundle:  registered dsh-superagent into dsh.profile.bundles
+  plugin:  /tmp/w6/home2/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+5:    "dsh-superagent": "file:/tmp/w6/home2/.ds-bot/superagent-src"
+[w6c 05:56:34] B3 buttons: "ChiefMemory updated | glm-5.3-flash | Manage models | ChiefChief of Staff | Download | Not now"
+[w6c 05:56:34] B3 "state http=200 hasMaster=false"
+[w6c 05:56:34] B3 main.log error-ish lines: 0
+[w6c 05:56:35] B4 pnpm install in profile exit=0
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+Done in 508ms using pnpm v11.0.9
+[w6c 05:56:35] B4 "state http=200 hasMaster=false"
+[w6c 05:56:36] done engines=0
+
+
+## A2b 旧版引用迁移（run3 里的 sed 写法无效，这里单独重跑；/tmp/w6/a2b.log）
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  plugin:  installed dsh-superagent from /home/lingxufeng/bot/app/superagent (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  plugin:  source staged to /tmp/gui-test/home/.ds-bot/superagent-src
+provisioned: /tmp/gui-test/home
+  patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  state:   /tmp/gui-test/home/.ds-bot/superagent-state
+next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+      开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。

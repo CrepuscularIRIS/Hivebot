@@ -1,0 +1,100 @@
+== T1 provision (bundled runtime via --appimage, clean source => build): bash scripts/dsbot-provision/provision.sh /tmp/gui-test/home --appimage /tmp/dsbot-trial/DS-Bot-0.3.8.AppImage --superagent-src /tmp/sa-clean2/superagent
+  |   runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  |   plugin:  installed dsh-superagent from /tmp/sa-clean2/superagent (source b323419bf7ee7caaddacf47b283ca914b28733d6af74c2f092a97143870f7525)
+  |   patch:   backed up the original to cordis.patch.yml.pre-hivebot
+  |   bundle:  registered dsh-superagent into dsh.profile.bundles
+  | provisioned: /tmp/gui-test/home
+  |   patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  |   plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  |   state:   /tmp/gui-test/home/.ds-bot/superagent-state
+  | next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+  |       开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+  -> exit=0
+  state: bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-experimental-voice-input-bundle","ds-bot","dsh-superagent"] deps=["dsh-superagent"]
+    installed=yes sha=b323419bf7ee patch_head="# hivebot-provision —— 本文件由 scripts/dsbot-provision/provision.sh 渲染（uninstall.sh 靠这一行认出它）。" backups=1 store=v11  patch_perm=664 node_modules=dsh-superagent graceful-fs proper-lockfile retry signal-exit zod 
+
+== T2 rerun (idempotent)
+  -> exit=0
+  |   runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  |   plugin:  up to date (source b323419bf7ee7caaddacf47b283ca914b28733d6af74c2f092a97143870f7525)
+  | provisioned: /tmp/gui-test/home
+  |   patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  |   plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  |   state:   /tmp/gui-test/home/.ds-bot/superagent-state
+  | next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+  |       开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+  state: bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-experimental-voice-input-bundle","ds-bot","dsh-superagent"] deps=["dsh-superagent"]
+    installed=yes sha=b323419bf7ee patch_head="# hivebot-provision —— 本文件由 scripts/dsbot-provision/provision.sh 渲染（uninstall.sh 靠这一行认出它）。" backups=1 store=v11  patch_perm=664 node_modules=dsh-superagent graceful-fs proper-lockfile retry signal-exit zod 
+
+== T3 source changed (append a comment to lib/index.js) => reinstall
+  -> exit=0
+  |   runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  |   plugin:  installed dsh-superagent from /tmp/sa-clean2/superagent (source 481066cf5a62d2f7b30e0bc91e570b64d613403d8838a2b0564cdb35003091b1)
+  | provisioned: /tmp/gui-test/home
+  |   patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  |   plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  |   state:   /tmp/gui-test/home/.ds-bot/superagent-state
+  | next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+  |       开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+  state: bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-experimental-voice-input-bundle","ds-bot","dsh-superagent"] deps=["dsh-superagent"]
+    installed=yes sha=481066cf5a62 patch_head="# hivebot-provision —— 本文件由 scripts/dsbot-provision/provision.sh 渲染（uninstall.sh 靠这一行认出它）。" backups=1 store=v11  patch_perm=664 node_modules=dsh-superagent graceful-fs proper-lockfile retry signal-exit zod 
+    marker in installed copy: // roundtrip-marker
+
+== T4 uninstall (keeps state dir)
+  -> exit=0
+  |   plugin:  pnpm remove dsh-superagent
+  |   bundle:  unregistered dsh-superagent
+  |   plugin:  removed /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  |   profile: no dependencies left — removed node_modules/ and pnpm-lock.yaml
+  |   patch:   restored /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml from cordis.patch.yml.pre-hivebot
+  |   state:   kept /tmp/gui-test/home/.ds-bot/superagent-state（加 --purge-state 一并删除）
+  | undone: /tmp/gui-test/home
+  | next: 重新启动 DS-Bot 即回到未接入状态。
+  state: bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-experimental-voice-input-bundle","ds-bot"] deps=[]
+    installed=no sha=- patch_head="# Your patch layer for this dsh profile, applied after every bundle layer:" backups=0 store=v11  patch_perm=664 node_modules=
+
+== T5 provision again, no flags (falls back to PATH node/pnpm; store v11 exists)
+  -> exit=0
+  |   runtime: PATH 上的 node v22.23.4 / pnpm 11.0.9
+  |   plugin:  installed dsh-superagent from /tmp/sa-clean2/superagent (source 481066cf5a62d2f7b30e0bc91e570b64d613403d8838a2b0564cdb35003091b1)
+  |   patch:   backed up the original to cordis.patch.yml.pre-hivebot
+  |   bundle:  registered dsh-superagent into dsh.profile.bundles
+  | provisioned: /tmp/gui-test/home
+  |   patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  |   plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  |   state:   /tmp/gui-test/home/.ds-bot/superagent-state
+  | next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+  |       开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+  state: bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-experimental-voice-input-bundle","ds-bot","dsh-superagent"] deps=["dsh-superagent"]
+    installed=yes sha=481066cf5a62 patch_head="# hivebot-provision —— 本文件由 scripts/dsbot-provision/provision.sh 渲染（uninstall.sh 靠这一行认出它）。" backups=1 store=v11  patch_perm=664 node_modules=dsh-superagent graceful-fs proper-lockfile retry signal-exit zod 
+
+== T6 uninstall --purge-state
+  -> exit=0
+  |   plugin:  pnpm remove dsh-superagent
+  |   bundle:  unregistered dsh-superagent
+  |   plugin:  removed /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  |   profile: no dependencies left — removed node_modules/ and pnpm-lock.yaml
+  |   patch:   restored /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml from cordis.patch.yml.pre-hivebot
+  |   state:   purged /tmp/gui-test/home/.ds-bot/superagent-state
+  | undone: /tmp/gui-test/home
+  | next: 重新启动 DS-Bot 即回到未接入状态。
+  state: bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-experimental-voice-input-bundle","ds-bot"] deps=[]
+    installed=no sha=- patch_head="# Your patch layer for this dsh profile, applied after every bundle layer:" backups=0 store=v11  patch_perm=664 node_modules=
+    state dir exists: no
+
+== T7 final provision for the GUI check (--appimage)
+  -> exit=0
+  |   runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  |   plugin:  installed dsh-superagent from /tmp/sa-clean2/superagent (source 481066cf5a62d2f7b30e0bc91e570b64d613403d8838a2b0564cdb35003091b1)
+  |   patch:   backed up the original to cordis.patch.yml.pre-hivebot
+  |   bundle:  registered dsh-superagent into dsh.profile.bundles
+  | provisioned: /tmp/gui-test/home
+  |   patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  |   plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  |   state:   /tmp/gui-test/home/.ds-bot/superagent-state
+  | next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+  |       开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+  state: bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-experimental-voice-input-bundle","ds-bot","dsh-superagent"] deps=["dsh-superagent"]
+    installed=yes sha=481066cf5a62 patch_head="# hivebot-provision —— 本文件由 scripts/dsbot-provision/provision.sh 渲染（uninstall.sh 靠这一行认出它）。" backups=1 store=v11  patch_perm=664 node_modules=dsh-superagent graceful-fs proper-lockfile retry signal-exit zod 
+
+== leftover temp dirs from runtime extraction: 79

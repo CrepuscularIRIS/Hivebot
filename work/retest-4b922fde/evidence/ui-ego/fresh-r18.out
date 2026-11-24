@@ -1,0 +1,19 @@
+== A1: fresh home engine ==
+== A1.5: 预配置（provision.sh——单一真源 scripts/dsbot-provision/） ==
+scripts/fresh-boot.sh: line 33: 307566 Killed                  setsid nohup $RT --expose-internals $APP/src/host.mjs >> "$LOG" 2>&1 < /dev/null
+  bundle:  registered dsh-superagent into dsh.profile.bundles
+provisioned: /tmp/dsbot-trial/home-fresh
+  patch:   /tmp/dsbot-trial/home-fresh/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  plugin:  /tmp/dsbot-trial/home-fresh/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  state:   /tmp/dsbot-trial/sa-state-fresh
+next: restart the engine with HOME=/tmp/dsbot-trial/home-fresh, then run scripts/fresh-boot.sh to verify.
+engine: dsh web: http://127.0.0.1:34449/?token=<redacted>
+== A2/A3/A4: 剧本（node 断言脚本） ==
+A2 OK: chief session-7bf4f675-539f-4395-9f41-b895acace267
+A2.5 OK: orchestrator activated, masterId=chief
+A4 send OK, waiting worker...
+A4-marker OK
+boot-check exit: 0
+evidence: A3=SKIP A4-worker=PASS A4-chief=PASS
+scripts/fresh-boot.sh: line 33: 312869 Killed                  setsid nohup $RT --expose-internals $APP/src/host.mjs >> "$LOG" 2>&1 < /dev/null
+r18_exit=0

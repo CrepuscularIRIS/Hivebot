@@ -1,0 +1,32 @@
+== a-provision-nokey (env -u DSH_LITELLM_API_KEY) ==
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  plugin:  installed dsh-superagent from /home/lingxufeng/bot/app/superagent (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+provisioned: /tmp/gui-test/home
+  patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  state:   /tmp/gui-test/home/.ds-bot/superagent-state
+next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+      开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+
+== b-uninstall (env -u DSH_LITELLM_API_KEY) ==
+  plugin:  pnpm remove dsh-superagent
+  bundle:  unregistered dsh-superagent
+  plugin:  removed /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  profile: no dependencies left — removed node_modules/ and pnpm-lock.yaml
+  patch:   restored /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml from cordis.patch.yml.pre-hivebot
+  state:   kept /tmp/gui-test/home/.ds-bot/superagent-state（加 --purge-state 一并删除）
+undone: /tmp/gui-test/home
+next: 重新启动 DS-Bot 即回到未接入状态。
+
+== c-provision-nokey (env -u DSH_LITELLM_API_KEY) ==
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  plugin:  installed dsh-superagent from /home/lingxufeng/bot/app/superagent (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  patch:   backed up the original to cordis.patch.yml.pre-hivebot
+  bundle:  registered dsh-superagent into dsh.profile.bundles
+provisioned: /tmp/gui-test/home
+  patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  state:   /tmp/gui-test/home/.ds-bot/superagent-state
+next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+      开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+

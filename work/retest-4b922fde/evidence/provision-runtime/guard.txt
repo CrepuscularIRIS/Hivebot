@@ -1,0 +1,15 @@
+# guard evidence 2026-11-24T05:14:49-05:00 — GUI engine running on /tmp/gui-test/home (app pid 3177338)
+## engines (pid DSH_HOME)
+3177558 /tmp/gui-test/home/.ds-bot
+## provision.sh (absolute home)
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+FAIL: DS-Bot 正在这个 home 上运行（引擎 pid: 3177558 ）——先完全退出再重跑。
+[exit 2]
+## uninstall.sh (absolute home)
+FAIL: DS-Bot 正在这个 home 上运行（引擎 pid: 3177558 ）——先完全退出再撤销。
+[exit 1]
+## uninstall.sh (relative 'home/' + trailing slash, cwd /tmp/gui-test)
+FAIL: DS-Bot 正在这个 home 上运行（引擎 pid: 3177558 ）——先完全退出再撤销。
+[exit 1]
+## still provisioned? (must be yes)
+2

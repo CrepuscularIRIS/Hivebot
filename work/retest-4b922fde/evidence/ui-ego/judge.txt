@@ -1,0 +1,16 @@
+判据 = scripts/fresh_boot_evidence.py（A3 只对 state.json mainBotIds 认定的主 bot 会话判定）
+
+## UI 复验（ego-browser 真实 UI，fresh-boot.sh --ui，引擎 pid 106421 / 端口 34311，2026-11-23 03:40–03:42 America/New_York）
+# 选模型 glm-5.3-flash 后、发委派消息之前（A4 尚未发生，FAIL 是预期的）
+A3=PASS A4-worker=FAIL A4-chief=FAIL
+# UI 发送 A4 委派消息、worker 落盘之后（marker 文件内容: ok）
+A3=PASS A4-worker=PASS A4-chief=PASS
+# state.json mainBotIds -> ['session-92314ef5-54e3-4017-8818-e7290472c14a']
+# Chief 会话: kickoff relay @11（source.kind=bot, role=kickoff）→ 人格开场 @17 → 首条人类消息 @27；逐事件见 ui-events-trace.txt
+# worker 会话 session-d9af0663-…: is_main_session=False（它的 kickoff 开场不计入 A3）
+
+## 纯 API 流程回归 r16 同一份 trial 数据的重判（假 PASS 自我更正）
+# fresh-boot r16 运行时的输出（旧判据，见 fresh-r16-old-judge.out 第 17 行）
+evidence: A3=PASS A4-worker=PASS A4-chief=PASS
+# 同一份数据用修复后的判据重判：Chief 没有做过人格开场 → A3=SKIP；旧 PASS 来自 worker 会话的 kickoff（见 r16-false-pass-trace.txt）
+A3=SKIP A4-worker=PASS A4-chief=PASS

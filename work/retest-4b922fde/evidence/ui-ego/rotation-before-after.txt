@@ -1,0 +1,69 @@
+== BEFORE (old lib: per-session watch + 60s poll only) ==
+-- rotate-before.log
+BEFORE t+0.00s bot-new-part sent (chief=session-12f5ffc4-6892-4abe-954a-85315fb8e6dc)
+BEFORE t+0.00s plugin masterId=session-12f5ffc4-6892-4abe-954a-85315fb8e6dc trigger-rows(new part)=0
+BEFORE t+0.25s DS-Bot current part -> session-2eae9825-43a1-4729-9f22-6ec76b6c87f0
+BEFORE t+0.28s send() to the new part returned
+Exception in thread Thread-1 (watch):
+Traceback (most recent call last):
+  File "/home/lingxufeng/miniconda3/lib/python3.13/threading.py", line 1043, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "/home/lingxufeng/miniconda3/lib/python3.13/threading.py", line 994, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/dsbot-trial/rotate_probe.py", line 106, in watch
+    rows = len(triggers(new)) if new else 0
+               ~~~~~~~~^^^^^
+  File "/tmp/dsbot-trial/rotate_probe.py", line 68, in triggers
+    rows = DB.execute('select id, at from trigger where id like ? order by at',
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ('local:' + session_id + ':%',)).fetchall()
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 123156333311808 and this is thread id 123156307191488.
+-- rotate-before-aftermath.log
+now 04:32:06
+plugin masterId = session-2eae9825-43a1-4729-9f22-6ec76b6c87f0 | equals new part: True
+trigger rows for OLD part: 0
+trigger rows for NEW part: 0
+new part session events: 30
+    5 turn/start 04:29:58  | 
+    9 user/message 04:29:58 {"kind": "bot", "form": "relay", "role": "handoff", "senderName": "DS Bot", "exchangeId": "897446a5-c592-4efc-978d-49622eed31ad", "handoff": true} | [Handoff · part 2] DS Bot moved your own chat with the user on to a fresh conversation, part 2, because a fres
+    10 user/message 04:29:58 {"kind": "runtime-context", "form": "snapshot", "sections": [{"name": "working-directory:current", "text": "Current working directory: \"/tmp/dsbot-trial/home-fresh/.ds-bot/bot/workspace\"."}, {"name": "sandbox:policy", "text": "Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspac
+    11 user/message 04:29:58 {"kind": "skill-catalog", "form": "catalog", "entries": [{"name": "goal-grill", "description": "Align with the user before writing a group goal — find the facts yourself, ask only the open decisions in one numbered round with a recommended answer each, then write the goal with checks and stages."}, {"name": "office", "description": "Create, edit, inspect, or convert 
+    12 user/message 04:29:58 {"kind": "time-context", "form": "snapshot", "sections": [{"name": "time-context", "text": "Time sampled while preparing turn 1, step 1: 2026-11-23T04:29:58-05:00[America/New_York]\nBrowser time zone for this request: unavailable. Ask the user to clarify otherwise-unqualified dates and times.\nElapsed since the preceding model-visible message: unavailable."}]} | Time s
+    15 assistant/message 04:29:58  | 
+    17 turn/end 04:29:58  | 
+    19 turn/start 04:29:58  | 
+    22 user/message 04:29:58 {"kind": "user", "rpcId": "89a2bb5f-918c-4545-b548-1c5b343b6f9a"} | Rotation probe: reply in one short line, no tools needed.
+    23 assistant/message 04:30:10  | 
+    25 turn/end 04:30:10  | 
+== AFTER (final code: persistent watch + catch-up on retarget + state.json watcher) ==
+-- rotate-after.log
+AFTER t+0.00s plugin masterId=session-12624341-49eb-42f5-b3f8-def1d53774d9 trigger-rows(new part)=0
+AFTER t+0.01s bot-new-part sent (chief=session-12624341-49eb-42f5-b3f8-def1d53774d9)
+AFTER t+0.26s DS-Bot current part -> session-8f4ff74f-1a9f-4271-9e09-821d7eeeb146
+AFTER t+0.28s send() to the new part returned
+AFTER t+0.76s plugin masterId=session-8f4ff74f-1a9f-4271-9e09-821d7eeeb146 trigger-rows(new part)=1
+SUMMARY {"label": "AFTER", "chief": "session-12624341-49eb-42f5-b3f8-def1d53774d9", "newPart": "session-8f4ff74f-1a9f-4271-9e09-821d7eeeb146", "dsBotSwitchAt": 0.26, "sendReturnedAt": 0.28, "triggerSeenAt": 0.7596869468688965, "rebindSeenAt": 0.7596886157989502, "triggerRowsNewPart": [["local:session-8f4ff74f-1a9f-4271-9e09-821d7eeeb146:9d69cdd4-ed9f-4dc9-9d73-78156dab8f1b", "2026-11-23T09:51:47.5
+-- rotate-after-aftermath.log
+now 04:52:10
+plugin masterId = session-8f4ff74f-1a9f-4271-9e09-821d7eeeb146 | equals new part: True
+trigger rows for OLD part: 0
+trigger rows for NEW part: 1
+    ('local:session-8f4ff74f-1a9f-4271-9e09-821d7eeeb146:9d69cdd4-ed9f-4dc9-9d73-78156dab8f1b', '2026-11-23T09:51:47.590Z')
+new part session events: 37
+    5 turn/start 04:51:47  | 
+    9 user/message 04:51:47 {"kind": "bot", "form": "relay", "role": "handoff", "senderName": "DS Bot", "exchangeId": "b4ff0340-bde5-486f-8d0f-d9838b0360ff", "handoff": true} | [Handoff · part 2] DS Bot moved your own chat with the user on to a fresh conversation, part 2, because a fres
+    10 user/message 04:51:47 {"kind": "runtime-context", "form": "snapshot", "sections": [{"name": "working-directory:current", "text": "Current working directory: \"/tmp/dsbot-trial/home-fresh/.ds-bot/bot/workspace\"."}, {"name": "sandbox:policy", "text": "Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspac
+    11 user/message 04:51:47 {"kind": "skill-catalog", "form": "catalog", "entries": [{"name": "goal-grill", "description": "Align with the user before writing a group goal — find the facts yourself, ask only the open decisions in one numbered round with a recommended answer each, then write the goal with checks and stages."}, {"name": "office", "description": "Create, edit, inspect, or convert 
+    12 user/message 04:51:47 {"kind": "time-context", "form": "snapshot", "sections": [{"name": "time-context", "text": "Time sampled while preparing turn 1, step 1: 2026-11-23T04:51:47-05:00[America/New_York]\nBrowser time zone for this request: unavailable. Ask the user to clarify otherwise-unqualified dates and times.\nElapsed since the preceding model-visible message: unavailable."}]} | Time s
+    15 assistant/message 04:51:47  | 
+    17 turn/end 04:51:47  | 
+    19 turn/start 04:51:47  | 
+    22 user/message 04:51:47 {"kind": "user", "rpcId": "910f0d30-bea7-4a74-8889-8968316fdf9a"} | Rotation probe: reply in one short line, no tools needed.
+    27 assistant/message 04:51:56  | 
+    31 user/message 04:51:56 {"kind": "dsh-superagent", "form": "relay"} | {"kind":"candidate","trigger_id":"local:session-8f4ff74f-1a9f-4271-9e09-821d7eeeb146:9d69cdd4-ed9f-4dc9-9d73-7
+    32 user/message 04:51:56 {"kind": "runtime-context", "form": "snapshot", "sections": [{"name": "working-directory:current", "text": "Current working directory: \"/tmp/dsbot-trial/home-fresh/.ds-bot/bot/workspace\"."}, {"name": "sandbox:policy", "text": "Current DSH file policy: danger-full-access. The DSH file sandbox does not restrict file modifications by available operations."}, {"name": "a
+    33 assistant/message 04:52:01  | 
+    35 turn/end 04:52:01  | 

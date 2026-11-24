@@ -3,7 +3,7 @@
 // B41a：新增 discovered 来源（UI 主 bot 权威认定，m3 bots.json 的 mainBotId），
 // 优先级 pin > discovered > stored > fallback——KV 里的 orchestrator-hash 是自造
 // 值，UI 认定权高于它；pin 仍是运维显式钉定，永远最高。
-import { readFileSync, watch } from 'node:fs'
+import { readFileSync, watch, type FSWatcher } from 'node:fs'
 import { join } from 'node:path'
 
 export function resolveMasterId(pin: string | undefined, discovered: string | undefined, stored: string | undefined, fallback: string): string {
@@ -52,54 +52,126 @@ export function watchBotsMeta(dataDir: string, current: string, onRepin: () => v
   }
 }
 
-/** goal-0acebfbf R5：ds-bot 重启会重建 Chief 会话（新 session id）但 bot/state.json 的 mainBotIds 不更新——
- * 解析出的 id 可能指向孤儿会话。用 sessionController 校验存活；不存活时回退到 session/list 里 title=Chief 的最新会话。 */
+/** goal-0acebfbf R5（UI 验收 B2 重写）：ds-bot 的主 bot 会话会换段/换人，masterId 必须跟着 DS-Bot 的认定走。
+ * 旧实现按「updatedAt 最新者胜」接任，真实 DS-Bot 0.3.8 上两头都错：Chief 用原生 create_bot 新建的
+ * Worker 会话最新 → masterId 绑到 Worker（编排工具挂错会话、监听离开 Chief）；bot-new-part 之后新段记在
+ * bot 条目的 sessionId、旧段进 segments → 白名单只认 segments 时永远留在旧段。
+ * store.js:507 `chatOf = botId => sessionIdOf(botOf(botId)?.sessionId) ?? botId`：bot 的 id 与其当前
+ * 聊天段可以不同，权威映射全在 bot/state.json 的 bot 条目。 */
+export interface BotIdentity {
+  /** 该 bot 当前自有聊天段（条目 sessionId，缺省 = bot id）。 */
+  current: string
+  /** 该 bot 名下全部会话：bot id、当前段、openParts（忙碌时另开的段，含其旧段）、已归档 segments。 */
+  owned: Set<string>
+}
+
+/** 读 DS-Bot 对一个 bot 的身份认定。state.json 未写、文件损坏或没有该 bot 的条目 → undefined（调用方保持现状）。 */
+export function readDsBotBotIdentity(dataDir: string | undefined, botId: string | undefined): BotIdentity | undefined {
+  if (!dataDir || !botId) return undefined
+  try {
+    type Part = { sessionId?: unknown; segments?: unknown }
+    const raw = JSON.parse(readFileSync(join(dataDir, 'bot', 'state.json'), 'utf8')) as {
+      bots?: Record<string, (Part & { openParts?: unknown }) | undefined>
+    }
+    const entry = raw.bots?.[botId]
+    if (!entry || typeof entry !== 'object') return undefined
+    const current = typeof entry.sessionId === 'string' && entry.sessionId.trim() !== '' ? entry.sessionId : botId
+    const owned = new Set<string>([botId, current])
+    const index = (part: Part | undefined) => {
+      if (typeof part?.sessionId === 'string' && part.sessionId) owned.add(part.sessionId)
+      if (!Array.isArray(part?.segments)) return
+      for (const segment of part.segments as Part[]) if (typeof segment?.sessionId === 'string' && segment.sessionId) owned.add(segment.sessionId)
+    }
+    index(entry)
+    if (Array.isArray(entry.openParts)) for (const part of entry.openParts as Part[]) index(part)
+    return { current, owned }
+  } catch { return undefined }
+}
+
+/** 主会话存活解析：candidate 是否仍是主 bot 的聊天段，不是则给出该绑到哪个会话。
+ * 拿不到身份认定（state.json 未写 / 无条目 / 无 sessionController）一律保持 candidate——宁可暂不监听，
+ * 也不按「谁最近被碰过谁当 Chief」猜。 */
 export async function resolveLiveMasterId(
   candidate: string,
   controller: unknown,
-  excludeRoomIds: readonly string[] = [],
-  /** 纠错轮四（审查 #2b）：Chief 身份白名单（其全部段）。非空时只允许白名单内的会话接任。 */
-  identityAllow?: ReadonlySet<string>,
+  /** DS-Bot 认定的主 bot 身份；见 readDsBotBotIdentity。 */
+  identity: BotIdentity | undefined,
 ): Promise<string> {
   const c = controller as { list?: (...args: unknown[]) => Promise<{ items?: Array<{ sessionId?: string; id?: string; updatedAt?: number | string }> }> }
   const list = c.list?.bind(c)
   try {
-    if (!list) return candidate
-    const listed = await list({})
-    const items = listed.items ?? []
-    // ds-bot 会话段轮转后 mainBotIds 不更新；活跃 Chief 段=updatedAt 最新的会话。
-    // 排除群聊（rooms keys）与死 candidate 自身；title 不在 list 回包（R5 实测 undefined）。
-    const excluded = new Set<string>([candidate, ...excludeRoomIds])
-    const candAt = Number(items.find(item => (item.sessionId ?? item.id) === candidate)?.updatedAt ?? 0)
-    const ranked = items
-      .map(item => ({ id: item.sessionId ?? item.id ?? '', at: Number(item.updatedAt ?? 0) }))
-      .filter(item => typeof item.id === 'string' && item.id && !excluded.has(item.id) && item.at > candAt)
-      .filter(item => !identityAllow || identityAllow.size === 0 || identityAllow.has(item.id))
-      .sort((a, b) => b.at - a.at)
-    const found = ranked[0]?.id
-    return typeof found === 'string' && found ? found : candidate
+    if (!list || !identity) return candidate
+    const at = new Map<string, number>()
+    for (const item of (await list({})).items ?? []) at.set(item.sessionId ?? item.id ?? '', Number(item.updatedAt ?? 0))
+    // ① DS-Bot 认定的当前段存活 → 就是它（candidate 已是当前段时原样返回，不触发重挂）。
+    if (at.has(identity.current)) return identity.current
+    // ② 当前段未列出（尚未建成/已不可用）：candidate 仍属该 bot → 不动。等新段进了列表，下一次重算由 ① 跟上
+    //   （重算时机：DS-Bot 的 state.json 落盘即触发，见 dsBotStateWatcher / createRebindScheduler）。
+    if (identity.owned.has(candidate)) return candidate
+    // ③ 换主或 candidate 已不属于该 bot：取该 bot 仍存活段里最新的；没有则保持，下轮巡检再试。
+    const live = [...at].filter(([id]) => identity.owned.has(id)).sort((a, b) => b[1] - a[1])[0]?.[0]
+    return live || candidate
   } catch { /* controller unavailable — keep candidate */ }
   return candidate
 }
 
-/** 纠错轮四（审查 #2b）：bot 的全部段会话 id 集（channel.js `parts` 同源数据）。段轮转后新段
- * 也在其中——用作 Chief 身份白名单，防止误绑到活跃 worker 段。文件缺失/旧格式（无 segments）回空。 */
-export function readDsBotBotParts(dataDir: string | undefined, botId: string): Set<string> {
-  if (!dataDir || !botId) return new Set()
-  try {
-    const raw = JSON.parse(readFileSync(join(dataDir, 'bot', 'state.json'), 'utf8')) as {
-      bots?: Record<string, { segments?: Array<{ sessionId?: string }> } | undefined>
+/** UI 验收 B2 残余（顾问 F1）：只靠 60s 巡检时，换段后到下一次巡检之间监听还留在旧段，用户在新段里立刻发的
+ * 消息不进 trigger 表（复测 #2 的「轮转后新消息未进 trigger 表」就是这条窗口）。DS-Bot 每次落盘都是原子替换
+ * bot/state.json（store.js:416–456：先写 `${statePath}.${pid}.tmp` 再 replace），watch 文件本身在第一次替换后
+ * 就跟丢了，所以 watch 的是 bot/ 目录；换段（parts.js:2036–2057）在 save 之前已把新会话建好，回调时重算即能看到新段。
+ * 只认 state.json 及其临时文件，state.lock 等不触发；filename 为 null（平台不报名字）时保守当作可能变了。
+ * ensure() 可重复调用：目录还不存在 / 上次装失败时静默跳过，由调用方的巡检再试；close() 之后不再装。 */
+export function dsBotStateWatcher(dataDir: string | undefined, onChange: () => void): { ensure: () => void; close: () => void } {
+  let watcher: FSWatcher | undefined
+  let closed = false
+  const ensure = () => {
+    if (closed || watcher || !dataDir) return
+    try {
+      watcher = watch(join(dataDir, 'bot'), { persistent: false }, (_event, filename) => {
+        if (filename === null || filename === 'state.json' || filename.startsWith('state.json.')) onChange()
+      })
+    } catch {
+      watcher = undefined // 目录还不存在等：下次 ensure 再试
     }
-    const entry = raw.bots?.[botId]
-    return new Set((entry?.segments ?? []).map(seg => seg.sessionId).filter((id): id is string => typeof id === 'string' && !!id))
-  } catch { return new Set() }
+  }
+  return {
+    ensure,
+    close: () => { closed = true; watcher?.close(); watcher = undefined },
+  }
 }
 
-/** goal-0acebfbf R5：ds-bot rooms dict 的 key 集（群聊会话排除清单）。文件缺失回空。 */
-export function readDsBotRoomIds(dataDir: string | undefined): string[] {
-  if (!dataDir) return []
-  try {
-    const raw = JSON.parse(readFileSync(join(dataDir, 'bot', 'state.json'), 'utf8')) as { rooms?: Record<string, unknown> }
-    return Object.keys(raw.rooms ?? {})
-  } catch { return [] }
+/** UI 验收 B2 残余（顾问 F1）：重算节流。state.json 落盘 → soon()：firstMs 后重算一次（等 DS-Bot 把新段建完、
+ * 会话列表能看到它），settleMs 再补算一次兜底（落盘与替换之间有锁等待时，第一次可能读到旧内容）。连续落盘合并成
+ * 一轮。所有重算串行（上一轮没结束不叠新轮）；run 拒绝不破链，now() 等到的是自己这一轮；定时器 unref，不拖住退出。 */
+export function createRebindScheduler(run: () => Promise<void>, opts: { firstMs: number; settleMs: number }): {
+  now: () => Promise<void>
+  soon: () => void
+  stop: () => void
+} {
+  let soon: ReturnType<typeof setTimeout> | undefined
+  let settle: ReturnType<typeof setTimeout> | undefined
+  let stopped = false
+  let chain: Promise<void> = Promise.resolve() // 记吞错后的版本，链上每一轮都等到上一轮结束
+  const now = () => {
+    if (stopped) return Promise.resolve()
+    const mine = chain.then(run, run)
+    chain = mine.catch(() => {})
+    return mine
+  }
+  const clear = () => {
+    clearTimeout(soon); clearTimeout(settle)
+    soon = settle = undefined
+  }
+  return {
+    now,
+    soon: () => {
+      if (stopped) return
+      clear()
+      soon = setTimeout(() => { soon = undefined; void now().catch(() => {}) }, opts.firstMs)
+      settle = setTimeout(() => { settle = undefined; void now().catch(() => {}) }, opts.settleMs)
+      soon.unref?.()
+      settle.unref?.()
+    },
+    stop: () => { stopped = true; clear() },
+  }
 }

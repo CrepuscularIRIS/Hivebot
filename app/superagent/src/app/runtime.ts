@@ -15,8 +15,8 @@ import { mkdirSync , watch as fsWatch } from 'node:fs'
 import { join } from 'node:path'
 import { acquireStateLock } from './lock.js'
 import { Engine, key, reasonText, type EngineForSettings, type ReceiveResult, type Ticket, type Trigger } from '../core/index.ts'
-import { readDsBotMainBotId, readDsBotRoomIds, readDsBotBotParts, readDiscoveredMasterId, resolveMasterId, watchBotsMeta, resolveLiveMasterId } from './master-id.ts'
-import { watchLocalSession } from '../sources/local.ts'
+import { readDsBotMainBotId, readDsBotBotIdentity, readDiscoveredMasterId, resolveMasterId, watchBotsMeta, resolveLiveMasterId, dsBotStateWatcher, createRebindScheduler } from './master-id.ts'
+import { watchLocalMaster, type LocalMasterWatch } from '../sources/local.ts'
 import { allowedSender, settingsPolicy } from '../policy.ts'
 import { SourceRegistry } from '../sources/registry.ts'
 import { Commands } from '../infra/commands.ts'
@@ -77,7 +77,7 @@ export class Runtime extends Service implements SourceHost {
   private readonly board = new HealthBoard()
   private readonly runtimeHealth = this.board.claim('runtime', { state: 'starting', detail: '' })
   masterId: string  // R5：live 校验可重写（ds-bot 重建 Chief 会话场景）
-  private masterWatch: () => void = () => {}
+  private masterWatch: LocalMasterWatch | undefined
   private readonly sourceLinks = new TextCache(200_000)
   private readonly stopped = new AbortController()
   private readonly disposers: (() => void)[] = []
@@ -172,14 +172,12 @@ export class Runtime extends Service implements SourceHost {
       this.sourceDeps = { store, engine, outbox, commands, sources, get ready() { return runtime.ready },
         get deployment() { return setup.deployment }, configured: () => setup.configured(),
         get setupProblem() { return setup.problem }, get feishuProblem() { return setup.feishuProblem }, receive: trigger => passes.receive(trigger) }
-      // B33：主 bot 会话（masterSessionId 钉定的那个）的用户消息 → local Trigger → engine intake。
-      // 开关：masterSessionId 配置时才订阅（默认 orchestrator-hash 会话不监听 UI）。
-      const watchMaster = (id: string): (() => void) => {
-        const stop = watchLocalSession(ctx, { sessionId: id, receive: trigger => passes.receive(trigger) })
-        this.disposers.push(stop)
-        return stop
-      }
-      this.masterWatch = watchMaster(masterId)
+      // B33：主 bot 会话（masterSessionId 钉定的那个；没钉就是 DS-Bot 主 bot 的当前段）的用户消息 → local Trigger → engine intake。
+      // 没有主 bot 时 masterId 是 orchestrator-<hash> 兜底会话，收不到 UI 消息 = 不监听 UI。
+      // UI 验收 B2 残余：监听一直挂着，换段只 retarget（补记窗口内先到的用户消息），不再摘旧挂新。
+      const masterWatch = this.masterWatch = watchLocalMaster(ctx, { receive: trigger => passes.receive(trigger) })
+      this.disposers.push(() => masterWatch.stop())
+      masterWatch.retarget(masterId)
       // B41a：UI 主 bot 变更（setMain 写 bots.json）→ 重解析 masterId → 不匹配则 restart 重订。
       // watch 只在未 pin（masterSessionId 空）时挂；discovered 已是当前值时不动作。
       if (!machine.masterSessionId?.trim()) {
@@ -233,9 +231,14 @@ export class Runtime extends Service implements SourceHost {
     // 一次性校验会留半切换（新段能回复但 watch/KV/ensure 留旧段）。改为初始化校验 + 60s 周期巡检，
     // 每次漂移都原子重挂（watch+KV+ensure 同步走）。
     if (!this.machine.masterSessionId?.trim()) {
-      await this.rebindMasterIfNeeded()
-      const timer = setInterval(() => { void this.rebindMasterIfNeeded().catch(() => { /* 巡检失败下轮再试 */ }) }, 60_000)
-      this.disposers.push(() => clearInterval(timer))
+      const scheduler = createRebindScheduler(() => this.rebindMasterIfNeeded(), { firstMs: 300, settleMs: 3000 })
+      await scheduler.now()
+      const dataDir = this.machine.dataDir ?? process.env.PBOTS_DATA_DIR
+      // UI 验收 B2 残余：DS-Bot 换段落盘即刻重算（state.json 是原子替换，watch 的是 bot/ 目录），不等下一次巡检。
+      const stateWatch = dsBotStateWatcher(dataDir, () => { scheduler.soon() })
+      stateWatch.ensure()
+      const timer = setInterval(() => { stateWatch.ensure(); void scheduler.now().catch(() => { /* 巡检失败下轮再试 */ }) }, 60_000)
+      this.disposers.push(() => { stateWatch.close(); scheduler.stop(); clearInterval(timer) })
     }
     if (!await this.setup.run(this.store.settings())) {
       this.runtimeHealth.set({ ...health('paused', 'setupPending'), at: now() })
@@ -253,22 +256,22 @@ export class Runtime extends Service implements SourceHost {
     this.runtimeHealth.set({ state: 'ready', detail: 'Orchestrator is ready', at: now() })
   }
   /**
-   * Codex 复测 #2：masterId 漂移的原子重挂。每次调用：live 解析（updatedAt 最新、排除 rooms/自身）→
-   * 漂移则一次完成 旧 watch 停 → 新 watch 挂 → KV 回写 → 新段 ensure（keepTitle）。任何一步失败
+   * Codex 复测 #2：masterId 漂移的原子重挂。每次调用：live 解析（DS-Bot 认定的主 bot 当前段）→
+   * 漂移则一次完成 监听切到新段（补记换段窗口内先到的用户消息）→ 新段 ensure（keepTitle）→ masterId/KV 回写。任何一步失败
    * 抛给调用方（初始化=致命；巡检=吞掉下轮再试），不产生半切换的中间稳定态。
    */
   private async rebindMasterIfNeeded(): Promise<void> {
     const sc = this.ctx.sessionController as unknown as { list: (...a: unknown[]) => Promise<{ items?: Array<{ sessionId?: string; updatedAt?: number }> }> }
-    const live = await resolveLiveMasterId(this.masterId, { list: sc.list.bind(sc) }, readDsBotRoomIds(this.machine.dataDir ?? process.env.PBOTS_DATA_DIR),
-      readDsBotBotParts(this.machine.dataDir ?? process.env.PBOTS_DATA_DIR, this.masterId))
+    const dataDir = this.machine.dataDir ?? process.env.PBOTS_DATA_DIR
+    // 身份认定跟 DS-Bot 认定的主 bot（state.json mainBotIds[0]，其次 m3 bots.json），不是跟当前 candidate。
+    const live = await resolveLiveMasterId(this.masterId, { list: sc.list.bind(sc) },
+      readDsBotBotIdentity(dataDir, readDsBotMainBotId(dataDir) ?? readDiscoveredMasterId(dataDir)))
     if (live === this.masterId) return
     this.ctx.logger.warn('dsh-superagent: master session rotated (%s → %s); rebinding atomically', this.masterId, live)
-    const stopOld = this.masterWatch
-    this.masterWatch = () => {}
-    try { stopOld() } catch { /* 旧 watch 已停 */ }
-    const stopNew = watchLocalSession(this.ctx, { sessionId: live, receive: t => this.passes.receive(t) })
-    this.disposers.push(stopNew)
-    this.masterWatch = stopNew
+    // 监听切到新段（补记换段窗口内先到的用户消息）。retarget 指向同一会话是空操作：ensure 失败后下一轮重进这里
+    // 不会重复补记。监听在构造时已建好，??= 只是防御。
+    const watch = this.masterWatch ??= watchLocalMaster(this.ctx, { receive: t => this.passes.receive(t) })
+    watch.retarget(live)
     // 纠错轮三自审：ensure 必须在 masterId/KV 提交之前——否则 ensure 失败时 watch/KV 已切到新段，
     // 下一轮 early-return（live===masterId）永不重试 ensure，留下「新段无 decorate」的半切换稳定态。
     if (this.setup.configured()) {

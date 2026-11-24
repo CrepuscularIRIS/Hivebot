@@ -1,0 +1,237 @@
+  engines running before start: 0 (want 0)
+
+===== prep: clone 已提交状态  (07:23:01) =====
+$ git clone -q file:///home/lingxufeng/bot /tmp/gui-walk2/repo
+[exit=0] clone
+  OK exit=0
+  HEAD=af40c524  dirty=0
+
+===== 教程: git clone … && cd Hivebot；APPIMAGE=…；chmod +x  (07:23:13) =====
+$ chmod +x /tmp/gui-walk2/home/DS-Bot-0.3.8-linux-x86_64.AppImage
+[exit=0] chmod
+  OK exit=0
+
+===== 排障行: 跳过首启直接安装 → FAIL: DS-Bot profile skeleton missing  (07:23:13) =====
+$ scripts/dsbot-provision/provision.sh /tmp/gui-walk2/home --appimage /tmp/gui-walk2/home/DS-Bot-0.3.8-linux-x86_64.AppImage
+FAIL: DS-Bot profile skeleton missing: /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/package.json
+  -> 先用这个 home 启动一次 DS-Bot（桌面双击 AppImage），窗口出来后完全退出，再重跑本脚本。
+[exit=2] provision-before-first-boot
+  OK exit=2
+  OK /FAIL: DS-Bot profile skeleton missing/
+
+===== 教程 1: 首启一次（本机无 FUSE，按排障表解包后运行）  (07:23:13) =====
+$ timeout 20 /tmp/gui-walk2/home/DS-Bot-0.3.8-linux-x86_64.AppImage
+dlopen(): error loading libfuse.so.2
+
+AppImages require FUSE to run. 
+You might still be able to extract the contents of this AppImage 
+if you run it with the --appimage-extract option. 
+See https://github.com/AppImage/AppImageKit/wiki/FUSE 
+for more information
+[exit=1] appimage-direct
+  (直接运行 AppImage 的退出码=1，仅记录；输出: dlopen(): error loading libfuse.so.2  AppImages require FUSE to run.  )
+  extract exit=0 (1.3G)
+  team window ready after ~4 s
+  OK exit=0
+  buttons(no provision yet, no key): ChiefMemory updated | DS Bot | Standard mode | Sign in to DeepSeek | Enter a DeepSeek API key | Open settings to set up a custom model | Stop | ChiefChief of Staff | Download | Not now
+  step-2 self-check without key → 0 (want exactly one line: 0; more lines = other DS-Bot engines running)
+  OK
+  app closed, engines=0 after ~1 s
+  OK exit=0
+
+===== 教程 1 自检: 骨架三文件  (07:23:26) =====
+$ ls /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/package.json /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/pnpm-workspace.yaml /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/cordis.patch.yml
+/tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/cordis.patch.yml
+/tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/package.json
+/tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/pnpm-workspace.yaml
+[exit=0] skeleton
+  OK exit=0
+
+===== 教程 2 方法 B: 带变量启动 + 自检（安装前只验变量是否传到引擎）  (07:23:26) =====
+  team window ready after ~3 s
+  OK exit=0
+  step-2 self-check with key → 1 (want exactly one line: 1; more lines = other DS-Bot engines running)
+  OK
+  app closed, engines=0 after ~1 s
+  OK exit=0
+
+===== 教程 3: scripts/dsbot-provision/provision.sh HOME --appimage APPIMAGE  (07:23:31) =====
+$ timeout 900 scripts/dsbot-provision/provision.sh /tmp/gui-walk2/home --appimage /tmp/gui-walk2/home/DS-Bot-0.3.8-linux-x86_64.AppImage
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+building superagent (lib/ missing)
+  deps:   pnpm install --frozen-lockfile
+FAIL: superagent build (pnpm install --frozen-lockfile) —— 构建日志尾部：
+
+Progress: resolved 234, reused 0, downloaded 97, added 97
+[WARN] Tarball download average speed 2 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/resolve.exports/-/resolve.exports-2.0.4.tgz (GET)
+[WARN] Tarball download average speed 11 KiB/s (size 13 KiB) is below 50 KiB/s: https://registry.npmjs.org/@csstools/css-color-parser/-/css-color-parser-4.2.8.tgz (GET)
+Progress: resolved 234, reused 0, downloaded 135, added 135
+Progress: resolved 234, reused 0, downloaded 164, added 164
+[WARN] Tarball download average speed 47 KiB/s (size 226 KiB) is below 50 KiB/s: https://registry.npmjs.org/@deepseek-ai/dsh-api-session-controller/-/dsh-api-session-controller-0.2.1-alpha.2.tgz (GET)
+[WARN] Tarball download average speed 20 KiB/s (size 33 KiB) is below 50 KiB/s: https://registry.npmjs.org/get-tsconfig/-/get-tsconfig-5.0.0-beta.5.tgz (GET)
+Progress: resolved 234, reused 0, downloaded 199, added 199
+Progress: resolved 234, reused 0, downloaded 220, added 220
+Progress: resolved 234, reused 0, downloaded 226, added 226
+Progress: resolved 234, reused 0, downloaded 227, added 226
+Progress: resolved 234, reused 0, downloaded 228, added 228
+[WARN] Tarball download average speed 21 KiB/s (size 107 KiB) is below 50 KiB/s: https://registry.npmjs.org/@deepseek-ai/dsh-llm/-/dsh-llm-0.2.1-alpha.2.tgz (GET)
+Progress: resolved 234, reused 0, downloaded 229, added 228
+Progress: resolved 234, reused 0, downloaded 229, added 229
+Progress: resolved 234, reused 0, downloaded 230, added 230
+Progress: resolved 234, reused 0, downloaded 231, added 230
+Progress: resolved 234, reused 0, downloaded 231, added 231
+[WARN] Request took 10857ms: https://registry.npmjs.org/react-dom
+Progress: resolved 234, reused 0, downloaded 232, added 231
+Progress: resolved 234, reused 0, downloaded 232, added 232
+[WARN] Tarball download average speed 34 KiB/s (size 681 KiB) is below 50 KiB/s: https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz (GET)
+Progress: resolved 234, reused 0, downloaded 233, added 232
+Progress: resolved 234, reused 0, downloaded 233, added 233
+[exit=1] provision
+  provision failed (exit=1) — 等 npmmirror 连续 6 次 200 后重跑（第  次）
+$ timeout 900 scripts/dsbot-provision/provision.sh /tmp/gui-walk2/home --appimage /tmp/gui-walk2/home/DS-Bot-0.3.8-linux-x86_64.AppImage
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+building superagent (lib/ missing)
+  deps:   pnpm install --frozen-lockfile
+  plugin:  installed dsh-superagent from /tmp/gui-walk2/repo/app/superagent (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  plugin:  source staged to /tmp/gui-walk2/home/.ds-bot/superagent-src
+  patch:   backed up the original to cordis.patch.yml.pre-hivebot
+  bundle:  registered dsh-superagent into dsh.profile.bundles
+provisioned: /tmp/gui-walk2/home
+  patch:   /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  plugin:  /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  state:   /tmp/gui-walk2/home/.ds-bot/superagent-state
+next: 启动 DS-Bot（home: /tmp/gui-walk2/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+      开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+[exit=0] provision
+  provision attempts: 
+  OK exit=0
+  OK /source staged to/
+  OK /registered dsh-superagent into dsh.profile.bundles/
+$ ls /tmp/gui-walk2/home/.ds-bot/superagent-src
+cordis.patch.yml
+lib
+locale
+package.json
+prompts
+skills
+[exit=0] stage-ls
+  OK exit=0
+  OK /cordis.patch.yml/
+
+===== 教程 4: 启动 → 选模型 → Chief 开场  (07:26:28) =====
+  team window ready after ~4 s
+  OK exit=0
+  buttons: ChiefMemory updated | DS Bot | Standard mode | glm-5.3-flash | Manage models | Stop | ChiefChief of Staff | Download | Not now
+$ node /tmp/gui-test-cdp.mjs eval (()=>{const b=[...document.querySelectorAll("button")].filter(b=>b.offsetParent!==null&&/glm-5\.3-flash/.test(b.textContent));if(!b.length)return "no-button";b[0].click();return "clicked "+b.length;})()
+"clicked 1"
+[exit=0] click
+  OK /clicked/
+  opening judged after ~15 s
+  OK exit=0
+$ node /tmp/gui-test-cdp.mjs eval (async()=>{const r=await fetch("/orchestrator/api/state",{headers:{"x-orchestrator-request":"1"}});const t=await r.text();let j=null;try{j=JSON.parse(t)}catch(e){}return "status="+r.status+" master="+!!(j&&j.masterId)+" runtime="+(j&&j.health&&j.health.runtime?j.health.runtime.state:null);})()
+"status=200 master=true runtime=ready"
+[exit=0] state
+  OK /status=200/
+  OK /master=true/
+$ env DSBOT_TRIAL=/tmp/gui-walk2/judge python3 scripts/fresh_boot_evidence.py
+A3=PASS A3-reason=judged A4-worker=FAIL A4-chief=FAIL
+[exit=0] evidence
+  OK /A3=PASS/
+
+===== 排障行: DS-Bot 运行中安装 → FAIL: DS-Bot 正在这个 home 上运行  (07:26:47) =====
+$ scripts/dsbot-provision/provision.sh /tmp/gui-walk2/home --appimage /tmp/gui-walk2/home/DS-Bot-0.3.8-linux-x86_64.AppImage
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+FAIL: DS-Bot 正在这个 home 上运行（引擎 pid: 357823 ）——先完全退出再重跑。
+[exit=2] provision-while-running
+  OK exit=2
+  OK /FAIL: DS-Bot 正在这个 home 上运行/
+
+===== 教程 5: DSBOT_HOME=HOME scripts/health-check.sh  (07:26:49) =====
+$ env DSBOT_HOME=/tmp/gui-walk2/home scripts/health-check.sh
+[1/4 引擎] processes=1
+[2/4 web] port=38011 code=401
+[3/4 面板] 跳过（桌面安装拿不到 token；Chief 在不在场看界面）
+[4/4 SuperAgent] http=200 orchestrator=ready masterId=ffe43e33
+RESULT: SuperAgent 就绪（绑定一致性未核对）
+[exit=0] health-check
+  OK exit=0
+  OK /RESULT: SuperAgent 就绪/
+  app closed, engines=0 after ~1 s
+  OK exit=0
+
+===== 教程 6 更新: 重跑安装（幂等）  (07:26:50) =====
+$ scripts/dsbot-provision/provision.sh /tmp/gui-walk2/home --appimage /tmp/gui-walk2/home/DS-Bot-0.3.8-linux-x86_64.AppImage
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  plugin:  up to date (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+provisioned: /tmp/gui-walk2/home
+  patch:   /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  plugin:  /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  state:   /tmp/gui-walk2/home/.ds-bot/superagent-state
+next: 启动 DS-Bot（home: /tmp/gui-walk2/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+      开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+[exit=0] provision-again
+  OK exit=0
+  plugin 行:   plugin:  up to date (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d);  plugin:  /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/node_modu
+
+===== 教程 6 撤销: uninstall.sh（默认保留编排数据）  (07:26:51) =====
+$ scripts/dsbot-provision/uninstall.sh /tmp/gui-walk2/home --appimage /tmp/gui-walk2/home/DS-Bot-0.3.8-linux-x86_64.AppImage
+  plugin:  pnpm remove dsh-superagent
+  bundle:  unregistered dsh-superagent
+  plugin:  removed /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  plugin:  removed /tmp/gui-walk2/home/.ds-bot/superagent-src
+  profile: no dependencies left — removed node_modules/ and pnpm-lock.yaml
+  patch:   restored /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/cordis.patch.yml from cordis.patch.yml.pre-hivebot
+  state:   kept /tmp/gui-walk2/home/.ds-bot/superagent-state（加 --purge-state 一并删除）
+undone: /tmp/gui-walk2/home
+next: 重新启动 DS-Bot 即回到未接入状态。
+[exit=0] uninstall
+  OK exit=0
+  OK /restored/
+  OK /superagent-src/
+$ sh -c grep -c hivebot-provision '/tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/cordis.patch.yml'; grep -c dsh-superagent '/tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/package.json'; ls -d '/tmp/gui-walk2/home/.ds-bot/superagent-src' 2>&1; ls '/tmp/gui-walk2/home/.ds-bot/superagent-state' | head -n 3
+0
+0
+ls: cannot access '/tmp/gui-walk2/home/.ds-bot/superagent-src': No such file or directory
+orchestrator.sqlite
+worker-bin
+[exit=0] after-uninstall
+  OK patch 已还原、bundle 已注销
+  OK 插件源副本已删
+  state 目录: orchestrator.sqlite worker-bin 
+
+===== 教程 6: 重新安装 → 启动 → health-check（模型已选过，对话保留）  (07:26:53) =====
+$ scripts/dsbot-provision/provision.sh /tmp/gui-walk2/home --appimage /tmp/gui-walk2/home/DS-Bot-0.3.8-linux-x86_64.AppImage
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  plugin:  installed dsh-superagent from /tmp/gui-walk2/repo/app/superagent (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  plugin:  source staged to /tmp/gui-walk2/home/.ds-bot/superagent-src
+  patch:   backed up the original to cordis.patch.yml.pre-hivebot
+  bundle:  registered dsh-superagent into dsh.profile.bundles
+provisioned: /tmp/gui-walk2/home
+  patch:   /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  plugin:  /tmp/gui-walk2/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  state:   /tmp/gui-walk2/home/.ds-bot/superagent-state
+next: 启动 DS-Bot（home: /tmp/gui-walk2/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+      开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+[exit=0] provision-3
+  OK exit=0
+  OK /registered dsh-superagent into dsh.profile.bundles/
+  team window ready after ~4 s
+  OK exit=0
+  buttons: ChiefMemory updated | Analysis completed | Called tools | ABuild the teamSet up specialized bots for a project or workflow | BA coding taskImplement, debug, or review code and scripts | CA document or research taskDocs, spreadsheets, research, or writing | DNot sure yetI'll help you figure out what 
+$ env DSBOT_HOME=/tmp/gui-walk2/home scripts/health-check.sh
+[1/4 引擎] processes=1
+[2/4 web] port=38011 code=401
+[3/4 面板] 跳过（桌面安装拿不到 token；Chief 在不在场看界面）
+[4/4 SuperAgent] http=200 orchestrator=ready masterId=ffe43e33
+RESULT: SuperAgent 就绪（绑定一致性未核对）
+[exit=0] health-check-2
+  OK exit=0
+  OK /RESULT: SuperAgent 就绪/
+  app closed, engines=0 after ~1 s
+  OK exit=0
+
+===== main.log 错误行  (07:27:03) =====
+  ValidationError=0 did-not-activate=0 lines=57
+
+WALK_FAILS=0
+exit=0

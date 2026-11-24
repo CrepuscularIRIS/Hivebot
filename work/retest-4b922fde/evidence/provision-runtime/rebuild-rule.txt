@@ -1,0 +1,90 @@
+# 安装器重建规则（provision.sh：lib/index.js 缺失或构建输入比它新时自动重建；开发依赖按锁文件已装好时不重复 pnpm install）
+# 2026-11-24；目标 home /tmp/gui-test/home（T 系列）或全新骨架 home /tmp/w8/home（W8 系列）；运行时 DS-Bot 0.3.8 AppImage 自带 node v24.21.0 / pnpm 11.7.0
+
+## T-b：touch src/policy.ts 让源码比 lib/index.js 新 → 重建，依赖不重装
+$ provision.sh <home> --appimage <DS-Bot-0.3.8 AppImage>  （输出全文）
+    runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  building superagent (source newer than lib/index.js)
+    deps:   up to date
+    plugin:  up to date (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  provisioned: /tmp/gui-test/home
+    patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+    plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+    state:   /tmp/gui-test/home/.ds-bot/superagent-state
+  next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+        开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+  [exit 0]
+
+## T-c：删 lib/，node_modules/.pnpm/lock.yaml 与 pnpm-lock.yaml 一致 → 重建，不跑 pnpm install
+$ provision.sh <home> --appimage <DS-Bot-0.3.8 AppImage>  （输出全文）
+    runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  building superagent (lib/ missing)
+    deps:   up to date
+    plugin:  up to date (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  provisioned: /tmp/gui-test/home
+    patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+    plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+    state:   /tmp/gui-test/home/.ds-bot/superagent-state
+  next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+        开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+  [exit 0]
+
+## T-d：删 lib/ 并破坏 lock → pnpm install --frozen-lockfile 后重建
+$ provision.sh <home> --appimage <DS-Bot-0.3.8 AppImage>  （输出全文）
+    runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  building superagent (lib/ missing)
+    deps:   pnpm install --frozen-lockfile
+    plugin:  up to date (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  provisioned: /tmp/gui-test/home
+    patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+    plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+    state:   /tmp/gui-test/home/.ds-bot/superagent-state
+  next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+        开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+  [exit 0]
+
+## T-e：T-b 之后立刻重跑 → 不再重建，插件 up to date
+$ provision.sh <home> --appimage <DS-Bot-0.3.8 AppImage>  （输出全文）
+    runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+    plugin:  up to date (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  provisioned: /tmp/gui-test/home
+    patch:   /tmp/gui-test/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+    plugin:  /tmp/gui-test/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+    state:   /tmp/gui-test/home/.ds-bot/superagent-state
+  next: 启动 DS-Bot（home: /tmp/gui-test/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+        开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+  [exit 0]
+
+## W8-1：全新骨架 home + 无 lib 的源码副本 + lock 不一致 → 首次安装全流程
+$ provision.sh <home> --appimage <DS-Bot-0.3.8 AppImage>  （输出全文）
+    runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  building superagent (lib/ missing)
+    deps:   pnpm install --frozen-lockfile
+    plugin:  installed dsh-superagent from /tmp/w8/repo/app/superagent (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+    plugin:  source staged to /tmp/w8/home/.ds-bot/superagent-src
+    patch:   backed up the original to cordis.patch.yml.pre-hivebot
+    bundle:  registered dsh-superagent into dsh.profile.bundles
+  provisioned: /tmp/w8/home
+    patch:   /tmp/w8/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+    plugin:  /tmp/w8/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+    state:   /tmp/w8/home/.ds-bot/superagent-state
+  next: 启动 DS-Bot（home: /tmp/w8/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+        开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+  provision-exit=0
+  [exit 0]
+
+## W8-2：W8-1 之后重跑 → up to date
+$ provision.sh <home> --appimage <DS-Bot-0.3.8 AppImage>  （输出全文）
+    runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  building superagent (lib/ missing)
+    deps:   pnpm install --frozen-lockfile
+    plugin:  up to date (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  provisioned: /tmp/w8/home
+    patch:   /tmp/w8/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+    plugin:  /tmp/w8/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+    state:   /tmp/w8/home/.ds-bot/superagent-state
+  next: 启动 DS-Bot（home: /tmp/w8/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+        开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+  provision-exit=0
+  [exit 0]
+

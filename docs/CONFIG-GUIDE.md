@@ -11,7 +11,7 @@
 │   cordis.patch.yml —— 模型从哪来、SuperAgent 插件怎么挂
 ├─ 第 2 层：SuperAgent 插件（编排行为）
 │   stateDir 里的 orchestrator.sqlite + 运行时设置（policy/eval）
-└─ 第 3 层：安装与运维（provision.sh / engine.sh / health-check.sh）
+└─ 第 3 层：安装与运维（provision.sh / uninstall.sh / health-check.sh）
 ```
 
 ---
@@ -44,7 +44,8 @@
     model: glm-5.3-flash             # ← 对应上面的模型 id
 ```
 
-- **key 放环境变量**（`DSH_LITELLM_API_KEY=sk-xxx`），不写进 yml。
+- **key 放环境变量**（`DSH_LITELLM_API_KEY=sk-xxx`），不写进 yml。这个变量必须对 **DS-Bot 进程本身**可见：
+  桌面启动的 DS-Bot 看不到终端里临时 `export` 的值（做法见 `scripts/dsbot-provision/README.md` 第 2 步）。
 - `compat` 四项（supportsDeveloperRole/supportsStore/maxTokensField/requiresReasoningContentOnAssistantMessages）按网关实测调；上面模板已按 LiteLLM+GLM 验过。
 - **怎么验**：起引擎 → 开 web UI → 给 bot 发一条消息 → bot 正常回复 = 路由通。
   若报 `model-unavailable`，九成是 yml 缩进或 provider 名不一致。
@@ -77,6 +78,9 @@ profile 层只补静态配置——preset 不要在 profile 里重复定义（�
   `/orchestrator/api/state` 404 或开 ticket 报 `Unknown agent preset` = 插件没激活，
   先查 `dsh.profile.bundles` 有没有 `dsh-superagent`（bundle 未注册），再查引擎日志
   `declares no dsh.bundle` 警告（插件被装成普通依赖）。
+- **桌面版（AppImage）怎么验**：引擎日志里 token 记为 `<hidden>`，拿不到 cookie——只带
+  `x-orchestrator-request: 1` 头 GET `/orchestrator/api/state`：200 = 插件在，404 = 没激活。
+  不带头恒为 403，不能当判据。`DSBOT_HOME=<home> scripts/health-check.sh` 已内置这条路径。
 
 ---
 
@@ -93,7 +97,7 @@ profile 层只补静态配置——preset 不要在 profile 里重复定义（�
 | `executor.blockedCommands` | worker shell 禁用命令名 | 空 | 与 DSH 审批是**叠加**关系：两层都放行才放行，只会更严不会更松 |
 | ticket 兜底 | 异步工单队列 | 实验性 | TEAM_TOOLS 是主编排路径，ticket 是兜底 ⚠️ |
 
-- 会话段轮转自动重绑（60s 巡检）+ 崩溃残锁自愈已内置，无需配置 ✅。
+- 会话段轮转自动重绑（监听 `bot/state.json` 即时重算 + 60s 巡检兜底）+ 崩溃残锁自愈已内置，无需配置 ✅。
 - **怎么验**：`GET /orchestrator/api/state` 的 `health` 全 ready。
 
 ---
@@ -102,14 +106,14 @@ profile 层只补静态配置——preset 不要在 profile 里重复定义（�
 
 | 脚本 | 功能 | 用法 |
 |---|---|---|
-| `scripts/dsbot-provision/provision.sh` | 对解包的 DS-Bot AppImage 一键注入以上全部配置 | `provision.sh <appimage-root> <home>`（`--superagent-src` 指源码）✅ |
-| `engine.sh`（trial 内） | 幂等起/停引擎 | `engine.sh start\|stop\|url`——**端口每次启动会变**，用 `url` 取当前值 |
-| `scripts/health-check.sh` | 四段读数：引擎进程/web 端口/Chief 绑定/编排面 | 全绿=链路健康；`DRIFTED`=绑定漂移 |
+| `scripts/dsbot-provision/provision.sh` | 一键写入以上全部配置并装好插件（幂等；DS-Bot 须已退出） | `provision.sh <home> --appimage <AppImage>`（`--base-url` / `--model` / `--superagent-src` 可选）✅ |
+| `scripts/dsbot-provision/uninstall.sh` | 撤销 provision 写过的东西 | `uninstall.sh <home> --appimage <AppImage> [--purge-state]` ✅ |
+| `scripts/health-check.sh` | 读数：引擎进程/web 端口/Chief 绑定/编排面；桌面安装走到编排面 | `DSBOT_HOME=<home> scripts/health-check.sh`，看末行 `RESULT: …` ✅ |
 | `scripts/fresh-boot.sh` | 干净 home 全链回归（预配置→kickoff→编排落盘） | exit 0 = 全过 ✅ |
 | `scripts/phone-link/fake-phone.mjs` | 协议级假手机（配对/收发验证） | 见 `scripts/phone-link/README.md` ✅ |
 
-**端口提醒**：引擎 URL 每次启动变——别抄固定地址，`engine.sh url` 或
-`ls -t host*.log | head -1` 里 grep `dsh web` 取当前值。
+**端口提醒**：引擎 URL 每次启动变——别抄固定地址。桌面版从 `<home>/.config/DS Bot/logs/main.log`
+里最后一条 `dsh web` 行取当前地址（token 记为 `<hidden>`，验证方法见 1.2）。
 
 ---
 
@@ -126,16 +130,12 @@ profile 层只补静态配置——preset 不要在 profile 里重复定义（�
 
 ## 快速上手（一台干净机器）
 
+完整六步见 `scripts/dsbot-provision/README.md`（首启 → 让 DS-Bot 进程看到 key → 安装 → 选模型 → 验证 → 更新/撤销）。最短形式：
+
 ```sh
-# 1. 解包 AppImage（或装好任意 DS-Bot 0.3.8+）
-./DS-Bot-*.AppImage --appimage-extract
-
-# 2. 一键注入配置（模型网关地址 + key 环境变量按需改 provision.sh 头部变量）
-DSH_LITELLM_API_KEY=sk-xxx scripts/dsbot-provision/provision.sh <root> <home>
-
-# 3. 起引擎 + 验证
-engine.sh start && scripts/health-check.sh
+APPIMAGE="$HOME/DS-Bot-0.3.8-linux-x86_64.AppImage"   # 换成你的 AppImage 路径
+"$APPIMAGE"                                            # 首启一次，窗口出来后完全退出
+scripts/dsbot-provision/provision.sh "$HOME" --appimage "$APPIMAGE"
+"$APPIMAGE"                                            # 启动，给 Chief 选模型
+DSBOT_HOME="$HOME" scripts/health-check.sh             # 期望末行 RESULT: SuperAgent 就绪
 ```
-
-三段全绿后，浏览器开 `engine.sh url` 给的地址（token 在引擎日志里），
-就能建 bot、对话、看编排了。

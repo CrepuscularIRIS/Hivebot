@@ -2,7 +2,7 @@
 
 一个包 = 官方 DS-Bot 0.3.8 Windows 安装器 + DSH SuperAgent 插件 + 预配置。
 **注意：exe 本身是官方原版安装器，不带 SuperAgent**——SuperAgent 由其后的 overlay 安装（`setup.bat` 会把两步串起来）。
-装完后主 bot 变为 SuperAgent 编排：消息 → Chief 分诊 → worker 会话执行 → 回写。
+装完后 Chief 仍是 DS-Bot 原生主 bot，多 bot 编排走 DS-Bot 原生 TEAM_TOOLS；SuperAgent 盯住 Chief 会话做 watch 记账、评估与 ticket 异步兜底。
 
 ## 安装（推荐：一键）
 
@@ -17,7 +17,7 @@
        -BaseUrl http://<litellm地址>/v1 -Model glm-5.3-flash
    ```
    先装 exe 还是先跑脚本都可以（幂等，重复运行收敛同一状态）。
-3. **启动 DS Bot**。完成。
+3. **启动 DS Bot**。首屏若是「Pick a model for me first」，点你的 LiteLLM 模型那一项。完成。
 
 ## 参数
 
@@ -37,8 +37,10 @@
 
 ## 验证与排查
 
-- **插件激活了吗**：DS-Bot 里主 bot 会话问一句「访问 /orchestrator/api/state 报什么」；
-  路由 404 = 插件没激活 → 重跑 `install.ps1`（幂等 repair），再完全退出并重启 DS-Bot。
+- **插件激活了吗**：DS-Bot 运行中，在 PowerShell 里执行
+  `Invoke-WebRequest -Uri "http://127.0.0.1:<端口>/orchestrator/api/state" -Headers @{"x-orchestrator-request"="1"} -UseBasicParsing`
+  （端口取引擎日志里 `dsh web` 那一行的地址）：200 = 插件已激活；404 = 没激活 → 重跑 `install.ps1`（幂等 repair），
+  再完全退出并重启 DS-Bot。不带这个头恒为 403，不能当判据。（判据在 Linux 桌面版实测，Windows 未单独实测。）
 - **日志**：`%USERPROFILE%\.ds-bot\` 下引擎日志若出现 `declares no dsh.bundle`，
   说明 bundles 注册没生效 → 打开 `profiles\ds-bot\package.json` 确认 `dsh.profile.bundles` 数组含 `dsh-superagent`。
 - **模型 401**：环境变量没生效（要新进程）或 key/BaseUrl 错。

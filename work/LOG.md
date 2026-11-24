@@ -1600,3 +1600,11 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
 - 未实测：教程里的方法 A（environment.d 重新登录后对桌面会话生效）只确认了前提，没做端到端；教程的干净 clone 实走只在本机（Ubuntu 24.04、X11、无 FUSE）做过。
 - 中断与残留：首次构建的 pnpm 被打断时安装器按构建失败正常退出，临时运行时目录已清（实走中实测到一次）；但实走脚本被整体终止的那次留下过 /tmp/tmp.*（134MB）——没定位是信号没传到安装器还是清理被一并杀掉，属已知待查项。
 - 踩坑：实走先后三次被外网中断打断（首次构建要下开发依赖）；还有一次是我的中断测试用 pgrep 模式取 pid 后发 SIGINT，误伤了正在实走的 pnpm install（实走脚本因此多跑了一次重试，顺带验证了「首次构建失败后重跑」可行）。教训：给按模式找到的 pid 发信号前必须确认归属，只对自己的进程树操作。
+- 只读审查与修复（08:00–08:55；只读子代理审 provision / uninstall / runtime / 教程 / health-check，10 条意见：改 9 条，1 条记为已知限制）：
+  - [高] 重跑 provision / uninstall 会整份覆盖 `cordis.patch.yml`——DS-Bot 的设置界面（@deepseek-ai/dsh-config-editor）和插件启停开关（dsh-plugin-manager 的 writePluginEnabled）写的是同一个文件，界面里做的设置会全丢。改为条目级合并：新增 `patch-merge.mjs`（借 DS-Bot 自带的 yaml 2.9.1），只并入 / 摘出安装器写的三项（llm-pi-ai 的 providers.litellm、agent-default-model 的 provider/model、dsh-superagent 的 stateDir/dataDir），其余条目（!!js 表达式、disabled 开关、用户自己的 provider）逐字节保留；文件头加一行标记认领；没带 --appimage / --app-dir 且文件里已有别的条目时拒绝并提示。runtime.sh 解运行时目录时多抽 resources/app/node_modules/yaml（三棵子树共约 135MB）。
+  - patch 改为最后一步替换（插件、skills、bundle 注册都成功之后才动）；EXIT trap 清 patch 临时文件与 pnpm 的两个输出日志；中途失败 / Ctrl-C 不留文件、原 patch 不变。
+  - 源码摘要覆盖包的 files 清单全部文件（此前只算 lib、package.json、skills：改 prompts、locale 后重跑会判 up to date）；up to date 分支检查 superagent-src 副本还在；--appimage 相对路径按当前目录算，文件不存在 / 没执行权限 / 解不出运行时各一句直给的报错（此前都是「无法从 AppImage 里取出自带运行时」且失败留 134MB 临时目录）；--purge-state 的 stateDir 只认安装器写的 dsh-superagent 条目。
+  - 教程：首屏更新对话框（默认聚焦 Download，点 Not now）、key 写法（umask 077 建文件；方法 B 用 read -rs，不进 shell 历史）、报错原文与脚本对齐、排障表补 5 行、说明重跑 / 撤销不再丢界面里做的设置。
+  - 保留不改：mtime 重建规则的盲区（时钟回拨、产物 mtime 在未来）写进已知限制。
+- 验证（审查修复后）：patch-merge 夹具测试入库 `scripts/dsbot-provision/tests/patch-merge-fixtures.sh`（70 项：用户原文件 → 并入 → 摘除逐字节还原、!!js / 带 name 的条目、编辑器重写过的文件、坏 YAML 不动、没有 yaml 库时只认空骨架；证据 patch-merge-fixtures.txt）；安装器集成测试 54 项（证据 installer-integration.txt）：旧版接入的 home 跑新安装器 patch 逐字节不变、带用户条目的往返前后逐字节相同、自定义状态目录的 --purge-state、相对路径 --appimage、PATH 模式遇用户条目拒绝、pnpm add 途中给安装器进程组发 INT（退出码 1：pnpm 自己接住 SIGINT 以 1 退出，bash 就不再执行 INT trap；不留临时目录、patch 不变、重跑能装好）；带用户条目的 home 起 GUI：编排面 200、日志 ValidationError 0。
+- 踩坑（续）：「$( cd dir; find … ) | sha256sum」的消费端在子 shell 外面跑（相对路径全失败）；多字段输出行要先 tr 拆字段再 sed；测试脚本别 rm -rf 自己所在目录、后台启动以 bash -n 通过为前提；给按模式找到的 pid 发信号前先确认归属，只对自己 setsid 出来的进程组发。

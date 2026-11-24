@@ -1,0 +1,59 @@
+baseline engines (other sessions): 0
+source copy: cordis.patch.yml locale package.json pnpm-lock.yaml prompts skills src tests tsconfig.json tsdown.config.ts  lib=no
+== firstboot home
+  window after 5 s
+  engines=0 skeleton: cordis.patch.yml cordis.yml package.json pnpm-workspace.yaml 
+== T-a build step honours NPM_CONFIG_REGISTRY (blackhole => must fail at pnpm install, patch untouched)
+exit=1
+2:building superagent (lib/ missing)
+3:  deps:   pnpm install --frozen-lockfile
+4:FAIL: superagent install (原 patch 未动) —— pnpm add 输出尾部：
+6:[WARN] GET http://127.0.0.1:1/proper-lockfile error (unknown). Will retry in 10 seconds. 2 retries left.
+7:[WARN] GET http://127.0.0.1:1/zod error (unknown). Will retry in 10 seconds. 2 retries left.
+8:[WARN] GET http://127.0.0.1:1/proper-lockfile error (unknown). Will retry in 1 minute. 1 retries left.
+9:[WARN] GET http://127.0.0.1:1/zod error (unknown). Will retry in 1 minute. 1 retries left.
+10:[ERR_PNPM_META_FETCH_FAIL] GET http://127.0.0.1:1/proper-lockfile: fetch failed
+patch unchanged: ef189a8c27db backup=no lib=yes
+== T-b default registry (npmmirror) build on a fresh store
+/tmp/w9/t.sh: line 30: 1795524811: command not found
+exit=0 secs=
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  plugin:  installed dsh-superagent from /tmp/w9/sa-src (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  plugin:  source staged to /tmp/w9/home/.ds-bot/superagent-src
+  patch:   backed up the original to cordis.patch.yml.pre-hivebot
+  bundle:  registered dsh-superagent into dsh.profile.bundles
+provisioned: /tmp/w9/home
+  patch:   /tmp/w9/home/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  plugin:  /tmp/w9/home/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  state:   /tmp/w9/home/.ds-bot/superagent-state
+next: 启动 DS-Bot（home: /tmp/w9/home），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+      开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+runtime temp dirs: 0
+== firstboot home2
+  window after 4 s
+  engines=0 skeleton: cordis.patch.yml cordis.yml package.json pnpm-workspace.yaml 
+== T-c install step honours NPM_CONFIG_REGISTRY (blackhole => must fail at pnpm add, original patch untouched)
+exit=1
+2:FAIL: superagent install (原 patch 未动) —— pnpm add 输出尾部：
+4:[WARN] GET http://127.0.0.1:1/zod error (unknown). Will retry in 10 seconds. 2 retries left.
+5:[WARN] GET http://127.0.0.1:1/proper-lockfile error (unknown). Will retry in 10 seconds. 2 retries left.
+6:[WARN] GET http://127.0.0.1:1/zod error (unknown). Will retry in 1 minute. 1 retries left.
+7:[WARN] GET http://127.0.0.1:1/proper-lockfile error (unknown). Will retry in 1 minute. 1 retries left.
+8:[ERR_PNPM_META_FETCH_FAIL] GET http://127.0.0.1:1/zod: fetch failed
+patch unchanged: before=ef189a8c27db after=ef189a8c27db tmp=none backup=no
+== T-d default registry install on home2
+exit=0
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  plugin:  installed dsh-superagent from /home/lingxufeng/bot/app/superagent (source 7b625cdab979c579f7e8de1e9625074eb4de00bff06f7dbad95a038e6a44181d)
+  plugin:  source staged to /tmp/w9/home2/.ds-bot/superagent-src
+  patch:   backed up the original to cordis.patch.yml.pre-hivebot
+  bundle:  registered dsh-superagent into dsh.profile.bundles
+provisioned: /tmp/w9/home2
+  patch:   /tmp/w9/home2/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  plugin:  /tmp/w9/home2/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  state:   /tmp/w9/home2/.ds-bot/superagent-state
+next: 启动 DS-Bot（home: /tmp/w9/home2），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+      开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+== T-e '/' state dir message
+exit=2 :: FAIL: --state-dir 不能是 /
+T_EXIT=0

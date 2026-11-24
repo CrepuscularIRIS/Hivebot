@@ -1,0 +1,143 @@
+PASS R 是旧版渲染结果（首行标记）
+--- T1 空骨架 + 渲染结果 = 渲染结果
+PASS T1 rc
+PASS T1 out == R
+PASS T1 state
+--- T2 已接入的 R 再 apply = 不变
+PASS T2 rc
+PASS T2 out == R（逐字节）
+PASS T2 state/entries
+--- T3 用户文件 U1 并入
+PASS T3 rc
+PASS T3 state/entries
+PASS T3 keeps apiKey: user-key-placeholder
+PASS T3 keeps deepseek:
+PASS T3 keeps disabled: true
+PASS T3 keeps provider: litellm
+PASS T3 keeps model: glm-5.3-flash
+PASS T3 keeps litellm:
+PASS T3 keeps stateDir:
+PASS T3 首行是标记
+PASS T3 DS-Bot 的三行说明还在
+--- T3b 幂等
+PASS T3b rc
+PASS T3b 再并入一次逐字节不变
+--- T4 apply 后 remove = 用户原文件逐字节还原
+PASS T4 rc
+PASS T4 out == U1（逐字节）
+PASS T4 fields
+--- T5 空骨架接入后摘除 = 空（shell 会整份还原备份）
+PASS T5 rc
+PASS T5 fields
+--- T6 没有备份摘除 = 干净的空骨架
+PASS T6 rc
+PASS T6 out
+--- T7 !!js 条目往返
+PASS T7 apply rc
+PASS T7 !!js 保真
+PASS T7 remove rc
+PASS T7 remove out == U3（逐字节）
+--- T8 坏文件：不动、不写 out
+PASS T8 坏 YAML rc 非 0
+PASS T8 没写 out
+PASS T8b 顶层非数组 rc 非 0
+T8b stderr: patch-merge: 现有 patch 的顶层不是数组（DS-Bot 的 profile patch 必须是 YAML 
+--- T9 没有 yaml 库（- ）：只认空骨架
+PASS T9 空骨架 rc
+PASS T9 out == R
+PASS T9b 用户文件 rc=3
+PASS T9c remove rc=3
+--- T10 DS-Bot 编辑器重写过的文件：它的改动在 remove 之后仍在
+PASS T10 apply rc
+PASS T10 remove rc
+PASS T10 GUI 写入的设置还在
+PASS T10 安装器的痕迹清干净
+PASS T10 用户自己的 provider 按备份放回
+--- T11 用户在界面里改过默认模型（落在安装器条目上）：摘除时整条拿掉
+PASS T11 apply rc
+PASS T11 remove rc
+PASS T11 安装器条目上改过的值不留
+PASS T11 用户原来的默认模型放回
+--- T12 带 name 的同 id 条目不算安装器的
+PASS T12 apply rc
+PASS T12 两条 llm-pi-ai
+PASS T12 remove rc
+PASS T12 out == U6（逐字节）
+--- T13 条目里 config 是空的
+PASS T13 apply rc
+PASS T13 条目数（空的壳不算）
+PASS T13 stateDir 写进去了
+PASS T13 remove rc
+PASS T13 out
+--- T14 只有标记行
+PASS T14 rc
+PASS T14 fields
+--- T15 文件缺失
+PASS T15 rc 非 0
+--- T16 用户文件第一条就是要放回的条目，且被 DS-Bot 重写过（说明块挂在它上面）
+PASS T16 apply rc
+PASS T16 重写后标记仍在第一行
+PASS T16 remove rc
+PASS T16 out == U16（逐字节）
+--- T17 标记行的写法
+1
+PASS T17 合并结果首行 = 「# hivebot-provision —— …」
+0
+PASS T17 整份采用用的十三行文件头没有跟到用户文件里
+1
+PASS T17 条目自己的说明照带
+--- T18 用户文件头与第一条之间空一行（说明块挂在集合上）
+PASS T18 apply rc
+PASS T18 remove rc
+PASS T18 out == U18（逐字节）
+--- T19 没有 id 的新条目追加后不带渲染结果的文件头
+1
+PASS T16/19 合并结果里标记行只有 1 行
+=== pass=70 fail=0
+--- T3 output:
+# hivebot-provision —— 下面三项里由安装器维护的键（l
+# Your patch layer for this dsh profile, applied after every bundle la
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+- id: dsh-plugin-manager
+  disabled: true
+- id: llm-pi-ai
+  config:
+    providers:
+      deepseek:
+        apiKey: user-key-placeholder
+      litellm:
+        apiKeyEnv: DSH_LITELLM_API_KEY
+        api: openai-completions
+        baseURL: http://127.0.0.1:4001/v1
+        displayName: LiteLLM (local)
+        models:
+          - id: glm-5.3-flash
+            contextWindow: 1000000
+            input:
+              - text
+              - image
+            reasoningEfforts:
+              low: low
+              medium: medium
+              high: high
+        compat:
+          supportsDeveloperRole: false
+          supportsStore: false
+          maxTokensField: max_tokens
+          requiresReasoningContentOnAssistantMessages: true
+- id: agent-default-model
+  config:
+    provider: litellm
+    model: glm-5.3-flash
+# SuperAgent 静态配置只在此层；policy/eval/executor 等运行
+- id: dsh-superagent
+  config:
+    stateDir: /home/you/.ds-bot/superagent-state
+    dataDir: /home/you
+--- stderr files:
+/tmp/tmp.SGnim9BzYz/out/t15.stderr: patch-merge: 现有 patch 读不到: /tmp/tmp.SGnim9BzYz/f/nope
+/tmp/tmp.SGnim9BzYz/out/t8b.stderr: patch-merge: 现有 patch 的顶层不是数组（DS-Bot 的 profile patch 必须是 YAML 序列）�
+/tmp/tmp.SGnim9BzYz/out/t8.stderr: patch-merge: 现有 patch 不是合法 YAML: Flow sequence in block collection must be sufficiently 
+/tmp/tmp.SGnim9BzYz/out/t9b.stderr: patch-merge: 现有 patch 里有 DS-Bot 或你写入的条目，需要 DS-Bot 自带的 yaml 库做�
+/tmp/tmp.SGnim9BzYz/out/t9c.stderr: patch-merge: 找不到 yaml 库，没法只摘安装器写的键（整份覆盖会丢掉 DS-Bot 设�

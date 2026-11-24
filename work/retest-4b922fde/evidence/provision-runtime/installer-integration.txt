@@ -1,0 +1,84 @@
+start: engines=0 tmpdirs=0
+--- I0 回到「旧版安装器接入过」的状态：patch = 模板渲染结果，备份 = 首启空骨架，插件包在
+i0 uninstall rc=0
+PASS I0 provision rc
+--- I1a 旧版接入的家（patch = 模板渲染结果）跑新安装器
+PASS I1a rc
+PASS I1a patch 没被重写
+PASS I1a patch 逐字节不变
+PASS I1b rc
+PASS I1b 插件 up to date
+PASS I1b patch up to date
+--- I2 模拟你在 DS-Bot 界面里改了设置（同一个文件里多了一条），再重跑 / 撤销 / 重装 / 撤销
+PASS I2 sim 写入 rc
+PASS I2b 重跑 rc
+PASS I2b patch up to date（你的条目还在，没被覆盖）
+PASS I2b patch 逐字节不变
+PASS I2b 你的条目在
+PASS I2c 撤销 rc
+PASS I2c 只摘安装器的条目
+PASS I2c 你的条目还在
+PASS I2c 安装器的条目与标记清干净
+PASS I2c 过期的接入前备份已删
+你的文件现在是:
+- id: some-plugin
+  config:
+    a: 1
+PASS I2d 重装 rc
+PASS I2d 并入而不是覆盖
+PASS I2d 备份 = 你当前的文件
+PASS I2d 你的条目还在
+并入后的文件头:
+# hivebot-provision —— 下面三项里由安装器维护的键（llm-pi-ai �
+- id: some-plugin
+  config:
+PASS I2e 再跑 rc
+PASS I2e patch up to date
+PASS I2f 撤销 rc
+PASS I2f 撤销后 = 接入前你的文件（逐字节）
+--- I3 自定义状态目录 + --purge-state
+PASS I3a rc
+PASS I3a patch 的 stateDir
+PASS I3b rc
+PASS I3b purge 的是自定义目录
+PASS I3b 目录已删
+PASS I3c 相对路径 rc
+PASS I3c patch 的 stateDir（绝对路径）
+PASS I3d rc
+PASS I3d purge
+--- I4 --appimage 的路径写法
+PASS I4a 相对路径 rc
+PASS I4b 相对路径 + 没有执行权限 rc 非 0
+PASS I4b 报错指向执行权限
+PASS I4c 文件不存在 rc 非 0
+PASS I4c 报错说不存在
+PASS I4 失败不留运行时临时目录
+--- I5 没有 DS-Bot 自带的 yaml（PATH 模式）时，文件里有你的条目就不敢动
+PASS I5a rc
+PASS I5a 说明原文件没动 + 提示加 --appimage
+PASS I5a patch 逐字节不变
+PASS I5b uninstall 同样拒绝 rc
+PASS I5b patch 逐字节不变
+i5a 输出:
+  runtime: PATH 上的 node v22.23.4 / pnpm 11.0.9
+FAIL: 合并 cordis.patch.yml 失败——原文件没动。
+patch-merge: 现有 patch 里有 DS-Bot 或你写入的条目，需要 DS-Bot 自带的 yaml 库做条目级合并（不覆盖它们）——加 --appimage 重跑。
+  -> 现有文件里有 DS-Bot 或你写入的条目，需要 DS-Bot 自带的 yaml 库做条目级合并：加 --appimage <AppImage 路径> 重跑。
+--- I6 安装途中 Ctrl-C（给安装器整个进程组发 INT，等同终端里按 Ctrl-C）：不留临时目录，不动 patch，重跑能装好
+PASS I6 在 pnpm add 途中按下了 Ctrl-C
+PASS I6 rc（被 Ctrl-C 打断：1 或 130）
+yes
+PASS I6 没留运行时临时目录
+PASS I6 patch 逐字节不变
+PASS I6 profile 里没有残留临时文件
+PASS I6 安装器的进程都退了
+i6 输出:
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+FAIL: superagent install (原 patch 未动) —— pnpm add 输出尾部：
+  （pnpm 没留下输出。如果是你按了 Ctrl-C：什么都没改，直接重跑就行）
+--- I7 收尾：默认参数重新接入
+PASS I7 rc
+PASS I7 你的条目还在
+PASS I7 默认状态目录写回 patch
+=== pass=54 fail=0
+end: engines=0 tmpdirs=0

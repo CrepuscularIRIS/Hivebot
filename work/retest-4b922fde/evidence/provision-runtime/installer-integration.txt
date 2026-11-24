@@ -29,7 +29,7 @@ PASS I2d 并入而不是覆盖
 PASS I2d 备份 = 你当前的文件
 PASS I2d 你的条目还在
 并入后的文件头:
-# hivebot-provision —— 下面三项里由安装器维护的键（llm-pi-ai �
+# hivebot-provision —— 下面三项里由安装器维护的键（llm-pi-ai �
 - id: some-plugin
   config:
 PASS I2e 再跑 rc

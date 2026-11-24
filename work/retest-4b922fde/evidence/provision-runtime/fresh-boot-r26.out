@@ -1,0 +1,26 @@
+== A1: fresh home engine ==
+== A1.5: 预配置（provision.sh——单一真源 scripts/dsbot-provision/） ==
+scripts/fresh-boot.sh: line 36: 2331178 Killed                  setsid nohup $RT --expose-internals $APP/src/host.mjs >> "$LOG" 2>&1 < /dev/null
+  runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
+  plugin:  installed dsh-superagent from /home/lingxufeng/bot/app/superagent (source cabbe609bee99e9127420d1b9bc5b7cf3873f101231c24e4ae9cba23f0cc0e54)
+  plugin:  source staged to /tmp/dsbot-trial/home-fresh/.ds-bot/superagent-src
+  bundle:  registered dsh-superagent into dsh.profile.bundles
+  patch:   backed up the original to cordis.patch.yml.pre-hivebot
+  patch:   written /tmp/dsbot-trial/home-fresh/.ds-bot/profiles/ds-bot/cordis.patch.yml（原来是首启的空骨架）
+provisioned: /tmp/dsbot-trial/home-fresh
+  patch:   /tmp/dsbot-trial/home-fresh/.ds-bot/profiles/ds-bot/cordis.patch.yml (5 id refs)
+  plugin:  /tmp/dsbot-trial/home-fresh/.ds-bot/profiles/ds-bot/node_modules/dsh-superagent
+  state:   /tmp/dsbot-trial/sa-state-fresh
+next: 启动 DS-Bot（home: /tmp/dsbot-trial/home-fresh），在界面里给 Chief 选模型「glm-5.3-flash · LiteLLM (local)」；
+      开发验收跑 scripts/fresh-boot.sh；撤销接入跑 scripts/dsbot-provision/uninstall.sh。
+engine: dsh web: http://127.0.0.1:35681/?token=<redacted>
+== A2/A3/A4: 剧本（node 断言脚本） ==
+A2 OK: chief session-972eb254-f6e6-44f0-a0e1-e626a7a0c283
+A2.5 OK: orchestrator activated, masterId=chief
+A2.7 OK: model picked for Chief
+A2.7 OK: Chief opened (kickoff relay + persona)
+A4 send OK, waiting worker...
+A4-marker OK
+boot-check exit: 0
+evidence: A3=PASS A3-reason=judged A4-worker=PASS A4-chief=PASS
+scripts/fresh-boot.sh: line 36: 2332435 Killed                  setsid nohup $RT --expose-internals $APP/src/host.mjs >> "$LOG" 2>&1 < /dev/null

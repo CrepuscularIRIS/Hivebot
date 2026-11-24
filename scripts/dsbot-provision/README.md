@@ -108,7 +108,7 @@ DS-Bot 运行中执行，期望最后一行 `RESULT: SuperAgent 就绪`：引擎
 | `FAIL: DS-Bot profile skeleton missing` | 还没用这个 home 启动过 DS-Bot——做第 1 步 |
 | `FAIL: DS-Bot 正在这个 home 上运行` | DS-Bot 没退干净——完全退出后重跑 |
 | `FAIL: 找不到可用的 node + pnpm` | 没带 `--appimage`，且 PATH 上没有合适的 node / pnpm |
-| 卡在 `building superagent` 很久不动，最后报 `FAIL: superagent build (pnpm install --frozen-lockfile)` | 首次安装在下载开发依赖，需要能访问 npm registry；网络不通时 pnpm 会反复重试一阵才报错。等网络恢复重跑；中途 Ctrl-C 也行——构建没完成时原 patch 不会被改动，临时文件会清掉 |
+| 卡在 `building superagent` 很久不动，最后报 `FAIL: superagent build (pnpm install --frozen-lockfile)` | 首次安装在下载开发依赖，需要能访问 npm registry；网络不通时 pnpm 会反复重试一阵才报错（实测断了约 12 分钟后失败）。报错尾部若是 `could not be checked against minimumReleaseAge … fetch failed`，同样是网络问题——pnpm 要联网核对每个依赖的发布时间，别为此关掉这项检查。等网络恢复重跑；中途 Ctrl-C 也行——构建没完成时原 patch 不会被改动，临时文件会清掉 |
 | `FAIL: pnpm 主版本对不上` | 没带 `--appimage`，PATH 上的 pnpm 和 DS-Bot 自己装插件用的不是同一套——带 `--appimage` |
 | `FAIL: superagent install (原 patch 未动)` | 插件依赖没装上（多半是网络或 registry；你按了 Ctrl-C 也是这句）——输出尾部有 pnpm 的报错；原 patch 没动，恢复后重跑 |
 | `FAIL: 合并 cordis.patch.yml 失败——原文件没动。`（后面提示加 `--appimage`） | 没带 `--appimage` / `--app-dir`，而 `cordis.patch.yml` 里已经有 DS-Bot 设置界面写入的条目——条目级合并要借 DS-Bot 自带的 yaml 库，带上再跑 |

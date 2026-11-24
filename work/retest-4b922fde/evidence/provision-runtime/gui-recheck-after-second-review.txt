@@ -1,0 +1,21 @@
+GUI 复验（二次只读审查的修复之后）
+home：/tmp/gui-test/home，默认接入，cordis.patch.yml 里另有 1 条用户条目（some-plugin）
+集成测试 77 项见 installer-integration.txt（同一轮）。复验跑在提交之前的工作区上，内容与随后收录本文件的提交一致。
+启动方式：DSH_LITELLM_API_KEY 取本地网关 key（不记录）+ 隔离 HOME/Xvfb :97 起 DS-Bot 0.3.8（AppImage 解包后跑 squashfs-root/AppRun）。
+
+闸门日志原文：
+10:12:10 stage=int start (repo HEAD=c5ecd525)
+10:15:02 NETWORK_STABLE load=29.34
+10:16:03 int exit=0 === pass=77 fail=0
+10:16:09 gui window ready=6s
+10:16:15 gui state: status=200 master=true len=1235
+10:16:15 gui patch: before=e9a33c224b8e058e after=e9a33c224b8e058e mode=600
+10:16:15 gui main.log: ValidationError=0 did-not-activate=0 lines=125
+10:16:16 gui closed engines=0
+10:16:16 job-exit=0
+
+怎么读：
+- gui state：页内 GET /orchestrator/api/state（带 x-orchestrator-request: 1）→ 200 且有 masterId = 插件激活、编排器就绪
+- gui patch：DS-Bot 启动前后的 cordis.patch.yml sha256 前 16 位相同 = 带用户条目的合并结果 DS-Bot 没有重写；mode=600 = 合并结果按新规则落盘
+- gui main.log：日志里 ValidationError / did not activate 计数都是 0
+- 截图 gui-4-after-second-review.png：Chief 开场 + A/B/C 卡片，无更新弹窗

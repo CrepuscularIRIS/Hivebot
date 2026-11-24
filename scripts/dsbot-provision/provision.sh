@@ -84,8 +84,9 @@ fi
 # 天然一致（见 runtime.sh）。不走 npm：装 superagent 的依赖会 ERESOLVE（见步骤 0）。
 # 解包出来的运行时（约 134 MB）在退出时删——trap 要在 runtime_resolve 之前装好：解包之后才失败、或中途 Ctrl-C，
 # 否则会把临时目录留在 /tmp（2026-11-24 只读审查 #4）。INT/TERM 先走 exit，才会触发 EXIT trap。
-# 退出时一并清掉 patch 的两个临时文件和 pnpm 的两个输出日志（中途失败 / Ctrl-C / 被信号打断时都不留下；变量还没赋值时展开为空）
-trap 'runtime_cleanup; rm -f "${PATCH_TMP:-}" "${PATCH_MERGED:-}" "${BUILD_LOG:-}" "${INSTALL_LOG:-}"' EXIT
+# 退出时一并清掉 patch 的两个临时文件、pnpm 的两个输出日志、拷到一半的插件源副本 superagent-src.new（中途失败 / Ctrl-C /
+# 被信号打断时都不留下；变量还没赋值时跳过）
+trap 'runtime_cleanup; rm -f "${PATCH_TMP:-}" "${PATCH_MERGED:-}" "${BUILD_LOG:-}" "${INSTALL_LOG:-}"; [ -z "${STAGE:-}" ] || rm -rf "${STAGE}.new"' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 runtime_resolve || {
@@ -173,7 +174,7 @@ if [ -f "$PATCH" ]; then
     exit 2
   fi
 else
-  cp "$PATCH_TMP" "$PATCH_MERGED"; PATCH_STATE="skeleton"
+  cp "$PATCH_TMP" "$PATCH_MERGED"; chmod 600 "$PATCH_MERGED"; PATCH_STATE="skeleton"
 fi
 
 # 2) 安装/升级 superagent 插件包进 profile（registry 同上：默认 npmmirror）
@@ -270,12 +271,19 @@ if (!m.dsh.profile.bundles.includes("dsh-superagent")) {
 # 5) 最后才替换 patch——走到这里插件、skills、bundle 注册都已成功，此后不会再有会失败的步骤
 #    （上面每条失败路径都已退出，原配置保持完整）。
 #    现有文件没有 hivebot-provision 标记 = 未接入状态下的最新原件（可能已经被你在 DS-Bot 里改过）：备份一份给
-#    uninstall.sh 按条目还原用。旧备份一并覆盖——它可能是更早那次接入留下的，已经不是你的最新设置。
+#    uninstall.sh 按条目还原用。已有的旧备份不覆盖、改名留档：uninstall.sh 留下它，是因为里面还有没放回的东西
+#    （2026-11-24 只读复审 #2）。
 if [ "$PATCH_ACTION" = unchanged ]; then
   echo "  patch:   up to date（安装器写的那三项没变，其余条目没动）"
 else
   if [ -f "$PATCH" ] && ! grep -q 'hivebot-provision' "$PATCH"; then
-    cp -p "$PATCH" "$PROFILE_DIR/cordis.patch.yml.pre-hivebot"
+    BACKUP="$PROFILE_DIR/cordis.patch.yml.pre-hivebot"
+    if [ -f "$BACKUP" ]; then
+      STAMP="$(date +%Y%m%d-%H%M%S)"
+      mv -f "$BACKUP" "$BACKUP.$STAMP"
+      echo "  patch:   旧备份改名留档为 cordis.patch.yml.pre-hivebot.$STAMP"
+    fi
+    cp -p "$PATCH" "$BACKUP"
     echo "  patch:   backed up the original to cordis.patch.yml.pre-hivebot"
   fi
   mv -f "$PATCH_MERGED" "$PATCH"

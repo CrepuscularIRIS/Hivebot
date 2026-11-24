@@ -59,6 +59,7 @@ PASS I5a 说明原文件没动 + 提示加 --appimage
 PASS I5a patch 逐字节不变
 PASS I5b uninstall 同样拒绝 rc
 PASS I5b patch 逐字节不变
+PASS I5b 提示加 --appimage（此前是死代码）
 i5a 输出:
   runtime: PATH 上的 node v22.23.4 / pnpm 11.0.9
 FAIL: 合并 cordis.patch.yml 失败——原文件没动。
@@ -76,9 +77,34 @@ i6 输出:
   runtime: DS-Bot 自带 node v24.21.0 / pnpm 11.7.0
 FAIL: superagent install (原 patch 未动) —— pnpm add 输出尾部：
   （pnpm 没留下输出。如果是你按了 Ctrl-C：什么都没改，直接重跑就行）
+--- I8 旧版安装器接入过的家（备份 = 接入前原件，多一条）：撤销时不自动放回、保留备份并提示；再接入时旧备份改名留档
+PASS I8a 撤销 rc
+PASS I8a 报出没放回的条目和键 + 保留备份
+PASS I8a 备份还在
+PASS I8a 标记与安装器加的条目已摘
+PASS I8a 接入前的默认模型放回
+PASS I8b 再接入 rc
+PASS I8b 旧备份改名留档
+PASS I8b 留档文件存在
+PASS I8b patch 权限 600
+PASS I8c 撤销 rc
+PASS I8c 这次没有缺的东西、备份已清
+PASS I8c patch 权限仍是 600
+--- I9 条目早没了、只剩标记：撤销后标记也去掉，下次接入会重新备份
+PASS I9 预备：接入 rc
+PASS I9a 撤销 rc
+PASS I9a 只去掉标记
+PASS I9a 标记行数为 0
+PASS I9b 再接入 rc
+PASS I9b 这次有备份
+--- I10 --purge-state 的目录取自 dsh-superagent 条目（行尾注释、空格都不碍事）
+PASS I10 接入 rc
+PASS I10 撤销 rc
+PASS I10 purge 的是条目里的目录
+PASS I10 目录已删
 --- I7 收尾：默认参数重新接入
 PASS I7 rc
 PASS I7 你的条目还在
 PASS I7 默认状态目录写回 patch
-=== pass=54 fail=0
+=== pass=77 fail=0
 end: engines=0 tmpdirs=0

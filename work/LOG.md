@@ -1608,3 +1608,8 @@ T26 A 段施工+回执完成（feat/T26 bacf173e），reviewer 审查中；修�
   - 保留不改：mtime 重建规则的盲区（时钟回拨、产物 mtime 在未来）写进已知限制。
 - 验证（审查修复后）：patch-merge 夹具测试入库 `scripts/dsbot-provision/tests/patch-merge-fixtures.sh`（70 项：用户原文件 → 并入 → 摘除逐字节还原、!!js / 带 name 的条目、编辑器重写过的文件、坏 YAML 不动、没有 yaml 库时只认空骨架；证据 patch-merge-fixtures.txt）；安装器集成测试 54 项（证据 installer-integration.txt）：旧版接入的 home 跑新安装器 patch 逐字节不变、带用户条目的往返前后逐字节相同、自定义状态目录的 --purge-state、相对路径 --appimage、PATH 模式遇用户条目拒绝、pnpm add 途中给安装器进程组发 INT（退出码 1：pnpm 自己接住 SIGINT 以 1 退出，bash 就不再执行 INT trap；不留临时目录、patch 不变、重跑能装好）；带用户条目的 home 起 GUI：编排面 200、日志 ValidationError 0。
 - 踩坑（续）：「$( cd dir; find … ) | sha256sum」的消费端在子 shell 外面跑（相对路径全失败）；多字段输出行要先 tr 拆字段再 sed；测试脚本别 rm -rf 自己所在目录、后台启动以 bash -n 通过为前提；给按模式找到的 pid 发信号前先确认归属，只对自己 setsid 出来的进程组发。
+- 二次只读审查（merge-review，10:00 前后；10 条意见全改）：
+  - [高] 撤销时拿备份里的整条盖回同 id 条目——接入后换过的 key、新加的 provider、插件开关写的 `disabled` 全丢。改为按键还原：条目不动，安装器的键按备份放回（备份里没有就摘掉）；接入前有、现在没有的条目或键（多半是旧版安装器整份覆盖掉的）只报不放——保留备份并提示，下次接入时旧备份改名留档（`cordis.patch.yml.pre-hivebot.<时间戳>`）。
+  - 撤销的「加 --appimage」提示是死代码（`if ! cmd; then` 里拿到的 `$?` 恒为 0）→ 先把输出和退出码分别接住；只剩标记的文件撤销后把去标记的结果落盘（此前写出了 `null`）；合并后的文件权限 0600；`--purge-state` 的目录改由 patch-merge 按 `dsh-superagent` 条目读（行尾注释、空格不碍事）；同 id 多条、YAML 锚点别名给人话报错；文件不是安装器写的时候不再删备份。
+  - 文档：「逐字节保留」改成「内容保留、文件经 yaml 库重新排版」；撤销同样要借 yaml 库，所以也带 `--appimage`；新增三行排障（撤销被拒 / `nothing to undo` / 备份里还有东西没放回）。
+- 验证（二次审查后）：夹具测试 105 项全过（新增：接入后改过的键照留、旧版安装器的 home、锚点别名、重复 id、多文档、权限 0600）；集成测试 77 项全过（新增 I8 旧版安装器 home 撤销保留备份、I9 只剩标记、I10 条目里的 stateDir）；带用户条目的 home 起 GUI：编排面 200、DS-Bot 启动前后 patch 逐字节相同、ValidationError 0。证据 `patch-merge-fixtures.txt`、`installer-integration.txt`、`gui-recheck-after-second-review.txt`。

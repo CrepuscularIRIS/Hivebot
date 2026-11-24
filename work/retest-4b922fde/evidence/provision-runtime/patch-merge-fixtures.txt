@@ -42,11 +42,14 @@ PASS T8 坏 YAML rc 非 0
 PASS T8 没写 out
 PASS T8b 顶层非数组 rc 非 0
 T8b stderr: patch-merge: 现有 patch 的顶层不是数组（DS-Bot 的 profile patch 必须是 YAML 
+PASS T8b 没写 out
 --- T9 没有 yaml 库（- ）：只认空骨架
 PASS T9 空骨架 rc
 PASS T9 out == R
 PASS T9b 用户文件 rc=3
+PASS T9b 没写 out
 PASS T9c remove rc=3
+PASS T9c 没写 out
 --- T10 DS-Bot 编辑器重写过的文件：它的改动在 remove 之后仍在
 PASS T10 apply rc
 PASS T10 remove rc
@@ -72,6 +75,8 @@ PASS T13 out
 --- T14 只有标记行
 PASS T14 rc
 PASS T14 fields
+PASS T14 out（标记去掉后的空骨架）
+PASS T14 标记行数为 0
 --- T15 文件缺失
 PASS T15 rc 非 0
 --- T16 用户文件第一条就是要放回的条目，且被 DS-Bot 重写过（说明块挂在它上面）
@@ -93,7 +98,44 @@ PASS T18 out == U18（逐字节）
 --- T19 没有 id 的新条目追加后不带渲染结果的文件头
 1
 PASS T16/19 合并结果里标记行只有 1 行
-=== pass=70 fail=0
+--- T20 接入后在安装器那三条里改过别的键：撤销时这些改动照留，安装器的键按备份放回
+PASS T20 remove rc
+PASS T20 keeps temperature: 0.3
+PASS T20 keeps apiKey: user-key-placeholder-rotated
+PASS T20 keeps extra: 1
+PASS T20 keeps disabled: true
+PASS T20 keeps provider: deepseek
+PASS T20 keeps model: deepseek-chat
+PASS T20 安装器的键摘干净
+PASS T20 fields
+PASS T20 没有 unrestored 行
+--- T21 旧版安装器接入过的家（现有文件 = 旧的整份渲染结果，备份 = 接入前原件、多一条）：没放回的条目和键要报出来
+PASS T21 remove rc
+PASS T21 unrestored 行
+PASS T21 statedir 行
+PASS T21 放回 provider: deepseek
+PASS T21 放回 model: deepseek-chat
+PASS T21 没自动放回的东西不在结果里（由 uninstall.sh 保留备份并提示）
+--- T22 固定键上带锚点、别处有别名：一句话报错、不写 out
+PASS T22 apply rc 非 0
+PASS T22 没写 out
+PASS T22 stderr 只有一行、以 patch-merge: 开头
+--- T23 同一个 id 出现两次：拒改并说明
+PASS T23 apply rc 非 0
+PASS T23 没写 out
+PASS T23 报错说出现两次
+--- T24 多文档 / config 不是映射：不动、不写 out
+PASS T24 多文档 apply rc 非 0
+PASS T24 没写 out
+PASS T25 config 不是映射 rc 非 0
+PASS T25 没写 out
+--- T26 --purge-state 用的 stateDir：按 id 从条目里读，行尾注释和空格不碍事
+PASS T26 rc
+PASS T26 statedir
+--- T27 落盘权限 0600（文件里有你自己 provider 的 key）
+PASS T27 apply 输出权限
+PASS T27 remove 输出权限
+=== pass=105 fail=0
 --- T3 output:
 # hivebot-provision —— 下面三项里由安装器维护的键（l
 # Your patch layer for this dsh profile, applied after every bundle la
@@ -136,8 +178,12 @@ PASS T16/19 合并结果里标记行只有 1 行
     stateDir: /home/you/.ds-bot/superagent-state
     dataDir: /home/you
 --- stderr files:
-/tmp/tmp.SGnim9BzYz/out/t15.stderr: patch-merge: 现有 patch 读不到: /tmp/tmp.SGnim9BzYz/f/nope
-/tmp/tmp.SGnim9BzYz/out/t8b.stderr: patch-merge: 现有 patch 的顶层不是数组（DS-Bot 的 profile patch 必须是 YAML 序列）�
-/tmp/tmp.SGnim9BzYz/out/t8.stderr: patch-merge: 现有 patch 不是合法 YAML: Flow sequence in block collection must be sufficiently 
-/tmp/tmp.SGnim9BzYz/out/t9b.stderr: patch-merge: 现有 patch 里有 DS-Bot 或你写入的条目，需要 DS-Bot 自带的 yaml 库做�
-/tmp/tmp.SGnim9BzYz/out/t9c.stderr: patch-merge: 找不到 yaml 库，没法只摘安装器写的键（整份覆盖会丢掉 DS-Bot 设�
+/tmp/tmp.PQdrlJo0pw/out/t15.stderr: patch-merge: 现有 patch 读不到: /tmp/tmp.PQdrlJo0pw/f/nope
+/tmp/tmp.PQdrlJo0pw/out/t22.stderr: patch-merge: 没做成，什么都没改——Unresolved alias (the anchor must be set before the al
+/tmp/tmp.PQdrlJo0pw/out/t23.stderr: patch-merge: 「agent-default-model」在现有 patch里出现了 2 次（第 1、2 条）——DS-B
+/tmp/tmp.PQdrlJo0pw/out/t24.stderr: patch-merge: 现有 patch 不是合法 YAML: Source contains multiple documents; please use YAML.par
+/tmp/tmp.PQdrlJo0pw/out/t25.stderr: patch-merge: 「agent-default-model」的 config 不是映射，不敢覆盖
+/tmp/tmp.PQdrlJo0pw/out/t8b.stderr: patch-merge: 现有 patch 的顶层不是数组（DS-Bot 的 profile patch 必须是 YAML 序列）�
+/tmp/tmp.PQdrlJo0pw/out/t8.stderr: patch-merge: 现有 patch 不是合法 YAML: Flow sequence in block collection must be sufficiently 
+/tmp/tmp.PQdrlJo0pw/out/t9b.stderr: patch-merge: 现有 patch 里有 DS-Bot 或你写入的条目，需要 DS-Bot 自带的 yaml 库做�
+/tmp/tmp.PQdrlJo0pw/out/t9c.stderr: patch-merge: 找不到 yaml 库，没法只摘安装器写的键（整份覆盖会丢掉 DS-Bot 设�

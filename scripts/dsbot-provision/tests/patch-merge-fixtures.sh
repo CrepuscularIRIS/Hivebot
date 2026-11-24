@@ -110,11 +110,14 @@ rc=$(run t8 apply "$F/U4" "$F/R" "$APP"); check "T8 坏 YAML rc 非 0" "$(nonzer
 [ ! -e "$OUT/t8.out" ]; check "T8 没写 out" "$?" 0
 rc=$(run t8b apply "$F/U5" "$F/R" "$APP"); check "T8b 顶层非数组 rc 非 0" "$(nonzero $rc)" x
 echo "T8b stderr: $(head -n 1 "$OUT/t8b.stderr" | cut -c1-90)"
+[ ! -e "$OUT/t8b.out" ]; check "T8b 没写 out" "$?" 0
 echo "--- T9 没有 yaml 库（- ）：只认空骨架"
 rc=$(run t9 apply "$F/U0" "$F/R" -); check "T9 空骨架 rc" "$rc" 0
 cmp -s "$OUT/t9.out" "$F/R"; check "T9 out == R" "$?" 0
 rc=$(run t9b apply "$F/U1" "$F/R" -); check "T9b 用户文件 rc=3" "$rc" 3
+[ ! -e "$OUT/t9b.out" ]; check "T9b 没写 out" "$?" 0
 rc=$(run t9c remove "$F/R" - -); check "T9c remove rc=3" "$rc" 3
+[ ! -e "$OUT/t9c.out" ]; check "T9c 没写 out" "$?" 0
 echo "--- T10 DS-Bot 编辑器重写过的文件：它的改动在 remove 之后仍在"
 rc=$(run t10 apply "$F/U2" "$F/R" "$APP"); check "T10 apply rc" "$rc" 0
 cp "$OUT/t10.out" "$F/A2"; "$NODE" "$SIM" "$F/A2" "$APP" dsh-plugin-manager '{"someSetting":false,"addedInGui":1}'
@@ -142,6 +145,8 @@ check "T13 out" "$(cat "$OUT/t13r.out")" "[]"
 echo "--- T14 只有标记行"
 rc=$(run t14 remove "$F/U8" - "$APP"); check "T14 rc" "$rc" 0
 check "T14 fields" "$(field t14 state)" absent
+check "T14 out（标记去掉后的空骨架）" "$(cat "$OUT/t14.out")" "[]"
+check "T14 标记行数为 0" "$(grep -c 'hivebot-provision' "$OUT/t14.out")" 0
 echo "--- T15 文件缺失"
 rc=$(run t15 apply "$F/nope" "$F/R" "$APP"); check "T15 rc 非 0" "$(nonzero $rc)" x
 echo "--- T16 用户文件第一条就是要放回的条目，且被 DS-Bot 重写过（说明块挂在它上面）"
@@ -168,6 +173,87 @@ rc=$(run t18r remove "$OUT/t18.out" "$F/U18" "$APP"); check "T18 remove rc" "$rc
 cmp -s "$OUT/t18r.out" "$F/U18"; check "T18 out == U18（逐字节）" "$?" 0
 echo "--- T19 没有 id 的新条目追加后不带渲染结果的文件头"
 grep -c '^# hivebot-provision' "$OUT/t16.out"; check "T16/19 合并结果里标记行只有 1 行" "$(grep -c '^# hivebot-provision' "$OUT/t16.out")" 1
+echo "--- T20 接入后在安装器那三条里改过别的键：撤销时这些改动照留，安装器的键按备份放回"
+cat > "$F/U20" <<'EOF'
+- id: agent-default-model
+  config:
+    provider: deepseek
+    model: deepseek-chat
+- id: llm-pi-ai
+  config:
+    providers:
+      deepseek:
+        apiKey: user-key-placeholder
+EOF
+cat > "$F/A20" <<'EOF'
+# hivebot-provision —— test
+- id: agent-default-model
+  config:
+    provider: litellm
+    model: glm-5.3-flash
+    temperature: 0.3
+- id: llm-pi-ai
+  config:
+    providers:
+      deepseek:
+        apiKey: user-key-placeholder-rotated
+      litellm:
+        displayName: my gateway
+    extra: 1
+  disabled: true
+- id: dsh-superagent
+  config:
+    stateDir: /home/you/.ds-bot/superagent-state
+    dataDir: /home/you
+EOF
+rc=$(run t20r remove "$F/A20" "$F/U20" "$APP"); check "T20 remove rc" "$rc" 0
+for pat in 'temperature: 0.3' 'apiKey: user-key-placeholder-rotated' 'extra: 1' 'disabled: true' 'provider: deepseek' 'model: deepseek-chat'; do
+  grep -qF -- "$pat" "$OUT/t20r.out"; check "T20 keeps $pat" "$?" 0
+done
+grep -qE 'litellm|my gateway|glm-5.3-flash|stateDir|dataDir|hivebot-provision' "$OUT/t20r.out"; check "T20 安装器的键摘干净" "$(absent $?)" x
+check "T20 fields" "$(field t20r state) removed=$(field t20r removed) restored=$(field t20r restored) entries=$(field t20r entries)" "kept removed=3 restored=2 entries=2"
+check "T20 没有 unrestored 行" "$(sed -n 's/^unrestored=//p' "$OUT/t20r.stdout")" ""
+echo "--- T21 旧版安装器接入过的家（现有文件 = 旧的整份渲染结果，备份 = 接入前原件、多一条）：没放回的条目和键要报出来"
+cp "$F/U1" "$F/B21"
+rc=$(run t21 remove "$F/R" "$F/B21" "$APP"); check "T21 remove rc" "$rc" 0
+check "T21 unrestored 行" "$(sed -n 's/^unrestored=//p' "$OUT/t21.stdout")" "llm-pi-ai(config.providers.deepseek),dsh-plugin-manager"
+check "T21 statedir 行" "$(sed -n 's/^statedir=//p' "$OUT/t21.stdout")" "/home/you/.ds-bot/superagent-state"
+for pat in 'provider: deepseek' 'model: deepseek-chat'; do
+  grep -qF -- "$pat" "$OUT/t21.out"; check "T21 放回 $pat" "$?" 0
+done
+grep -qE 'dsh-plugin-manager|user-key-placeholder|hivebot-provision|litellm' "$OUT/t21.out"; check "T21 没自动放回的东西不在结果里（由 uninstall.sh 保留备份并提示）" "$(absent $?)" x
+echo "--- T22 固定键上带锚点、别处有别名：一句话报错、不写 out"
+cat > "$F/U22" <<'EOF'
+- id: agent-default-model
+  config:
+    provider: &dp deepseek
+    model: deepseek-chat
+- id: other
+  config:
+    provider: *dp
+EOF
+rc=$(run t22 apply "$F/U22" "$F/R" "$APP"); check "T22 apply rc 非 0" "$(nonzero $rc)" x
+[ ! -e "$OUT/t22.out" ]; check "T22 没写 out" "$?" 0
+check "T22 stderr 只有一行、以 patch-merge: 开头" "$(wc -l < "$OUT/t22.stderr") $(head -c 12 "$OUT/t22.stderr")" "1 patch-merge:"
+echo "--- T23 同一个 id 出现两次：拒改并说明"
+printf -- '- id: agent-default-model\n  config:\n    provider: deepseek\n- id: agent-default-model\n  config:\n    model: deepseek-chat\n' > "$F/U23"
+rc=$(run t23 apply "$F/U23" "$F/R" "$APP"); check "T23 apply rc 非 0" "$(nonzero $rc)" x
+[ ! -e "$OUT/t23.out" ]; check "T23 没写 out" "$?" 0
+grep -q '出现了 2 次' "$OUT/t23.stderr"; check "T23 报错说出现两次" "$?" 0
+echo "--- T24 多文档 / config 不是映射：不动、不写 out"
+printf -- '---\n- id: a\n---\n- id: b\n' > "$F/U24"
+printf -- '- id: agent-default-model\n  config: oops\n' > "$F/U25"
+rc=$(run t24 apply "$F/U24" "$F/R" "$APP"); check "T24 多文档 apply rc 非 0" "$(nonzero $rc)" x
+[ ! -e "$OUT/t24.out" ]; check "T24 没写 out" "$?" 0
+rc=$(run t25 apply "$F/U25" "$F/R" "$APP"); check "T25 config 不是映射 rc 非 0" "$(nonzero $rc)" x
+[ ! -e "$OUT/t25.out" ]; check "T25 没写 out" "$?" 0
+echo "--- T26 --purge-state 用的 stateDir：按 id 从条目里读，行尾注释和空格不碍事"
+sed -e 's|^    stateDir: .*|    stateDir: /home/you/.ds-bot/sa state   # 我的状态目录|' "$F/R" > "$F/R26"
+rc=$(run t26 remove "$F/R26" - "$APP"); check "T26 rc" "$rc" 0
+check "T26 statedir" "$(sed -n 's/^statedir=//p' "$OUT/t26.stdout")" "/home/you/.ds-bot/sa state"
+echo "--- T27 落盘权限 0600（文件里有你自己 provider 的 key）"
+check "T27 apply 输出权限" "$(stat -c %a "$OUT/t3.out")" 600
+check "T27 remove 输出权限" "$(stat -c %a "$OUT/t4.out")" 600
 echo "=== pass=$pass fail=$fail"
 echo "--- T3 output:"; awk '{print substr($0,1,70)}' "$OUT/t3.out"
 echo "--- stderr files:"; for f in "$OUT"/*.stderr; do [ -s "$f" ] && echo "$f: $(head -n 1 "$f" | cut -c1-100)"; done

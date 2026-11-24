@@ -14,8 +14,8 @@
 //
 // 用法（<app-dir> = DS-Bot 的 resources/app，用它的 node_modules/yaml；给 - 表示从本脚本位置往上找）：
 //   patch-merge.mjs apply  <patch> <rendered> <out> <app-dir|->   把渲染结果里的三项并进 <patch>（<patch> 是空骨架「[]」时整份采用渲染结果）
-//   patch-merge.mjs remove <patch> <backup|-> <out> <app-dir|->   把三项摘掉；接入前备份里有同 id 条目的原样放回
-// 结果打印在标准输出（state=… / removed=… / restored=… / entries=…），<out> 写成功才退出 0。
+//   patch-merge.mjs remove <patch> <backup|-> <out> <app-dir|->   把安装器写的键摘掉；接入前就有的值按备份放回，接入后你改的其它键照留
+// 结果打印在标准输出（state=… / removed=… / restored=… / entries=…，可能再跟 statedir=… / unrestored=… 两行），<out> 写成功才退出 0。
 // 任何一步出错都退出非 0 且不写 <out>；退出码 3 = 现有 patch 不是空骨架、却找不到 yaml 库（加 --appimage 重跑）。
 
 import { createRequire } from "node:module";
@@ -55,8 +55,10 @@ function read(file, what) {
   }
 }
 
+// 落盘权限 0600：并进去的文件里有你自己 provider 的 key 明文，DS-Bot 自己写这个文件也是 0600（2026-11-24 只读复审 #5）。
 function write(out, text) {
-  fs.writeFileSync(out, text.endsWith(NL) ? text : text + NL);
+  fs.writeFileSync(out, text.endsWith(NL) ? text : text + NL, { mode: 0o600 });
+  fs.chmodSync(out, 0o600);
 }
 
 const report = (fields) => {
@@ -97,10 +99,55 @@ function looksEmpty(text) {
 
 const itemsOf = (seq) => (seq ? seq.items : []);
 // 与 DS-Bot 编辑器同口径：按 id 找「覆盖条目」——跳过带 insert 的（插入列表）和带 name 的（限定名字的覆盖），都不是安装器写的。
-const findEntry = (Y, seq, id) =>
-  itemsOf(seq).findIndex((item) => Y.isMap(item) && item.get("id") === id && !item.has("insert") && !item.has("name"));
+// 同一个 id 出现两条以上就中止：DS-Bot 以最后一条为准，安装器不猜该改哪一条（2026-11-24 只读复审 #7）。
+function findEntry(Y, seq, id, what) {
+  const hits = [];
+  itemsOf(seq).forEach((item, index) => {
+    if (Y.isMap(item) && item.get("id") === id && !item.has("insert") && !item.has("name")) hits.push(index);
+  });
+  if (hits.length > 1) {
+    throw new Bail(
+      "「" + id + "」在" + what + "里出现了 " + hits.length + " 次（第 " + hits.map((index) => index + 1).join("、") + " 条）——DS-Bot 以最后一条为准，安装器不敢猜；先删掉多余的那条再跑",
+    );
+  }
+  return hits.length === 0 ? -1 : hits[0];
+}
 // undefined 或显式的 null（key: 后面空着）
 const isNull = (node) => node == null || node.value === null;
+
+// 条目里 keyPath 指的节点；沿途缺、或中间不是映射，就是没有（undefined）
+function nodeAt(Y, item, keyPath) {
+  let node = item;
+  for (const key of keyPath) {
+    if (!Y.isMap(node)) return undefined;
+    node = node.get(key, true);
+    if (node === undefined) return undefined;
+  }
+  return node;
+}
+
+// 条目的「身份证」：id，加上 name 限定 / insert 列表的区别——备份里有、结果里没有的条目要报给 uninstall.sh
+const entryKey = (Y, item) =>
+  Y.isMap(item) && item.get("id") != null
+    ? JSON.stringify([item.get("id"), item.has("name") ? String(item.get("name")) : null, item.has("insert")])
+    : null;
+
+// 安装器的键的完整路径（相对条目）：报「备份里有、现在没有」时不算它们——那几个已经按备份放回或摘掉了
+const OWNED_PATHS = new Set(Object.values(OWNED).flat().map((keyPath) => keyPath.join(".")));
+
+// 备份的条目里有、现在的条目里没有的键（递归），例如 providers.deepseek。只报不放：接入后的文件才是你的最新状态
+function missingKeys(Y, current, backup, prefix, found) {
+  if (!Y.isMap(current) || !Y.isMap(backup)) return;
+  for (const pair of backup.items) {
+    const key = String(pair.key.value);
+    if (key === "id" || key === "name") continue;
+    const keyPath = prefix.concat(key);
+    if (OWNED_PATHS.has(keyPath.join("."))) continue;
+    const here = current.get(key, true);
+    if (here === undefined) found.push(keyPath.join("."));
+    else missingKeys(Y, here, pair.value, keyPath, found);
+  }
+}
 
 // 把 src 条目里 keyPath 指的节点写进 dst 条目的同一位置（克隆，连同注释）。沿途缺的中间映射补上；
 // 遇到不是映射的节点就中止——那不是安装器写的形状，不碰。
@@ -191,7 +238,7 @@ function apply(currentText, renderedText, out, appDir) {
   for (const item of rendered.contents.items) {
     const id = item.get("id");
     const keyPaths = OWNED[id] ?? [];
-    const index = findEntry(Y, seq, id);
+    const index = findEntry(Y, seq, id, "现有 patch");
     if (index < 0) {
       const copy = item.clone();
       // 渲染结果的文件头是给「整份采用」的文件写的（「本文件由 provision.sh 渲染」…十三行）：
@@ -221,24 +268,41 @@ function remove(currentText, backupText, out, appDir) {
   const backupSeq = backup ? backup.contents : null;
   let removed = 0;
   let restored = 0;
+  let stateDir;
+  const missing = [];
   for (const id of IDS) {
-    const index = findEntry(Y, seq, id);
+    const index = findEntry(Y, seq, id, "现有 patch");
     if (index < 0) continue;
     removed += 1;
-    const fromBackup = findEntry(Y, backupSeq, id);
-    if (fromBackup >= 0) {
-      // 按备份放回。这条上的注释要留给放回去的条目：DS-Bot 重写过文件之后，文件头的说明块
-      // 挂在第一条条目上，而第一条恰好就是要放回的这条时，直接换节点会把说明一起丢掉。
-      const old = seq.items[index];
-      const back = backupSeq.items[fromBackup].clone();
-      if (back.commentBefore == null && old.commentBefore != null) back.commentBefore = old.commentBefore;
-      if (back.comment == null && old.comment != null) back.comment = old.comment;
-      seq.set(index, back);
-      restored += 1;
+    const item = seq.items[index];
+    if (id === "dsh-superagent") {
+      const value = nodeAt(Y, item, ["config", "stateDir"]);
+      if (Y.isScalar(value) && typeof value.value === "string" && value.value !== "") stateDir = value.value;
+    }
+    const fromBackup = backupSeq ? findEntry(Y, backupSeq, id, "接入前的备份") : -1;
+    if (fromBackup < 0) {
+      // 安装器自己加的条目：只摘安装器的键；摘完只剩 id（可带 name）就是空壳，连条目一起删
+      for (const keyPath of OWNED[id]) delOwned(Y, item, keyPath);
+      prune(Y, seq, index, OWNED[id]);
       continue;
     }
-    for (const keyPath of OWNED[id]) delOwned(Y, seq.items[index], keyPath);
-    prune(Y, seq, index, OWNED[id]);
+    // 接入前就有的条目：条目本身不动。安装器的键按备份放回原值（备份里没有这个键就摘掉），接入后你在这里改过的
+    // 其它键照留——DS-Bot 的设置界面是整条重写同一个条目的 config，接入后的改动必然落在这一条里（2026-11-24
+    // 只读复审 #1：此前拿备份里的整条盖回去，这些改动全丢）。
+    const back = backupSeq.items[fromBackup];
+    for (const keyPath of OWNED[id]) {
+      if (nodeAt(Y, back, keyPath) === undefined) delOwned(Y, item, keyPath);
+      else setOwned(Y, id, item, back, keyPath);
+    }
+    // 条目上的注释也按备份放回：安装器在它加的条目上方写说明、旧版安装器把整份文件头写在第一条上；
+    // 你自己在这些条目上写的注释在备份里（接入后才加在条目上的注释会丢，属极少数）。
+    item.commentBefore = back.commentBefore;
+    item.comment = back.comment;
+    restored += 1;
+    // 接入前有、现在没有的其它键（被旧版安装器整份覆盖掉的）只报不放：uninstall.sh 据此保留备份并提示
+    const gone = [];
+    missingKeys(Y, item, back, [], gone);
+    if (gone.length > 0) missing.push(id + "(" + gone.join(",") + ")");
   }
   // 摘掉标记行；其余注释（DS-Bot 首启写的那三行说明）原样留着
   for (const node of markedNodes(current)) {
@@ -247,12 +311,23 @@ function remove(currentText, backupText, out, appDir) {
     const rest = comment.split(NL).filter((line) => !line.includes(MARKER)).join(NL);
     node.commentBefore = rest.trim() === "" ? null : rest;
   }
-  let text = String(current);
+  // 只剩一条标记行、没有任何条目的文件，yaml 的内容是空的（直接 String 会得到 null）
+  let text = current.contents == null ? "" : String(current);
   if (text.includes(MARKER)) text = text.split(NL).filter((line) => !line.includes("# " + MARKER)).join(NL);
   const entries = itemsOf(seq).length;
   if (entries === 0 && text.trim() === "") text = "[]" + NL;
   write(out, text);
   report({ state: removed === 0 ? "absent" : entries === 0 ? "empty" : "kept", removed, restored, entries });
+  // uninstall.sh --purge-state 只认这里读出的 stateDir（按 id 找条目、交给 yaml 解析，行尾注释不会混进路径）
+  if (stateDir !== undefined) console.log("statedir=" + stateDir);
+  // 备份里整条都不在结果里的条目（接入后被整份覆盖过——旧版安装器——或被删过）同样只报不放
+  const keys = new Set(itemsOf(seq).map((item) => entryKey(Y, item)));
+  for (const item of itemsOf(backupSeq)) {
+    const key = entryKey(Y, item);
+    if (key === null || keys.has(key)) continue;
+    missing.push(String(item.get("id")) + (item.has("name") ? "(name=" + String(item.get("name")) + ")" : "") + (item.has("insert") ? "(insert)" : ""));
+  }
+  if (missing.length > 0) console.log("unrestored=" + missing.join(","));
 }
 
 function main(argv) {
@@ -275,5 +350,7 @@ try {
   main(process.argv.slice(2));
 } catch (error) {
   if (error instanceof Bail) die(error.message);
-  throw error;
+  // 兜底成一句话（2026-11-24 只读复审 #8）：yaml 库抛的异常（如固定键上带锚点、别处还有别名）此前带堆栈退出。
+  const message = error && error.message ? String(error.message) : String(error);
+  die("没做成，什么都没改——" + message + (/[Aa]lias/.test(message) ? "（固定键上带锚点/别名时安装器不处理，先手工去掉那个锚点再跑）" : ""));
 }

@@ -70,9 +70,9 @@ for p in $(pgrep -f 'resources/app/src/host[.]mjs'); do tr '\0' '\n' < /proc/"$p
 scripts/dsbot-provision/provision.sh "$HOME" --appimage "$APPIMAGE"
 ```
 
-它做四件事：往 `cordis.patch.yml` 里并入三项（LiteLLM 模型路由 + 默认模型 + SuperAgent 的 stateDir/dataDir；接入前的原文件备份成 `cordis.patch.yml.pre-hivebot`）→ 把插件源复制到 `~/.ds-bot/superagent-src` 并装进 profile → 注册进 `package.json` 的 `dsh.profile.bundles` → 打印结果。重复跑是安全的：插件源码变了就原地重装，patch 只更新安装器自己写的那三项。patch 是最后一步才替换的——前面任何一步失败，原文件都不动。
+它做四件事：往 `cordis.patch.yml` 里并入三项（LiteLLM 模型路由 + 默认模型 + SuperAgent 的 stateDir/dataDir；接入前的原文件备份成 `cordis.patch.yml.pre-hivebot`，已有旧备份时先改名留档、不覆盖）→ 把插件源复制到 `~/.ds-bot/superagent-src` 并装进 profile → 注册进 `package.json` 的 `dsh.profile.bundles` → 打印结果。重复跑是安全的：插件源码变了就原地重装，patch 只更新安装器自己写的那三项。patch 是最后一步才替换的——前面任何一步失败，原文件都不动。
 
-> `cordis.patch.yml` 不只安装器在写：DS-Bot 的设置界面、插件启停开关写的也是这个文件。安装器只并入/更新自己那三项（`patch-merge.mjs`），重跑和撤销都不碰其余条目。做条目级合并要借 DS-Bot 自带的 yaml 库——**没带 `--appimage` / `--app-dir`** 而文件里已经有 DS-Bot 写入的条目时，安装器会拒绝并提示加 `--appimage`（首启的空骨架不受影响）。
+> `cordis.patch.yml` 不只安装器在写：DS-Bot 的设置界面、插件启停开关写的也是这个文件。安装器只并入/更新自己那三项（`patch-merge.mjs`），重跑和撤销都不碰其余条目。做条目级合并要借 DS-Bot 自带的 yaml 库——**没带 `--appimage` / `--app-dir`** 而文件里已经有 DS-Bot 写入的条目时，安装和撤销都会拒绝并提示加 `--appimage`（首启的空骨架不受影响）。并入后的文件由 yaml 库重新排版（换行统一成 LF、超长行重排），内容不变，权限是 `0600`（里面有你自己 provider 的 key）；安装器那几个键上的行尾注释会随键的替换丢掉，写在别处的不受影响。
 
 新 clone 的仓库里插件还没有构建产物，第一次跑会先多一步，打印 `building superagent (lib/ missing)`：下载开发依赖、构建插件，耗时就花在这一步，取决于网速。以后重跑直接跳过，除非源码比构建产物新（比如 `git pull` 之后）——那时会自动重建再装，装进去的不会是旧构建。
 
@@ -97,7 +97,7 @@ DS-Bot 运行中执行，期望最后一行 `RESULT: SuperAgent 就绪`：引擎
 ### 6. 以后
 
 - **更新**：`git pull` 后完全退出 DS-Bot，重跑第 3 步（源码比构建产物新时会自动重建插件再装）。
-- **撤销**：`scripts/dsbot-provision/uninstall.sh "$HOME" --appimage "$APPIMAGE"`——从 `cordis.patch.yml` 里摘掉安装器写的那三项（接入前就有的设置原样放回）、注销 bundle、删插件。编排数据（watch 记账 / ticket / 评估库）默认保留，加 `--purge-state` 一并删。
+- **撤销**：`scripts/dsbot-provision/uninstall.sh "$HOME" --appimage "$APPIMAGE"`——从 `cordis.patch.yml` 里摘掉安装器写的那些键（接入前就有的值按备份放回；接入后你在 DS-Bot 设置界面里改的其它键照留）、注销 bundle、删插件。编排数据（watch 记账 / ticket / 评估库）默认保留，加 `--purge-state` 一并删。撤销同样要借 DS-Bot 自带的 yaml 库（见第 3 步下面的说明），所以也带 `--appimage`。
 - **换网关或模型**：重跑第 3 步，带 `--base-url` / `--model`。
 
 ## 排障
@@ -114,6 +114,9 @@ DS-Bot 运行中执行，期望最后一行 `RESULT: SuperAgent 就绪`：引擎
 | `FAIL: 合并 cordis.patch.yml 失败——原文件没动。`（后面提示加 `--appimage`） | 没带 `--appimage` / `--app-dir`，而 `cordis.patch.yml` 里已经有 DS-Bot 设置界面写入的条目——条目级合并要借 DS-Bot 自带的 yaml 库，带上再跑 |
 | `FAIL: --appimage 文件不存在` / `…没有执行权限` | `--appimage` 的路径写错（相对路径按当前目录算）或忘了 `chmod +x` |
 | `FAIL: 无法从 AppImage 里取出自带运行时` | 它不是 DS-Bot 0.3.8 的 AppImage，或没有执行权限；也可以解包后用 `--app-dir ./squashfs-root` |
+| `FAIL: 没法只摘安装器写的条目——什么都没动，cordis.patch.yml 原样。`（后面提示加 `--appimage`） | 撤销时没带 `--appimage` / `--app-dir`，而 `cordis.patch.yml` 里有别的条目——撤销也要做条目级合并，带上再跑 |
+| `nothing to undo: …/profiles/ds-bot not found` | 这个 home 还没用 DS-Bot 启动过（没有 profile 目录），没有可撤销的东西 |
+| 撤销时打出 `patch:   注意——接入前的备份里还有东西不在当前文件里，没自动放回：…` | 这份 patch 被更早的安装器整份覆盖过：接入前的原件 `cordis.patch.yml.pre-hivebot` 还留着，里面有条目或键不在当前文件里。安装器分不清它们是被覆盖掉的还是你后来删的，所以不自动放回——要的话照提示手工并回 `cordis.patch.yml`；不要了就删掉那个备份 |
 | 发消息报模型 401 | key 不对，或 key 没传到进程（同第一行） |
 | `RESULT: SuperAgent 未就绪`（编排面回了 200） | 还没给 Chief 选模型——做第 4 步 |
 | `RESULT: 路由 404 = 插件没激活` | `package.json` 的 `dsh.profile.bundles` 里没有 `dsh-superagent`——重跑第 3 步后重启 DS-Bot |
@@ -125,7 +128,7 @@ DS-Bot 运行中执行，期望最后一行 `RESULT: SuperAgent 就绪`：引擎
 |---|---|
 | `cordis.patch.template.yml` | 模型路由 + 默认模型 + SuperAgent 的 stateDir/dataDir。插件条目和 worker / router preset 只定义在插件包内的 bundle 层，这里不重复。 |
 | `provision.sh` | 渲染并并入 patch、装插件、注册 bundle；patch 最后才替换，前面任何一步失败都不动原文件 |
-| `uninstall.sh` | 撤销上面三步：只摘安装器写进 patch 的那三项，其余只动 provision 写过的东西 |
+| `uninstall.sh` | 撤销上面三步：只摘安装器写进 patch 的那些键（接入前就有的值按备份放回），其余只动 provision 写过的东西 |
 | `patch-merge.mjs` | 把安装器写的三项并入 / 摘出 `cordis.patch.yml`，其余条目原样保留（内部用，不单独执行） |
 | `runtime.sh` | 找 node + pnpm：`--appimage` / `--app-dir` → 正在运行的引擎的命令行 → `PATH` |
 
@@ -148,7 +151,7 @@ scripts/fresh-boot.sh                 # 网关 key 取 app/ui/.env 的 LITELLM_M
 python3 -m pytest -q scripts/tests   # 判据脚本的回归
 ```
 
-patch 合并（`patch-merge.mjs`）的夹具测试：70 项，不变量是「你的原文件 → 并入 → 摘除」逐字节还原。条目级合并要借 DS-Bot 自带的 yaml 库，所以把上面解包出来的 `resources/app` 给进去：
+patch 合并（`patch-merge.mjs`）的夹具测试：105 项，主不变量是「你的原文件 → 并入 → 摘除」后与原文件逐字节相同。条目级合并要借 DS-Bot 自带的 yaml 库，所以把上面解包出来的 `resources/app` 给进去：
 
 ```sh
 DSBOT_APP_DIR=/tmp/dsbot-trial/squashfs-root/resources/app bash scripts/dsbot-provision/tests/patch-merge-fixtures.sh

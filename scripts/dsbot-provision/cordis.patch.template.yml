@@ -1,3 +1,4 @@
+# hivebot-provision —— 本文件由 scripts/dsbot-provision/provision.sh 渲染（uninstall.sh 靠这一行认出它）。
 # provision 渲染模板（占位符由 provision.sh sed 替换）：
 #   __STATE_DIR__  SuperAgent 状态目录（orchestrator.sqlite 等）
 #   __DATA_DIR__   DS-Bot 数据目录（<home>/.ds-bot——discovered 链读 bot/state.json）

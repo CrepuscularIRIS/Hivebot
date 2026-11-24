@@ -21,10 +21,13 @@ PNPM=()               # pnpm 命令（数组）
 RUNTIME_KIND=""
 
 # --appimage <文件>：AppImage 自带的解包器只依赖它自己（不需要 FUSE / libfuse2），
-# 只抽出 node 与 pnpm 两棵子树（约 134 MB）到临时目录，脚本退出时删除。
+# 只抽出 node、pnpm 和 yaml 库三棵子树（约 135 MB）到临时目录，脚本退出时删除（调用方在 runtime_resolve 之前装 EXIT trap）。
+# yaml 是 DS-Bot 自己读写 cordis.patch.yml 用的库：patch-merge.mjs 借它做条目级合并（2026-11-24 只读审查 #1）。
 runtime_set_appimage() {
-  [ -f "$1" ] || { echo "FAIL: --appimage 文件不存在: $1" >&2; exit 2; }
-  APPIMAGE="$1"
+  # 相对路径在这里就补成绝对路径：解包前会先 cd 进临时目录，到那时相对路径就找不到了（2026-11-24 只读审查 #4）
+  case "$1" in /*) APPIMAGE="$1" ;; *) APPIMAGE="$(pwd)/$1" ;; esac
+  [ -f "$APPIMAGE" ] || { echo "FAIL: --appimage 文件不存在: $1" >&2; exit 2; }
+  [ -x "$APPIMAGE" ] || { echo "FAIL: --appimage 文件没有执行权限——先 chmod +x：$APPIMAGE" >&2; exit 2; }
 }
 
 # --app-dir <目录>：AppImage 解包目录（squashfs-root）、resources 目录或 resources/app 本身。
@@ -70,10 +73,14 @@ runtime_resolve() {
   local p d store store_major want have
   if [ -n "$APPIMAGE" ]; then
     RUNTIME_TMP="$(mktemp -d)"
-    # --appimage-extract 一次只收一个模式；两棵子树各抽一次，落在同一个 squashfs-root 下。
+    # --appimage-extract 一次只收一个模式；三棵子树各抽一次，落在同一个 squashfs-root 下。
+    # yaml 排在 pnpm 后面：pnpm 抽不出来就别再花时间了。
     ( cd "$RUNTIME_TMP" && "$APPIMAGE" --appimage-extract 'resources/app/node_modules/pnpm/*' >/dev/null 2>&1 \
-        && "$APPIMAGE" --appimage-extract 'resources/primary-runtime/dependencies/node/*' >/dev/null 2>&1 ) \
-      || { echo "FAIL: 无法从 AppImage 里取出自带运行时: $APPIMAGE" >&2; exit 2; }
+        && "$APPIMAGE" --appimage-extract 'resources/primary-runtime/dependencies/node/*' >/dev/null 2>&1 \
+        && "$APPIMAGE" --appimage-extract 'resources/app/node_modules/yaml/*' >/dev/null 2>&1 ) \
+      || { echo "FAIL: 无法从 AppImage 里取出自带运行时: $APPIMAGE" >&2
+           echo "  -> 确认它是 DS-Bot 0.3.8 的 AppImage 且有执行权限（chmod +x）；或改用 --app-dir 指向解包目录" >&2
+           echo "     （先跑「<AppImage> --appimage-extract」，再指到 squashfs-root）。" >&2; exit 2; }
     if ! _runtime_probe "$RUNTIME_TMP/squashfs-root"; then
       echo "FAIL: $APPIMAGE 里没有自带的 pnpm（resources/app/node_modules/pnpm/bin/pnpm.mjs）——不是 DS-Bot 0.3.8 的 AppImage？" >&2
       exit 2

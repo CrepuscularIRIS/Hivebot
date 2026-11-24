@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # uninstall.sh —— 撤销 provision.sh 的接入。只动 provision.sh 写过的东西：
 #   bundle 注册（profile package.json 的 dsh.profile.bundles）、插件包（node_modules/dsh-superagent
-#   及 package.json 里的依赖键）、插件源副本（.ds-bot/superagent-src）、patch（还原首次接入前的备份
-#   cordis.patch.yml.pre-hivebot）、以及可选的 SuperAgent 状态目录。不碰 DS-Bot 本体、会话、凭证。
+#   及 package.json 里的依赖键）、插件源副本（.ds-bot/superagent-src）、patch（只摘掉安装器写的那三项——
+#   你在 DS-Bot 设置界面里做的改动、插件启停开关写的条目原样保留；见 patch-merge.mjs）、以及可选的
+#   SuperAgent 状态目录。不碰 DS-Bot 本体、会话、凭证。
 #
 # 用法：uninstall.sh <home> [--appimage FILE | --app-dir DIR] [--purge-state]
 #   <home>          当初传给 provision.sh 的那个 home
@@ -14,6 +15,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$REPO_ROOT/scripts/dsbot-provision/runtime.sh"
+MERGE="$REPO_ROOT/scripts/dsbot-provision/patch-merge.mjs"
 
 HOME_DIR=""
 PURGE=0
@@ -45,6 +47,10 @@ if [ -n "$ENGINE_PIDS" ]; then
   exit 1
 fi
 
+# 解包出来的运行时在退出时删——trap 要在 runtime_resolve 之前装好（理由见 provision.sh）。INT/TERM 先走 exit 才会触发它。
+trap 'runtime_cleanup; rm -f "${PATCH_TMP:-}"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 # node + pnpm：来源同 provision.sh。改 package.json 至少要有 node；没有 pnpm 时只删插件目录与依赖键（见步骤 2、3）。
 if ! runtime_resolve; then
   if command -v node >/dev/null 2>&1; then NODE_BIN="$(command -v node)"
@@ -53,7 +59,34 @@ if ! runtime_resolve; then
     exit 2
   fi
 fi
-trap runtime_cleanup EXIT
+
+# 1) patch：先算出「摘掉安装器写的那三项之后」的结果，落在临时文件；后面各步都成功才替换（任何一步失败，原文件不动，
+#    前面也什么都还没改）。
+#    - 文件里没有 hivebot-provision 标记 → 不是安装器渲染/并入过的，不碰。
+#    - 接入前就有的同 id 条目，按接入前的备份原样放回；备份里没有的，只摘安装器写的键（scripts/dsbot-provision/patch-merge.mjs）。
+#    - stateDir 只在标记存在时、从 dsh-superagent 条目里读（provision.sh --state-dir 可能改过它；别处的 stateDir 不相干，
+#      也不采信——2026-11-24 只读审查 #6）。--purge-state 删的就是它，必须在替换 patch 之前读。
+PATCH_TMP="$PROFILE_DIR/cordis.patch.yml.uninstall-tmp"
+PATCH_STATE="foreign"; PATCH_ENTRIES=""
+STATE_DIR=""
+if grep -q 'hivebot-provision' "$PATCH" 2>/dev/null; then
+  if ! MERGE_OUT="$("$NODE_BIN" "$MERGE" remove "$PATCH" "$BACKUP" "$PATCH_TMP" "${APP_DIR:--}" 2>&1)"; then
+    MERGE_RC=$?
+    rm -f "$PATCH_TMP"
+    echo "FAIL: 没法只摘安装器写的条目——什么都没动，cordis.patch.yml 原样。" >&2
+    printf '%s\n' "$MERGE_OUT" >&2
+    if [ "$MERGE_RC" = 3 ]; then
+      echo "  -> 需要 DS-Bot 自带的 yaml 库：加 --appimage <DS-Bot 的 AppImage 路径> 重跑。" >&2
+    fi
+    exit 2
+  fi
+  # patch-merge 的输出是一行「state=… removed=… restored=… entries=…」：按空白拆开再取字段（只去掉 state= 前缀会
+  # 把整行都当成状态值——2026-11-24 集成测试踩到：撤销走到「不是安装器写的」分支，安装器的条目没摘）。
+  PATCH_STATE="$(printf '%s\n' "$MERGE_OUT" | tr ' ' '\n' | sed -n 's/^state=//p' | head -n 1)"
+  PATCH_ENTRIES="$(printf '%s\n' "$MERGE_OUT" | tr ' ' '\n' | sed -n 's/^entries=//p' | head -n 1)"
+  STATE_DIR="$(awk '/^- id: /{ on = ($3 == "dsh-superagent") } on && /^ +stateDir: /{ sub(/^ +stateDir: */, ""); print; exit }' "$PATCH" 2>/dev/null | tr -d "\"'" | head -n 1)"
+fi
+STATE_DIR="${STATE_DIR:-$HOME_DIR/.ds-bot/superagent-state}"
 
 # 1) 插件包：有 pnpm 就先走 pnpm remove——它自己改 package.json 的 dependencies，并连带清掉只有它依赖的包。
 #    不能带 --registry（pnpm remove 不认这个选项；2026-11-24 实测 [ERROR] Unknown option: 'registry'）。
@@ -100,20 +133,40 @@ if "$NODE_BIN" -e 'const m=JSON.parse(require("fs").readFileSync(process.argv[1]
   rm -rf "$PROFILE_DIR/node_modules" "$PROFILE_DIR/pnpm-lock.yaml"
   echo "  profile: no dependencies left — removed node_modules/ and pnpm-lock.yaml"
 fi
-# 3) patch：还原首次接入前的备份；没有备份（旧版 provision 没做备份）就保留现状
-if [ -f "$BACKUP" ]; then
-  mv -f "$BACKUP" "$PATCH"
-  echo "  patch:   restored $PATCH from cordis.patch.yml.pre-hivebot"
-else
-  echo "  patch:   no pre-hivebot backup — $PATCH 原样保留（bundle 已注销，里面的 dsh-superagent 条目不会被加载）"
-fi
+# 3) patch：换上第 1 步算好的结果（前面各步都已成功）
+case "$PATCH_STATE" in
+  empty)
+    # 摘完什么都不剩：接入前有备份就整份还原（逐字节回到接入前），没有就留一个干净的空骨架
+    if [ -f "$BACKUP" ]; then
+      mv -f "$BACKUP" "$PATCH"
+      echo "  patch:   restored $PATCH from cordis.patch.yml.pre-hivebot"
+    else
+      mv -f "$PATCH_TMP" "$PATCH"
+      echo "  patch:   removed the hivebot entries from $PATCH"
+    fi ;;
+  kept)
+    # 还有你的条目：写回摘除后的结果，并清掉接入前的备份——现在的文件才是你的最新设置
+    mv -f "$PATCH_TMP" "$PATCH"
+    rm -f "$BACKUP"
+    echo "  patch:   removed the hivebot entries from $PATCH（其余 $PATCH_ENTRIES 条设置原样保留）" ;;
+  absent)
+    rm -f "$PATCH_TMP" "$BACKUP"
+    echo "  patch:   没找到安装器写的条目——$PATCH 原样保留" ;;
+  *)
+    rm -f "$BACKUP"
+    echo "  patch:   $PATCH 不是安装器写的，原样保留" ;;
+esac
 
-# 4) 状态目录（默认保留）
-STATE_DIR="$(sed -n 's/^ *stateDir: *//p' "$PATCH" 2>/dev/null | head -n 1 || true)"
-STATE_DIR="${STATE_DIR:-$HOME_DIR/.ds-bot/superagent-state}"
+# 4) 状态目录（默认保留）。--purge-state 只删状态目录本身：路径看着不像状态目录（空、/、home，或任何
+#    把 profile 包在里面的上级目录）就拒绝——宁可让用户手动删，也不 rm -rf 到别的东西。
 if [ "$PURGE" = 1 ]; then
-  rm -rf "$STATE_DIR" "${STATE_DIR}.lock" "${STATE_DIR}.lock.owner"
-  echo "  state:   purged $STATE_DIR"
+  if [ -z "$STATE_DIR" ] || [ "$STATE_DIR" = "/" ] || [ "$STATE_DIR" = "$HOME_DIR" ] \
+     || case "$PROFILE_DIR" in "$STATE_DIR"|"$STATE_DIR"/*) true ;; *) false ;; esac; then
+    echo "  state:   REFUSED — 「$STATE_DIR」不像 SuperAgent 状态目录，没删；要删请手动处理" >&2
+  else
+    rm -rf "$STATE_DIR" "${STATE_DIR}.lock" "${STATE_DIR}.lock.owner"
+    echo "  state:   purged $STATE_DIR"
+  fi
 elif [ -d "$STATE_DIR" ]; then
   echo "  state:   kept $STATE_DIR（加 --purge-state 一并删除）"
 fi

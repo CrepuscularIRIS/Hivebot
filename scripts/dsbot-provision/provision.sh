@@ -22,8 +22,8 @@
 #       变量名写进模型路由；桌面启动的 DS-Bot 看不到终端里临时 export 的值，做法见同目录 README.md 第 2 步。
 # 运行时：优先用 DS-Bot 自带的 node + pnpm——给 --appimage / --app-dir；都没给时从正在运行的引擎的
 #       命令行里找；都没有才退到 PATH 上的 node / pnpm（此时 pnpm 主版本必须与 profile 的 store 一致）。详见 runtime.sh。
-# 幂等：重跑安全。源码变了（git pull / 重新构建）会原地重装插件；引擎原有的 patch 在首次接入前
-#       备份为 cordis.patch.yml.pre-hivebot。撤销接入用同目录的 uninstall.sh。
+# 幂等：重跑安全。源码变了会原地重装插件：lib/ 缺失、或 src/ 与构建输入比 lib/index.js 新（git pull 之后）
+#       时先重建再装；引擎原有的 patch 在首次接入前备份为 cordis.patch.yml.pre-hivebot。撤销接入用同目录的 uninstall.sh。
 # 验收：scripts/fresh-boot.sh（A1/A1.5/A2/A2.5/A2.7/A3/A4，全过 exit 0）。
 set -euo pipefail
 
@@ -88,17 +88,34 @@ fi
 # 2026-11-24 干净 clone 实测：用 npm 装会 ERESOLVE（@deepseek-ai/cordis 4.0.5-alpha.1 与
 # cordis-plugin-include 声明的 peer ~4.0.5 冲突），旧写法还把 npm 的输出 >/dev/null 吞了，只剩一句
 # tsdown: not found。改走包自己的锁文件（pnpm-lock.yaml + --frozen-lockfile），失败时打出日志尾部。
+# 2026-11-24 补：光看 lib/ 在不在还不够——git pull 之后产物还在，但已经是旧的，「更新 = 重跑本脚本」装进去的
+# 就是旧构建。所以源码（src/ 与构建输入）比 lib/index.js 新也重建；只认 mtime，没动过的 checkout 不会多构建。
+BUILD_INPUTS="src tsdown.config.ts tsconfig.json package.json pnpm-lock.yaml"
+BUILD_REASON=""
+if [ ! -f "$SUPERAGENT_SRC/lib/index.js" ]; then
+  BUILD_REASON="lib/ missing"
+elif [ -n "$(cd "$SUPERAGENT_SRC" && find $BUILD_INPUTS -newer lib/index.js -print -quit 2>/dev/null)" ]; then
+  BUILD_REASON="source newer than lib/index.js"
+fi
 ENTRY="$SUPERAGENT_SRC/lib/index.js"
-if [ ! -f "$ENTRY" ]; then
-  echo "building superagent (lib/ missing): pnpm install --frozen-lockfile && pnpm run build"
+if [ -n "$BUILD_REASON" ]; then
+  echo "building superagent ($BUILD_REASON)"
   BUILD_LOG="$(mktemp)"
-  ( cd "$SUPERAGENT_SRC" && PATH="$RUNTIME_PATH" "${PNPM[@]}" install --frozen-lockfile --ignore-scripts ${NPM_CONFIG_REGISTRY:+--registry="$NPM_CONFIG_REGISTRY"} >"$BUILD_LOG" 2>&1 \
-        && PATH="$RUNTIME_PATH" "${PNPM[@]}" run build >>"$BUILD_LOG" 2>&1 ) || {
-    echo "FAIL: superagent build (pnpm install --frozen-lockfile + pnpm run build) —— 构建日志尾部：" >&2
+  build_fail() {
+    echo "FAIL: superagent build ($1) —— 构建日志尾部：" >&2
     tail -n 25 "$BUILD_LOG" >&2
     rm -f "$BUILD_LOG"
     exit 1
   }
+  # devDependencies：node_modules 里那份锁文件副本与 pnpm-lock.yaml 一致就不重装（git pull 只改了源码的常见
+  # 情形）——少一次联网，也不拿安装器的 pnpm 去动开发者自己的 node_modules。
+  if cmp -s "$SUPERAGENT_SRC/node_modules/.pnpm/lock.yaml" "$SUPERAGENT_SRC/pnpm-lock.yaml"; then
+    echo "  deps:   up to date"
+  else
+    echo "  deps:   pnpm install --frozen-lockfile"
+    ( cd "$SUPERAGENT_SRC" && PATH="$RUNTIME_PATH" "${PNPM[@]}" install --frozen-lockfile --ignore-scripts ${NPM_CONFIG_REGISTRY:+--registry="$NPM_CONFIG_REGISTRY"} >"$BUILD_LOG" 2>&1 ) || build_fail "pnpm install --frozen-lockfile"
+  fi
+  ( cd "$SUPERAGENT_SRC" && PATH="$RUNTIME_PATH" "${PNPM[@]}" run build >>"$BUILD_LOG" 2>&1 ) || build_fail "pnpm run build"
   rm -f "$BUILD_LOG"
 fi
 [ -f "$ENTRY" ] || { echo "FAIL: superagent entry missing after build: $ENTRY" >&2; exit 1; }

@@ -12,7 +12,7 @@
 | 系统 | Linux x64 桌面（实证 Ubuntu 24.04.5） |
 | DS-Bot | 官方 0.3.8 AppImage：[DS-Bot-0.3.8-linux-x86_64.AppImage](https://github.com/Fei2411/DS-Bot/releases/download/v0.3.8/DS-Bot-0.3.8-linux-x86_64.AppImage) |
 | 模型网关 | 任意 OpenAI 兼容网关及其 key。默认 `http://127.0.0.1:4001/v1` + 模型 `glm-5.3-flash`，不一样就用 `--base-url` / `--model` 指过去。网关不随本仓库分发。 |
-| 网络 | 能访问 npm registry（插件依赖按锁文件下载，默认走 npmmirror 镜像） |
+| 网络 | 能访问 npm registry（首次安装要先下载开发依赖构建插件，再下载插件依赖；都按锁文件走，默认 npmmirror 镜像） |
 | Node / pnpm | 不用装——`--appimage` 让安装器临时借用 AppImage 自带的 node v24.21.0 / pnpm 11.7.0 |
 
 ```sh
@@ -53,10 +53,10 @@ chmod 600 ~/.config/environment.d/50-hivebot.conf
 DSH_LITELLM_API_KEY='<你的 key>' "$APPIMAGE"
 ```
 
-自检（DS-Bot 运行中执行，输出 `1` = 变量已传到引擎进程）：
+自检（DS-Bot 运行中执行；每个正在运行的 DS-Bot 引擎输出一行，`1` = 变量已传到该引擎，`0` = 没传到；没有任何输出 = 没找到引擎进程）：
 
 ```sh
-tr '\0' '\n' < /proc/"$(pgrep -f 'resources/app/src/host[.]mjs' | head -n 1)"/environ | grep -c '^DSH_LITELLM_API_KEY='
+for p in $(pgrep -f 'resources/app/src/host[.]mjs'); do tr '\0' '\n' < /proc/"$p"/environ | grep -c '^DSH_LITELLM_API_KEY='; done
 ```
 
 > 实证范围：方法 B 与自检命令实测通过（不带变量时首屏只有 Sign in to DeepSeek / Enter a DeepSeek API key / Open settings…）。方法 A 依赖图形会话由 systemd 用户实例管理（本机 Ubuntu 24.04 X11 GNOME 确认如此，别的桌面环境未验证），**没做重新登录后的端到端实测**——登录后请跑自检，输出 `0` 就先用方法 B。
@@ -68,6 +68,8 @@ scripts/dsbot-provision/provision.sh "$HOME" --appimage "$APPIMAGE"
 ```
 
 它做四件事：渲染 `cordis.patch.yml`（LiteLLM 模型路由 + 默认模型 + SuperAgent 的 stateDir/dataDir；原文件先备份成 `cordis.patch.yml.pre-hivebot`）→ 把插件源复制到 `~/.ds-bot/superagent-src` 并装进 profile → 注册进 `package.json` 的 `dsh.profile.bundles` → 打印结果。重复跑是安全的，源码变了就原地重装。
+
+新 clone 的仓库里插件还没有构建产物，第一次跑会先多一步，打印 `building superagent (lib/ missing)`：下载开发依赖、构建插件，耗时就花在这一步，取决于网速。以后重跑直接跳过，除非源码比构建产物新（比如 `git pull` 之后）——那时会自动重建再装，装进去的不会是旧构建。
 
 DS-Bot 必须已完全退出，否则脚本会拒绝：`FAIL: DS-Bot 正在这个 home 上运行`。
 
@@ -89,7 +91,7 @@ DS-Bot 运行中执行，期望最后一行 `RESULT: SuperAgent 就绪`：引擎
 
 ### 6. 以后
 
-- **更新**：`git pull` 后完全退出 DS-Bot，重跑第 3 步。
+- **更新**：`git pull` 后完全退出 DS-Bot，重跑第 3 步（源码比构建产物新时会自动重建插件再装）。
 - **撤销**：`scripts/dsbot-provision/uninstall.sh "$HOME" --appimage "$APPIMAGE"`——还原 patch 备份、注销 bundle、删插件。编排数据（watch 记账 / ticket / 评估库）默认保留，加 `--purge-state` 一并删。
 - **换网关或模型**：重跑第 3 步，带 `--base-url` / `--model`。
 
@@ -101,6 +103,7 @@ DS-Bot 运行中执行，期望最后一行 `RESULT: SuperAgent 就绪`：引擎
 | `FAIL: DS-Bot profile skeleton missing` | 还没用这个 home 启动过 DS-Bot——做第 1 步 |
 | `FAIL: DS-Bot 正在这个 home 上运行` | DS-Bot 没退干净——完全退出后重跑 |
 | `FAIL: 找不到可用的 node + pnpm` | 没带 `--appimage`，且 PATH 上没有合适的 node / pnpm |
+| 卡在 `building superagent` 很久不动 | 首次安装在下载开发依赖，需要能访问 npm registry；网络不通时 pnpm 会一直重试。恢复后 Ctrl-C 重跑（构建没完成时原 patch 不会被改动） |
 | 安装器提示 pnpm 主版本与 profile 的 store 不一致 | 同上，带 `--appimage`（和 DS-Bot 自己装插件用的是同一套 pnpm） |
 | 发消息报模型 401 | key 不对，或 key 没传到进程（同第一行） |
 | `RESULT: SuperAgent 未就绪`（编排面回了 200） | 还没给 Chief 选模型——做第 4 步 |

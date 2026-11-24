@@ -14,6 +14,7 @@
 - 不再要求给安装器传 `DSH_LITELLM_API_KEY`：它只把变量名写进模型路由，key 是 DS-Bot 进程启动时自己读的。
 - 插件源安装时复制到 `~/.ds-bot/superagent-src`，profile 引用这份副本。此前引用的是仓库路径：仓库被挪走或删掉后，引擎再对该 profile 跑 `pnpm install` 会报 `[ENOENT] ENOENT: no such file or directory, scandir`。改后把源目录挪走，DS-Bot 照常启动、插件照常激活、`pnpm install` 通过。
 - 修复撤销时 `pnpm remove` 不认 `--registry`（`[ERROR] Unknown option: 'registry'`）导致退回手工删除。
+- 源码比构建产物新时（`git pull` 之后）自动重建插件再装。此前只在 `lib/` 缺失时构建，「更新 = 重跑安装器」装进去的可能是旧构建；开发依赖已按锁文件装好时不重复 `pnpm install`。
 
 ### 文档
 
